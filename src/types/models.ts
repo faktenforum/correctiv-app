@@ -1,7 +1,7 @@
 export type FeedKey = 'recherchen' | 'faktencheck' | 'klima' | 'schweiz' | 'lokal' | 'salon5';
 
 export interface FeedItem {
-  /** guid aus dem Feed */
+  /** guid from the feed */
   id: string;
   feed: FeedKey;
   title: string;
@@ -11,7 +11,7 @@ export interface FeedItem {
   /** ISO-8601 */
   publishedAt: string;
   categories: string[];
-  /** og:image — der Feed liefert keine Bilder, wird lazy nachgeladen */
+  /** og:image — the feed provides no images, loaded lazily */
   imageUrl?: string | null;
 }
 
@@ -23,13 +23,13 @@ export interface ArticleDetail {
   authors?: string | null;
   dateIso?: string | null;
   dateText?: string | null;
-  /** Faktencheck-Bewertung: false | mostly-false | missing-context | unproven | true … */
+  /** Fact-check rating: false | mostly-false | missing-context | unproven | true … */
   rating?: string | null;
   ratingText?: string | null;
   bodyHtml: string;
   ogImage?: string | null;
   readingMinutes: number;
-  /** true, wenn aus dem gebündelten Offline-Bestand geladen */
+  /** true if loaded from the bundled offline content */
   offline?: boolean;
 }
 

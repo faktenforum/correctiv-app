@@ -6,14 +6,14 @@
       </StackLayout>
 
       <CollectionView row="1" :items="modules" :itemTemplateSelector="templateSelector">
-        <!-- 1. Hero: Top-Recherche (LIVE) -->
+        <!-- 1. Hero: top investigation (LIVE) -->
         <template #hero="{ item }">
           <StackLayout class="pt-sm">
             <ArticleCard :item="item.article" variant="hero" badge="Recherche" @open="openArticle" />
           </StackLayout>
         </template>
 
-        <!-- 2. Spotlight-Briefing (SAMPLE) -->
+        <!-- 2. Spotlight briefing (SAMPLE) -->
         <template #briefing="{ item }">
           <StackLayout>
             <SectionHeader title="Das Wichtigste heute" />
@@ -21,14 +21,14 @@
           </StackLayout>
         </template>
 
-        <!-- 3. Early-Access (Status-Flip-Demo) -->
+        <!-- 3. Early access (status-flip demo) -->
         <template #earlyAccess="{ item }">
           <StackLayout class="pt-m">
             <EarlyAccessCard :item="item.earlyAccess" @read="openUrl" />
           </StackLayout>
         </template>
 
-        <!-- 4. Neueste Recherchen (LIVE) -->
+        <!-- 4. Latest investigations (LIVE) -->
         <template #sectionRecherchen>
           <SectionHeader title="Neueste Recherchen" />
         </template>
@@ -41,8 +41,8 @@
           </StackLayout>
         </template>
 
-        <!-- 5. Faktencheck-Rail (LIVE, horizontal) — ScrollView statt nested
-             CollectionView: die crasht in recycelten Zellen (viewClass-Error) -->
+        <!-- 5. Fact-check rail (LIVE, horizontal) — ScrollView instead of nested
+             CollectionView: the latter crashes in recycled cells (viewClass error) -->
         <template #factcheckRail="{ item }">
           <StackLayout>
             <SectionHeader title="Faktencheck" />
@@ -63,7 +63,7 @@
           </StackLayout>
         </template>
 
-        <!-- 6. Mitmach-Karte (SAMPLE → Tab 4) -->
+        <!-- 6. Participate card (SAMPLE → tab 4) -->
         <template #participate="{ item }">
           <StackLayout class="pt-m">
             <ParticipateCard
@@ -75,7 +75,7 @@
           </StackLayout>
         </template>
 
-        <!-- 7. Mediathek-Reihe: Video des Tages + Radio (LIVE) -->
+        <!-- 7. Media row: video of the day + radio (LIVE) -->
         <template #mediaRow="{ item }">
           <StackLayout>
             <SectionHeader title="Mediathek" action="Alles ansehen" @action="goToMedia" />
@@ -94,7 +94,7 @@
           </StackLayout>
         </template>
 
-        <!-- 8. Backstage-Modul (SAMPLE) -->
+        <!-- 8. Backstage module (SAMPLE) -->
         <template #backstage="{ item }">
           <StackLayout class="pt-m">
             <BackstageTile
@@ -106,7 +106,7 @@
           </StackLayout>
         </template>
 
-        <!-- 9. Impact-Footer -->
+        <!-- 9. Impact footer -->
         <template #impact>
           <ImpactFooter />
         </template>
@@ -185,7 +185,7 @@ const modules = computed((): HomeModule[] => {
   const video = media.byKey.funfacts.videos[0] ?? null;
   const mediaModule: HomeModule = { id: 'mediaRow', kind: 'mediaRow', video };
 
-  // Personalisierung (Onboarding): gewählte Interessen rücken Module nach oben
+  // Personalization (onboarding): selected interests move modules up
   const boosted = interestsStore.boostedModules;
   if (railModule && boosted.includes('factcheckRail')) {
     result.splice(result.findIndex((m) => m.id === 'sec-recherchen'), 0, railModule);
@@ -197,7 +197,7 @@ const modules = computed((): HomeModule[] => {
 
   if (railModule && !boosted.includes('factcheckRail')) result.push(railModule);
 
-  // Zusätzliche Sektionen aus Interessen-Feeds (Klima, Lokal, Schweiz)
+  // Additional sections from interest feeds (Klima, Lokal, Schweiz)
   for (const interest of interestsStore.extraFeeds) {
     const feedItems = feeds.byKey[interest.feed!].items.slice(0, 2);
     if (feedItems.length > 0) {
@@ -240,7 +240,7 @@ async function onLoaded() {
   if (loaded) return;
   loaded = true;
   await Promise.all([feeds.fetch('recherchen'), feeds.fetch('faktencheck'), media.fetch('funfacts')]);
-  // Interessen-Feeds nachladen (Personalisierung)
+  // Load interest feeds afterwards (personalization)
   for (const interest of interestsStore.extraFeeds) {
     feeds.fetch(interest.feed!);
   }
@@ -258,7 +258,7 @@ function openUrl(url: string) {
 }
 
 function openVideo(video: Video) {
-  // VideoPlayerPage folgt in M5 — bis dahin extern öffnen
+  // VideoPlayerPage follows in M5 — open externally until then
   Utils.openUrl(video.url);
 }
 

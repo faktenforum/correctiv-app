@@ -1,9 +1,9 @@
 import { defineStore } from 'pinia';
 
 /**
- * Club-Mitgliedschaft — lokaler State (Prototyp simuliert Beitritt/Zahlung).
- * isMember ist der zentrale Demo-Hebel: alle Club-Touchpoints lesen ihn
- * reaktiv im Template-Renderpfad (NIE in lokale refs snapshotten!).
+ * Club membership — local state (the prototype simulates joining/payment).
+ * isMember is the central demo lever: all club touchpoints read it
+ * reactively in the template render path (NEVER snapshot it into local refs!).
  */
 export const useMembershipStore = defineStore('membership', {
   state: () => ({
@@ -21,7 +21,7 @@ export const useMembershipStore = defineStore('membership', {
       this.interval = interval;
       this.paused = false;
     },
-    /** Dev-Helfer für Demo-Resets (Einstellungen) */
+    /** Dev helper for demo resets (settings) */
     reset() {
       this.isMember = false;
       this.memberSince = null;

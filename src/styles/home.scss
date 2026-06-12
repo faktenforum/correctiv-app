@@ -1,4 +1,4 @@
-// Home-Module (M3) — Flächen, Hairlines, Gelb nur Club, Rot nur Journalismus
+// Home modules (M3) — surfaces, hairlines, yellow only for club, red only for journalism
 @use './tokens.generated.scss' as t;
 @use './typography.scss' as ty;
 
@@ -16,7 +16,7 @@
   color: t.$color-emphasis;
 }
 
-/* Spotlight-Briefing */
+/* Spotlight briefing */
 .spotlight-card {
   background-color: t.$color-grey-200;
   border-radius: t.$radius-md;
@@ -58,7 +58,7 @@
   margin-top: 2;
 }
 
-/* Early-Access (Gelb = Club) */
+/* Early access (yellow = club) */
 .early-access-card {
   background-color: t.$color-alternative;
   border-radius: t.$radius-md;
@@ -94,7 +94,7 @@
   color: t.$color-emphasis;
 }
 
-/* Faktencheck-Rail (horizontale CollectionView, fixe Höhe Pflicht!) */
+/* Fact-check rail (horizontal CollectionView, fixed height is mandatory!) */
 .factcheck-rail {
   height: 190;
 }
@@ -120,7 +120,7 @@
   margin-top: t.$spacing-xs;
 }
 
-/* Mitmach-Karte */
+/* Participate card */
 .participate-card {
   background-color: t.$color-grey-700;
   border-radius: t.$radius-md;
@@ -158,7 +158,7 @@
   color: t.$color-grey-400;
 }
 
-/* Mediathek-Reihe */
+/* Media row */
 .media-row {
   padding: 0 t.$spacing-xs;
 }
@@ -213,7 +213,7 @@
   margin: 0 t.$spacing-xs;
 }
 
-/* Backstage-Modul */
+/* Backstage module */
 .backstage-tile {
   background-color: t.$color-grey-200;
   border-width: 1;
@@ -258,7 +258,7 @@
   color: t.$color-grey-700;
 }
 
-/* Impact-Footer */
+/* Impact footer */
 .impact-footer {
   padding: t.$spacing-m t.$spacing-sm t.$spacing-l t.$spacing-sm;
 }

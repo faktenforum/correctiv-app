@@ -1,11 +1,13 @@
-// Globale Styles — Tokens kommen ausschließlich über die generierte Pipeline
-// (scripts/sync-tokens.mjs). theme.css aus wp-design-tokens NIE direkt importieren.
+// Global styles — tokens come exclusively through the generated pipeline
+// (scripts/sync-tokens.mjs). NEVER import theme.css from wp-design-tokens directly.
 @use './styles/tokens.generated.scss' as t;
 @use './styles/typography.scss';
 @use './styles/components.scss';
 @use './styles/shell.scss';
 @use './styles/cards.scss';
 @use './styles/home.scss';
+@use './styles/media.scss';
+@use './styles/participate.scss';
 
 Page {
   background-color: t.$color-grey-100;

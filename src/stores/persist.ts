@@ -2,9 +2,9 @@ import { ApplicationSettings } from '@nativescript/core';
 import type { Store } from 'pinia';
 
 /**
- * Minimaler Persistenz-Adapter: hydratisiert den Store aus ApplicationSettings
- * und schreibt die angegebenen State-Keys (debounced) zurück.
- * Kein pinia-plugin-persistedstate — das erwartet localStorage.
+ * Minimal persistence adapter: hydrates the store from ApplicationSettings
+ * and writes the given state keys back (debounced).
+ * No pinia-plugin-persistedstate — that expects localStorage.
  */
 export function persist(store: Store, keys: string[]) {
   const storageKey = `store.${store.$id}`;
@@ -14,7 +14,7 @@ export function persist(store: Store, keys: string[]) {
     try {
       store.$patch(JSON.parse(raw));
     } catch {
-      // korrupte Persistenz verwerfen statt Crash beim Start
+      // discard corrupt persistence instead of crashing at startup
       ApplicationSettings.remove(storageKey);
     }
   }

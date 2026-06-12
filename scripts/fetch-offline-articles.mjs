@@ -1,12 +1,12 @@
 /**
- * Erzeugt das Offline-Bundle: ~15 echte Artikel + Feed-Snapshots + Titelbilder
- * als App-Assets. Vor jeder Demo ausführen — die Demo darf nie vom WLAN abhängen.
+ * Generates the offline bundle: ~15 real articles + feed snapshots + cover images
+ * as app assets. Run before every demo — the demo must never depend on Wi-Fi.
  *
- * Nutzt dieselbe Extraktionslogik wie die App (src/lib/extract.mjs).
- * Hinweis: Bilder im Artikel-Body bleiben Remote-URLs; offline gebündelt
- * wird nur das Titelbild (og:image).
+ * Uses the same extraction logic as the app (src/lib/extract.mjs).
+ * Note: images inside the article body remain remote URLs; only the cover
+ * image (og:image) is bundled offline.
  *
- * Aufruf: npm run offline-articles
+ * Usage: npm run offline-articles
  */
 import { writeFileSync, mkdirSync, readFileSync } from 'node:fs';
 import { dirname, resolve } from 'node:path';
@@ -26,7 +26,7 @@ const FEEDS = {
   salon5: 'https://correctiv.org/category/salon5/feed/',
 };
 
-// Mix laut Plan: 6 Recherchen, 4 Faktenchecks, 2 Klima, je 1 CH/Lokal/Salon5
+// Mix per plan: 6 investigations, 4 fact checks, 2 climate, 1 each CH/local/Salon5
 const PICK = { recherchen: 6, faktencheck: 4, klima: 2, schweiz: 1, lokal: 1, salon5: 1 };
 
 function slugify(url) {
@@ -41,7 +41,7 @@ function slugify(url) {
   );
 }
 
-/** Minimaler RSS-Parser fürs Skript (die App nutzt fast-xml-parser). */
+/** Minimal RSS parser for this script (the app uses fast-xml-parser). */
 function parseItems(xml, feed) {
   const items = [];
   const itemRe = /<item>([\s\S]*?)<\/item>/g;
@@ -77,7 +77,7 @@ function parseItems(xml, feed) {
 
 async function fetchString(url) {
   const res = await fetch(url, { headers: UA });
-  if (!res.ok) throw new Error(`HTTP ${res.status} für ${url}`);
+  if (!res.ok) throw new Error(`HTTP ${res.status} for ${url}`);
   return res.text();
 }
 
@@ -92,9 +92,9 @@ for (const [feed, feedUrl] of Object.entries(FEEDS)) {
   process.stdout.write(`Feed ${feed} … `);
   const xml = await fetchString(feedUrl);
   const items = parseItems(xml, feed);
-  console.log(`${items.length} Items`);
+  console.log(`${items.length} items`);
 
-  // Feed-Snapshot als Offline-Fallback
+  // Feed snapshot as offline fallback
   writeFileSync(resolve(SRC, `assets/data/feeds/${feed}.json`), JSON.stringify(items, null, 1));
 
   let picked = 0;
@@ -106,12 +106,12 @@ for (const [feed, feedUrl] of Object.entries(FEEDS)) {
       const html = await fetchString(item.url);
       const extracted = extractArticle(html);
       if (!extracted.bodyHtml) {
-        console.warn(`  ! kein Body: ${item.url}`);
+        console.warn(`  ! no body: ${item.url}`);
         continue;
       }
       const slug = slugify(item.url);
 
-      // Titelbild herunterladen und lokal referenzieren
+      // Download the cover image and reference it locally
       let localImage = null;
       if (extracted.ogImage) {
         try {
@@ -123,7 +123,7 @@ for (const [feed, feedUrl] of Object.entries(FEEDS)) {
             localImage = `~/assets/images/articles/${slug}.${ext}`;
           }
         } catch {
-          /* Titelbild ist Komfort */
+          /* cover image is a nicety */
         }
       }
 
@@ -158,4 +158,4 @@ writeFileSync(
   resolve(SRC, 'assets/data/articles/index.json'),
   JSON.stringify({ generatedAt: new Date().toISOString(), articles: indexEntries }, null, 1),
 );
-console.log(`\nOffline-Bundle: ${indexEntries.length} Artikel, ${Object.keys(FEEDS).length} Feed-Snapshots`);
+console.log(`\nOffline bundle: ${indexEntries.length} articles, ${Object.keys(FEEDS).length} feed snapshots`);

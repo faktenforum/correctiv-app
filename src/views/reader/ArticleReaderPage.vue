@@ -1,7 +1,7 @@
 <template>
   <Page actionBarHidden="true" @loaded="onPageLoaded">
     <GridLayout rows="auto, *" class="bg-grey-100">
-      <!-- Nativer Header: Back, Teilen, Speichern -->
+      <!-- Native header: back, share, save -->
       <GridLayout row="0" columns="auto, *, auto, auto" class="reader-header hairline-bottom">
         <Label col="0" :text="icons.arrowLeft" class="lucide reader-header__icon" @tap="goBack()" />
         <Label col="1" :text="badgeText" class="reader-header__badge" verticalAlignment="center" />
@@ -15,7 +15,7 @@
         />
       </GridLayout>
 
-      <!-- Inhalt -->
+      <!-- Content -->
       <GridLayout row="1">
         <AWebView
           ref="webviewRef"
@@ -93,11 +93,11 @@ async function load() {
     });
     const webview = webviewRef.value?.nativeView;
     if (webview) {
-      webview.src = html; // HTML-String → loadDataWithBaseURL(file:///<app>/)
+      webview.src = html; // HTML string → loadDataWithBaseURL(file:///<app>/)
       status.value = 'ready';
     }
   } catch (err) {
-    console.error('Artikel laden fehlgeschlagen:', err);
+    console.error('Article load failed:', err);
     status.value = 'error';
   }
 }
@@ -110,7 +110,7 @@ function onShouldOverrideUrlLoading(args: ShouldOverrideUrlLoadEventData) {
     openJoinFlow();
     return;
   }
-  // correctiv.org-Artikel im eigenen Reader öffnen, alles andere im Browser
+  // Open correctiv.org articles in our own reader, everything else in the browser
   if (/^https?:\/\/(www\.)?correctiv\.org\/.+\/\d{4}\/\d{2}\/\d{2}\//.test(url)) {
     navigate(ArticleReaderPage, { props: { url } });
   } else if (url.startsWith('http')) {

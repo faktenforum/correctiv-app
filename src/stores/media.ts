@@ -38,7 +38,7 @@ export const useMediaStore = defineStore('media', {
         state.status = 'ready';
         setCached(CACHE_NS, key, videos);
       } catch (err) {
-        console.error(`YouTube-Feed '${key}' fehlgeschlagen:`, err instanceof Error ? err.message : err);
+        console.error(`YouTube feed '${key}' failed:`, err instanceof Error ? err.message : err);
         const stale = getStale<Video[]>(CACHE_NS, key);
         if (stale) {
           state.videos = stale;

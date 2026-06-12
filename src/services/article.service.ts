@@ -44,8 +44,8 @@ function loadOfflineArticle(url: string): ArticleDetail | null {
 }
 
 /**
- * Fallback-Kaskade: Datei-Cache (24 h) → Netz → gebündelter Offline-Bestand →
- * abgelaufener Cache. Die Demo darf nie vom WLAN abhängen.
+ * Fallback cascade: file cache (24 h) → network → bundled offline content →
+ * expired cache. The demo must never depend on Wi-Fi.
  */
 export async function loadArticle(url: string): Promise<ArticleDetail> {
   const cached = getCached<ArticleDetail>(CACHE_NS, url, CACHE_TTL_MS);
@@ -54,7 +54,7 @@ export async function loadArticle(url: string): Promise<ArticleDetail> {
   try {
     const html = await fetchText(url, 12000);
     const extracted = extractArticle(html);
-    if (!extracted.bodyHtml) throw new Error(`Kein Artikel-Body unter ${url}`);
+    if (!extracted.bodyHtml) throw new Error(`No article body at ${url}`);
     const detail: ArticleDetail = {
       url,
       ...extracted,
@@ -73,7 +73,7 @@ export async function loadArticle(url: string): Promise<ArticleDetail> {
   }
 }
 
-/** Nur das og:image einer Artikel-URL (für Karten-Thumbnails), mit Cache. */
+/** Only the og:image of an article URL (for card thumbnails), with cache. */
 export async function loadOgImage(url: string): Promise<string | null> {
   const cacheKey = `og:${url}`;
   const cached = getCached<string | null>(CACHE_NS, cacheKey, CACHE_TTL_MS);
@@ -84,7 +84,7 @@ export async function loadOgImage(url: string): Promise<string | null> {
     const html = await fetchText(url, 12000);
     const image = extractMeta(html, 'og:image');
     setCached(CACHE_NS, cacheKey, image ?? '');
-    // Wenn wir schon die ganze Seite geladen haben: Artikel gleich mit cachen
+    // Since we already loaded the whole page: cache the article right away too
     const extracted = extractArticle(html);
     if (extracted.bodyHtml) {
       setCached(CACHE_NS, url, {
@@ -118,14 +118,14 @@ const RATING_LABELS: Record<string, string> = {
 
 export function ratingLabel(rating: string | null | undefined, ratingText?: string | null): string | null {
   if (!rating) return null;
-  // ratingText aus der Seite ist am verlässlichsten ("Falsch Über diese Bewertung")
+  // ratingText from the page is the most reliable ("Falsch Über diese Bewertung")
   const fromPage = ratingText?.replace(/Über diese Bewertung.*/i, '').trim();
   return fromPage || RATING_LABELS[rating] || rating;
 }
 
 let templateCache: string | null = null;
 
-/** Baut das Reader-HTML aus assets/reader/template.html. */
+/** Builds the reader HTML from assets/reader/template.html. */
 export function buildReaderHtml(
   detail: ArticleDetail,
   options: { isMember: boolean; textScale: number },

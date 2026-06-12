@@ -1,8 +1,8 @@
 /**
- * Abhängigkeitsfreies Parsing für WordPress-RSS-2.0 und YouTube-Atom-Feeds.
- * Bewusst regex-basiert statt XML-Lib: fast-xml-parser kollidiert mit dem
- * CommonJS-Resolver von @nativescript/vite, und die beiden Feed-Formate sind
- * stabil genug. Läuft identisch in Node (Skripte) und in der App.
+ * Dependency-free parsing for WordPress RSS 2.0 and YouTube Atom feeds.
+ * Deliberately regex-based instead of an XML lib: fast-xml-parser collides
+ * with the CommonJS resolver of @nativescript/vite, and the two feed formats
+ * are stable enough. Runs identically in Node (scripts) and in the app.
  */
 import { decodeEntities } from './extract.mjs';
 
@@ -17,7 +17,7 @@ function blockTag(block, name) {
 }
 
 /**
- * WordPress-RSS → Items.
+ * WordPress RSS → items.
  * @returns {Array<{id:string, feed:string, title:string, url:string, teaser:string,
  *   author?:string, publishedAt:string, categories:string[], imageUrl:null}>}
  */
@@ -49,7 +49,7 @@ export function parseWpFeed(xml, feed) {
 }
 
 /**
- * YouTube-Atom → Videos.
+ * YouTube Atom → videos.
  * @returns {Array<{id:string, title:string, url:string, thumbnailUrl:string,
  *   publishedAt:string, description?:string}>}
  */

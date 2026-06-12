@@ -1,5 +1,5 @@
 <template>
-  <!-- Varianten: hero (großes Bild oben), standard (Bild rechts), compact (nur Text) -->
+  <!-- Variants: hero (large image on top), standard (image on the right), compact (text only) -->
   <GridLayout v-if="variant === 'hero'" rows="auto, auto" class="article-card article-card--hero" @tap="$emit('open', item)">
     <GridLayout row="0" class="article-card__image-wrap">
       <Image v-if="item.imageUrl" :src="item.imageUrl" stretch="aspectFill" class="article-card__hero-image" />

@@ -1,10 +1,10 @@
 import { TNSPlayer } from '@nativescript-community/audio';
 
 /**
- * Singleton um TNSPlayer (Android: android.media.MediaPlayer — streamt den
- * Icecast-MP3 direkt; iOS: AVAudioPlayer — kann KEINE Live-Streams, dort
- * bräuchte es einen AVPlayer-Wrapper; dokumentierte Lücke der iOS-Schiene).
- * Kennt kein UI und kein Pinia — der audio-Store bindet die Callbacks.
+ * Singleton around TNSPlayer (Android: android.media.MediaPlayer — streams the
+ * Icecast MP3 directly; iOS: AVAudioPlayer — CANNOT play live streams, an
+ * AVPlayer wrapper would be needed there; documented gap of the iOS track).
+ * Knows no UI and no Pinia — the audio store binds the callbacks.
  */
 
 export interface AudioServiceCallbacks {
@@ -28,14 +28,14 @@ export async function playUrl(url: string, callbacks: AudioServiceCallbacks = {}
     audioFile: url,
     loop: false,
     autoPlay: true,
-    // iOS-theoretisch: Playback-Kategorie, damit Audio im Hintergrund weiterläuft
+    // iOS in theory: playback category so audio keeps playing in the background
     sessionCategory: 'AVAudioSessionCategoryPlayback',
     completeCallback: () => callbacks.onComplete?.(),
     errorCallback: (args: unknown) => callbacks.onError?.(String((args as { error?: unknown })?.error ?? args)),
   });
 }
 
-/** Gebündelte Datei aus dem App-Ordner (Sample-Episoden) abspielen. */
+/** Play a bundled file from the app folder (sample episodes). */
 export async function playFile(path: string, callbacks: AudioServiceCallbacks = {}): Promise<void> {
   const p = getPlayer();
   await p.stop().catch(() => undefined);
@@ -73,7 +73,7 @@ export function isPlaying(): boolean {
   return player?.isAudioPlaying() ?? false;
 }
 
-/** Aktuelle Position in Sekunden (Android MediaPlayer liefert ms, iOS s). */
+/** Current position in seconds (Android MediaPlayer returns ms, iOS s). */
 export function currentTimeSec(): number {
   if (!player) return 0;
   return __ANDROID__ ? player.currentTime / 1000 : player.currentTime;

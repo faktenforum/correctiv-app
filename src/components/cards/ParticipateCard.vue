@@ -1,5 +1,5 @@
 <template>
-  <!-- Mitmach-Karte auf Home — Mitmachen ist Kernversprechen, prominent platziert -->
+  <!-- Participate card on Home — participation is a core promise, placed prominently -->
   <StackLayout class="participate-card" @tap="$emit('open')">
     <Label text="MITMACHEN" class="participate-card__kicker" />
     <Label :text="title" class="participate-card__title" textWrap="true" />

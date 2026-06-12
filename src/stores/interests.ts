@@ -9,13 +9,13 @@ export const useInterestsStore = defineStore('interests', {
     selectedInterests(state): Interest[] {
       return interests.filter((i) => state.selected.includes(i.id));
     },
-    /** Module, die durch Interessen nach oben rücken (Home-Personalisierung) */
+    /** Modules that move up due to interests (home personalization) */
     boostedModules(): string[] {
       return this.selectedInterests
         .map((i) => i.boostModule)
         .filter((m): m is NonNullable<Interest['boostModule']> => !!m);
     },
-    /** Feeds, aus denen Home zusätzliche Sektionen zeigt */
+    /** Feeds from which Home shows additional sections */
     extraFeeds(): Interest[] {
       return this.selectedInterests.filter((i) => i.feed && i.feed !== 'salon5');
     },

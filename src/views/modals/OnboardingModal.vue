@@ -1,7 +1,7 @@
 <template>
   <Page actionBarHidden="true" :class="step === 0 ? 'onboarding--mission' : 'bg-grey-100'">
     <GridLayout rows="auto, *, auto">
-      <!-- Kopf: Schritt-Punkte + Überspringen (ab Schritt 2) -->
+      <!-- Header: step dots + skip (from step 2 onwards) -->
       <GridLayout row="0" columns="*, auto" class="px-sm py-s">
         <StackLayout col="0" orientation="horizontal" verticalAlignment="center">
           <Label
@@ -21,7 +21,7 @@
         />
       </GridLayout>
 
-      <!-- Schritt 1: Mission (rot, nicht überspringbar) -->
+      <!-- Step 1: mission (red, not skippable) -->
       <StackLayout v-if="step === 0" row="1" verticalAlignment="center" class="px-m">
         <Label text="CORRECTIV" class="onboarding__brand" />
         <Label
@@ -36,7 +36,7 @@
         </StackLayout>
       </StackLayout>
 
-      <!-- Schritt 2: Interessen -->
+      <!-- Step 2: interests -->
       <ScrollView v-if="step === 1" row="1">
         <StackLayout class="px-sm py-m">
           <Label text="Was interessiert Sie?" class="ty-headline-xl text-grey-700" textWrap="true" />
@@ -58,7 +58,7 @@
         </StackLayout>
       </ScrollView>
 
-      <!-- Schritt 3: Mitmachen + Push -->
+      <!-- Step 3: participate + push -->
       <ScrollView v-if="step === 2" row="1">
         <StackLayout class="px-sm py-m">
           <Label text="Recherchen, bei denen Sie mitmachen" class="ty-headline-xl text-grey-700" textWrap="true" />
@@ -81,7 +81,7 @@
         </StackLayout>
       </ScrollView>
 
-      <!-- Schritt 4: Club-Soft-Pitch (kein Dark Pattern: zwei gleichwertige Wege) -->
+      <!-- Step 4: club soft pitch (no dark pattern: two equal paths) -->
       <StackLayout v-if="step === 3" row="1" verticalAlignment="center" class="px-m">
         <Label text="CORRECTIV gehört niemandem. Außer allen." class="ty-headline-xl text-grey-700" textWrap="true" />
         <Label
@@ -91,7 +91,7 @@
         />
       </StackLayout>
 
-      <!-- Fuß: Aktionen -->
+      <!-- Footer: actions -->
       <StackLayout row="2" class="px-sm py-m">
         <Button
           v-if="step < 3"
@@ -125,7 +125,7 @@ function finish(withJoin: boolean) {
   settings.completeOnboarding();
   $closeModal();
   if (withJoin) {
-    // Nach dem Schließen den Beitritts-Flow öffnen
+    // Open the join flow after closing
     setTimeout(() => openJoinFlow(), 350);
   }
 }

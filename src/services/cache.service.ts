@@ -1,13 +1,13 @@
 import { knownFolders, path, File, Folder } from '@nativescript/core';
 
 /**
- * Zwei Ebenen: In-Memory (Session) + Datei-Cache in documents/cache/<ns>/.
- * ApplicationSettings bleibt den kleinen Store-Persistenzen vorbehalten.
+ * Two layers: in-memory (session) + file cache in documents/cache/<ns>/.
+ * ApplicationSettings remains reserved for the small store persistences.
  */
 const memory = new Map<string, { data: unknown; ts: number }>();
 
 function fileKey(key: string): string {
-  // djb2 — stabil und kurz genug für Dateinamen
+  // djb2 — stable and short enough for file names
   let h = 5381;
   for (let i = 0; i < key.length; i++) h = ((h << 5) + h + key.charCodeAt(i)) >>> 0;
   return h.toString(36);
@@ -36,7 +36,7 @@ export function getCached<T>(ns: string, key: string, ttlMs: number): T | null {
   }
 }
 
-/** Liefert auch abgelaufene Einträge — für stale-while-revalidate und Offline-Fallback. */
+/** Also returns expired entries — for stale-while-revalidate and offline fallback. */
 export function getStale<T>(ns: string, key: string): T | null {
   const mem = memory.get(`${ns}:${key}`);
   if (mem) return mem.data as T;
@@ -56,6 +56,6 @@ export function setCached(ns: string, key: string, data: unknown): void {
     const file = cacheFolder(ns).getFile(`${fileKey(key)}.json`);
     file.writeTextSync(JSON.stringify(entry));
   } catch {
-    // Datei-Cache ist Komfort, kein Muss
+    // file cache is a nicety, not a must
   }
 }

@@ -8,14 +8,14 @@ export const useSettingsStore = defineStore('settings', {
   state: () => ({
     onboardingDone: false,
     pushOptIn: false,
-    /** Skaliert die Artikel-Typografie im Reader (Profil → Einstellungen). */
+    /** Scales the article typography in the reader (Profile → Settings). */
     textScale: 1,
     newsletter: {
       spotlight: false,
       spotlightCh: false,
       klima: false,
     },
-    // Flüchtiger Shell-Zustand (nicht persistiert)
+    // Ephemeral shell state (not persisted)
     activeTab: 'home' as TabId,
     visitedTabs: ['home'] as TabId[],
   }),

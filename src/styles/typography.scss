@@ -1,13 +1,13 @@
-// Komposit-Typografie nach wp-design-tokens/css/typography.css.
-// NS-Eigenheiten: font-size in dip, letter-spacing in em (px ÷ font-size),
-// pro Schnitt eine eigene font-family (Android fettet sonst synthetisch).
-// line-height ist plattformabhängig: Android = ZUSÄTZLICHER Zeilenabstand
-// (setLineSpacing), iOS = Gesamt-Zeilenhöhe — deshalb je Plattform generiert.
+// Composite typography per wp-design-tokens/css/typography.css.
+// NS quirks: font-size in dip, letter-spacing in em (px ÷ font-size),
+// a dedicated font-family per weight (Android otherwise bolds synthetically).
+// line-height is platform-dependent: Android = ADDITIONAL line spacing
+// (setLineSpacing), iOS = total line height — hence generated per platform.
 @use 'sass:math';
 @use 'sass:list';
 @use './tokens.generated.scss' as t;
 
-// Font-Stacks: Dateiname (Android) = PostScript-Name (iOS), siehe src/fonts/
+// Font stacks: file name (Android) = PostScript name (iOS), see src/fonts/
 $ff-serif: 'Merriweather-Regular', 'Merriweather';
 $ff-serif-bold: 'Merriweather-Bold', 'Merriweather';
 $ff-serif-italic: 'Merriweather-Italic', 'Merriweather';
@@ -53,7 +53,7 @@ $type-styles: (
   }
 }
 
-/* Serif-Helfer */
+/* Serif helpers */
 .font-serif {
   font-family: $ff-serif;
 }

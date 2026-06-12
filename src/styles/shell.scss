@@ -1,4 +1,4 @@
-// Styles der App-Shell (AppShell.vue, TabBar.vue, MiniPlayer.vue)
+// Styles for the app shell (AppShell.vue, TabBar.vue, MiniPlayer.vue)
 @use './tokens.generated.scss' as t;
 @use './typography.scss' as ty;
 
@@ -26,7 +26,7 @@
   color: t.$color-emphasis;
 }
 
-/* Mini-Player — über der Tab-Bar, in allen Tabs sichtbar */
+/* Mini player — above the tab bar, visible in all tabs */
 .mini-player {
   background-color: t.$color-grey-200;
   padding: t.$spacing-xs t.$spacing-sm;
@@ -70,7 +70,7 @@
   vertical-align: center;
 }
 
-/* Live-Banner (Mediathek, Home-Kachel, Salon5-Projektseite) */
+/* Live banner (media library, home tile, Salon5 project page) */
 .live-banner {
   background-color: t.$color-grey-700;
   border-radius: t.$radius-md;

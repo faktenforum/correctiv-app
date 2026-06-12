@@ -4,9 +4,9 @@ import type { Component } from 'nativescript-vue';
 import { useSettingsStore, type TabId } from '../stores/settings';
 
 /**
- * Kapselt die Frame-pro-Tab-Navigation. Mit fünf parallelen Frames ist
- * Frame.topmost() mehrdeutig — deshalb wird IMMER mit expliziter Frame-ID
- * navigiert, aufgelöst über den aktiven Tab.
+ * Encapsulates the frame-per-tab navigation. With five parallel frames
+ * Frame.topmost() is ambiguous — therefore navigation ALWAYS uses an explicit
+ * frame ID, resolved via the active tab.
  */
 export function useNavigation() {
   const settings = useSettingsStore();
@@ -15,7 +15,7 @@ export function useNavigation() {
     return $navigateTo(component, { frame: `tab-${settings.activeTab}`, ...options });
   }
 
-  /** Quersprung: Tab wechseln und dort eine Seite pushen (z.B. Home-Mitmach-Karte → Tab 4). */
+  /** Cross-jump: switch tab and push a page there (e.g. home participate card → tab 4). */
   function navigateInTab(tab: TabId, component?: Component, options: NavigateToOptions<Record<string, unknown>> = {}) {
     settings.setActiveTab(tab);
     if (component) return $navigateTo(component, { frame: `tab-${tab}`, ...options });

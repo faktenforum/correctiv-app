@@ -1,0 +1,247 @@
+// Participate tab: callouts, Faktenforum, Abriss-Atlas (M6)
+@use './tokens.generated.scss' as t;
+@use './typography.scss' as ty;
+
+.callout-kicker {
+  font-family: ty.$ff-sans-bold;
+  font-size: 11;
+  letter-spacing: 0.1;
+  color: t.$color-emphasis;
+}
+.callout-count-icon {
+  font-size: 15;
+  color: t.$color-grey-600;
+  margin-right: t.$spacing-xs;
+}
+.callout-count {
+  font-family: ty.$ff-sans-semibold;
+  font-size: 14;
+  color: t.$color-grey-600;
+}
+.callout-submitted {
+  color: #2e7d4f;
+}
+
+/* Step indicator (callout form + join flow) */
+.step-indicator {
+  padding: t.$spacing-s t.$spacing-sm 0 t.$spacing-sm;
+}
+.step-indicator__bar {
+  height: 3;
+  border-radius: 1;
+  background-color: t.$color-grey-300;
+  margin-right: t.$spacing-xs;
+}
+.step-indicator__bar--active {
+  background-color: t.$color-emphasis;
+}
+
+/* Form controls */
+.form-option {
+  border-width: 1;
+  border-color: t.$color-grey-300;
+  border-radius: t.$radius-s;
+  padding: t.$spacing-s;
+  margin-top: t.$spacing-xs;
+}
+.form-option--selected {
+  border-color: t.$color-grey-700;
+  background-color: t.$color-grey-200;
+}
+.form-option__check {
+  font-size: 16;
+  color: t.$color-grey-700;
+  width: 22;
+  vertical-align: center;
+}
+.form-option__label {
+  font-family: ty.$ff-sans;
+  font-size: 15;
+  color: t.$color-grey-700;
+}
+.form-textarea {
+  font-family: ty.$ff-sans;
+  font-size: 15;
+  color: t.$color-grey-700;
+  border-width: 1;
+  border-color: t.$color-grey-300;
+  border-radius: t.$radius-s;
+  padding: t.$spacing-s;
+  height: 110;
+}
+.form-textfield {
+  font-family: ty.$ff-sans;
+  font-size: 15;
+  color: t.$color-grey-700;
+  border-width: 1;
+  border-color: t.$color-grey-300;
+  border-radius: t.$radius-s;
+  padding: t.$spacing-s;
+}
+.form-file {
+  border-width: 1;
+  border-color: t.$color-grey-400;
+  border-radius: t.$radius-s;
+  padding: t.$spacing-s;
+}
+.form-file__icon {
+  font-size: 18;
+  color: t.$color-grey-600;
+  margin-right: t.$spacing-s;
+}
+.form-file__label {
+  font-family: ty.$ff-sans;
+  font-size: 14;
+  color: t.$color-grey-600;
+}
+.mr-s { margin-right: 12; }
+
+/* Success page */
+.success-icon {
+  font-size: 48;
+  color: #2e7d4f;
+}
+
+/* Faktenforum */
+.claim-card {
+  background-color: t.$color-grey-200;
+  border-radius: t.$radius-md;
+  padding: t.$spacing-s t.$spacing-sm;
+}
+.claim-card__quote {
+  font-family: ty.$ff-serif;
+  font-size: 15;
+  line-height: 6;
+  color: t.$color-grey-700;
+  margin-top: t.$spacing-xs;
+}
+.claim-card__meta {
+  font-family: ty.$ff-sans;
+  font-size: 12;
+  color: t.$color-grey-500;
+  margin-top: t.$spacing-xs;
+}
+.status-tag {
+  font-family: ty.$ff-sans-bold;
+  font-size: 11;
+  padding: 2 8;
+  border-radius: t.$radius-xs;
+}
+.status-tag--checked {
+  background-color: t.$color-grey-700;
+  color: t.$color-grey-100;
+}
+.status-tag--checking {
+  background-color: t.$color-alternative;
+  color: t.$color-grey-700;
+}
+.status-tag--submitted {
+  background-color: t.$color-grey-300;
+  color: t.$color-grey-700;
+}
+.claim-source__dot {
+  font-size: 14;
+  color: t.$color-grey-700;
+  margin-right: t.$spacing-s;
+  vertical-align: top;
+}
+
+/* Abriss-Atlas */
+.atlas-map {
+  height: 160;
+  background-color: t.$color-grey-250;
+  border-radius: t.$radius-md;
+}
+.atlas-map__pin {
+  font-size: 34;
+  color: t.$color-emphasis;
+  horizontal-align: center;
+  vertical-align: center;
+}
+.atlas-map__caption {
+  font-family: ty.$ff-sans;
+  font-size: 11;
+  color: t.$color-grey-500;
+  horizontal-align: right;
+  vertical-align: bottom;
+  margin: 0 t.$spacing-xs t.$spacing-xs 0;
+}
+.atlas-entry__icon {
+  font-size: 16;
+  color: t.$color-grey-500;
+  margin-right: t.$spacing-s;
+  vertical-align: center;
+}
+
+/* Overview cards on the participate tab */
+.callout-list-card {
+  background-color: t.$color-grey-200;
+  border-radius: t.$radius-md;
+  padding: t.$spacing-sm;
+}
+.callout-list-card__title {
+  font-family: ty.$ff-sans-bold;
+  font-size: 17;
+  line-height: 5;
+  color: t.$color-grey-700;
+  margin-top: t.$spacing-xs;
+}
+.callout-list-card__teaser {
+  font-family: ty.$ff-sans;
+  font-size: 13;
+  line-height: 5;
+  color: t.$color-grey-600;
+  margin-top: t.$spacing-xs;
+}
+.callout-list-card__count {
+  font-family: ty.$ff-sans-semibold;
+  font-size: 12;
+  color: t.$color-grey-600;
+}
+.callout-progress {
+  height: 6;
+  background-color: t.$color-grey-300;
+  border-radius: 3;
+}
+.callout-progress__fill {
+  height: 6;
+  background-color: t.$color-emphasis;
+  border-radius: 3;
+  horizontal-align: left;
+}
+.ml-s { margin-left: 12; }
+
+.hub-card {
+  background-color: t.$color-grey-200;
+  border-radius: t.$radius-md;
+  padding: t.$spacing-sm;
+}
+.hub-card__icon {
+  font-size: 22;
+  color: t.$color-grey-700;
+  margin-right: t.$spacing-s;
+  vertical-align: center;
+}
+.hub-card__title {
+  font-family: ty.$ff-sans-bold;
+  font-size: 15;
+  color: t.$color-grey-700;
+}
+.hub-card__teaser {
+  font-family: ty.$ff-sans;
+  font-size: 13;
+  line-height: 4;
+  color: t.$color-grey-600;
+  margin-top: 2;
+}
+.hub-card__chevron {
+  font-size: 18;
+  color: t.$color-grey-500;
+  vertical-align: center;
+}
+.community-teaser {
+  border-width: 1;
+  border-color: t.$color-grey-300;
+  border-radius: t.$radius-md;
+  padding: t.$spacing-s t.$spacing-sm;
+}

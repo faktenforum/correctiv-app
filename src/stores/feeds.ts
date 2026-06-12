@@ -21,14 +21,14 @@ function emptyState(): FeedState {
   return { items: [], status: 'idle', lastFetched: 0 };
 }
 
-/** Gebündelter Feed-Snapshot aus assets/data/feeds/<key>.json (Offline-Fallback). */
+/** Bundled feed snapshot from assets/data/feeds/<key>.json (offline fallback). */
 function loadBundledSnapshot(key: FeedKey): FeedItem[] | null {
   try {
     const appRoot = knownFolders.currentApp().path;
     const file = path.join(appRoot, 'assets', 'data', 'feeds', `${key}.json`);
     if (!File.exists(file)) return null;
     const items = JSON.parse(File.fromPath(file).readTextSync()) as FeedItem[];
-    // Lokale Titelbilder aus dem Offline-Artikel-Index übernehmen
+    // Adopt local cover images from the offline article index
     try {
       const indexFile = path.join(appRoot, 'assets', 'data', 'articles', 'index.json');
       if (File.exists(indexFile)) {
@@ -42,7 +42,7 @@ function loadBundledSnapshot(key: FeedKey): FeedItem[] | null {
         }
       }
     } catch {
-      // Bilder sind Komfort
+      // images are a nicety
     }
     return items;
   } catch {
@@ -63,9 +63,9 @@ export const useFeedsStore = defineStore('feeds', {
   }),
   actions: {
     /**
-     * Cache-Kaskade mit stale-while-revalidate: frischer Cache → sofort;
-     * abgelaufener Cache → sofort anzeigen, Netz-Refresh im Hintergrund;
-     * Netz-Fehler → gebündelter Snapshot (status 'offline').
+     * Cache cascade with stale-while-revalidate: fresh cache → immediately;
+     * expired cache → show immediately, network refresh in the background;
+     * network error → bundled snapshot (status 'offline').
      */
     async fetch(key: FeedKey, options: { force?: boolean } = {}) {
       const state = this.byKey[key];
@@ -86,7 +86,7 @@ export const useFeedsStore = defineStore('feeds', {
 
       try {
         const items = await fetchFeed(key, FEEDS[key].url);
-        // og:image-URLs aus früherer Anreicherung übernehmen
+        // Carry over og:image URLs from earlier enrichment
         const known = new Map(state.items.map((i) => [i.id, i.imageUrl]));
         for (const item of items) {
           const image = known.get(item.id);
@@ -97,8 +97,8 @@ export const useFeedsStore = defineStore('feeds', {
         state.lastFetched = Date.now();
         setCached(CACHE_NS, key, items);
       } catch (err) {
-        console.error(`Feed-Fetch '${key}' fehlgeschlagen:`, err instanceof Error ? err.message : err);
-        if (state.items.length > 0) return; // stale Anzeige reicht
+        console.error(`Feed fetch '${key}' failed:`, err instanceof Error ? err.message : err);
+        if (state.items.length > 0) return; // stale display is sufficient
         const snapshot = loadBundledSnapshot(key);
         if (snapshot) {
           state.items = snapshot;
@@ -109,7 +109,7 @@ export const useFeedsStore = defineStore('feeds', {
       }
     },
 
-    /** og:image eines Items lazy nachladen und reaktiv patchen. */
+    /** Lazily load an item's og:image and patch it reactively. */
     async enrichImage(key: FeedKey, itemId: string) {
       const state = this.byKey[key];
       const item = state.items.find((i) => i.id === itemId);

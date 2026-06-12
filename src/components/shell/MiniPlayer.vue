@@ -1,7 +1,7 @@
 <template>
-  <!-- nativescript-vue 3 exportiert kein withModifiers — keine @tap.stop-Modifier verwenden -->
+  <!-- nativescript-vue 3 does not export withModifiers — do not use @tap.stop modifiers -->
   <GridLayout columns="auto, *, auto, auto" class="mini-player hairline-top">
-    <!-- Artwork bzw. Live-Punkt -->
+    <!-- Artwork or live dot -->
     <GridLayout col="0" class="mini-player__artwork" verticalAlignment="center" @tap="openFullPlayer">
       <Label v-if="audioStore.isLive" text="●" class="mini-player__live-dot" />
       <Label v-else :text="icons.headphones" class="lucide mini-player__icon" />
@@ -28,8 +28,10 @@
 
 <script setup lang="ts">
 import { computed } from 'nativescript-vue';
+import { $showModal } from 'nativescript-vue';
 import { icons } from '../../ui/icons';
 import { useAudioStore } from '../../stores/audio';
+import PlayerModal from '../../views/modals/PlayerModal.vue';
 
 const audioStore = useAudioStore();
 
@@ -49,6 +51,6 @@ function formatTime(sec: number): string {
 }
 
 function openFullPlayer() {
-  // PlayerModal folgt in M5 — der Mini-Player selbst ist der M1-Spike.
+  $showModal(PlayerModal, { fullscreen: true });
 }
 </script>

@@ -1,12 +1,12 @@
 import type { FeedKey } from '../types/models';
 
 /**
- * Verifizierte Live-Feeds (siehe DATENQUELLEN.md).
+ * Verified live feeds (see DATENQUELLEN.md).
  *
- * ACHTUNG, Falle: URLs wie correctiv.org/faktencheck/feed/ (ohne /category/)
- * liefern nur die statische Landingpage als 1 Item. Echte Artikel-Streams
- * gibt es ausschließlich unter /category/<slug>/feed/ — Ausnahme ist der
- * Haupt-Feed correctiv.org/feed/.
+ * BEWARE, pitfall: URLs like correctiv.org/faktencheck/feed/ (without /category/)
+ * only return the static landing page as 1 item. Real article streams
+ * exist exclusively under /category/<slug>/feed/ — the exception is the
+ * main feed correctiv.org/feed/.
  */
 export const FEEDS: Record<FeedKey, { label: string; url: string }> = {
   recherchen: { label: 'Recherchen', url: 'https://correctiv.org/feed/' },
@@ -18,18 +18,18 @@ export const FEEDS: Record<FeedKey, { label: string; url: string }> = {
 };
 
 export const YOUTUBE_FEEDS = {
-  /** CORRECTIV im Gespräch (Playlist) */
+  /** CORRECTIV im Gespräch (playlist) */
   gespraech:
     'https://www.youtube.com/feeds/videos.xml?playlist_id=PL2IVZYzgpfPrwo2K0jXXNyH_hO9oOucXT',
-  /** FunFacts (Kanal) */
+  /** FunFacts (channel) */
   funfacts: 'https://www.youtube.com/feeds/videos.xml?channel_id=UCA0KeaGDjNAJs0ihc_rAiGA',
-  /** CORRECTIV-Hauptkanal */
+  /** CORRECTIV main channel */
   hauptkanal: 'https://www.youtube.com/feeds/videos.xml?channel_id=UCZ-tUoJJV-18Xtcij_tOgGQ',
 } as const;
 
 /**
- * Salon5-Radio (Icecast, 64 kbit/s MP3).
- * Niemals per HEAD-Request prüfen — Icecast antwortet darauf mit 400.
- * Verfügbarkeit ergibt sich nur aus dem Play-Versuch.
+ * Salon5 radio (Icecast, 64 kbit/s MP3).
+ * Never probe with a HEAD request — Icecast responds to it with 400.
+ * Availability can only be determined by attempting to play.
  */
 export const RADIO_STREAM_URL = 'https://icecast.correctiv.net/salon5low';

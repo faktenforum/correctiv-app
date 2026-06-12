@@ -1,0 +1,134 @@
+// Media library, player, sheets (M5)
+@use './tokens.generated.scss' as t;
+@use './typography.scss' as ty;
+
+/* Podcast series tiles */
+.series-rail {
+  height: 200;
+}
+.series-tile {
+  width: 140;
+  margin: 0 t.$spacing-xs;
+}
+.series-tile__cover {
+  height: 120;
+  border-radius: t.$radius-md;
+  background-color: t.$color-grey-700;
+}
+.series-tile__cover--pausenbrot { background-color: #2f5e8c; }
+.series-tile__cover--deeptalk { background-color: #5a3d7a; }
+.series-tile__cover--mission-klima { background-color: #2e7d4f; }
+.series-tile__icon {
+  font-size: 32;
+  color: t.$color-grey-100;
+  horizontal-align: center;
+  vertical-align: center;
+}
+.series-tile__title {
+  font-family: ty.$ff-sans-bold;
+  font-size: 13;
+  line-height: 4;
+  color: t.$color-grey-700;
+  margin-top: t.$spacing-xs;
+}
+.series-tile__publisher {
+  font-family: ty.$ff-sans;
+  font-size: 11;
+  color: t.$color-grey-500;
+}
+
+/* Episode rows */
+.episode-row {
+  padding: t.$spacing-s t.$spacing-sm;
+}
+.episode-row__play {
+  font-size: 22;
+  color: t.$color-grey-700;
+  margin-right: t.$spacing-s;
+  vertical-align: center;
+}
+.episode-row__title {
+  font-family: ty.$ff-sans-semibold;
+  font-size: 15;
+  line-height: 4;
+  color: t.$color-grey-700;
+}
+.episode-row__meta {
+  font-family: ty.$ff-sans;
+  font-size: 12;
+  color: t.$color-grey-500;
+  margin-top: 1;
+}
+.bonus-row {
+  background-color: t.$color-grey-200;
+  border-radius: t.$radius-md;
+}
+
+/* Video embed (16:9 at full width) */
+.video-embed {
+  height: 220;
+  background-color: t.$color-grey-700;
+}
+
+/* Fullscreen player */
+.player__artwork {
+  width: 180;
+  height: 180;
+  border-radius: t.$radius-md;
+  background-color: t.$color-grey-200;
+  horizontal-align: center;
+}
+.player__artwork-icon {
+  font-family: 'lucide';
+  font-size: 56;
+  color: t.$color-grey-500;
+  horizontal-align: center;
+  vertical-align: center;
+}
+.player__artwork-icon--live {
+  font-family: ty.$ff-sans;
+  color: t.$color-emphasis;
+}
+.player__slider {
+  color: t.$color-emphasis;
+  background-color: t.$color-grey-300;
+}
+.player__time {
+  font-family: ty.$ff-sans;
+  font-size: 12;
+  color: t.$color-grey-500;
+}
+.player__speed {
+  font-family: ty.$ff-sans-bold;
+  font-size: 16;
+  color: t.$color-grey-700;
+  vertical-align: center;
+  padding: t.$spacing-s;
+}
+.player__play {
+  font-size: 44;
+  color: t.$color-grey-700;
+  padding: t.$spacing-s;
+  horizontal-align: center;
+}
+.text-emphasis {
+  color: t.$color-emphasis;
+}
+
+/* Bottom sheet overlay */
+.sheet-overlay {
+  background-color: rgba(51, 51, 51, 0.5);
+}
+.sheet {
+  background-color: t.$color-grey-100;
+  border-radius: t.$radius-md t.$radius-md 0 0;
+  padding: t.$spacing-s t.$spacing-sm t.$spacing-sm t.$spacing-sm;
+}
+.sheet__handle {
+  width: 36;
+  height: 4;
+  background-color: t.$color-grey-300;
+  border-radius: 2;
+  horizontal-align: center;
+  margin-bottom: t.$spacing-s;
+}

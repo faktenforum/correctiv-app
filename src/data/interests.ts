@@ -1,12 +1,12 @@
 import type { FeedKey } from '../types/models';
 
-/** Themen-Chips aus dem Konzept (Onboarding Schritt 2). */
+/** Topic chips from the concept (onboarding step 2). */
 export interface Interest {
   id: string;
   label: string;
-  /** Feed, dessen Inhalte bei Auswahl zusätzlich auf Home erscheinen */
+  /** Feed whose content additionally appears on Home when selected */
   feed?: FeedKey;
-  /** Home-Modul, das bei Auswahl nach oben rückt */
+  /** Home module that moves up when selected */
   boostModule?: 'factcheckRail' | 'mediaRow';
 }
 

@@ -1,13 +1,13 @@
-// Lucide-Icon-Font (src/fonts/lucide.ttf, ISC-Lizenz).
-// Codepoints aus lucide-static/font/lucide.css; Nutzung: <Label class="lucide" :text="icons.house" />
+// Lucide icon font (src/fonts/lucide.ttf, ISC license).
+// Codepoints from lucide-static/font/lucide.css; usage: <Label class="lucide" :text="icons.house" />
 export const icons = {
-  // Tab-Bar
+  // Tab bar
   house: '\ue0f5',
   compass: '\ue09b',
   monitorPlay: '\ue485',
   megaphone: '\ue235',
   userRound: '\ue468',
-  // Player & Medien
+  // Player & media
   play: '\ue13c',
   pause: '\ue12e',
   circlePlay: '\ue080',
@@ -15,7 +15,7 @@ export const icons = {
   headphones: '\ue0f1',
   mic: '\ue118',
   video: '\ue1a5',
-  // Aktionen
+  // Actions
   bookmark: '\ue060',
   bookmarkCheck: '\ue51f',
   share: '\ue156',
@@ -28,7 +28,7 @@ export const icons = {
   refreshCw: '\ue145',
   externalLink: '\ue0b9',
   camera: '\ue064',
-  // Inhalte & Status
+  // Content & status
   newspaper: '\ue348',
   fileText: '\ue0cc',
   mail: '\ue10f',

@@ -1,8 +1,8 @@
 /**
- * Spotlight-Briefing — SAMPLE (Newsletter-Archiv ist nicht öffentlich, siehe
- * DATENQUELLEN.md). Struktur und Ton echter Spotlight-Ausgaben nachempfunden;
- * Artikel-Links zeigen auf real existierende correctiv.org-Artikel aus dem
- * Offline-Bundle, damit das Briefing auch offline durchklickbar ist.
+ * Spotlight briefing — SAMPLE (the newsletter archive is not public, see
+ * DATENQUELLEN.md). Modeled on the structure and tone of real Spotlight issues;
+ * article links point to actually existing correctiv.org articles from the
+ * offline bundle so the briefing is clickable offline as well.
  */
 export interface SpotlightItem {
   time: string;
@@ -13,7 +13,7 @@ export interface SpotlightItem {
 
 export interface SpotlightIssue {
   id: string;
-  /** ISO-Datum */
+  /** ISO date */
   date: string;
   subject: string;
   items: SpotlightItem[];

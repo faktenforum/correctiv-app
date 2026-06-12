@@ -1,6 +1,6 @@
-/* Reader-Styles — direkte Ableitung der wp-design-tokens (theme.css/typography.css).
-   Im WebView gelten die Original-Tokens unverändert: rem, unitless line-height,
-   letter-spacing. html{font-size} wird vom Template gesetzt (Textgröße-Einstellung). */
+/* Reader styles — directly derived from the wp-design-tokens (theme.css/typography.css).
+   Inside the WebView the original tokens apply unchanged: rem, unitless line-height,
+   letter-spacing. html{font-size} is set by the template (text size setting). */
 
 @font-face {
   font-family: 'Merriweather';
@@ -89,7 +89,7 @@ article {
   margin-bottom: 0.75rem;
 }
 
-/* Artikel-Headline laut Konzept in Merriweather (headline-xl) */
+/* Article headline per the concept in Merriweather (headline-xl) */
 h1 {
   font-family: var(--serif);
   font-weight: 700;
@@ -139,7 +139,7 @@ h1 {
   padding: 1rem 1rem 0;
 }
 
-/* Fließtext: text-article 15.5px, leading-looser 1.8, 24-px-Raster */
+/* Body text: text-article 15.5px, leading-looser 1.8, 24px grid */
 .reader-body { padding: 1rem 1rem 0; }
 .reader-body p {
   font-size: 0.96875rem;
@@ -189,7 +189,7 @@ h1 {
   line-height: 1.8;
 }
 
-/* Infoboxen (detail__box) */
+/* Info boxes (detail__box) */
 .reader-body .detail__box {
   background: var(--grey-200);
   border-radius: 0.3125rem;
@@ -204,7 +204,7 @@ h1 {
 }
 .reader-body .detail__box p { font-size: 0.875rem; line-height: 1.6; margin-bottom: 0.75rem; }
 
-/* Unterstützungs-Moment am Artikelende — Einladung, nie Schranke */
+/* Support moment at the end of the article — invitation, never a barrier */
 .reader-footer {
   margin: 3rem 1rem 0;
   padding: 1.5rem 1rem;

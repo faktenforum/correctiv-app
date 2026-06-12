@@ -1,4 +1,4 @@
-// Karten & Reader-Chrome — Flächen statt Schatten, Hairlines, minimale Radien
+// Cards & reader chrome — surfaces instead of shadows, hairlines, minimal radii
 @use './tokens.generated.scss' as t;
 @use './typography.scss' as ty;
 
@@ -36,7 +36,7 @@
   color: t.$color-grey-500;
 }
 
-/* ── Faktencheck-Plakette (nativ, in Karten/Rails) ────────── */
+/* ── Fact-check plaque (native, in cards/rails) ───────────── */
 .rating-plaque {
   font-family: ty.$ff-sans-bold;
   font-size: 12;
@@ -136,7 +136,7 @@
   color: t.$color-grey-700;
 }
 
-/* Karten im Listenkontext mit horizontalem Seitenabstand */
+/* Cards in a list context with horizontal page padding */
 .list-pad {
   padding-left: t.$spacing-sm;
   padding-right: t.$spacing-sm;

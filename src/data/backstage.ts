@@ -1,16 +1,16 @@
 /**
- * Backstage-Inhalte — SAMPLE (redaktionelle Club-Inhalte existieren noch nicht
- * als API). Beispiele aus dem Konzept, verknüpft mit echten Artikeln aus dem
- * Offline-Bundle, damit Early-Access nach dem Status-Flip wirklich öffnet.
+ * Backstage content — SAMPLE (editorial club content does not yet exist
+ * as an API). Examples from the concept, linked to real articles from the
+ * offline bundle so that early access really opens after the status flip.
  */
 
 export interface EarlyAccessItem {
   id: string;
   title: string;
   teaser: string;
-  /** Wochentag-Label für „Für alle ab …“ */
+  /** Weekday label for "Für alle ab …" */
   publicFromLabel: string;
-  /** ISO-Zeitpunkt für den Countdown */
+  /** ISO timestamp for the countdown */
   publicFromIso: string;
   articleUrl: string;
 }
@@ -30,7 +30,7 @@ export interface BonusMedia {
   title: string;
   teaser: string;
   durationLabel: string;
-  /** Pfad relativ zum App-Ordner oder URL */
+  /** Path relative to the app folder, or a URL */
   source: string;
   club: true;
 }

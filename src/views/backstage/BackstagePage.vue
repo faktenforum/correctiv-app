@@ -1,7 +1,5 @@
-mkdir -p src/views/backstage
-cat > src/views/backstage/BackstagePage.vue <<'EOF'
 <template>
-  <!-- M3-Stub: Teaser-Sicht; vollständiger Hub mit allen Sektionen folgt in M7 -->
+  <!-- M3 stub: teaser view; the complete hub with all sections follows in M7 -->
   <Page actionBarHidden="true">
     <GridLayout rows="auto, *" class="bg-grey-100">
       <GridLayout row="0" columns="auto, *" class="px-sm py-s hairline-bottom">

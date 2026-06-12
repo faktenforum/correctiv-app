@@ -9,14 +9,15 @@ import { useSettingsStore, PERSISTED_KEYS } from './stores/settings';
 import { useSavedArticlesStore } from './stores/savedArticles';
 import { useMembershipStore } from './stores/membership';
 import { useInterestsStore } from './stores/interests';
+import { useParticipationStore } from './stores/participation';
 import { persist } from './stores/persist';
-// @nativescript/vite wendet nur eine Datei namens app.css automatisch an —
-// SCSS deshalb als String importieren und selbst registrieren.
+// @nativescript/vite only applies a file named app.css automatically —
+// therefore import the SCSS as a string and register it ourselves.
 import appCss from './app.scss?inline';
 
 Application.addCss(appCss);
 
-// Statischer Import — require() liefert unter Vite/ESM keinen Konstruktor
+// Static import — require() does not yield a constructor under Vite/ESM
 registerElement('AWebView', () => AWebView);
 
 const pinia = createPinia();
@@ -29,10 +30,11 @@ persist(settings, PERSISTED_KEYS);
 persist(useSavedArticlesStore(pinia), ['items']);
 persist(useMembershipStore(pinia), ['isMember', 'memberSince', 'amountEur', 'interval', 'paused']);
 persist(useInterestsStore(pinia), ['selected']);
+persist(useParticipationStore(pinia), ['submissions']);
 
 if (__ANDROID__) {
-  // Mit fünf parallelen Frames poppt der Hardware-Back-Button sonst beliebige
-  // Frames: erst im aktiven Tab zurück, dann zum Home-Tab, dann Default.
+  // With five parallel frames the hardware back button would otherwise pop
+  // arbitrary frames: first go back within the active tab, then to the home tab, then default.
   Application.android.on('activityBackPressed', (args: AndroidActivityBackPressedEventData) => {
     const frame = Frame.getFrameById(`tab-${settings.activeTab}`);
     if (frame?.canGoBack()) {

@@ -1,7 +1,7 @@
 <template>
   <GridLayout rows="*, auto, auto" class="bg-grey-100">
-    <!-- Zeile 0: Frame pro Tab — lazy gemountet, nie zerstört (erhält Stacks,
-         Scroll-Positionen und hält alle Screens für den Status-Flip gemountet) -->
+    <!-- Row 0: frame-per-tab — lazily mounted, never destroyed (preserves stacks,
+         scroll positions and keeps all screens mounted for the status flip) -->
     <GridLayout row="0">
       <template v-for="tab in tabDefs" :key="tab.id">
         <Frame
@@ -14,11 +14,14 @@
       </template>
     </GridLayout>
 
-    <!-- Zeile 1: persistenter Audio-Mini-Player — sichtbar in allen Tabs -->
+    <!-- Row 1: persistent audio mini player — visible in all tabs -->
     <MiniPlayer v-if="audioStore.isActive" row="1" />
 
-    <!-- Zeile 2: Tab-Bar -->
+    <!-- Row 2: tab bar -->
     <TabBar row="2" :activeTab="settings.activeTab" @select="settings.setActiveTab" />
+
+    <!-- Global bottom sheet: invitation after the 60s preview (above all rows) -->
+    <ClubInviteSheet v-if="audioStore.previewEnded" row="0" rowSpan="3" />
   </GridLayout>
 </template>
 
@@ -28,6 +31,7 @@ import { $showModal } from 'nativescript-vue';
 import TabBar from './components/shell/TabBar.vue';
 import MiniPlayer from './components/shell/MiniPlayer.vue';
 import OnboardingModal from './views/modals/OnboardingModal.vue';
+import ClubInviteSheet from './components/sheets/ClubInviteSheet.vue';
 import { useAudioStore } from './stores/audio';
 import HomePage from './views/home/HomePage.vue';
 import DiscoverPage from './views/discover/DiscoverPage.vue';
@@ -41,7 +45,7 @@ const audioStore = useAudioStore();
 
 onMounted(() => {
   if (!settings.onboardingDone) {
-    // kurz verzögert, bis die Shell gerendert ist — sonst fehlt der Modal-Host
+    // briefly delayed until the shell is rendered — otherwise the modal host is missing
     setTimeout(() => $showModal(OnboardingModal, { fullscreen: true }), 250);
   }
 });

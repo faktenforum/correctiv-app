@@ -1,17 +1,18 @@
 import { defineStore } from 'pinia';
+import { knownFolders, path } from '@nativescript/core';
 import type { AudioTrack } from '../types/models';
 import { RADIO_STREAM_URL } from '../data/feeds.config';
 import * as audio from '../services/audio.service';
 
 export type PlayerStatus = 'idle' | 'loading' | 'playing' | 'paused' | 'error';
 
-/** 60-Sekunden-Vorschau für Club-Bonusinhalte (Einladung, kein Schloss). */
+/** 60-second preview for club bonus content (invitation, never a lock). */
 export const PREVIEW_LIMIT_SEC = 60;
 
 let progressTimer: ReturnType<typeof setInterval> | null = null;
 let loadingWatchdog: ReturnType<typeof setTimeout> | null = null;
 
-/** MediaPlayer meldet Netzfehler teils gar nicht oder sehr spät — Watchdog nötig. */
+/** MediaPlayer sometimes reports network errors not at all or very late — watchdog needed. */
 const LOADING_TIMEOUT_MS = 15000;
 
 export const useAudioStore = defineStore('audio', {
@@ -22,7 +23,7 @@ export const useAudioStore = defineStore('audio', {
     durationSec: 0,
     speed: 1,
     errorMessage: null as string | null,
-    /** wird gesetzt, wenn die 60s-Preview ausgelaufen ist → ClubInviteSheet */
+    /** set when the 60s preview has run out → ClubInviteSheet */
     previewEnded: false,
   }),
   getters: {
@@ -46,11 +47,15 @@ export const useAudioStore = defineStore('audio', {
       const fullTrack: AudioTrack = { ...track, kind: track.kind ?? 'episode' };
       const play = fullTrack.url.startsWith('http')
         ? () => audio.playUrl(fullTrack.url, this._callbacks())
-        : () => audio.playFile(fullTrack.url, this._callbacks());
+        : () =>
+            audio.playFile(
+              path.join(knownFolders.currentApp().path, fullTrack.url),
+              this._callbacks(),
+            );
       await this._start(fullTrack, play);
     },
 
-    /** Bonusinhalt als 60s-Preview (für Nicht-Mitglieder). */
+    /** Bonus content as a 60s preview (for non-members). */
     async playPreview(track: Omit<AudioTrack, 'kind'>) {
       await this.playEpisode({ ...track, kind: 'preview' });
     },
@@ -68,7 +73,7 @@ export const useAudioStore = defineStore('audio', {
 
     async seekTo(seconds: number) {
       if (!this.track || this.isLive) return;
-      // Android MediaPlayer erwartet ms im Plugin? seekTo nimmt Sekunden laut API
+      // Does the Android MediaPlayer expect ms in the plugin? seekTo takes seconds per the API
       await audio.seekTo(seconds);
       this.positionSec = seconds;
     },
@@ -112,7 +117,7 @@ export const useAudioStore = defineStore('audio', {
       }, LOADING_TIMEOUT_MS);
       try {
         await play();
-        if (this.status !== 'loading') return; // Watchdog hat schon abgebrochen
+        if (this.status !== 'loading') return; // watchdog has already aborted
         if (loadingWatchdog) clearTimeout(loadingWatchdog);
         this.status = 'playing';
         this._startTimer();
@@ -120,7 +125,7 @@ export const useAudioStore = defineStore('audio', {
         this.status = 'error';
         this.errorMessage =
           'Wiedergabe nicht möglich. Prüfen Sie Ihre Internetverbindung und versuchen Sie es erneut.';
-        console.error('Audio-Start fehlgeschlagen:', err);
+        console.error('Audio start failed:', err);
       }
     },
 
@@ -136,7 +141,7 @@ export const useAudioStore = defineStore('audio', {
           this.status = 'error';
           this.errorMessage =
             'Wiedergabe unterbrochen. Prüfen Sie Ihre Internetverbindung und versuchen Sie es erneut.';
-          console.error('Audio-Fehler:', message);
+          console.error('Audio error:', message);
         },
       };
     },
@@ -154,7 +159,7 @@ export const useAudioStore = defineStore('audio', {
         ) {
           audio.pause();
           this.status = 'paused';
-          this.previewEnded = true; // ClubInviteSheet wird in der UI geöffnet
+          this.previewEnded = true; // ClubInviteSheet is opened in the UI
         }
       }, 1000);
     },

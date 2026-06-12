@@ -1,10 +1,10 @@
 /**
- * String-basierte Extraktion aus correctiv.org-Artikelseiten (WordPress-Theme,
- * BEM-Klassen `detail__*`). Bewusst DOM-frei: läuft identisch im Node-Skript
- * (scripts/fetch-offline-articles.mjs) und in der App (article.service.ts).
+ * String-based extraction from correctiv.org article pages (WordPress theme,
+ * BEM classes `detail__*`). Deliberately DOM-free: runs identically in the
+ * Node script (scripts/fetch-offline-articles.mjs) and in the app (article.service.ts).
  */
 
-/** <meta property="og:image" content="..."> — beide Attribut-Reihenfolgen. */
+/** <meta property="og:image" content="..."> — both attribute orders. */
 export function extractMeta(html, property) {
   const a = html.match(
     new RegExp(`<meta[^>]+(?:property|name)=["']${property}["'][^>]+content=["']([^"']+)["']`, 'i'),
@@ -16,7 +16,7 @@ export function extractMeta(html, property) {
   return b ? decodeEntities(b[1]) : null;
 }
 
-/** Liefert den inneren HTML-Inhalt des ersten Elements, dessen öffnender Tag auf `startRe` passt — mit Tag-Balancierung. */
+/** Returns the inner HTML content of the first element whose opening tag matches `startRe` — with tag balancing. */
 export function balancedBlock(html, startRe) {
   const m = html.match(startRe);
   if (!m) return null;
@@ -31,7 +31,7 @@ export function balancedBlock(html, startRe) {
     close.lastIndex = pos;
     const o = open.exec(html);
     const c = close.exec(html);
-    if (!c) return null; // kaputtes Markup
+    if (!c) return null; // broken markup
     if (o && o.index < c.index) {
       depth += 1;
       pos = o.index + o[0].length;
@@ -69,21 +69,21 @@ export function decodeEntities(s) {
     .replace(/&#8230;|&hellip;/g, '…');
 }
 
-/** Entfernt Skripte, Tracker und Share-Blöcke aus dem Artikel-Body, behält Inhalts-Markup. */
+/** Removes scripts, trackers and share blocks from the article body, keeps content markup. */
 export function sanitizeBody(body) {
   let out = body;
   for (const tag of ['script', 'noscript', 'iframe', 'form', 'style', 'svg', 'button']) {
     out = out.replace(new RegExp(`<${tag}[\\s\\S]*?</${tag}>`, 'gi'), '');
   }
-  // Tracking-Pixel (1×1) und leere lazyload-imgs ohne src
+  // Tracking pixels (1×1) and empty lazyload imgs without src
   out = out.replace(/<img[^>]+(facebook\.com\/tr|height="1")[^>]*>/gi, '');
-  // <picture>/<source>-Varianten auf das <img> reduzieren (WebView lädt srcset selbst)
+  // Reduce <picture>/<source> variants to the <img> (the WebView loads srcset itself)
   out = out.replace(/<source[^>]*>/gi, '');
   return out.trim();
 }
 
 /**
- * Zerlegt eine correctiv.org-Artikelseite.
+ * Decomposes a correctiv.org article page.
  * @returns {{ topline: string|null, headline: string|null, excerpt: string|null,
  *   authors: string|null, dateIso: string|null, dateText: string|null,
  *   rating: string|null, ratingText: string|null, bodyHtml: string|null, ogImage: string|null }}
@@ -103,7 +103,7 @@ export function extractArticle(html) {
   const authorsBlock = balancedBlock(html, /<\w+[^>]*class="[^"]*detail__authors\b[^"]*"[^>]*>/);
   let authors = null;
   if (authorsBlock) {
-    // "von Max Bernhard" — das <time>-Element gehört nicht zu den Autor:innen
+    // "von Max Bernhard" — the <time> element is not part of the authors
     authors = stripTags(authorsBlock.replace(/<time[\s\S]*?<\/time>/gi, '')).replace(/^von\s+/i, '');
   }
 
@@ -133,7 +133,7 @@ export function extractArticle(html) {
   };
 }
 
-/** Lesezeit in Minuten (~200 Wörter/min) aus Artikel-HTML. */
+/** Reading time in minutes (~200 words/min) from article HTML. */
 export function readingMinutes(bodyHtml) {
   const words = stripTags(bodyHtml || '').split(/\s+/).filter(Boolean).length;
   return Math.max(1, Math.round(words / 200));

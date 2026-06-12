@@ -1,5 +1,5 @@
-// Die NS-Runtime hat kein deutsches ICU — toLocaleDateString('de-DE')
-// fällt auf Englisch zurück. Eigene Formatter statt Intl.
+// The NS runtime has no German ICU — toLocaleDateString('de-DE')
+// falls back to English. Custom formatters instead of Intl.
 const MONTHS = [
   'Januar', 'Februar', 'März', 'April', 'Mai', 'Juni',
   'Juli', 'August', 'September', 'Oktober', 'November', 'Dezember',

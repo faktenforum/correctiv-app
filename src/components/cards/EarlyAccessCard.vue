@@ -1,5 +1,5 @@
 <template>
-  <!-- Early-Access: Countdown für Gäste, „Jetzt lesen" für Mitglieder (Status-Flip!) -->
+  <!-- Early access: countdown for guests, "Jetzt lesen" for members (status flip!) -->
   <StackLayout class="early-access-card" @tap="onTap">
     <GridLayout columns="auto, *" class="mb-xs">
       <ClubBadge col="0" />

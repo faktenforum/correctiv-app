@@ -1,4 +1,4 @@
-// Wiederkehrende Bausteine im Token-Design: Flächen statt Schatten, Hairlines, minimale Radien.
+// Recurring building blocks in the token design: surfaces instead of shadows, hairlines, minimal radii.
 @use './tokens.generated.scss' as t;
 @use './typography.scss' as ty;
 
@@ -51,7 +51,7 @@
   android-dynamic-elevation-offset: 0;
 }
 
-// Projekt-Badge (Rot = Journalismus) / Club-Badge (Gelb = Club)
+// Project badge (red = journalism) / club badge (yellow = club)
 .badge {
   font-family: ty.$ff-sans-bold;
   font-size: 11;

@@ -1,6 +1,6 @@
 <template>
-  <!-- M7 baut den vollständigen 4-Schritte-Flow; das hier ist der verdrahtete Kern,
-       damit Status-Flip und correctiv://join schon früh end-to-end funktionieren. -->
+  <!-- M7 builds the complete 4-step flow; this is the wired-up core so that
+       the status flip and correctiv://join work end-to-end early on. -->
   <Page actionBarHidden="true">
     <GridLayout rows="auto, *" class="bg-grey-100">
       <GridLayout row="0" columns="*, auto" class="px-sm py-s">

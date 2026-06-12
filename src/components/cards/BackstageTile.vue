@@ -1,5 +1,5 @@
 <template>
-  <!-- Backstage-Modul auf Home: Tagebuch + Bonusfolge angeteasert, nie versperrt -->
+  <!-- Backstage module on Home: diary + bonus episode teased, never locked away -->
   <StackLayout class="backstage-tile" @tap="$emit('open')">
     <GridLayout columns="auto, *" class="mb-xs">
       <ClubBadge col="0" text="BACKSTAGE" />
