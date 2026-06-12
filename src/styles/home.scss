@@ -95,9 +95,12 @@
   color: t.$color-grey-700;
 }
 
-/* Fact-check rail (horizontal CollectionView, fixed height is mandatory!) */
+/* Fact-check rail (horizontal CollectionView, fixed height is mandatory!)
+   Height leaves the card borders visible; the bottom margin keeps the
+   following module (participate card) clearly separated. */
 .factcheck-rail {
-  height: 190;
+  height: 200;
+  margin-bottom: t.$spacing-sm;
 }
 .factcheck-rail-card {
   width: 240;
@@ -176,9 +179,6 @@
 .media-card__thumb {
   height: 112;
   border-radius: t.$radius-md;
-}
-.media-card__thumb--placeholder {
-  background-color: t.$color-grey-300;
 }
 .media-card__play {
   font-size: 30;

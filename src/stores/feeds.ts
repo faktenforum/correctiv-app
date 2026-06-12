@@ -21,6 +21,35 @@ function emptyState(): FeedState {
   return { items: [], status: 'idle', lastFetched: 0 };
 }
 
+/** Local cover images from the offline article bundle, keyed by article URL. */
+function loadLocalImageIndex(): Map<string, string> | null {
+  try {
+    const appRoot = knownFolders.currentApp().path;
+    const indexFile = path.join(appRoot, 'assets', 'data', 'articles', 'index.json');
+    if (!File.exists(indexFile)) return null;
+    const index = JSON.parse(File.fromPath(indexFile).readTextSync()) as {
+      articles: { url: string; localImage: string | null }[];
+    };
+    const map = new Map<string, string>();
+    for (const article of index.articles) {
+      if (article.localImage) map.set(article.url, article.localImage);
+    }
+    return map;
+  } catch {
+    return null;
+  }
+}
+
+/** Replace image URLs with bundled local covers where the article is in the bundle. */
+function adoptLocalImages(items: FeedItem[]) {
+  const imageByUrl = loadLocalImageIndex();
+  if (!imageByUrl) return;
+  for (const item of items) {
+    const local = imageByUrl.get(item.url);
+    if (local) item.imageUrl = local;
+  }
+}
+
 /** Bundled feed snapshot from assets/data/feeds/<key>.json (offline fallback). */
 function loadBundledSnapshot(key: FeedKey): FeedItem[] | null {
   try {
@@ -28,22 +57,7 @@ function loadBundledSnapshot(key: FeedKey): FeedItem[] | null {
     const file = path.join(appRoot, 'assets', 'data', 'feeds', `${key}.json`);
     if (!File.exists(file)) return null;
     const items = JSON.parse(File.fromPath(file).readTextSync()) as FeedItem[];
-    // Adopt local cover images from the offline article index
-    try {
-      const indexFile = path.join(appRoot, 'assets', 'data', 'articles', 'index.json');
-      if (File.exists(indexFile)) {
-        const index = JSON.parse(File.fromPath(indexFile).readTextSync()) as {
-          articles: { url: string; localImage: string | null }[];
-        };
-        const imageByUrl = new Map(index.articles.map((a) => [a.url, a.localImage]));
-        for (const item of items) {
-          const local = imageByUrl.get(item.url);
-          if (local) item.imageUrl = local;
-        }
-      }
-    } catch {
-      // images are a nicety
-    }
+    adoptLocalImages(items);
     return items;
   } catch {
     return null;
@@ -98,7 +112,12 @@ export const useFeedsStore = defineStore('feeds', {
         setCached(CACHE_NS, key, items);
       } catch (err) {
         console.error(`Feed fetch '${key}' failed:`, err instanceof Error ? err.message : err);
-        if (state.items.length > 0) return; // stale display is sufficient
+        if (state.items.length > 0) {
+          // Stale items keep remote image URLs that cannot load offline —
+          // borrow the bundled local covers for articles that are in the bundle.
+          adoptLocalImages(state.items);
+          return;
+        }
         const snapshot = loadBundledSnapshot(key);
         if (snapshot) {
           state.items = snapshot;

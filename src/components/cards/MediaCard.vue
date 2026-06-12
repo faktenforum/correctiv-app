@@ -1,8 +1,7 @@
 <template>
   <StackLayout class="media-card" @tap="$emit('open')">
     <GridLayout class="media-card__thumb-wrap">
-      <Image v-if="thumbnail" :src="thumbnail" stretch="aspectFill" class="media-card__thumb" />
-      <Label v-else text="" class="media-card__thumb media-card__thumb--placeholder" />
+      <RemoteImage :url="thumbnail" kind="video" class="media-card__thumb" />
       <Label :text="icons.circlePlay" class="lucide media-card__play" />
       <Label v-if="durationLabel" :text="durationLabel" class="media-card__duration" />
     </GridLayout>
@@ -15,6 +14,7 @@
 <script setup lang="ts">
 import { icons } from '../../ui/icons';
 import ClubBadge from '../ui/ClubBadge.vue';
+import RemoteImage from '../ui/RemoteImage.vue';
 
 withDefaults(
   defineProps<{

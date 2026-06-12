@@ -106,3 +106,18 @@
 .live-dot {
   color: t.$color-emphasis;
 }
+
+/* RemoteImage placeholder tiles — styled like the podcast covers:
+   a calm surface with a centered icon instead of an empty gap */
+.remote-image__placeholder {
+  background-color: t.$color-grey-250;
+}
+.remote-image__placeholder--video {
+  background-color: t.$color-grey-700;
+}
+.remote-image__icon {
+  font-size: 28;
+  color: t.$color-grey-400;
+  horizontal-align: center;
+  vertical-align: center;
+}

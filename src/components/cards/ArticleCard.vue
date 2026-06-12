@@ -2,10 +2,7 @@
   <!-- Variants: hero (large image on top), standard (image on the right), compact (text only) -->
   <!-- Hero: flat and edge-to-edge with red text kicker (design draft) -->
   <StackLayout v-if="variant === 'hero'" class="article-card article-card--hero" @tap="$emit('open', item)">
-    <GridLayout class="article-card__image-wrap">
-      <Image v-if="item.imageUrl" :src="item.imageUrl" stretch="aspectFill" class="article-card__hero-image" />
-      <Label v-else text="" class="article-card__image-placeholder" />
-    </GridLayout>
+    <RemoteImage :url="item.imageUrl" :articleUrl="item.url" class="article-card__image-wrap" />
     <StackLayout class="article-card__body hairline-bottom">
       <Label v-if="badge" :text="badge" class="kicker" />
       <Label :text="item.title" class="article-card__hero-title" textWrap="true" />
@@ -21,8 +18,7 @@
       <Label :text="meta" class="article-card__meta" />
     </StackLayout>
     <GridLayout col="1" class="article-card__thumb-wrap" verticalAlignment="top">
-      <Image v-if="item.imageUrl" :src="item.imageUrl" stretch="aspectFill" class="article-card__thumb" />
-      <Label v-else text="" class="article-card__thumb article-card__image-placeholder" />
+      <RemoteImage :url="item.imageUrl" :articleUrl="item.url" class="article-card__thumb" />
     </GridLayout>
   </GridLayout>
 
@@ -36,6 +32,7 @@
 import { computed } from 'nativescript-vue';
 import type { FeedItem } from '../../types/models';
 import ProjectBadge from '../ui/ProjectBadge.vue';
+import RemoteImage from '../ui/RemoteImage.vue';
 import { formatDateShortDe } from '../../lib/format';
 
 const props = withDefaults(
