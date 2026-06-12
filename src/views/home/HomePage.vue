@@ -32,6 +32,9 @@
         <template #sectionRecherchen>
           <SectionHeader title="Neueste Recherchen" />
         </template>
+        <template #sectionInterest="{ item }">
+          <SectionHeader :title="item.title" />
+        </template>
         <template #default="{ item }">
           <StackLayout class="list-pad">
             <ArticleCard :item="item.article" variant="standard" :badge="item.badge" @open="openArticle" />
@@ -134,6 +137,7 @@ import ArticleReaderPage from '../reader/ArticleReaderPage.vue';
 import BackstagePage from '../backstage/BackstagePage.vue';
 import { useFeedsStore } from '../../stores/feeds';
 import { useMediaStore } from '../../stores/media';
+import { useInterestsStore } from '../../stores/interests';
 import { useNavigation } from '../../composables/useNavigation';
 import { spotlightIssues } from '../../data/spotlight';
 import { earlyAccess, diaries, bonusMedia } from '../../data/backstage';
@@ -148,6 +152,7 @@ interface HomeModule {
 
 const feeds = useFeedsStore();
 const media = useMediaStore();
+const interestsStore = useInterestsStore();
 const { navigate, navigateInTab } = useNavigation();
 
 const modules = computed((): HomeModule[] => {
@@ -175,14 +180,36 @@ const modules = computed((): HomeModule[] => {
   }
 
   const factchecks = feeds.byKey.faktencheck.items.slice(0, 8);
-  if (factchecks.length > 0) {
-    result.push({ id: 'rail', kind: 'factcheckRail', factchecks });
+  const railModule: HomeModule | null =
+    factchecks.length > 0 ? { id: 'rail', kind: 'factcheckRail', factchecks } : null;
+  const video = media.byKey.funfacts.videos[0] ?? null;
+  const mediaModule: HomeModule = { id: 'mediaRow', kind: 'mediaRow', video };
+
+  // Personalisierung (Onboarding): gewählte Interessen rücken Module nach oben
+  const boosted = interestsStore.boostedModules;
+  if (railModule && boosted.includes('factcheckRail')) {
+    result.splice(result.findIndex((m) => m.id === 'sec-recherchen'), 0, railModule);
+  }
+  if (boosted.includes('mediaRow')) {
+    const anchor = result.findIndex((m) => m.id === 'sec-recherchen');
+    result.splice(anchor >= 0 ? anchor : result.length, 0, { ...mediaModule, id: 'mediaRow-boost' });
+  }
+
+  if (railModule && !boosted.includes('factcheckRail')) result.push(railModule);
+
+  // Zusätzliche Sektionen aus Interessen-Feeds (Klima, Lokal, Schweiz)
+  for (const interest of interestsStore.extraFeeds) {
+    const feedItems = feeds.byKey[interest.feed!].items.slice(0, 2);
+    if (feedItems.length > 0) {
+      result.push({ id: `sec-${interest.id}`, kind: 'sectionInterest', title: interest.label });
+      for (const article of feedItems) {
+        result.push({ id: `${interest.id}-${article.id}`, kind: 'article', article, badge: interest.label });
+      }
+    }
   }
 
   result.push({ id: 'participate', kind: 'participate', callout: callouts[0] });
-
-  const video = media.byKey.funfacts.videos[0] ?? null;
-  result.push({ id: 'mediaRow', kind: 'mediaRow', video });
+  if (!boosted.includes('mediaRow')) result.push(mediaModule);
 
   result.push({ id: 'backstage', kind: 'backstage', diary: diaries[0], bonus: bonusMedia[0] });
   result.push({ id: 'impact', kind: 'impact' });
@@ -196,6 +223,7 @@ function templateSelector(item: HomeModule): string {
     briefing: 'briefing',
     earlyAccess: 'earlyAccess',
     sectionRecherchen: 'sectionRecherchen',
+    sectionInterest: 'sectionInterest',
     article: 'default',
     factcheckRail: 'factcheckRail',
     participate: 'participate',
@@ -212,6 +240,10 @@ async function onLoaded() {
   if (loaded) return;
   loaded = true;
   await Promise.all([feeds.fetch('recherchen'), feeds.fetch('faktencheck'), media.fetch('funfacts')]);
+  // Interessen-Feeds nachladen (Personalisierung)
+  for (const interest of interestsStore.extraFeeds) {
+    feeds.fetch(interest.feed!);
+  }
   for (const item of feeds.byKey.recherchen.items.slice(0, 5)) {
     feeds.enrichImage('recherchen', item.id);
   }

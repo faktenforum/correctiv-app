@@ -8,6 +8,7 @@ import AppShell from './AppShell.vue';
 import { useSettingsStore, PERSISTED_KEYS } from './stores/settings';
 import { useSavedArticlesStore } from './stores/savedArticles';
 import { useMembershipStore } from './stores/membership';
+import { useInterestsStore } from './stores/interests';
 import { persist } from './stores/persist';
 // @nativescript/vite wendet nur eine Datei namens app.css automatisch an —
 // SCSS deshalb als String importieren und selbst registrieren.
@@ -27,6 +28,7 @@ const settings = useSettingsStore(pinia);
 persist(settings, PERSISTED_KEYS);
 persist(useSavedArticlesStore(pinia), ['items']);
 persist(useMembershipStore(pinia), ['isMember', 'memberSince', 'amountEur', 'interval', 'paused']);
+persist(useInterestsStore(pinia), ['selected']);
 
 if (__ANDROID__) {
   // Mit fünf parallelen Frames poppt der Hardware-Back-Button sonst beliebige

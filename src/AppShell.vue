@@ -23,8 +23,11 @@
 </template>
 
 <script setup lang="ts">
+import { onMounted } from 'nativescript-vue';
+import { $showModal } from 'nativescript-vue';
 import TabBar from './components/shell/TabBar.vue';
 import MiniPlayer from './components/shell/MiniPlayer.vue';
+import OnboardingModal from './views/modals/OnboardingModal.vue';
 import { useAudioStore } from './stores/audio';
 import HomePage from './views/home/HomePage.vue';
 import DiscoverPage from './views/discover/DiscoverPage.vue';
@@ -35,6 +38,13 @@ import { useSettingsStore, type TabId } from './stores/settings';
 
 const settings = useSettingsStore();
 const audioStore = useAudioStore();
+
+onMounted(() => {
+  if (!settings.onboardingDone) {
+    // kurz verzögert, bis die Shell gerendert ist — sonst fehlt der Modal-Host
+    setTimeout(() => $showModal(OnboardingModal, { fullscreen: true }), 250);
+  }
+});
 
 const tabDefs: { id: TabId; page: unknown }[] = [
   { id: 'home', page: HomePage },

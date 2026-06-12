@@ -273,3 +273,61 @@
   horizontal-align: center;
   margin-top: t.$spacing-xs;
 }
+
+/* ── Onboarding ─────────────────────────────────────────── */
+.onboarding--mission {
+  background-color: t.$color-emphasis;
+}
+.onboarding__dot {
+  font-size: 8;
+  color: t.$color-grey-400;
+  margin-right: 6;
+}
+.onboarding__dot--active {
+  color: t.$color-grey-700;
+}
+.onboarding__dot--light {
+  color: t.$color-grey-100;
+}
+.onboarding__skip {
+  font-family: ty.$ff-sans-semibold;
+  font-size: 14;
+  color: t.$color-grey-600;
+  padding: t.$spacing-xs;
+}
+.onboarding__brand {
+  font-family: ty.$ff-sans-bold;
+  font-size: 18;
+  letter-spacing: 0.15;
+  color: t.$color-grey-100;
+}
+.onboarding__mission-title {
+  font-family: ty.$ff-serif-bold;
+  font-size: 34;
+  line-height: 10;
+  color: t.$color-grey-100;
+  margin-top: t.$spacing-s;
+}
+.onboarding__fact {
+  font-family: ty.$ff-sans-semibold;
+  font-size: 17;
+  line-height: 8;
+  color: t.$color-grey-100;
+  margin-top: t.$spacing-s;
+}
+.btn-onboarding-light {
+  font-family: ty.$ff-sans-bold;
+  font-size: 16;
+  background-color: t.$color-grey-100;
+  color: t.$color-grey-700;
+  border-radius: t.$radius-s;
+  padding: t.$spacing-s t.$spacing-m;
+  text-transform: none;
+  android-elevation: 0;
+}
+.onboarding__chip {
+  margin: 0 t.$spacing-xs t.$spacing-s 0;
+}
+.onboarding__switch {
+  vertical-align: center;
+}
