@@ -25,3 +25,74 @@
 .tab-active {
   color: t.$color-emphasis;
 }
+
+/* Mini-Player — über der Tab-Bar, in allen Tabs sichtbar */
+.mini-player {
+  background-color: t.$color-grey-200;
+  padding: t.$spacing-xs t.$spacing-sm;
+}
+.mini-player__artwork {
+  width: 36;
+  height: 36;
+  background-color: t.$color-grey-300;
+  border-radius: t.$radius-s;
+}
+.mini-player__live-dot {
+  color: t.$color-emphasis;
+  font-size: 14;
+  text-align: center;
+}
+.mini-player__icon {
+  color: t.$color-grey-600;
+  font-size: 18;
+  text-align: center;
+}
+.mini-player__text {
+  margin-left: t.$spacing-s;
+}
+.mini-player__title {
+  font-family: ty.$ff-sans-semibold;
+  font-size: 14;
+  color: t.$color-grey-700;
+}
+.mini-player__subtitle {
+  font-family: ty.$ff-sans;
+  font-size: 12;
+  color: t.$color-grey-600;
+}
+.mini-player__subtitle--live {
+  color: t.$color-emphasis;
+}
+.mini-player__control {
+  font-size: 20;
+  color: t.$color-grey-700;
+  padding: t.$spacing-xs t.$spacing-s;
+  vertical-align: center;
+}
+
+/* Live-Banner (Mediathek, Home-Kachel, Salon5-Projektseite) */
+.live-banner {
+  background-color: t.$color-grey-700;
+  border-radius: t.$radius-md;
+  padding: t.$spacing-s t.$spacing-sm;
+}
+.live-banner__dot {
+  color: t.$color-emphasis;
+  font-size: 16;
+  margin-right: t.$spacing-s;
+}
+.live-banner__title {
+  font-family: ty.$ff-sans-bold;
+  font-size: 15;
+  color: t.$color-grey-100;
+}
+.live-banner__subtitle {
+  font-family: ty.$ff-sans;
+  font-size: 12;
+  color: t.$color-grey-400;
+}
+.live-banner__play {
+  font-size: 22;
+  color: t.$color-grey-100;
+  padding: t.$spacing-xs;
+}
