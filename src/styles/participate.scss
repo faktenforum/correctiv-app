@@ -348,3 +348,78 @@
   color: t.$color-grey-100;
 }
 .pb-l { padding-bottom: 36; }
+
+/* Profile (M8) */
+.club-card {
+  background-color: t.$color-alternative;
+  border-radius: t.$radius-md;
+  padding: t.$spacing-sm;
+}
+.club-card__brand {
+  font-family: ty.$ff-sans-bold;
+  font-size: 12;
+  letter-spacing: 0.12;
+  color: t.$color-grey-700;
+}
+.club-card__icon {
+  font-size: 18;
+  color: t.$color-grey-700;
+}
+.club-card__name {
+  font-family: ty.$ff-serif-bold;
+  font-size: 22;
+  color: t.$color-grey-700;
+}
+.club-card__since {
+  font-family: ty.$ff-sans;
+  font-size: 13;
+  color: t.$color-grey-700;
+  margin-top: 2;
+}
+.impact-card {
+  background-color: t.$color-grey-200;
+  border-radius: t.$radius-md;
+  padding: t.$spacing-sm;
+}
+.impact-card__article {
+  background-color: t.$color-grey-100;
+  border-radius: t.$radius-s;
+  padding: t.$spacing-s;
+}
+.newsletter-row {
+  padding: t.$spacing-s 0;
+}
+.saved-remove {
+  font-size: 16;
+  color: t.$color-grey-500;
+  padding: t.$spacing-s;
+  vertical-align: center;
+}
+.report-figure__value {
+  font-family: ty.$ff-sans-bold;
+  font-size: 20;
+  color: t.$color-emphasis;
+  width: 70;
+}
+.report-figure__label {
+  font-family: ty.$ff-sans;
+  font-size: 14;
+  color: t.$color-grey-700;
+  vertical-align: center;
+}
+.text-scale-option {
+  font-family: ty.$ff-sans-bold;
+  font-size: 16;
+  color: t.$color-grey-600;
+  text-align: center;
+  padding: t.$spacing-s;
+  border-width: 1;
+  border-color: t.$color-grey-300;
+  border-radius: t.$radius-s;
+  margin: 0 4;
+}
+.text-scale-option--active {
+  background-color: t.$color-grey-700;
+  border-color: t.$color-grey-700;
+  color: t.$color-grey-100;
+}

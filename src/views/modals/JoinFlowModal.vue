@@ -147,7 +147,7 @@ const dataValid = computed(() => name.value.trim().length > 1 && email.value.inc
 
 function join() {
   // THE status flip: every club touchpoint in the app reacts in the same tick
-  membership.join(Math.round(amount.value), interval.value);
+  membership.join(Math.round(amount.value), interval.value, name.value.trim());
   step.value = 3;
 }
 

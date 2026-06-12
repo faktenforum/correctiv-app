@@ -28,7 +28,7 @@ app.use(CollectionViewPlugin);
 const settings = useSettingsStore(pinia);
 persist(settings, PERSISTED_KEYS);
 persist(useSavedArticlesStore(pinia), ['items']);
-persist(useMembershipStore(pinia), ['isMember', 'memberSince', 'amountEur', 'interval', 'paused']);
+persist(useMembershipStore(pinia), ['isMember', 'name', 'memberSince', 'amountEur', 'interval', 'paused']);
 persist(useInterestsStore(pinia), ['selected']);
 persist(useParticipationStore(pinia), ['submissions']);
 
