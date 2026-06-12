@@ -28,7 +28,8 @@ export const useAudioStore = defineStore('audio', {
   }),
   getters: {
     isLive: (state) => state.track?.kind === 'radio',
-    isActive: (state) => state.track !== null && state.status !== 'error',
+    // Stays visible in the error state so the user sees the failure message
+    isActive: (state) => state.track !== null,
   },
   actions: {
     async playRadio() {
@@ -148,9 +149,20 @@ export const useAudioStore = defineStore('audio', {
 
     _startTimer() {
       this._clearTimer();
+      let maxPos = 0;
       progressTimer = setInterval(() => {
         if (this.status !== 'playing') return;
-        this.positionSec = audio.currentTimeSec();
+        const pos = audio.currentTimeSec();
+        // MediaPlayer sometimes resets to 0 on completion without firing the
+        // complete callback — detect the position regression and finish cleanly.
+        if (!this.isLive && maxPos > 5 && pos < 1) {
+          this._clearTimer();
+          this.status = 'idle';
+          this.positionSec = 0;
+          return;
+        }
+        maxPos = Math.max(maxPos, pos);
+        this.positionSec = pos;
         this.durationSec = audio.durationSec();
         if (
           this.track?.kind === 'preview' &&

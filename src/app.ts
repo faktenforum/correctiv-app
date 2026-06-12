@@ -10,6 +10,7 @@ import { useSavedArticlesStore } from './stores/savedArticles';
 import { useMembershipStore } from './stores/membership';
 import { useInterestsStore } from './stores/interests';
 import { useParticipationStore } from './stores/participation';
+import { useFeedsStore } from './stores/feeds';
 import { persist } from './stores/persist';
 // @nativescript/vite only applies a file named app.css automatically —
 // therefore import the SCSS as a string and register it ourselves.
@@ -46,5 +47,14 @@ if (__ANDROID__) {
     }
   });
 }
+
+
+// Refresh live content when the app returns to the foreground — keeps the
+// "fresh every day" promise without a pull-to-refresh plugin dependency.
+Application.on(Application.resumeEvent, () => {
+  const feeds = useFeedsStore(pinia);
+  feeds.fetch('recherchen', { force: true });
+  feeds.fetch('faktencheck', { force: true });
+});
 
 app.start();
