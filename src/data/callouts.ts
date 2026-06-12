@@ -1,8 +1,8 @@
 /**
- * CrowdNewsroom-Callouts — SAMPLE im Beabee-CalloutDto-Schema
- * (https://github.com/beabee-communityrm — formSchema mit Formio-artigen
- * Slides/Components), damit Phase 3 nur den Daten-Layer tauschen muss.
- * Inhalte: echte bzw. konzeptgetreue CORRECTIV-Aufrufe.
+ * CrowdNewsroom callouts — SAMPLE in the Beabee CalloutDto schema
+ * (https://github.com/beabee-communityrm — formSchema with Formio-like
+ * slides/components), so that phase 3 only needs to swap the data layer.
+ * Content: real or concept-faithful CORRECTIV callouts.
  */
 
 export interface CalloutComponent {
@@ -31,7 +31,7 @@ export interface Callout {
   expires: string | null;
   status: 'open' | 'ended';
   responseCount: number;
-  /** Wer fragt, und was passiert mit den Daten — Datenschutz-Klartext */
+  /** Who is asking, and what happens to the data — privacy in plain language */
   whoAsks: string;
   dataUse: string;
   formSchema: { slides: CalloutSlide[] };
