@@ -1,0 +1,143 @@
+// Karten & Reader-Chrome — Flächen statt Schatten, Hairlines, minimale Radien
+@use './tokens.generated.scss' as t;
+@use './typography.scss' as ty;
+
+/* ── Reader ───────────────────────────────────────────────── */
+.reader-header {
+  background-color: t.$color-grey-100;
+  padding: t.$spacing-xs t.$spacing-s;
+}
+.reader-header__icon {
+  font-size: 22;
+  color: t.$color-grey-700;
+  padding: t.$spacing-xs t.$spacing-s;
+  vertical-align: center;
+}
+.reader-header__icon--active {
+  color: t.$color-emphasis;
+}
+.reader-header__badge {
+  font-family: ty.$ff-sans-bold;
+  font-size: 12;
+  letter-spacing: 0.08;
+  color: t.$color-emphasis;
+  text-align: center;
+}
+.reader-webview {
+  background-color: t.$color-grey-100;
+}
+.reader-spinner {
+  color: t.$color-emphasis;
+  width: 32;
+  height: 32;
+}
+.reader-error-icon {
+  font-size: 36;
+  color: t.$color-grey-500;
+}
+
+/* ── Faktencheck-Plakette (nativ, in Karten/Rails) ────────── */
+.rating-plaque {
+  font-family: ty.$ff-sans-bold;
+  font-size: 12;
+  padding: 2 8;
+  border-radius: t.$radius-s;
+  horizontal-align: left;
+}
+.rating-plaque--false {
+  background-color: t.$color-emphasis;
+  color: t.$color-grey-100;
+}
+.rating-plaque--context {
+  background-color: t.$color-alternative;
+  color: t.$color-grey-700;
+}
+.rating-plaque--true {
+  background-color: #2e7d4f;
+  color: t.$color-grey-100;
+}
+.rating-plaque--neutral {
+  background-color: t.$color-grey-300;
+  color: t.$color-grey-700;
+}
+
+/* ── ArticleCard ──────────────────────────────────────────── */
+.article-card {
+  background-color: t.$color-grey-100;
+}
+
+.article-card--hero {
+  background-color: t.$color-grey-200;
+  border-radius: t.$radius-md;
+  margin: 0 t.$spacing-sm t.$spacing-m t.$spacing-sm;
+}
+.article-card__image-wrap {
+  height: 200;
+  border-radius: t.$radius-md t.$radius-md 0 0;
+}
+.article-card__hero-image {
+  height: 200;
+  border-radius: t.$radius-md t.$radius-md 0 0;
+}
+.article-card__image-placeholder {
+  background-color: t.$color-grey-300;
+  height: 200;
+}
+.article-card__body {
+  padding: t.$spacing-s t.$spacing-sm t.$spacing-sm t.$spacing-sm;
+}
+.article-card__hero-title {
+  font-family: ty.$ff-serif-bold;
+  font-size: 22;
+  line-height: 6;
+  color: t.$color-grey-700;
+  margin-top: t.$spacing-xs;
+}
+.article-card__teaser {
+  font-family: ty.$ff-sans;
+  font-size: 14;
+  line-height: 6;
+  color: t.$color-grey-600;
+  margin-top: t.$spacing-xs;
+}
+.article-card__meta {
+  font-family: ty.$ff-sans;
+  font-size: 12;
+  color: t.$color-grey-500;
+  margin-top: t.$spacing-xs;
+}
+
+.article-card__body--standard {
+  padding: t.$spacing-s t.$spacing-s t.$spacing-s 0;
+}
+.article-card__title {
+  font-family: ty.$ff-sans-bold;
+  font-size: 16;
+  line-height: 5;
+  color: t.$color-grey-700;
+  margin-top: 2;
+}
+.article-card__thumb-wrap {
+  margin: t.$spacing-s 0;
+}
+.article-card__thumb {
+  width: 92;
+  height: 70;
+  border-radius: t.$radius-s;
+}
+
+.article-card--compact {
+  padding: t.$spacing-xs 0;
+}
+.article-card__title--compact {
+  font-family: ty.$ff-sans-semibold;
+  font-size: 15;
+  line-height: 4;
+  color: t.$color-grey-700;
+}
+
+/* Karten im Listenkontext mit horizontalem Seitenabstand */
+.list-pad {
+  padding-left: t.$spacing-sm;
+  padding-right: t.$spacing-sm;
+}

@@ -24,9 +24,27 @@ function emptyState(): FeedState {
 /** Gebündelter Feed-Snapshot aus assets/data/feeds/<key>.json (Offline-Fallback). */
 function loadBundledSnapshot(key: FeedKey): FeedItem[] | null {
   try {
-    const file = path.join(knownFolders.currentApp().path, 'assets', 'data', 'feeds', `${key}.json`);
+    const appRoot = knownFolders.currentApp().path;
+    const file = path.join(appRoot, 'assets', 'data', 'feeds', `${key}.json`);
     if (!File.exists(file)) return null;
-    return JSON.parse(File.fromPath(file).readTextSync()) as FeedItem[];
+    const items = JSON.parse(File.fromPath(file).readTextSync()) as FeedItem[];
+    // Lokale Titelbilder aus dem Offline-Artikel-Index übernehmen
+    try {
+      const indexFile = path.join(appRoot, 'assets', 'data', 'articles', 'index.json');
+      if (File.exists(indexFile)) {
+        const index = JSON.parse(File.fromPath(indexFile).readTextSync()) as {
+          articles: { url: string; localImage: string | null }[];
+        };
+        const imageByUrl = new Map(index.articles.map((a) => [a.url, a.localImage]));
+        for (const item of items) {
+          const local = imageByUrl.get(item.url);
+          if (local) item.imageUrl = local;
+        }
+      }
+    } catch {
+      // Bilder sind Komfort
+    }
+    return items;
   } catch {
     return null;
   }
@@ -78,7 +96,8 @@ export const useFeedsStore = defineStore('feeds', {
         state.status = 'ready';
         state.lastFetched = Date.now();
         setCached(CACHE_NS, key, items);
-      } catch {
+      } catch (err) {
+        console.error(`Feed-Fetch '${key}' fehlgeschlagen:`, err instanceof Error ? err.message : err);
         if (state.items.length > 0) return; // stale Anzeige reicht
         const snapshot = loadBundledSnapshot(key);
         if (snapshot) {

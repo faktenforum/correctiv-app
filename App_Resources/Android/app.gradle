@@ -15,8 +15,18 @@ android {
     // Version Information
     versionCode 1
     versionName "1.0.0"
-    
+
     generatedDensities = []
+  }
+
+  // Debug-Builds nur für Emulator/echte Geräte-ABIs paketieren —
+  // halbiert die APK und entlastet den knappen Emulator-Speicher.
+  buildTypes {
+    debug {
+      ndk {
+        abiFilters "x86_64", "arm64-v8a"
+      }
+    }
   }
 
   aaptOptions {

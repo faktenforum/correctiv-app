@@ -4,6 +4,7 @@
 @use './styles/typography.scss';
 @use './styles/components.scss';
 @use './styles/shell.scss';
+@use './styles/cards.scss';
 
 Page {
   background-color: t.$color-grey-100;

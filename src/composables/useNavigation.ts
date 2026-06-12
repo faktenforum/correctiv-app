@@ -1,4 +1,5 @@
-import { $navigateTo, $navigateBack, NavigationOptions } from 'nativescript-vue';
+import { $navigateTo, $navigateBack } from 'nativescript-vue';
+import type { NavigateToOptions } from 'nativescript-vue/dist/plugins/navigation';
 import type { Component } from 'nativescript-vue';
 import { useSettingsStore, type TabId } from '../stores/settings';
 
@@ -10,12 +11,12 @@ import { useSettingsStore, type TabId } from '../stores/settings';
 export function useNavigation() {
   const settings = useSettingsStore();
 
-  function navigate(component: Component, options: NavigationOptions = {}) {
+  function navigate(component: Component, options: NavigateToOptions<Record<string, unknown>> = {}) {
     return $navigateTo(component, { frame: `tab-${settings.activeTab}`, ...options });
   }
 
   /** Quersprung: Tab wechseln und dort eine Seite pushen (z.B. Home-Mitmach-Karte → Tab 4). */
-  function navigateInTab(tab: TabId, component?: Component, options: NavigationOptions = {}) {
+  function navigateInTab(tab: TabId, component?: Component, options: NavigateToOptions<Record<string, unknown>> = {}) {
     settings.setActiveTab(tab);
     if (component) return $navigateTo(component, { frame: `tab-${tab}`, ...options });
   }
