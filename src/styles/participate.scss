@@ -245,3 +245,106 @@
   border-radius: t.$radius-md;
   padding: t.$spacing-s t.$spacing-sm;
 }
+
+/* Backstage & join flow (M7) */
+.diary-card {
+  background-color: t.$color-grey-200;
+  border-radius: t.$radius-md;
+  padding: t.$spacing-sm;
+}
+.diary-card__title {
+  font-family: ty.$ff-serif-bold;
+  font-size: 17;
+  line-height: 5;
+  color: t.$color-grey-700;
+  margin-top: 2;
+}
+.diary-card__teaser {
+  font-family: ty.$ff-sans;
+  font-size: 13;
+  line-height: 5;
+  color: t.$color-grey-600;
+  margin-top: t.$spacing-xs;
+}
+.diary-card__cta {
+  font-family: ty.$ff-sans-bold;
+  font-size: 13;
+  color: t.$color-grey-700;
+}
+.event-date {
+  width: 52;
+  background-color: t.$color-grey-100;
+  border-width: 1;
+  border-color: t.$color-grey-300;
+  border-radius: t.$radius-s;
+  padding: t.$spacing-xs;
+}
+.event-date__day {
+  font-family: ty.$ff-sans-bold;
+  font-size: 20;
+  color: t.$color-grey-700;
+  text-align: center;
+}
+.event-date__month {
+  font-family: ty.$ff-sans;
+  font-size: 12;
+  color: t.$color-grey-600;
+  text-align: center;
+}
+.verlag-card {
+  background-color: t.$color-grey-200;
+  border-width: 1;
+  border-color: t.$color-alternative;
+  border-radius: t.$radius-md;
+  padding: t.$spacing-sm;
+}
+.verlag-card__code {
+  font-family: ty.$ff-sans-bold;
+  font-size: 15;
+  color: t.$color-grey-700;
+  background-color: t.$color-alternative;
+  padding: t.$spacing-xs t.$spacing-s;
+  border-radius: t.$radius-s;
+  horizontal-align: left;
+}
+.join-stat__number {
+  font-family: ty.$ff-sans-bold;
+  font-size: 26;
+  color: t.$color-emphasis;
+  width: 110;
+}
+.join-stat__label {
+  font-family: ty.$ff-sans;
+  font-size: 14;
+  line-height: 5;
+  color: t.$color-grey-700;
+  vertical-align: center;
+}
+.join-amount {
+  font-family: ty.$ff-sans-bold;
+  font-size: 40;
+  color: t.$color-grey-700;
+  margin-top: 12;
+}
+.join-slider {
+  color: t.$color-emphasis;
+  background-color: t.$color-grey-300;
+  margin-top: 12;
+}
+.join-interval {
+  border-width: 1;
+  border-color: t.$color-grey-300;
+  border-radius: t.$radius-s;
+}
+.join-interval__option {
+  font-family: ty.$ff-sans-semibold;
+  font-size: 15;
+  color: t.$color-grey-600;
+  text-align: center;
+  padding: t.$spacing-s;
+}
+.join-interval__option--active {
+  background-color: t.$color-grey-700;
+  color: t.$color-grey-100;
+}
+.pb-l { padding-bottom: 36; }
