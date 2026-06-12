@@ -9,7 +9,7 @@
       <ScrollView row="1">
         <StackLayout class="px-sm py-m">
           <Label text="CROWDNEWSROOM" class="callout-kicker" />
-          <Label :text="callout.title" class="ty-headline-xl text-grey-700 mt-xs" textWrap="true" />
+          <Label :text="callout.title" class="ty-headline-xl text-grey-700 font-serif-bold mt-xs" textWrap="true" />
           <GridLayout columns="auto, auto" class="mt-s">
             <Label col="0" :text="icons.users" class="lucide callout-count-icon" />
             <Label col="1" :text="`${formatNumberDe(totalCount)} Beiträge bisher`" class="callout-count" />

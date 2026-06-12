@@ -58,18 +58,22 @@
   margin-top: 2;
 }
 
-/* Early access (yellow = club) */
+/* Early access (yellow = club) — subtle tint + yellow border (design draft);
+   full yellow stays reserved for the club card in the profile */
 .early-access-card {
-  background-color: t.$color-alternative;
+  background-color: rgba(253, 225, 98, 0.22);
+  border-width: 1;
+  border-color: t.$color-alternative;
   border-radius: t.$radius-md;
   margin: 0 t.$spacing-sm;
   padding: t.$spacing-sm;
 }
 .early-access-card__when {
-  font-family: ty.$ff-sans-semibold;
-  font-size: 12;
-  color: t.$color-grey-700;
-  text-align: right;
+  font-family: ty.$ff-sans;
+  font-size: 13;
+  line-height: 4;
+  color: t.$color-grey-600;
+  margin-top: t.$spacing-xs;
 }
 .early-access-card__title {
   font-family: ty.$ff-serif-bold;
@@ -87,11 +91,8 @@
 }
 .early-access-card__cta {
   font-family: ty.$ff-sans-bold;
-  font-size: 13;
+  font-size: 14;
   color: t.$color-grey-700;
-}
-.early-access-card__cta--member {
-  color: t.$color-emphasis;
 }
 
 /* Fact-check rail (horizontal CollectionView, fixed height is mandatory!) */
@@ -100,7 +101,9 @@
 }
 .factcheck-rail-card {
   width: 240;
-  background-color: t.$color-grey-200;
+  background-color: t.$color-grey-100;
+  border-width: 1;
+  border-color: t.$color-grey-300;
   border-radius: t.$radius-md;
   margin: 0 t.$spacing-xs 0 t.$spacing-sm;
   padding: t.$spacing-s;
@@ -134,7 +137,7 @@
   color: t.$color-alternative;
 }
 .participate-card__title {
-  font-family: ty.$ff-sans-bold;
+  font-family: ty.$ff-serif-bold;
   font-size: 18;
   line-height: 5;
   color: t.$color-grey-100;
@@ -263,10 +266,10 @@
   padding: t.$spacing-m t.$spacing-sm t.$spacing-l t.$spacing-sm;
 }
 .impact-footer__line {
-  font-family: ty.$ff-sans;
-  font-size: 14;
-  line-height: 5;
-  color: t.$color-grey-600;
+  font-family: ty.$ff-serif;
+  font-size: 15;
+  line-height: 6;
+  color: t.$color-grey-700;
   text-align: center;
 }
 .impact-footer__cta {
@@ -313,7 +316,13 @@
   font-size: 17;
   line-height: 8;
   color: t.$color-grey-100;
-  margin-top: t.$spacing-s;
+}
+.onboarding__bullet {
+  /* Yellow bullet dots on the red mission screen (design draft) */
+  color: t.$color-alternative;
+  font-size: 10;
+  margin-right: t.$spacing-s;
+  vertical-align: center;
 }
 .btn-onboarding-light {
   font-family: ty.$ff-sans-bold;

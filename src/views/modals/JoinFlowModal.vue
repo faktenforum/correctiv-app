@@ -44,7 +44,16 @@
       <ScrollView v-if="step === 1" row="2">
         <StackLayout class="px-m py-m">
           <Label text="Ihr Beitrag" class="ty-headline-xl text-grey-700" textWrap="true" />
-          <Label :text="`${amount} € / ${interval === 'monatlich' ? 'Monat' : 'Jahr'}`" class="join-amount" />
+          <!-- Giant serif amount, centered (design draft) -->
+          <GridLayout columns="auto, auto" horizontalAlignment="center" class="mt-s">
+            <Label col="0" :text="`${displayAmount} €`" class="join-amount" />
+            <Label
+              col="1"
+              :text="interval === 'monatlich' ? 'im Monat' : 'im Jahr'"
+              class="join-amount__interval"
+              verticalAlignment="bottom"
+            />
+          </GridLayout>
           <Slider v-model="amount" minValue="5" maxValue="50" class="join-slider" />
           <GridLayout columns="auto, *, auto" class="mt-xs">
             <Label col="0" text="5 €" class="ty-text-s text-grey-500" />
@@ -68,14 +77,18 @@
             />
           </GridLayout>
 
-          <!-- Perk threshold — invitation framing, no tiers -->
+          <!-- Perk thresholds — invitation framing, no tiers; lines light up when reached -->
           <StackLayout class="card mt-m">
             <Label
-              :text="amount >= 15
-                ? '✓ Ab 15 € erhalten Sie das CORRECTIV-Bookzine viermal im Jahr per Post.'
-                : 'Ab 15 € monatlich: das CORRECTIV-Bookzine viermal im Jahr per Post.'"
-              class="ty-text-s mt-xs"
-              :class="amount >= 15 ? 'callout-submitted' : 'text-grey-600'"
+              :text="`${displayAmount >= 15 ? '✓ ' : ''}Ab 15 €: das CORRECTIV-Bookzine viermal im Jahr per Post`"
+              class="perk-line"
+              :class="{ 'perk-line--active': displayAmount >= 15 }"
+              textWrap="true"
+            />
+            <Label
+              :text="`${displayAmount >= 30 ? '✓ ' : ''}Ab 30 €: signierte Neuerscheinung des CORRECTIV Verlags`"
+              class="perk-line mt-xs"
+              :class="{ 'perk-line--active': displayAmount >= 30 }"
               textWrap="true"
             />
           </StackLayout>
@@ -101,13 +114,21 @@
         </StackLayout>
       </ScrollView>
 
-      <!-- Step 4: welcome -->
+      <!-- Step 4: welcome — yellow check circle + serif headline (design draft) -->
       <StackLayout v-if="step === 3" row="2" verticalAlignment="center" class="px-m">
-        <ClubBadge text="CLUB" />
-        <Label text="Willkommen im Club!" class="ty-headline-xl text-grey-700 font-serif-bold mt-s" textWrap="true" />
+        <GridLayout class="join-success__circle" horizontalAlignment="center">
+          <Label text="✓" class="join-success__check" />
+        </GridLayout>
         <Label
-          :text="`Sie unterstützen CORRECTIV ab jetzt mit ${amount} € ${interval === 'monatlich' ? 'im Monat' : 'im Jahr'}. Das Backstage steht Ihnen offen — Recherchen lesen Sie ab sofort früher.`"
+          text="Willkommen im Club."
+          class="ty-headline-xl text-grey-700 font-serif-bold mt-m"
+          textAlignment="center"
+          textWrap="true"
+        />
+        <Label
+          :text="`Sie unterstützen CORRECTIV ab jetzt mit ${displayAmount} € ${interval === 'monatlich' ? 'im Monat' : 'im Jahr'}. Ab sofort lesen Sie Recherchen früher, hören Bonusfolgen und sehen hinter die Kulissen.`"
           class="ty-text-m text-grey-600 mt-s"
+          textAlignment="center"
           textWrap="true"
         />
       </StackLayout>
@@ -115,9 +136,9 @@
       <!-- Footer actions -->
       <StackLayout row="3" class="px-sm py-s hairline-top">
         <Button v-if="step === 0" text="Weiter" class="btn-primary" @tap="step = 1" />
-        <Button v-else-if="step === 1" :text="`Mit ${amount} € unterstützen`" class="btn-primary" @tap="step = 2" />
+        <Button v-else-if="step === 1" :text="`Mit ${displayAmount} € unterstützen`" class="btn-primary" @tap="step = 2" />
         <Button v-else-if="step === 2" text="Jetzt Mitglied werden" class="btn-primary" :isEnabled="dataValid" @tap="join" />
-        <Button v-else text="Ins Backstage" class="btn-primary" @tap="finishToBackstage" />
+        <Button v-else text="Ins Backstage" class="btn-dark" @tap="finishToBackstage" />
         <Button v-if="step < 3" text="Erstmal umsehen" class="btn-quiet mt-xs" @tap="$closeModal()" />
       </StackLayout>
     </GridLayout>
@@ -128,7 +149,6 @@
 import { ref, computed } from 'nativescript-vue';
 import { $closeModal } from 'nativescript-vue';
 import { icons } from '../../ui/icons';
-import ClubBadge from '../../components/ui/ClubBadge.vue';
 import BackstagePage from '../backstage/BackstagePage.vue';
 import { useMembershipStore } from '../../stores/membership';
 import { useNavigation } from '../../composables/useNavigation';
@@ -141,6 +161,9 @@ const amount = ref(10);
 const interval = ref<'monatlich' | 'jährlich'>('monatlich');
 const name = ref('');
 const email = ref('');
+
+// Slider values are floats while dragging — display and book whole euros
+const displayAmount = computed(() => Math.round(amount.value));
 
 // Mock data step: any non-empty values suffice in the prototype
 const dataValid = computed(() => name.value.trim().length > 1 && email.value.includes('@'));

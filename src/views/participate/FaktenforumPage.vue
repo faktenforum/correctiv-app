@@ -21,7 +21,7 @@
             @tap="openClaim(claim)"
           >
             <GridLayout columns="auto, *">
-              <Label col="0" :text="statusLabel(claim).text" class="status-tag" :class="statusLabel(claim).cls" />
+              <Label col="0" :text="claimStatusTag(claim).text" class="status-tag" :class="claimStatusTag(claim).cls" />
             </GridLayout>
             <Label :text="`„${claim.quote}“`" class="claim-card__quote" textWrap="true" />
             <Label :text="claim.shortId + ' · eingereicht ' + formatDateShortDe(claim.submittedAt)" class="claim-card__meta" />
@@ -34,29 +34,12 @@
 
 <script setup lang="ts">
 import { icons } from '../../ui/icons';
-import { claims, type Claim } from '../../data/claims';
+import { claims, claimStatusTag, type Claim } from '../../data/claims';
 import ClaimDetailPage from './ClaimDetailPage.vue';
 import { useNavigation } from '../../composables/useNavigation';
 import { formatDateShortDe } from '../../lib/format';
 
 const { navigate, goBack } = useNavigation();
-
-function statusLabel(claim: Claim): { text: string; cls: string } {
-  if (claim.status === 'checked') {
-    return { text: claim.rating === 'richtig' ? 'Geprüft: Richtig' : `Geprüft: ${ratingText(claim)}`, cls: 'status-tag--checked' };
-  }
-  if (claim.status === 'checking') return { text: 'In Prüfung', cls: 'status-tag--checking' };
-  return { text: 'Eingereicht', cls: 'status-tag--submitted' };
-}
-
-function ratingText(claim: Claim): string {
-  switch (claim.rating) {
-    case 'falsch': return 'Falsch';
-    case 'fehlender-kontext': return 'Fehlender Kontext';
-    case 'unbelegt': return 'Unbelegt';
-    default: return 'Richtig';
-  }
-}
 
 function openClaim(claim: Claim) {
   navigate(ClaimDetailPage, { props: { claim } });

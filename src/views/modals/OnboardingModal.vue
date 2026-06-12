@@ -30,9 +30,20 @@
           textWrap="true"
         />
         <StackLayout class="mt-l">
-          <Label text="→ Gemeinnützig und unabhängig" class="onboarding__fact" textWrap="true" />
-          <Label text="→ Finanziert durch Spenden" class="onboarding__fact" textWrap="true" />
-          <Label text="→ Journalismus ohne Paywall — für alle" class="onboarding__fact" textWrap="true" />
+          <!-- Yellow bullet dots on red (design draft). Static rows —
+               v-for over layout containers renders unreliably in nativescript-vue 3. -->
+          <GridLayout rows="auto" columns="auto, *" class="mt-s">
+            <Label col="0" text="●" class="onboarding__bullet" />
+            <Label col="1" text="Gemeinnützig — uns gehört niemand" class="onboarding__fact" textWrap="true" />
+          </GridLayout>
+          <GridLayout rows="auto" columns="auto, *" class="mt-s">
+            <Label col="0" text="●" class="onboarding__bullet" />
+            <Label col="1" text="Spendenfinanziert — von Tausenden getragen" class="onboarding__fact" textWrap="true" />
+          </GridLayout>
+          <GridLayout rows="auto" columns="auto, *" class="mt-s">
+            <Label col="0" text="●" class="onboarding__bullet" />
+            <Label col="1" text="Ohne Paywall — Journalismus für alle" class="onboarding__fact" textWrap="true" />
+          </GridLayout>
         </StackLayout>
       </StackLayout>
 
@@ -83,7 +94,7 @@
 
       <!-- Step 4: club soft pitch (no dark pattern: two equal paths) -->
       <StackLayout v-if="step === 3" row="1" verticalAlignment="center" class="px-m">
-        <Label text="CORRECTIV gehört niemandem. Außer allen." class="ty-headline-xl text-grey-700" textWrap="true" />
+        <Label text="CORRECTIV gehört niemandem. Außer allen." class="ty-headline-xl text-grey-700 font-serif-bold" textWrap="true" />
         <Label
           text="Unser Journalismus bleibt frei — ermöglicht von Menschen, die ihn unterstützen. Der Club ist Nähe, keine Paywall: Recherchen früher lesen, Backstage-Einblicke, Bonusfolgen."
           class="ty-text-m text-grey-600 mt-s"

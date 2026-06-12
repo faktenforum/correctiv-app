@@ -1,10 +1,12 @@
 <template>
   <!-- nativescript-vue 3 does not export withModifiers — do not use @tap.stop modifiers -->
-  <GridLayout columns="auto, *, auto, auto" class="mini-player hairline-top">
-    <!-- Artwork or live dot -->
-    <GridLayout col="0" class="mini-player__artwork" verticalAlignment="center" @tap="openFullPlayer">
-      <Label v-if="audioStore.isLive" text="●" class="mini-player__live-dot" />
-      <Label v-else :text="icons.headphones" class="lucide mini-player__icon" />
+  <GridLayout columns="auto, *, auto" class="mini-player hairline-top">
+    <!-- Round red play/pause button (design draft) -->
+    <GridLayout col="0" class="mini-player__button" verticalAlignment="center" @tap="audioStore.togglePlay()">
+      <Label
+        :text="audioStore.status === 'playing' ? icons.pause : icons.play"
+        class="lucide mini-player__button-icon"
+      />
     </GridLayout>
 
     <StackLayout col="1" verticalAlignment="center" class="mini-player__text" @tap="openFullPlayer">
@@ -16,13 +18,7 @@
       />
     </StackLayout>
 
-    <Label
-      col="2"
-      :text="audioStore.status === 'playing' ? icons.pause : icons.play"
-      class="lucide mini-player__control"
-      @tap="audioStore.togglePlay()"
-    />
-    <Label col="3" :text="icons.x" class="lucide mini-player__control" @tap="audioStore.stop()" />
+    <Label col="2" :text="icons.x" class="lucide mini-player__control" @tap="audioStore.stop()" />
   </GridLayout>
 </template>
 

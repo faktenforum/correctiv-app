@@ -24,6 +24,14 @@ Page {
   color: t.$color-grey-700;
 }
 
+/* Current date next to the wordmark on Home (design draft) */
+.home-date {
+  font-family: 'SourceSans3-Regular', 'Source Sans 3';
+  font-size: 13;
+  color: t.$color-grey-600;
+  text-align: right;
+}
+
 .back-icon {
   font-family: 'lucide';
   font-size: 22;

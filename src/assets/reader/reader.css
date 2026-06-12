@@ -213,7 +213,8 @@ h1 {
   text-align: center;
 }
 .support-line {
-  font-family: var(--sans);
+  /* Serif per the design draft — reads like an editorial note, not an ad */
+  font-family: var(--serif);
   font-size: 0.9375rem;
   line-height: 1.5;
   color: var(--grey-700);

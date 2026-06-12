@@ -5,6 +5,15 @@ const MONTHS = [
   'Juli', 'August', 'September', 'Oktober', 'November', 'Dezember',
 ];
 
+const WEEKDAYS = ['Sonntag', 'Montag', 'Dienstag', 'Mittwoch', 'Donnerstag', 'Freitag', 'Samstag'];
+
+/** "Freitag, 12. Juni 2026" — home header date per the design draft */
+export function formatDateWeekdayDe(iso: string | Date): string {
+  const d = typeof iso === 'string' ? new Date(iso) : iso;
+  if (Number.isNaN(d.getTime())) return '';
+  return `${WEEKDAYS[d.getDay()]}, ${formatDateDe(d)}`;
+}
+
 export function formatDateDe(iso: string | Date): string {
   const d = typeof iso === 'string' ? new Date(iso) : iso;
   if (Number.isNaN(d.getTime())) return '';

@@ -1,16 +1,15 @@
 <template>
   <Page actionBarHidden="true" @loaded="onLoaded">
     <GridLayout rows="auto, *" class="bg-grey-100">
-      <StackLayout row="0" class="px-sm py-s hairline-bottom">
-        <Label text="CORRECTIV" class="brand" />
-      </StackLayout>
+      <GridLayout row="0" columns="auto, *" class="px-sm py-s hairline-bottom">
+        <Label col="0" text="CORRECTIV" class="brand" />
+        <Label col="1" :text="todayLabel" class="home-date" verticalAlignment="center" />
+      </GridLayout>
 
       <CollectionView row="1" :items="modules" :itemTemplateSelector="templateSelector">
-        <!-- 1. Hero: top investigation (LIVE) -->
+        <!-- 1. Hero: top investigation (LIVE) — flat, directly below the header -->
         <template #hero="{ item }">
-          <StackLayout class="pt-sm">
-            <ArticleCard :item="item.article" variant="hero" badge="Recherche" @open="openArticle" />
-          </StackLayout>
+          <ArticleCard :item="item.article" variant="hero" badge="Recherche" @open="openArticle" />
         </template>
 
         <!-- 2. Spotlight briefing (SAMPLE) -->
@@ -143,7 +142,7 @@ import { useNavigation } from '../../composables/useNavigation';
 import { spotlightIssues } from '../../data/spotlight';
 import { earlyAccess, diaries, bonusMedia } from '../../data/backstage';
 import { callouts } from '../../data/callouts';
-import { formatNumberDe } from '../../lib/format';
+import { formatNumberDe, formatDateWeekdayDe } from '../../lib/format';
 
 interface HomeModule {
   id: string;
@@ -155,6 +154,8 @@ const feeds = useFeedsStore();
 const media = useMediaStore();
 const interestsStore = useInterestsStore();
 const { navigate, navigateInTab } = useNavigation();
+
+const todayLabel = formatDateWeekdayDe(new Date());
 
 const modules = computed((): HomeModule[] => {
   const recherchen = feeds.byKey.recherchen;

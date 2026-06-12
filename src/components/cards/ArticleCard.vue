@@ -1,17 +1,18 @@
 <template>
   <!-- Variants: hero (large image on top), standard (image on the right), compact (text only) -->
-  <GridLayout v-if="variant === 'hero'" rows="auto, auto" class="article-card article-card--hero" @tap="$emit('open', item)">
-    <GridLayout row="0" class="article-card__image-wrap">
+  <!-- Hero: flat and edge-to-edge with red text kicker (design draft) -->
+  <StackLayout v-if="variant === 'hero'" class="article-card article-card--hero" @tap="$emit('open', item)">
+    <GridLayout class="article-card__image-wrap">
       <Image v-if="item.imageUrl" :src="item.imageUrl" stretch="aspectFill" class="article-card__hero-image" />
       <Label v-else text="" class="article-card__image-placeholder" />
     </GridLayout>
-    <StackLayout row="1" class="article-card__body">
-      <ProjectBadge v-if="badge" :text="badge" />
+    <StackLayout class="article-card__body hairline-bottom">
+      <Label v-if="badge" :text="badge" class="kicker" />
       <Label :text="item.title" class="article-card__hero-title" textWrap="true" />
       <Label v-if="item.teaser" :text="item.teaser" class="article-card__teaser" textWrap="true" :maxLines="3" />
       <Label :text="meta" class="article-card__meta" />
     </StackLayout>
-  </GridLayout>
+  </StackLayout>
 
   <GridLayout v-else-if="variant === 'standard'" columns="*, auto" class="article-card hairline-bottom" @tap="$emit('open', item)">
     <StackLayout col="0" class="article-card__body--standard">

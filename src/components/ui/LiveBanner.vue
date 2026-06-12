@@ -1,16 +1,17 @@
 <template>
-  <GridLayout columns="auto, *, auto" class="live-banner" @tap="onTap">
-    <Label col="0" text="●" class="live-banner__dot" verticalAlignment="center" />
+  <GridLayout columns="auto, *" class="live-banner" @tap="onTap">
+    <!-- Round red play/pause button (design draft) -->
+    <GridLayout col="0" class="live-banner__button" verticalAlignment="center">
+      <Label :text="isThisPlaying ? icons.pause : icons.play" class="lucide live-banner__button-icon" />
+    </GridLayout>
     <StackLayout col="1" verticalAlignment="center" class="live-banner__text">
-      <Label text="LIVE — Salon5 Radio" class="live-banner__title" />
-      <Label text="24/7 aus Bottrop" class="live-banner__subtitle" />
+      <GridLayout columns="auto, auto">
+        <Label col="0" text="●" class="live-banner__dot" verticalAlignment="center" />
+        <Label col="1" text="LIVE" class="live-banner__live-label" verticalAlignment="center" />
+      </GridLayout>
+      <Label text="Salon5 Radio" class="live-banner__title" />
+      <Label :text="subtitle" class="live-banner__subtitle" textWrap="true" :maxLines="2" />
     </StackLayout>
-    <Label
-      col="2"
-      :text="isThisPlaying ? icons.pause : icons.play"
-      class="lucide live-banner__play"
-      verticalAlignment="center"
-    />
   </GridLayout>
 </template>
 
@@ -18,6 +19,8 @@
 import { computed } from 'nativescript-vue';
 import { icons } from '../../ui/icons';
 import { useAudioStore } from '../../stores/audio';
+
+withDefaults(defineProps<{ subtitle?: string }>(), { subtitle: '24/7 aus Bottrop' });
 
 const audioStore = useAudioStore();
 const isThisPlaying = computed(() => audioStore.isLive && audioStore.status === 'playing');

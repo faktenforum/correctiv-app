@@ -1,6 +1,6 @@
 import { createApp, registerElement } from 'nativescript-vue';
 import { createPinia } from 'pinia';
-import { Application, Frame } from '@nativescript/core';
+import { Application, Frame, Utils } from '@nativescript/core';
 import type { AndroidActivityBackPressedEventData } from '@nativescript/core/application/application-interfaces';
 import CollectionViewPlugin from '@nativescript-community/ui-collectionview/vue3';
 import { AWebView } from '@nativescript-community/ui-webview';
@@ -34,6 +34,18 @@ persist(useInterestsStore(pinia), ['selected']);
 persist(useParticipationStore(pinia), ['submissions']);
 
 if (__ANDROID__) {
+  // The native image fetcher (org.nativescript.widgets) caches remote images in
+  // <externalCacheDir>/http but never creates that directory — on fresh devices
+  // every remote Image fails with ENOENT. Create it once at startup.
+  Application.on(Application.launchEvent, () => {
+    try {
+      const extCache = Utils.android.getApplicationContext()?.getExternalCacheDir();
+      if (extCache) new java.io.File(extCache, 'http').mkdirs();
+    } catch (err) {
+      console.error('Could not prepare the external image cache dir:', err);
+    }
+  });
+
   // With five parallel frames the hardware back button would otherwise pop
   // arbitrary frames: first go back within the active tab, then to the home tab, then default.
   Application.android.on('activityBackPressed', (args: AndroidActivityBackPressedEventData) => {

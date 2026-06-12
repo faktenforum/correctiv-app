@@ -8,6 +8,7 @@
       <Label col="0" :text="icons.users" class="lucide participate-card__count-icon" />
       <Label col="1" :text="countLabel" class="participate-card__count" />
     </GridLayout>
+    <Button text="Jetzt mitmachen" class="btn-primary btn-compact mt-s" horizontalAlignment="left" @tap="$emit('open')" />
   </StackLayout>
 </template>
 

@@ -11,7 +11,7 @@
 
           <!-- Live radio -->
           <StackLayout class="px-sm pt-s">
-            <LiveBanner />
+            <LiveBanner subtitle="24/7 aus Bottrop — von Jugendlichen für Jugendliche" />
           </StackLayout>
 
           <!-- Podcasts -->

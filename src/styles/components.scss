@@ -50,6 +50,23 @@
   android-elevation: 0;
   android-dynamic-elevation-offset: 0;
 }
+/* Dark ink button — member actions like "Jetzt lesen" / "Ins Backstage" (design draft) */
+.btn-dark {
+  font-family: ty.$ff-sans-bold;
+  font-size: 14;
+  background-color: t.$color-grey-700;
+  color: t.$color-grey-100;
+  border-radius: t.$radius-s;
+  padding: t.$spacing-s t.$spacing-sm;
+  text-transform: none;
+  android-elevation: 0;
+  android-dynamic-elevation-offset: 0;
+}
+/* Compact modifier for in-card CTAs */
+.btn-compact {
+  font-size: 14;
+  padding: t.$spacing-xs t.$spacing-sm;
+}
 
 // Project badge (red = journalism) / club badge (yellow = club)
 .badge {

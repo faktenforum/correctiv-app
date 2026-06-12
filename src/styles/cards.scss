@@ -66,32 +66,39 @@
   background-color: t.$color-grey-100;
 }
 
+/* Hero is flat and edge-to-edge (design draft): full-bleed image, red text
+   kicker, serif headline, hairline below — no card chrome. */
 .article-card--hero {
-  background-color: t.$color-grey-200;
-  border-radius: t.$radius-md;
-  margin: 0 t.$spacing-sm t.$spacing-m t.$spacing-sm;
+  background-color: t.$color-grey-100;
 }
 .article-card__image-wrap {
-  height: 200;
-  border-radius: t.$radius-md t.$radius-md 0 0;
+  height: 216;
 }
 .article-card__hero-image {
-  height: 200;
-  border-radius: t.$radius-md t.$radius-md 0 0;
+  height: 216;
 }
 .article-card__image-placeholder {
   background-color: t.$color-grey-300;
-  height: 200;
+  height: 216;
 }
 .article-card__body {
-  padding: t.$spacing-s t.$spacing-sm t.$spacing-sm t.$spacing-sm;
+  padding: t.$spacing-s t.$spacing-sm t.$spacing-m t.$spacing-sm;
 }
 .article-card__hero-title {
   font-family: ty.$ff-serif-bold;
-  font-size: 22;
+  font-size: 24;
   line-height: 6;
   color: t.$color-grey-700;
   margin-top: t.$spacing-xs;
+}
+
+/* Red text kicker (caps, no background) — journalism red, design draft */
+.kicker {
+  font-family: ty.$ff-sans-bold;
+  font-size: 11;
+  letter-spacing: 0.11;
+  text-transform: uppercase;
+  color: t.$color-emphasis;
 }
 .article-card__teaser {
   font-family: ty.$ff-sans;

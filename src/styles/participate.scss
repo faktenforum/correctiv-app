@@ -121,6 +121,8 @@
   color: t.$color-grey-500;
   margin-top: t.$spacing-xs;
 }
+/* Status tags (design draft) — no yellow here, yellow is reserved for the club:
+   checked verdict = red, positive verdict = green, in review = outlined, submitted = grey */
 .status-tag {
   font-family: ty.$ff-sans-bold;
   font-size: 11;
@@ -128,17 +130,55 @@
   border-radius: t.$radius-xs;
 }
 .status-tag--checked {
-  background-color: t.$color-grey-700;
+  background-color: t.$color-emphasis;
+  color: t.$color-grey-100;
+}
+.status-tag--checked-true {
+  background-color: #2e7d4f;
   color: t.$color-grey-100;
 }
 .status-tag--checking {
-  background-color: t.$color-alternative;
+  background-color: t.$color-grey-100;
   color: t.$color-grey-700;
+  border-width: 1;
+  border-color: t.$color-grey-400;
 }
 .status-tag--submitted {
-  background-color: t.$color-grey-300;
-  color: t.$color-grey-700;
+  background-color: t.$color-grey-250;
+  color: t.$color-grey-600;
 }
+
+/* Claim review progress: Eingereicht → In Prüfung → Geprüft (design draft) */
+.claim-progress {
+  margin-top: t.$spacing-sm;
+}
+.claim-progress__dot {
+  width: 12;
+  height: 12;
+  border-radius: 6;
+  background-color: t.$color-grey-300;
+  horizontal-align: center;
+}
+.claim-progress__dot--done {
+  background-color: t.$color-grey-700;
+}
+.claim-progress__dot--final {
+  background-color: t.$color-emphasis;
+}
+.claim-progress__line {
+  height: 1;
+  background-color: t.$color-grey-300;
+  margin-top: 6;
+  vertical-align: top;
+}
+.claim-progress__label {
+  font-family: ty.$ff-sans;
+  font-size: 11;
+  color: t.$color-grey-600;
+  text-align: center;
+  margin-top: t.$spacing-xs;
+}
+
 .claim-source__dot {
   font-size: 14;
   color: t.$color-grey-700;
@@ -180,7 +220,7 @@
   padding: t.$spacing-sm;
 }
 .callout-list-card__title {
-  font-family: ty.$ff-sans-bold;
+  font-family: ty.$ff-serif-bold;
   font-size: 17;
   line-height: 5;
   color: t.$color-grey-700;
@@ -320,11 +360,40 @@
   color: t.$color-grey-700;
   vertical-align: center;
 }
+/* Giant serif amount, centered (design draft) */
 .join-amount {
-  font-family: ty.$ff-sans-bold;
-  font-size: 40;
+  font-family: ty.$ff-serif-bold;
+  font-size: 44;
   color: t.$color-grey-700;
-  margin-top: 12;
+}
+.join-amount__interval {
+  font-family: ty.$ff-sans;
+  font-size: 15;
+  color: t.$color-grey-600;
+  margin-left: t.$spacing-xs;
+  margin-bottom: t.$spacing-xs;
+}
+.perk-line {
+  font-family: ty.$ff-sans;
+  font-size: 13;
+  line-height: 4;
+  color: t.$color-grey-500;
+}
+.perk-line--active {
+  font-family: ty.$ff-sans-bold;
+  color: t.$color-grey-700;
+}
+.join-success__circle {
+  width: 64;
+  height: 64;
+  border-radius: 32;
+  background-color: t.$color-alternative;
+}
+.join-success__check {
+  font-size: 30;
+  color: t.$color-grey-700;
+  horizontal-align: center;
+  vertical-align: center;
 }
 .join-slider {
   color: t.$color-emphasis;

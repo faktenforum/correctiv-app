@@ -5,14 +5,18 @@
     <StackLayout row="1" class="sheet" @tap="() => {}">
       <Label text="" class="sheet__handle" />
       <ClubBadge />
-      <Label text="Ganze Folge hören?" class="ty-headline-l text-grey-700 mt-s" textWrap="true" />
       <Label
-        text="Die ersten 60 Sekunden gehören allen. Die ganze Folge ist ein Dankeschön an die Menschen, die CORRECTIV möglich machen — werden Sie Teil des Clubs."
+        text="Ganze Folge hören? Werden Sie Teil des Clubs."
+        class="ty-headline-l text-grey-700 font-serif-bold mt-s"
+        textWrap="true"
+      />
+      <Label
+        text="Die ersten 60 Sekunden gehören allen. Der Rest ist unser Dankeschön an die Menschen, die CORRECTIV möglich machen."
         class="ty-text-m text-grey-600 mt-xs"
         textWrap="true"
       />
       <Button text="Unterstützer:in werden" class="btn-primary mt-m" @tap="join" />
-      <Button text="Später vielleicht" class="btn-secondary mt-s mb-s" @tap="dismiss" />
+      <Button text="Später" class="btn-secondary mt-s mb-s" @tap="dismiss" />
     </StackLayout>
   </GridLayout>
 </template>

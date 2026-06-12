@@ -121,3 +121,20 @@ export const claimsResponse = {
 };
 
 export const claims = claimsResponse.data.claims;
+
+const RATING_TEXT: Record<NonNullable<Claim['rating']>, string> = {
+  'falsch': 'Falsch',
+  'fehlender-kontext': 'Fehlender Kontext',
+  'richtig': 'Richtig',
+  'unbelegt': 'Unbelegt',
+};
+
+/** Status tag for claim lists and the claim detail page (shared UI helper). */
+export function claimStatusTag(claim: Claim): { text: string; cls: string } {
+  if (claim.status === 'checked') {
+    const text = `Geprüft: ${claim.rating ? RATING_TEXT[claim.rating] : 'Abgeschlossen'}`;
+    return { text, cls: claim.rating === 'richtig' ? 'status-tag--checked-true' : 'status-tag--checked' };
+  }
+  if (claim.status === 'checking') return { text: 'In Prüfung', cls: 'status-tag--checking' };
+  return { text: 'Eingereicht', cls: 'status-tag--submitted' };
+}

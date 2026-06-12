@@ -7,8 +7,29 @@
       </GridLayout>
       <ScrollView row="1">
         <StackLayout class="px-sm py-m">
-          <Label :text="`„${claim.quote}“`" class="ty-headline-m text-grey-700 font-serif" textWrap="true" />
+          <GridLayout columns="auto, *">
+            <Label col="0" :text="claimStatusTag(claim).text" class="status-tag" :class="claimStatusTag(claim).cls" />
+          </GridLayout>
+          <Label :text="`„${claim.quote}“`" class="ty-headline-m text-grey-700 font-serif-bold mt-s" textWrap="true" />
           <Label :text="claim.synopsis" class="ty-text-m text-grey-600 mt-s" textWrap="true" />
+
+          <!-- Review progress: Eingereicht → In Prüfung → Geprüft (design draft) -->
+          <GridLayout columns="*, *, *, *, *" class="claim-progress">
+            <StackLayout col="0">
+              <Label class="claim-progress__dot claim-progress__dot--done" />
+              <Label text="Eingereicht" class="claim-progress__label" />
+            </StackLayout>
+            <Label col="1" class="claim-progress__line" />
+            <StackLayout col="2">
+              <Label class="claim-progress__dot" :class="{ 'claim-progress__dot--done': stage >= 1 }" />
+              <Label text="In Prüfung" class="claim-progress__label" />
+            </StackLayout>
+            <Label col="3" class="claim-progress__line" />
+            <StackLayout col="4">
+              <Label class="claim-progress__dot" :class="{ 'claim-progress__dot--final': stage >= 2 }" />
+              <Label text="Geprüft" class="claim-progress__label" />
+            </StackLayout>
+          </GridLayout>
 
           <Label text="Quellenbewertung" class="ty-headline-xs text-grey-700 mt-m" />
           <StackLayout v-if="claim.sources.length === 0" class="card mt-s">
@@ -36,13 +57,16 @@
 </template>
 
 <script setup lang="ts">
+import { computed } from 'nativescript-vue';
 import { Utils } from '@nativescript/core';
 import { icons } from '../../ui/icons';
-import type { Claim, ClaimSource } from '../../data/claims';
+import { claimStatusTag, type Claim, type ClaimSource } from '../../data/claims';
 import { useNavigation } from '../../composables/useNavigation';
 
-defineProps<{ claim: Claim }>();
+const props = defineProps<{ claim: Claim }>();
 const { goBack } = useNavigation();
+
+const stage = computed(() => (props.claim.status === 'checked' ? 2 : props.claim.status === 'checking' ? 1 : 0));
 
 function credibilityDot(level: ClaimSource['credibility']): string {
   return level === 'hoch' ? '●' : level === 'mittel' ? '◐' : '○';

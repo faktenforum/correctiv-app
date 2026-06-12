@@ -31,21 +31,18 @@
   background-color: t.$color-grey-200;
   padding: t.$spacing-xs t.$spacing-sm;
 }
-.mini-player__artwork {
+/* Round red play/pause button (design draft) */
+.mini-player__button {
   width: 36;
   height: 36;
-  background-color: t.$color-grey-300;
-  border-radius: t.$radius-s;
+  border-radius: 18;
+  background-color: t.$color-emphasis;
 }
-.mini-player__live-dot {
-  color: t.$color-emphasis;
-  font-size: 14;
-  text-align: center;
-}
-.mini-player__icon {
-  color: t.$color-grey-600;
-  font-size: 18;
-  text-align: center;
+.mini-player__button-icon {
+  color: t.$color-grey-100;
+  font-size: 15;
+  horizontal-align: center;
+  vertical-align: center;
 }
 .mini-player__text {
   margin-left: t.$spacing-s;
@@ -70,16 +67,36 @@
   vertical-align: center;
 }
 
-/* Live banner (media library, home tile, Salon5 project page) */
+/* Live banner (media library, home tile, Salon5 project page) —
+   round red play button left, LIVE row + titles right (design draft) */
 .live-banner {
   background-color: t.$color-grey-700;
   border-radius: t.$radius-md;
   padding: t.$spacing-s t.$spacing-sm;
 }
+.live-banner__button {
+  width: 44;
+  height: 44;
+  border-radius: 22;
+  background-color: t.$color-emphasis;
+  margin-right: t.$spacing-s;
+}
+.live-banner__button-icon {
+  color: t.$color-grey-100;
+  font-size: 18;
+  horizontal-align: center;
+  vertical-align: center;
+}
 .live-banner__dot {
   color: t.$color-emphasis;
-  font-size: 16;
-  margin-right: t.$spacing-s;
+  font-size: 12;
+  margin-right: t.$spacing-xs;
+}
+.live-banner__live-label {
+  font-family: ty.$ff-sans-bold;
+  font-size: 11;
+  letter-spacing: 0.09;
+  color: t.$color-emphasis;
 }
 .live-banner__title {
   font-family: ty.$ff-sans-bold;
@@ -90,9 +107,4 @@
   font-family: ty.$ff-sans;
   font-size: 12;
   color: t.$color-grey-400;
-}
-.live-banner__play {
-  font-size: 22;
-  color: t.$color-grey-100;
-  padding: t.$spacing-xs;
 }
