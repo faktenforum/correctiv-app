@@ -22,3 +22,7 @@ export function formatTimeHm(sec: number): string {
   const s = Math.floor(sec % 60);
   return `${m}:${s.toString().padStart(2, '0')}`;
 }
+
+export function formatNumberDe(n: number): string {
+  return n.toString().replace(/\B(?=(\d{3})+(?!\d))/g, '.');
+}

@@ -1,0 +1,275 @@
+// Home-Module (M3) — Flächen, Hairlines, Gelb nur Club, Rot nur Journalismus
+@use './tokens.generated.scss' as t;
+@use './typography.scss' as ty;
+
+.section-header {
+  padding: t.$spacing-m t.$spacing-sm t.$spacing-s t.$spacing-sm;
+}
+.section-header__title {
+  font-family: ty.$ff-sans-bold;
+  font-size: 19;
+  color: t.$color-grey-700;
+}
+.section-header__action {
+  font-family: ty.$ff-sans-semibold;
+  font-size: 14;
+  color: t.$color-emphasis;
+}
+
+/* Spotlight-Briefing */
+.spotlight-card {
+  background-color: t.$color-grey-200;
+  border-radius: t.$radius-md;
+  margin: 0 t.$spacing-sm;
+  padding: t.$spacing-sm;
+}
+.spotlight-card__brand {
+  font-family: ty.$ff-sans-bold;
+  font-size: 11;
+  letter-spacing: 0.1;
+  color: t.$color-emphasis;
+}
+.spotlight-card__date {
+  font-family: ty.$ff-sans;
+  font-size: 12;
+  color: t.$color-grey-500;
+  text-align: right;
+}
+.spotlight-card__item {
+  padding: t.$spacing-s 0 0 0;
+}
+.spotlight-card__time {
+  font-family: ty.$ff-sans-semibold;
+  font-size: 12;
+  color: t.$color-grey-500;
+  margin-right: t.$spacing-s;
+  vertical-align: top;
+}
+.spotlight-card__title {
+  font-family: ty.$ff-sans-bold;
+  font-size: 15;
+  color: t.$color-grey-700;
+}
+.spotlight-card__text {
+  font-family: ty.$ff-sans;
+  font-size: 13;
+  line-height: 5;
+  color: t.$color-grey-600;
+  margin-top: 2;
+}
+
+/* Early-Access (Gelb = Club) */
+.early-access-card {
+  background-color: t.$color-alternative;
+  border-radius: t.$radius-md;
+  margin: 0 t.$spacing-sm;
+  padding: t.$spacing-sm;
+}
+.early-access-card__when {
+  font-family: ty.$ff-sans-semibold;
+  font-size: 12;
+  color: t.$color-grey-700;
+  text-align: right;
+}
+.early-access-card__title {
+  font-family: ty.$ff-serif-bold;
+  font-size: 18;
+  line-height: 5;
+  color: t.$color-grey-700;
+  margin-top: t.$spacing-xs;
+}
+.early-access-card__teaser {
+  font-family: ty.$ff-sans;
+  font-size: 13;
+  line-height: 5;
+  color: t.$color-grey-700;
+  margin-top: t.$spacing-xs;
+}
+.early-access-card__cta {
+  font-family: ty.$ff-sans-bold;
+  font-size: 13;
+  color: t.$color-grey-700;
+}
+.early-access-card__cta--member {
+  color: t.$color-emphasis;
+}
+
+/* Faktencheck-Rail (horizontale CollectionView, fixe Höhe Pflicht!) */
+.factcheck-rail {
+  height: 190;
+}
+.factcheck-rail-card {
+  width: 240;
+  background-color: t.$color-grey-200;
+  border-radius: t.$radius-md;
+  margin: 0 t.$spacing-xs 0 t.$spacing-sm;
+  padding: t.$spacing-s;
+}
+.factcheck-rail-card__title {
+  font-family: ty.$ff-sans-bold;
+  font-size: 14;
+  line-height: 4;
+  color: t.$color-grey-700;
+  margin-top: t.$spacing-xs;
+}
+.factcheck-rail-card__teaser {
+  font-family: ty.$ff-sans;
+  font-size: 12;
+  line-height: 4;
+  color: t.$color-grey-600;
+  margin-top: t.$spacing-xs;
+}
+
+/* Mitmach-Karte */
+.participate-card {
+  background-color: t.$color-grey-700;
+  border-radius: t.$radius-md;
+  margin: 0 t.$spacing-sm;
+  padding: t.$spacing-sm;
+}
+.participate-card__kicker {
+  font-family: ty.$ff-sans-bold;
+  font-size: 11;
+  letter-spacing: 0.1;
+  color: t.$color-alternative;
+}
+.participate-card__title {
+  font-family: ty.$ff-sans-bold;
+  font-size: 18;
+  line-height: 5;
+  color: t.$color-grey-100;
+  margin-top: t.$spacing-xs;
+}
+.participate-card__teaser {
+  font-family: ty.$ff-sans;
+  font-size: 13;
+  line-height: 5;
+  color: t.$color-grey-400;
+  margin-top: t.$spacing-xs;
+}
+.participate-card__count-icon {
+  font-size: 14;
+  color: t.$color-grey-400;
+  margin-right: t.$spacing-xs;
+}
+.participate-card__count {
+  font-family: ty.$ff-sans-semibold;
+  font-size: 13;
+  color: t.$color-grey-400;
+}
+
+/* Mediathek-Reihe */
+.media-row {
+  padding: 0 t.$spacing-xs;
+}
+.media-card {
+  width: 200;
+  margin: 0 t.$spacing-xs;
+}
+.media-card__thumb-wrap {
+  height: 112;
+  border-radius: t.$radius-md;
+}
+.media-card__thumb {
+  height: 112;
+  border-radius: t.$radius-md;
+}
+.media-card__thumb--placeholder {
+  background-color: t.$color-grey-300;
+}
+.media-card__play {
+  font-size: 30;
+  color: t.$color-grey-100;
+  horizontal-align: center;
+  vertical-align: center;
+}
+.media-card__duration {
+  font-family: ty.$ff-sans-semibold;
+  font-size: 11;
+  color: t.$color-grey-100;
+  background-color: rgba(51, 51, 51, 0.85);
+  border-radius: t.$radius-xs;
+  padding: 1 5;
+  horizontal-align: right;
+  vertical-align: bottom;
+  margin: 0 t.$spacing-xs t.$spacing-xs 0;
+}
+.media-card__title {
+  font-family: ty.$ff-sans-bold;
+  font-size: 14;
+  line-height: 4;
+  color: t.$color-grey-700;
+  margin-top: t.$spacing-xs;
+}
+.media-card__subtitle {
+  font-family: ty.$ff-sans;
+  font-size: 12;
+  color: t.$color-grey-500;
+  margin-top: 1;
+}
+.media-row-radio {
+  width: 200;
+  height: 112;
+  margin: 0 t.$spacing-xs;
+}
+
+/* Backstage-Modul */
+.backstage-tile {
+  background-color: t.$color-grey-200;
+  border-width: 1;
+  border-color: t.$color-alternative;
+  border-radius: t.$radius-md;
+  margin: 0 t.$spacing-sm;
+  padding: t.$spacing-sm;
+}
+.backstage-tile__title {
+  font-family: ty.$ff-serif-bold;
+  font-size: 17;
+  line-height: 5;
+  color: t.$color-grey-700;
+  margin-top: t.$spacing-xs;
+}
+.backstage-tile__teaser {
+  font-family: ty.$ff-sans;
+  font-size: 13;
+  line-height: 5;
+  color: t.$color-grey-600;
+  margin-top: t.$spacing-xs;
+}
+.backstage-tile__bonus {
+  background-color: t.$color-grey-100;
+  border-radius: t.$radius-s;
+  padding: t.$spacing-xs t.$spacing-s;
+}
+.backstage-tile__bonus-icon {
+  font-size: 16;
+  color: t.$color-grey-700;
+  margin-right: t.$spacing-s;
+  vertical-align: center;
+}
+.backstage-tile__bonus-title {
+  font-family: ty.$ff-sans-semibold;
+  font-size: 13;
+  color: t.$color-grey-700;
+}
+.backstage-tile__link {
+  font-family: ty.$ff-sans-bold;
+  font-size: 13;
+  color: t.$color-grey-700;
+}
+
+/* Impact-Footer */
+.impact-footer {
+  padding: t.$spacing-m t.$spacing-sm t.$spacing-l t.$spacing-sm;
+}
+.impact-footer__line {
+  font-family: ty.$ff-sans;
+  font-size: 14;
+  line-height: 5;
+  color: t.$color-grey-600;
+  text-align: center;
+}
+.impact-footer__cta {
+  horizontal-align: center;
+  margin-top: t.$spacing-xs;
+}

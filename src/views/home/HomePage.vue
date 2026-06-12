@@ -1,26 +1,113 @@
 <template>
-  <!-- M2: provisorische Live-Liste; das vollständige Home-Modul-Layout folgt in M3 -->
   <Page actionBarHidden="true" @loaded="onLoaded">
     <GridLayout rows="auto, *" class="bg-grey-100">
       <StackLayout row="0" class="px-sm py-s hairline-bottom">
         <Label text="CORRECTIV" class="brand" />
       </StackLayout>
 
-      <CollectionView
-        row="1"
-        :items="listItems"
-        :itemTemplateSelector="templateSelector"
-      >
+      <CollectionView row="1" :items="modules" :itemTemplateSelector="templateSelector">
+        <!-- 1. Hero: Top-Recherche (LIVE) -->
         <template #hero="{ item }">
           <StackLayout class="pt-sm">
-            <ArticleCard :item="item.article" variant="hero" :badge="item.badge" @open="openArticle" />
+            <ArticleCard :item="item.article" variant="hero" badge="Recherche" @open="openArticle" />
           </StackLayout>
+        </template>
+
+        <!-- 2. Spotlight-Briefing (SAMPLE) -->
+        <template #briefing="{ item }">
+          <StackLayout>
+            <SectionHeader title="Das Wichtigste heute" />
+            <SpotlightBriefing :issue="item.issue" @open="openUrl" />
+          </StackLayout>
+        </template>
+
+        <!-- 3. Early-Access (Status-Flip-Demo) -->
+        <template #earlyAccess="{ item }">
+          <StackLayout class="pt-m">
+            <EarlyAccessCard :item="item.earlyAccess" @read="openUrl" />
+          </StackLayout>
+        </template>
+
+        <!-- 4. Neueste Recherchen (LIVE) -->
+        <template #sectionRecherchen>
+          <SectionHeader title="Neueste Recherchen" />
         </template>
         <template #default="{ item }">
           <StackLayout class="list-pad">
             <ArticleCard :item="item.article" variant="standard" :badge="item.badge" @open="openArticle" />
           </StackLayout>
         </template>
+
+        <!-- 5. Faktencheck-Rail (LIVE, horizontal) — ScrollView statt nested
+             CollectionView: die crasht in recycelten Zellen (viewClass-Error) -->
+        <template #factcheckRail="{ item }">
+          <StackLayout>
+            <SectionHeader title="Faktencheck" />
+            <ScrollView orientation="horizontal" class="factcheck-rail">
+              <StackLayout orientation="horizontal">
+                <StackLayout
+                  v-for="check in item.factchecks"
+                  :key="check.id"
+                  class="factcheck-rail-card"
+                  @tap="openArticle(check)"
+                >
+                  <ProjectBadge text="Faktencheck" />
+                  <Label :text="check.title" class="factcheck-rail-card__title" textWrap="true" :maxLines="4" />
+                  <Label :text="check.teaser" class="factcheck-rail-card__teaser" textWrap="true" :maxLines="3" />
+                </StackLayout>
+              </StackLayout>
+            </ScrollView>
+          </StackLayout>
+        </template>
+
+        <!-- 6. Mitmach-Karte (SAMPLE → Tab 4) -->
+        <template #participate="{ item }">
+          <StackLayout class="pt-m">
+            <ParticipateCard
+              :title="item.callout.title"
+              :teaser="item.callout.excerpt"
+              :countLabel="`${formatNumberDe(item.callout.responseCount)} Beiträge bisher`"
+              @open="goToParticipate"
+            />
+          </StackLayout>
+        </template>
+
+        <!-- 7. Mediathek-Reihe: Video des Tages + Radio (LIVE) -->
+        <template #mediaRow="{ item }">
+          <StackLayout>
+            <SectionHeader title="Mediathek" action="Alles ansehen" @action="goToMedia" />
+            <ScrollView orientation="horizontal" class="media-row">
+              <StackLayout orientation="horizontal">
+                <MediaCard
+                  v-if="item.video"
+                  :title="item.video.title"
+                  subtitle="FunFacts · Video des Tages"
+                  :thumbnail="item.video.thumbnailUrl"
+                  @open="openVideo(item.video)"
+                />
+                <LiveBanner class="media-row-radio" />
+              </StackLayout>
+            </ScrollView>
+          </StackLayout>
+        </template>
+
+        <!-- 8. Backstage-Modul (SAMPLE) -->
+        <template #backstage="{ item }">
+          <StackLayout class="pt-m">
+            <BackstageTile
+              :diaryTitle="item.diary.title"
+              :diaryTeaser="item.diary.teaser"
+              :bonusTitle="item.bonus.title"
+              @open="goToBackstage"
+            />
+          </StackLayout>
+        </template>
+
+        <!-- 9. Impact-Footer -->
+        <template #impact>
+          <ImpactFooter />
+        </template>
+
         <template #status="{ item }">
           <Label :text="item.text" class="ty-text-s text-grey-600 list-pad py-s" textWrap="true" />
         </template>
@@ -31,59 +118,100 @@
 
 <script setup lang="ts">
 import { computed } from 'nativescript-vue';
-import type { FeedItem } from '../../types/models';
+import { Utils } from '@nativescript/core';
+import type { FeedItem, Video } from '../../types/models';
 import ArticleCard from '../../components/cards/ArticleCard.vue';
+import SpotlightBriefing from '../../components/cards/SpotlightBriefing.vue';
+import EarlyAccessCard from '../../components/cards/EarlyAccessCard.vue';
+import ParticipateCard from '../../components/cards/ParticipateCard.vue';
+import MediaCard from '../../components/cards/MediaCard.vue';
+import BackstageTile from '../../components/cards/BackstageTile.vue';
+import SectionHeader from '../../components/ui/SectionHeader.vue';
+import ProjectBadge from '../../components/ui/ProjectBadge.vue';
+import LiveBanner from '../../components/ui/LiveBanner.vue';
+import ImpactFooter from '../../components/ui/ImpactFooter.vue';
 import ArticleReaderPage from '../reader/ArticleReaderPage.vue';
+import BackstagePage from '../backstage/BackstagePage.vue';
 import { useFeedsStore } from '../../stores/feeds';
+import { useMediaStore } from '../../stores/media';
 import { useNavigation } from '../../composables/useNavigation';
+import { spotlightIssues } from '../../data/spotlight';
+import { earlyAccess, diaries, bonusMedia } from '../../data/backstage';
+import { callouts } from '../../data/callouts';
+import { formatNumberDe } from '../../lib/format';
 
-interface HomeListItem {
+interface HomeModule {
   id: string;
-  kind: 'hero' | 'article' | 'status';
-  article?: FeedItem;
-  badge?: string;
-  text?: string;
+  kind: string;
+  [key: string]: unknown;
 }
 
 const feeds = useFeedsStore();
-const { navigate } = useNavigation();
+const media = useMediaStore();
+const { navigate, navigateInTab } = useNavigation();
 
-const listItems = computed((): HomeListItem[] => {
-  const feedState = feeds.byKey.recherchen;
-  if (feedState.status === 'loading' || feedState.status === 'idle') {
+const modules = computed((): HomeModule[] => {
+  const recherchen = feeds.byKey.recherchen;
+  const result: HomeModule[] = [];
+
+  if (recherchen.status === 'loading' || recherchen.status === 'idle') {
     return [{ id: 'status', kind: 'status', text: 'Aktuelle Recherchen werden geladen …' }];
   }
-  if (feedState.status === 'error') {
-    return [{ id: 'status', kind: 'status', text: 'Recherchen konnten nicht geladen werden.' }];
+  if (recherchen.status === 'offline') {
+    result.push({ id: 'offline', kind: 'status', text: 'Offline — gebündelte Inhalte werden angezeigt.' });
   }
-  const items: HomeListItem[] = feedState.items.slice(0, 15).map((article, index) => ({
-    id: article.id,
-    kind: index === 0 ? 'hero' : 'article',
-    article,
-    badge: index === 0 ? 'Recherche' : badgeFor(article),
-  }));
-  if (feedState.status === 'offline') {
-    items.unshift({ id: 'status', kind: 'status', text: 'Offline — gebündelte Artikel werden angezeigt.' });
+
+  const articles = recherchen.items;
+  if (articles[0]) result.push({ id: 'hero', kind: 'hero', article: articles[0] });
+
+  result.push({ id: 'briefing', kind: 'briefing', issue: spotlightIssues[0] });
+  result.push({ id: 'early', kind: 'earlyAccess', earlyAccess });
+
+  if (articles.length > 1) {
+    result.push({ id: 'sec-recherchen', kind: 'sectionRecherchen' });
+    for (const article of articles.slice(1, 5)) {
+      result.push({ id: article.id, kind: 'article', article, badge: '' });
+    }
   }
-  return items;
+
+  const factchecks = feeds.byKey.faktencheck.items.slice(0, 8);
+  if (factchecks.length > 0) {
+    result.push({ id: 'rail', kind: 'factcheckRail', factchecks });
+  }
+
+  result.push({ id: 'participate', kind: 'participate', callout: callouts[0] });
+
+  const video = media.byKey.funfacts.videos[0] ?? null;
+  result.push({ id: 'mediaRow', kind: 'mediaRow', video });
+
+  result.push({ id: 'backstage', kind: 'backstage', diary: diaries[0], bonus: bonusMedia[0] });
+  result.push({ id: 'impact', kind: 'impact' });
+
+  return result;
 });
 
-function badgeFor(article: FeedItem): string {
-  return article.url.includes('/faktencheck/') ? 'Faktencheck' : '';
-}
-
-function templateSelector(item: HomeListItem): string {
-  if (item.kind === 'hero') return 'hero';
-  if (item.kind === 'status') return 'status';
-  return 'default';
+function templateSelector(item: HomeModule): string {
+  const map: Record<string, string> = {
+    hero: 'hero',
+    briefing: 'briefing',
+    earlyAccess: 'earlyAccess',
+    sectionRecherchen: 'sectionRecherchen',
+    article: 'default',
+    factcheckRail: 'factcheckRail',
+    participate: 'participate',
+    mediaRow: 'mediaRow',
+    backstage: 'backstage',
+    impact: 'impact',
+    status: 'status',
+  };
+  return map[item.kind] ?? 'default';
 }
 
 let loaded = false;
 async function onLoaded() {
   if (loaded) return;
   loaded = true;
-  await feeds.fetch('recherchen');
-  // Titelbilder der ersten Artikel nachladen (Hero + Top 4)
+  await Promise.all([feeds.fetch('recherchen'), feeds.fetch('faktencheck'), media.fetch('funfacts')]);
   for (const item of feeds.byKey.recherchen.items.slice(0, 5)) {
     feeds.enrichImage('recherchen', item.id);
   }
@@ -91,5 +219,26 @@ async function onLoaded() {
 
 function openArticle(article: FeedItem) {
   navigate(ArticleReaderPage, { props: { url: article.url, title: article.title } });
+}
+
+function openUrl(url: string) {
+  navigate(ArticleReaderPage, { props: { url } });
+}
+
+function openVideo(video: Video) {
+  // VideoPlayerPage folgt in M5 — bis dahin extern öffnen
+  Utils.openUrl(video.url);
+}
+
+function goToParticipate() {
+  navigateInTab('participate');
+}
+
+function goToMedia() {
+  navigateInTab('media');
+}
+
+function goToBackstage() {
+  navigate(BackstagePage);
 }
 </script>
