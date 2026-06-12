@@ -423,3 +423,39 @@
   border-color: t.$color-grey-700;
   color: t.$color-grey-100;
 }
+
+/* Discover & search (M9/M10) */
+.search-entry {
+  background-color: t.$color-grey-200;
+  border-radius: t.$radius-md;
+  padding: t.$spacing-s t.$spacing-sm;
+}
+.search-entry__icon {
+  font-size: 18;
+  color: t.$color-grey-500;
+  margin-right: t.$spacing-s;
+}
+.search-entry__hint {
+  font-family: ty.$ff-sans;
+  font-size: 15;
+  color: t.$color-grey-500;
+}
+.chip-rail {
+  height: 56;
+  margin-top: 12;
+}
+.search-field {
+  font-family: ty.$ff-sans;
+  font-size: 16;
+  color: t.$color-grey-700;
+  border-width: 0;
+  background-color: t.$color-grey-200;
+  border-radius: t.$radius-s;
+  padding: t.$spacing-xs t.$spacing-s;
+}
+.spotlight-reader-item__link {
+  font-family: ty.$ff-sans-bold;
+  font-size: 14;
+  color: t.$color-emphasis;
+}
+.mt-l { margin-top: 36; }

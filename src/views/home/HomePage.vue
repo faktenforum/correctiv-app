@@ -16,7 +16,7 @@
         <!-- 2. Spotlight briefing (SAMPLE) -->
         <template #briefing="{ item }">
           <StackLayout>
-            <SectionHeader title="Das Wichtigste heute" />
+            <SectionHeader title="Das Wichtigste heute" action="Alle Ausgaben" @action="openSpotlight" />
             <SpotlightBriefing :issue="item.issue" @open="openUrl" />
           </StackLayout>
         </template>
@@ -134,6 +134,7 @@ import ProjectBadge from '../../components/ui/ProjectBadge.vue';
 import LiveBanner from '../../components/ui/LiveBanner.vue';
 import ImpactFooter from '../../components/ui/ImpactFooter.vue';
 import ArticleReaderPage from '../reader/ArticleReaderPage.vue';
+import SpotlightReaderPage from '../reader/SpotlightReaderPage.vue';
 import BackstagePage from '../backstage/BackstagePage.vue';
 import { useFeedsStore } from '../../stores/feeds';
 import { useMediaStore } from '../../stores/media';
@@ -268,6 +269,10 @@ function goToParticipate() {
 
 function goToMedia() {
   navigateInTab('media');
+}
+
+function openSpotlight() {
+  navigate(SpotlightReaderPage);
 }
 
 function goToBackstage() {
