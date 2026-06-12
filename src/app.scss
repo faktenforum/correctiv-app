@@ -1,0 +1,29 @@
+// Globale Styles — Tokens kommen ausschließlich über die generierte Pipeline
+// (scripts/sync-tokens.mjs). theme.css aus wp-design-tokens NIE direkt importieren.
+@use './styles/tokens.generated.scss' as t;
+@use './styles/typography.scss';
+@use './styles/components.scss';
+@use './styles/shell.scss';
+
+Page {
+  background-color: t.$color-grey-100;
+}
+
+.lucide {
+  font-family: 'lucide';
+}
+
+.brand {
+  font-family: 'SourceSans3-Bold', 'Source Sans 3';
+  font-size: 16;
+  letter-spacing: 0.12;
+  color: t.$color-grey-700;
+}
+
+.back-icon {
+  font-family: 'lucide';
+  font-size: 22;
+  color: t.$color-grey-700;
+  vertical-align: center;
+  padding: 4 8 4 0;
+}

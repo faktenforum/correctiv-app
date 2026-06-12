@@ -1,0 +1,65 @@
+// Komposit-Typografie nach wp-design-tokens/css/typography.css.
+// NS-Eigenheiten: font-size in dip, letter-spacing in em (px ÷ font-size),
+// pro Schnitt eine eigene font-family (Android fettet sonst synthetisch).
+// line-height ist plattformabhängig: Android = ZUSÄTZLICHER Zeilenabstand
+// (setLineSpacing), iOS = Gesamt-Zeilenhöhe — deshalb je Plattform generiert.
+@use 'sass:math';
+@use 'sass:list';
+@use './tokens.generated.scss' as t;
+
+// Font-Stacks: Dateiname (Android) = PostScript-Name (iOS), siehe src/fonts/
+$ff-serif: 'Merriweather-Regular', 'Merriweather';
+$ff-serif-bold: 'Merriweather-Bold', 'Merriweather';
+$ff-serif-italic: 'Merriweather-Italic', 'Merriweather';
+$ff-sans: 'SourceSans3-Regular', 'Source Sans 3';
+$ff-sans-semibold: 'SourceSans3-Semibold', 'Source Sans 3';
+$ff-sans-bold: 'SourceSans3-Bold', 'Source Sans 3';
+
+@function ls($px, $size) {
+  @return math.div(math.round(math.div($px, $size) * 1000), 1000);
+}
+
+// name: (family, size, letter-spacing-px, leading)
+$type-styles: (
+  'ty-text-article': ($ff-serif, t.$font-size-text-article, t.$letter-spacing-wider, t.$leading-looser),
+  'ty-text-s': ($ff-sans, t.$font-size-text-s, t.$letter-spacing-wider, t.$leading-loose),
+  'ty-text-m': ($ff-sans, t.$font-size-text-m, t.$letter-spacing-wide, t.$leading-loose),
+  'ty-text-l': ($ff-sans, t.$font-size-text-l, t.$letter-spacing-wide, t.$leading-relaxed),
+  'ty-headline-xs': ($ff-sans-bold, t.$font-size-headline-xs, t.$letter-spacing-wider, t.$leading-loose),
+  'ty-headline-s': ($ff-sans-bold, t.$font-size-headline-s, t.$letter-spacing-wider, t.$leading-loose),
+  'ty-headline-m': ($ff-sans-bold, t.$font-size-headline-m, t.$letter-spacing-normal, t.$leading-snug),
+  'ty-headline-l': ($ff-sans-bold, t.$font-size-headline-l, t.$letter-spacing-tight, t.$leading-tight),
+  'ty-headline-xl': ($ff-sans-bold, t.$font-size-headline-xl, t.$letter-spacing-tighter, t.$leading-tight),
+  'ty-headline-xxl': ($ff-sans-bold, t.$font-size-headline-xxl, t.$letter-spacing-tighter, t.$leading-tight),
+  'ty-button': ($ff-sans-bold, t.$font-size-text-button, t.$letter-spacing-wider, t.$leading-loose),
+);
+
+@each $name, $def in $type-styles {
+  $family: list.nth($def, 1);
+  $size: list.nth($def, 2);
+  $ls-px: list.nth($def, 3);
+  $leading: list.nth($def, 4);
+
+  .#{$name} {
+    font-family: $family;
+    font-size: $size;
+    letter-spacing: ls($ls-px, $size);
+  }
+  .ns-android .#{$name} {
+    line-height: math.round($size * ($leading - 1));
+  }
+  .ns-ios .#{$name} {
+    line-height: math.round($size * $leading);
+  }
+}
+
+/* Serif-Helfer */
+.font-serif {
+  font-family: $ff-serif;
+}
+.font-serif-bold {
+  font-family: $ff-serif-bold;
+}
+.font-sans-semibold {
+  font-family: $ff-sans-semibold;
+}

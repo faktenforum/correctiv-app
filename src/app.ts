@@ -1,0 +1,39 @@
+import { createApp, registerElement } from 'nativescript-vue';
+import { createPinia } from 'pinia';
+import { Application, Frame } from '@nativescript/core';
+import CollectionViewPlugin from '@nativescript-community/ui-collectionview/vue3';
+import AppShell from './AppShell.vue';
+import { useSettingsStore, PERSISTED_KEYS } from './stores/settings';
+import { persist } from './stores/persist';
+// @nativescript/vite wendet nur eine Datei namens app.css automatisch an —
+// SCSS deshalb als String importieren und selbst registrieren.
+import appCss from './app.scss?inline';
+
+Application.addCss(appCss);
+
+registerElement('AWebView', () => require('@nativescript-community/ui-webview').AWebView);
+
+const pinia = createPinia();
+const app = createApp(AppShell);
+app.use(pinia);
+app.use(CollectionViewPlugin);
+
+const settings = useSettingsStore(pinia);
+persist(settings, PERSISTED_KEYS);
+
+if (__ANDROID__) {
+  // Mit fünf parallelen Frames poppt der Hardware-Back-Button sonst beliebige
+  // Frames: erst im aktiven Tab zurück, dann zum Home-Tab, dann Default.
+  Application.android.on('activityBackPressed', (args: { cancel: boolean }) => {
+    const frame = Frame.getFrameById(`tab-${settings.activeTab}`);
+    if (frame?.canGoBack()) {
+      args.cancel = true;
+      frame.goBack();
+    } else if (settings.activeTab !== 'home') {
+      args.cancel = true;
+      settings.setActiveTab('home');
+    }
+  });
+}
+
+app.start();

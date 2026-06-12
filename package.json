@@ -1,0 +1,38 @@
+{
+  "name": "app-prototype",
+  "main": "src/app.ts",
+  "version": "1.0.0",
+  "private": true,
+  "dependencies": {
+    "@nativescript-community/audio": "^6.4.14",
+    "@nativescript-community/ui-collectionview": "^6.0.24",
+    "@nativescript-community/ui-material-bottomsheet": "~7.3.2",
+    "@nativescript-community/ui-webview": "~1.6.1",
+    "@nativescript/core": "~9.0.0",
+    "@valor/nativescript-websockets": "^2.0.2",
+    "fast-xml-parser": "^5.8.0",
+    "nativescript-vue": "^3.0.0",
+    "pinia": "~3.0.4"
+  },
+  "devDependencies": {
+    "@nativescript/android": "9.0.4",
+    "@nativescript/types": "~9.0.0",
+    "@nativescript/vite": "^2.0.3",
+    "@types/node": "^20.19.43",
+    "concurrently": "^9.0.0",
+    "sass": "^1.101.0",
+    "typescript": "~5.8.0",
+    "vue": "^3.5.38",
+    "wait-on": "^9.0.0"
+  },
+  "scripts": {
+    "dev:ios": "concurrently -k -n vite,ns \"npm run dev:server:ios\" \"wait-on tcp:5173 && npm run ios\"",
+    "dev:android": "concurrently -k -n vite,ns \"npm run dev:server:android\" \"wait-on tcp:5173 && npm run android\"",
+    "dev:server:ios": "vite serve -- --env.ios --env.hmr",
+    "dev:server:android": "vite serve -- --env.android --env.hmr",
+    "ios": "ns debug ios",
+    "android": "ns debug android",
+    "tokens": "node scripts/sync-tokens.mjs",
+    "offline-articles": "node scripts/fetch-offline-articles.mjs"
+  }
+}

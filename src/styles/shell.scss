@@ -1,0 +1,27 @@
+// Styles der App-Shell (AppShell.vue, TabBar.vue, MiniPlayer.vue)
+@use './tokens.generated.scss' as t;
+@use './typography.scss' as ty;
+
+.tab-bar {
+  background-color: t.$color-grey-100;
+}
+.tab-item {
+  padding: t.$spacing-xs 0 t.$spacing-s 0;
+  horizontal-align: stretch;
+}
+.tab-icon {
+  font-family: 'lucide';
+  font-size: 22;
+  color: t.$color-grey-600;
+  text-align: center;
+}
+.tab-label {
+  font-family: ty.$ff-sans-semibold;
+  font-size: 11;
+  color: t.$color-grey-600;
+  text-align: center;
+  margin-top: 2;
+}
+.tab-active {
+  color: t.$color-emphasis;
+}

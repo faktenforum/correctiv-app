@@ -1,0 +1,91 @@
+// Wiederkehrende Bausteine im Token-Design: Flächen statt Schatten, Hairlines, minimale Radien.
+@use './tokens.generated.scss' as t;
+@use './typography.scss' as ty;
+
+.card {
+  background-color: t.$color-grey-200;
+  border-radius: t.$radius-md;
+  padding: t.$spacing-sm;
+}
+
+.hairline-top {
+  border-top-width: 1;
+  border-top-color: t.$color-grey-300;
+}
+.hairline-bottom {
+  border-bottom-width: 1;
+  border-bottom-color: t.$color-grey-300;
+}
+
+.btn-primary {
+  font-family: ty.$ff-sans-bold;
+  font-size: t.$font-size-text-button;
+  background-color: t.$color-emphasis;
+  color: t.$color-grey-100;
+  border-radius: t.$radius-s;
+  padding: t.$spacing-s t.$spacing-m;
+  text-transform: none;
+  android-elevation: 0;
+  android-dynamic-elevation-offset: 0;
+}
+.btn-secondary {
+  font-family: ty.$ff-sans-bold;
+  font-size: t.$font-size-text-button;
+  background-color: transparent;
+  color: t.$color-grey-700;
+  border-width: 1;
+  border-color: t.$color-grey-400;
+  border-radius: t.$radius-s;
+  padding: t.$spacing-s t.$spacing-m;
+  text-transform: none;
+  android-elevation: 0;
+  android-dynamic-elevation-offset: 0;
+}
+.btn-quiet {
+  font-family: ty.$ff-sans-semibold;
+  font-size: t.$font-size-text-m;
+  background-color: transparent;
+  color: t.$color-emphasis;
+  text-transform: none;
+  android-elevation: 0;
+  android-dynamic-elevation-offset: 0;
+}
+
+// Projekt-Badge (Rot = Journalismus) / Club-Badge (Gelb = Club)
+.badge {
+  font-family: ty.$ff-sans-bold;
+  font-size: 11;
+  letter-spacing: 0.08;
+  text-transform: uppercase;
+  padding: 2 6;
+  border-radius: t.$radius-xs;
+  horizontal-align: left;
+}
+.badge-project {
+  background-color: t.$color-emphasis;
+  color: t.$color-grey-100;
+}
+.badge-club {
+  background-color: t.$color-alternative;
+  color: t.$color-grey-700;
+}
+
+.chip {
+  font-family: ty.$ff-sans-semibold;
+  font-size: t.$font-size-text-m;
+  color: t.$color-grey-700;
+  background-color: t.$color-grey-200;
+  border-width: 1;
+  border-color: t.$color-grey-300;
+  border-radius: t.$radius-md;
+  padding: t.$spacing-xs t.$spacing-sm;
+}
+.chip-active {
+  background-color: t.$color-grey-700;
+  border-color: t.$color-grey-700;
+  color: t.$color-grey-100;
+}
+
+.live-dot {
+  color: t.$color-emphasis;
+}

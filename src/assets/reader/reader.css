@@ -1,0 +1,232 @@
+/* Reader-Styles — direkte Ableitung der wp-design-tokens (theme.css/typography.css).
+   Im WebView gelten die Original-Tokens unverändert: rem, unitless line-height,
+   letter-spacing. html{font-size} wird vom Template gesetzt (Textgröße-Einstellung). */
+
+@font-face {
+  font-family: 'Merriweather';
+  src: url('../../fonts/Merriweather-Regular.ttf') format('truetype');
+  font-weight: 400;
+  font-style: normal;
+}
+@font-face {
+  font-family: 'Merriweather';
+  src: url('../../fonts/Merriweather-Bold.ttf') format('truetype');
+  font-weight: 700;
+  font-style: normal;
+}
+@font-face {
+  font-family: 'Merriweather';
+  src: url('../../fonts/Merriweather-Italic.ttf') format('truetype');
+  font-weight: 400;
+  font-style: italic;
+}
+@font-face {
+  font-family: 'Source Sans 3';
+  src: url('../../fonts/SourceSans3-Regular.ttf') format('truetype');
+  font-weight: 400;
+  font-style: normal;
+}
+@font-face {
+  font-family: 'Source Sans 3';
+  src: url('../../fonts/SourceSans3-Semibold.ttf') format('truetype');
+  font-weight: 600;
+  font-style: normal;
+}
+@font-face {
+  font-family: 'Source Sans 3';
+  src: url('../../fonts/SourceSans3-Bold.ttf') format('truetype');
+  font-weight: 700;
+  font-style: normal;
+}
+
+:root {
+  --emphasis: #ff5064;
+  --alternative: #fde162;
+  --grey-100: #ffffff;
+  --grey-200: #f8f8f8;
+  --grey-300: #e6e6e6;
+  --grey-500: #b3b3b3;
+  --grey-600: #707070;
+  --grey-700: #333333;
+  --serif: 'Merriweather', serif;
+  --sans: 'Source Sans 3', sans-serif;
+}
+
+* { box-sizing: border-box; margin: 0; padding: 0; }
+
+body {
+  background: var(--grey-100);
+  color: var(--grey-700);
+  font-family: var(--serif);
+  -webkit-text-size-adjust: 100%;
+}
+
+article {
+  max-width: 38.75rem; /* container-content 620px */
+  margin: 0 auto;
+  padding-bottom: 3rem;
+}
+
+.hero img {
+  display: block;
+  width: 100%;
+  height: auto;
+}
+
+.reader-header { padding: 1.5rem 1rem 0; }
+
+.badge {
+  display: inline-block;
+  font-family: var(--sans);
+  font-weight: 700;
+  font-size: 0.6875rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--grey-100);
+  background: var(--emphasis);
+  padding: 0.125rem 0.375rem;
+  border-radius: 0.0625rem;
+  margin-bottom: 0.75rem;
+}
+
+/* Artikel-Headline laut Konzept in Merriweather (headline-xl) */
+h1 {
+  font-family: var(--serif);
+  font-weight: 700;
+  font-size: 1.75rem;
+  line-height: 1.2;
+  letter-spacing: -0.2px;
+  margin-bottom: 0.75rem;
+}
+
+.rating {
+  display: inline-block;
+  font-family: var(--sans);
+  font-weight: 700;
+  font-size: 1rem;
+  padding: 0.375rem 0.75rem;
+  border-radius: 0.125rem;
+  margin-bottom: 0.75rem;
+  background: var(--grey-300);
+  color: var(--grey-700);
+}
+.rating--false, .rating--mostly-false, .rating--mostly_false, .rating--manipulated {
+  background: var(--emphasis);
+  color: var(--grey-100);
+}
+.rating--missing-context, .rating--missing_context, .rating--misleading, .rating--unproven {
+  background: var(--alternative);
+  color: var(--grey-700);
+}
+.rating--true, .rating--mostly-true, .rating--mostly_true {
+  background: #2e7d4f;
+  color: var(--grey-100);
+}
+
+.meta {
+  font-family: var(--sans);
+  font-size: 0.875rem;
+  line-height: 1.5;
+  letter-spacing: 0.2px;
+  color: var(--grey-600);
+}
+
+.excerpt {
+  font-family: var(--serif);
+  font-style: italic;
+  font-size: 1.09375rem;
+  line-height: 1.5;
+  padding: 1rem 1rem 0;
+}
+
+/* Fließtext: text-article 15.5px, leading-looser 1.8, 24-px-Raster */
+.reader-body { padding: 1rem 1rem 0; }
+.reader-body p {
+  font-size: 0.96875rem;
+  line-height: 1.8;
+  letter-spacing: 0.2px;
+  word-spacing: 0.109375rem;
+  margin-bottom: 1.5rem;
+  hyphens: auto;
+}
+.reader-body h2, .reader-body h3 {
+  font-family: var(--sans);
+  font-weight: 700;
+  line-height: 1.3;
+  margin: 2.25rem 0 0.75rem;
+}
+.reader-body h2 { font-size: 1.4375rem; }
+.reader-body h3 { font-size: 1.1875rem; }
+
+.reader-body a { color: var(--emphasis); text-decoration: underline; }
+
+.reader-body img {
+  display: block;
+  max-width: 100%;
+  height: auto;
+  margin: 0 auto;
+}
+.reader-body figure { margin: 1.5rem 0; }
+.reader-body figcaption, .reader-body .figure__caption {
+  font-family: var(--sans);
+  font-size: 0.8125rem;
+  line-height: 1.5;
+  color: var(--grey-600);
+  padding-top: 0.5rem;
+}
+
+.reader-body blockquote {
+  border-left: 2px solid var(--emphasis);
+  padding: 0.75rem 0 0.75rem 1rem;
+  margin-bottom: 1.5rem;
+  font-style: italic;
+}
+
+.reader-body ul, .reader-body ol {
+  padding-left: 1.25rem;
+  margin-bottom: 1.5rem;
+  font-size: 0.96875rem;
+  line-height: 1.8;
+}
+
+/* Infoboxen (detail__box) */
+.reader-body .detail__box {
+  background: var(--grey-200);
+  border-radius: 0.3125rem;
+  padding: 1rem;
+  margin: 1.5rem 0;
+}
+.reader-body .detail__box-title {
+  font-family: var(--sans);
+  font-weight: 700;
+  font-size: 1.0625rem;
+  margin-bottom: 0.5rem;
+}
+.reader-body .detail__box p { font-size: 0.875rem; line-height: 1.6; margin-bottom: 0.75rem; }
+
+/* Unterstützungs-Moment am Artikelende — Einladung, nie Schranke */
+.reader-footer {
+  margin: 3rem 1rem 0;
+  padding: 1.5rem 1rem;
+  background: var(--grey-200);
+  border-radius: 0.3125rem;
+  text-align: center;
+}
+.support-line {
+  font-family: var(--sans);
+  font-size: 0.9375rem;
+  line-height: 1.5;
+  color: var(--grey-700);
+  margin-bottom: 1rem;
+}
+.support-btn {
+  display: inline-block;
+  font-family: var(--sans);
+  font-weight: 700;
+  font-size: 1rem;
+  color: var(--grey-100);
+  background: var(--emphasis);
+  text-decoration: none;
+  padding: 0.75rem 1.5rem;
+  border-radius: 0.125rem;
+}
