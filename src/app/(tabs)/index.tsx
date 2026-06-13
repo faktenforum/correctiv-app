@@ -6,6 +6,7 @@ import { ArticleRow } from '@/components/feed/ArticleRow';
 import { FaktencheckRail } from '@/components/feed/FaktencheckRail';
 import { EarlyAccessCard } from '@/components/home/EarlyAccessCard';
 import { ImpactFooter } from '@/components/home/ImpactFooter';
+import { MediathekReihe } from '@/components/home/MediathekReihe';
 import { SpotlightBriefing } from '@/components/home/SpotlightBriefing';
 import { Hairline, Screen, SectionHeader, Typo } from '@/components/ui';
 import { useFeed } from '@/lib/feeds/useFeed';
@@ -67,6 +68,11 @@ export default function HomeScreen() {
           <FaktencheckRail items={faktenchecks.data!.slice(0, 8)} onPress={openArticle} />
         </View>
       )}
+
+      <View className="mt-l">
+        <SectionHeader title="Mediathek" className="mb-s" actionLabel="Alles ansehen →" onAction={() => router.push('/(tabs)/mediathek')} />
+        <MediathekReihe onOpenMediathek={() => router.push('/(tabs)/mediathek')} />
+      </View>
 
       <ImpactFooter onJoin={() => router.push('/(tabs)/profil')} />
     </Screen>
