@@ -11,7 +11,7 @@ Built with **NativeScript 9 · Vue 3 (nativescript-vue 3) · Vite · TypeScript 
   <img src="media/demo.gif" alt="Demo walkthrough of the CORRECTIV app prototype on Android: live home feed, article reader, media library and the persistent Salon5 live-radio mini player" width="270">
 </p>
 
-<p align="center"><sub>The running Android app — live feed → article reader → media library → persistent Salon5 live radio.<br>For a click-through version in the browser, see the <a href="#design-preview-interactive-mockup">design preview</a> below.</sub></p>
+<p align="center"><sub>The running Android app. A click-through web version is in the <a href="#design-preview-interactive-mockup">design preview</a> below.</sub></p>
 
 > **Status:** Functional prototype covering the full demo journey (onboarding →
 > home → reader → media → participate → club join → backstage → profile).
@@ -31,13 +31,10 @@ backed by authentic sample data.
 
 👉 **[faktenforum.github.io/correctiv-app](https://faktenforum.github.io/correctiv-app/)**
 
-A click-through preview of the same demo journey, hosted via GitHub Pages
-([`docs/`](docs/)). This is the original **design draft** from
-[Claude Design](https://claude.ai/) — an HTML/React mockup, *not* the running
-NativeScript app — so it conveys layout, flow and feel in any browser without a
-build. The real implementation is the NativeScript code in this repository; the
-two have intentionally minor visual differences (the app was aligned to this
-draft, keeping the stronger solution where they differed).
+The original **design draft** ([Claude Design](https://claude.ai/)) as an
+HTML/React mockup, hosted via GitHub Pages ([`docs/`](docs/)) — the same demo
+journey in any browser, no build. It shows layout and flow but is *not* the
+running app; the NativeScript code was aligned to it, with minor differences.
 
 ## Requirements
 
