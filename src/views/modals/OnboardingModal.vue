@@ -1,6 +1,11 @@
 <template>
-  <Page actionBarHidden="true" :class="step === 0 ? 'onboarding--mission' : 'bg-grey-100'">
-    <GridLayout rows="auto, *, auto">
+  <!-- A modal <Page>'s own background-color doesn't paint reliably; like the
+       other modals (Player/JoinFlow), the FILLING inner layout carries the bg.
+       Mission (step 0) is the coral brand screen (design draft: bg-accent) and
+       is theme-independent; the later steps follow the app theme via the
+       .ns-dark class the controller applies to this modal root. -->
+  <Page actionBarHidden="true">
+    <GridLayout rows="auto, *, auto" :class="step === 0 ? 'onboarding--mission' : 'bg-grey-100'">
       <!-- Header: step dots + skip (from step 2 onwards) -->
       <GridLayout row="0" columns="*, auto" class="px-sm py-s">
         <StackLayout col="0" orientation="horizontal" verticalAlignment="center">
@@ -126,7 +131,9 @@ import { interests as allInterests } from '../../data/interests';
 import { useInterestsStore } from '../../stores/interests';
 import { useSettingsStore } from '../../stores/settings';
 import { useJoinFlow } from '../../composables/useJoinFlow';
+import { useThemeForModal } from '../../composables/useTheme';
 
+useThemeForModal();
 const step = ref(0);
 const interestsStore = useInterestsStore();
 const settings = useSettingsStore();

@@ -62,6 +62,8 @@
 .bonus-row {
   background-color: t.$color-grey-200;
   border-radius: t.$radius-md;
+  margin-top: t.$spacing-xs;
+  margin-bottom: t.$spacing-s;
 }
 
 /* Video embed (16:9 at full width) */

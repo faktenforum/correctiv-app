@@ -8,6 +8,7 @@
 @use './styles/home.scss';
 @use './styles/media.scss';
 @use './styles/participate.scss';
+@use './styles/dark.scss';
 
 Page {
   background-color: t.$color-grey-100;
