@@ -1,0 +1,128 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<!--
+  ProfileScreen — the Profil tab (guest + member states, newsletters, settings).
+  vm: {
+    isGuest, isMember, openJoin,
+    member:{ name, line }, impactArticles:[{ name }],
+    openBackstage, savedLabel, qbOpen,
+    newsletterRows:[{ label, toggle, bg, x }],
+    pushBg, pushX, togglePush,
+    followBg, followX, toggleFollowOs,
+    darkBg, darkX, toggleDark, darkHint, darkRowOpacity
+  }
+-->
+<div class="font-sans">
+  <div class="pt-[66px] px-[16px] pb-[12px] font-bold text-[28px] text-strong">Profil</div>
+
+  <sc-if value="{{ vm.isGuest }}" hint-placeholder-val="{{ true }}">
+    <div class="mt-[0px] mx-[16px] mb-[20px] bg-subtle rounded-[5px] p-[16px] flex flex-col gap-[8px]">
+      <div class="text-[16px] font-bold text-strong">Sie sind als Gast unterwegs</div>
+      <div class="text-[14px] text-mutedfg leading-[1.45]">Unser Journalismus bleibt frei — für alle. Ihr Beitrag macht genau das möglich.</div>
+      <div onClick="{{ vm.openJoin }}" class="self-start bg-accent text-white text-[14px] font-bold py-[9px] px-[16px] rounded-[2px] whitespace-nowrap cursor-pointer">Unterstützer:in werden</div>
+    </div>
+  </sc-if>
+  <sc-if value="{{ vm.isMember }}" hint-placeholder-val="{{ false }}">
+    <div class="mt-[0px] mx-[16px] mb-[20px] bg-highlight rounded-[5px] py-[18px] px-[16px] flex flex-col gap-[4px]">
+      <div class="text-[11px] font-bold tracking-[1.5px]" style="color: rgb(51,51,51);">CORRECTIV CLUB</div>
+      <div class="text-[20px] font-bold" style="color: rgb(51,51,51);">{{ vm.member.name }}</div>
+      <div class="text-[13px]" style="color: rgb(51,51,51);">{{ vm.member.line }}</div>
+    </div>
+    <div class="mt-[0px] mx-[16px] mb-[20px] flex flex-col gap-[8px]">
+      <div class="text-[12px] font-bold tracking-[1.2px] text-mutedfg">MEIN IMPACT</div>
+      <div class="text-[14px] text-strong leading-[1.5]">Ihr Beitrag wirkt ab sofort. Unter anderem diese Recherchen wurden durch Unterstützer:innen ermöglicht:</div>
+      <div class="flex flex-col gap-[2px] text-[14px] text-mutedfg leading-[1.7]">
+        <sc-for list="{{ vm.impactArticles }}" as="a" hint-placeholder-count="3">
+          <div>• {{ a.name }}</div>
+        </sc-for>
+      </div>
+    </div>
+    <div class="my-[0px] mx-[16px] border-t border-line">
+      <div class="flex items-center justify-between py-[13px] px-[0px] border-b border-line">
+        <div class="text-[15px] text-strong">Meine Mitgliedschaft</div>
+        <div class="text-[13px] text-mutedfg">{{ vm.member.manage }}</div>
+      </div>
+    </div>
+  </sc-if>
+
+  <div class="my-[0px] mx-[16px]">
+    <div onClick="{{ vm.openBackstage }}" class="flex items-center justify-between py-[13px] px-[0px] border-b border-line cursor-pointer">
+      <div class="flex items-center gap-[8px]">
+        <div class="text-[15px] text-strong">Backstage</div>
+        <div class="bg-highlight text-[#333333] text-[10px] font-bold tracking-[1px] whitespace-nowrap py-[2px] px-[6px] rounded-[2px]">CLUB</div>
+      </div>
+      <div class="text-[15px] text-faint">›</div>
+    </div>
+    <div class="flex items-center justify-between py-[13px] px-[0px] border-b border-line">
+      <div class="text-[15px] text-strong">Gespeicherte Artikel</div>
+      <div class="text-[13px] text-mutedfg">{{ vm.savedLabel }}</div>
+    </div>
+    <div onClick="{{ vm.qbOpen }}" class="flex items-center justify-between py-[13px] px-[0px] border-b border-line cursor-pointer">
+      <div class="flex items-center gap-[8px]">
+        <div class="text-[15px] text-strong">Quartalsbericht</div>
+        <div class="bg-highlight text-[#333333] text-[10px] font-bold tracking-[1px] whitespace-nowrap py-[2px] px-[6px] rounded-[2px]">CLUB</div>
+      </div>
+      <div class="text-[15px] text-faint">›</div>
+    </div>
+  </div>
+
+  <div class="pt-[20px] px-[16px] pb-[6px] text-[12px] font-bold tracking-[1.2px] text-mutedfg">NEWSLETTER</div>
+  <div class="my-[0px] mx-[16px]">
+    <sc-for list="{{ vm.newsletterRows }}" as="nl" hint-placeholder-count="3">
+      <div class="flex items-center justify-between py-[11px] px-[0px] border-b border-line">
+        <div class="text-[15px] text-strong">{{ nl.label }}</div>
+        <div onClick="{{ nl.toggle }}" class="w-[42px] h-[25px] rounded-[13px] relative cursor-pointer transition-colors duration-200" style="background: {{ nl.bg }};">
+          <div class="absolute top-[2.5px] left-[2.5px] w-[20px] h-[20px] rounded-full bg-card transition-transform duration-200" style="transform: {{ nl.x }};"></div>
+        </div>
+      </div>
+    </sc-for>
+  </div>
+
+  <div class="pt-[20px] px-[16px] pb-[6px] text-[12px] font-bold tracking-[1.2px] text-mutedfg">EINSTELLUNGEN</div>
+  <div class="mt-[0px] mx-[16px] mb-[28px]">
+    <div class="flex items-center justify-between py-[11px] px-[0px] border-b border-line">
+      <div class="text-[15px] text-strong">Push-Mitteilungen</div>
+      <div onClick="{{ vm.togglePush }}" class="w-[42px] h-[25px] rounded-[13px] relative cursor-pointer transition-colors duration-200" style="background: {{ vm.pushBg }};">
+        <div class="absolute top-[2.5px] left-[2.5px] w-[20px] h-[20px] rounded-full bg-card transition-transform duration-200" style="transform: {{ vm.pushX }};"></div>
+      </div>
+    </div>
+    <div class="flex items-center justify-between py-[11px] px-[0px] border-b border-line">
+      <div class="text-[15px] text-strong">An Systemeinstellung orientieren</div>
+      <div onClick="{{ vm.toggleFollowOs }}" class="w-[42px] h-[25px] rounded-[13px] relative cursor-pointer transition-colors duration-200" style="background: {{ vm.followBg }};">
+        <div class="absolute top-[2.5px] left-[2.5px] w-[20px] h-[20px] rounded-full bg-card transition-transform duration-200" style="transform: {{ vm.followX }};"></div>
+      </div>
+    </div>
+    <div class="flex items-center justify-between py-[11px] px-[0px] border-b border-line" style="opacity: {{ vm.darkRowOpacity }};">
+      <div class="flex flex-col gap-[2px]">
+        <div class="text-[15px] text-strong">Dunkelmodus</div>
+        <div class="text-[12px] text-mutedfg">{{ vm.darkHint }}</div>
+      </div>
+      <div onClick="{{ vm.toggleDark }}" class="w-[42px] h-[25px] rounded-[13px] relative cursor-pointer transition-colors duration-200" style="background: {{ vm.darkBg }};">
+        <div class="absolute top-[2.5px] left-[2.5px] w-[20px] h-[20px] rounded-full bg-card transition-transform duration-200" style="transform: {{ vm.darkX }};"></div>
+      </div>
+    </div>
+    <div class="flex items-center justify-between py-[13px] px-[0px] border-b border-line">
+      <div class="text-[15px] text-strong">Textgröße</div>
+      <div class="text-[13px] text-mutedfg">Standard</div>
+    </div>
+    <div class="flex items-center justify-between py-[13px] px-[0px] border-b border-line">
+      <div class="text-[15px] text-strong">Über CORRECTIV</div>
+      <div class="text-[15px] text-faint">›</div>
+    </div>
+    <div class="flex items-center justify-between py-[13px] px-[0px] border-b border-line">
+      <div class="text-[15px] text-strong">Impressum &amp; Datenschutz</div>
+      <div class="text-[15px] text-faint">›</div>
+    </div>
+  </div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props="{&quot;$preview&quot;: {&quot;width&quot;: 402, &quot;height&quot;: 900}, &quot;vm&quot;: {&quot;editor&quot;: null}}"></script>
+</body>
+</html>

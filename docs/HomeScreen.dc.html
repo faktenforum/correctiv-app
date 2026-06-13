@@ -1,0 +1,166 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<!--
+  HomeScreen — the Home tab.
+  Receives one `vm` view-model from the shell (Correctiv App.dc.html → homeVm).
+  Section headings / decorative copy stay inline; every list and link comes from
+  `vm`, which the shell builds from content.js. To change what's on Home, edit
+  the content collections or the homeVm builder — not this markup.
+-->
+<div class="font-sans">
+
+  <!-- Masthead -->
+  <div class="pt-[66px] px-[16px] pb-[10px] flex items-baseline justify-between border-b border-line">
+    <div class="font-black text-[17px] tracking-[2px] text-strong">CORRECTIV</div>
+    <div class="text-[13px] text-mutedfg whitespace-nowrap shrink-0">{{ vm.dateline }}</div>
+  </div>
+
+  <!-- Hero article (chrome-less, full-bleed image) -->
+  <div onClick="{{ vm.hero.open }}" class="cursor-pointer">
+    <image-slot id="img-hero" shape="rect" placeholder="Titelbild hierher ziehen (og:image der Recherche)" style="width: 100%; height: 216px; display: block;"></image-slot>
+    <div class="pt-[14px] px-[16px] pb-[18px] flex flex-col gap-[8px] border-b border-line">
+      <div class="text-[11px] font-bold tracking-[1.2px] text-accent">{{ vm.hero.kicker }}</div>
+      <div class="font-serif font-black text-[24px] leading-[1.25] text-strong [text-wrap:pretty]">{{ vm.hero.title }}</div>
+      <div class="text-[13px] text-mutedfg">{{ vm.hero.meta }}</div>
+    </div>
+  </div>
+
+  <!-- Spotlight briefing -->
+  <div class="m-[16px] bg-subtle rounded-[5px] py-[14px] px-[16px] flex flex-col gap-[0px]">
+    <div class="flex items-center justify-between pb-[10px]">
+      <div class="text-[12px] font-bold tracking-[1.2px] text-strong">DAS WICHTIGSTE HEUTE</div>
+      <div onClick="{{ vm.openSpotlight }}" class="text-[13px] font-bold text-accent cursor-pointer whitespace-nowrap">Spotlight →</div>
+    </div>
+    <sc-for list="{{ vm.spotlightRows }}" as="row" hint-placeholder-count="3">
+      <div class="flex gap-[10px] py-[9px] px-[0px] border-t border-line">
+        <div class="text-[13px] font-bold text-mutedfg shrink-0">{{ row.time }}</div>
+        <div class="text-[14px] leading-[1.45] text-strong">{{ row.text }}</div>
+      </div>
+    </sc-for>
+  </div>
+
+  <!-- Early-access (Club) -->
+  <div class="mt-[0px] mx-[16px] mb-[24px] bg-highlightwash border border-highlight rounded-[5px] py-[14px] px-[16px] flex flex-col gap-[8px]">
+    <div class="flex items-center gap-[8px]">
+      <div class="bg-highlight text-[#333333] text-[10px] font-bold tracking-[1px] whitespace-nowrap py-[3px] px-[7px] rounded-[2px]">CLUB · FRÜHER LESEN</div>
+    </div>
+    <div class="font-serif font-bold text-[18px] leading-[1.3] text-strong">{{ vm.early.title }}</div>
+    <sc-if value="{{ vm.early.isGuest }}" hint-placeholder-val="{{ true }}">
+      <div class="text-[14px] text-mutedfg leading-[1.45]">Für alle ab Montag. Clubmitglieder lesen jetzt.</div>
+      <div onClick="{{ vm.early.openJoin }}" class="text-[14px] font-bold text-strong cursor-pointer">Unterstützer:in werden →</div>
+    </sc-if>
+    <sc-if value="{{ vm.early.isMember }}" hint-placeholder-val="{{ false }}">
+      <div class="text-[14px] text-mutedfg leading-[1.45]">Für alle ab Montag — Sie lesen jetzt schon.</div>
+      <div onClick="{{ vm.early.openRead }}" class="self-start bg-ink text-white text-[14px] font-bold py-[9px] px-[16px] rounded-[2px] whitespace-nowrap cursor-pointer">Jetzt lesen</div>
+    </sc-if>
+  </div>
+
+  <!-- Latest investigations -->
+  <div class="py-[0px] px-[16px] flex flex-col">
+    <div class="text-[17px] font-bold text-strong pb-[4px]">Neueste Recherchen</div>
+    <sc-for list="{{ vm.recherchen }}" as="r" hint-placeholder-count="3">
+      <div onClick="{{ r.open }}" class="flex gap-[12px] py-[12px] px-[0px] border-b border-line cursor-pointer items-center">
+        <div class="flex-1 flex flex-col gap-[4px]">
+          <div class="text-[15px] font-bold leading-[1.35] text-strong">{{ r.title }}</div>
+          <div class="text-[12px] text-mutedfg">{{ r.meta }}</div>
+        </div>
+        <image-slot id="{{ r.slot }}" shape="rounded" radius="2" placeholder="Bild" class="shrink-0" style="width: 72px; height: 72px;"></image-slot>
+      </div>
+    </sc-for>
+  </div>
+
+  <!-- Fact-check rail -->
+  <div class="pt-[20px] px-[0px] pb-[8px] flex flex-col gap-[10px]">
+    <div class="flex items-center justify-between py-[0px] px-[16px]">
+      <div class="text-[17px] font-bold text-strong">Faktencheck</div>
+      <div onClick="{{ vm.openFakten }}" class="text-[13px] font-bold text-accent cursor-pointer whitespace-nowrap">Alle →</div>
+    </div>
+    <div class="flex gap-[10px] overflow-x-auto pt-[2px] px-[16px] pb-[8px]">
+      <sc-for list="{{ vm.faktenchecks }}" as="f" hint-placeholder-count="2">
+        <div onClick="{{ f.open }}" class="w-[240px] shrink-0 border border-line rounded-[5px] p-[12px] flex flex-col gap-[8px] cursor-pointer bg-card">
+          <div class="self-start bg-accent text-white text-[10px] font-bold tracking-[1px] whitespace-nowrap py-[3px] px-[7px] rounded-[2px]">{{ f.verdict }}</div>
+          <div class="text-[14px] font-semibold leading-[1.4] text-strong">{{ f.title }}</div>
+          <div class="text-[12px] text-mutedfg">{{ f.source }}</div>
+        </div>
+      </sc-for>
+    </div>
+  </div>
+
+  <!-- Participate card -->
+  <div onClick="{{ vm.goMitmachen }}" class="mt-[8px] mx-[16px] mb-[24px] bg-ink rounded-[5px] p-[16px] flex flex-col gap-[8px] cursor-pointer">
+    <div class="text-[11px] font-bold tracking-[1.2px]" style="color: rgba(255,255,255,0.6);">MITMACHEN · UMFRAGE</div>
+    <div class="font-serif font-bold text-[18px] leading-[1.3] text-white">Die Zukunft von CORRECTIV: Wir fragen Sie</div>
+    <div class="text-[14px] leading-[1.45]" style="color: rgba(255,255,255,0.75);">Ihre Antworten fließen direkt in unsere Planung ein. Fünf Minuten genügen.</div>
+    <div class="self-start bg-accent text-white text-[14px] font-bold py-[9px] px-[16px] rounded-[2px] whitespace-nowrap mt-[4px]">Jetzt mitmachen</div>
+  </div>
+
+  <!-- Mediathek row -->
+  <div class="pt-[0px] px-[16px] pb-[24px] flex flex-col gap-[10px]">
+    <div class="flex items-center justify-between">
+      <div class="text-[17px] font-bold text-strong">Mediathek</div>
+      <div onClick="{{ vm.goMediathek }}" class="text-[13px] font-bold text-accent cursor-pointer whitespace-nowrap">Alle →</div>
+    </div>
+    <div class="grid grid-cols-2 gap-[10px]">
+      <div onClick="{{ vm.mediaFeature.open }}" class="flex flex-col gap-[6px] cursor-pointer">
+        <div class="relative rounded-[2px] overflow-hidden bg-ink flex items-center justify-center" style="width: 100%; height: 96px;">
+          <div class="absolute top-[6px] left-[6px] text-[8px] font-bold tracking-[1px] text-white px-[5px] py-[2px] rounded-[2px]" style="background: var(--accent);">FUNFACTS</div>
+          <div class="w-[40px] h-[40px] rounded-full flex items-center justify-center" style="background: rgba(255,255,255,0.16);">
+            <svg width="15" height="15" viewBox="0 0 18 18"><path d="M5 3v12l10-6z" fill="#ffffff"></path></svg>
+          </div>
+        </div>
+        <div class="text-[13px] font-bold leading-[1.35] text-strong">{{ vm.mediaFeature.title }}</div>
+        <div class="text-[11px] text-mutedfg">{{ vm.mediaFeature.source }}</div>
+      </div>
+      <div onClick="{{ vm.radioToggle }}" class="bg-subtle rounded-[2px] p-[12px] flex flex-col justify-between cursor-pointer min-h-[96px]">
+        <div class="flex items-center gap-[6px]">
+          <div class="w-[8px] h-[8px] rounded-full bg-accent" style="animation: cvPulse 1.6s infinite;"></div>
+          <div class="text-[11px] font-bold tracking-[1px] text-accent">LIVE</div>
+        </div>
+        <div class="flex flex-col gap-[2px]">
+          <div class="text-[14px] font-bold text-strong">Salon5 Radio läuft</div>
+          <div class="text-[12px] text-mutedfg">24/7 aus Bottrop · Tippen zum Hören</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Backstage module -->
+  <div class="pt-[0px] px-[16px] pb-[24px] flex flex-col gap-[10px]">
+    <div class="flex items-center gap-[8px]">
+      <div class="text-[17px] font-bold text-strong">Backstage</div>
+      <div class="bg-highlight text-[#333333] text-[10px] font-bold tracking-[1px] whitespace-nowrap py-[2px] px-[6px] rounded-[2px]">CLUB</div>
+    </div>
+    <div class="grid grid-cols-2 gap-[10px]">
+      <sc-for list="{{ vm.backstageTiles }}" as="b" hint-placeholder-count="2">
+        <div onClick="{{ vm.openBackstage }}" class="bg-subtle rounded-[5px] p-[12px] flex flex-col gap-[6px] cursor-pointer">
+          <div class="text-[11px] font-bold tracking-[1px] text-mutedfg">{{ b.kicker }}</div>
+          <div class="text-[14px] font-bold leading-[1.35] text-strong">{{ b.title }}</div>
+        </div>
+      </sc-for>
+    </div>
+    <div onClick="{{ vm.openBackstage }}" class="text-[14px] font-bold text-strong cursor-pointer">Alles aus dem Backstage →</div>
+  </div>
+
+  <!-- Impact footer -->
+  <div class="mt-[0px] mx-[16px] mb-[28px] py-[20px] px-[16px] border-t border-line flex flex-col items-center gap-[8px] text-center">
+    <div class="font-serif text-[15px] text-strong">Ermöglicht durch Unterstützer:innen wie Sie.</div>
+    <sc-if value="{{ vm.impact.isGuest }}" hint-placeholder-val="{{ true }}">
+      <div onClick="{{ vm.impact.openJoin }}" class="text-[13px] font-bold text-accent cursor-pointer whitespace-nowrap">Unterstützer:in werden</div>
+    </sc-if>
+    <sc-if value="{{ vm.impact.isMember }}" hint-placeholder-val="{{ false }}">
+      <div class="text-[13px] text-mutedfg">Sie sind Teil davon. Danke.</div>
+    </sc-if>
+  </div>
+
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props="{&quot;$preview&quot;: {&quot;width&quot;: 402, &quot;height&quot;: 760}, &quot;vm&quot;: {&quot;editor&quot;: null}}"></script>
+</body>
+</html>

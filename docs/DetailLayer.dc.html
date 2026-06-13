@@ -1,0 +1,431 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<!--
+  DetailLayer — every "pushed" full-screen overlay, routed by the `detail`
+  view-model the shell builds from the navigation stack. Exactly one of the
+  show* flags is true at a time. All data + callbacks arrive via `detail`.
+  Sits at z-5, below the persistent media player (z-7).
+-->
+<div class="font-sans">
+
+  <!-- ===================== ARTICLE / FACT-CHECK READER ===================== -->
+  <sc-if value="{{ detail.showArticle }}" hint-placeholder-val="{{ false }}">
+    <div data-screen-label="Artikel-Reader" class="absolute inset-0 z-[5] bg-card flex flex-col">
+      <div class="pt-[62px] px-[12px] pb-[8px] flex items-center justify-between border-b border-line shrink-0">
+        <div onClick="{{ detail.back }}" class="flex items-center gap-[4px] cursor-pointer p-[6px] text-strong">
+          <svg width="11" height="18" viewBox="0 0 12 20" fill="none"><path d="M10 2L2 10l8 8" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"></path></svg>
+          <div class="text-[15px] font-semibold">Zurück</div>
+        </div>
+        <div onClick="{{ detail.toggleSave }}" class="text-[14px] font-bold text-strong cursor-pointer p-[6px]">{{ detail.saveLabel }}</div>
+      </div>
+      <div class="flex-1 overflow-y-auto min-h-0">
+        <image-slot id="{{ detail.article.imgSlot }}" shape="rect" placeholder="Titelbild hierher ziehen (og:image)" style="width: 100%; height: 210px; display: block;"></image-slot>
+        <div class="pt-[16px] px-[16px] pb-[0px] flex flex-col gap-[10px]">
+          <div class="text-[11px] font-bold tracking-[1.2px] text-accent">{{ detail.article.kicker }}</div>
+          <div class="font-serif font-black text-[28px] leading-[1.2] text-strong [text-wrap:pretty]">{{ detail.article.title }}</div>
+          <sc-if value="{{ detail.article.isFact }}" hint-placeholder-val="{{ false }}">
+            <div class="self-start bg-accent text-white text-[13px] font-bold tracking-[1.5px] py-[6px] px-[12px] rounded-[2px]">{{ detail.article.verdict }}</div>
+          </sc-if>
+          <div class="text-[13px] text-mutedfg pb-[6px] border-b border-line">{{ detail.article.authors }} · {{ detail.article.meta }}</div>
+        </div>
+        <div class="pt-[12px] px-[16px] pb-[0px] flex flex-col">
+          <sc-for list="{{ detail.article.body }}" as="b" hint-placeholder-count="4">
+            <sc-if value="{{ b.isP }}" hint-placeholder-val="{{ true }}">
+              <div class="font-serif text-[15.5px] leading-[1.8] tracking-[0.2px] text-strong pb-[18px]">{{ b.text }}</div>
+            </sc-if>
+            <sc-if value="{{ b.isH }}" hint-placeholder-val="{{ false }}">
+              <div class="text-[19px] font-bold leading-[1.3] text-strong pt-[6px] px-[0px] pb-[12px]">{{ b.text }}</div>
+            </sc-if>
+            <sc-if value="{{ b.isBox }}" hint-placeholder-val="{{ false }}">
+              <div class="bg-subtle rounded-[5px] py-[14px] px-[16px] text-[14px] leading-[1.55] text-strong mb-[18px]">{{ b.text }}</div>
+            </sc-if>
+          </sc-for>
+          <div class="text-[12px] text-faint pb-[18px]">Prototyp: Der Volltext wird beim Öffnen live von der Artikelseite geladen — hier gekürzt dargestellt.</div>
+        </div>
+        <div class="mt-[0px] mx-[16px] mb-[16px] bg-subtle rounded-[5px] p-[16px] flex flex-col gap-[10px] text-center items-center">
+          <div class="font-serif text-[15px] leading-[1.5] text-strong">Diese Recherche war nur möglich durch Unterstützer:innen wie Sie.</div>
+          <sc-if value="{{ detail.isGuest }}" hint-placeholder-val="{{ true }}">
+            <div onClick="{{ detail.openJoin }}" class="bg-accent text-white text-[14px] font-bold py-[9px] px-[18px] rounded-[2px] cursor-pointer">Unterstützer:in werden</div>
+          </sc-if>
+          <sc-if value="{{ detail.isMember }}" hint-placeholder-val="{{ false }}">
+            <div class="text-[13px] text-mutedfg">Sie machen das möglich. Danke.</div>
+          </sc-if>
+        </div>
+        <div class="pt-[0px] px-[16px] pb-[32px] flex gap-[18px] items-center">
+          <div class="text-[14px] font-bold text-strong cursor-pointer">Teilen</div>
+          <div onClick="{{ detail.toggleSave }}" class="text-[14px] font-bold text-strong cursor-pointer">{{ detail.saveLabel }}</div>
+          <div class="text-[14px] text-mutedfg ml-[auto]">Mehr zum Thema ›</div>
+        </div>
+      </div>
+    </div>
+  </sc-if>
+
+  <!-- ===================== SPOTLIGHT READER ===================== -->
+  <sc-if value="{{ detail.showSpotlight }}" hint-placeholder-val="{{ false }}">
+    <div data-screen-label="Spotlight-Reader" class="absolute inset-0 z-[5] bg-card flex flex-col">
+      <div class="pt-[62px] px-[12px] pb-[8px] flex items-center gap-[4px] border-b border-line shrink-0">
+        <div onClick="{{ detail.back }}" class="flex items-center gap-[4px] cursor-pointer p-[6px] text-strong">
+          <svg width="11" height="18" viewBox="0 0 12 20" fill="none"><path d="M10 2L2 10l8 8" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"></path></svg>
+          <div class="text-[15px] font-semibold">Zurück</div>
+        </div>
+      </div>
+      <div class="flex-1 overflow-y-auto min-h-0 pt-[18px] px-[16px] pb-[32px]">
+        <div class="flex items-center justify-between pb-[14px]">
+          <div class="text-[18px] text-faint cursor-pointer py-[4px] px-[8px]">‹</div>
+          <div class="flex flex-col items-center gap-[2px]">
+            <div class="text-[12px] font-bold tracking-[1.5px] text-accent">SPOTLIGHT</div>
+            <div class="text-[13px] text-mutedfg">{{ detail.spotlight.date }}</div>
+          </div>
+          <div class="text-[18px] py-[4px] px-[8px] text-line2">›</div>
+        </div>
+        <div class="font-serif text-[15.5px] leading-[1.8] text-strong pb-[18px]">{{ detail.spotlight.intro }}</div>
+        <div class="flex flex-col gap-[16px]">
+          <sc-for list="{{ detail.spotlight.edition }}" as="e" hint-placeholder-count="3">
+            <div class="border-t border-line pt-[14px] flex flex-col gap-[6px]">
+              <div class="text-[15px] font-bold text-strong leading-[1.4]">{{ e.title }}</div>
+              <div class="font-serif text-[14.5px] leading-[1.7] text-strong">{{ e.text }}</div>
+            </div>
+          </sc-for>
+        </div>
+        <div class="border-t border-line mt-[18px] pt-[14px] font-serif text-[14.5px] leading-[1.7] text-mutedfg">{{ detail.spotlight.outro }}</div>
+      </div>
+    </div>
+  </sc-if>
+
+  <!-- ===================== PROJECT FRONT ===================== -->
+  <sc-if value="{{ detail.showProjekt }}" hint-placeholder-val="{{ false }}">
+    <div data-screen-label="Projektseite" class="absolute inset-0 z-[5] bg-card flex flex-col">
+      <div class="pt-[62px] px-[12px] pb-[8px] flex items-center gap-[4px] border-b border-line shrink-0">
+        <div onClick="{{ detail.back }}" class="flex items-center gap-[4px] cursor-pointer p-[6px] text-strong">
+          <svg width="11" height="18" viewBox="0 0 12 20" fill="none"><path d="M10 2L2 10l8 8" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"></path></svg>
+          <div class="text-[15px] font-semibold">Zurück</div>
+        </div>
+      </div>
+      <div class="flex-1 overflow-y-auto min-h-0">
+        <div class="pt-[18px] px-[16px] pb-[14px] flex flex-col gap-[8px] border-b border-line">
+          <div class="self-start bg-accent text-white text-[10px] font-bold tracking-[1px] whitespace-nowrap py-[3px] px-[7px] rounded-[2px]">{{ detail.projekt.badge }}</div>
+          <div class="font-bold text-[24px] text-strong">{{ detail.projekt.title }}</div>
+          <div class="text-[14px] text-mutedfg leading-[1.5]">{{ detail.projekt.description }}</div>
+          <div onClick="{{ detail.projekt.onAction }}" class="self-start border-[1.5px] border-strongline text-strong text-[14px] font-bold py-[8px] px-[14px] rounded-[2px] whitespace-nowrap cursor-pointer mt-[2px]">{{ detail.projekt.action }}</div>
+        </div>
+        <div class="pt-[6px] px-[16px] pb-[28px] flex flex-col">
+          <sc-for list="{{ detail.projekt.feed }}" as="a" hint-placeholder-count="4">
+            <div onClick="{{ a.open }}" class="flex flex-col gap-[5px] py-[13px] px-[0px] border-b border-line cursor-pointer">
+              <sc-if value="{{ a.hasVerdict }}" hint-placeholder-val="{{ false }}">
+                <div class="self-start bg-accent text-white text-[10px] font-bold tracking-[1px] whitespace-nowrap py-[2px] px-[6px] rounded-[2px]">{{ a.verdict }}</div>
+              </sc-if>
+              <div class="text-[15px] font-bold leading-[1.4] text-strong">{{ a.title }}</div>
+              <div class="text-[12px] text-mutedfg">{{ a.meta }}</div>
+            </div>
+          </sc-for>
+        </div>
+      </div>
+    </div>
+  </sc-if>
+
+  <!-- ===================== FAKTENFORUM ===================== -->
+  <sc-if value="{{ detail.showFaktenforum }}" hint-placeholder-val="{{ false }}">
+    <div data-screen-label="Faktenforum" class="absolute inset-0 z-[5] bg-card flex flex-col">
+      <div class="pt-[62px] px-[12px] pb-[8px] flex items-center gap-[4px] border-b border-line shrink-0">
+        <div onClick="{{ detail.back }}" class="flex items-center gap-[4px] cursor-pointer p-[6px] text-strong">
+          <svg width="11" height="18" viewBox="0 0 12 20" fill="none"><path d="M10 2L2 10l8 8" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"></path></svg>
+          <div class="text-[15px] font-semibold">Mitmachen</div>
+        </div>
+      </div>
+      <div class="flex-1 overflow-y-auto min-h-0">
+        <div class="pt-[18px] px-[16px] pb-[10px] flex flex-col gap-[6px]">
+          <div class="font-bold text-[24px] text-strong">Faktenforum</div>
+          <div class="text-[14px] text-mutedfg leading-[1.5]">Eingereichte Behauptungen — geprüft von der Community, angeleitet von der Redaktion.</div>
+        </div>
+        <div class="pt-[0px] px-[16px] pb-[28px] flex flex-col">
+          <sc-for list="{{ detail.claims }}" as="c" hint-placeholder-count="5">
+            <div onClick="{{ c.open }}" class="flex flex-col gap-[6px] py-[13px] px-[0px] border-b border-line cursor-pointer">
+              <div class="self-start text-[10px] font-bold tracking-[1px] whitespace-nowrap py-[3px] px-[7px] rounded-[2px]" style="background: {{ c.sBg }}; color: {{ c.sFg }}; border: 1px solid {{ c.sBd }};">{{ c.status }}</div>
+              <div class="text-[15px] font-semibold leading-[1.4] text-strong">{{ c.claim }}</div>
+              <div class="text-[12px] text-mutedfg">{{ c.meta }}</div>
+            </div>
+          </sc-for>
+        </div>
+      </div>
+    </div>
+  </sc-if>
+
+  <!-- ===================== CLAIM DETAIL ===================== -->
+  <sc-if value="{{ detail.showClaim }}" hint-placeholder-val="{{ false }}">
+    <div data-screen-label="Behauptung" class="absolute inset-0 z-[5] bg-card flex flex-col">
+      <div class="pt-[62px] px-[12px] pb-[8px] flex items-center gap-[4px] border-b border-line shrink-0">
+        <div onClick="{{ detail.back }}" class="flex items-center gap-[4px] cursor-pointer p-[6px] text-strong">
+          <svg width="11" height="18" viewBox="0 0 12 20" fill="none"><path d="M10 2L2 10l8 8" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"></path></svg>
+          <div class="text-[15px] font-semibold">Faktenforum</div>
+        </div>
+      </div>
+      <div class="flex-1 overflow-y-auto min-h-0 pt-[18px] px-[16px] pb-[32px]">
+        <div class="self-start inline-block text-[10px] font-bold tracking-[1px] whitespace-nowrap py-[3px] px-[7px] rounded-[2px]" style="background: {{ detail.claim.sBg }}; color: {{ detail.claim.sFg }}; border: 1px solid {{ detail.claim.sBd }};">{{ detail.claim.status }}</div>
+        <div class="font-serif font-bold text-[20px] leading-[1.4] text-strong pt-[12px] px-[0px] pb-[6px]">„{{ detail.claim.q }}“</div>
+        <div class="text-[12px] text-mutedfg pb-[18px]">{{ detail.claim.meta }}</div>
+        <div class="flex items-center gap-[0px] pb-[20px]">
+          <div class="flex flex-col items-center gap-[4px] flex-1">
+            <div class="w-[12px] h-[12px] rounded-full" style="background: {{ detail.claim.d1 }};"></div>
+            <div class="text-[11px] text-mutedfg">Eingereicht</div>
+          </div>
+          <div class="h-[1px] flex-1 mt-[-16px] bg-line"></div>
+          <div class="flex flex-col items-center gap-[4px] flex-1">
+            <div class="w-[12px] h-[12px] rounded-full" style="background: {{ detail.claim.d2 }};"></div>
+            <div class="text-[11px] text-mutedfg">In Prüfung</div>
+          </div>
+          <div class="h-[1px] flex-1 mt-[-16px] bg-line"></div>
+          <div class="flex flex-col items-center gap-[4px] flex-1">
+            <div class="w-[12px] h-[12px] rounded-full" style="background: {{ detail.claim.d3 }};"></div>
+            <div class="text-[11px] text-mutedfg">Geprüft</div>
+          </div>
+        </div>
+        <div class="text-[12px] font-bold tracking-[1.2px] text-mutedfg pb-[8px]">QUELLENBEWERTUNG</div>
+        <div class="flex flex-col">
+          <sc-for list="{{ detail.claim.sources }}" as="s" hint-placeholder-count="2">
+            <div class="flex items-center gap-[10px] py-[11px] px-[0px] border-b border-line">
+              <div class="w-[9px] h-[9px] rounded-full shrink-0" style="background: {{ s.dot }};"></div>
+              <div class="flex-1 text-[14px] text-strong">{{ s.name }}</div>
+              <div class="text-[13px] font-semibold text-mutedfg">{{ s.confidence }}</div>
+            </div>
+          </sc-for>
+        </div>
+        <div class="bg-subtle rounded-[5px] py-[14px] px-[16px] text-[13px] leading-[1.5] text-mutedfg mt-[18px]">Prototyp: Datenmodell nach echtem Faktenforum-Schema (Claim, Status, Quellenbewertung). Inhalte sind Beispieldaten.</div>
+      </div>
+    </div>
+  </sc-if>
+
+  <!-- ===================== CALLOUT FLOW ===================== -->
+  <sc-if value="{{ detail.showCallout }}" hint-placeholder-val="{{ false }}">
+    <div data-screen-label="Callout-Flow" class="absolute inset-0 z-[5] bg-card flex flex-col">
+      <div class="pt-[62px] px-[12px] pb-[8px] flex items-center justify-between border-b border-line shrink-0">
+        <div onClick="{{ detail.back }}" class="flex items-center gap-[4px] cursor-pointer p-[6px] text-strong">
+          <svg width="11" height="18" viewBox="0 0 12 20" fill="none"><path d="M10 2L2 10l8 8" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"></path></svg>
+          <div class="text-[15px] font-semibold">Mitmachen</div>
+        </div>
+        <div class="text-[13px] text-mutedfg pr-[6px]">{{ detail.calloutStepLabel }}</div>
+      </div>
+      <div class="flex-1 overflow-y-auto min-h-0">
+
+        <sc-if value="{{ detail.c0 }}" hint-placeholder-val="{{ true }}">
+          <div class="pt-[18px] px-[16px] pb-[32px] flex flex-col gap-[14px]">
+            <div class="flex flex-col gap-[8px]">
+              <div class="self-start text-[11px] font-bold tracking-[1.2px] text-accent">{{ detail.callout.kicker }}</div>
+              <div class="font-serif font-black text-[24px] leading-[1.25] text-strong">{{ detail.callout.title }}</div>
+              <div class="text-[15px] text-strong leading-[1.55]">{{ detail.callout.description }}</div>
+            </div>
+            <div class="flex flex-col gap-[5px]">
+              <div class="h-[4px] rounded-[2px] overflow-hidden bg-muted"><div class="h-full bg-ink" style="width: {{ detail.callout.progressPct }};"></div></div>
+              <div class="text-[12px] text-mutedfg">{{ detail.callout.contributions }}</div>
+            </div>
+            <div class="flex flex-col gap-[4px] border-t border-line pt-[12px]">
+              <div class="text-[12px] font-bold tracking-[1.2px] text-mutedfg">WER FRAGT?</div>
+              <div class="text-[14px] text-strong leading-[1.5]">{{ detail.callout.org }}</div>
+            </div>
+            <div class="bg-subtle rounded-[5px] py-[14px] px-[16px] flex flex-col gap-[4px]">
+              <div class="text-[12px] font-bold tracking-[1.2px] text-mutedfg">DATENSCHUTZ IM KLARTEXT</div>
+              <div class="text-[13px] text-strong leading-[1.55]">{{ detail.callout.privacy }}</div>
+            </div>
+            <div onClick="{{ detail.startCallout }}" class="bg-accent text-white text-[16px] font-bold p-[13px] rounded-[2px] cursor-pointer text-center">Jetzt beitragen</div>
+          </div>
+        </sc-if>
+
+        <sc-if value="{{ detail.c1 }}" hint-placeholder-val="{{ false }}">
+          <div class="pt-[18px] px-[16px] pb-[32px] flex flex-col gap-[18px]">
+            <div class="flex flex-col gap-[10px]">
+              <div class="text-[16px] font-bold text-strong leading-[1.4]">{{ detail.callout.q1 }}</div>
+              <div class="flex gap-[8px]" style="flex-wrap: wrap;">
+                <sc-for list="{{ detail.callout.options }}" as="o" hint-placeholder-count="4">
+                  <div onClick="{{ o.toggle }}" class="text-[14px] font-semibold py-[8px] px-[13px] rounded-[2px] cursor-pointer" style="border: 1.5px solid {{ o.bd }}; background: {{ o.bg }}; color: {{ o.fg }};">{{ o.label }}</div>
+                </sc-for>
+              </div>
+            </div>
+            <div class="flex flex-col gap-[10px]">
+              <div class="text-[16px] font-bold text-strong leading-[1.4]">{{ detail.callout.q2 }}</div>
+              <textarea rows="4" placeholder="Ihre Antwort …" class="w-full border border-line2 rounded-[2px] py-[10px] px-[12px] text-[15px] leading-[1.5] text-strong" style="resize: none; outline: none;"></textarea>
+            </div>
+            <sc-if value="{{ detail.callout.hasPhoto }}" hint-placeholder-val="{{ false }}">
+              <div class="flex flex-col gap-[10px]">
+                <div class="text-[16px] font-bold text-strong">Foto anhängen <span class="font-normal text-mutedfg text-[14px]">(optional)</span></div>
+                <image-slot id="img-callout-foto" shape="rounded" radius="2" placeholder="Foto" style="width: 96px; height: 96px;"></image-slot>
+              </div>
+            </sc-if>
+            <div onClick="{{ detail.submitCallout }}" class="bg-accent text-white text-[16px] font-bold p-[13px] rounded-[2px] cursor-pointer text-center">Beitrag absenden</div>
+          </div>
+        </sc-if>
+
+        <sc-if value="{{ detail.c2 }}" hint-placeholder-val="{{ false }}">
+          <div class="pt-[40px] px-[24px] pb-[32px] flex flex-col items-center gap-[14px] text-center">
+            <svg width="56" height="56" viewBox="0 0 56 56"><circle cx="28" cy="28" r="26" fill="none" stroke="#333333" stroke-width="2.5"></circle><path d="M17 29l8 8 14-16" fill="none" stroke="#333333" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"></path></svg>
+            <div class="font-serif font-black text-[23px] leading-[1.3] text-strong">Danke — Ihr Beitrag fließt in die Recherche ein.</div>
+            <div class="text-[14px] text-mutedfg leading-[1.5]">Die Redaktion sichtet alle Beiträge. Persönliche Daten bleiben geschützt.</div>
+            <div onClick="{{ detail.toggleUpdates }}" class="border-[1.5px] border-strongline text-strong text-[14px] font-bold py-[10px] px-[16px] rounded-[2px] cursor-pointer">{{ detail.updatesLabel }}</div>
+            <div onClick="{{ detail.back }}" class="text-[14px] font-bold text-accent cursor-pointer p-[4px]">Zurück zur Übersicht</div>
+          </div>
+        </sc-if>
+      </div>
+    </div>
+  </sc-if>
+
+  <!-- ===================== BACKSTAGE ===================== -->
+  <sc-if value="{{ detail.showBackstage }}" hint-placeholder-val="{{ false }}">
+    <div data-screen-label="Backstage" class="absolute inset-0 z-[5] bg-card flex flex-col">
+      <div class="pt-[62px] px-[12px] pb-[8px] flex items-center justify-between border-b border-line shrink-0">
+        <div onClick="{{ detail.back }}" class="flex items-center gap-[4px] cursor-pointer p-[6px] text-strong">
+          <svg width="11" height="18" viewBox="0 0 12 20" fill="none"><path d="M10 2L2 10l8 8" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"></path></svg>
+          <div class="text-[15px] font-semibold">Zurück</div>
+        </div>
+        <div class="bg-highlight text-[#333333] text-[10px] font-bold tracking-[1px] whitespace-nowrap py-[3px] px-[7px] rounded-[2px] mr-[6px]">CLUB</div>
+      </div>
+      <div class="flex-1 overflow-y-auto min-h-0">
+        <div class="pt-[18px] px-[16px] pb-[14px] flex flex-col gap-[6px]">
+          <div class="font-bold text-[28px] text-strong">Backstage</div>
+          <sc-if value="{{ detail.isMember }}" hint-placeholder-val="{{ false }}">
+            <div class="text-[15px] text-mutedfg leading-[1.5]">Schön, dass Sie da sind. Hier sehen Sie, wie unsere Recherchen entstehen.</div>
+          </sc-if>
+          <sc-if value="{{ detail.isGuest }}" hint-placeholder-val="{{ true }}">
+            <div class="text-[15px] text-mutedfg leading-[1.5]">So sieht es hinter den Kulissen aus. Alles hier ist Teil des CORRECTIV Club.</div>
+          </sc-if>
+        </div>
+
+        <sc-if value="{{ detail.isGuest }}" hint-placeholder-val="{{ true }}">
+          <div class="mt-[0px] mx-[16px] mb-[18px] bg-highlightwash border border-highlight rounded-[5px] py-[14px] px-[16px] flex flex-col gap-[8px]">
+            <div class="font-serif font-bold text-[16px] leading-[1.4] text-strong">CORRECTIV gehört niemandem. Außer allen.</div>
+            <div class="text-[14px] text-mutedfg leading-[1.5]">Werden Sie Teil des Clubs — und dieser Bereich öffnet sich für Sie.</div>
+            <div onClick="{{ detail.openJoin }}" class="self-start bg-accent text-white text-[14px] font-bold py-[9px] px-[16px] rounded-[2px] whitespace-nowrap cursor-pointer">Unterstützer:in werden</div>
+          </div>
+        </sc-if>
+
+        <div class="pt-[0px] px-[16px] pb-[20px] flex flex-col gap-[10px]">
+          <div class="text-[12px] font-bold tracking-[1.2px] text-mutedfg">FRÜHER LESEN</div>
+          <div class="border border-line rounded-[5px] py-[14px] px-[16px] flex flex-col gap-[7px]">
+            <div class="font-serif font-bold text-[17px] leading-[1.3] text-strong">Pension um jeden Preis</div>
+            <div class="text-[13px] text-mutedfg">Für alle ab Montag, 15. Juni</div>
+            <sc-if value="{{ detail.isMember }}" hint-placeholder-val="{{ false }}">
+              <div onClick="{{ detail.openPension }}" class="self-start bg-ink text-white text-[14px] font-bold py-[8px] px-[14px] rounded-[2px] whitespace-nowrap cursor-pointer">Jetzt lesen</div>
+            </sc-if>
+            <sc-if value="{{ detail.isGuest }}" hint-placeholder-val="{{ true }}">
+              <div class="text-[13px] text-mutedfg">Clubmitglieder lesen jetzt schon.</div>
+            </sc-if>
+          </div>
+        </div>
+
+        <div class="pt-[0px] px-[16px] pb-[20px] flex flex-col gap-[4px]">
+          <div class="text-[12px] font-bold tracking-[1.2px] text-mutedfg pb-[6px]">RECHERCHETAGEBUCH · PENSIONSKASSEN</div>
+          <div class="flex flex-col gap-[4px] py-[10px] px-[0px] border-b border-line">
+            <div class="text-[15px] font-bold text-strong">Woche 3: Die Spur führt nach Bern</div>
+            <div class="text-[13px] text-mutedfg leading-[1.45]">Ein Dokument aus der Schweiz wirft neue Fragen auf — und öffnet eine Tür.</div>
+          </div>
+          <div class="flex flex-col gap-[4px] py-[10px] px-[0px] border-b border-line">
+            <div class="text-[15px] font-bold text-strong">Woche 2: Wer redet, wer schweigt</div>
+            <div class="text-[13px] text-mutedfg leading-[1.45]">Erste Gespräche mit Insidern — und eine überraschende Absage.</div>
+          </div>
+          <div class="flex flex-col gap-[4px] py-[10px] px-[0px]">
+            <div class="text-[15px] font-bold text-strong">Woche 1: Ein Hinweis aus der Community</div>
+            <div class="text-[13px] text-mutedfg leading-[1.45]">Wie ein Beitrag aus dem CrowdNewsroom diese Recherche ausgelöst hat.</div>
+          </div>
+        </div>
+
+        <div class="pt-[0px] px-[16px] pb-[20px] flex flex-col gap-[10px]">
+          <div class="text-[12px] font-bold tracking-[1.2px] text-mutedfg">BONUS-AUDIO</div>
+          <div class="bg-subtle rounded-[5px] py-[12px] px-[16px] flex items-center gap-[12px]">
+            <div onClick="{{ detail.playBonus }}" class="w-[38px] h-[38px] rounded-full bg-ink flex items-center justify-center cursor-pointer shrink-0">
+              <svg width="14" height="14" viewBox="0 0 18 18"><path d="M5 3v12l10-6z" fill="#ffffff"></path></svg>
+            </div>
+            <div class="flex flex-col gap-[2px]">
+              <div class="text-[14px] font-bold text-strong">Wie wir an die Pensionskassen-Daten kamen</div>
+              <div class="text-[12px] text-mutedfg">{{ detail.bonusSubLabel }}</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="pt-[0px] px-[16px] pb-[20px] flex flex-col gap-[10px]">
+          <div class="text-[12px] font-bold tracking-[1.2px] text-mutedfg">Q&amp;A MIT DER REDAKTION</div>
+          <div class="border border-line rounded-[5px] py-[14px] px-[16px] flex flex-col gap-[8px]">
+            <div class="text-[15px] font-bold text-strong">Fr, 26. Juni, 18 Uhr — mit dem Pensionskassen-Team</div>
+            <sc-if value="{{ detail.isMember }}" hint-placeholder-val="{{ false }}">
+              <div onClick="{{ detail.sendQa }}" class="self-start border-[1.5px] border-strongline text-strong text-[14px] font-bold py-[8px] px-[14px] rounded-[2px] whitespace-nowrap cursor-pointer">{{ detail.qaLabel }}</div>
+            </sc-if>
+            <sc-if value="{{ detail.isGuest }}" hint-placeholder-val="{{ true }}">
+              <div class="text-[13px] text-mutedfg">Clubmitglieder reichen vorab Fragen ein.</div>
+            </sc-if>
+          </div>
+        </div>
+
+        <div class="pt-[0px] px-[16px] pb-[20px] flex flex-col gap-[10px]">
+          <div class="text-[12px] font-bold tracking-[1.2px] text-mutedfg">EVENTS</div>
+          <div class="border border-line rounded-[5px] py-[14px] px-[16px] flex flex-col gap-[6px]">
+            <div class="text-[15px] font-bold text-strong">Buchpremiere des CORRECTIV Verlags</div>
+            <div class="text-[13px] text-mutedfg">Berlin · Einladung für Clubmitglieder</div>
+            <sc-if value="{{ detail.isMember }}" hint-placeholder-val="{{ false }}">
+              <div class="self-start border-[1.5px] border-strongline text-strong text-[14px] font-bold py-[8px] px-[14px] rounded-[2px] whitespace-nowrap cursor-pointer mt-[2px]">Platz reservieren</div>
+            </sc-if>
+          </div>
+        </div>
+
+        <div class="pt-[0px] px-[16px] pb-[32px] flex flex-col gap-[10px]">
+          <div class="text-[12px] font-bold tracking-[1.2px] text-mutedfg">IHR VERLAG-VORTEIL</div>
+          <div class="grid grid-cols-2 gap-[10px]">
+            <div class="flex flex-col gap-[6px]">
+              <image-slot id="img-buch-akten" shape="rounded" radius="2" placeholder="Cover" src="https://correctiv.org/wp-content/uploads/elementor/thumbs/Header_Main-1-rkqgx88l1cy7jr8d6clvwaro4urrk6oxftt3e5t1tc.webp" style="width: 100%; height: 150px;"></image-slot>
+              <div class="text-[13px] font-bold text-strong">Akten des Missbrauchs</div>
+            </div>
+            <div class="flex flex-col gap-[6px]">
+              <image-slot id="img-buch-karten" shape="rounded" radius="2" placeholder="Cover" style="width: 100%; height: 150px;"></image-slot>
+              <div class="text-[13px] font-bold text-strong">100 Karten über Rechtsextremismus</div>
+            </div>
+          </div>
+          <sc-if value="{{ detail.isMember }}" hint-placeholder-val="{{ false }}">
+            <div class="text-[14px] text-strong">Ihr Bookzine des Quartals ist inklusive. Zum Shop ↗</div>
+          </sc-if>
+          <sc-if value="{{ detail.isGuest }}" hint-placeholder-val="{{ true }}">
+            <div class="text-[13px] text-mutedfg">Clubmitglieder erhalten das Bookzine des Quartals inklusive.</div>
+          </sc-if>
+        </div>
+      </div>
+    </div>
+  </sc-if>
+
+  <!-- ===================== QUARTERLY REPORT ===================== -->
+  <sc-if value="{{ detail.showBericht }}" hint-placeholder-val="{{ false }}">
+    <div data-screen-label="Quartalsbericht" class="absolute inset-0 z-[5] bg-card flex flex-col">
+      <div class="pt-[62px] px-[12px] pb-[8px] flex items-center gap-[4px] border-b border-line shrink-0">
+        <div onClick="{{ detail.back }}" class="flex items-center gap-[4px] cursor-pointer p-[6px] text-strong">
+          <svg width="11" height="18" viewBox="0 0 12 20" fill="none"><path d="M10 2L2 10l8 8" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"></path></svg>
+          <div class="text-[15px] font-semibold">Profil</div>
+        </div>
+      </div>
+      <div class="flex-1 overflow-y-auto min-h-0 pt-[18px] px-[16px] pb-[32px]">
+        <div class="text-[11px] font-bold tracking-[1.2px] text-mutedfg">TRANSPARENZ</div>
+        <div class="font-serif font-black text-[24px] leading-[1.25] text-strong pt-[8px] px-[0px] pb-[6px]">Quartalsbericht Q1 2026</div>
+        <div class="text-[14px] text-mutedfg leading-[1.5] pb-[18px]">Woher unser Geld kommt und wohin es fließt — offengelegt für unsere Unterstützer:innen.</div>
+        <div class="flex flex-col gap-[14px]">
+          <div class="flex flex-col gap-[5px]">
+            <div class="flex justify-between text-[14px] text-strong"><span>Redaktion &amp; Recherche</span><span class="font-bold">▮▮▮</span></div>
+            <div class="h-[6px] rounded-[2px] overflow-hidden bg-muted"><div class="h-full w-[62%] bg-ink"></div></div>
+          </div>
+          <div class="flex flex-col gap-[5px]">
+            <div class="flex justify-between text-[14px] text-strong"><span>Bildung &amp; Community</span><span class="font-bold">▮▮</span></div>
+            <div class="h-[6px] rounded-[2px] overflow-hidden bg-muted"><div class="h-full w-[24%] bg-ink"></div></div>
+          </div>
+          <div class="flex flex-col gap-[5px]">
+            <div class="flex justify-between text-[14px] text-strong"><span>Verwaltung</span><span class="font-bold">▮</span></div>
+            <div class="h-[6px] rounded-[2px] overflow-hidden bg-muted"><div class="h-full w-[14%] bg-ink"></div></div>
+          </div>
+        </div>
+        <div class="bg-subtle rounded-[5px] py-[14px] px-[16px] text-[13px] leading-[1.5] text-mutedfg mt-[20px]">Prototyp: Struktur nach echtem Transparenz-Material (correctiv.org/ueber-uns/finanzen). Werte sind Platzhalter.</div>
+      </div>
+    </div>
+  </sc-if>
+
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props="{&quot;$preview&quot;: {&quot;width&quot;: 402, &quot;height&quot;: 874}, &quot;detail&quot;: {&quot;editor&quot;: null}}"></script>
+</body>
+</html>

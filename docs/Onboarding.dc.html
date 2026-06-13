@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<!--
+  Onboarding — first-run flow (mission → interests → participate → club).
+  Driven by the `ob` view-model from the shell.
+-->
+<sc-if value="{{ ob.open }}" hint-placeholder-val="{{ true }}">
+  <div data-screen-label="Onboarding" class="absolute inset-0 z-[8] flex flex-col">
+
+    <sc-if value="{{ ob.s0 }}" hint-placeholder-val="{{ true }}">
+      <div data-screen-label="Onboarding Mission" class="flex-1 bg-accent flex flex-col justify-end pt-[0px] px-[24px] pb-[48px] gap-[18px]">
+        <div class="font-black text-[15px] tracking-[2px] text-white">CORRECTIV</div>
+        <div class="font-serif font-black text-[34px] leading-[1.2] text-white [text-wrap:pretty]">Recherchen für die Gesellschaft</div>
+        <div class="flex flex-col gap-[10px]">
+          <div class="flex gap-[10px] items-baseline"><div class="w-[7px] h-[7px] rounded-full bg-highlight shrink-0" style="transform: translateY(-2px);"></div><div class="text-[16px] text-white">Gemeinnützig — uns gehört niemand</div></div>
+          <div class="flex gap-[10px] items-baseline"><div class="w-[7px] h-[7px] rounded-full bg-highlight shrink-0" style="transform: translateY(-2px);"></div><div class="text-[16px] text-white">Spendenfinanziert — von Tausenden getragen</div></div>
+          <div class="flex gap-[10px] items-baseline"><div class="w-[7px] h-[7px] rounded-full bg-highlight shrink-0" style="transform: translateY(-2px);"></div><div class="text-[16px] text-white">Ohne Paywall — Journalismus für alle</div></div>
+        </div>
+        <div onClick="{{ ob.next }}" class="bg-card text-strong text-[16px] font-bold p-[14px] rounded-[2px] cursor-pointer text-center mt-[10px]">Los geht's</div>
+      </div>
+    </sc-if>
+
+    <sc-if value="{{ ob.s1 }}" hint-placeholder-val="{{ false }}">
+      <div data-screen-label="Onboarding Interessen" class="flex-1 bg-card flex flex-col pt-[80px] px-[24px] pb-[48px] gap-[16px]">
+        <div class="font-serif font-black text-[27px] leading-[1.25] text-strong">Was interessiert Sie?</div>
+        <div class="text-[15px] text-mutedfg leading-[1.5]">Ihre Auswahl ordnet die Startseite — alles bleibt für Sie zugänglich.</div>
+        <div class="flex gap-[10px] pt-[6px]" style="flex-wrap: wrap;">
+          <sc-for list="{{ ob.chips }}" as="ch" hint-placeholder-count="8">
+            <div onClick="{{ ch.toggle }}" class="text-[15px] font-semibold py-[9px] px-[15px] rounded-[2px] cursor-pointer" style="border: 1.5px solid {{ ch.bd }}; background: {{ ch.bg }}; color: {{ ch.fg }};">{{ ch.label }}</div>
+          </sc-for>
+        </div>
+        <div class="mt-[auto] flex flex-col gap-[12px]">
+          <div onClick="{{ ob.next }}" class="bg-accent text-white text-[16px] font-bold p-[14px] rounded-[2px] cursor-pointer text-center">Weiter</div>
+          <div onClick="{{ ob.skip }}" class="text-[14px] font-bold text-mutedfg cursor-pointer text-center">Überspringen</div>
+        </div>
+      </div>
+    </sc-if>
+
+    <sc-if value="{{ ob.s2 }}" hint-placeholder-val="{{ false }}">
+      <div data-screen-label="Onboarding Mitmachen" class="flex-1 bg-card flex flex-col pt-[80px] px-[24px] pb-[48px] gap-[16px]">
+        <div class="font-serif font-black text-[27px] leading-[1.25] text-strong">Recherchen entstehen mit Ihnen</div>
+        <div class="text-[15px] text-mutedfg leading-[1.5]">Im CrowdNewsroom teilen Sie Erfahrungen, im Faktenforum prüfen Sie Behauptungen — gemeinsam mit der Redaktion.</div>
+        <div class="bg-subtle rounded-[5px] py-[14px] px-[16px] flex flex-col gap-[4px]">
+          <div class="text-[14px] font-bold text-strong">Aktueller Aufruf</div>
+          <div class="text-[14px] text-mutedfg">Wem gehört die Stadt? · 2.143 Beiträge</div>
+        </div>
+        <div class="flex items-center justify-between border-t border-line pt-[14px]">
+          <div class="flex flex-col gap-[2px]">
+            <div class="text-[15px] font-bold text-strong">Push-Mitteilungen</div>
+            <div class="text-[13px] text-mutedfg">Neue Recherchen &amp; Mitmach-Aufrufe</div>
+          </div>
+          <div onClick="{{ ob.togglePush }}" class="w-[42px] h-[25px] rounded-[13px] relative cursor-pointer transition-colors duration-200" style="background: {{ ob.pushBg }};">
+            <div class="absolute top-[2.5px] left-[2.5px] w-[20px] h-[20px] rounded-full bg-card transition-transform duration-200" style="transform: {{ ob.pushX }};"></div>
+          </div>
+        </div>
+        <div class="mt-[auto] flex flex-col gap-[12px]">
+          <div onClick="{{ ob.next }}" class="bg-accent text-white text-[16px] font-bold p-[14px] rounded-[2px] cursor-pointer text-center">Weiter</div>
+          <div onClick="{{ ob.skip }}" class="text-[14px] font-bold text-mutedfg cursor-pointer text-center">Überspringen</div>
+        </div>
+      </div>
+    </sc-if>
+
+    <sc-if value="{{ ob.s3 }}" hint-placeholder-val="{{ false }}">
+      <div data-screen-label="Onboarding Club" class="flex-1 bg-card flex flex-col pt-[80px] px-[24px] pb-[48px] gap-[16px]">
+        <div class="self-start bg-highlight text-[#333333] text-[10px] font-bold tracking-[1px] whitespace-nowrap py-[3px] px-[7px] rounded-[2px]">CORRECTIV CLUB</div>
+        <div class="font-serif font-black text-[27px] leading-[1.25] text-strong">CORRECTIV gehört niemandem. Außer allen.</div>
+        <div class="text-[15px] text-mutedfg leading-[1.55]">Der Journalismus bleibt frei — für alle. Clubmitglieder bekommen Nähe: Backstage-Einblicke, frühen Zugang, den direkten Draht zur Redaktion.</div>
+        <div class="mt-[auto] flex flex-col gap-[12px]">
+          <div onClick="{{ ob.join }}" class="bg-accent text-white text-[16px] font-bold p-[14px] rounded-[2px] cursor-pointer text-center">Unterstützer:in werden</div>
+          <div onClick="{{ ob.browse }}" class="border-[1.5px] border-strongline text-strong text-[16px] font-bold p-[13px] rounded-[2px] cursor-pointer text-center">Erstmal umsehen</div>
+        </div>
+      </div>
+    </sc-if>
+
+    <div class="absolute top-[66px] right-[20px] flex gap-[5px]">
+      <div class="w-[16px] h-[3px] rounded-[2px]" style="background: {{ ob.d0 }};"></div>
+      <div class="w-[16px] h-[3px] rounded-[2px]" style="background: {{ ob.d1 }};"></div>
+      <div class="w-[16px] h-[3px] rounded-[2px]" style="background: {{ ob.d2 }};"></div>
+      <div class="w-[16px] h-[3px] rounded-[2px]" style="background: {{ ob.d3 }};"></div>
+    </div>
+  </div>
+</sc-if>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props="{&quot;$preview&quot;: {&quot;width&quot;: 402, &quot;height&quot;: 874}, &quot;ob&quot;: {&quot;editor&quot;: null}}"></script>
+</body>
+</html>
