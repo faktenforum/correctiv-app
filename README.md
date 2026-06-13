@@ -1,56 +1,80 @@
-# Welcome to your Expo app 👋
+# CORRECTIV App — Prototyp (React Native / Expo)
 
-This is an [Expo](https://expo.dev) project created with [`create-expo-app`](https://www.npmjs.com/package/create-expo-app).
+Prototyp der CORRECTIV-App gemäß `../app/KONZEPT.md` und `../app/DATENQUELLEN.md`.
+Eine vergleichende Vue-Variante entsteht parallel in `../app-prototype`.
 
-## Get started
+## Stack
 
-1. Install dependencies
+- **Expo SDK 56** (React Native 0.85, New Architecture), **TypeScript**, **expo-router** (Tabs + Stack)
+- **NativeWind v4** + **Token-Brücke** aus `../wp-design-tokens` (Tailwind v4 → px-Werte + TS-Konstanten)
+- **expo-audio** für Live-Radio (Icecast) + Podcasts inkl. Hintergrund-Audio/Lockscreen
+  (react-native-track-player ist mit RN 0.85 / New Arch inkompatibel — siehe unten)
+- **react-native-webview** für den Artikel-Reader (bereinigtes HTML + eingebettete Fonts)
+- **Zustand** (+ AsyncStorage-Persist) für lokalen State
+- **fast-xml-parser** (RSS/YouTube-Atom), **htmlparser2 + css-select + domutils** (Artikel-Extraktion)
 
-   ```bash
-   npm install
-   ```
+## Entwicklung
 
-2. Start the app
-
-   ```bash
-   npx expo start
-   ```
-
-In the output, you'll find options to open the app in a
-
-- [development build](https://docs.expo.dev/develop/development-builds/introduction/)
-- [Android emulator](https://docs.expo.dev/workflow/android-studio-emulator/)
-- [iOS simulator](https://docs.expo.dev/workflow/ios-simulator/)
-- [Expo Go](https://expo.dev/go), a limited sandbox for trying out app development with Expo
-
-You can start developing by editing the files inside the **app** directory. This project uses [file-based routing](https://docs.expo.dev/router/introduction).
-
-## Get a fresh project
-
-When you're ready, run:
+Voraussetzungen: Node ≥ 20, JDK 17, Android SDK (`ANDROID_HOME`), ein Emulator oder Gerät.
 
 ```bash
-npm run reset-project
+npm install
+npm run android        # Dev-Build bauen + auf Emulator/Gerät installieren (einmalig)
+npm start              # danach: Metro mit Fast Refresh (Dev-Client, kein Expo Go!)
 ```
 
-This command will move the starter code to the **app-example** directory and create a blank **app** directory where you can start developing.
+Expo Go funktioniert NICHT (native Module). Immer Dev-Build / Release-APK verwenden.
 
-### Other setup steps
+### Release-APK (Demo-Gerät)
 
-- To set up ESLint for linting, run `npx expo lint`, or follow our guide on ["Using ESLint and Prettier"](https://docs.expo.dev/guides/using-eslint/)
-- If you'd like to set up unit testing, follow our guide on ["Unit Testing with Jest"](https://docs.expo.dev/develop/unit-testing/)
-- Learn more about the TypeScript setup in this template in our guide on ["Using TypeScript"](https://docs.expo.dev/guides/typescript/)
+```bash
+cd android && ./gradlew assembleRelease                          # universal (alle ABIs)
+./gradlew assembleRelease -PreactNativeArchitectures=arm64-v8a   # nur arm64 (echtes Gerät)
+adb install -r app/build/outputs/apk/release/app-release.apk
+```
+Release ist selbst-enthaltend (JS gebündelt, kein Metro nötig) und mit dem Debug-Keystore
+signiert (für die Demo ausreichend; vor echter Verteilung eigenen Keystore erzeugen).
 
-## Learn more
+## Generierte Artefakte (nicht von Hand editieren)
 
-To learn more about developing your project with Expo, look at the following resources:
+| Skript | Erzeugt | Zweck |
+|---|---|---|
+| `npm run tokens` | `tailwind.tokens.generated.js`, `src/lib/theme/tokens.generated.ts`, `readerCss.generated.ts` | Design-Tokens aus `../wp-design-tokens` |
+| `npm run fonts` | `src/lib/theme/readerFonts.generated.ts` | Subsetted base64-Fonts für die Reader-WebView (braucht `pyftsubset`) |
+| `npm run offline-articles` | `src/lib/articles/offlineArticles.generated.ts` | ~15 vor-extrahierte Artikel (Offline-Cache) |
 
-- [Expo documentation](https://docs.expo.dev/): Learn fundamentals, or go into advanced topics with our [guides](https://docs.expo.dev/guides).
-- [Learn Expo tutorial](https://docs.expo.dev/tutorial/introduction/): Follow a step-by-step tutorial where you'll create a project that runs on Android, iOS, and the web.
+## Qualität
 
-## Join the community
+```bash
+npm run check   # tsc (App) + tsc (Tests) + eslint
+npm test        # jest: Token-Snapshot, Feed-Parser, Artikel-Extraktion (gegen echte Fixtures)
+```
 
-Join our community of developers creating universal apps.
+## Architektur
 
-- [Expo on GitHub](https://github.com/expo/expo): View our open source platform and contribute.
-- [Discord community](https://chat.expo.dev): Chat with Expo users and ask questions.
+```
+src/
+  app/                 expo-router-Routen ((tabs)/ + artikel, …)
+  components/ui/        Design-System (Typo, Button, Card, Badge, Chip, Screen, …)
+  components/feed|home/ Feed- und Home-Bausteine
+  lib/theme/            Token-Brücke-Outputs + Typografie + Fonts
+  lib/feeds/            Quellen-Registry, RSS/Atom-Parser, Client, useFeed-Hook
+  lib/articles/         Extraktion, Reader-HTML, og:image, Offline-Bundle
+  lib/net/              cachedFetch (network-first / cache-first Policies)
+  lib/store/            Zustand-Stores (persist)
+data/                   Beispieldaten (Form künftiger API-Antworten)
+scripts/                Generatoren (Token-Brücke, Fonts, Offline-Artikel)
+__tests__/ + __fixtures__/  Unit-Tests gegen echte Feed-/Artikel-Snapshots
+```
+
+## Wichtige Entscheidung: Audio
+
+`react-native-track-player@4.1` kompiliert unter RN 0.85 erst nach Kotlin-Patch und
+crasht dann zur Laufzeit unter der New Architecture (`TurboModule … returnType == void`).
+RN 0.85 bietet keine Old-Architecture-Option. Daher **expo-audio** (offiziell, New-Arch-kompatibel,
+Icecast-Streaming + Hintergrund-Audio + Lockscreen-Controls). Audio ist in `src/lib/audio/` gekapselt.
+
+## Status (Roadmap aus dem Konzept)
+
+- ✅ **M0** Fundament · ✅ **M1** Datenlayer + Home · ✅ **M2** Artikel-Reader
+- ⏳ M3 Audio/Mediathek · M4 Mitmachen · M5 Club & Profil · M6 Onboarding + Demo-Härtung · M7 Entdecken/Suche
