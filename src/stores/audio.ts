@@ -99,6 +99,9 @@ export const useAudioStore = defineStore('audio', {
     },
 
     async _start(track: AudioTrack, play: () => Promise<void>) {
+      // Coordinate: stop any video so only one medium plays at a time.
+      const { useVideoStore } = await import('./video');
+      useVideoStore().close();
       this._clearTimer();
       this.track = track;
       this.status = 'loading';

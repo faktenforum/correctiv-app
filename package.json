@@ -18,6 +18,7 @@
     "@nativescript-community/ui-webview": "~1.6.1",
     "@nativescript/core": "~9.0.0",
     "@nativescript/social-share": "^2.3.0",
+    "@nstudio/nativescript-exoplayer": "^6.2.0",
     "nativescript-vue": "^3.0.0",
     "pinia": "~3.0.4"
   },
