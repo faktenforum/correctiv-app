@@ -1,31 +1,67 @@
 # CORRECTIV App — Prototype
 
-Native app prototype (Android + theoretical iOS) for the CORRECTIV community app
-described in [`../app/KONZEPT.md`](../app/KONZEPT.md). Built with **NativeScript 9 +
-Vue 3 (nativescript-vue 3) + Vite + TypeScript + Pinia**.
+A native mobile app **prototype** for the CORRECTIV community: one place for the
+organisation's investigations, fact-checks, Salon5 radio, CrowdNewsroom callouts,
+the Faktenforum and the membership club — built on the principle of *closeness,
+not a paywall* (journalism stays free for everyone; membership adds proximity).
 
-The prototype mixes **live content** (correctiv.org WordPress RSS, YouTube Atom
-feeds, Salon5 Icecast radio) with **fully interactive simulated flows**
-(CrowdNewsroom callouts, club membership with app-wide status flip, Backstage)
-backed by authentic sample data. See [`../app/DATENQUELLEN.md`](../app/DATENQUELLEN.md)
-for the verified data source register.
+Built with **NativeScript 9 · Vue 3 (nativescript-vue 3) · Vite · TypeScript · Pinia**.
+
+> **Status:** Functional prototype covering the full demo journey (onboarding →
+> home → reader → media → participate → club join → backstage → profile).
+> Developed and verified on the Android emulator; iOS is maintained in code
+> (resources, platform guards) but has not been built or tested. Real backend
+> integrations (Beabee, Faktenforum GraphQL, payment, SSO) are intentionally
+> **out of scope** — the prototype uses live read-only content plus typed sample
+> data shaped like the future API responses, so a later phase swaps only the
+> data layer.
+
+The prototype mixes **live content** — correctiv.org WordPress RSS, YouTube Atom
+feeds, the Salon5 Icecast stream — with **fully interactive simulated flows**
+(callout submission, club membership with an app-wide status flip, Backstage)
+backed by authentic sample data.
 
 ## Requirements
 
 - Node ≥ 20.19 (Vite 7)
-- NativeScript CLI 9 (`npm i -g nativescript`)
-- Android SDK + emulator (`ANDROID_HOME` set); JDK 17
-- iOS builds require macOS (not testable on this machine — kept compiling, never run)
+- NativeScript CLI 9 — `npm i -g nativescript`
+- Android SDK + an emulator or device (`ANDROID_HOME` set), JDK 17
+- iOS builds additionally require macOS + Xcode (the iOS platform package is not
+  installed here; the code paths are kept but unbuilt)
 
-## Development
+## Getting started
 
 ```bash
 npm install
-npm run tokens            # regenerate src/styles/tokens.generated.scss from ../wp-design-tokens
-npm run offline-articles  # refresh the offline bundle (~15 real articles) — run before demos!
-ns run android --no-hmr   # build, deploy and watch (reliable default)
-./scripts/deploy-emulator.sh  # deterministic one-shot deploy (kills zombie watchers, verifies fresh bundle)
+ns run android --no-hmr        # build, deploy and run on the emulator/device
 ```
+
+The design tokens are pre-generated and committed (`src/styles/tokens.generated.scss`),
+so the app builds without any sibling checkout. For demos, refresh the bundled
+offline content first:
+
+```bash
+npm run offline-articles       # refresh the offline article bundle (~15 real articles)
+```
+
+Convenience scripts:
+
+```bash
+./scripts/deploy-emulator.sh   # deterministic one-shot deploy (kills zombie watchers,
+                               # verifies the bundle is fresh — see gotchas below)
+npm run tokens                 # regenerate tokens from a wp-design-tokens checkout (optional, see below)
+```
+
+### Design tokens
+
+Branding comes from CORRECTIV's [`wp-design-tokens`](https://github.com/correctiv/wp-design-tokens).
+`scripts/sync-tokens.mjs` converts that repo's `css/theme.css` into
+NativeScript-compatible SCSS (rem→dip, letter-spacing→em, platform-specific
+line-height under `.ns-android`/`.ns-ios`). The generated file is committed, so
+running `npm run tokens` is only needed when the upstream tokens change; it
+expects a `wp-design-tokens` checkout next to this repository. Never import
+`theme.css` directly — the NativeScript CSS subset does not support `rem`,
+`:root` or unitless line-heights.
 
 ## Architecture in one minute
 
@@ -36,27 +72,44 @@ ns run android --no-hmr   # build, deploy and watch (reliable default)
   `src/app.ts` (back within the active frame → home tab → default).
 - **Navigation:** no router. `useNavigation()` wraps `$navigateTo` and always
   passes an explicit frame id (`Frame.topmost()` is ambiguous with five frames).
-- **Design tokens:** `scripts/sync-tokens.mjs` converts
-  `../wp-design-tokens/css/theme.css` into `src/styles/tokens.generated.scss`
-  (rem→dip, letter-spacing→em, platform-specific line-height under
-  `.ns-android`/`.ns-ios`). Never import `theme.css` directly.
-- **Article reader:** native header + `AWebView`. `article.service.ts` fetches
-  the article page, extracts content via the dependency-free `src/lib/extract.mjs`
-  (shared with the offline script) and renders `src/assets/reader/template.html`
-  with `reader.css` — a direct derivation of the original web tokens, so the
-  typography matches correctiv.org exactly. `correctiv://join` links open the
-  native join flow.
+- **Article reader:** native header + `AWebView`. `services/article.service.ts`
+  fetches the article page, extracts content via the dependency-free
+  `src/lib/extract.mjs` (shared with the offline script) and renders
+  `src/assets/reader/template.html` with `reader.css` — a direct derivation of
+  the web tokens, so typography matches correctiv.org. `correctiv://join` links
+  open the native join flow.
+- **Images:** remote thumbnails load through `components/ui/RemoteImage.vue`
+  (the JS HTTP stack via `ImageSource.fromUrl`), falling back to a bundled local
+  cover and then a styled placeholder tile — never an empty gap.
 - **Offline:** the demo must never depend on Wi-Fi. Feeds fall back to bundled
-  snapshots (`src/assets/data/feeds/`), articles to the bundled offline set
+  snapshots (`src/assets/data/feeds/`), articles to a bundled offline set
   (`src/assets/data/articles/`, generated by `scripts/fetch-offline-articles.mjs`).
 - **Audio:** `@nativescript-community/audio` (Android MediaPlayer streams the
   Icecast MP3 directly). `stores/audio.ts` owns all player state including the
   60-second preview gate for club bonus content (invitation, never a lock).
   Known iOS gap: AVAudioPlayer cannot play live streams (needs an AVPlayer wrapper).
 - **State:** Pinia stores persisted via a small `ApplicationSettings` adapter
-  (`stores/persist.ts`). `membership.isMember` is the central demo lever — all
-  club touchpoints read it reactively in the render path; never snapshot it
-  into local refs.
+  (`stores/persist.ts`). `membership.isMember` is the central demo lever — every
+  club touchpoint reads it reactively in the render path; never snapshot it into
+  local refs.
+
+## Repository layout
+
+```
+src/
+  AppShell.vue  app.ts  app.scss
+  components/   cards, shell, sheets, ui (incl. RemoteImage)
+  views/        home, discover, media, participate, reader, backstage, profile, modals
+  stores/       membership, interests, savedArticles, audio, feeds, participation, settings
+  services/     http, cache, rss, article, audio, image
+  data/         feeds.config, callouts, claims, spotlight, backstage, … (typed sample data)
+  lib/          extract.mjs, rss-parse.mjs, format.ts (shared, dependency-free)
+  styles/       tokens.generated.scss + typography/components/cards/… (all global)
+  assets/       reader template, offline data bundle, images, audio
+  fonts/        Merriweather, Source Sans 3, Lucide (see fonts/LICENSES.md)
+scripts/        sync-tokens.mjs, fetch-offline-articles.mjs, deploy-emulator.sh
+App_Resources/  Android (manifest, icons) and iOS (Info.plist) platform resources
+```
 
 ## Toolchain gotchas (hard-won)
 
@@ -67,17 +120,22 @@ ns run android --no-hmr   # build, deploy and watch (reliable default)
 | Android `line-height` = extra spacing, iOS = total height | use the `ty-*` classes; values are generated per platform |
 | `@tap.stop` compiles to `withModifiers`, which nativescript-vue 3 doesn't export | don't use event modifiers |
 | `registerElement` with runtime `require()` crashes under ESM ("viewClass is not a constructor") | static imports only |
-| fast-xml-parser breaks the Vite CommonJS resolver | regex-based feed parsing in `src/lib/rss-parse.mjs` |
+| XML feed parsing libraries break the Vite CommonJS resolver | regex-based feed parsing in `src/lib/rss-parse.mjs` |
 | `AbortController` is not a global in the NS runtime | timeouts via `Promise.race` (`services/http.ts`) |
 | Nesting CollectionView inside CollectionView cells crashes | horizontal rails use `ScrollView` |
+| The native image fetcher silently fails when its external cache dir is missing | load remote images via `RemoteImage` / `ImageSource.fromUrl` |
+| `GridLayout` without an explicit `rows="auto"` stretches like `*` inside modal stacks | set `rows="auto"` on in-stack grids |
 | Build errors still "successfully sync" the previous bundle | check `bundle.mjs` mtime; use `scripts/deploy-emulator.sh` |
 | `adb shell pm clear` deletes the synced JS bundle | uninstall + fresh deploy afterwards |
 | WordPress feeds: only `/category/<slug>/feed/` URLs deliver article streams | see `src/data/feeds.config.ts` |
 | Icecast answers HEAD requests with 400 | availability = try to play |
 
-## Milestones
+## Licensing & attribution
 
-M0 walking skeleton → M1 audio spike → M2 content pipeline → M3 home (9 modules)
-→ M4 onboarding/personalization → M5 media library → M6 participate → M7 club
-join + backstage + status flip → M8 profile (phase 1 done) → M9 discover →
-M10 search + Spotlight reader → M11 polish. See the plan file / git history.
+- **Code:** GNU Affero General Public License v3.0 — see [`LICENSE`](LICENSE).
+- **Bundled fonts:** Merriweather and Source Sans 3 (SIL OFL 1.1), Lucide (ISC) —
+  see [`src/fonts/LICENSES.md`](src/fonts/LICENSES.md).
+- **Sample content & images** (article titles, covers, the demo audio clip) are
+  CORRECTIV material, included for prototyping purposes.
+- This is a prototype, not a released product, and is not affiliated with any
+  app-store listing.
