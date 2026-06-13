@@ -1,6 +1,12 @@
-import { onMounted, watch } from 'nativescript-vue';
+import { onMounted, watch, ref } from 'nativescript-vue';
 import { Application } from '@nativescript/core';
 import { useSettingsStore } from '../stores/settings';
+
+// Increments on every ACTUAL appearance flip. CollectionView recycles its cells
+// natively and does not re-apply CSS when the root class changes, so pages with a
+// CollectionView bind this to `:key` to force a fresh render on theme change.
+export const themeTick = ref(0);
+let lastAppliedClass = '';
 
 // Internal NativeScript members we use to drive the appearance class ourselves.
 // Stable (core uses them for its own dark mode) but not in the public typings.
@@ -58,6 +64,10 @@ function applyAppearance(dark: boolean): void {
     App.applyCssClass(root, APPEARANCE_CLASSES, cls);
     const modals = typeof root._getRootModalViews === 'function' ? root._getRootModalViews() : null;
     if (modals) for (const m of modals) App.applyCssClass(m, APPEARANCE_CLASSES, cls);
+    if (cls !== lastAppliedClass) {
+      lastAppliedClass = cls;
+      themeTick.value += 1; // notify CollectionView pages to re-render
+    }
   } catch {
     /* never let theming crash a render */
   }

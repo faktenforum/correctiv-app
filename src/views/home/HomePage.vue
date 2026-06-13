@@ -6,7 +6,9 @@
         <Label col="1" :text="todayLabel" class="home-date" verticalAlignment="center" />
       </GridLayout>
 
-      <CollectionView row="1" :items="modules" :itemTemplateSelector="templateSelector">
+      <!-- :key re-renders the list on a theme flip — CollectionView recycles
+           cells natively and won't re-apply .ns-dark/.ns-light otherwise -->
+      <CollectionView row="1" :key="themeTick" :items="modules" :itemTemplateSelector="templateSelector">
         <!-- 1. Hero: top investigation (LIVE) — flat, directly below the header -->
         <template #hero="{ item }">
           <ArticleCard :item="item.article" variant="hero" badge="Recherche" @open="openArticle" />
@@ -148,6 +150,7 @@ import BackstagePage from '../backstage/BackstagePage.vue';
 import { useFeedsStore } from '../../stores/feeds';
 import { useMediaStore } from '../../stores/media';
 import { useVideoStore } from '../../stores/video';
+import { themeTick } from '../../composables/useTheme';
 import { useInterestsStore } from '../../stores/interests';
 import { useNavigation } from '../../composables/useNavigation';
 import { spotlightIssues } from '../../data/spotlight';
