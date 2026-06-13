@@ -7,6 +7,12 @@ not a paywall* (journalism stays free for everyone; membership adds proximity).
 
 Built with **NativeScript 9 · Vue 3 (nativescript-vue 3) · Vite · TypeScript · Pinia**.
 
+<p align="center">
+  <img src="media/demo.gif" alt="Demo walkthrough of the CORRECTIV app prototype on Android: live home feed, article reader, media library and the persistent Salon5 live-radio mini player" width="270">
+</p>
+
+<p align="center"><sub>The running Android app — live feed → article reader → media library → persistent Salon5 live radio.<br>For a click-through version in the browser, see the <a href="#design-preview-interactive-mockup">design preview</a> below.</sub></p>
+
 > **Status:** Functional prototype covering the full demo journey (onboarding →
 > home → reader → media → participate → club join → backstage → profile).
 > Developed and verified on the Android emulator; iOS is maintained in code
