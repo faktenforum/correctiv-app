@@ -178,11 +178,15 @@ $d-accent: #ff6173; // accent (lighter coral on dark)
    the descendant `.ns-dark .bg-grey-100` above cannot reach the root. */
 .ns-dark.bg-grey-100 { background-color: $d-page; }
 
-/* Onboarding */
+/* Onboarding (steps 1–3; the mission screen is theme-independent coral) */
 .ns-dark .onboarding__skip { color: $d-muted; }
+.ns-dark .onboarding__dot { color: $d-faint; }
 .ns-dark .onboarding__dot--active { color: $d-strong; }
 /* Selected interest chip — lift above the card surface, keep white label */
 .ns-dark .chip-active { background-color: $d-border2; border-color: $d-border2; }
+/* Selected text-size + dark button: same lifted-neutral treatment as chip-active */
+.ns-dark .text-scale-option--active { background-color: $d-border2; border-color: $d-border2; }
+.ns-dark .btn-dark { background-color: $d-border2; }
 
 /* JoinFlow */
 .ns-dark .join-stat__number { color: $d-accent; }

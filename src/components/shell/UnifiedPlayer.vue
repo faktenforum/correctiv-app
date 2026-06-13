@@ -21,10 +21,10 @@
       v-if="video.hlsUrl"
       :row="video.expanded ? 1 : 0"
       col="0"
-      :controls="video.expanded ? 'true' : 'false'"
+      :controls="video.expanded"
       :src="video.hlsUrl"
-      srcType="3"
-      autoplay="true"
+      :srcType="HLS_SRC_TYPE"
+      :autoplay="true"
       class="uplayer__video"
     />
     <Label
@@ -82,6 +82,9 @@ import { useVideoStore } from '../../stores/video';
 import { formatDateDe, formatTimeHm, formatNumberDe } from '../../lib/format';
 
 const video = useVideoStore();
+
+// ExoVideo srcType for an HLS (.m3u8) source.
+const HLS_SRC_TYPE = 3;
 
 // 16:9 video height for the expanded player (DIP).
 const expVideoH = Math.round((Screen.mainScreen.widthDIPs * 9) / 16);

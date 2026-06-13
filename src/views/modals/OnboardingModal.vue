@@ -1,9 +1,9 @@
 <template>
-  <!-- A modal <Page>'s own background-color doesn't paint reliably; like the
-       other modals (Player/JoinFlow), the FILLING inner layout carries the bg.
-       Mission (step 0) is the coral brand screen (design draft: bg-accent) and
-       is theme-independent; the later steps follow the app theme via the
-       .ns-dark class the controller applies to this modal root. -->
+  <!-- A modal <Page>'s own background-color doesn't paint reliably, so the
+       FILLING inner layout carries the bg (like Player/JoinFlow). Mission
+       (step 0) is the coral brand screen (design: bg-accent), theme-independent;
+       later steps use bg-grey-100, which the .ns-dark class — applied to this
+       modal root by useThemeForModal() — turns dark. -->
   <Page actionBarHidden="true">
     <GridLayout rows="auto, *, auto" :class="step === 0 ? 'onboarding--mission' : 'bg-grey-100'">
       <!-- Header: step dots + skip (from step 2 onwards) -->

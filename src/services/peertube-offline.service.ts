@@ -24,6 +24,10 @@ export interface OfflineBundle {
   bytes: number;
 }
 
+/** DownloadManager poll cadence and ceiling (600 × 400ms ≈ 4 min per file). */
+const POLL_INTERVAL_MS = 400;
+const MAX_POLL_TICKS = 600;
+
 function context(): android.content.Context {
   return Utils.android.getApplicationContext();
 }
@@ -81,6 +85,8 @@ function buildLocalMaster(
   }
   const audioAttr = audioPlaylist ? ',AUDIO="audio"' : '';
   const resolution = video.width && video.height ? `,RESOLUTION=${video.width}x${video.height}` : '';
+  // H.264 High@L4 + AAC-LC — what tube.funfacts.de transcodes to; ExoPlayer only
+  // needs CODECS present, not exact, to pick this single variant.
   lines.push(
     `#EXT-X-STREAM-INF:BANDWIDTH=${Math.max(video.sizeBytes, 1)}${resolution},CODECS="avc1.640028,mp4a.40.2"${audioAttr}`,
     videoPlaylist,
@@ -125,8 +131,8 @@ function awaitDownload(id: number): Promise<void> {
       } finally {
         if (cursor) cursor.close();
       }
-      if (++ticks > 600) return reject(new Error('Download timed out.'));
-      setTimeout(poll, 400);
+      if (++ticks > MAX_POLL_TICKS) return reject(new Error('Download timed out.'));
+      setTimeout(poll, POLL_INTERVAL_MS);
     };
     poll();
   });

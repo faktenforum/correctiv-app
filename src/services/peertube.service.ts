@@ -111,11 +111,6 @@ export async function fetchVideoDetail(idOrShort: string): Promise<PeerTubeVideo
   return { ...base, hlsMasterUrl: hls ? abs(hls.playlistUrl) : undefined, renditions };
 }
 
-/** Privacy-respecting embed URL (P2P disabled) — the no-native-player fallback. */
-export function embedUrl(id: string): string {
-  return `${PEERTUBE_HOST}/videos/embed/${id}?api=1&p2p=0&playsinline=1&title=0`;
-}
-
 /** Map a PeerTube video to the app's shared Video model. */
 export function toVideo(pt: PeerTubeVideo): Video {
   return {
