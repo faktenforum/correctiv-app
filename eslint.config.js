@@ -6,6 +6,6 @@ module.exports = defineConfig([
   expoConfig,
   {
     // Auto-generierte Token-Brücke + native Ordner nicht linten.
-    ignores: ['dist/*', 'android/*', 'ios/*', '*.generated.*', 'src/lib/theme/*.generated.ts'],
+    ignores: ['dist/*', 'android/*', 'ios/*', '**/*.generated.*'],
   },
 ]);
