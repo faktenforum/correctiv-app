@@ -1,0 +1,61 @@
+/**
+ * Baseline grid – for vertical rhythm.
+ *
+ * Accepts "baseline-V" or "baseline-V/M":
+ *  - V is the target line height in grid lines
+ *  - M is the push
+ *
+ * @see
+ * - https://czak.pl/til/baseline-grid-with-tailwindcss
+ * - https://maketypework.com/web-typography-baseline-grids-made-easy/
+ */
+@utility baseline-* {
+  /* Calculate shift based on --value(integer) */
+  --baseline-shift: calc(
+    calc(calc(--value(integer) * var(--var-baseline-size)) - 1cap) / 2
+  );
+
+  /* Default push of 1 if modifier not provided */
+  --baseline-push: calc(var(--var-baseline-size) - var(--baseline-shift));
+
+  /* Override with --modifier(integer) if provided */
+  --baseline-push: calc(
+    calc(--modifier(integer) * var(--var-baseline-size)) - var(--baseline-shift)
+  );
+
+  /* Apply */
+  line-height: calc(--value(integer) * var(--var-baseline-size));
+
+  padding-block-start: var(--baseline-shift);
+  padding-block-end: 0;
+
+  margin-block-start: 0;
+  margin-block-end: var(--baseline-push);
+}
+
+/**
+ * Duration – adds the values allowed via theme config to the `duration-` utility.
+ * 
+ * By default, Tailwind does not allow configuring transition-duration
+ * via Theme config. To consistently use the same durations, the keywords
+ * defined in the Theme config are used as values here, so the utility classes
+ * `tw:duration-fast` and `tw:duration-slow` can be used. However, as the value
+ * of `tw:duration-fast` is set as default transition duration, it does not need
+ * to be specified on its own.
+ * See:
+ * - https://tailwindcss.com/docs/transition-duration
+ * - https://tailwindcss.com/docs/adding-custom-styles#adding-custom-utilities
+ *
+ */
+@utility duration-* {
+  transition-duration: --value(--duration-*);
+}
+
+/**
+ * Word spacing – exposes theme word-spacing tokens as utility classes.
+ * Tailwind v4 has no built-in word-spacing utility, so this registers one.
+ * See: https://tailwindcss.com/docs/adding-custom-styles#adding-custom-utilities
+ */
+@utility word-spacing-normal {
+  word-spacing: var(--var-word-spacing-normal);
+}

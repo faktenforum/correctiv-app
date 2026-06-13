@@ -1,0 +1,1601 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin="anonymous">
+  <link href="https://fonts.googleapis.com/css2?family=Merriweather:ital,wght@0,400;0,700;0,900;1,400&amp;family=Source+Sans+3:wght@400;600;700;900&amp;display=swap" rel="stylesheet">
+  <script src="./image-slot.js"></script>
+  <style>
+    html, body { margin: 0; padding: 0; background: #f0f0f0; }
+    * { box-sizing: border-box; }
+    @keyframes cvPulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.3; } }
+    ::-webkit-scrollbar { width: 0; height: 0; }
+    input, textarea, button { font-family: 'Source Sans 3', sans-serif; }
+  </style>
+</helmet>
+
+<div style="min-height: 100vh; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 18px; padding: 36px 24px; font-family: 'Source Sans 3', sans-serif;">
+
+  <x-import component="IOSDevice" from="./ios-frame.jsx" hint-size="402px,874px">
+    <div style="height: 100%; position: relative; display: flex; flex-direction: column; background: #ffffff; color: #333333; font-family: 'Source Sans 3', sans-serif; -webkit-font-smoothing: antialiased;">
+
+      <!-- ============ TAB: HOME ============ -->
+      <sc-if value="{{ showHome }}" hint-placeholder-val="{{ true }}">
+        <div data-screen-label="Home" style="flex: 1; overflow-y: auto; min-height: 0;">
+          <div style="padding: 66px 16px 10px; display: flex; align-items: baseline; justify-content: space-between; border-bottom: 1px solid #e6e6e6;">
+            <div style="font-weight: 900; font-size: 17px; letter-spacing: 2px; color: #333333;">CORRECTIV</div>
+            <div style="font-size: 13px; color: #707070; white-space: nowrap; flex-shrink: 0;">Freitag, 12. Juni 2026</div>
+          </div>
+
+          <!-- Hero -->
+          <div onClick="{{ openHero }}" style="cursor: pointer;">
+            <image-slot id="img-hero" shape="rect" placeholder="Titelbild hierher ziehen (og:image der Recherche)" style="width: 100%; height: 216px; display: block;"></image-slot>
+            <div style="padding: 14px 16px 18px; display: flex; flex-direction: column; gap: 8px; border-bottom: 1px solid #e6e6e6;">
+              <div style="font-size: 11px; font-weight: 700; letter-spacing: 1.2px; color: #ff5064;">RECHERCHE</div>
+              <div style="font-family: Merriweather, serif; font-weight: 900; font-size: 24px; line-height: 1.25; color: #333333; text-wrap: pretty;">Die Perfekte Frau: Wie Autokraten ein Ideal erschaffen</div>
+              <div style="font-size: 13px; color: #707070;">CORRECTIV-Redaktion · Heute · 12 Min. Lesezeit</div>
+            </div>
+          </div>
+
+          <!-- Spotlight-Briefing -->
+          <div style="margin: 16px; background: #f8f8f8; border-radius: 5px; padding: 14px 16px; display: flex; flex-direction: column; gap: 0;">
+            <div style="display: flex; align-items: center; justify-content: space-between; padding-bottom: 10px;">
+              <div style="font-size: 12px; font-weight: 700; letter-spacing: 1.2px; color: #333333;">DAS WICHTIGSTE HEUTE</div>
+              <div onClick="{{ openSpotlight }}" style="font-size: 13px; font-weight: 700; color: #ff5064; cursor: pointer; white-space: nowrap;">Spotlight →</div>
+            </div>
+            <div style="display: flex; gap: 10px; padding: 9px 0; border-top: 1px solid #e6e6e6;">
+              <div style="font-size: 13px; font-weight: 700; color: #707070; flex-shrink: 0;">6:30</div>
+              <div style="font-size: 14px; line-height: 1.45; color: #333333;">Pensionskassen: Aufsicht kündigt nach CORRECTIV-Recherche Sonderprüfung an</div>
+            </div>
+            <div style="display: flex; gap: 10px; padding: 9px 0; border-top: 1px solid #e6e6e6;">
+              <div style="font-size: 13px; font-weight: 700; color: #707070; flex-shrink: 0;">6:30</div>
+              <div style="font-size: 14px; line-height: 1.45; color: #333333;">Faktencheck: KI-Fake zur US-Botschaft in Kiew verbreitet sich weiter</div>
+            </div>
+            <div style="display: flex; gap: 10px; padding: 9px 0 0; border-top: 1px solid #e6e6e6;">
+              <div style="font-size: 13px; font-weight: 700; color: #707070; flex-shrink: 0;">6:30</div>
+              <div style="font-size: 14px; line-height: 1.45; color: #333333;">CrowdNewsroom: „Wem gehört die Stadt?" erreicht 2.000 Beiträge</div>
+            </div>
+          </div>
+
+          <!-- Early-Access-Karte (Club) -->
+          <div style="margin: 0 16px 24px; background: rgba(253, 225, 98, 0.22); border: 1px solid #fde162; border-radius: 5px; padding: 14px 16px; display: flex; flex-direction: column; gap: 8px;">
+            <div style="display: flex; align-items: center; gap: 8px;">
+              <div style="background: #fde162; color: #333333; font-size: 10px; font-weight: 700; letter-spacing: 1px; white-space: nowrap; padding: 3px 7px; border-radius: 2px;">CLUB · FRÜHER LESEN</div>
+            </div>
+            <div style="font-family: Merriweather, serif; font-weight: 700; font-size: 18px; line-height: 1.3; color: #333333;">Pension um jeden Preis</div>
+            <sc-if value="{{ isGuest }}" hint-placeholder-val="{{ true }}">
+              <div style="font-size: 14px; color: #707070; line-height: 1.45;">Für alle ab Montag. Clubmitglieder lesen jetzt.</div>
+              <div onClick="{{ openJoin }}" style="font-size: 14px; font-weight: 700; color: #333333; cursor: pointer;">Unterstützer:in werden →</div>
+            </sc-if>
+            <sc-if value="{{ isMember }}" hint-placeholder-val="{{ false }}">
+              <div style="font-size: 14px; color: #707070; line-height: 1.45;">Für alle ab Montag — Sie lesen jetzt schon.</div>
+              <div onClick="{{ openPension }}" style="align-self: flex-start; background: #333333; color: #ffffff; font-size: 14px; font-weight: 700; padding: 9px 16px; border-radius: 2px; white-space: nowrap; cursor: pointer;">Jetzt lesen</div>
+            </sc-if>
+          </div>
+
+          <!-- Neueste Recherchen -->
+          <div style="padding: 0 16px; display: flex; flex-direction: column;">
+            <div style="font-size: 17px; font-weight: 700; color: #333333; padding-bottom: 4px;">Neueste Recherchen</div>
+            <div onClick="{{ openHeizung }}" style="display: flex; gap: 12px; padding: 12px 0; border-bottom: 1px solid #e6e6e6; cursor: pointer; align-items: center;">
+              <div style="flex: 1; display: flex; flex-direction: column; gap: 4px;">
+                <div style="font-size: 15px; font-weight: 700; line-height: 1.35; color: #333333;">Großstädte warnen vor Reiches „Heizungsgesetz"</div>
+                <div style="font-size: 12px; color: #707070;">Recherche · Heute</div>
+              </div>
+              <image-slot id="img-heizung" shape="rounded" radius="2" placeholder="Bild" style="width: 72px; height: 72px; flex-shrink: 0;"></image-slot>
+            </div>
+            <div onClick="{{ openDenkfabrik }}" style="display: flex; gap: 12px; padding: 12px 0; border-bottom: 1px solid #e6e6e6; cursor: pointer; align-items: center;">
+              <div style="flex: 1; display: flex; flex-direction: column; gap: 4px;">
+                <div style="font-size: 15px; font-weight: 700; line-height: 1.35; color: #333333;">Von der rechten Denkfabrik zu Katherina Reiche</div>
+                <div style="font-size: 12px; color: #707070;">Recherche · Gestern</div>
+              </div>
+              <image-slot id="img-denkfabrik" shape="rounded" radius="2" placeholder="Bild" style="width: 72px; height: 72px; flex-shrink: 0;"></image-slot>
+            </div>
+            <div onClick="{{ openDuerre }}" style="display: flex; gap: 12px; padding: 12px 0; cursor: pointer; align-items: center;">
+              <div style="flex: 1; display: flex; flex-direction: column; gap: 4px;">
+                <div style="font-size: 15px; font-weight: 700; line-height: 1.35; color: #333333;">So sehr leidet Ihre Region unter Dürre</div>
+                <div style="font-size: 12px; color: #707070;">Klima · Gestern</div>
+              </div>
+              <image-slot id="img-duerre" shape="rounded" radius="2" placeholder="Bild" style="width: 72px; height: 72px; flex-shrink: 0;"></image-slot>
+            </div>
+          </div>
+
+          <!-- Faktencheck-Rail -->
+          <div style="padding: 20px 0 8px; display: flex; flex-direction: column; gap: 10px;">
+            <div style="display: flex; align-items: center; justify-content: space-between; padding: 0 16px;">
+              <div style="font-size: 17px; font-weight: 700; color: #333333;">Faktencheck</div>
+              <div onClick="{{ openFakten }}" style="font-size: 13px; font-weight: 700; color: #ff5064; cursor: pointer; white-space: nowrap;">Alle →</div>
+            </div>
+            <div style="display: flex; gap: 10px; overflow-x: auto; padding: 2px 16px 8px;">
+              <div onClick="{{ openFcKiew }}" style="width: 240px; flex-shrink: 0; border: 1px solid #e6e6e6; border-radius: 5px; padding: 12px; display: flex; flex-direction: column; gap: 8px; cursor: pointer; background: #ffffff;">
+                <div style="align-self: flex-start; background: #ff5064; color: #ffffff; font-size: 10px; font-weight: 700; letter-spacing: 1px; white-space: nowrap; padding: 3px 7px; border-radius: 2px;">FALSCH</div>
+                <div style="font-size: 14px; font-weight: 600; line-height: 1.4; color: #333333;">US-Botschaft in Kiew wurde nicht evakuiert – Grok und Community Notes liegen bei KI-Fake falsch</div>
+                <div style="font-size: 12px; color: #707070;">CORRECTIV.Faktencheck</div>
+              </div>
+              <div onClick="{{ openFcMerz }}" style="width: 240px; flex-shrink: 0; border: 1px solid #e6e6e6; border-radius: 5px; padding: 12px; display: flex; flex-direction: column; gap: 8px; cursor: pointer; background: #ffffff;">
+                <div style="align-self: flex-start; background: #ff5064; color: #ffffff; font-size: 10px; font-weight: 700; letter-spacing: 1px; white-space: nowrap; padding: 3px 7px; border-radius: 2px;">FALSCH</div>
+                <div style="font-size: 14px; font-weight: 600; line-height: 1.4; color: #333333;">KI-Stimme von Friedrich Merz verkündet erfundene Mindestlohn-Kürzung auf Tiktok</div>
+                <div style="font-size: 12px; color: #707070;">CORRECTIV.Faktencheck</div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Mitmach-Karte -->
+          <div onClick="{{ goMitmachen }}" style="margin: 8px 16px 24px; background: #333333; border-radius: 5px; padding: 16px; display: flex; flex-direction: column; gap: 8px; cursor: pointer;">
+            <div style="font-size: 11px; font-weight: 700; letter-spacing: 1.2px; color: rgba(255,255,255,0.6);">MITMACHEN · UMFRAGE</div>
+            <div style="font-family: Merriweather, serif; font-weight: 700; font-size: 18px; line-height: 1.3; color: #ffffff;">Die Zukunft von CORRECTIV: Wir fragen Sie</div>
+            <div style="font-size: 14px; color: rgba(255,255,255,0.75); line-height: 1.45;">Ihre Antworten fließen direkt in unsere Planung ein. Fünf Minuten genügen.</div>
+            <div style="align-self: flex-start; background: #ff5064; color: #ffffff; font-size: 14px; font-weight: 700; padding: 9px 16px; border-radius: 2px; white-space: nowrap; margin-top: 4px;">Jetzt mitmachen</div>
+          </div>
+
+          <!-- Mediathek-Reihe -->
+          <div style="padding: 0 16px 24px; display: flex; flex-direction: column; gap: 10px;">
+            <div style="display: flex; align-items: center; justify-content: space-between;">
+              <div style="font-size: 17px; font-weight: 700; color: #333333;">Mediathek</div>
+              <div onClick="{{ goMediathek }}" style="font-size: 13px; font-weight: 700; color: #ff5064; cursor: pointer; white-space: nowrap;">Alle →</div>
+            </div>
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
+              <div onClick="{{ goMediathek }}" style="display: flex; flex-direction: column; gap: 6px; cursor: pointer;">
+                <image-slot id="img-funfacts-wm" shape="rounded" radius="2" placeholder="Video-Thumbnail" src="https://i.ytimg.com/vi/9Z7vH-Gsidc/hqdefault.jpg" style="width: 100%; height: 96px;"></image-slot>
+                <div style="font-size: 13px; font-weight: 700; line-height: 1.35; color: #333333;">Die WM26 ist ein absurder Fiebertraum – mit Oliver Welke</div>
+                <div style="font-size: 11px; color: #707070;">FunFacts · Video des Tages</div>
+              </div>
+              <div onClick="{{ toggleRadio }}" style="background: #f8f8f8; border-radius: 2px; padding: 12px; display: flex; flex-direction: column; justify-content: space-between; cursor: pointer; min-height: 96px;">
+                <div style="display: flex; align-items: center; gap: 6px;">
+                  <div style="width: 8px; height: 8px; border-radius: 50%; background: #ff5064; animation: cvPulse 1.6s infinite;"></div>
+                  <div style="font-size: 11px; font-weight: 700; letter-spacing: 1px; color: #ff5064;">LIVE</div>
+                </div>
+                <div style="display: flex; flex-direction: column; gap: 2px;">
+                  <div style="font-size: 14px; font-weight: 700; color: #333333;">Salon5 Radio läuft</div>
+                  <div style="font-size: 12px; color: #707070;">24/7 aus Bottrop · Tippen zum Hören</div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Backstage-Modul -->
+          <div style="padding: 0 16px 24px; display: flex; flex-direction: column; gap: 10px;">
+            <div style="display: flex; align-items: center; gap: 8px;">
+              <div style="font-size: 17px; font-weight: 700; color: #333333;">Backstage</div>
+              <div style="background: #fde162; color: #333333; font-size: 10px; font-weight: 700; letter-spacing: 1px; white-space: nowrap; padding: 2px 6px; border-radius: 2px;">CLUB</div>
+            </div>
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
+              <div onClick="{{ openBackstage }}" style="background: #f8f8f8; border-radius: 5px; padding: 12px; display: flex; flex-direction: column; gap: 6px; cursor: pointer;">
+                <div style="font-size: 11px; font-weight: 700; letter-spacing: 1px; color: #707070;">RECHERCHETAGEBUCH</div>
+                <div style="font-size: 14px; font-weight: 700; line-height: 1.35; color: #333333;">Woche 3: Die Spur führt nach Bern</div>
+              </div>
+              <div onClick="{{ openBackstage }}" style="background: #f8f8f8; border-radius: 5px; padding: 12px; display: flex; flex-direction: column; gap: 6px; cursor: pointer;">
+                <div style="font-size: 11px; font-weight: 700; letter-spacing: 1px; color: #707070;">BONUSFOLGE</div>
+                <div style="font-size: 14px; font-weight: 700; line-height: 1.35; color: #333333;">Wie wir an die Pensionskassen-Daten kamen</div>
+              </div>
+            </div>
+            <div onClick="{{ openBackstage }}" style="font-size: 14px; font-weight: 700; color: #333333; cursor: pointer;">Alles aus dem Backstage →</div>
+          </div>
+
+          <!-- Impact-Footer -->
+          <div style="margin: 0 16px 28px; padding: 20px 16px; border-top: 1px solid #e6e6e6; display: flex; flex-direction: column; align-items: center; gap: 8px; text-align: center;">
+            <div style="font-family: Merriweather, serif; font-size: 15px; color: #333333;">Ermöglicht durch Unterstützer:innen wie Sie.</div>
+            <sc-if value="{{ isGuest }}" hint-placeholder-val="{{ true }}">
+              <div onClick="{{ openJoin }}" style="font-size: 13px; font-weight: 700; color: #ff5064; cursor: pointer; white-space: nowrap;">Unterstützer:in werden</div>
+            </sc-if>
+            <sc-if value="{{ isMember }}" hint-placeholder-val="{{ false }}">
+              <div style="font-size: 13px; color: #707070;">Sie sind Teil davon. Danke.</div>
+            </sc-if>
+          </div>
+        </div>
+      </sc-if>
+
+      <!-- ============ TAB: ENTDECKEN ============ -->
+      <sc-if value="{{ showEntdecken }}" hint-placeholder-val="{{ false }}">
+        <div data-screen-label="Entdecken" style="flex: 1; overflow-y: auto; min-height: 0;">
+          <div style="padding: 66px 16px 12px; display: flex; flex-direction: column; gap: 12px;">
+            <div style="font-weight: 700; font-size: 28px; color: #333333;">Entdecken</div>
+            <div style="background: #f0f0f0; border-radius: 5px; height: 44px; display: flex; align-items: center; gap: 8px; padding: 0 12px;">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#707070" stroke-width="2"><circle cx="11" cy="11" r="7"></circle><path d="M16.5 16.5L21 21"></path></svg>
+              <div style="font-size: 15px; color: #707070;">Recherchen, Faktenchecks, Projekte …</div>
+            </div>
+            <div style="display: flex; gap: 8px; overflow-x: auto; padding-bottom: 2px;">
+              <sc-for list="{{ themenChips }}" as="chip" hint-placeholder-count="5">
+                <div onClick="{{ chip.open }}" style="flex-shrink: 0; border: 1px solid #cecece; border-radius: 2px; padding: 6px 12px; font-size: 13px; font-weight: 600; color: #333333; cursor: pointer;">{{ chip.label }}</div>
+              </sc-for>
+            </div>
+          </div>
+          <sc-for list="{{ entdeckenGruppen }}" as="grp" hint-placeholder-count="3">
+            <div style="padding: 10px 16px 4px; display: flex; flex-direction: column;">
+              <div style="font-size: 12px; font-weight: 700; letter-spacing: 1.2px; color: #707070; padding-bottom: 6px;">{{ grp.name }}</div>
+              <sc-for list="{{ grp.items }}" as="p" hint-placeholder-count="2">
+                <div onClick="{{ p.open }}" style="display: flex; align-items: center; gap: 12px; padding: 11px 0; border-bottom: 1px solid #e6e6e6; cursor: pointer;">
+                  <div style="flex: 1; display: flex; flex-direction: column; gap: 2px;">
+                    <div style="font-size: 15px; font-weight: 700; color: #333333;">{{ p.name }}</div>
+                    <div style="font-size: 13px; color: #707070; line-height: 1.4;">{{ p.desc }}</div>
+                  </div>
+                  <div style="font-size: 15px; color: #b3b3b3; flex-shrink: 0;">{{ p.arrow }}</div>
+                </div>
+              </sc-for>
+            </div>
+          </sc-for>
+          <div style="height: 28px;"></div>
+        </div>
+      </sc-if>
+
+      <!-- ============ TAB: MEDIATHEK ============ -->
+      <sc-if value="{{ showMediathek }}" hint-placeholder-val="{{ false }}">
+        <div data-screen-label="Mediathek" style="flex: 1; overflow-y: auto; min-height: 0;">
+          <div style="padding: 66px 16px 12px; font-weight: 700; font-size: 28px; color: #333333;">Mediathek</div>
+
+          <!-- Live-Banner -->
+          <div style="margin: 0 16px 24px; background: #333333; border-radius: 5px; padding: 16px; display: flex; align-items: center; gap: 14px;">
+            <div onClick="{{ toggleRadio }}" style="width: 48px; height: 48px; border-radius: 50%; background: #ff5064; display: flex; align-items: center; justify-content: center; cursor: pointer; flex-shrink: 0;">
+              <sc-if value="{{ radioPlaying }}" hint-placeholder-val="{{ false }}">
+                <svg width="16" height="16" viewBox="0 0 16 16"><rect x="2" y="1" width="4" height="14" fill="#ffffff"></rect><rect x="10" y="1" width="4" height="14" fill="#ffffff"></rect></svg>
+              </sc-if>
+              <sc-if value="{{ radioStopped }}" hint-placeholder-val="{{ true }}">
+                <svg width="18" height="18" viewBox="0 0 18 18"><path d="M5 3v12l10-6z" fill="#ffffff"></path></svg>
+              </sc-if>
+            </div>
+            <div style="display: flex; flex-direction: column; gap: 3px;">
+              <div style="display: flex; align-items: center; gap: 6px;">
+                <div style="width: 8px; height: 8px; border-radius: 50%; background: #ff5064; animation: cvPulse 1.6s infinite;"></div>
+                <div style="font-size: 11px; font-weight: 700; letter-spacing: 1px; color: #ff5064;">LIVE</div>
+              </div>
+              <div style="font-size: 16px; font-weight: 700; color: #ffffff;">Salon5 Radio</div>
+              <div style="font-size: 13px; color: rgba(255,255,255,0.7);">24/7 aus Bottrop — von Jugendlichen für Jugendliche</div>
+            </div>
+          </div>
+
+          <!-- Podcasts -->
+          <div style="display: flex; flex-direction: column; gap: 10px; padding-bottom: 24px;">
+            <div style="font-size: 17px; font-weight: 700; color: #333333; padding: 0 16px;">Podcasts</div>
+            <div style="display: flex; gap: 12px; overflow-x: auto; padding: 0 16px;">
+              <div style="width: 116px; flex-shrink: 0; display: flex; flex-direction: column; gap: 6px;">
+                <image-slot id="img-pod-pausenbrot" shape="rounded" radius="2" placeholder="Cover" style="width: 116px; height: 116px;"></image-slot>
+                <div style="font-size: 13px; font-weight: 700; color: #333333;">Pausenbrot</div>
+                <div style="font-size: 11px; color: #707070;">Salon5 · Mo–Fr</div>
+              </div>
+              <div style="width: 116px; flex-shrink: 0; display: flex; flex-direction: column; gap: 6px;">
+                <image-slot id="img-pod-deeptalk" shape="rounded" radius="2" placeholder="Cover" style="width: 116px; height: 116px;"></image-slot>
+                <div style="font-size: 13px; font-weight: 700; color: #333333;">Deeptalk</div>
+                <div style="font-size: 11px; color: #707070;">Salon5 · wöchentlich</div>
+              </div>
+              <div style="width: 116px; flex-shrink: 0; display: flex; flex-direction: column; gap: 6px;">
+                <image-slot id="img-pod-klima" shape="rounded" radius="2" placeholder="Cover" style="width: 116px; height: 116px;"></image-slot>
+                <div style="font-size: 13px; font-weight: 700; color: #333333;">Mission Klima</div>
+                <div style="font-size: 11px; color: #707070;">Salon5</div>
+              </div>
+              <div style="width: 116px; flex-shrink: 0; display: flex; flex-direction: column; gap: 6px;">
+                <image-slot id="img-pod-correctiv" shape="rounded" radius="2" placeholder="Cover" style="width: 116px; height: 116px;"></image-slot>
+                <div style="font-size: 13px; font-weight: 700; color: #333333;">CORRECTIV Podcast</div>
+                <div style="font-size: 11px; color: #707070;">Hintergründe</div>
+              </div>
+            </div>
+          </div>
+
+          <!-- CORRECTIV im Gespräch -->
+          <div style="padding: 0 16px 24px; display: flex; flex-direction: column; gap: 10px;">
+            <div style="font-size: 17px; font-weight: 700; color: #333333;">CORRECTIV im Gespräch</div>
+            <div style="display: flex; gap: 12px; align-items: center;">
+              <image-slot id="img-vid-gueler" shape="rounded" radius="2" placeholder="Thumbnail" src="https://i.ytimg.com/vi/6xz23UXKsNo/hqdefault.jpg" style="width: 124px; height: 70px; flex-shrink: 0;"></image-slot>
+              <div style="flex: 1; display: flex; flex-direction: column; gap: 3px;">
+                <div style="font-size: 14px; font-weight: 700; line-height: 1.35; color: #333333;">Wo steht die CDU in der Integrationsdebatte? – mit Serap Güler</div>
+                <div style="font-size: 12px; color: #707070;">YouTube · 43 Min.</div>
+              </div>
+            </div>
+            <div style="display: flex; gap: 12px; align-items: center;">
+              <image-slot id="img-vid-demokratie" shape="rounded" radius="2" placeholder="Thumbnail" src="https://i.ytimg.com/vi/timGjj1j5MA/hqdefault.jpg" style="width: 124px; height: 70px; flex-shrink: 0;"></image-slot>
+              <div style="flex: 1; display: flex; flex-direction: column; gap: 3px;">
+                <div style="font-size: 14px; font-weight: 700; line-height: 1.35; color: #333333;">Die Aushöhlung der Demokratie – mit Anna-Mira Brandau und Maximilian Steinbeis</div>
+                <div style="font-size: 12px; color: #707070;">YouTube · 51 Min.</div>
+              </div>
+            </div>
+          </div>
+
+          <!-- FunFacts -->
+          <div style="padding: 0 16px 24px; display: flex; flex-direction: column; gap: 10px;">
+            <div style="font-size: 17px; font-weight: 700; color: #333333;">FunFacts</div>
+            <div style="display: flex; flex-direction: column; gap: 8px;">
+              <div style="position: relative;">
+                <image-slot id="img-funfacts-wm" shape="rounded" radius="2" placeholder="Video-Thumbnail (YouTube)" src="https://i.ytimg.com/vi/9Z7vH-Gsidc/hqdefault.jpg" style="width: 100%; height: 190px; display: block;"></image-slot>
+                <div style="position: absolute; left: 50%; top: 50%; transform: translate(-50%, -50%); width: 52px; height: 52px; border-radius: 50%; background: rgba(51,51,51,0.85); display: flex; align-items: center; justify-content: center; pointer-events: none;">
+                  <svg width="20" height="20" viewBox="0 0 18 18"><path d="M5 3v12l10-6z" fill="#ffffff"></path></svg>
+                </div>
+              </div>
+              <div style="font-size: 15px; font-weight: 700; line-height: 1.35; color: #333333;">Die WM26 ist ein absurder Fiebertraum – mit Oliver Welke</div>
+              <div style="font-size: 12px; color: #707070;">FunFacts · heute · Wiedergabe im eingebetteten YouTube-Player</div>
+            </div>
+          </div>
+
+          <!-- Backstage-Audio -->
+          <div style="margin: 0 16px 28px; border: 1px solid #fde162; background: rgba(253, 225, 98, 0.22); border-radius: 5px; padding: 14px 16px; display: flex; flex-direction: column; gap: 8px;">
+            <div style="align-self: flex-start; background: #fde162; color: #333333; font-size: 10px; font-weight: 700; letter-spacing: 1px; white-space: nowrap; padding: 3px 7px; border-radius: 2px;">CLUB · BONUSFOLGE</div>
+            <div style="font-size: 15px; font-weight: 700; line-height: 1.35; color: #333333;">Wie wir an die Pensionskassen-Daten kamen</div>
+            <div style="font-size: 13px; color: #707070; line-height: 1.4;">Das Recherche-Team über verschlossene Türen, Umwege und einen entscheidenden Hinweis.</div>
+            <div onClick="{{ playBonus }}" style="align-self: flex-start; border: 1.5px solid #333333; color: #333333; font-size: 14px; font-weight: 700; padding: 8px 14px; border-radius: 2px; white-space: nowrap; cursor: pointer;">{{ bonusBtnLabel }}</div>
+          </div>
+        </div>
+      </sc-if>
+
+      <!-- ============ TAB: MITMACHEN ============ -->
+      <sc-if value="{{ showMitmachen }}" hint-placeholder-val="{{ false }}">
+        <div data-screen-label="Mitmachen" style="flex: 1; overflow-y: auto; min-height: 0;">
+          <div style="padding: 66px 16px 4px; display: flex; flex-direction: column; gap: 6px;">
+            <div style="font-weight: 700; font-size: 28px; color: #333333;">Mitmachen</div>
+            <div style="font-size: 15px; color: #707070; line-height: 1.45;">Recherchen entstehen mit Ihnen — so machen Sie mit.</div>
+          </div>
+
+          <!-- Aktive Aufrufe -->
+          <div style="padding: 18px 16px 8px; display: flex; flex-direction: column; gap: 12px;">
+            <div style="font-size: 12px; font-weight: 700; letter-spacing: 1.2px; color: #707070;">AKTIVE AUFRUFE</div>
+            <div style="border: 1px solid #e6e6e6; border-radius: 5px; padding: 14px 16px; display: flex; flex-direction: column; gap: 8px;">
+              <div style="font-size: 11px; font-weight: 700; letter-spacing: 1.2px; color: #ff5064;">CROWDNEWSROOM</div>
+              <div style="font-family: Merriweather, serif; font-weight: 700; font-size: 18px; line-height: 1.3; color: #333333;">Wem gehört die Stadt?</div>
+              <div style="font-size: 14px; color: #707070; line-height: 1.45;">Helfen Sie uns herauszufinden, wer von steigenden Mieten profitiert. Ihre Erfahrung zählt.</div>
+              <div style="display: flex; flex-direction: column; gap: 5px; padding-top: 2px;">
+                <div style="height: 4px; background: #e6e6e6; border-radius: 2px; overflow: hidden;"><div style="height: 100%; width: 71%; background: #333333;"></div></div>
+                <div style="font-size: 12px; color: #707070;">2.143 Beiträge</div>
+              </div>
+              <div onClick="{{ openCalloutStadt }}" style="align-self: flex-start; background: #ff5064; color: #ffffff; font-size: 14px; font-weight: 700; padding: 9px 16px; border-radius: 2px; white-space: nowrap; cursor: pointer; margin-top: 2px;">Mitmachen</div>
+            </div>
+            <div style="border: 1px solid #e6e6e6; border-radius: 5px; padding: 14px 16px; display: flex; flex-direction: column; gap: 8px;">
+              <div style="font-size: 11px; font-weight: 700; letter-spacing: 1.2px; color: #ff5064;">UMFRAGE</div>
+              <div style="font-family: Merriweather, serif; font-weight: 700; font-size: 18px; line-height: 1.3; color: #333333;">Die Zukunft von CORRECTIV: Wir fragen Sie</div>
+              <div style="display: flex; flex-direction: column; gap: 5px; padding-top: 2px;">
+                <div style="height: 4px; background: #e6e6e6; border-radius: 2px; overflow: hidden;"><div style="height: 100%; width: 58%; background: #333333;"></div></div>
+                <div style="font-size: 12px; color: #707070;">5.812 Teilnahmen</div>
+              </div>
+              <div onClick="{{ openCalloutZukunft }}" style="align-self: flex-start; border: 1.5px solid #333333; color: #333333; font-size: 14px; font-weight: 700; padding: 8px 14px; border-radius: 2px; white-space: nowrap; cursor: pointer; margin-top: 2px;">Teilnehmen</div>
+            </div>
+          </div>
+
+          <!-- Faktenforum -->
+          <div style="padding: 12px 16px 8px; display: flex; flex-direction: column; gap: 12px;">
+            <div style="font-size: 12px; font-weight: 700; letter-spacing: 1.2px; color: #707070;">FAKTENFORUM</div>
+            <div style="background: #f8f8f8; border-radius: 5px; padding: 14px 16px; display: flex; flex-direction: column; gap: 8px;">
+              <div style="font-size: 15px; font-weight: 700; color: #333333;">Behauptungen gemeinsam prüfen</div>
+              <div style="font-size: 14px; color: #707070; line-height: 1.45;">Im Faktenforum prüft die Community Behauptungen aus dem Netz — angeleitet von der Redaktion. Lokalgruppen gibt es in vielen Städten.</div>
+              <div onClick="{{ openFaktenforum }}" style="align-self: flex-start; border: 1.5px solid #333333; color: #333333; font-size: 14px; font-weight: 700; padding: 8px 14px; border-radius: 2px; white-space: nowrap; cursor: pointer;">Behauptungen ansehen</div>
+            </div>
+          </div>
+
+          <!-- Abriss-Atlas -->
+          <div style="padding: 12px 16px 8px; display: flex; flex-direction: column; gap: 12px;">
+            <div style="font-size: 12px; font-weight: 700; letter-spacing: 1.2px; color: #707070;">ABRISS-ATLAS</div>
+            <div style="border: 1px solid #e6e6e6; border-radius: 5px; overflow: hidden; display: flex; flex-direction: column;">
+              <image-slot id="img-abriss-karte" shape="rect" placeholder="Karten-Snapshot (abriss-atlas.de)" style="width: 100%; height: 130px; display: block;"></image-slot>
+              <div style="padding: 12px 16px; display: flex; flex-direction: column; gap: 8px;">
+                <div style="font-size: 14px; color: #707070; line-height: 1.45;">Dokumentieren Sie Gebäudeabrisse in Deutschland und der Schweiz — für mehr Ressourcenschutz.</div>
+                <div style="display: flex; gap: 8px;">
+                  <div style="border: 1.5px solid #333333; color: #333333; font-size: 14px; font-weight: 700; padding: 8px 14px; border-radius: 2px; white-space: nowrap; cursor: pointer;">Abriss melden ↗</div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Tipp geben -->
+          <div style="padding: 12px 16px 8px; display: flex; flex-direction: column; gap: 12px;">
+            <div style="font-size: 12px; font-weight: 700; letter-spacing: 1.2px; color: #707070;">TIPP GEBEN</div>
+            <div style="background: #f8f8f8; border-radius: 5px; padding: 14px 16px; display: flex; flex-direction: column; gap: 10px;">
+              <div style="font-size: 14px; color: #333333; line-height: 1.45;">Ihnen ist eine zweifelhafte Behauptung begegnet? Oder Sie wissen etwas, das wir wissen sollten?</div>
+              <div style="display: flex; flex-direction: column; gap: 8px;">
+                <div style="border: 1.5px solid #333333; color: #333333; font-size: 14px; font-weight: 700; padding: 8px 14px; border-radius: 2px; white-space: nowrap; cursor: pointer; align-self: flex-start;">Faktencheck-Tipp per WhatsApp ↗</div>
+                <div style="font-size: 13px; color: #707070;">Für vertrauliche Hinweise: der sichere Briefkasten ↗</div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Club-Teaser -->
+          <div style="margin: 12px 16px 28px; display: flex; align-items: center; gap: 8px;">
+            <div style="background: #fde162; color: #333333; font-size: 10px; font-weight: 700; letter-spacing: 1px; white-space: nowrap; padding: 2px 6px; border-radius: 2px; flex-shrink: 0;">CLUB</div>
+            <div style="font-size: 13px; color: #707070;">Clubmitglieder diskutieren Recherchen im Community-Bereich.</div>
+          </div>
+        </div>
+      </sc-if>
+
+      <!-- ============ TAB: PROFIL ============ -->
+      <sc-if value="{{ showProfil }}" hint-placeholder-val="{{ false }}">
+        <div data-screen-label="Profil" style="flex: 1; overflow-y: auto; min-height: 0;">
+          <div style="padding: 66px 16px 12px; font-weight: 700; font-size: 28px; color: #333333;">Profil</div>
+
+          <sc-if value="{{ isGuest }}" hint-placeholder-val="{{ true }}">
+            <div style="margin: 0 16px 20px; background: #f8f8f8; border-radius: 5px; padding: 16px; display: flex; flex-direction: column; gap: 8px;">
+              <div style="font-size: 16px; font-weight: 700; color: #333333;">Sie sind als Gast unterwegs</div>
+              <div style="font-size: 14px; color: #707070; line-height: 1.45;">Unser Journalismus bleibt frei — für alle. Ihr Beitrag macht genau das möglich.</div>
+              <div onClick="{{ openJoin }}" style="align-self: flex-start; background: #ff5064; color: #ffffff; font-size: 14px; font-weight: 700; padding: 9px 16px; border-radius: 2px; white-space: nowrap; cursor: pointer;">Unterstützer:in werden</div>
+            </div>
+          </sc-if>
+          <sc-if value="{{ isMember }}" hint-placeholder-val="{{ false }}">
+            <div style="margin: 0 16px 20px; background: #fde162; border-radius: 5px; padding: 18px 16px; display: flex; flex-direction: column; gap: 4px;">
+              <div style="font-size: 11px; font-weight: 700; letter-spacing: 1.5px; color: #333333;">CORRECTIV CLUB</div>
+              <div style="font-size: 20px; font-weight: 700; color: #333333;">Alex Beispiel</div>
+              <div style="font-size: 13px; color: #333333;">Mitglied seit Juni 2026 · 10 € im Monat</div>
+            </div>
+            <div style="margin: 0 16px 20px; display: flex; flex-direction: column; gap: 8px;">
+              <div style="font-size: 12px; font-weight: 700; letter-spacing: 1.2px; color: #707070;">MEIN IMPACT</div>
+              <div style="font-size: 14px; color: #333333; line-height: 1.5;">Ihr Beitrag wirkt ab sofort. Unter anderem diese Recherchen wurden durch Unterstützer:innen ermöglicht:</div>
+              <div style="font-size: 14px; color: #707070; line-height: 1.7;">• Die Perfekte Frau<br>• Pension um jeden Preis<br>• So sehr leidet Ihre Region unter Dürre</div>
+            </div>
+            <div style="margin: 0 16px; border-top: 1px solid #e6e6e6;">
+              <div style="display: flex; align-items: center; justify-content: space-between; padding: 13px 0; border-bottom: 1px solid #e6e6e6;">
+                <div style="font-size: 15px; color: #333333;">Meine Mitgliedschaft</div>
+                <div style="font-size: 13px; color: #707070;">10 €/Monat · ändern</div>
+              </div>
+            </div>
+          </sc-if>
+
+          <div style="margin: 0 16px;">
+            <div onClick="{{ openBackstage }}" style="display: flex; align-items: center; justify-content: space-between; padding: 13px 0; border-bottom: 1px solid #e6e6e6; cursor: pointer;">
+              <div style="display: flex; align-items: center; gap: 8px;">
+                <div style="font-size: 15px; color: #333333;">Backstage</div>
+                <div style="background: #fde162; color: #333333; font-size: 10px; font-weight: 700; letter-spacing: 1px; white-space: nowrap; padding: 2px 6px; border-radius: 2px;">CLUB</div>
+              </div>
+              <div style="font-size: 15px; color: #b3b3b3;">›</div>
+            </div>
+            <div style="display: flex; align-items: center; justify-content: space-between; padding: 13px 0; border-bottom: 1px solid #e6e6e6;">
+              <div style="font-size: 15px; color: #333333;">Gespeicherte Artikel</div>
+              <div style="font-size: 13px; color: #707070;">{{ savedLabel }}</div>
+            </div>
+            <div onClick="{{ qbOpen }}" style="display: flex; align-items: center; justify-content: space-between; padding: 13px 0; border-bottom: 1px solid #e6e6e6; cursor: pointer;">
+              <div style="display: flex; align-items: center; gap: 8px;">
+                <div style="font-size: 15px; color: #333333;">Quartalsbericht</div>
+                <div style="background: #fde162; color: #333333; font-size: 10px; font-weight: 700; letter-spacing: 1px; white-space: nowrap; padding: 2px 6px; border-radius: 2px;">CLUB</div>
+              </div>
+              <div style="font-size: 15px; color: #b3b3b3;">›</div>
+            </div>
+          </div>
+
+          <div style="padding: 20px 16px 6px; font-size: 12px; font-weight: 700; letter-spacing: 1.2px; color: #707070;">NEWSLETTER</div>
+          <div style="margin: 0 16px;">
+            <sc-for list="{{ newsletterRows }}" as="nl" hint-placeholder-count="3">
+              <div style="display: flex; align-items: center; justify-content: space-between; padding: 11px 0; border-bottom: 1px solid #e6e6e6;">
+                <div style="font-size: 15px; color: #333333;">{{ nl.label }}</div>
+                <div onClick="{{ nl.toggle }}" style="width: 42px; height: 25px; border-radius: 13px; background: {{ nl.bg }}; position: relative; cursor: pointer; transition: background 0.2s;">
+                  <div style="position: absolute; top: 2.5px; left: 2.5px; width: 20px; height: 20px; border-radius: 50%; background: #ffffff; transform: {{ nl.x }}; transition: transform 0.2s;"></div>
+                </div>
+              </div>
+            </sc-for>
+          </div>
+
+          <div style="padding: 20px 16px 6px; font-size: 12px; font-weight: 700; letter-spacing: 1.2px; color: #707070;">EINSTELLUNGEN</div>
+          <div style="margin: 0 16px 28px;">
+            <div style="display: flex; align-items: center; justify-content: space-between; padding: 11px 0; border-bottom: 1px solid #e6e6e6;">
+              <div style="font-size: 15px; color: #333333;">Push-Mitteilungen</div>
+              <div onClick="{{ togglePush }}" style="width: 42px; height: 25px; border-radius: 13px; background: {{ pushBg }}; position: relative; cursor: pointer; transition: background 0.2s;">
+                <div style="position: absolute; top: 2.5px; left: 2.5px; width: 20px; height: 20px; border-radius: 50%; background: #ffffff; transform: {{ pushX }}; transition: transform 0.2s;"></div>
+              </div>
+            </div>
+            <div style="display: flex; align-items: center; justify-content: space-between; padding: 13px 0; border-bottom: 1px solid #e6e6e6;">
+              <div style="font-size: 15px; color: #333333;">Textgröße</div>
+              <div style="font-size: 13px; color: #707070;">Standard</div>
+            </div>
+            <div style="display: flex; align-items: center; justify-content: space-between; padding: 13px 0; border-bottom: 1px solid #e6e6e6;">
+              <div style="font-size: 15px; color: #333333;">Über CORRECTIV</div>
+              <div style="font-size: 15px; color: #b3b3b3;">›</div>
+            </div>
+            <div style="display: flex; align-items: center; justify-content: space-between; padding: 13px 0; border-bottom: 1px solid #e6e6e6;">
+              <div style="font-size: 15px; color: #333333;">Impressum &amp; Datenschutz</div>
+              <div style="font-size: 15px; color: #b3b3b3;">›</div>
+            </div>
+          </div>
+        </div>
+      </sc-if>
+
+      <!-- ============ MINI-PLAYER ============ -->
+      <sc-if value="{{ hasAudio }}" hint-placeholder-val="{{ false }}">
+        <div data-screen-label="Mini-Player" style="flex-shrink: 0; border-top: 1px solid #e6e6e6; background: #f8f8f8; display: flex; align-items: center; gap: 10px; padding: 8px 12px;">
+          <div onClick="{{ toggleAudio }}" style="width: 36px; height: 36px; border-radius: 50%; background: #ff5064; display: flex; align-items: center; justify-content: center; cursor: pointer; flex-shrink: 0;">
+            <sc-if value="{{ audioPlaying }}" hint-placeholder-val="{{ true }}">
+              <svg width="12" height="12" viewBox="0 0 16 16"><rect x="2" y="1" width="4" height="14" fill="#ffffff"></rect><rect x="10" y="1" width="4" height="14" fill="#ffffff"></rect></svg>
+            </sc-if>
+            <sc-if value="{{ audioPaused }}" hint-placeholder-val="{{ false }}">
+              <svg width="14" height="14" viewBox="0 0 18 18"><path d="M5 3v12l10-6z" fill="#ffffff"></path></svg>
+            </sc-if>
+          </div>
+          <div style="flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 1px;">
+            <div style="font-size: 13px; font-weight: 700; color: #333333; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">{{ audioTitle }}</div>
+            <div style="font-size: 11px; color: #707070;">{{ audioSub }}</div>
+          </div>
+          <div onClick="{{ closeAudio }}" style="padding: 8px; cursor: pointer; color: #707070; font-size: 16px; line-height: 1;">✕</div>
+        </div>
+      </sc-if>
+
+      <!-- ============ TAB-BAR ============ -->
+      <div style="flex-shrink: 0; border-top: 1px solid #e6e6e6; background: #ffffff; display: flex; padding: 6px 4px 24px;">
+        <div onClick="{{ goHome }}" style="flex: 1; display: flex; flex-direction: column; align-items: center; gap: 3px; cursor: pointer; color: {{ cHome }}; padding-top: 4px;">
+          <svg width="23" height="23" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"><path d="M3 11.5L12 4l9 7.5"></path><path d="M5.5 9.8V20h13V9.8"></path></svg>
+          <div style="font-size: 10px; font-weight: 600;">Home</div>
+        </div>
+        <div onClick="{{ goEntdecken }}" style="flex: 1; display: flex; flex-direction: column; align-items: center; gap: 3px; cursor: pointer; color: {{ cEntdecken }}; padding-top: 4px;">
+          <svg width="23" height="23" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"><circle cx="12" cy="12" r="8.5"></circle><path d="M15.2 8.8l-2 4.4-4.4 2 2-4.4z"></path></svg>
+          <div style="font-size: 10px; font-weight: 600;">Entdecken</div>
+        </div>
+        <div onClick="{{ goMediathek }}" style="flex: 1; display: flex; flex-direction: column; align-items: center; gap: 3px; cursor: pointer; color: {{ cMediathek }}; padding-top: 4px;">
+          <svg width="23" height="23" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"><rect x="3" y="5" width="18" height="14" rx="2"></rect><path d="M10.5 9.3v5.4l4.6-2.7z" fill="currentColor" stroke="none"></path></svg>
+          <div style="font-size: 10px; font-weight: 600;">Mediathek</div>
+        </div>
+        <div onClick="{{ goMitmachen }}" style="flex: 1; display: flex; flex-direction: column; align-items: center; gap: 3px; cursor: pointer; color: {{ cMitmachen }}; padding-top: 4px;">
+          <svg width="23" height="23" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round" stroke-linecap="round"><path d="M4 5h16v11H9.5L4.5 20z"></path><path d="M12 7.8v5"></path><path d="M9.5 10.3h5"></path></svg>
+          <div style="font-size: 10px; font-weight: 600;">Mitmachen</div>
+        </div>
+        <div onClick="{{ goProfil }}" style="flex: 1; display: flex; flex-direction: column; align-items: center; gap: 3px; cursor: pointer; color: {{ cProfil }}; padding-top: 4px;">
+          <svg width="23" height="23" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><circle cx="12" cy="8.3" r="3.6"></circle><path d="M4.8 20c1-4 4.2-5.6 7.2-5.6s6.2 1.6 7.2 5.6"></path></svg>
+          <div style="font-size: 10px; font-weight: 600;">Profil</div>
+        </div>
+      </div>
+
+      <!-- ============ OVERLAY: ARTIKEL-READER ============ -->
+      <sc-if value="{{ showArticle }}" hint-placeholder-val="{{ false }}">
+        <div data-screen-label="Artikel-Reader" style="position: absolute; inset: 0; z-index: 5; background: #ffffff; display: flex; flex-direction: column;">
+          <div style="padding: 62px 12px 8px; display: flex; align-items: center; justify-content: space-between; border-bottom: 1px solid #e6e6e6; flex-shrink: 0;">
+            <div onClick="{{ back }}" style="display: flex; align-items: center; gap: 4px; cursor: pointer; padding: 6px; color: #333333;">
+              <svg width="11" height="18" viewBox="0 0 12 20" fill="none"><path d="M10 2L2 10l8 8" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"></path></svg>
+              <div style="font-size: 15px; font-weight: 600;">Zurück</div>
+            </div>
+            <div onClick="{{ toggleSave }}" style="font-size: 14px; font-weight: 700; color: #333333; cursor: pointer; padding: 6px;">{{ saveLabel }}</div>
+          </div>
+          <div style="flex: 1; overflow-y: auto; min-height: 0;">
+            <image-slot id="{{ article.imgId }}" shape="rect" placeholder="Titelbild hierher ziehen (og:image)" style="width: 100%; height: 210px; display: block;"></image-slot>
+            <div style="padding: 16px 16px 0; display: flex; flex-direction: column; gap: 10px;">
+              <div style="font-size: 11px; font-weight: 700; letter-spacing: 1.2px; color: #ff5064;">{{ article.kicker }}</div>
+              <div style="font-family: Merriweather, serif; font-weight: 900; font-size: 28px; line-height: 1.2; color: #333333; text-wrap: pretty;">{{ article.title }}</div>
+              <sc-if value="{{ article.isFact }}" hint-placeholder-val="{{ false }}">
+                <div style="align-self: flex-start; background: #ff5064; color: #ffffff; font-size: 13px; font-weight: 700; letter-spacing: 1.5px; padding: 6px 12px; border-radius: 2px;">{{ article.verdict }}</div>
+              </sc-if>
+              <div style="font-size: 13px; color: #707070; padding-bottom: 6px; border-bottom: 1px solid #e6e6e6;">{{ article.authors }} · {{ article.meta }}</div>
+            </div>
+            <div style="padding: 12px 16px 0; display: flex; flex-direction: column;">
+              <sc-for list="{{ article.body }}" as="b" hint-placeholder-count="4">
+                <sc-if value="{{ b.isP }}" hint-placeholder-val="{{ true }}">
+                  <div style="font-family: Merriweather, serif; font-size: 15.5px; line-height: 1.8; letter-spacing: 0.2px; color: #333333; padding-bottom: 18px;">{{ b.x }}</div>
+                </sc-if>
+                <sc-if value="{{ b.isH }}" hint-placeholder-val="{{ false }}">
+                  <div style="font-size: 19px; font-weight: 700; line-height: 1.3; color: #333333; padding: 6px 0 12px;">{{ b.x }}</div>
+                </sc-if>
+                <sc-if value="{{ b.isBox }}" hint-placeholder-val="{{ false }}">
+                  <div style="background: #f8f8f8; border-radius: 5px; padding: 14px 16px; font-size: 14px; line-height: 1.55; color: #333333; margin-bottom: 18px;">{{ b.x }}</div>
+                </sc-if>
+              </sc-for>
+              <div style="font-size: 12px; color: #b3b3b3; padding-bottom: 18px;">Prototyp: Der Volltext wird beim Öffnen live von der Artikelseite geladen — hier gekürzt dargestellt.</div>
+            </div>
+            <div style="margin: 0 16px 16px; background: #f8f8f8; border-radius: 5px; padding: 16px; display: flex; flex-direction: column; gap: 10px; text-align: center; align-items: center;">
+              <div style="font-family: Merriweather, serif; font-size: 15px; line-height: 1.5; color: #333333;">Diese Recherche war nur möglich durch Unterstützer:innen wie Sie.</div>
+              <sc-if value="{{ isGuest }}" hint-placeholder-val="{{ true }}">
+                <div onClick="{{ openJoin }}" style="background: #ff5064; color: #ffffff; font-size: 14px; font-weight: 700; padding: 9px 18px; border-radius: 2px; cursor: pointer;">Unterstützer:in werden</div>
+              </sc-if>
+              <sc-if value="{{ isMember }}" hint-placeholder-val="{{ false }}">
+                <div style="font-size: 13px; color: #707070;">Sie machen das möglich. Danke.</div>
+              </sc-if>
+            </div>
+            <div style="padding: 0 16px 32px; display: flex; gap: 18px; align-items: center;">
+              <div style="font-size: 14px; font-weight: 700; color: #333333; cursor: pointer;">Teilen</div>
+              <div onClick="{{ toggleSave }}" style="font-size: 14px; font-weight: 700; color: #333333; cursor: pointer;">{{ saveLabel }}</div>
+              <div style="font-size: 14px; color: #707070; margin-left: auto;">Mehr zum Thema ›</div>
+            </div>
+          </div>
+        </div>
+      </sc-if>
+
+      <!-- ============ OVERLAY: SPOTLIGHT-READER ============ -->
+      <sc-if value="{{ showSpotlight }}" hint-placeholder-val="{{ false }}">
+        <div data-screen-label="Spotlight-Reader" style="position: absolute; inset: 0; z-index: 5; background: #ffffff; display: flex; flex-direction: column;">
+          <div style="padding: 62px 12px 8px; display: flex; align-items: center; gap: 4px; border-bottom: 1px solid #e6e6e6; flex-shrink: 0;">
+            <div onClick="{{ back }}" style="display: flex; align-items: center; gap: 4px; cursor: pointer; padding: 6px; color: #333333;">
+              <svg width="11" height="18" viewBox="0 0 12 20" fill="none"><path d="M10 2L2 10l8 8" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"></path></svg>
+              <div style="font-size: 15px; font-weight: 600;">Zurück</div>
+            </div>
+          </div>
+          <div style="flex: 1; overflow-y: auto; min-height: 0; padding: 18px 16px 32px;">
+            <div style="display: flex; align-items: center; justify-content: space-between; padding-bottom: 14px;">
+              <div style="font-size: 18px; color: #b3b3b3; cursor: pointer; padding: 4px 8px;">‹</div>
+              <div style="display: flex; flex-direction: column; align-items: center; gap: 2px;">
+                <div style="font-size: 12px; font-weight: 700; letter-spacing: 1.5px; color: #ff5064;">SPOTLIGHT</div>
+                <div style="font-size: 13px; color: #707070;">Freitag, 12. Juni 2026</div>
+              </div>
+              <div style="font-size: 18px; color: #e6e6e6; padding: 4px 8px;">›</div>
+            </div>
+            <div style="font-family: Merriweather, serif; font-size: 15.5px; line-height: 1.8; color: #333333; padding-bottom: 18px;">Guten Morgen! Das Wichtigste aus dem CORRECTIV-Kosmos — kuratiert von der Redaktion.</div>
+            <div style="display: flex; flex-direction: column; gap: 16px;">
+              <div style="border-top: 1px solid #e6e6e6; padding-top: 14px; display: flex; flex-direction: column; gap: 6px;">
+                <div style="font-size: 15px; font-weight: 700; color: #333333; line-height: 1.4;">Pensionskassen: Aufsicht kündigt Sonderprüfung an</div>
+                <div style="font-family: Merriweather, serif; font-size: 14.5px; line-height: 1.7; color: #333333;">Nach unserer Recherche „Pension um jeden Preis" reagiert die Finanzaufsicht. Was das für Versicherte bedeutet, lesen Sie kommende Woche.</div>
+              </div>
+              <div style="border-top: 1px solid #e6e6e6; padding-top: 14px; display: flex; flex-direction: column; gap: 6px;">
+                <div style="font-size: 15px; font-weight: 700; color: #333333; line-height: 1.4;">KI-Fake zur US-Botschaft in Kiew</div>
+                <div style="font-family: Merriweather, serif; font-size: 14.5px; line-height: 1.7; color: #333333;">Ein Video verbreitet sich millionenfach — und selbst KI-Assistenten fallen darauf herein. Unser Faktencheck zeigt, woran Sie den Fake erkennen.</div>
+              </div>
+              <div style="border-top: 1px solid #e6e6e6; padding-top: 14px; display: flex; flex-direction: column; gap: 6px;">
+                <div style="font-size: 15px; font-weight: 700; color: #333333; line-height: 1.4;">2.000 Beiträge für „Wem gehört die Stadt?"</div>
+                <div style="font-family: Merriweather, serif; font-size: 14.5px; line-height: 1.7; color: #333333;">Unser CrowdNewsroom wächst. Jeder Beitrag hilft, das Geschäft mit der Miete transparent zu machen — machen Sie mit.</div>
+              </div>
+            </div>
+            <div style="border-top: 1px solid #e6e6e6; margin-top: 18px; padding-top: 14px; font-family: Merriweather, serif; font-size: 14.5px; line-height: 1.7; color: #707070;">Bleiben Sie aufmerksam — Ihre CORRECTIV-Redaktion</div>
+          </div>
+        </div>
+      </sc-if>
+
+      <!-- ============ OVERLAY: PROJEKTSEITE ============ -->
+      <sc-if value="{{ showProjekt }}" hint-placeholder-val="{{ false }}">
+        <div data-screen-label="Projektseite" style="position: absolute; inset: 0; z-index: 5; background: #ffffff; display: flex; flex-direction: column;">
+          <div style="padding: 62px 12px 8px; display: flex; align-items: center; gap: 4px; border-bottom: 1px solid #e6e6e6; flex-shrink: 0;">
+            <div onClick="{{ back }}" style="display: flex; align-items: center; gap: 4px; cursor: pointer; padding: 6px; color: #333333;">
+              <svg width="11" height="18" viewBox="0 0 12 20" fill="none"><path d="M10 2L2 10l8 8" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"></path></svg>
+              <div style="font-size: 15px; font-weight: 600;">Zurück</div>
+            </div>
+          </div>
+          <div style="flex: 1; overflow-y: auto; min-height: 0;">
+            <div style="padding: 18px 16px 14px; display: flex; flex-direction: column; gap: 8px; border-bottom: 1px solid #e6e6e6;">
+              <div style="align-self: flex-start; background: #ff5064; color: #ffffff; font-size: 10px; font-weight: 700; letter-spacing: 1px; white-space: nowrap; padding: 3px 7px; border-radius: 2px;">{{ projekt.badge }}</div>
+              <div style="font-weight: 700; font-size: 24px; color: #333333;">{{ projekt.title }}</div>
+              <div style="font-size: 14px; color: #707070; line-height: 1.5;">{{ projekt.desc }}</div>
+              <div onClick="{{ projekt.onAction }}" style="align-self: flex-start; border: 1.5px solid #333333; color: #333333; font-size: 14px; font-weight: 700; padding: 8px 14px; border-radius: 2px; white-space: nowrap; cursor: pointer; margin-top: 2px;">{{ projekt.actionLabel }}</div>
+            </div>
+            <div style="padding: 6px 16px 28px; display: flex; flex-direction: column;">
+              <sc-for list="{{ projekt.feed }}" as="a" hint-placeholder-count="4">
+                <div onClick="{{ a.open }}" style="display: flex; flex-direction: column; gap: 5px; padding: 13px 0; border-bottom: 1px solid #e6e6e6; cursor: pointer;">
+                  <sc-if value="{{ a.hasVerdict }}" hint-placeholder-val="{{ false }}">
+                    <div style="align-self: flex-start; background: #ff5064; color: #ffffff; font-size: 10px; font-weight: 700; letter-spacing: 1px; white-space: nowrap; padding: 2px 6px; border-radius: 2px;">{{ a.verdict }}</div>
+                  </sc-if>
+                  <div style="font-size: 15px; font-weight: 700; line-height: 1.4; color: #333333;">{{ a.title }}</div>
+                  <div style="font-size: 12px; color: #707070;">{{ a.meta }}</div>
+                </div>
+              </sc-for>
+            </div>
+          </div>
+        </div>
+      </sc-if>
+
+      <!-- ============ OVERLAY: FAKTENFORUM ============ -->
+      <sc-if value="{{ showFaktenforum }}" hint-placeholder-val="{{ false }}">
+        <div data-screen-label="Faktenforum" style="position: absolute; inset: 0; z-index: 5; background: #ffffff; display: flex; flex-direction: column;">
+          <div style="padding: 62px 12px 8px; display: flex; align-items: center; gap: 4px; border-bottom: 1px solid #e6e6e6; flex-shrink: 0;">
+            <div onClick="{{ back }}" style="display: flex; align-items: center; gap: 4px; cursor: pointer; padding: 6px; color: #333333;">
+              <svg width="11" height="18" viewBox="0 0 12 20" fill="none"><path d="M10 2L2 10l8 8" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"></path></svg>
+              <div style="font-size: 15px; font-weight: 600;">Mitmachen</div>
+            </div>
+          </div>
+          <div style="flex: 1; overflow-y: auto; min-height: 0;">
+            <div style="padding: 18px 16px 10px; display: flex; flex-direction: column; gap: 6px;">
+              <div style="font-weight: 700; font-size: 24px; color: #333333;">Faktenforum</div>
+              <div style="font-size: 14px; color: #707070; line-height: 1.5;">Eingereichte Behauptungen — geprüft von der Community, angeleitet von der Redaktion.</div>
+            </div>
+            <div style="padding: 0 16px 28px; display: flex; flex-direction: column;">
+              <sc-for list="{{ claims }}" as="c" hint-placeholder-count="5">
+                <div onClick="{{ c.open }}" style="display: flex; flex-direction: column; gap: 6px; padding: 13px 0; border-bottom: 1px solid #e6e6e6; cursor: pointer;">
+                  <div style="align-self: flex-start; font-size: 10px; font-weight: 700; letter-spacing: 1px; white-space: nowrap; padding: 3px 7px; border-radius: 2px; background: {{ c.sBg }}; color: {{ c.sFg }}; border: 1px solid {{ c.sBd }};">{{ c.status }}</div>
+                  <div style="font-size: 15px; font-weight: 600; line-height: 1.4; color: #333333;">{{ c.q }}</div>
+                  <div style="font-size: 12px; color: #707070;">{{ c.meta }}</div>
+                </div>
+              </sc-for>
+            </div>
+          </div>
+        </div>
+      </sc-if>
+
+      <!-- ============ OVERLAY: CLAIM-DETAIL ============ -->
+      <sc-if value="{{ showClaim }}" hint-placeholder-val="{{ false }}">
+        <div data-screen-label="Behauptung" style="position: absolute; inset: 0; z-index: 5; background: #ffffff; display: flex; flex-direction: column;">
+          <div style="padding: 62px 12px 8px; display: flex; align-items: center; gap: 4px; border-bottom: 1px solid #e6e6e6; flex-shrink: 0;">
+            <div onClick="{{ back }}" style="display: flex; align-items: center; gap: 4px; cursor: pointer; padding: 6px; color: #333333;">
+              <svg width="11" height="18" viewBox="0 0 12 20" fill="none"><path d="M10 2L2 10l8 8" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"></path></svg>
+              <div style="font-size: 15px; font-weight: 600;">Faktenforum</div>
+            </div>
+          </div>
+          <div style="flex: 1; overflow-y: auto; min-height: 0; padding: 18px 16px 32px;">
+            <div style="align-self: flex-start; display: inline-block; font-size: 10px; font-weight: 700; letter-spacing: 1px; white-space: nowrap; padding: 3px 7px; border-radius: 2px; background: {{ claim.sBg }}; color: {{ claim.sFg }}; border: 1px solid {{ claim.sBd }};">{{ claim.status }}</div>
+            <div style="font-family: Merriweather, serif; font-weight: 700; font-size: 20px; line-height: 1.4; color: #333333; padding: 12px 0 6px;">„{{ claim.q }}"</div>
+            <div style="font-size: 12px; color: #707070; padding-bottom: 18px;">{{ claim.meta }}</div>
+            <div style="display: flex; align-items: center; gap: 0; padding-bottom: 20px;">
+              <div style="display: flex; flex-direction: column; align-items: center; gap: 4px; flex: 1;">
+                <div style="width: 12px; height: 12px; border-radius: 50%; background: {{ claim.d1 }};"></div>
+                <div style="font-size: 11px; color: #707070;">Eingereicht</div>
+              </div>
+              <div style="height: 1px; background: #e6e6e6; flex: 1; margin-top: -16px;"></div>
+              <div style="display: flex; flex-direction: column; align-items: center; gap: 4px; flex: 1;">
+                <div style="width: 12px; height: 12px; border-radius: 50%; background: {{ claim.d2 }};"></div>
+                <div style="font-size: 11px; color: #707070;">In Prüfung</div>
+              </div>
+              <div style="height: 1px; background: #e6e6e6; flex: 1; margin-top: -16px;"></div>
+              <div style="display: flex; flex-direction: column; align-items: center; gap: 4px; flex: 1;">
+                <div style="width: 12px; height: 12px; border-radius: 50%; background: {{ claim.d3 }};"></div>
+                <div style="font-size: 11px; color: #707070;">Geprüft</div>
+              </div>
+            </div>
+            <div style="font-size: 12px; font-weight: 700; letter-spacing: 1.2px; color: #707070; padding-bottom: 8px;">QUELLENBEWERTUNG</div>
+            <div style="display: flex; flex-direction: column;">
+              <sc-for list="{{ claim.sources }}" as="s" hint-placeholder-count="2">
+                <div style="display: flex; align-items: center; gap: 10px; padding: 11px 0; border-bottom: 1px solid #e6e6e6;">
+                  <div style="width: 9px; height: 9px; border-radius: 50%; background: {{ s.dot }}; flex-shrink: 0;"></div>
+                  <div style="flex: 1; font-size: 14px; color: #333333;">{{ s.name }}</div>
+                  <div style="font-size: 13px; font-weight: 600; color: #707070;">{{ s.rating }}</div>
+                </div>
+              </sc-for>
+            </div>
+            <div style="background: #f8f8f8; border-radius: 5px; padding: 14px 16px; font-size: 13px; line-height: 1.5; color: #707070; margin-top: 18px;">Prototyp: Datenmodell nach echtem Faktenforum-Schema (Claim, Status, Quellenbewertung). Inhalte sind Beispieldaten.</div>
+          </div>
+        </div>
+      </sc-if>
+
+      <!-- ============ OVERLAY: CALLOUT-FLOW ============ -->
+      <sc-if value="{{ showCallout }}" hint-placeholder-val="{{ false }}">
+        <div data-screen-label="Callout-Flow" style="position: absolute; inset: 0; z-index: 5; background: #ffffff; display: flex; flex-direction: column;">
+          <div style="padding: 62px 12px 8px; display: flex; align-items: center; justify-content: space-between; border-bottom: 1px solid #e6e6e6; flex-shrink: 0;">
+            <div onClick="{{ back }}" style="display: flex; align-items: center; gap: 4px; cursor: pointer; padding: 6px; color: #333333;">
+              <svg width="11" height="18" viewBox="0 0 12 20" fill="none"><path d="M10 2L2 10l8 8" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"></path></svg>
+              <div style="font-size: 15px; font-weight: 600;">Mitmachen</div>
+            </div>
+            <div style="font-size: 13px; color: #707070; padding-right: 6px;">{{ calloutStepLabel }}</div>
+          </div>
+          <div style="flex: 1; overflow-y: auto; min-height: 0;">
+
+            <sc-if value="{{ c0 }}" hint-placeholder-val="{{ true }}">
+              <div style="padding: 18px 16px 32px; display: flex; flex-direction: column; gap: 14px;">
+                <div style="display: flex; flex-direction: column; gap: 8px;">
+                  <div style="align-self: flex-start; font-size: 11px; font-weight: 700; letter-spacing: 1.2px; color: #ff5064;">{{ callout.kicker }}</div>
+                  <div style="font-family: Merriweather, serif; font-weight: 900; font-size: 24px; line-height: 1.25; color: #333333;">{{ callout.title }}</div>
+                  <div style="font-size: 15px; color: #333333; line-height: 1.55;">{{ callout.desc }}</div>
+                </div>
+                <div style="display: flex; flex-direction: column; gap: 5px;">
+                  <div style="height: 4px; background: #e6e6e6; border-radius: 2px; overflow: hidden;"><div style="height: 100%; width: {{ callout.pctW }}; background: #333333;"></div></div>
+                  <div style="font-size: 12px; color: #707070;">{{ callout.beitraege }}</div>
+                </div>
+                <div style="display: flex; flex-direction: column; gap: 4px; border-top: 1px solid #e6e6e6; padding-top: 12px;">
+                  <div style="font-size: 12px; font-weight: 700; letter-spacing: 1.2px; color: #707070;">WER FRAGT?</div>
+                  <div style="font-size: 14px; color: #333333; line-height: 1.5;">{{ callout.org }}</div>
+                </div>
+                <div style="background: #f8f8f8; border-radius: 5px; padding: 14px 16px; display: flex; flex-direction: column; gap: 4px;">
+                  <div style="font-size: 12px; font-weight: 700; letter-spacing: 1.2px; color: #707070;">DATENSCHUTZ IM KLARTEXT</div>
+                  <div style="font-size: 13px; color: #333333; line-height: 1.55;">{{ callout.privacy }}</div>
+                </div>
+                <div onClick="{{ startCallout }}" style="background: #ff5064; color: #ffffff; font-size: 16px; font-weight: 700; padding: 13px; border-radius: 2px; cursor: pointer; text-align: center;">Jetzt beitragen</div>
+              </div>
+            </sc-if>
+
+            <sc-if value="{{ c1 }}" hint-placeholder-val="{{ false }}">
+              <div style="padding: 18px 16px 32px; display: flex; flex-direction: column; gap: 18px;">
+                <div style="display: flex; flex-direction: column; gap: 10px;">
+                  <div style="font-size: 16px; font-weight: 700; color: #333333; line-height: 1.4;">{{ callout.q1 }}</div>
+                  <div style="display: flex; flex-wrap: wrap; gap: 8px;">
+                    <sc-for list="{{ copts }}" as="o" hint-placeholder-count="4">
+                      <div onClick="{{ o.toggle }}" style="border: 1.5px solid {{ o.bd }}; background: {{ o.bg }}; color: {{ o.fg }}; font-size: 14px; font-weight: 600; padding: 8px 13px; border-radius: 2px; cursor: pointer;">{{ o.label }}</div>
+                    </sc-for>
+                  </div>
+                </div>
+                <div style="display: flex; flex-direction: column; gap: 10px;">
+                  <div style="font-size: 16px; font-weight: 700; color: #333333; line-height: 1.4;">{{ callout.q2 }}</div>
+                  <textarea rows="4" placeholder="Ihre Antwort …" style="width: 100%; border: 1px solid #cecece; border-radius: 2px; padding: 10px 12px; font-size: 15px; line-height: 1.5; color: #333333; resize: none; outline: none;"></textarea>
+                </div>
+                <sc-if value="{{ callout.hasPhoto }}" hint-placeholder-val="{{ false }}">
+                  <div style="display: flex; flex-direction: column; gap: 10px;">
+                    <div style="font-size: 16px; font-weight: 700; color: #333333;">Foto anhängen <span style="font-weight: 400; color: #707070; font-size: 14px;">(optional)</span></div>
+                    <image-slot id="img-callout-foto" shape="rounded" radius="2" placeholder="Foto" style="width: 96px; height: 96px;"></image-slot>
+                  </div>
+                </sc-if>
+                <div onClick="{{ submitCallout }}" style="background: #ff5064; color: #ffffff; font-size: 16px; font-weight: 700; padding: 13px; border-radius: 2px; cursor: pointer; text-align: center;">Beitrag absenden</div>
+              </div>
+            </sc-if>
+
+            <sc-if value="{{ c2 }}" hint-placeholder-val="{{ false }}">
+              <div style="padding: 40px 24px 32px; display: flex; flex-direction: column; align-items: center; gap: 14px; text-align: center;">
+                <svg width="56" height="56" viewBox="0 0 56 56"><circle cx="28" cy="28" r="26" fill="none" stroke="#333333" stroke-width="2.5"></circle><path d="M17 29l8 8 14-16" fill="none" stroke="#333333" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"></path></svg>
+                <div style="font-family: Merriweather, serif; font-weight: 900; font-size: 23px; line-height: 1.3; color: #333333;">Danke — Ihr Beitrag fließt in die Recherche ein.</div>
+                <div style="font-size: 14px; color: #707070; line-height: 1.5;">Die Redaktion sichtet alle Beiträge. Persönliche Daten bleiben geschützt.</div>
+                <div onClick="{{ toggleUpdates }}" style="border: 1.5px solid #333333; color: #333333; font-size: 14px; font-weight: 700; padding: 10px 16px; border-radius: 2px; cursor: pointer;">{{ updatesLabel }}</div>
+                <div onClick="{{ back }}" style="font-size: 14px; font-weight: 700; color: #ff5064; cursor: pointer; padding: 4px;">Zurück zur Übersicht</div>
+              </div>
+            </sc-if>
+          </div>
+        </div>
+      </sc-if>
+
+      <!-- ============ OVERLAY: BACKSTAGE ============ -->
+      <sc-if value="{{ showBackstage }}" hint-placeholder-val="{{ false }}">
+        <div data-screen-label="Backstage" style="position: absolute; inset: 0; z-index: 5; background: #ffffff; display: flex; flex-direction: column;">
+          <div style="padding: 62px 12px 8px; display: flex; align-items: center; justify-content: space-between; border-bottom: 1px solid #e6e6e6; flex-shrink: 0;">
+            <div onClick="{{ back }}" style="display: flex; align-items: center; gap: 4px; cursor: pointer; padding: 6px; color: #333333;">
+              <svg width="11" height="18" viewBox="0 0 12 20" fill="none"><path d="M10 2L2 10l8 8" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"></path></svg>
+              <div style="font-size: 15px; font-weight: 600;">Zurück</div>
+            </div>
+            <div style="background: #fde162; color: #333333; font-size: 10px; font-weight: 700; letter-spacing: 1px; white-space: nowrap; padding: 3px 7px; border-radius: 2px; margin-right: 6px;">CLUB</div>
+          </div>
+          <div style="flex: 1; overflow-y: auto; min-height: 0;">
+            <div style="padding: 18px 16px 14px; display: flex; flex-direction: column; gap: 6px;">
+              <div style="font-weight: 700; font-size: 28px; color: #333333;">Backstage</div>
+              <sc-if value="{{ isMember }}" hint-placeholder-val="{{ false }}">
+                <div style="font-size: 15px; color: #707070; line-height: 1.5;">Schön, dass Sie da sind. Hier sehen Sie, wie unsere Recherchen entstehen.</div>
+              </sc-if>
+              <sc-if value="{{ isGuest }}" hint-placeholder-val="{{ true }}">
+                <div style="font-size: 15px; color: #707070; line-height: 1.5;">So sieht es hinter den Kulissen aus. Alles hier ist Teil des CORRECTIV Club.</div>
+              </sc-if>
+            </div>
+
+            <sc-if value="{{ isGuest }}" hint-placeholder-val="{{ true }}">
+              <div style="margin: 0 16px 18px; background: rgba(253, 225, 98, 0.22); border: 1px solid #fde162; border-radius: 5px; padding: 14px 16px; display: flex; flex-direction: column; gap: 8px;">
+                <div style="font-family: Merriweather, serif; font-weight: 700; font-size: 16px; line-height: 1.4; color: #333333;">CORRECTIV gehört niemandem. Außer allen.</div>
+                <div style="font-size: 14px; color: #707070; line-height: 1.5;">Werden Sie Teil des Clubs — und dieser Bereich öffnet sich für Sie.</div>
+                <div onClick="{{ openJoin }}" style="align-self: flex-start; background: #ff5064; color: #ffffff; font-size: 14px; font-weight: 700; padding: 9px 16px; border-radius: 2px; white-space: nowrap; cursor: pointer;">Unterstützer:in werden</div>
+              </div>
+            </sc-if>
+
+            <!-- Früher lesen -->
+            <div style="padding: 0 16px 20px; display: flex; flex-direction: column; gap: 10px;">
+              <div style="font-size: 12px; font-weight: 700; letter-spacing: 1.2px; color: #707070;">FRÜHER LESEN</div>
+              <div style="border: 1px solid #e6e6e6; border-radius: 5px; padding: 14px 16px; display: flex; flex-direction: column; gap: 7px;">
+                <div style="font-family: Merriweather, serif; font-weight: 700; font-size: 17px; line-height: 1.3; color: #333333;">Pension um jeden Preis</div>
+                <div style="font-size: 13px; color: #707070;">Für alle ab Montag, 15. Juni</div>
+                <sc-if value="{{ isMember }}" hint-placeholder-val="{{ false }}">
+                  <div onClick="{{ openPension }}" style="align-self: flex-start; background: #333333; color: #ffffff; font-size: 14px; font-weight: 700; padding: 8px 14px; border-radius: 2px; white-space: nowrap; cursor: pointer;">Jetzt lesen</div>
+                </sc-if>
+                <sc-if value="{{ isGuest }}" hint-placeholder-val="{{ true }}">
+                  <div style="font-size: 13px; color: #707070;">Clubmitglieder lesen jetzt schon.</div>
+                </sc-if>
+              </div>
+            </div>
+
+            <!-- Recherchetagebuch -->
+            <div style="padding: 0 16px 20px; display: flex; flex-direction: column; gap: 4px;">
+              <div style="font-size: 12px; font-weight: 700; letter-spacing: 1.2px; color: #707070; padding-bottom: 6px;">RECHERCHETAGEBUCH · PENSIONSKASSEN</div>
+              <div style="display: flex; flex-direction: column; gap: 4px; padding: 10px 0; border-bottom: 1px solid #e6e6e6;">
+                <div style="font-size: 15px; font-weight: 700; color: #333333;">Woche 3: Die Spur führt nach Bern</div>
+                <div style="font-size: 13px; color: #707070; line-height: 1.45;">Ein Dokument aus der Schweiz wirft neue Fragen auf — und öffnet eine Tür.</div>
+              </div>
+              <div style="display: flex; flex-direction: column; gap: 4px; padding: 10px 0; border-bottom: 1px solid #e6e6e6;">
+                <div style="font-size: 15px; font-weight: 700; color: #333333;">Woche 2: Wer redet, wer schweigt</div>
+                <div style="font-size: 13px; color: #707070; line-height: 1.45;">Erste Gespräche mit Insidern — und eine überraschende Absage.</div>
+              </div>
+              <div style="display: flex; flex-direction: column; gap: 4px; padding: 10px 0;">
+                <div style="font-size: 15px; font-weight: 700; color: #333333;">Woche 1: Ein Hinweis aus der Community</div>
+                <div style="font-size: 13px; color: #707070; line-height: 1.45;">Wie ein Beitrag aus dem CrowdNewsroom diese Recherche ausgelöst hat.</div>
+              </div>
+            </div>
+
+            <!-- Bonus-Audio -->
+            <div style="padding: 0 16px 20px; display: flex; flex-direction: column; gap: 10px;">
+              <div style="font-size: 12px; font-weight: 700; letter-spacing: 1.2px; color: #707070;">BONUS-AUDIO</div>
+              <div style="background: #f8f8f8; border-radius: 5px; padding: 12px 16px; display: flex; align-items: center; gap: 12px;">
+                <div onClick="{{ playBonus }}" style="width: 38px; height: 38px; border-radius: 50%; background: #333333; display: flex; align-items: center; justify-content: center; cursor: pointer; flex-shrink: 0;">
+                  <svg width="14" height="14" viewBox="0 0 18 18"><path d="M5 3v12l10-6z" fill="#ffffff"></path></svg>
+                </div>
+                <div style="display: flex; flex-direction: column; gap: 2px;">
+                  <div style="font-size: 14px; font-weight: 700; color: #333333;">Wie wir an die Pensionskassen-Daten kamen</div>
+                  <div style="font-size: 12px; color: #707070;">{{ bonusSubLabel }}</div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Q&A -->
+            <div style="padding: 0 16px 20px; display: flex; flex-direction: column; gap: 10px;">
+              <div style="font-size: 12px; font-weight: 700; letter-spacing: 1.2px; color: #707070;">Q&amp;A MIT DER REDAKTION</div>
+              <div style="border: 1px solid #e6e6e6; border-radius: 5px; padding: 14px 16px; display: flex; flex-direction: column; gap: 8px;">
+                <div style="font-size: 15px; font-weight: 700; color: #333333;">Fr, 26. Juni, 18 Uhr — mit dem Pensionskassen-Team</div>
+                <sc-if value="{{ isMember }}" hint-placeholder-val="{{ false }}">
+                  <div onClick="{{ sendQa }}" style="align-self: flex-start; border: 1.5px solid #333333; color: #333333; font-size: 14px; font-weight: 700; padding: 8px 14px; border-radius: 2px; white-space: nowrap; cursor: pointer;">{{ qaLabel }}</div>
+                </sc-if>
+                <sc-if value="{{ isGuest }}" hint-placeholder-val="{{ true }}">
+                  <div style="font-size: 13px; color: #707070;">Clubmitglieder reichen vorab Fragen ein.</div>
+                </sc-if>
+              </div>
+            </div>
+
+            <!-- Events -->
+            <div style="padding: 0 16px 20px; display: flex; flex-direction: column; gap: 10px;">
+              <div style="font-size: 12px; font-weight: 700; letter-spacing: 1.2px; color: #707070;">EVENTS</div>
+              <div style="border: 1px solid #e6e6e6; border-radius: 5px; padding: 14px 16px; display: flex; flex-direction: column; gap: 6px;">
+                <div style="font-size: 15px; font-weight: 700; color: #333333;">Buchpremiere des CORRECTIV Verlags</div>
+                <div style="font-size: 13px; color: #707070;">Berlin · Einladung für Clubmitglieder</div>
+                <sc-if value="{{ isMember }}" hint-placeholder-val="{{ false }}">
+                  <div style="align-self: flex-start; border: 1.5px solid #333333; color: #333333; font-size: 14px; font-weight: 700; padding: 8px 14px; border-radius: 2px; white-space: nowrap; cursor: pointer; margin-top: 2px;">Platz reservieren</div>
+                </sc-if>
+              </div>
+            </div>
+
+            <!-- Verlag-Vorteil -->
+            <div style="padding: 0 16px 32px; display: flex; flex-direction: column; gap: 10px;">
+              <div style="font-size: 12px; font-weight: 700; letter-spacing: 1.2px; color: #707070;">IHR VERLAG-VORTEIL</div>
+              <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
+                <div style="display: flex; flex-direction: column; gap: 6px;">
+                  <image-slot id="img-buch-akten" shape="rounded" radius="2" placeholder="Cover" src="https://correctiv.org/wp-content/uploads/elementor/thumbs/Header_Main-1-rkqgx88l1cy7jr8d6clvwaro4urrk6oxftt3e5t1tc.webp" style="width: 100%; height: 150px;"></image-slot>
+                  <div style="font-size: 13px; font-weight: 700; color: #333333;">Akten des Missbrauchs</div>
+                </div>
+                <div style="display: flex; flex-direction: column; gap: 6px;">
+                  <image-slot id="img-buch-karten" shape="rounded" radius="2" placeholder="Cover" style="width: 100%; height: 150px;"></image-slot>
+                  <div style="font-size: 13px; font-weight: 700; color: #333333;">100 Karten über Rechtsextremismus</div>
+                </div>
+              </div>
+              <sc-if value="{{ isMember }}" hint-placeholder-val="{{ false }}">
+                <div style="font-size: 14px; color: #333333;">Ihr Bookzine des Quartals ist inklusive. Zum Shop ↗</div>
+              </sc-if>
+              <sc-if value="{{ isGuest }}" hint-placeholder-val="{{ true }}">
+                <div style="font-size: 13px; color: #707070;">Clubmitglieder erhalten das Bookzine des Quartals inklusive.</div>
+              </sc-if>
+            </div>
+          </div>
+        </div>
+      </sc-if>
+
+      <!-- ============ OVERLAY: QUARTALSBERICHT ============ -->
+      <sc-if value="{{ showBericht }}" hint-placeholder-val="{{ false }}">
+        <div data-screen-label="Quartalsbericht" style="position: absolute; inset: 0; z-index: 5; background: #ffffff; display: flex; flex-direction: column;">
+          <div style="padding: 62px 12px 8px; display: flex; align-items: center; gap: 4px; border-bottom: 1px solid #e6e6e6; flex-shrink: 0;">
+            <div onClick="{{ back }}" style="display: flex; align-items: center; gap: 4px; cursor: pointer; padding: 6px; color: #333333;">
+              <svg width="11" height="18" viewBox="0 0 12 20" fill="none"><path d="M10 2L2 10l8 8" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"></path></svg>
+              <div style="font-size: 15px; font-weight: 600;">Profil</div>
+            </div>
+          </div>
+          <div style="flex: 1; overflow-y: auto; min-height: 0; padding: 18px 16px 32px;">
+            <div style="font-size: 11px; font-weight: 700; letter-spacing: 1.2px; color: #707070;">TRANSPARENZ</div>
+            <div style="font-family: Merriweather, serif; font-weight: 900; font-size: 24px; line-height: 1.25; color: #333333; padding: 8px 0 6px;">Quartalsbericht Q1 2026</div>
+            <div style="font-size: 14px; color: #707070; line-height: 1.5; padding-bottom: 18px;">Woher unser Geld kommt und wohin es fließt — offengelegt für unsere Unterstützer:innen.</div>
+            <div style="display: flex; flex-direction: column; gap: 14px;">
+              <div style="display: flex; flex-direction: column; gap: 5px;">
+                <div style="display: flex; justify-content: space-between; font-size: 14px; color: #333333;"><span>Redaktion &amp; Recherche</span><span style="font-weight: 700;">▮▮▮</span></div>
+                <div style="height: 6px; background: #e6e6e6; border-radius: 2px; overflow: hidden;"><div style="height: 100%; width: 62%; background: #333333;"></div></div>
+              </div>
+              <div style="display: flex; flex-direction: column; gap: 5px;">
+                <div style="display: flex; justify-content: space-between; font-size: 14px; color: #333333;"><span>Bildung &amp; Community</span><span style="font-weight: 700;">▮▮</span></div>
+                <div style="height: 6px; background: #e6e6e6; border-radius: 2px; overflow: hidden;"><div style="height: 100%; width: 24%; background: #333333;"></div></div>
+              </div>
+              <div style="display: flex; flex-direction: column; gap: 5px;">
+                <div style="display: flex; justify-content: space-between; font-size: 14px; color: #333333;"><span>Verwaltung</span><span style="font-weight: 700;">▮</span></div>
+                <div style="height: 6px; background: #e6e6e6; border-radius: 2px; overflow: hidden;"><div style="height: 100%; width: 14%; background: #333333;"></div></div>
+              </div>
+            </div>
+            <div style="background: #f8f8f8; border-radius: 5px; padding: 14px 16px; font-size: 13px; line-height: 1.5; color: #707070; margin-top: 20px;">Prototyp: Struktur nach echtem Transparenz-Material (correctiv.org/ueber-uns/finanzen). Werte sind Platzhalter.</div>
+          </div>
+        </div>
+      </sc-if>
+
+      <!-- ============ BONUS-SHEET ============ -->
+      <sc-if value="{{ showBonusSheet }}" hint-placeholder-val="{{ false }}">
+        <div data-screen-label="Bonus-Sheet" style="position: absolute; inset: 0; z-index: 7; display: flex; flex-direction: column; justify-content: flex-end;">
+          <div onClick="{{ closeBonusSheet }}" style="position: absolute; inset: 0; background: rgba(51,51,51,0.45);"></div>
+          <div style="position: relative; background: #ffffff; border-radius: 5px 5px 0 0; padding: 22px 20px 40px; display: flex; flex-direction: column; gap: 12px;">
+            <div style="align-self: flex-start; background: #fde162; color: #333333; font-size: 10px; font-weight: 700; letter-spacing: 1px; white-space: nowrap; padding: 3px 7px; border-radius: 2px;">CLUB</div>
+            <div style="font-family: Merriweather, serif; font-weight: 900; font-size: 21px; line-height: 1.3; color: #333333;">Ganze Folge hören? Werden Sie Teil des Clubs.</div>
+            <div style="font-size: 14px; color: #707070; line-height: 1.5;">Die ersten 60 Sekunden gehören allen. Der Rest ist unser Dankeschön an die, die CORRECTIV möglich machen.</div>
+            <div onClick="{{ sheetJoin }}" style="background: #ff5064; color: #ffffff; font-size: 16px; font-weight: 700; padding: 13px; border-radius: 2px; cursor: pointer; text-align: center;">Unterstützer:in werden</div>
+            <div onClick="{{ closeBonusSheet }}" style="font-size: 14px; font-weight: 700; color: #707070; cursor: pointer; text-align: center; padding: 4px;">Später</div>
+          </div>
+        </div>
+      </sc-if>
+
+      <!-- ============ JOIN-FLOW (modal) ============ -->
+      <sc-if value="{{ showJoin }}" hint-placeholder-val="{{ false }}">
+        <div data-screen-label="Club-Beitritt" style="position: absolute; inset: 0; z-index: 6; display: flex; flex-direction: column; justify-content: flex-end;">
+          <div onClick="{{ closeJoin }}" style="position: absolute; inset: 0; background: rgba(51,51,51,0.45);"></div>
+          <div style="position: relative; background: #ffffff; border-radius: 5px 5px 0 0; min-height: 72%; display: flex; flex-direction: column;">
+            <div style="display: flex; align-items: center; justify-content: space-between; padding: 16px 20px 0;">
+              <div style="display: flex; gap: 5px;">
+                <div style="width: 22px; height: 3px; border-radius: 2px; background: {{ jd0 }};"></div>
+                <div style="width: 22px; height: 3px; border-radius: 2px; background: {{ jd1 }};"></div>
+                <div style="width: 22px; height: 3px; border-radius: 2px; background: {{ jd2 }};"></div>
+                <div style="width: 22px; height: 3px; border-radius: 2px; background: {{ jd3 }};"></div>
+              </div>
+              <div onClick="{{ closeJoin }}" style="padding: 6px; cursor: pointer; color: #707070; font-size: 17px; line-height: 1;">✕</div>
+            </div>
+            <div style="flex: 1; overflow-y: auto; padding: 14px 20px 36px;">
+
+              <sc-if value="{{ j0 }}" hint-placeholder-val="{{ true }}">
+                <div style="display: flex; flex-direction: column; gap: 14px;">
+                  <div style="font-family: Merriweather, serif; font-weight: 900; font-size: 25px; line-height: 1.25; color: #333333;">CORRECTIV gehört niemandem. Außer allen.</div>
+                  <div style="font-size: 15px; color: #333333; line-height: 1.55;">Unser Journalismus bleibt frei. Für alle. Ihr Beitrag macht genau das möglich.</div>
+                  <div style="display: flex; flex-direction: column; gap: 0; border-top: 1px solid #e6e6e6;">
+                    <div style="display: flex; gap: 10px; padding: 11px 0; border-bottom: 1px solid #e6e6e6; align-items: baseline;">
+                      <div style="font-size: 14px; font-weight: 700; color: #ff5064; flex-shrink: 0;">✓</div>
+                      <div style="font-size: 14px; color: #333333;">Gemeinnützig — keine Eigentümer, keine Aktionäre</div>
+                    </div>
+                    <div style="display: flex; gap: 10px; padding: 11px 0; border-bottom: 1px solid #e6e6e6; align-items: baseline;">
+                      <div style="font-size: 14px; font-weight: 700; color: #ff5064; flex-shrink: 0;">✓</div>
+                      <div style="font-size: 14px; color: #333333;">Spendenfinanziert — unabhängig von Konzernen</div>
+                    </div>
+                    <div style="display: flex; gap: 10px; padding: 11px 0; border-bottom: 1px solid #e6e6e6; align-items: baseline;">
+                      <div style="font-size: 14px; font-weight: 700; color: #ff5064; flex-shrink: 0;">✓</div>
+                      <div style="font-size: 14px; color: #333333;">Ohne Paywall — Recherchen bleiben frei zugänglich</div>
+                    </div>
+                  </div>
+                  <div onClick="{{ jNext }}" style="background: #ff5064; color: #ffffff; font-size: 16px; font-weight: 700; padding: 13px; border-radius: 2px; cursor: pointer; text-align: center;">Weiter</div>
+                </div>
+              </sc-if>
+
+              <sc-if value="{{ j1 }}" hint-placeholder-val="{{ false }}">
+                <div style="display: flex; flex-direction: column; gap: 16px;">
+                  <div style="font-size: 20px; font-weight: 700; color: #333333;">Ihr Beitrag</div>
+                  <div style="display: flex; align-items: baseline; gap: 6px; justify-content: center; padding: 6px 0;">
+                    <div style="font-family: Merriweather, serif; font-weight: 900; font-size: 44px; color: #333333;">{{ joinAmount }} €</div>
+                    <div style="font-size: 15px; color: #707070;">{{ rhythmusLabel }}</div>
+                  </div>
+                  <input type="range" min="5" max="50" step="1" value="{{ joinAmount }}" onChange="{{ setJoinAmount }}" style="width: 100%; accent-color: #ff5064;">
+                  <div style="display: flex; justify-content: space-between; font-size: 12px; color: #b3b3b3;"><span>5 €</span><span>50 €</span></div>
+                  <div style="display: flex; border: 1.5px solid #333333; border-radius: 2px; overflow: hidden;">
+                    <div onClick="{{ setMonthly }}" style="flex: 1; text-align: center; padding: 9px; font-size: 14px; font-weight: 700; cursor: pointer; background: {{ mBg }}; color: {{ mFg }};">Monatlich</div>
+                    <div onClick="{{ setYearly }}" style="flex: 1; text-align: center; padding: 9px; font-size: 14px; font-weight: 700; cursor: pointer; background: {{ yBg }}; color: {{ yFg }};">Jährlich</div>
+                  </div>
+                  <div style="display: flex; flex-direction: column; gap: 6px; background: #f8f8f8; border-radius: 5px; padding: 12px 14px;">
+                    <div style="font-size: 13px; color: {{ perk15Fg }}; font-weight: {{ perk15W }};">Ab 15 €: jährliches Bookzine des CORRECTIV Verlags per Post</div>
+                    <div style="font-size: 13px; color: {{ perk30Fg }}; font-weight: {{ perk30W }};">Ab 30 €: signierte Neuerscheinung des Verlags</div>
+                  </div>
+                  <div onClick="{{ jNext }}" style="background: #ff5064; color: #ffffff; font-size: 16px; font-weight: 700; padding: 13px; border-radius: 2px; cursor: pointer; text-align: center;">Weiter</div>
+                </div>
+              </sc-if>
+
+              <sc-if value="{{ j2 }}" hint-placeholder-val="{{ false }}">
+                <div style="display: flex; flex-direction: column; gap: 14px;">
+                  <div style="font-size: 20px; font-weight: 700; color: #333333;">Ihre Daten</div>
+                  <div style="display: flex; flex-direction: column; gap: 6px;">
+                    <div style="font-size: 13px; font-weight: 700; color: #707070;">Name</div>
+                    <input type="text" defaultValue="Alex Beispiel" style="width: 100%; border: 1px solid #cecece; border-radius: 2px; padding: 11px 12px; font-size: 15px; color: #333333; outline: none;">
+                  </div>
+                  <div style="display: flex; flex-direction: column; gap: 6px;">
+                    <div style="font-size: 13px; font-weight: 700; color: #707070;">E-Mail</div>
+                    <input type="text" defaultValue="alex@beispiel.de" style="width: 100%; border: 1px solid #cecece; border-radius: 2px; padding: 11px 12px; font-size: 15px; color: #333333; outline: none;">
+                  </div>
+                  <div style="display: flex; flex-direction: column; gap: 6px;">
+                    <div style="font-size: 13px; font-weight: 700; color: #707070;">Zahlungsweise</div>
+                    <div style="border: 1px solid #cecece; border-radius: 2px; padding: 11px 12px; font-size: 15px; color: #b3b3b3;">SEPA-Lastschrift · DE89 ···· ···· 3000</div>
+                  </div>
+                  <div style="font-size: 12px; color: #b3b3b3;">Im Prototyp simuliert — es werden keine echten Daten verarbeitet.</div>
+                  <div onClick="{{ finishJoin }}" style="background: #ff5064; color: #ffffff; font-size: 16px; font-weight: 700; padding: 13px; border-radius: 2px; cursor: pointer; text-align: center;">Beitritt abschließen — {{ joinAmount }} € {{ rhythmusLabel }}</div>
+                </div>
+              </sc-if>
+
+              <sc-if value="{{ j3 }}" hint-placeholder-val="{{ false }}">
+                <div style="display: flex; flex-direction: column; align-items: center; gap: 14px; text-align: center; padding-top: 18px;">
+                  <div style="width: 64px; height: 64px; border-radius: 50%; background: #fde162; display: flex; align-items: center; justify-content: center;">
+                    <svg width="30" height="30" viewBox="0 0 56 56"><path d="M14 29l9 9 19-21" fill="none" stroke="#333333" stroke-width="5" stroke-linecap="round" stroke-linejoin="round"></path></svg>
+                  </div>
+                  <div style="font-family: Merriweather, serif; font-weight: 900; font-size: 27px; line-height: 1.25; color: #333333;">Willkommen im Club.</div>
+                  <div style="font-size: 15px; color: #707070; line-height: 1.5;">Ab sofort lesen Sie Recherchen früher, hören Bonusfolgen und sehen hinter die Kulissen. Der Early-Access auf Ihrer Startseite ist bereits freigeschaltet.</div>
+                  <div onClick="{{ toBackstage }}" style="background: #333333; color: #ffffff; font-size: 16px; font-weight: 700; padding: 13px 22px; border-radius: 2px; cursor: pointer; align-self: stretch; text-align: center;">Ins Backstage</div>
+                  <div onClick="{{ closeJoin }}" style="font-size: 14px; font-weight: 700; color: #707070; cursor: pointer; padding: 4px;">Später ansehen</div>
+                </div>
+              </sc-if>
+            </div>
+          </div>
+        </div>
+      </sc-if>
+
+      <!-- ============ ONBOARDING ============ -->
+      <sc-if value="{{ showOnboarding }}" hint-placeholder-val="{{ true }}">
+        <div data-screen-label="Onboarding" style="position: absolute; inset: 0; z-index: 8; display: flex; flex-direction: column;">
+
+          <sc-if value="{{ ob0 }}" hint-placeholder-val="{{ true }}">
+            <div data-screen-label="Onboarding Mission" style="flex: 1; background: #ff5064; display: flex; flex-direction: column; justify-content: flex-end; padding: 0 24px 48px; gap: 18px;">
+              <div style="font-weight: 900; font-size: 15px; letter-spacing: 2px; color: #ffffff;">CORRECTIV</div>
+              <div style="font-family: Merriweather, serif; font-weight: 900; font-size: 34px; line-height: 1.2; color: #ffffff; text-wrap: pretty;">Recherchen für die Gesellschaft</div>
+              <div style="display: flex; flex-direction: column; gap: 10px;">
+                <div style="display: flex; gap: 10px; align-items: baseline;"><div style="width: 7px; height: 7px; border-radius: 50%; background: #fde162; flex-shrink: 0; transform: translateY(-2px);"></div><div style="font-size: 16px; color: #ffffff;">Gemeinnützig — uns gehört niemand</div></div>
+                <div style="display: flex; gap: 10px; align-items: baseline;"><div style="width: 7px; height: 7px; border-radius: 50%; background: #fde162; flex-shrink: 0; transform: translateY(-2px);"></div><div style="font-size: 16px; color: #ffffff;">Spendenfinanziert — von Tausenden getragen</div></div>
+                <div style="display: flex; gap: 10px; align-items: baseline;"><div style="width: 7px; height: 7px; border-radius: 50%; background: #fde162; flex-shrink: 0; transform: translateY(-2px);"></div><div style="font-size: 16px; color: #ffffff;">Ohne Paywall — Journalismus für alle</div></div>
+              </div>
+              <div onClick="{{ obNext }}" style="background: #ffffff; color: #333333; font-size: 16px; font-weight: 700; padding: 14px; border-radius: 2px; cursor: pointer; text-align: center; margin-top: 10px;">Los geht's</div>
+            </div>
+          </sc-if>
+
+          <sc-if value="{{ ob1 }}" hint-placeholder-val="{{ false }}">
+            <div data-screen-label="Onboarding Interessen" style="flex: 1; background: #ffffff; display: flex; flex-direction: column; padding: 80px 24px 48px; gap: 16px;">
+              <div style="font-family: Merriweather, serif; font-weight: 900; font-size: 27px; line-height: 1.25; color: #333333;">Was interessiert Sie?</div>
+              <div style="font-size: 15px; color: #707070; line-height: 1.5;">Ihre Auswahl ordnet die Startseite — alles bleibt für Sie zugänglich.</div>
+              <div style="display: flex; flex-wrap: wrap; gap: 10px; padding-top: 6px;">
+                <sc-for list="{{ chips }}" as="ch" hint-placeholder-count="8">
+                  <div onClick="{{ ch.toggle }}" style="border: 1.5px solid {{ ch.bd }}; background: {{ ch.bg }}; color: {{ ch.fg }}; font-size: 15px; font-weight: 600; padding: 9px 15px; border-radius: 2px; cursor: pointer;">{{ ch.label }}</div>
+                </sc-for>
+              </div>
+              <div style="margin-top: auto; display: flex; flex-direction: column; gap: 12px;">
+                <div onClick="{{ obNext }}" style="background: #ff5064; color: #ffffff; font-size: 16px; font-weight: 700; padding: 14px; border-radius: 2px; cursor: pointer; text-align: center;">Weiter</div>
+                <div onClick="{{ obSkip }}" style="font-size: 14px; font-weight: 700; color: #707070; cursor: pointer; text-align: center;">Überspringen</div>
+              </div>
+            </div>
+          </sc-if>
+
+          <sc-if value="{{ ob2 }}" hint-placeholder-val="{{ false }}">
+            <div data-screen-label="Onboarding Mitmachen" style="flex: 1; background: #ffffff; display: flex; flex-direction: column; padding: 80px 24px 48px; gap: 16px;">
+              <div style="font-family: Merriweather, serif; font-weight: 900; font-size: 27px; line-height: 1.25; color: #333333;">Recherchen entstehen mit Ihnen</div>
+              <div style="font-size: 15px; color: #707070; line-height: 1.5;">Im CrowdNewsroom teilen Sie Erfahrungen, im Faktenforum prüfen Sie Behauptungen — gemeinsam mit der Redaktion.</div>
+              <div style="background: #f8f8f8; border-radius: 5px; padding: 14px 16px; display: flex; flex-direction: column; gap: 4px;">
+                <div style="font-size: 14px; font-weight: 700; color: #333333;">Aktueller Aufruf</div>
+                <div style="font-size: 14px; color: #707070;">Wem gehört die Stadt? · 2.143 Beiträge</div>
+              </div>
+              <div style="display: flex; align-items: center; justify-content: space-between; border-top: 1px solid #e6e6e6; padding-top: 14px;">
+                <div style="display: flex; flex-direction: column; gap: 2px;">
+                  <div style="font-size: 15px; font-weight: 700; color: #333333;">Push-Mitteilungen</div>
+                  <div style="font-size: 13px; color: #707070;">Neue Recherchen &amp; Mitmach-Aufrufe</div>
+                </div>
+                <div onClick="{{ togglePush }}" style="width: 42px; height: 25px; border-radius: 13px; background: {{ pushBg }}; position: relative; cursor: pointer; transition: background 0.2s;">
+                  <div style="position: absolute; top: 2.5px; left: 2.5px; width: 20px; height: 20px; border-radius: 50%; background: #ffffff; transform: {{ pushX }}; transition: transform 0.2s;"></div>
+                </div>
+              </div>
+              <div style="margin-top: auto; display: flex; flex-direction: column; gap: 12px;">
+                <div onClick="{{ obNext }}" style="background: #ff5064; color: #ffffff; font-size: 16px; font-weight: 700; padding: 14px; border-radius: 2px; cursor: pointer; text-align: center;">Weiter</div>
+                <div onClick="{{ obSkip }}" style="font-size: 14px; font-weight: 700; color: #707070; cursor: pointer; text-align: center;">Überspringen</div>
+              </div>
+            </div>
+          </sc-if>
+
+          <sc-if value="{{ ob3 }}" hint-placeholder-val="{{ false }}">
+            <div data-screen-label="Onboarding Club" style="flex: 1; background: #ffffff; display: flex; flex-direction: column; padding: 80px 24px 48px; gap: 16px;">
+              <div style="align-self: flex-start; background: #fde162; color: #333333; font-size: 10px; font-weight: 700; letter-spacing: 1px; white-space: nowrap; padding: 3px 7px; border-radius: 2px;">CORRECTIV CLUB</div>
+              <div style="font-family: Merriweather, serif; font-weight: 900; font-size: 27px; line-height: 1.25; color: #333333;">CORRECTIV gehört niemandem. Außer allen.</div>
+              <div style="font-size: 15px; color: #707070; line-height: 1.55;">Der Journalismus bleibt frei — für alle. Clubmitglieder bekommen Nähe: Backstage-Einblicke, frühen Zugang, den direkten Draht zur Redaktion.</div>
+              <div style="margin-top: auto; display: flex; flex-direction: column; gap: 12px;">
+                <div onClick="{{ obJoin }}" style="background: #ff5064; color: #ffffff; font-size: 16px; font-weight: 700; padding: 14px; border-radius: 2px; cursor: pointer; text-align: center;">Unterstützer:in werden</div>
+                <div onClick="{{ obBrowse }}" style="border: 1.5px solid #333333; color: #333333; font-size: 16px; font-weight: 700; padding: 13px; border-radius: 2px; cursor: pointer; text-align: center;">Erstmal umsehen</div>
+              </div>
+            </div>
+          </sc-if>
+
+          <div style="position: absolute; top: 66px; right: 20px; display: flex; gap: 5px;">
+            <div style="width: 16px; height: 3px; border-radius: 2px; background: {{ od0 }};"></div>
+            <div style="width: 16px; height: 3px; border-radius: 2px; background: {{ od1 }};"></div>
+            <div style="width: 16px; height: 3px; border-radius: 2px; background: {{ od2 }};"></div>
+            <div style="width: 16px; height: 3px; border-radius: 2px; background: {{ od3 }};"></div>
+          </div>
+        </div>
+      </sc-if>
+
+    </div>
+  </x-import>
+
+  <div style="display: flex; align-items: center; gap: 16px; max-width: 640px;">
+    <div style="font-size: 12px; color: #707070; line-height: 1.5; text-align: center;">Prototyp · Demo-Pfad: Onboarding → Home → Reader → Mediathek (Radio live) → Mitmachen → Club-Beitritt → Backstage → Profil</div>
+    <div onClick="{{ resetDemo }}" style="flex-shrink: 0; font-size: 12px; font-weight: 700; color: #333333; border: 1px solid #cecece; border-radius: 2px; padding: 5px 10px; cursor: pointer; background: #ffffff;">Demo zurücksetzen</div>
+  </div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script>
+class Component extends DCLogic {
+  state = {
+    onboarding: true,
+    obStep: 0,
+    interests: {},
+    pushOn: false,
+    tab: 'home',
+    stack: [],
+    member: false,
+    joinOpen: false,
+    joinStep: 0,
+    joinAmount: 10,
+    joinYearly: false,
+    calloutId: null,
+    calloutStep: 0,
+    calloutSel: {},
+    updatesOn: false,
+    audioSrc: null,
+    audioPlaying: false,
+    bonusLeft: 60,
+    bonusSheet: false,
+    saved: {},
+    nl: { spot: true, schweiz: false, klima: true },
+    qaSent: false,
+  };
+
+  D = {
+    articles: {
+      hero: {
+        kicker: 'RECHERCHE', title: 'Die Perfekte Frau: Wie Autokraten ein Ideal erschaffen',
+        authors: 'CORRECTIV-Redaktion', meta: '12. Juni 2026 · 12 Min. Lesezeit', imgId: 'img-hero',
+        body: [
+          { t: 'p', x: 'In mehreren autoritär regierten Staaten arbeiten Regierungen an einem Frauenbild, das in Kampagnen, Lehrplänen und Gesetzen auftaucht: jung, fürsorglich, kinderreich – und politisch still.' },
+          { t: 'h', x: 'Ein Ideal als Instrument' },
+          { t: 'p', x: 'CORRECTIV hat Kampagnenmaterial, Haushaltsposten und Reden aus mehreren Ländern ausgewertet. Das Muster: Familienpolitik wird zur Bühne, auf der Rollenbilder festgeschrieben werden.' },
+          { t: 'box', x: 'Diese Recherche ist Teil einer Serie über autoritäre Familienpolitik in Europa. Alle Teile finden Sie in der App unter „Recherchen“.' },
+          { t: 'p', x: 'Fachleute warnen: Wo das Ideal Gesetz wird, schrumpfen Spielräume – bei Scheidung, Erwerbsarbeit, Selbstbestimmung.' },
+        ],
+      },
+      pension: {
+        kicker: 'RECHERCHE · FRÜHER LESEN', title: 'Pension um jeden Preis',
+        authors: 'CORRECTIV-Redaktion', meta: 'Für alle ab Montag, 15. Juni · 14 Min.', imgId: 'img-pension',
+        body: [
+          { t: 'p', x: 'Versorgungswerke versprechen Sicherheit im Alter. Unsere Recherche zeigt, wie einzelne Kassen Risiken eingehen – und wer die Folgen trägt.' },
+          { t: 'h', x: 'Was die Unterlagen zeigen' },
+          { t: 'p', x: 'Monatelang haben wir Dokumente ausgewertet und mit Insidern gesprochen. Den Weg dorthin dokumentiert das Recherchetagebuch im Backstage.' },
+          { t: 'p', x: 'Nach Veröffentlichung dieser Recherche kündigte die Aufsicht eine Sonderprüfung an.' },
+        ],
+      },
+      heizung: {
+        kicker: 'RECHERCHE', title: 'Großstädte warnen vor Reiches „Heizungsgesetz“',
+        authors: 'CORRECTIV-Redaktion', meta: '12. Juni 2026 · 8 Min.', imgId: 'img-heizung',
+        body: [
+          { t: 'p', x: 'Mehrere Großstädte sehen die kommunale Wärmeplanung gefährdet. Interne Stellungnahmen, die CORRECTIV vorliegen, zeichnen ein deutliches Bild.' },
+          { t: 'p', x: 'Die Recherche entstand im Netzwerk von CORRECTIV.Lokal mit über 1.700 Journalist:innen.' },
+        ],
+      },
+      denkfabrik: {
+        kicker: 'RECHERCHE', title: 'Von der rechten Denkfabrik zu Katherina Reiche',
+        authors: 'CORRECTIV-Redaktion', meta: '11. Juni 2026 · 10 Min.', imgId: 'img-denkfabrik',
+        body: [
+          { t: 'p', x: 'Personelle Verbindungen zwischen einer Denkfabrik und einem Bundesministerium werfen Fragen auf. CORRECTIV hat Lebensläufe, Vorträge und Netzwerke nachgezeichnet.' },
+          { t: 'p', x: 'Die Beteiligten hatten bis Redaktionsschluss Gelegenheit zur Stellungnahme.' },
+        ],
+      },
+      duerre: {
+        kicker: 'KLIMA', title: 'So sehr leidet Ihre Region unter Dürre',
+        authors: 'CORRECTIV-Redaktion', meta: '11. Juni 2026 · 6 Min.', imgId: 'img-duerre',
+        body: [
+          { t: 'p', x: 'Wie trocken ist es vor Ihrer Haustür? Unsere Datenanalyse zeigt die Entwicklung der Bodenfeuchte für jede Region in Deutschland.' },
+          { t: 'box', x: 'In der App: Postleitzahl eingeben und die Auswertung für die eigene Region sehen (im Prototyp angedeutet).' },
+          { t: 'p', x: 'Die Daten stammen aus öffentlichen Messnetzen und wurden vom CORRECTIV-Datenteam aufbereitet.' },
+        ],
+      },
+      fcKiew: {
+        kicker: 'FAKTENCHECK', title: 'US-Botschaft in Kiew wurde nicht evakuiert – Grok und Community Notes liegen bei KI-Fake falsch',
+        authors: 'CORRECTIV.Faktencheck', meta: '12. Juni 2026 · 5 Min.', imgId: 'img-fc-kiew',
+        isFact: true, verdict: 'FALSCH',
+        body: [
+          { t: 'box', x: 'Behauptung: Ein Video auf X soll zeigen, dass die US-Botschaft in Kiew evakuiert wird.' },
+          { t: 'p', x: 'Das Video ist KI-generiert. Eine Bild-Rückwärtssuche und Auffälligkeiten im Material belegen das. Die Botschaft dementiert eine Evakuierung.' },
+          { t: 'h', x: 'Auch KI-Assistenten lagen falsch' },
+          { t: 'p', x: 'Grok und Community Notes stuften das Video zunächst falsch ein – ein Beispiel dafür, warum automatisierte Prüfung menschliche Faktenchecks nicht ersetzt.' },
+        ],
+      },
+      fcMerz: {
+        kicker: 'FAKTENCHECK', title: 'KI-Stimme von Friedrich Merz verkündet erfundene Mindestlohn-Kürzung auf Tiktok',
+        authors: 'CORRECTIV.Faktencheck', meta: '11. Juni 2026 · 4 Min.', imgId: 'img-fc-merz',
+        isFact: true, verdict: 'FALSCH',
+        body: [
+          { t: 'box', x: 'Behauptung: In einem Tiktok-Video kündigt Friedrich Merz eine Kürzung des Mindestlohns an.' },
+          { t: 'p', x: 'Die Tonspur ist eine KI-generierte Stimmimitation. Eine solche Ankündigung gibt es nicht.' },
+          { t: 'p', x: 'Woran Sie KI-Stimmen erkennen: unnatürliche Betonung, fehlende Atemgeräusche, asynchrone Lippenbewegungen.' },
+        ],
+      },
+    },
+    chipLabels: ['AfD-Recherchen', 'Klima', 'Gesundheit', 'Russland/Ukraine', 'Faktenchecks', 'Lokal', 'Schweiz', 'Jugend/Salon5'],
+    callouts: {
+      stadt: {
+        kicker: 'CROWDNEWSROOM', title: 'Wem gehört die Stadt?',
+        desc: 'Steigende Mieten, anonyme Eigentümer: Gemeinsam mit Ihnen recherchieren wir, wer vom Geschäft mit der Miete profitiert. Ihre Erfahrung als Mieter:in zählt.',
+        org: 'Das CrowdNewsroom-Team von CORRECTIV. Verantwortlich im Sinne des Presserechts.',
+        privacy: 'Ihre Angaben werden vertraulich behandelt und nur für diese Recherche genutzt. Veröffentlicht wird nichts, was Rückschlüsse auf Sie zulässt — außer Sie stimmen ausdrücklich zu.',
+        beitraege: '2.143 Beiträge', pctW: '71%',
+        q1: 'Wem gehört die Wohnung, in der Sie zur Miete wohnen?',
+        opts: ['Privatperson', 'Wohnungsunternehmen', 'Genossenschaft', 'Weiß ich nicht'],
+        q2: 'Was haben Sie bei Mieterhöhungen erlebt?',
+        hasPhoto: true,
+      },
+      zukunft: {
+        kicker: 'UMFRAGE', title: 'Die Zukunft von CORRECTIV: Wir fragen Sie',
+        desc: 'Wohin soll sich CORRECTIV entwickeln? Ihre Antworten fließen direkt in unsere Planung ein.',
+        org: 'Die Geschäftsführung und Redaktionsleitung von CORRECTIV.',
+        privacy: 'Die Umfrage ist anonym. Es werden keine personenbezogenen Daten gespeichert.',
+        beitraege: '5.812 Teilnahmen', pctW: '58%',
+        q1: 'Was wünschen Sie sich mehr von CORRECTIV?',
+        opts: ['Mehr Lokal-Recherchen', 'Mehr Faktenchecks', 'Mehr Audio & Video', 'Mehr Mitmach-Aktionen'],
+        q2: 'Was möchten Sie uns mitgeben?',
+        hasPhoto: false,
+      },
+    },
+    claims: [
+      { id: 'kiew', q: 'Video zeigt angeblich die Evakuierung der US-Botschaft in Kiew', meta: 'Eingereicht vor 2 Tagen · 14 Prüfungen', st: 2,
+        sources: [ { name: 'Ursprungspost auf X', rating: 'irreführend', dot: '#ff5064' }, { name: 'Pressestelle der Botschaft', rating: 'belastbar', dot: '#333333' } ] },
+      { id: 'merz', q: 'Friedrich Merz kündigt auf Tiktok eine Mindestlohn-Kürzung an', meta: 'Eingereicht vor 3 Tagen · 11 Prüfungen', st: 2,
+        sources: [ { name: 'Tiktok-Video (KI-Stimme)', rating: 'gefälscht', dot: '#ff5064' }, { name: 'Transkript-Abgleich Bundestag', rating: 'belastbar', dot: '#333333' } ] },
+      { id: 'duerre-foto', q: 'Foto zeigt angeblich Dürreschäden in Brandenburg von 2026', meta: 'Eingereicht gestern · 4 Prüfungen', st: 1,
+        sources: [ { name: 'Facebook-Post', rating: 'ungeklärt', dot: '#b3b3b3' }, { name: 'Bild-Rückwärtssuche', rating: 'läuft', dot: '#b3b3b3' } ] },
+      { id: 'co2', q: 'Kassenbon beweist angeblich eine „versteckte CO₂-Steuer“ im Supermarkt', meta: 'Eingereicht heute · noch keine Prüfung', st: 0,
+        sources: [ { name: 'Foto eines Kassenbons', rating: 'ungeklärt', dot: '#b3b3b3' } ] },
+      { id: 'zitat', q: 'Zugespitztes Zitat einer Lokalpolitikerin zur Wärmeplanung', meta: 'Eingereicht gestern · 2 Prüfungen', st: 1,
+        sources: [ { name: 'Geteilte Bildkachel', rating: 'ungeklärt', dot: '#b3b3b3' }, { name: 'Ratsprotokoll', rating: 'läuft', dot: '#b3b3b3' } ] },
+    ],
+  };
+
+  push(s) { this.setState(st => ({ stack: [...st.stack, s] })); }
+
+  componentWillUnmount() {
+    if (this._radio) { this._radio.pause(); this._radio = null; }
+    clearInterval(this._bt);
+  }
+
+  stopRadioEl() { if (this._radio) { this._radio.pause(); } }
+
+  startBonusTick() {
+    clearInterval(this._bt);
+    this._bt = setInterval(() => {
+      this.setState(st => {
+        if (!st.audioPlaying || st.audioSrc !== 'bonus') return null;
+        if (st.member) return null;
+        const left = st.bonusLeft - 1;
+        if (left <= 0) {
+          clearInterval(this._bt);
+          return { bonusLeft: 0, audioSrc: null, audioPlaying: false, bonusSheet: true };
+        }
+        return { bonusLeft: left };
+      });
+    }, 1000);
+  }
+
+  renderVals() {
+    const s = this.state;
+    const D = this.D;
+    const top = s.stack.length ? s.stack[s.stack.length - 1] : { type: null };
+    const RED = '#ff5064', INK = '#333333', GREY = '#707070', HAIR = '#e6e6e6';
+
+    // navigation
+    const goTab = (tab) => () => this.setState({ tab, stack: [] });
+    const open = (type, extra) => () => this.push(Object.assign({ type }, extra || {}));
+    const back = () => this.setState(st => ({ stack: st.stack.slice(0, -1) }));
+
+    const openArt = (id) => () => this.push({ type: 'article', id });
+
+    // article
+    const artData = top.type === 'article' ? D.articles[top.id] : null;
+    const article = artData ? {
+      kicker: artData.kicker, title: artData.title, authors: artData.authors, meta: artData.meta,
+      imgId: artData.imgId, isFact: !!artData.isFact, verdict: artData.verdict || '',
+      body: artData.body.map(b => ({ isP: b.t === 'p', isH: b.t === 'h', isBox: b.t === 'box', x: b.x })),
+    } : { body: [], imgId: 'img-none' };
+    const savedNow = top.type === 'article' && s.saved[top.id];
+
+    // projekt pages
+    const feedOf = (ids) => ids.map(id => {
+      const a = D.articles[id];
+      return { title: a.title, meta: a.authors + ' · ' + a.meta, open: openArt(id), hasVerdict: !!a.isFact, verdict: a.verdict || '' };
+    });
+    const projekte = {
+      fakten: {
+        badge: 'CORRECTIV.FAKTENCHECK', title: 'Faktencheck',
+        desc: 'Wir prüfen virale Behauptungen und KI-Fakes — täglich, transparent, mit offengelegten Quellen.',
+        actionLabel: 'Tipp per WhatsApp senden ↗', onAction: () => {},
+        feed: feedOf(['fcKiew', 'fcMerz']),
+      },
+      klima: {
+        badge: 'THEMA', title: 'Klimawandel',
+        desc: 'Daten, Recherchen und Faktenchecks zur Klimakrise — und was sie für Ihre Region bedeutet.',
+        actionLabel: 'Newsletter Klima abonnieren', onAction: () => {},
+        feed: feedOf(['duerre', 'heizung']),
+      },
+      salon5: {
+        badge: 'SALON5', title: 'Salon5',
+        desc: 'Die Jugendredaktion von CORRECTIV — mit eigenem Radio, rund um die Uhr aus Bottrop.',
+        actionLabel: 'Salon5 Radio hören', onAction: () => this.valsCache_toggleRadio(),
+        feed: feedOf(['hero']),
+      },
+      lokal: {
+        badge: 'CORRECTIV.LOKAL', title: 'Lokal',
+        desc: 'Ein Netzwerk von über 1.700 Lokaljournalist:innen recherchiert gemeinsam, was Orte bewegt.',
+        actionLabel: 'Zum Netzwerk ↗', onAction: () => {},
+        feed: feedOf(['heizung']),
+      },
+      schweiz: {
+        badge: 'CORRECTIV.SCHWEIZ', title: 'Schweiz',
+        desc: 'Recherchen aus und für die Schweiz — unabhängig und gemeinnützig.',
+        actionLabel: 'Spotlight Schweiz abonnieren', onAction: () => {},
+        feed: feedOf(['pension']),
+      },
+    };
+    const projekt = top.type === 'projekt' ? projekte[top.id] : { feed: [] };
+
+    // entdecken directory
+    const P = (name, desc, openFn) => ({ name, desc, open: openFn || (() => {}), arrow: openFn ? '›' : '↗' });
+    const entdeckenGruppen = [
+      { name: 'RECHERCHIEREN', items: [
+        P('Recherchen', 'Investigative Berichte von correctiv.org', goTab('home')),
+        P('Faktencheck', 'Virale Behauptungen, täglich geprüft', open('projekt', { id: 'fakten' })),
+        P('CORRECTIV.Schweiz', 'Recherchen aus der Schweiz', open('projekt', { id: 'schweiz' })),
+        P('CORRECTIV.Lokal', 'Netzwerk: 1.700+ Journalist:innen', open('projekt', { id: 'lokal' })),
+        P('CORRECTIV.Europe', 'Bald: Recherchen für Europa', null),
+      ]},
+      { name: 'JUNGE FORMATE', items: [
+        P('Salon5', 'Jugendredaktion mit 24/7-Radio', open('projekt', { id: 'salon5' })),
+        P('FunFacts', 'Fakten gegen Fakes — als Video', goTab('mediathek')),
+      ]},
+      { name: 'MITMACHEN', items: [
+        P('CrowdNewsroom', 'Bürgerrecherchen — Ihr Wissen zählt', goTab('mitmachen')),
+        P('Faktenforum', 'Community-Faktenchecks', open('faktenforum')),
+        P('Abriss-Atlas', 'Gebäudeabrisse melden (DE/CH)', goTab('mitmachen')),
+      ]},
+      { name: 'LERNEN', items: [
+        P('Reporterfabrik', 'Workshops: Journalismus für alle', null),
+        P('Reporter4You', 'Medienbildung für Schulen', null),
+      ]},
+      { name: 'DATENBANKEN & WERKZEUGE', items: [
+        P('Sunlight', 'Lobby- und Machtstrukturen durchsuchen', null),
+        P('NSDAP-Mitgliederkartei', 'Historische Datenbank', null),
+      ]},
+      { name: 'VERLAG & BÜHNE', items: [
+        P('CORRECTIV Verlag', 'Bücher & Bookzines — shop.correctiv.org', null),
+        P('Theater', 'ATLAS, Das Kraftwerk', null),
+      ]},
+      { name: 'EXILE-MEDIEN', items: [
+        P('Radio Sakharov', 'Unabhängige Stimmen im Exil', null),
+        P('Özgürüz', 'Türkisch-deutsches Exilmedium', null),
+      ]},
+    ];
+    const themenChips = [
+      { label: 'Klima', open: open('projekt', { id: 'klima' }) },
+      { label: 'Faktenchecks', open: open('projekt', { id: 'fakten' }) },
+      { label: 'AfD-Recherchen', open: () => {} },
+      { label: 'Lokal', open: open('projekt', { id: 'lokal' }) },
+      { label: 'Schweiz', open: open('projekt', { id: 'schweiz' }) },
+      { label: 'Jugend', open: open('projekt', { id: 'salon5' }) },
+    ];
+
+    // claims
+    const stBadge = (st) => st === 2
+      ? { sBg: RED, sFg: '#ffffff', sBd: RED, status: 'GEPRÜFT: FALSCH' }
+      : st === 1
+        ? { sBg: '#ffffff', sFg: INK, sBd: '#cecece', status: 'IN PRÜFUNG' }
+        : { sBg: '#f0f0f0', sFg: GREY, sBd: '#f0f0f0', status: 'EINGEREICHT' };
+    const claims = D.claims.map(c => Object.assign({ q: c.q, meta: c.meta, open: () => this.push({ type: 'claim', id: c.id }) }, stBadge(c.st)));
+    const claimData = top.type === 'claim' ? D.claims.find(c => c.id === top.id) : null;
+    const claim = claimData ? Object.assign({
+      q: claimData.q, meta: claimData.meta, sources: claimData.sources,
+      d1: INK, d2: claimData.st >= 1 ? INK : HAIR, d3: claimData.st >= 2 ? RED : HAIR,
+    }, stBadge(claimData.st)) : { sources: [] };
+
+    // callout flow
+    const calloutData = s.calloutId ? D.callouts[s.calloutId] : null;
+    const callout = calloutData || {};
+    const copts = (calloutData ? calloutData.opts : []).map(label => {
+      const on = !!s.calloutSel[label];
+      return {
+        label, on,
+        bg: on ? INK : '#ffffff', bd: on ? INK : '#cecece', fg: on ? '#ffffff' : INK,
+        toggle: () => this.setState(st => ({ calloutSel: Object.assign({}, st.calloutSel, { [label]: !st.calloutSel[label] }) })),
+      };
+    });
+    const openCallout = (id) => () => this.setState(st => ({ calloutId: id, calloutStep: 0, calloutSel: {}, updatesOn: false, stack: [...st.stack, { type: 'callout' }] }));
+
+    // audio
+    const toggleRadio = () => {
+      if (!this._radio) {
+        this._radio = new Audio('https://icecast.correctiv.net/salon5low');
+        this._radio.crossOrigin = 'anonymous';
+      }
+      clearInterval(this._bt);
+      if (s.audioSrc === 'radio' && s.audioPlaying) {
+        this._radio.pause();
+        this.setState({ audioPlaying: false });
+      } else {
+        this._radio.play().catch(() => {});
+        this.setState({ audioSrc: 'radio', audioPlaying: true });
+      }
+    };
+    this.valsCache_toggleRadio = toggleRadio;
+    const playBonus = () => {
+      this.stopRadioEl();
+      this.setState({ audioSrc: 'bonus', audioPlaying: true, bonusLeft: this.state.member ? 0 : 60 });
+      if (!this.state.member) this.startBonusTick();
+    };
+    const toggleAudio = () => {
+      if (s.audioSrc === 'radio') { toggleRadio(); return; }
+      this.setState(st => ({ audioPlaying: !st.audioPlaying }));
+    };
+    const closeAudio = () => {
+      this.stopRadioEl();
+      clearInterval(this._bt);
+      this.setState({ audioSrc: null, audioPlaying: false });
+    };
+    const mm = Math.floor(s.bonusLeft / 60), ss = String(s.bonusLeft % 60).padStart(2, '0');
+
+    // join flow
+    const openJoin = () => this.setState({ joinOpen: true, joinStep: 0 });
+    const closeJoin = () => this.setState({ joinOpen: false });
+    const dotJ = (i) => s.joinStep >= i ? RED : HAIR;
+    const dotO = (i) => s.obStep >= i ? (s.obStep === 0 ? 'rgba(255,255,255,0.9)' : RED) : (s.obStep === 0 ? 'rgba(255,255,255,0.35)' : HAIR);
+
+    // toggles
+    const togglePart = (key) => () => this.setState(st => ({ nl: Object.assign({}, st.nl, { [key]: !st.nl[key] }) }));
+    const sw = (on) => ({ bg: on ? INK : '#cecece', x: on ? 'translateX(17px)' : 'translateX(0px)' });
+    const newsletterRows = [
+      Object.assign({ label: 'Spotlight', toggle: togglePart('spot') }, sw(s.nl.spot)),
+      Object.assign({ label: 'Spotlight Schweiz', toggle: togglePart('schweiz') }, sw(s.nl.schweiz)),
+      Object.assign({ label: 'Klima', toggle: togglePart('klima') }, sw(s.nl.klima)),
+    ];
+
+    // onboarding chips
+    const chips = D.chipLabels.map(label => {
+      const on = !!s.interests[label];
+      return {
+        label, on,
+        bg: on ? INK : '#ffffff', bd: on ? INK : '#cecece', fg: on ? '#ffffff' : INK,
+        toggle: () => this.setState(st => ({ interests: Object.assign({}, st.interests, { [label]: !st.interests[label] }) })),
+      };
+    });
+
+    const savedCount = Object.values(s.saved).filter(Boolean).length;
+    const tabC = (t) => (s.tab === t ? RED : GREY);
+    const noOverlay = s.stack.length === 0;
+
+    return {
+      // tabs
+      goHome: goTab('home'), goEntdecken: goTab('entdecken'), goMediathek: goTab('mediathek'),
+      goMitmachen: goTab('mitmachen'), goProfil: goTab('profil'),
+      cHome: tabC('home'), cEntdecken: tabC('entdecken'), cMediathek: tabC('mediathek'),
+      cMitmachen: tabC('mitmachen'), cProfil: tabC('profil'),
+      showHome: s.tab === 'home', showEntdecken: s.tab === 'entdecken', showMediathek: s.tab === 'mediathek',
+      showMitmachen: s.tab === 'mitmachen', showProfil: s.tab === 'profil',
+      // member
+      isMember: s.member, isGuest: !s.member,
+      // overlays
+      back,
+      showArticle: top.type === 'article', article,
+      saveLabel: savedNow ? '✓ Gespeichert' : 'Speichern',
+      toggleSave: () => { const id = top.id; this.setState(st => ({ saved: Object.assign({}, st.saved, { [id]: !st.saved[id] }) })); },
+      showSpotlight: top.type === 'spotlight', openSpotlight: open('spotlight'),
+      showProjekt: top.type === 'projekt', projekt,
+      showBackstage: top.type === 'backstage', openBackstage: open('backstage'),
+      showFaktenforum: top.type === 'faktenforum', openFaktenforum: open('faktenforum'), claims,
+      showClaim: top.type === 'claim', claim,
+      showBericht: top.type === 'bericht',
+      qbOpen: s.member ? open('bericht') : openJoin,
+      // article openers
+      openHero: openArt('hero'), openPension: openArt('pension'), openHeizung: openArt('heizung'),
+      openDenkfabrik: openArt('denkfabrik'), openDuerre: openArt('duerre'),
+      openFcKiew: openArt('fcKiew'), openFcMerz: openArt('fcMerz'),
+      openFakten: open('projekt', { id: 'fakten' }), openKlima: open('projekt', { id: 'klima' }),
+      // entdecken
+      entdeckenGruppen, themenChips,
+      // callout
+      showCallout: top.type === 'callout', callout, copts,
+      c0: s.calloutStep === 0, c1: s.calloutStep === 1, c2: s.calloutStep === 2,
+      calloutStepLabel: s.calloutStep === 0 ? '' : s.calloutStep === 1 ? 'Schritt 1 von 2' : 'Schritt 2 von 2',
+      openCalloutStadt: openCallout('stadt'), openCalloutZukunft: openCallout('zukunft'),
+      startCallout: () => this.setState({ calloutStep: 1 }),
+      submitCallout: () => this.setState({ calloutStep: 2 }),
+      updatesLabel: s.updatesOn ? '✓ Updates aktiviert' : 'Updates zu dieser Recherche erhalten',
+      toggleUpdates: () => this.setState(st => ({ updatesOn: !st.updatesOn })),
+      // audio
+      hasAudio: s.audioSrc !== null && noOverlay,
+      audioPlaying: s.audioPlaying, audioPaused: !s.audioPlaying,
+      radioPlaying: s.audioSrc === 'radio' && s.audioPlaying,
+      radioStopped: !(s.audioSrc === 'radio' && s.audioPlaying),
+      audioTitle: s.audioSrc === 'radio' ? 'Salon5 Radio' : 'Bonusfolge: Wie wir an die Pensionskassen-Daten kamen',
+      audioSub: s.audioSrc === 'radio' ? 'LIVE · 24/7 aus Bottrop' : (s.member ? 'Bonusfolge · Backstage' : 'Vorschau · noch ' + mm + ':' + ss),
+      toggleRadio, toggleAudio, closeAudio, playBonus,
+      bonusBtnLabel: s.member ? 'Ganze Folge hören' : '60 Sekunden anspielen',
+      bonusSubLabel: s.member ? '23 Min. · für Clubmitglieder' : '23 Min. · 60-Sekunden-Vorschau für alle',
+      showBonusSheet: s.bonusSheet,
+      closeBonusSheet: () => this.setState({ bonusSheet: false }),
+      sheetJoin: () => this.setState({ bonusSheet: false, joinOpen: true, joinStep: 0 }),
+      // join
+      showJoin: s.joinOpen, openJoin, closeJoin,
+      j0: s.joinStep === 0, j1: s.joinStep === 1, j2: s.joinStep === 2, j3: s.joinStep === 3,
+      jd0: dotJ(0), jd1: dotJ(1), jd2: dotJ(2), jd3: dotJ(3),
+      jNext: () => this.setState(st => ({ joinStep: st.joinStep + 1 })),
+      finishJoin: () => this.setState({ joinStep: 3, member: true }),
+      toBackstage: () => this.setState(st => ({ joinOpen: false, stack: [...st.stack.filter(x => x.type !== 'backstage'), { type: 'backstage' }] })),
+      joinAmount: s.joinAmount,
+      setJoinAmount: (e) => this.setState({ joinAmount: parseInt(e.target.value, 10) }),
+      rhythmusLabel: s.joinYearly ? 'im Jahr' : 'im Monat',
+      setMonthly: () => this.setState({ joinYearly: false }),
+      setYearly: () => this.setState({ joinYearly: true }),
+      mBg: s.joinYearly ? '#ffffff' : INK, mFg: s.joinYearly ? INK : '#ffffff',
+      yBg: s.joinYearly ? INK : '#ffffff', yFg: s.joinYearly ? '#ffffff' : INK,
+      perk15Fg: s.joinAmount >= 15 ? INK : '#b3b3b3', perk15W: s.joinAmount >= 15 ? 700 : 400,
+      perk30Fg: s.joinAmount >= 30 ? INK : '#b3b3b3', perk30W: s.joinAmount >= 30 ? 700 : 400,
+      // profil
+      savedLabel: savedCount === 1 ? '1 Artikel' : savedCount + ' Artikel',
+      newsletterRows,
+      pushBg: sw(s.pushOn).bg, pushX: sw(s.pushOn).x,
+      togglePush: () => this.setState(st => ({ pushOn: !st.pushOn })),
+      // backstage
+      qaLabel: s.qaSent ? '✓ Frage eingereicht' : 'Frage einreichen',
+      sendQa: () => this.setState({ qaSent: true }),
+      // onboarding
+      showOnboarding: s.onboarding,
+      ob0: s.obStep === 0, ob1: s.obStep === 1, ob2: s.obStep === 2, ob3: s.obStep === 3,
+      od0: dotO(0), od1: dotO(1), od2: dotO(2), od3: dotO(3),
+      obNext: () => this.setState(st => ({ obStep: st.obStep + 1 })),
+      obSkip: () => this.setState({ onboarding: false }),
+      obJoin: () => this.setState({ onboarding: false, joinOpen: true, joinStep: 0 }),
+      obBrowse: () => this.setState({ onboarding: false }),
+      chips,
+      // misc
+      resetDemo: () => {
+        this.stopRadioEl(); clearInterval(this._bt);
+        this.setState({
+          onboarding: true, obStep: 0, interests: {}, pushOn: false, tab: 'home', stack: [],
+          member: false, joinOpen: false, joinStep: 0, joinAmount: 10, joinYearly: false,
+          calloutId: null, calloutStep: 0, calloutSel: {}, updatesOn: false,
+          audioSrc: null, audioPlaying: false, bonusLeft: 60, bonusSheet: false,
+          saved: {}, nl: { spot: true, schweiz: false, klima: true }, qaSent: false,
+        });
+      },
+    };
+  }
+}
+</script>
+</body>
+</html>

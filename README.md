@@ -21,6 +21,18 @@ feeds, the Salon5 Icecast stream — with **fully interactive simulated flows**
 (callout submission, club membership with an app-wide status flip, Backstage)
 backed by authentic sample data.
 
+## Design preview (interactive mockup)
+
+👉 **[faktenforum.github.io/correctiv-app](https://faktenforum.github.io/correctiv-app/)**
+
+A click-through preview of the same demo journey, hosted via GitHub Pages
+([`docs/`](docs/)). This is the original **design draft** from
+[Claude Design](https://claude.ai/) — an HTML/React mockup, *not* the running
+NativeScript app — so it conveys layout, flow and feel in any browser without a
+build. The real implementation is the NativeScript code in this repository; the
+two have intentionally minor visual differences (the app was aligned to this
+draft, keeping the stronger solution where they differed).
+
 ## Requirements
 
 - Node ≥ 20.19 (Vite 7)
