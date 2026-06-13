@@ -1,7 +1,3 @@
-// Eigener Entry-Point: zuerst expo-router, dann den RNTP-Playback-Service
-// registrieren (Standard-Pattern für react-native-track-player + expo-router).
+// Entry-Point. Audio läuft über expo-audio (kein separater Playback-Service nötig;
+// Hintergrund-Audio + Lockscreen-Controls via setAudioModeAsync / setActiveForLockScreen).
 import 'expo-router/entry';
-
-import TrackPlayer from 'react-native-track-player';
-
-TrackPlayer.registerPlaybackService(() => require('./src/lib/audio/playbackService').default);

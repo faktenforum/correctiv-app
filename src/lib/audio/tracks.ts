@@ -1,13 +1,9 @@
-import type { Track } from 'react-native-track-player';
+import { SALON5_STREAM_URL } from '@/lib/feeds/sources';
 
-/**
- * Salon5-Radio: verifizierter Icecast-Stream (audio/mpeg, 64 kbit/s). Als
- * Live-Stream markiert — kein Progress/Seek, nie per HEAD prüfen (Icecast → 400).
- */
-export const SALON5_RADIO: Track = {
+/** Metadaten + Quelle des Salon5-Live-Streams (Icecast). Für Player + Lockscreen. */
+export const SALON5_RADIO = {
   id: 'salon5-radio',
-  url: 'https://icecast.correctiv.net/salon5low',
+  url: SALON5_STREAM_URL,
   title: 'Salon5 Radio',
   artist: '24/7 aus Bottrop',
-  isLiveStream: true,
-};
+} as const;

@@ -11,3 +11,5 @@ export { Chip } from './Chip';
 export type { ChipProps } from './Chip';
 export { Screen } from './Screen';
 export type { ScreenProps } from './Screen';
+export { SectionHeader } from './SectionHeader';
+export type { SectionHeaderProps } from './SectionHeader';

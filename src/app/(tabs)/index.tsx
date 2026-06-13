@@ -1,43 +1,74 @@
-import { View } from 'react-native';
+import { router } from 'expo-router';
+import { ActivityIndicator, View } from 'react-native';
 
-import { Badge, Button, Card, Hairline, Screen, Typo } from '@/components/ui';
+import { ArticleHero } from '@/components/feed/ArticleHero';
+import { ArticleRow } from '@/components/feed/ArticleRow';
+import { FaktencheckRail } from '@/components/feed/FaktencheckRail';
+import { EarlyAccessCard } from '@/components/home/EarlyAccessCard';
+import { ImpactFooter } from '@/components/home/ImpactFooter';
+import { SpotlightBriefing } from '@/components/home/SpotlightBriefing';
+import { Hairline, Screen, SectionHeader, Typo } from '@/components/ui';
+import { useFeed } from '@/lib/feeds/useFeed';
+import { openArticle } from '@/lib/openArticle';
+import { colors } from '@/lib/theme';
 
 /**
- * M0-Platzhalter für Home: zeigt die Design-System-Bausteine, um Tokens, Fonts
- * und NativeWind end-to-end zu verifizieren. Wird in M1 durch den echten Feed ersetzt.
+ * Home — kuratierter Querschnitt durchs Ökosystem. LIVE: Hero + Neueste
+ * Recherchen (Haupt-Feed), Faktencheck-Rail. SAMPLE: Spotlight-Briefing,
+ * Early-Access-Karte. In M3–M5 kommen Mediathek-Reihe, Mitmach- und Backstage-Modul hinzu.
  */
 export default function HomeScreen() {
+  const recherchen = useFeed('haupt');
+  const faktenchecks = useFeed('faktencheck');
+
+  const hero = recherchen.data?.[0];
+  const neueste = recherchen.data?.slice(1, 6) ?? [];
+
   return (
     <Screen>
-      <Typo variant="headline-xl" className="mb-2xs">
-        CORRECTIV
-      </Typo>
-      <Typo variant="text-m" color="grey-600" className="mb-m">
-        Die App für alle, die CORRECTIV möglich machen.
+      <Typo variant="headline-xl">CORRECTIV</Typo>
+      <Typo variant="text-s" color="grey-600" className="mb-m">
+        Recherchen für die Gesellschaft
       </Typo>
 
-      <Hairline className="mb-m" />
+      {recherchen.loading && !recherchen.data && (
+        <View className="py-2xl">
+          <ActivityIndicator color={colors.emphasis} />
+        </View>
+      )}
 
-      <View className="mb-m flex-row flex-wrap gap-xs">
-        <Badge label="Faktencheck" tone="emphasis" />
-        <Badge label="Backstage" tone="club" />
-        <Badge label="Salon5 Radio" tone="live" />
-        <Badge label="Klima" tone="neutral" />
+      {hero && <ArticleHero item={hero} onPress={openArticle} />}
+
+      <View className="mt-l">
+        <SpotlightBriefing />
       </View>
 
-      <Card className="mb-m">
-        <Typo variant="headline-m" className="mb-2xs">
-          Die Perfekte Frau
-        </Typo>
-        <Typo variant="text-article" color="grey-600">
-          Wie Autokraten ein Ideal erschaffen — eine Recherche über Macht, Körper und Ideologie.
-        </Typo>
-      </Card>
-
-      <View className="gap-s">
-        <Button title="Unterstützer:in werden" variant="primary" fullWidth />
-        <Button title="Erstmal umsehen" variant="outline" fullWidth />
+      <View className="mt-l">
+        <EarlyAccessCard onPress={() => router.push('/(tabs)/profil')} />
       </View>
+
+      {neueste.length > 0 && (
+        <View className="mt-l">
+          <SectionHeader title="Neueste Recherchen" />
+          <View className="mt-2xs">
+            {neueste.map((item, i) => (
+              <View key={item.id}>
+                {i > 0 && <Hairline />}
+                <ArticleRow item={item} onPress={openArticle} />
+              </View>
+            ))}
+          </View>
+        </View>
+      )}
+
+      {(faktenchecks.data?.length ?? 0) > 0 && (
+        <View className="mt-l">
+          <SectionHeader title="Faktenchecks" className="mb-s" />
+          <FaktencheckRail items={faktenchecks.data!.slice(0, 8)} onPress={openArticle} />
+        </View>
+      )}
+
+      <ImpactFooter onJoin={() => router.push('/(tabs)/profil')} />
     </Screen>
   );
 }
