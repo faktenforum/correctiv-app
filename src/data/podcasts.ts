@@ -1,8 +1,9 @@
 /**
- * Podcast series — SAMPLE (Salon5 series RSS not findable, see
- * DATENQUELLEN.md §open issues). Real series and episode titles;
- * audio points to the bundled sample episode so that the player
- * and the preview gate can be demonstrated offline.
+ * Podcast series — OFFLINE SEED / last-resort fallback. Live data now comes
+ * from the Salon5 Castopod instance via stores/podcasts.ts (real episodes with
+ * real MP3 enclosures). This typed sample is only used when neither the network
+ * nor a bundled snapshot (assets/data/podcasts/) is available; its audio points
+ * to the bundled sample episode so the player and preview gate still work.
  */
 
 export interface PodcastEpisode {
@@ -20,6 +21,8 @@ export interface PodcastSeries {
   title: string;
   publisher: string;
   description: string;
+  /** Series cover (Castopod itunes:image); absent for the offline seed. */
+  imageUrl?: string | null;
   episodes: PodcastEpisode[];
 }
 

@@ -1,0 +1,40 @@
+{
+ "generatedAt": "2026-06-14T06:17:51.734Z",
+ "podcasts": [
+  {
+   "id": "pausenbrot",
+   "title": "Pausenbrot",
+   "episodes": 20
+  },
+  {
+   "id": "klima",
+   "title": "Mission Klima",
+   "episodes": 20
+  },
+  {
+   "id": "salon5_erklart",
+   "title": "Salon5 erklärt",
+   "episodes": 12
+  },
+  {
+   "id": "politik",
+   "title": "Geld, Macht und Leben",
+   "episodes": 20
+  },
+  {
+   "id": "europa_was_geht",
+   "title": "Europa, was geht?",
+   "episodes": 20
+  },
+  {
+   "id": "sport",
+   "title": "Workout für die Ohren",
+   "episodes": 20
+  },
+  {
+   "id": "pyjama_party",
+   "title": "Pyjama Party",
+   "episodes": 20
+  }
+ ]
+}

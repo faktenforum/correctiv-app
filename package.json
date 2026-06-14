@@ -41,6 +41,7 @@
     "ios": "ns debug ios",
     "android": "ns debug android",
     "tokens": "node scripts/sync-tokens.mjs",
-    "offline-articles": "node scripts/fetch-offline-articles.mjs"
+    "offline-articles": "node scripts/fetch-offline-articles.mjs",
+    "offline-podcasts": "node scripts/fetch-offline-podcasts.mjs"
   }
 }

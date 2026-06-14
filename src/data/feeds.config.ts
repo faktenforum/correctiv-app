@@ -49,3 +49,22 @@ export const PEERTUBE_CHANNELS = {
  * Availability can only be determined by attempting to play.
  */
 export const RADIO_STREAM_URL = 'https://icecast.correctiv.net/salon5low';
+
+/**
+ * Salon5 podcasts run on CORRECTIV's own Castopod instance — standard podcast
+ * RSS per show at `${PODCAST_HOST}/@<handle>/feed.xml`, each episode carrying a
+ * real MP3 <enclosure>. (Note: salon5.de is an unrelated site; the youth
+ * newsroom lives here and on salon5.org / correctiv.org/projekte/salon5.)
+ */
+export const PODCAST_HOST = 'https://salon5.correctiv.net';
+
+/** Curated Salon5 shows for the media library, in display order (Castopod handles). */
+export const PODCAST_CHANNELS = [
+  'pausenbrot',
+  'klima',
+  'salon5_erklart',
+  'politik',
+  'europa_was_geht',
+  'sport',
+  'pyjama_party',
+] as const;

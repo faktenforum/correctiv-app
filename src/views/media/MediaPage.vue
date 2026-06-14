@@ -19,13 +19,19 @@
           <ScrollView orientation="horizontal" class="series-rail">
             <StackLayout orientation="horizontal" class="px-xs">
               <StackLayout
-                v-for="series in podcastSeries"
+                v-for="series in podcasts.series"
                 :key="series.id"
                 class="series-tile"
                 @tap="openSeries(series)"
               >
-                <GridLayout class="series-tile__cover" :class="`series-tile__cover--${series.id}`">
-                  <Label :text="icons.mic" class="lucide series-tile__icon" />
+                <GridLayout class="series-tile__cover">
+                  <RemoteImage
+                    v-if="series.imageUrl"
+                    :url="series.imageUrl"
+                    kind="video"
+                    class="series-tile__cover-img"
+                  />
+                  <Label v-else :text="icons.mic" class="lucide series-tile__icon" />
                 </GridLayout>
                 <Label :text="series.title" class="series-tile__title" textWrap="true" :maxLines="2" />
                 <Label :text="series.publisher" class="series-tile__publisher" />
@@ -97,19 +103,22 @@ import type { Video } from '../../types/models';
 import LiveBanner from '../../components/ui/LiveBanner.vue';
 import SectionHeader from '../../components/ui/SectionHeader.vue';
 import ClubBadge from '../../components/ui/ClubBadge.vue';
+import RemoteImage from '../../components/ui/RemoteImage.vue';
 import MediaCard from '../../components/cards/MediaCard.vue';
 import SeriesPage from './SeriesPage.vue';
 import VideoPlayerPage from './VideoPlayerPage.vue';
 import { useVideoStore } from '../../stores/video';
-import { podcastSeries, type PodcastSeries } from '../../data/podcasts';
+import type { PodcastSeries } from '../../data/podcasts';
 import { bonusMedia, type BonusMedia } from '../../data/backstage';
 import { useMediaStore } from '../../stores/media';
+import { usePodcastsStore } from '../../stores/podcasts';
 import { useAudioStore } from '../../stores/audio';
 import { useMembershipStore } from '../../stores/membership';
 import { useNavigation } from '../../composables/useNavigation';
 import { formatDateShortDe, formatTimeHm } from '../../lib/format';
 
 const media = useMediaStore();
+const podcasts = usePodcastsStore();
 const audioStore = useAudioStore();
 const membership = useMembershipStore();
 const { navigate } = useNavigation();
@@ -119,6 +128,7 @@ let loaded = false;
 function onLoaded() {
   if (loaded) return;
   loaded = true;
+  podcasts.fetchAll();
   media.fetch('gespraech');
   media.fetch('funfacts');
 }

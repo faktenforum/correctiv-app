@@ -32,6 +32,11 @@ export function formatTimeHm(sec: number): string {
   return `${m}:${s.toString().padStart(2, '0')}`;
 }
 
+/** "25 Min." — coarse episode length from seconds (podcast lists). */
+export function formatMinutesDe(sec: number): string {
+  return `${Math.max(1, Math.round(sec / 60))} Min.`;
+}
+
 export function formatNumberDe(n: number): string {
   return n.toString().replace(/\B(?=(\d{3})+(?!\d))/g, '.');
 }

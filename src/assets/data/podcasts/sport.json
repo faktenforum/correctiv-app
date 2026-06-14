@@ -1,0 +1,149 @@
+{
+ "id": "sport",
+ "title": "Workout für die Ohren",
+ "publisher": "Salon5",
+ "description": "Couch-Potatoes und Sport- Junkies aufgepasst! Sport ist für alle da. In dieser Podcast-Reihe sprechen wir über alle wichtigen Themen rund um alle Sportarten: Probleme im Sportunterricht, mentaler Druck von Talenten und Profis oder Sexismus…",
+ "imageUrl": "https://salon5.correctiv.net/media/podcasts/sport/cover_feed.png",
+ "episodes": [
+  {
+   "id": "https://salon5.correctiv.net/@sport/episodes/wm-und-co-wie-beeinflussen-grose-sportereignisse-die-gesellschaft",
+   "title": "WM und Co.: Wie beeinflussen große Sportereignisse die Gesellschaft?",
+   "date": "2026-06-10T11:49:17.000Z",
+   "durationLabel": "26 Min.",
+   "audio": "https://salon5.correctiv.net/audio/@sport/wm-und-co-wie-beeinflussen-grose-sportereignisse-die-gesellschaft.mp3"
+  },
+  {
+   "id": "https://salon5.correctiv.net/@sport/episodes/neu-im-gym-uber-motivation-disziplin-und-hemmungen",
+   "title": "Neu im Gym: Über Motivation, Disziplin und Hemmungen",
+   "date": "2026-06-02T22:01:00.000Z",
+   "durationLabel": "21 Min.",
+   "audio": "https://salon5.correctiv.net/audio/@sport/neu-im-gym-uber-motivation-disziplin-und-hemmungen.mp3"
+  },
+  {
+   "id": "https://salon5.correctiv.net/@sport/episodes/sport-pendeln-doomscrolling-das-machen-wir-in-unserer-freizeit",
+   "title": "Sport, Pendeln, Doomscrolling: Das machen wir in unserer Freizeit",
+   "date": "2025-08-22T22:01:00.000Z",
+   "durationLabel": "21 Min.",
+   "audio": "https://salon5.correctiv.net/audio/@sport/sport-pendeln-doomscrolling-das-machen-wir-in-unserer-freizeit.mp3"
+  },
+  {
+   "id": "https://salon5.correctiv.net/@sport/episodes/olympia-fur-studis-live-bei-den-fisu-world-university-games",
+   "title": "Olympia für Studis – live bei den FISU World University Games",
+   "date": "2025-07-29T11:51:04.000Z",
+   "durationLabel": "43 Min.",
+   "audio": "https://salon5.correctiv.net/audio/@sport/olympia-fur-studis-live-bei-den-fisu-world-university-games.mp3"
+  },
+  {
+   "id": "https://salon5.correctiv.net/@sport/episodes/sexuelle-gewalt-im-jugendfusball",
+   "title": "Sexuelle Gewalt im Jugendfußball",
+   "date": "2025-04-03T15:52:49.000Z",
+   "durationLabel": "24 Min.",
+   "audio": "https://salon5.correctiv.net/audio/@sport/sexuelle-gewalt-im-jugendfusball.mp3"
+  },
+  {
+   "id": "https://salon5.correctiv.net/@sport/episodes/was-ist-die-formel-1",
+   "title": "Was ist die Formel 1?",
+   "date": "2025-03-14T09:22:36.000Z",
+   "durationLabel": "3 Min.",
+   "audio": "https://salon5.correctiv.net/audio/@sport/was-ist-die-formel-1.mp3"
+  },
+  {
+   "id": "d267ee75-e563-11ef-97fe-a85e453daa56",
+   "title": "Gehören Fußball und Politik zusammen?",
+   "date": "2025-02-07T14:57:10.000Z",
+   "durationLabel": "4 Min.",
+   "audio": "https://salon5.correctiv.net/audio/@sport/gehoeren-fussball-und-politik-zusammen-jy9ng.mp3"
+  },
+  {
+   "id": "51428f84-3e0b-11ef-ac9c-a85e453daa56",
+   "title": "Kurz erklärt: Welche Mythen übers Gym stimmen wirklich?",
+   "date": "2024-07-09T15:52:56.000Z",
+   "durationLabel": "4 Min.",
+   "audio": "https://salon5.correctiv.net/audio/@sport/kurz-erklaert-welche-mythen-uebers-gym-stimmen-wirklich-xktpf.mp3"
+  },
+  {
+   "id": "738a17fc-3e0a-11ef-ac9c-a85e453daa56",
+   "title": "Jürgen Martschukat über das Zeitalter der Fitness",
+   "date": "2024-07-09T15:46:42.000Z",
+   "durationLabel": "26 Min.",
+   "audio": "https://salon5.correctiv.net/audio/@sport/juergen-martschukat-ueber-das-zeitalter-der-fitness-yykhw.mp3"
+  },
+  {
+   "id": "bd8085d5-3d42-11ef-ac9c-a85e453daa56",
+   "title": "So geht es uns im Gym",
+   "date": "2024-07-08T15:57:07.000Z",
+   "durationLabel": "11 Min.",
+   "audio": "https://salon5.correctiv.net/audio/@sport/so-geht-es-uns-im-gym-6pt4m.mp3"
+  },
+  {
+   "id": "eb2feef0-3ad7-11ef-ac9c-a85e453daa56",
+   "title": "Dicke Muskeln um jeden Preis – was ihr über Anabolika wissen müsst!",
+   "date": "2024-07-05T14:07:27.000Z",
+   "durationLabel": "3 Min.",
+   "audio": "https://salon5.correctiv.net/audio/@sport/dicke-muskeln-um-jeden-preis-was-ihr-ueber-anabolika-wissen-muesst-jf1sk.mp3"
+  },
+  {
+   "id": "5e47cd4f-39fc-11ef-ac9c-a85e453daa56",
+   "title": "Euro 2024: Deutschland vor dem Viertelfinale gegen Spanien",
+   "date": "2024-07-04T11:55:49.000Z",
+   "durationLabel": "6 Min.",
+   "audio": "https://salon5.correctiv.net/audio/@sport/euro-2024-deutschland-vor-dem-viertelfinale-gegen-spanien-nvn1a.wav"
+  },
+  {
+   "id": "5450f3b3-2e40-11ef-ac9c-a85e453daa56",
+   "title": "Nachhaltigste EM ever? – Das sind die Ergebnisse unsere Recherche",
+   "date": "2024-06-19T13:32:05.000Z",
+   "durationLabel": "15 Min.",
+   "audio": "https://salon5.correctiv.net/audio/@sport/nachhaltigste-em-ever-das-sind-die-ergebnisse-unsere-recherche-utdsy.mp3"
+  },
+  {
+   "id": "d896a30d-2e18-11ef-ac9c-a85e453daa56",
+   "title": "Wie nachhaltig ist die Euro 2024?",
+   "date": "2024-06-19T08:49:25.000Z",
+   "durationLabel": "21 Min.",
+   "audio": "https://salon5.correctiv.net/audio/@sport/wie-nachhaltig-ist-die-euro-2024-qz6as.mp3"
+  },
+  {
+   "id": "a579e692-2e18-11ef-ac9c-a85e453daa56",
+   "title": "Interview mit der Deutschen Umwelthilfe: Ist die Euro 2024 die nachhaltigste EM ever?",
+   "date": "2024-06-19T08:48:02.000Z",
+   "durationLabel": "16 Min.",
+   "audio": "https://salon5.correctiv.net/audio/@sport/interview-mit-der-deutschen-umwelthilfe-ist-die-euro-2024-die-nachhaltigste-em-ever-k6plo.mp3"
+  },
+  {
+   "id": "c741edbc-2e17-11ef-ac9c-a85e453daa56",
+   "title": "EM in Deutschland:Public Viewing, Deutschlandfahnen und die Nationalhymne",
+   "date": "2024-06-19T08:41:49.000Z",
+   "durationLabel": "8 Min.",
+   "audio": "https://salon5.correctiv.net/audio/@sport/em-in-deutschland-public-viewing-deutschlandfahnen-und-die-nationalhymne-mqbzm.mp3"
+  },
+  {
+   "id": "8ef19912-2e17-11ef-ac9c-a85e453daa56",
+   "title": "UEFA vs. Städte - Wer sind die wahren Gewinner der Fußball-EM?",
+   "date": "2024-06-19T08:40:15.000Z",
+   "durationLabel": "20 Min.",
+   "audio": "https://salon5.correctiv.net/audio/@sport/uefa-vs-staedte-wer-sind-die-wahren-gewinner-der-fussball-em-wdsi9.mp3"
+  },
+  {
+   "id": "a3f16c96-2ca9-11ef-ac9c-a85e453daa56",
+   "title": "Wer gewinnt die EM 2024?",
+   "date": "2024-06-17T13:00:53.000Z",
+   "durationLabel": "8 Min.",
+   "audio": "https://salon5.correctiv.net/audio/@sport/wer-gewinnt-die-em-2024-pufvw.mp3"
+  },
+  {
+   "id": "19403b86-299e-11ef-ac9c-a85e453daa56",
+   "title": "Die wichtigsten Zahlen zur Euro 2024",
+   "date": "2024-06-13T16:00:43.000Z",
+   "durationLabel": "2 Min.",
+   "audio": "https://salon5.correctiv.net/audio/@sport/die-wichtigsten-zahlen-zur-euro-2024-vsade.mp3"
+  },
+  {
+   "id": "97b71e49-df91-11ee-ac9c-a85e453daa56",
+   "title": "Inklusiver Sportunterricht an deutschen Schulen",
+   "date": "2024-03-11T10:24:46.000Z",
+   "durationLabel": "12 Min.",
+   "audio": "https://salon5.correctiv.net/audio/@sport/inklusiver-sportunterricht-an-deutschen-schulen-ka5jz.mp3"
+  }
+ ]
+}

@@ -1,0 +1,93 @@
+{
+ "id": "salon5_erklart",
+ "title": "Salon5 erklärt",
+ "publisher": "Salon5",
+ "description": "Nebenbei einfach ein bisschen schlauer werden? Unsere Salon5 Reporter und Reporterinnen erklären euch komplexe Zusammenhänge, Fachbegriffe und verschaffen euch einen Überblick, über alles, was gerade angeht. So könnt ihr in der Schule nebe…",
+ "imageUrl": "https://salon5.correctiv.net/media/podcasts/salon5_erklart/cover_feed.png",
+ "episodes": [
+  {
+   "id": "69ffe3ca-f34e-11ea-a171-a85e453daa56",
+   "title": "Kurz erklärt: Systemrelevant",
+   "date": "2025-03-03T13:44:59.000Z",
+   "durationLabel": "9 Min.",
+   "audio": "https://salon5.correctiv.net/audio/@salon5_erklart/kurz-erklaert-systemrelevant-qpl9a.mp3"
+  },
+  {
+   "id": "653fe693-bee2-11eb-9be9-a85e453daa56",
+   "title": "Kurz Erklärt: Das Infektionsschutzgesetz",
+   "date": "2025-03-03T13:44:49.000Z",
+   "durationLabel": "6 Min.",
+   "audio": "https://salon5.correctiv.net/audio/@salon5_erklart/kurz-erklaert-das-infektionsschutzgesetz-fop2u.mp3"
+  },
+  {
+   "id": "23610854-19e7-11ec-9be9-a85e453daa56",
+   "title": "Kurz Erklärt: Das Wahlprogramm der CDU",
+   "date": "2025-03-03T13:44:40.000Z",
+   "durationLabel": "5 Min.",
+   "audio": "https://salon5.correctiv.net/audio/@salon5_erklart/kurz-erklaert-das-wahlprogramm-der-cdu-vz4hp.mp3"
+  },
+  {
+   "id": "0c322829-1aa6-11ec-9be9-a85e453daa56",
+   "title": "Kurz Erklärt: Das Wahlprogramm der Grünen",
+   "date": "2025-03-03T13:44:29.000Z",
+   "durationLabel": "7 Min.",
+   "audio": "https://salon5.correctiv.net/audio/@salon5_erklart/kurz-erklaert-das-wahlprogramm-der-gruenen-paudg.mp3"
+  },
+  {
+   "id": "f5001c94-1b6c-11ec-9be9-a85e453daa56",
+   "title": "Kurz Erklärt: Das Wahlprogramm der SPD",
+   "date": "2025-03-03T13:44:12.000Z",
+   "durationLabel": "5 Min.",
+   "audio": "https://salon5.correctiv.net/audio/@salon5_erklart/kurz-erklaert-das-wahlprogramm-der-spd-9tscj.mp3"
+  },
+  {
+   "id": "5d13f097-1c2e-11ec-9be9-a85e453daa56",
+   "title": "Kurz Erklärt: Das Wahlprogramm der AfD",
+   "date": "2025-03-03T13:44:03.000Z",
+   "durationLabel": "6 Min.",
+   "audio": "https://salon5.correctiv.net/audio/@salon5_erklart/kurz-erklaert-das-wahlprogramm-der-afd-mw8sf.mp3"
+  },
+  {
+   "id": "912a62b6-1d0d-11ec-9be9-a85e453daa56",
+   "title": "Kurz Erklärt: Das Wahlprogramm der Linken",
+   "date": "2025-03-03T13:43:53.000Z",
+   "durationLabel": "7 Min.",
+   "audio": "https://salon5.correctiv.net/audio/@salon5_erklart/kurz-erklaert-das-wahlprogramm-der-linken-fwzwy.mp3"
+  },
+  {
+   "id": "e6239973-1d1a-11ec-9be9-a85e453daa56",
+   "title": "Kurz Erklärt: Das Wahlprogramm der FDP",
+   "date": "2025-03-03T13:43:44.000Z",
+   "durationLabel": "8 Min.",
+   "audio": "https://salon5.correctiv.net/audio/@salon5_erklart/kurz-erklaert-das-wahlprogramm-der-fdp-vseca.mp3"
+  },
+  {
+   "id": "b176171f-f326-11ed-84ae-a85e453daa56",
+   "title": "Kurz Erklärt: Der Wald",
+   "date": "2025-03-03T13:43:33.000Z",
+   "durationLabel": "4 Min.",
+   "audio": "https://salon5.correctiv.net/audio/@salon5_erklart/kurz-erklaert-der-wald-vqbzt.mp3"
+  },
+  {
+   "id": "548f1657-09d5-11ee-84ae-a85e453daa56",
+   "title": "KurzErklärt: Bürgerentscheid",
+   "date": "2025-03-03T13:43:22.000Z",
+   "durationLabel": "2 Min.",
+   "audio": "https://salon5.correctiv.net/audio/@salon5_erklart/kurzerklaert-buergerentscheid-okmkt.mp3"
+  },
+  {
+   "id": "d175e8eb-1437-11ee-84ae-a85e453daa56",
+   "title": "Kurz Erklärt: Die Geschichte von Queer-Pride und dem CSD",
+   "date": "2025-03-03T13:43:07.000Z",
+   "durationLabel": "3 Min.",
+   "audio": "https://salon5.correctiv.net/audio/@salon5_erklart/kurz-erklaert-die-geschichte-von-queer-pride-und-dem-csd-hemij.mp3"
+  },
+  {
+   "id": "adef5832-402f-11ee-84ae-a85e453daa56",
+   "title": "Kurz erklärt: Taschengeld",
+   "date": "2025-03-03T13:42:48.000Z",
+   "durationLabel": "5 Min.",
+   "audio": "https://salon5.correctiv.net/audio/@salon5_erklart/kurz-erklaert-taschengeld-4kb83.mp3"
+  }
+ ]
+}

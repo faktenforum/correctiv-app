@@ -1,0 +1,149 @@
+{
+ "id": "pausenbrot",
+ "title": "Pausenbrot",
+ "publisher": "Salon5",
+ "description": "Gruppenzwang, Lernstress, Mobbing und Leistungsdruck: Wir sprechen in dieser Podcast-Serie über alles rund um Schule, Uni und Arbeit. Wie kann ich am besten für die nächste Klassenarbeit lernen? Warum ist das Bildungssystem in Deutschland…",
+ "imageUrl": "https://salon5.correctiv.net/media/podcasts/pausenbrot/cover_feed.png",
+ "episodes": [
+  {
+   "id": "https://salon5.correctiv.net/@pausenbrot/episodes/gott-mit-dir-du-land-der-bayern",
+   "title": "Gott mit dir, du Land der Bayern",
+   "date": "2026-06-08T22:01:00.000Z",
+   "durationLabel": "25 Min.",
+   "audio": "https://salon5.correctiv.net/audio/@pausenbrot/gott-mit-dir-du-land-der-bayern.mp3"
+  },
+  {
+   "id": "https://salon5.correctiv.net/@pausenbrot/episodes/so-geht-schule-in-anderen-landern",
+   "title": "So geht Schule in anderen Ländern",
+   "date": "2026-05-14T22:01:00.000Z",
+   "durationLabel": "5 Min.",
+   "audio": "https://salon5.correctiv.net/audio/@pausenbrot/so-geht-schule-in-anderen-landern.mp3"
+  },
+  {
+   "id": "https://salon5.correctiv.net/@pausenbrot/episodes/jedes-abitur-ist-gleich-oder",
+   "title": "Jedes Abitur ist gleich… oder?",
+   "date": "2026-04-29T10:57:39.000Z",
+   "durationLabel": "20 Min.",
+   "audio": "https://salon5.correctiv.net/audio/@pausenbrot/jedes-abitur-ist-gleich-oder.mp3"
+  },
+  {
+   "id": "https://salon5.correctiv.net/@pausenbrot/episodes/wie-nutzen-lehrer-ihre-macht-aus",
+   "title": "Wie nutzen Lehrer ihre Macht aus?",
+   "date": "2026-04-20T06:00:00.000Z",
+   "durationLabel": "16 Min.",
+   "audio": "https://salon5.correctiv.net/audio/@pausenbrot/wie-nutzen-lehrer-ihre-macht-aus.mp3"
+  },
+  {
+   "id": "https://salon5.correctiv.net/@pausenbrot/episodes/schule-lernen-furs-leben-oder-oft-unnotig",
+   "title": "Schule: Lernen fürs Leben oder oft unnötig?",
+   "date": "2026-04-16T07:41:44.000Z",
+   "durationLabel": "32 Min.",
+   "audio": "https://salon5.correctiv.net/audio/@pausenbrot/schule-lernen-furs-leben-oder-oft-unnotig.mp3"
+  },
+  {
+   "id": "https://salon5.correctiv.net/@pausenbrot/episodes/erste-hilfe-als-fach-in-der-schule-ist-das-sinnvoll",
+   "title": "Erste Hilfe als Fach in der Schule: Ist das sinnvoll?",
+   "date": "2026-03-03T23:01:00.000Z",
+   "durationLabel": "13 Min.",
+   "audio": "https://salon5.correctiv.net/audio/@pausenbrot/erste-hilfe-als-fach-in-der-schule-ist-das-sinnvoll.mp3"
+  },
+  {
+   "id": "https://salon5.correctiv.net/@pausenbrot/episodes/durfen-schulerzeitungen-zensiert-werden",
+   "title": "Dürfen Schülerzeitungen zensiert werden?",
+   "date": "2026-02-26T10:22:24.000Z",
+   "durationLabel": "23 Min.",
+   "audio": "https://salon5.correctiv.net/audio/@pausenbrot/durfen-schulerzeitungen-zensiert-werden.mp3"
+  },
+  {
+   "id": "https://salon5.correctiv.net/@pausenbrot/episodes/interview-herr-schmelzer-mussen-lehrer-neutral-sein",
+   "title": "Interview: Herr Schmelzer, müssen Lehrer neutral sein?",
+   "date": "2026-02-23T09:38:03.000Z",
+   "durationLabel": "13 Min.",
+   "audio": "https://salon5.correctiv.net/audio/@pausenbrot/interview-herr-schmelzer-mussen-lehrer-neutral-sein.mp3"
+  },
+  {
+   "id": "https://salon5.correctiv.net/@pausenbrot/episodes/von-peru-nach-deutschland",
+   "title": "Von Peru nach Deutschland",
+   "date": "2026-01-28T16:00:59.000Z",
+   "durationLabel": "13 Min.",
+   "audio": "https://salon5.correctiv.net/audio/@pausenbrot/von-peru-nach-deutschland.mp3"
+  },
+  {
+   "id": "https://salon5.correctiv.net/@pausenbrot/episodes/die-schlimmsten-aussagen-von-lehrkraften",
+   "title": "Die schlimmsten Aussagen von Lehrkräften!",
+   "date": "2026-01-12T23:01:00.000Z",
+   "durationLabel": "38 Min.",
+   "audio": "https://salon5.correctiv.net/audio/@pausenbrot/die-schlimmsten-aussagen-von-lehrkraften.mp3"
+  },
+  {
+   "id": "https://salon5.correctiv.net/@pausenbrot/episodes/kurz-erklart-welche-rechte-und-pflichten-haben-lehrer",
+   "title": "Kurz erklärt: Welche Rechte und Pflichten haben Lehrer?",
+   "date": "2026-01-11T23:01:00.000Z",
+   "durationLabel": "4 Min.",
+   "audio": "https://salon5.correctiv.net/audio/@pausenbrot/kurz-erklart-welche-rechte-und-pflichten-haben-lehrer.mp3"
+  },
+  {
+   "id": "https://salon5.correctiv.net/@pausenbrot/episodes/sechs-wochen-in-peru-so-war-malins-schuleraustausch",
+   "title": "Sechs Wochen in Peru: So war Malins Schüleraustausch",
+   "date": "2025-12-09T09:42:10.000Z",
+   "durationLabel": "22 Min.",
+   "audio": "https://salon5.correctiv.net/audio/@pausenbrot/sechs-wochen-in-peru-so-war-malins-schuleraustausch.mp3"
+  },
+  {
+   "id": "https://salon5.correctiv.net/@pausenbrot/episodes/bundesschulerkonferenz-zum-iqb-bildungstrend",
+   "title": "Bundesschülerkonferenz zum IQB-Bildungstrend",
+   "date": "2025-10-24T23:00:00.000Z",
+   "durationLabel": "27 Min.",
+   "audio": "https://salon5.correctiv.net/audio/@pausenbrot/bundesschulerkonferenz-zum-iqb-bildungstrend.mp3"
+  },
+  {
+   "id": "https://salon5.correctiv.net/@pausenbrot/episodes/digitalisierung-an-schulen-woran-scheiterts",
+   "title": "Digitalisierung an Schulen: Woran scheitert’s?",
+   "date": "2025-10-17T22:01:00.000Z",
+   "durationLabel": "22 Min.",
+   "audio": "https://salon5.correctiv.net/audio/@pausenbrot/digitalisierung-an-schulen-woran-scheiterts.mp3"
+  },
+  {
+   "id": "https://salon5.correctiv.net/@pausenbrot/episodes/your-vision-schule-nrw-schulern-eine-stimme-geben",
+   "title": "Your Vision Schule NRW: Schülern eine Stimme geben!",
+   "date": "2025-10-16T07:32:47.000Z",
+   "durationLabel": "18 Min.",
+   "audio": "https://salon5.correctiv.net/audio/@pausenbrot/your-vision-schule-nrw-schulern-eine-stimme-geben.mp3"
+  },
+  {
+   "id": "https://salon5.correctiv.net/@pausenbrot/episodes/modernes-lernen-so-kann-schule-sein",
+   "title": "Modernes Lernen: So kann Schule sein!",
+   "date": "2025-10-14T22:01:00.000Z",
+   "durationLabel": "11 Min.",
+   "audio": "https://salon5.correctiv.net/audio/@pausenbrot/modernes-lernen-so-kann-schule-sein.mp3"
+  },
+  {
+   "id": "https://salon5.correctiv.net/@pausenbrot/episodes/was-muss-sich-an-unseren-schulen-andern",
+   "title": "Was muss sich an unseren Schulen ändern?",
+   "date": "2025-10-13T07:27:02.000Z",
+   "durationLabel": "23 Min.",
+   "audio": "https://salon5.correctiv.net/audio/@pausenbrot/was-muss-sich-an-unseren-schulen-andern.mp3"
+  },
+  {
+   "id": "https://salon5.correctiv.net/@pausenbrot/episodes/back-to-school-so-ist-es-fur-uns-wieder-in-der-schule-zu-sein",
+   "title": "Back to school: So ist es für uns, wieder in der Schule zu sein!",
+   "date": "2025-09-13T22:01:00.000Z",
+   "durationLabel": "11 Min.",
+   "audio": "https://salon5.correctiv.net/audio/@pausenbrot/back-to-school-so-ist-es-fur-uns-wieder-in-der-schule-zu-sein.mp3"
+  },
+  {
+   "id": "https://salon5.correctiv.net/@pausenbrot/episodes/was-kommt-nach-der-schule",
+   "title": "Was kommt nach der Schule?",
+   "date": "2025-09-01T07:38:35.000Z",
+   "durationLabel": "22 Min.",
+   "audio": "https://salon5.correctiv.net/audio/@pausenbrot/was-kommt-nach-der-schule.mp3"
+  },
+  {
+   "id": "https://salon5.correctiv.net/@pausenbrot/episodes/schulstart-wie-bereiten-wir-uns-vor",
+   "title": "Schulstart: Wie bereiten wir uns vor?",
+   "date": "2025-08-26T22:10:00.000Z",
+   "durationLabel": "27 Min.",
+   "audio": "https://salon5.correctiv.net/audio/@pausenbrot/schulstart-wie-bereiten-wir-uns-vor.mp3"
+  }
+ ]
+}
