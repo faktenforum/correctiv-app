@@ -22,11 +22,13 @@ export const icons = {
   x: '\ue1b2',
   chevronLeft: '\ue06e',
   chevronRight: '\ue06f',
+  chevronDown: '\ue06d',
   arrowLeft: '\ue048',
   search: '\ue151',
   check: '\ue06c',
   refreshCw: '\ue145',
   externalLink: '\ue0b9',
+  arrowUpRight: '\ue04d',
   camera: '\ue064',
   // Content & status
   newspaper: '\ue348',

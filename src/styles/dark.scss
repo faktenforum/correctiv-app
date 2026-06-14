@@ -48,6 +48,16 @@ $d-accent: #ff6173; // accent (lighter coral on dark)
 .ns-dark .uplayer--expanded { background-color: $d-page; }
 .ns-dark .uplayer__icon,
 .ns-dark .uplayer__hint { color: $d-strong; }
+.ns-dark .uplayer__title,
+.ns-dark .uplayer__body,
+.ns-dark .uplayer__watch-text,
+.ns-dark .uplayer__watch-icon,
+.ns-dark .uplayer__bande-text { color: $d-strong; }
+.ns-dark .uplayer__episode,
+.ns-dark .uplayer__source { color: $d-muted; }
+.ns-dark .uplayer__bande { background-color: $d-card2; }
+.ns-dark .uplayer__source-badge { color: $d-accent; border-color: $d-accent; }
+.ns-dark .uplayer__bande-btn { background-color: $d-accent; }
 
 /* ── Card / tile surfaces ────────────────────────────────── */
 .ns-dark .article-card,

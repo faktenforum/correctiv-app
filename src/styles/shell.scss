@@ -155,3 +155,88 @@
 .uplayer__bartext {
   margin-left: t.$spacing-s;
 }
+
+/* Expanded player — minimize group (left) + source badge (right), design draft */
+.uplayer__minimize {
+  vertical-align: center;
+}
+.uplayer__source-badge {
+  font-family: ty.$ff-sans-bold;
+  font-size: 11;
+  letter-spacing: 0.1;
+  text-transform: uppercase;
+  color: t.$color-emphasis;
+  border-width: 1;
+  border-color: t.$color-emphasis;
+  border-radius: t.$radius-xs;
+  padding: 3 6;
+}
+
+/* Expanded player — video metadata (design draft) */
+.uplayer__meta {
+  padding: t.$spacing-s t.$spacing-sm t.$spacing-l t.$spacing-sm;
+}
+.uplayer__kicker-row {
+  margin-bottom: t.$spacing-xs;
+}
+.uplayer__episode {
+  font-family: ty.$ff-sans;
+  font-size: 12;
+  color: t.$color-grey-500;
+}
+.uplayer__title {
+  font-family: ty.$ff-serif-bold;
+  font-size: 23;
+  line-height: 5;
+  color: t.$color-grey-700;
+}
+.uplayer__source {
+  font-family: ty.$ff-sans;
+  font-size: 13;
+  color: t.$color-grey-500;
+  margin-top: t.$spacing-xs;
+  padding-bottom: t.$spacing-s;
+}
+.uplayer__body {
+  font-family: ty.$ff-serif;
+  font-size: 15;
+  line-height: 8;
+  color: t.$color-grey-700;
+  margin-top: t.$spacing-s;
+}
+.uplayer__watch {
+  margin-top: t.$spacing-m;
+}
+.uplayer__watch-text {
+  font-family: ty.$ff-sans-bold;
+  font-size: 14;
+  color: t.$color-grey-700;
+}
+.uplayer__watch-icon {
+  font-size: 14;
+  color: t.$color-grey-700;
+}
+.uplayer__bande {
+  background-color: t.$color-grey-200;
+  border-radius: t.$radius-md;
+  padding: t.$spacing-sm;
+  margin-top: t.$spacing-m;
+}
+.uplayer__bande-text {
+  font-family: ty.$ff-serif;
+  font-size: 15;
+  line-height: 6;
+  color: t.$color-grey-700;
+  text-align: center;
+}
+.uplayer__bande-btn {
+  font-family: ty.$ff-sans-bold;
+  font-size: 14;
+  color: t.$color-grey-100;
+  background-color: t.$color-emphasis;
+  border-radius: t.$radius-xs;
+  padding: 9 18;
+  horizontal-align: center;
+  text-align: center;
+  margin-top: t.$spacing-s;
+}
