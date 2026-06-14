@@ -35,6 +35,12 @@ jobs:
     # the actual compilation toolchain is validated by the build itself.
     env:
       NS_SKIP_ENV_CHECK: "true"
+      # @nativescript/vite 2.0.3 only deploys the Vite bundle into the native
+      # project in watch mode (ns debug, via an IPC channel). A one-shot
+      # `ns build` has no IPC, so the bundle never reaches assets/app and the
+      # Static Binding Generator fails. Point Vite's output dir straight at the
+      # platform assets dir so the bundle lands where the build expects it.
+      NS_VITE_DIST_DIR: ${{ github.workspace }}/platforms/android/app/src/main/assets/app
     steps:
       - uses: actions/checkout@v4
 
