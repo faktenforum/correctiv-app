@@ -18,6 +18,11 @@ jobs:
   android-debug:
     name: Android debug build
     runs-on: ubuntu-latest
+    # Skip the NativeScript doctor preflight: a build-only runner has no
+    # emulator/SDK images, which the doctor otherwise treats as a fatal error
+    # even though a compilation-capable SDK is present.
+    env:
+      NS_SKIP_ENV_CHECK: "true"
     steps:
       - uses: actions/checkout@v4
 

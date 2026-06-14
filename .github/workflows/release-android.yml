@@ -31,6 +31,10 @@ jobs:
   build:
     name: Build signed APK + AAB
     runs-on: ubuntu-latest
+    # Skip the NativeScript doctor preflight (no emulator on a build runner);
+    # the actual compilation toolchain is validated by the build itself.
+    env:
+      NS_SKIP_ENV_CHECK: "true"
     steps:
       - uses: actions/checkout@v4
 
