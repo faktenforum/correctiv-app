@@ -22,7 +22,13 @@
             textWrap="true"
           />
           <template v-else>
-            <!-- Live feed hits -->
+            <Label
+              v-if="searching && articleHits.length === 0"
+              text="Suche läuft …"
+              class="ty-text-m text-grey-600 px-sm py-s"
+            />
+
+            <!-- Live full-text hits from correctiv.org (WordPress REST) -->
             <SectionHeader v-if="articleHits.length > 0" title="Artikel" />
             <StackLayout v-for="item in articleHits" :key="item.id" class="list-pad">
               <ArticleCard :item="item" variant="compact" @open="openArticle" />
@@ -45,7 +51,7 @@
             </GridLayout>
 
             <Label
-              v-if="articleHits.length === 0 && sampleHits.length === 0"
+              v-if="!searching && articleHits.length === 0 && sampleHits.length === 0"
               :text="`Keine Treffer für „${trimmedQuery}“.`"
               class="ty-text-m text-grey-600 px-sm py-s"
               textWrap="true"
@@ -58,7 +64,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed } from 'nativescript-vue';
+import { ref, computed, watch } from 'nativescript-vue';
 import { icons } from '../../ui/icons';
 import type { FeedItem } from '../../types/models';
 import SectionHeader from '../../components/ui/SectionHeader.vue';
@@ -66,6 +72,7 @@ import ArticleCard from '../../components/cards/ArticleCard.vue';
 import ArticleReaderPage from '../reader/ArticleReaderPage.vue';
 import { searchSamples, type SearchSample } from '../../data/search-samples';
 import { useFeedsStore } from '../../stores/feeds';
+import { searchArticles } from '../../services/search.service';
 import { useNavigation } from '../../composables/useNavigation';
 import type { FeedKey } from '../../types/models';
 
@@ -81,7 +88,7 @@ let loaded = false;
 function onLoaded() {
   if (loaded) return;
   loaded = true;
-  // Search runs over everything already loaded; warm up the remaining feeds
+  // Warm up the feeds so the offline fallback search has something to match.
   for (const key of ALL_FEEDS) feeds.fetch(key);
 }
 
@@ -89,20 +96,53 @@ function matches(text: string): boolean {
   return text.toLowerCase().includes(trimmedQuery.value.toLowerCase());
 }
 
-const articleHits = computed((): FeedItem[] => {
-  if (trimmedQuery.value.length < 2) return [];
+// Live server-side full-text search over all of correctiv.org (WordPress REST).
+// Debounced; the most recent query wins; on a network error we fall back to a
+// local search over the feeds already loaded on this device.
+const articleHits = ref<FeedItem[]>([]);
+const searching = ref(false);
+let seq = 0;
+let debounceTimer: ReturnType<typeof setTimeout> | null = null;
+
+function localFeedHits(needle: string): FeedItem[] {
   const seen = new Set<string>();
   const hits: FeedItem[] = [];
   for (const key of ALL_FEEDS) {
     for (const item of feeds.byKey[key].items) {
       if (seen.has(item.url)) continue;
-      if (matches(item.title) || matches(item.teaser)) {
+      if (item.title.toLowerCase().includes(needle) || item.teaser.toLowerCase().includes(needle)) {
         seen.add(item.url);
         hits.push(item);
       }
     }
   }
   return hits.slice(0, 12);
+}
+
+async function runSearch(q: string) {
+  const mine = ++seq;
+  searching.value = true;
+  try {
+    const results = await searchArticles(q, 15);
+    if (mine !== seq) return; // a newer query superseded this one
+    articleHits.value = results.length ? results : localFeedHits(q.toLowerCase());
+  } catch {
+    if (mine !== seq) return;
+    articleHits.value = localFeedHits(q.toLowerCase()); // offline / API error
+  } finally {
+    if (mine === seq) searching.value = false;
+  }
+}
+
+watch(trimmedQuery, (q) => {
+  if (debounceTimer) clearTimeout(debounceTimer);
+  if (q.length < 2) {
+    seq++; // cancel any in-flight request
+    articleHits.value = [];
+    searching.value = false;
+    return;
+  }
+  debounceTimer = setTimeout(() => runSearch(q), 300);
 });
 
 const sampleHits = computed((): SearchSample[] => {
