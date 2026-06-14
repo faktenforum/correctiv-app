@@ -1,0 +1,59 @@
+# Compile check for every PR and every push to main.
+# Builds an unsigned debug APK so we catch native/build breakage early.
+# No signing secrets are required for this workflow.
+name: CI
+
+on:
+  pull_request:
+    branches: [main]
+  push:
+    branches: [main]
+
+# Cancel an in-progress run when a newer commit is pushed to the same ref.
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  android-debug:
+    name: Android debug build
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+
+      - name: Set up JDK 17
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: 17
+
+      # GitHub-hosted ubuntu runners ship the Android SDK pre-installed; this
+      # only makes sure licenses are accepted and SDK 35 is present.
+      - name: Prepare Android SDK
+        run: |
+          SDKMANAGER="${ANDROID_HOME}/cmdline-tools/latest/bin/sdkmanager"
+          yes | "$SDKMANAGER" --licenses >/dev/null 2>&1 || true
+          "$SDKMANAGER" "platform-tools" "platforms;android-35" "build-tools;35.0.0" >/dev/null || true
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Install NativeScript CLI
+        run: npm install -g nativescript
+
+      - name: Build Android (debug)
+        run: ns build android
+
+      - name: Upload debug APK
+        uses: actions/upload-artifact@v4
+        with:
+          name: correctiv-app-debug-apk
+          path: platforms/android/app/build/outputs/apk/**/*.apk
+          if-no-files-found: warn
+          retention-days: 14
