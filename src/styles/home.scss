@@ -66,6 +66,7 @@
   border-color: t.$color-alternative;
   border-radius: t.$radius-md;
   margin: 0 t.$spacing-sm;
+  margin-top: t.$spacing-m;
   padding: t.$spacing-sm;
 }
 .early-access-card__when {
@@ -210,10 +211,10 @@
   color: t.$color-grey-500;
   margin-top: 1;
 }
-.media-row-radio {
-  width: 200;
-  height: 112;
-  margin: 0 t.$spacing-xs;
+/* Home Mediathek row: two equal-width FunFacts video tiles */
+.media-card--stretch {
+  width: auto;
+  horizontal-align: stretch;
 }
 
 /* Backstage module */
@@ -222,7 +223,10 @@
   border-width: 1;
   border-color: t.$color-alternative;
   border-radius: t.$radius-md;
-  margin: 0 t.$spacing-sm;
+  /* Gap to the live-radio banner above lives on the CARD, not the cell wrapper:
+     CollectionView doesn't reliably render padding on a cell's root view
+     (same reason .early-access-card carries its own margin-top). */
+  margin: t.$spacing-m t.$spacing-sm 0 t.$spacing-sm;
   padding: t.$spacing-sm;
 }
 .backstage-tile__title {

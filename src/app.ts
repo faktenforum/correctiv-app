@@ -4,6 +4,7 @@ import { Application, Frame, Utils } from '@nativescript/core';
 import type { AndroidActivityBackPressedEventData } from '@nativescript/core/application/application-interfaces';
 import CollectionViewPlugin from '@nativescript-community/ui-collectionview/vue3';
 import { AWebView } from '@nativescript-community/ui-webview';
+import { Video as ExoVideoElement } from '@nstudio/nativescript-exoplayer';
 import AppShell from './AppShell.vue';
 import { useSettingsStore, PERSISTED_KEYS } from './stores/settings';
 import { useSavedArticlesStore } from './stores/savedArticles';
@@ -20,6 +21,8 @@ Application.addCss(appCss);
 
 // Static import — require() does not yield a constructor under Vite/ESM
 registerElement('AWebView', () => AWebView);
+// Native video element (ExoPlayer on Android, AVPlayer on iOS) for PeerTube HLS.
+registerElement('ExoVideo', () => ExoVideoElement);
 
 const pinia = createPinia();
 const app = createApp(AppShell);

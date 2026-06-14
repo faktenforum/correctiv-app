@@ -1,0 +1,202 @@
+// Dark mode — active when the AppShell root carries the `ns-dark` class
+// (settings.theme; 'system' follows Application.systemAppearance()).
+//
+// The grey scale is NON-semantic: grey-100 (#fff) is used both as a light
+// surface AND as white text on dark/coloured surfaces; grey-700 (#333) is both
+// strong text AND a dark banner/button background. So dark values are assigned
+// per ROLE, not by inverting a shade — and grey-100-as-text / grey-700-as-bg
+// are intentionally left untouched (they read correctly on dark already).
+//
+// Light stays the default; these descendant rules win when `.ns-dark` is present.
+
+$d-page: #1a1a1a; // page surface (was grey-100 bg)
+$d-card: #202020; // elevated card (was grey-100 bg)
+$d-card2: #242424; // tinted card (was grey-200 bg)
+$d-muted-surface: #2e2e2e; // (was grey-250 bg / grey-300 utility)
+$d-strong: #f2f2f2; // strong text (was grey-700 text)
+$d-muted: #a8a8a8; // muted text (was grey-600 text)
+$d-faint: #7c7c7c; // faint text (was grey-500 text)
+$d-border: #3a3a3a; // hairlines / borders (was grey-300)
+$d-border2: #4a4a4a; // stronger borders (was grey-400)
+$d-accent: #ff6173; // accent (lighter coral on dark)
+
+/* ── Utilities + global Page ─────────────────────────────── */
+.ns-dark .bg-grey-100 { background-color: $d-page; }
+.ns-dark .bg-grey-200 { background-color: $d-card2; }
+.ns-dark .bg-grey-250 { background-color: $d-muted-surface; }
+.ns-dark .bg-grey-300 { background-color: $d-border; }
+.ns-dark .text-grey-700 { color: $d-strong; }
+.ns-dark .text-grey-600 { color: $d-muted; }
+.ns-dark .text-grey-500 { color: $d-faint; }
+.ns-dark .text-emphasis { color: $d-accent; }
+.ns-dark Page { background-color: $d-page; }
+
+/* ── Shell: tab bar, header, players ─────────────────────── */
+.ns-dark .tab-bar { background-color: $d-page; }
+.ns-dark .tab-icon,
+.ns-dark .tab-label { color: $d-muted; }
+.ns-dark .tab-active { color: $d-accent; }
+.ns-dark .brand { color: $d-strong; }
+.ns-dark .home-date { color: $d-muted; }
+.ns-dark .back-icon { color: $d-strong; }
+.ns-dark .hairline-top { border-top-color: $d-border; }
+.ns-dark .hairline-bottom { border-bottom-color: $d-border; }
+.ns-dark .mini-player { background-color: $d-card2; }
+.ns-dark .mini-player__title,
+.ns-dark .mini-player__control { color: $d-strong; }
+.ns-dark .uplayer--bar { background-color: $d-card2; }
+.ns-dark .uplayer--expanded { background-color: $d-page; }
+.ns-dark .uplayer__icon,
+.ns-dark .uplayer__hint { color: $d-strong; }
+
+/* ── Card / tile surfaces ────────────────────────────────── */
+.ns-dark .article-card,
+.ns-dark .article-card--hero,
+.ns-dark .factcheck-rail-card,
+.ns-dark .backstage-tile__bonus,
+.ns-dark .impact-card__article,
+.ns-dark .event-date,
+.ns-dark .reader-header,
+.ns-dark .reader-webview { background-color: $d-card; }
+
+.ns-dark .card,
+.ns-dark .spotlight-card,
+.ns-dark .backstage-tile,
+.ns-dark .claim-card,
+.ns-dark .callout-list-card,
+.ns-dark .hub-card,
+.ns-dark .diary-card,
+.ns-dark .verlag-card,
+.ns-dark .impact-card,
+.ns-dark .search-entry,
+.ns-dark .search-field,
+.ns-dark .chip { background-color: $d-card2; }
+
+.ns-dark .atlas-map,
+.ns-dark .remote-image__placeholder { background-color: $d-muted-surface; }
+
+/* ── Strong text (titles, headings, body-strong) ─────────── */
+.ns-dark .section-header__title,
+.ns-dark .article-card__hero-title,
+.ns-dark .article-card__title,
+.ns-dark .article-card__title--compact,
+.ns-dark .spotlight-card__title,
+.ns-dark .factcheck-rail-card__title,
+.ns-dark .backstage-tile__title,
+.ns-dark .backstage-tile__bonus-icon,
+.ns-dark .backstage-tile__bonus-title,
+.ns-dark .backstage-tile__link,
+.ns-dark .impact-footer__line,
+.ns-dark .reader-header__icon,
+.ns-dark .claim-card__quote,
+.ns-dark .claim-source__dot,
+.ns-dark .form-option__check,
+.ns-dark .form-option__label,
+.ns-dark .form-textarea,
+.ns-dark .form-textfield,
+.ns-dark .hub-card__icon,
+.ns-dark .hub-card__title,
+.ns-dark .diary-card__title,
+.ns-dark .diary-card__cta,
+.ns-dark .event-date__day,
+.ns-dark .callout-list-card__title,
+.ns-dark .join-stat__label,
+.ns-dark .join-amount,
+.ns-dark .perk-line--active,
+.ns-dark .report-figure__label,
+.ns-dark .media-card__title,
+.ns-dark .chip,
+.ns-dark .early-access-card__title,
+.ns-dark .early-access-card__teaser,
+.ns-dark .early-access-card__cta,
+.ns-dark .text-scale-option { color: $d-strong; }
+
+/* ── Muted text ──────────────────────────────────────────── */
+.ns-dark .article-card__teaser,
+.ns-dark .spotlight-card__text,
+.ns-dark .callout-count,
+.ns-dark .callout-count-icon,
+.ns-dark .form-file__icon,
+.ns-dark .form-file__label,
+.ns-dark .claim-progress__label,
+.ns-dark .hub-card__teaser,
+.ns-dark .backstage-tile__teaser,
+.ns-dark .callout-list-card__teaser,
+.ns-dark .callout-list-card__count,
+.ns-dark .diary-card__teaser,
+.ns-dark .event-date__month,
+.ns-dark .join-amount__interval,
+.ns-dark .join-interval__option,
+.ns-dark .early-access-card__when { color: $d-muted; }
+
+/* ── Faint text / chevrons ───────────────────────────────── */
+.ns-dark .article-card__meta,
+.ns-dark .spotlight-card__date,
+.ns-dark .spotlight-card__time,
+.ns-dark .claim-card__meta,
+.ns-dark .atlas-map__caption,
+.ns-dark .atlas-entry__icon,
+.ns-dark .hub-card__chevron,
+.ns-dark .saved-remove,
+.ns-dark .media-card__subtitle,
+.ns-dark .search-entry__icon,
+.ns-dark .search-entry__hint,
+.ns-dark .perk-line,
+.ns-dark .reader-error-icon { color: $d-faint; }
+
+/* ── Borders + progress tracks ───────────────────────────── */
+.ns-dark .factcheck-rail-card,
+.ns-dark .form-option,
+.ns-dark .form-textarea,
+.ns-dark .form-textfield,
+.ns-dark .community-teaser,
+.ns-dark .event-date,
+.ns-dark .join-interval,
+.ns-dark .text-scale-option,
+.ns-dark .chip { border-color: $d-border; }
+.ns-dark .btn-secondary,
+.ns-dark .form-file,
+.ns-dark .status-tag--checking { border-color: $d-border2; }
+.ns-dark .callout-progress,
+.ns-dark .step-indicator__bar,
+.ns-dark .claim-progress__line { background-color: $d-border; }
+
+/* ── Mediathek: podcast tiles, episode + backstage bonus rows ─ */
+.ns-dark .series-tile__title { color: $d-strong; }
+.ns-dark .series-tile__publisher { color: $d-faint; }
+.ns-dark .episode-row__play,
+.ns-dark .episode-row__title { color: $d-strong; }
+.ns-dark .episode-row__meta { color: $d-faint; }
+.ns-dark .bonus-row { background-color: $d-card2; }
+.ns-dark .player__speed,
+.ns-dark .player__play { color: $d-strong; }
+
+/* ── Modals (Onboarding / JoinFlow / audio Player) ────────────
+   Shown via $showModal as separate Page roots, so they carry the theme
+   class on their OWN root (see useTheme + each modal's <Page :class>).
+   The bg utility sits on that same element → match the COMPOUND form;
+   the descendant `.ns-dark .bg-grey-100` above cannot reach the root. */
+.ns-dark.bg-grey-100 { background-color: $d-page; }
+
+/* Onboarding (steps 1–3; the mission screen is theme-independent coral) */
+.ns-dark .onboarding__skip { color: $d-muted; }
+.ns-dark .onboarding__dot { color: $d-faint; }
+.ns-dark .onboarding__dot--active { color: $d-strong; }
+/* Selected interest chip — lift above the card surface, keep white label */
+.ns-dark .chip-active { background-color: $d-border2; border-color: $d-border2; }
+/* Selected text-size + dark button: same lifted-neutral treatment as chip-active */
+.ns-dark .text-scale-option--active { background-color: $d-border2; border-color: $d-border2; }
+.ns-dark .btn-dark { background-color: $d-border2; }
+
+/* JoinFlow */
+.ns-dark .join-stat__number { color: $d-accent; }
+.ns-dark .join-slider { background-color: $d-border; }
+.ns-dark .join-interval__option--active { background-color: $d-border2; }
+.ns-dark .btn-quiet { color: $d-accent; }
+
+/* Audio player (full screen) */
+.ns-dark .player__artwork { background-color: $d-card2; }
+.ns-dark .player__artwork-icon { color: $d-faint; }
+.ns-dark .player__artwork-icon--live { color: $d-accent; }
+.ns-dark .player__slider { background-color: $d-border; }
+.ns-dark .player__time { color: $d-faint; }

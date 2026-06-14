@@ -1,0 +1,134 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<!--
+  MediaLibraryScreen — the Mediathek tab.
+  All playable items open the unified MediaPlayer via the handlers in `vm`.
+  vm: {
+    radio:   { toggle, playing, stopped },
+    podcasts:[{ title, cadence, cover }],
+    conversations:[{ title, source, duration, thumb, slot }],
+    funfacts:{ feature:{ kicker, episode, duration, title, poster, open },
+               rest:[{ title, host, episode, duration, poster, open }] },
+    bonus:   { play, label }
+  }
+-->
+<div class="font-sans">
+  <div class="pt-[66px] px-[16px] pb-[12px] font-bold text-[28px] text-strong">Mediathek</div>
+
+  <!-- Live radio banner -->
+  <div class="mt-[0px] mx-[16px] mb-[24px] bg-ink rounded-[5px] p-[16px] flex items-center gap-[14px]">
+    <div onClick="{{ vm.radio.toggle }}" class="w-[48px] h-[48px] rounded-full bg-accent flex items-center justify-center cursor-pointer shrink-0">
+      <sc-if value="{{ vm.radio.playing }}" hint-placeholder-val="{{ false }}">
+        <svg width="16" height="16" viewBox="0 0 16 16"><rect x="2" y="1" width="4" height="14" fill="#ffffff"></rect><rect x="10" y="1" width="4" height="14" fill="#ffffff"></rect></svg>
+      </sc-if>
+      <sc-if value="{{ vm.radio.stopped }}" hint-placeholder-val="{{ true }}">
+        <svg width="18" height="18" viewBox="0 0 18 18"><path d="M5 3v12l10-6z" fill="#ffffff"></path></svg>
+      </sc-if>
+    </div>
+    <div class="flex flex-col gap-[3px]">
+      <div class="flex items-center gap-[6px]">
+        <div class="w-[8px] h-[8px] rounded-full bg-accent" style="animation: cvPulse 1.6s infinite;"></div>
+        <div class="text-[11px] font-bold tracking-[1px] text-accent">LIVE</div>
+      </div>
+      <div class="text-[16px] font-bold text-white">Salon5 Radio</div>
+      <div class="text-[13px]" style="color: rgba(255,255,255,0.7);">24/7 aus Bottrop — von Jugendlichen für Jugendliche</div>
+    </div>
+  </div>
+
+  <!-- Podcasts -->
+  <div class="flex flex-col gap-[10px] pb-[24px]">
+    <div class="text-[17px] font-bold text-strong py-[0px] px-[16px]">Podcasts</div>
+    <div class="flex gap-[12px] overflow-x-auto py-[0px] px-[16px]">
+      <sc-for list="{{ vm.podcasts }}" as="p" hint-placeholder-count="4">
+        <div class="w-[116px] shrink-0 flex flex-col gap-[6px]">
+          <image-slot id="{{ p.cover }}" shape="rounded" radius="2" placeholder="Cover" style="width: 116px; height: 116px;"></image-slot>
+          <div class="text-[13px] font-bold text-strong">{{ p.title }}</div>
+          <div class="text-[11px] text-mutedfg">{{ p.cadence }}</div>
+        </div>
+      </sc-for>
+    </div>
+  </div>
+
+  <!-- CORRECTIV im Gespräch -->
+  <div class="pt-[0px] px-[16px] pb-[24px] flex flex-col gap-[10px]">
+    <div class="text-[17px] font-bold text-strong">CORRECTIV im Gespräch</div>
+    <sc-for list="{{ vm.conversations }}" as="c" hint-placeholder-count="2">
+      <div class="flex gap-[12px] items-center">
+        <image-slot id="{{ c.slot }}" shape="rounded" radius="2" placeholder="Thumbnail" src="{{ c.thumb }}" class="shrink-0" style="width: 124px; height: 70px;"></image-slot>
+        <div class="flex-1 flex flex-col gap-[3px]">
+          <div class="text-[14px] font-bold leading-[1.35] text-strong">{{ c.title }}</div>
+          <div class="text-[12px] text-mutedfg">{{ c.source }} · {{ c.duration }}</div>
+        </div>
+      </div>
+    </sc-for>
+  </div>
+
+  <!-- FunFacts — opens the unified player -->
+  <div class="pt-[0px] px-[16px] pb-[24px] flex flex-col gap-[12px]">
+    <div class="flex items-start justify-between gap-[10px]">
+      <div class="flex flex-col gap-[2px]">
+        <div class="text-[17px] font-bold text-strong">FunFacts</div>
+        <div class="text-[11px] text-mutedfg">Facts, but funny · täglich auf tube.funfacts.de</div>
+      </div>
+      <div class="shrink-0 self-center text-[10px] font-bold tracking-[1px] text-accent border border-accent rounded-[2px] py-[3px] px-[6px] whitespace-nowrap">PEERTUBE</div>
+    </div>
+
+    <!-- Featured (poster → tap opens player) -->
+    <div onClick="{{ vm.funfacts.feature.open }}" class="flex flex-col gap-[8px] cursor-pointer">
+      <div class="relative rounded-[3px] overflow-hidden bg-ink" style="aspect-ratio: 16 / 9;">
+        <iframe src="{{ vm.funfacts.feature.poster }}" title="{{ vm.funfacts.feature.title }}" tabindex="-1" scrolling="no" frameborder="0" loading="lazy" style="width: 100%; height: 100%; border: 0; display: block; pointer-events: none;"></iframe>
+        <div class="absolute inset-0 flex items-center justify-center">
+          <div class="w-[52px] h-[52px] rounded-full flex items-center justify-center" style="background: rgba(0,0,0,0.5);">
+            <svg width="20" height="20" viewBox="0 0 18 18"><path d="M5 3v12l10-6z" fill="#ffffff"></path></svg>
+          </div>
+        </div>
+      </div>
+      <div class="flex items-center gap-[8px]">
+        <div class="text-[10px] font-bold tracking-[1.2px] text-accent">{{ vm.funfacts.feature.kicker }}</div>
+        <div class="text-[11px] text-mutedfg">{{ vm.funfacts.feature.episode }} · {{ vm.funfacts.feature.duration }}</div>
+      </div>
+      <div class="text-[15px] font-bold leading-[1.35] text-strong [text-wrap:pretty]">{{ vm.funfacts.feature.title }}</div>
+    </div>
+
+    <!-- More episodes -->
+    <div class="text-[12px] font-bold tracking-[1.2px] text-mutedfg pt-[4px]">WEITERE FOLGEN</div>
+    <div class="flex flex-col gap-[2px]">
+      <sc-for list="{{ vm.funfacts.rest }}" as="v" hint-placeholder-count="4">
+        <div onClick="{{ v.open }}" class="flex gap-[12px] items-center py-[8px] cursor-pointer">
+          <div class="relative shrink-0 rounded-[2px] overflow-hidden bg-ink" style="width: 124px; height: 70px;">
+            <iframe src="{{ v.poster }}" title="{{ v.title }}" tabindex="-1" scrolling="no" frameborder="0" loading="lazy" style="width: 100%; height: 100%; border: 0; display: block; pointer-events: none;"></iframe>
+            <div class="absolute inset-0"></div>
+          </div>
+          <div class="flex-1 flex flex-col gap-[3px] min-w-0">
+            <div class="text-[14px] font-bold leading-[1.3] text-strong [text-wrap:pretty]">{{ v.title }}</div>
+            <div class="text-[12px] text-mutedfg">{{ v.host }} · {{ v.episode }} · {{ v.duration }}</div>
+          </div>
+        </div>
+      </sc-for>
+    </div>
+
+    <a href="https://tube.funfacts.de/c/funfacts.de/videos" target="_blank" rel="noopener" class="self-start flex items-center gap-[5px] text-[13px] font-bold text-accent no-underline pt-[2px]">
+      Alle Folgen auf tube.funfacts.de
+      <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M7 17 17 7M9 7h8v8"></path></svg>
+    </a>
+  </div>
+
+  <!-- Backstage bonus audio -->
+  <div class="mt-[0px] mx-[16px] mb-[28px] border border-highlight bg-highlightwash rounded-[5px] py-[14px] px-[16px] flex flex-col gap-[8px]">
+    <div class="self-start bg-highlight text-[#333333] text-[10px] font-bold tracking-[1px] whitespace-nowrap py-[3px] px-[7px] rounded-[2px]">CLUB · BONUSFOLGE</div>
+    <div class="text-[15px] font-bold leading-[1.35] text-strong">Wie wir an die Pensionskassen-Daten kamen</div>
+    <div class="text-[13px] text-mutedfg leading-[1.4]">Das Recherche-Team über verschlossene Türen, Umwege und einen entscheidenden Hinweis.</div>
+    <div onClick="{{ vm.bonus.play }}" class="self-start border-[1.5px] border-strongline text-strong text-[14px] font-bold py-[8px] px-[14px] rounded-[2px] whitespace-nowrap cursor-pointer">{{ vm.bonus.label }}</div>
+  </div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props="{&quot;$preview&quot;: {&quot;width&quot;: 402, &quot;height&quot;: 900}, &quot;vm&quot;: {&quot;editor&quot;: null}}"></script>
+</body>
+</html>

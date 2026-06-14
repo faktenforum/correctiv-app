@@ -6,7 +6,9 @@
         <Label col="1" :text="todayLabel" class="home-date" verticalAlignment="center" />
       </GridLayout>
 
-      <CollectionView row="1" :items="modules" :itemTemplateSelector="templateSelector">
+      <!-- :key re-renders the list on a theme flip — CollectionView recycles
+           cells natively and won't re-apply .ns-dark/.ns-light otherwise -->
+      <CollectionView row="1" :key="themeTick" :items="modules" :itemTemplateSelector="templateSelector">
         <!-- 1. Hero: top investigation (LIVE) — flat, directly below the header -->
         <template #hero="{ item }">
           <ArticleCard :item="item.article" variant="hero" badge="Recherche" @open="openArticle" />
@@ -78,24 +80,34 @@
         <template #mediaRow="{ item }">
           <StackLayout>
             <SectionHeader title="Mediathek" action="Alles ansehen" @action="goToMedia" />
-            <ScrollView orientation="horizontal" class="media-row">
-              <StackLayout orientation="horizontal">
-                <MediaCard
-                  v-if="item.video"
-                  :title="item.video.title"
-                  subtitle="FunFacts · Video des Tages"
-                  :thumbnail="item.video.thumbnailUrl"
-                  @open="openVideo(item.video)"
-                />
-                <LiveBanner class="media-row-radio" />
-              </StackLayout>
-            </ScrollView>
+            <GridLayout columns="*, *" class="media-row px-sm">
+              <MediaCard
+                v-if="item.videos[0]"
+                col="0"
+                class="media-card--stretch"
+                :title="item.videos[0].title"
+                subtitle="FunFacts"
+                :thumbnail="item.videos[0].thumbnailUrl"
+                @open="openVideo(item.videos[0])"
+              />
+              <MediaCard
+                v-if="item.videos[1]"
+                col="1"
+                class="media-card--stretch"
+                :title="item.videos[1].title"
+                subtitle="FunFacts"
+                :thumbnail="item.videos[1].thumbnailUrl"
+                @open="openVideo(item.videos[1])"
+              />
+            </GridLayout>
+            <!-- Live radio: same LiveBanner component as the Mediathek page -->
+            <LiveBanner class="mx-sm mt-s" />
           </StackLayout>
         </template>
 
         <!-- 8. Backstage module (SAMPLE) -->
         <template #backstage="{ item }">
-          <StackLayout class="pt-m">
+          <StackLayout>
             <BackstageTile
               :diaryTitle="item.diary.title"
               :diaryTeaser="item.diary.teaser"
@@ -137,6 +149,8 @@ import SpotlightReaderPage from '../reader/SpotlightReaderPage.vue';
 import BackstagePage from '../backstage/BackstagePage.vue';
 import { useFeedsStore } from '../../stores/feeds';
 import { useMediaStore } from '../../stores/media';
+import { useVideoStore } from '../../stores/video';
+import { themeTick } from '../../composables/useTheme';
 import { useInterestsStore } from '../../stores/interests';
 import { useNavigation } from '../../composables/useNavigation';
 import { spotlightIssues } from '../../data/spotlight';
@@ -152,6 +166,7 @@ interface HomeModule {
 
 const feeds = useFeedsStore();
 const media = useMediaStore();
+const videoStore = useVideoStore();
 const interestsStore = useInterestsStore();
 const { navigate, navigateInTab } = useNavigation();
 
@@ -184,8 +199,8 @@ const modules = computed((): HomeModule[] => {
   const factchecks = feeds.byKey.faktencheck.items.slice(0, 8);
   const railModule: HomeModule | null =
     factchecks.length > 0 ? { id: 'rail', kind: 'factcheckRail', factchecks } : null;
-  const video = media.byKey.funfacts.videos[0] ?? null;
-  const mediaModule: HomeModule = { id: 'mediaRow', kind: 'mediaRow', video };
+  const videos = media.byKey.funfacts.videos.slice(0, 2);
+  const mediaModule: HomeModule = { id: 'mediaRow', kind: 'mediaRow', videos };
 
   // Personalization (onboarding): selected interests move modules up
   const boosted = interestsStore.boostedModules;
@@ -260,8 +275,12 @@ function openUrl(url: string) {
 }
 
 function openVideo(video: Video) {
-  // VideoPlayerPage follows in M5 — open externally until then
-  Utils.openUrl(video.url);
+  // FunFacts is PeerTube → persistent native player; anything else opens externally.
+  if (video.source === 'peertube') {
+    videoStore.play(video);
+  } else {
+    Utils.openUrl(video.url);
+  }
 }
 
 function goToParticipate() {

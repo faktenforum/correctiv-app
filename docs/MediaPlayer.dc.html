@@ -1,0 +1,154 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<!--
+  MediaPlayer — the app's single, persistent media surface for BOTH audio
+  (radio / bonus) and video (PeerTube). The owning shell (Correctiv App.dc.html)
+  holds the session and passes a `player` view-model + callbacks.
+
+  ONE docked bar represents whatever is playing while you navigate the app:
+    • audio  → play/pause + title + progress
+    • video  → a small live thumbnail (the persistent <iframe>) + title
+  Tapping the bar re-opens the full player; ✕ closes the session.
+
+  Expanded states cover the screen but stop above the tab bar, so navigating
+  auto-collapses to the docked bar without ever interrupting playback (the video
+  <iframe> is mounted once and only repositions between full and thumbnail).
+-->
+<sc-if value="{{ player.active }}" hint-placeholder-val="{{ false }}">
+  <div class="absolute inset-0 z-[7]" style="pointer-events: none;">
+
+    <!-- ============================ VIDEO ============================ -->
+    <sc-if value="{{ player.isVideo }}" hint-placeholder-val="{{ false }}">
+
+      <!-- Expanded chrome (sits BEHIND the persistent video surface) -->
+      <sc-if value="{{ player.expanded }}" hint-placeholder-val="{{ true }}">
+        <div data-screen-label="Player (Video)" class="absolute top-0 left-0 right-0 bg-card flex flex-col" style="bottom: 76px; pointer-events: auto;">
+          <div class="pt-[64px] px-[12px] pb-[8px] flex items-center justify-between shrink-0" style="height: 100px;">
+            <div onClick="{{ player.collapse }}" class="flex items-center gap-[5px] cursor-pointer p-[6px] text-strong">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 9l6 6 6-6"></path></svg>
+              <div class="text-[14px] font-semibold">Minimieren</div>
+            </div>
+            <div class="text-[11px] font-bold tracking-[1px] text-accent border border-accent rounded-[2px] py-[3px] px-[6px] whitespace-nowrap mr-[6px]">PEERTUBE</div>
+          </div>
+          <div class="shrink-0" style="height: 226px;"></div>
+          <div class="flex-1 overflow-y-auto min-h-0">
+            <div class="pt-[16px] px-[16px] pb-[0px] flex flex-col gap-[10px]">
+              <div class="flex items-center gap-[8px]">
+                <div class="text-[10px] font-bold tracking-[1.2px] text-accent">{{ player.kicker }}</div>
+                <div class="text-[11px] text-mutedfg">{{ player.episode }} · {{ player.duration }}</div>
+              </div>
+              <div class="font-serif font-black text-[24px] leading-[1.25] text-strong [text-wrap:pretty]">{{ player.title }}</div>
+              <div class="text-[13px] text-mutedfg pb-[6px] border-b border-line">{{ player.source }} · {{ player.host }}</div>
+              <div class="font-serif text-[15.5px] leading-[1.8] tracking-[0.2px] text-strong pb-[4px]">{{ player.description }}</div>
+            </div>
+            <div class="pt-[6px] px-[16px] pb-[10px] flex gap-[18px] items-center">
+              <a href="{{ player.watchUrl }}" target="_blank" rel="noopener" class="flex items-center gap-[5px] text-[14px] font-bold text-strong no-underline">
+                Auf tube.funfacts.de ansehen
+                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M7 17 17 7M9 7h8v8"></path></svg>
+              </a>
+            </div>
+            <div class="mt-[6px] mx-[16px] mb-[28px] bg-subtle rounded-[5px] p-[16px] flex flex-col gap-[10px] text-center items-center">
+              <div class="font-serif text-[15px] leading-[1.5] text-strong">FunFacts läuft ohne Tracking und ohne Konzern — getragen von der Bande.</div>
+              <a href="https://bande.funfacts.de/join" target="_blank" rel="noopener" class="bg-accent text-white text-[14px] font-bold py-[9px] px-[18px] rounded-[2px] no-underline">Teil der Bande werden</a>
+            </div>
+          </div>
+        </div>
+      </sc-if>
+
+      <!-- Persistent video surface — mounted once; only its size/position change.
+           Expanded = full-width 16:9; collapsed = small live thumbnail docked in
+           the player bar. A transparent overlay (collapsed only) re-expands it. -->
+      <div style="position: absolute; background: #000; overflow: hidden; pointer-events: auto; transition: top 0.34s cubic-bezier(0.4,0,0.2,1), left 0.34s cubic-bezier(0.4,0,0.2,1), width 0.34s cubic-bezier(0.4,0,0.2,1), height 0.34s cubic-bezier(0.4,0,0.2,1); left: {{ player.vbLeft }}; top: {{ player.vbTop }}; width: {{ player.vbW }}; height: {{ player.vbH }}; border-radius: {{ player.vbRadius }}; box-shadow: {{ player.vbShadow }}; z-index: {{ player.vbZ }};">
+        <iframe src="{{ player.videoSrc }}" title="{{ player.title }}" allow="autoplay; fullscreen; picture-in-picture; encrypted-media" allowfullscreen="true" frameborder="0" style="position: absolute; left: 0; top: {{ player.ifTop }}; width: 100%; height: {{ player.ifH }}; border: 0; display: block;"></iframe>
+        <!-- Collapsed thumbnail: a full-cover overlay swallows all pointer events so
+             the (clipped, unusable) PeerTube controls can't be operated; tapping
+             anywhere re-opens the full player. -->
+        <sc-if value="{{ player.collapsed }}" hint-placeholder-val="{{ false }}">
+          <div onClick="{{ player.expand }}" class="absolute inset-0 cursor-pointer" style="pointer-events: auto; background: transparent;"></div>
+        </sc-if>
+      </div>
+    </sc-if>
+
+    <!-- ============================ AUDIO (expanded only) ============================ -->
+    <sc-if value="{{ player.isAudio }}" hint-placeholder-val="{{ false }}">
+      <sc-if value="{{ player.expanded }}" hint-placeholder-val="{{ false }}">
+        <div data-screen-label="Player (Audio)" class="absolute top-0 left-0 right-0 bg-card flex flex-col" style="bottom: 76px; pointer-events: auto;">
+          <div class="pt-[64px] px-[12px] pb-[8px] flex items-center justify-between shrink-0" style="height: 100px;">
+            <div onClick="{{ player.collapse }}" class="flex items-center gap-[5px] cursor-pointer p-[6px] text-strong">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 9l6 6 6-6"></path></svg>
+              <div class="text-[14px] font-semibold">Minimieren</div>
+            </div>
+            <sc-if value="{{ player.isLive }}" hint-placeholder-val="{{ false }}">
+              <div class="flex items-center gap-[6px] mr-[8px]">
+                <div class="w-[8px] h-[8px] rounded-full bg-accent" style="animation: cvPulse 1.6s infinite;"></div>
+                <div class="text-[11px] font-bold tracking-[1px] text-accent">LIVE</div>
+              </div>
+            </sc-if>
+          </div>
+          <div class="flex-1 overflow-y-auto min-h-0 flex flex-col items-center px-[28px] pt-[14px] pb-[28px] gap-[24px]">
+            <div class="rounded-[6px] flex items-center justify-center shrink-0" style="width: 232px; height: 232px; background: {{ player.artBg }};">
+              <sc-if value="{{ player.isLive }}" hint-placeholder-val="{{ false }}">
+                <svg width="66" height="66" viewBox="0 0 24 24" fill="none" stroke="#ffffff" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2a3 3 0 0 0-3 3v7a3 3 0 0 0 6 0V5a3 3 0 0 0-3-3z"></path><path d="M19 10v2a7 7 0 0 1-14 0v-2"></path><path d="M12 19v3"></path></svg>
+              </sc-if>
+              <sc-if value="{{ player.isPreview }}" hint-placeholder-val="{{ true }}">
+                <svg width="66" height="66" viewBox="0 0 24 24" fill="none" stroke="#333333" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M3 14v-2a9 9 0 0 1 18 0v2"></path><path d="M21 15a2 2 0 0 1-2 2h-1v-5h1a2 2 0 0 1 2 2zM3 15a2 2 0 0 0 2 2h1v-5H5a2 2 0 0 0-2 2z"></path></svg>
+              </sc-if>
+            </div>
+            <div class="flex flex-col items-center gap-[6px] text-center">
+              <div class="text-[12px] font-bold tracking-[1.2px] text-accent">{{ player.kicker }}</div>
+              <div class="font-serif font-black text-[22px] leading-[1.3] text-strong [text-wrap:pretty]">{{ player.title }}</div>
+              <div class="text-[14px] text-mutedfg">{{ player.subtitle }}</div>
+            </div>
+            <div onClick="{{ player.togglePlay }}" class="w-[68px] h-[68px] rounded-full bg-accent flex items-center justify-center cursor-pointer shrink-0">
+              <sc-if value="{{ player.playing }}" hint-placeholder-val="{{ true }}">
+                <svg width="22" height="22" viewBox="0 0 16 16"><rect x="2" y="1" width="4" height="14" fill="#ffffff"></rect><rect x="10" y="1" width="4" height="14" fill="#ffffff"></rect></svg>
+              </sc-if>
+              <sc-if value="{{ player.paused }}" hint-placeholder-val="{{ false }}">
+                <svg width="26" height="26" viewBox="0 0 18 18"><path d="M5 3v12l10-6z" fill="#ffffff"></path></svg>
+              </sc-if>
+            </div>
+            <div class="text-[13px] text-mutedfg text-center">{{ player.progressLabel }}</div>
+          </div>
+        </div>
+      </sc-if>
+    </sc-if>
+
+    <!-- ============ UNIFIED DOCKED BAR (collapsed — audio AND video) ============ -->
+    <sc-if value="{{ player.collapsed }}" hint-placeholder-val="{{ true }}">
+      <div class="absolute left-0 right-0 border-t border-line bg-subtle flex items-center gap-[10px] py-[8px] px-[12px]" style="bottom: 76px; pointer-events: auto;">
+        <!-- left: audio = play/pause circle; video = reserved slot for the live thumbnail -->
+        <sc-if value="{{ player.isAudio }}" hint-placeholder-val="{{ false }}">
+          <div onClick="{{ player.togglePlay }}" class="w-[40px] h-[40px] rounded-full bg-accent flex items-center justify-center cursor-pointer shrink-0">
+            <sc-if value="{{ player.playing }}" hint-placeholder-val="{{ true }}">
+              <svg width="13" height="13" viewBox="0 0 16 16"><rect x="2" y="1" width="4" height="14" fill="#ffffff"></rect><rect x="10" y="1" width="4" height="14" fill="#ffffff"></rect></svg>
+            </sc-if>
+            <sc-if value="{{ player.paused }}" hint-placeholder-val="{{ false }}">
+              <svg width="15" height="15" viewBox="0 0 18 18"><path d="M5 3v12l10-6z" fill="#ffffff"></path></svg>
+            </sc-if>
+          </div>
+        </sc-if>
+        <sc-if value="{{ player.isVideo }}" hint-placeholder-val="{{ false }}">
+          <div class="rounded-[3px] bg-ink shrink-0" style="width: 64px; height: 40px;"></div>
+        </sc-if>
+        <!-- middle: title + status, tap to re-open -->
+        <div onClick="{{ player.expand }}" class="flex-1 min-w-0 flex flex-col gap-[1px] cursor-pointer">
+          <div class="text-[13px] font-bold text-strong whitespace-nowrap overflow-hidden text-ellipsis">{{ player.title }}</div>
+          <div class="text-[11px] text-mutedfg whitespace-nowrap overflow-hidden text-ellipsis">{{ player.progressLabel }}</div>
+        </div>
+        <div onClick="{{ player.close }}" class="p-[8px] cursor-pointer text-mutedfg text-[16px] leading-[1] shrink-0">✕</div>
+      </div>
+    </sc-if>
+
+  </div>
+</sc-if>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props="{&quot;$preview&quot;: {&quot;width&quot;: 402, &quot;height&quot;: 874}, &quot;player&quot;: {&quot;editor&quot;: null}}"></script>
+</body>
+</html>

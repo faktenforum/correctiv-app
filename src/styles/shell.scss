@@ -87,10 +87,19 @@
   horizontal-align: center;
   vertical-align: center;
 }
+/* Pulsing LIVE dot (fades in/out — like the design draft) */
+@keyframes live-pulse {
+  0% { opacity: 1; }
+  50% { opacity: 0.2; }
+  100% { opacity: 1; }
+}
 .live-banner__dot {
   color: t.$color-emphasis;
   font-size: 12;
   margin-right: t.$spacing-xs;
+  animation-name: live-pulse;
+  animation-duration: 1.4s;
+  animation-iteration-count: infinite;
 }
 .live-banner__live-label {
   font-family: ty.$ff-sans-bold;
@@ -107,4 +116,42 @@
   font-family: ty.$ff-sans;
   font-size: 12;
   color: t.$color-grey-400;
+}
+
+/* Unified video player (PeerTube native) — collapsed bar + expanded player,
+   hosted in AppShell Row 1 so the native surface survives navigation. */
+.uplayer {
+  background-color: t.$color-grey-100;
+}
+.uplayer--bar {
+  background-color: t.$color-grey-200;
+}
+.uplayer--expanded {
+  background-color: t.$color-grey-100;
+}
+.uplayer__header {
+  padding: t.$spacing-xs t.$spacing-sm;
+}
+.uplayer__icon {
+  font-family: 'lucide';
+  font-size: 22;
+  color: t.$color-grey-700;
+  vertical-align: center;
+}
+.uplayer__hint {
+  font-family: ty.$ff-sans-semibold;
+  font-size: 14;
+  color: t.$color-grey-700;
+  text-align: center;
+  vertical-align: center;
+}
+.uplayer__video {
+  background-color: #000000;
+}
+.uplayer__loading {
+  color: t.$color-grey-600;
+  background-color: #000000;
+}
+.uplayer__bartext {
+  margin-left: t.$spacing-s;
 }

@@ -1,5 +1,5 @@
 <template>
-  <Page actionBarHidden="true">
+  <Page actionBarHidden="true" class="bg-grey-100">
     <GridLayout rows="auto, auto, *, auto" class="bg-grey-100">
       <GridLayout row="0" columns="*, auto" class="px-sm py-s">
         <Label col="1" :text="icons.x" class="lucide reader-header__icon" @tap="$closeModal()" />
@@ -152,9 +152,11 @@ import { icons } from '../../ui/icons';
 import BackstagePage from '../backstage/BackstagePage.vue';
 import { useMembershipStore } from '../../stores/membership';
 import { useNavigation } from '../../composables/useNavigation';
+import { useThemeForModal } from '../../composables/useTheme';
 
 const membership = useMembershipStore();
 const { navigate } = useNavigation();
+useThemeForModal();
 
 const step = ref(0);
 const amount = ref(10);

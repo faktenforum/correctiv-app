@@ -40,6 +40,14 @@ export interface Video {
   thumbnailUrl: string;
   publishedAt: string;
   description?: string;
+  /** Source platform — drives playback (native PeerTube player vs YouTube WebView). */
+  source?: 'youtube' | 'peertube';
+  /** Duration in seconds (PeerTube only — YouTube Atom feed has none). */
+  durationSec?: number;
+  /** View count (PeerTube only). */
+  views?: number;
+  /** HLS master playlist for the native player (PeerTube; set on detail fetch). */
+  hlsMasterUrl?: string;
 }
 
 export interface AudioTrack {

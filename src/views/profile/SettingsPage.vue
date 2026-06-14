@@ -18,6 +18,18 @@
             </GridLayout>
           </StackLayout>
 
+          <SectionHeader title="Darstellung" />
+          <StackLayout class="card mx-sm">
+            <GridLayout columns="*, auto">
+              <Label col="0" text="An Systemeinstellung orientieren" class="ty-text-m text-grey-700" textWrap="true" />
+              <Switch col="1" v-model="followSystem" class="onboarding__switch" />
+            </GridLayout>
+            <GridLayout v-if="!followSystem" columns="*, auto" class="mt-s">
+              <Label col="0" text="Dunkelmodus" class="ty-text-m text-grey-700" />
+              <Switch col="1" v-model="darkOn" class="onboarding__switch" />
+            </GridLayout>
+          </StackLayout>
+
           <SectionHeader title="Textgröße im Artikel" />
           <StackLayout class="card mx-sm">
             <GridLayout columns="*, *, *">
@@ -67,7 +79,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref } from 'nativescript-vue';
+import { ref, computed } from 'nativescript-vue';
 import { Utils } from '@nativescript/core';
 import { icons } from '../../ui/icons';
 import SectionHeader from '../../components/ui/SectionHeader.vue';
@@ -82,6 +94,15 @@ const interests = useInterestsStore();
 const { goBack } = useNavigation();
 
 const resetDone = ref(false);
+
+const followSystem = computed({
+  get: () => settings.theme === 'system',
+  set: (v: boolean) => settings.setTheme(v ? 'system' : 'light'),
+});
+const darkOn = computed({
+  get: () => settings.theme === 'dark',
+  set: (v: boolean) => settings.setTheme(v ? 'dark' : 'light'),
+});
 
 const textScaleOptions = [
   { label: 'A', value: 0.9 },

@@ -6,7 +6,7 @@
       </StackLayout>
 
       <ScrollView row="1">
-        <StackLayout class="pb-m">
+        <StackLayout class="pb-l">
           <Label text="Mitmachen" class="ty-headline-xl text-grey-700 px-sm pt-m" textWrap="true" />
           <Label
             text="Journalismus zum Mitmachen: Ihre Hinweise, Beobachtungen und Prüfungen machen Recherchen erst möglich."

@@ -1,5 +1,5 @@
 <template>
-  <Page actionBarHidden="true">
+  <Page actionBarHidden="true" class="bg-grey-100">
     <GridLayout rows="auto, *, auto" class="bg-grey-100">
       <GridLayout row="0" columns="auto, *" class="px-sm py-s">
         <Label col="0" :text="icons.x" class="lucide reader-header__icon" @tap="$closeModal()" />
@@ -63,9 +63,11 @@
 import { $closeModal } from 'nativescript-vue';
 import { icons } from '../../ui/icons';
 import { useAudioStore } from '../../stores/audio';
+import { useThemeForModal } from '../../composables/useTheme';
 import { formatTimeHm } from '../../lib/format';
 
 const audioStore = useAudioStore();
+useThemeForModal();
 
 const SPEEDS = [1, 1.2, 1.5];
 

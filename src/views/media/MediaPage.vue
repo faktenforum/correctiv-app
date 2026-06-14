@@ -6,7 +6,7 @@
       </StackLayout>
 
       <ScrollView row="1">
-        <StackLayout class="pb-m">
+        <StackLayout class="pb-l">
           <Label text="Mediathek" class="ty-headline-xl text-grey-700 px-sm pt-m" textWrap="true" />
 
           <!-- Live radio -->
@@ -59,8 +59,10 @@
                 :title="video.title"
                 :thumbnail="video.thumbnailUrl"
                 :subtitle="formatDateShortDe(video.publishedAt)"
+                :durationLabel="video.durationSec ? formatTimeHm(video.durationSec) : ''"
                 @open="openVideo(video, 'FunFacts')"
               />
+              <Label v-if="media.byKey.funfacts.status === 'error'" text="Videos derzeit nicht erreichbar." class="ty-text-s text-grey-600 px-sm" />
             </StackLayout>
           </ScrollView>
 
@@ -98,18 +100,20 @@ import ClubBadge from '../../components/ui/ClubBadge.vue';
 import MediaCard from '../../components/cards/MediaCard.vue';
 import SeriesPage from './SeriesPage.vue';
 import VideoPlayerPage from './VideoPlayerPage.vue';
+import { useVideoStore } from '../../stores/video';
 import { podcastSeries, type PodcastSeries } from '../../data/podcasts';
 import { bonusMedia, type BonusMedia } from '../../data/backstage';
 import { useMediaStore } from '../../stores/media';
 import { useAudioStore } from '../../stores/audio';
 import { useMembershipStore } from '../../stores/membership';
 import { useNavigation } from '../../composables/useNavigation';
-import { formatDateShortDe } from '../../lib/format';
+import { formatDateShortDe, formatTimeHm } from '../../lib/format';
 
 const media = useMediaStore();
 const audioStore = useAudioStore();
 const membership = useMembershipStore();
 const { navigate } = useNavigation();
+const videoStore = useVideoStore();
 
 let loaded = false;
 function onLoaded() {
@@ -124,7 +128,12 @@ function openSeries(series: PodcastSeries) {
 }
 
 function openVideo(video: Video, channel: string) {
-  navigate(VideoPlayerPage, { props: { video, channel } });
+  // PeerTube → persistent native player; YouTube stays in the full-page WebView.
+  if (video.source === 'peertube') {
+    videoStore.play(video);
+  } else {
+    navigate(VideoPlayerPage, { props: { video, channel } });
+  }
 }
 
 function playBonus(bonus: BonusMedia) {
