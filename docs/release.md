@@ -5,7 +5,7 @@ Two GitHub Actions workflows live in `.github/workflows/`:
 | Workflow | File | Trigger | What it does |
 | --- | --- | --- | --- |
 | **CI** | `ci.yml` | PR to `main`, push to `main` | Builds an unsigned **debug** APK as a compile check. No secrets needed. |
-| **Release Android** | `release-android.yml` | push of a `v*` tag (or manual) | Builds a **signed** APK + AAB and attaches them to the matching GitHub Release. |
+| **Release Android** | `release-android.yml` | push of a `v*` tag (or manual) | Signs with your upload key (**APK + AAB**, Play-ready) when secrets are set, otherwise with the bundled **test key** (**APK only**). Attaches the result to the GitHub Release. |
 
 ## Cutting a release
 
@@ -24,9 +24,23 @@ workflow run number becomes the `versionCode` (Play requires it to increase on e
 upload). `App_Resources/Android/app.gradle` is patched only inside CI — it is not
 committed.
 
-## One-time setup: signing secrets
+## Signing modes
 
-The release workflow needs an **upload keystore** and four repository secrets.
+The release build works **with or without** your own signing key:
+
+| | Secrets set? | Output | Use |
+| --- | --- | --- | --- |
+| **Real release** | yes | APK **+ AAB**, signed with your upload key | Google Play + sideloading |
+| **Test fallback** | no | APK only, signed with the in-repo **test key** (`signing/`) | Sideloading / sharing prototype builds |
+
+The test fallback needs no setup — every `v*` tag (or manual run) produces an
+installable, consistently-signed test APK (clearly marked as a test build). It must
+never go to the Play Store. To produce real releases, add the secrets below.
+
+## Switching to real (Play Store) releases
+
+For Play-ready releases, set up your own **upload keystore** and four repository
+secrets. Without them the workflow falls back to the test key described above.
 
 ### 1. Create an upload keystore (if you don't have one yet)
 
@@ -59,9 +73,9 @@ rm keystore.b64
 
 ## Testing the pipeline without a release
 
-Run the **Release Android** workflow manually (Actions tab → Run workflow). It builds
-the signed artifacts and uploads them to the run as artifacts, without creating a
-release. The signing secrets still need to be set.
+Run the **Release Android** workflow manually (Actions tab → Run workflow, or
+`gh workflow run release-android.yml`). It builds the APK and uploads it to the run as
+an artifact, without creating a release. No secrets required — it uses the test key.
 
 ## iOS (not yet wired up)
 

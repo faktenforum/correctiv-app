@@ -8,7 +8,13 @@
 # Manual runs (workflow_dispatch) build the artifacts and upload them to the
 # run only (no release is created) — useful for testing the pipeline.
 #
-# Required repository secrets (see docs/release.md):
+# Signing:
+#   - If the ANDROID_KEYSTORE_* secrets are set (see docs/release.md), the build
+#     is signed with your real upload key -> Play-ready APK + AAB.
+#   - If they are NOT set, it falls back to the committed throwaway TEST keystore
+#     (signing/correctiv-test.keystore) -> installable test APK only (no AAB).
+#     Never use the test key for the Play Store.
+# Optional secrets:
 #   ANDROID_KEYSTORE_BASE64   base64 of the upload keystore (.jks)
 #   ANDROID_KEYSTORE_PASSWORD keystore password
 #   ANDROID_KEY_ALIAS         key alias
@@ -68,21 +74,23 @@ jobs:
       - name: Install NativeScript CLI
         run: npm install -g nativescript
 
-      - name: Verify signing secrets are present
+      # Pick the signing key: real upload keystore from secrets (Play-ready) or
+      # the committed throwaway TEST keystore (installable test APK only).
+      - name: Prepare keystore
+        id: ks
         env:
           ANDROID_KEYSTORE_BASE64: ${{ secrets.ANDROID_KEYSTORE_BASE64 }}
         run: |
-          if [ -z "$ANDROID_KEYSTORE_BASE64" ]; then
-            echo "::error::ANDROID_KEYSTORE_BASE64 is not set. See docs/release.md for setup."
-            exit 1
+          if [ -n "$ANDROID_KEYSTORE_BASE64" ]; then
+            echo "Signing with the real upload keystore (from secrets)."
+            echo "$ANDROID_KEYSTORE_BASE64" | base64 -d > "${RUNNER_TEMP}/release.keystore"
+            echo "path=${RUNNER_TEMP}/release.keystore" >> "$GITHUB_OUTPUT"
+            echo "real=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "::warning::No ANDROID_KEYSTORE_* secrets set — signing with the committed TEST keystore. The result is NOT for the Play Store."
+            echo "path=${GITHUB_WORKSPACE}/signing/correctiv-test.keystore" >> "$GITHUB_OUTPUT"
+            echo "real=false" >> "$GITHUB_OUTPUT"
           fi
-
-      - name: Decode keystore
-        env:
-          ANDROID_KEYSTORE_BASE64: ${{ secrets.ANDROID_KEYSTORE_BASE64 }}
-        run: |
-          echo "$ANDROID_KEYSTORE_BASE64" | base64 -d > "${RUNNER_TEMP}/release.keystore"
-          echo "KEYSTORE_PATH=${RUNNER_TEMP}/release.keystore" >> "$GITHUB_ENV"
 
       # On a tag, drive the app version from the tag (vX.Y.Z -> X.Y.Z) and use
       # the run number as a monotonic versionCode (Play Store requires it to
@@ -96,29 +104,36 @@ jobs:
           sed -i -E "s/versionName \"[^\"]*\"/versionName \"${VERSION_NAME}\"/" App_Resources/Android/app.gradle
           sed -i -E "s/versionCode [0-9]+/versionCode ${VERSION_CODE}/" App_Resources/Android/app.gradle
 
+      # Passwords/alias fall back to the TEST keystore's known values when the
+      # secrets are absent (GitHub returns '' for an unset secret).
       - name: Build signed APK
         env:
-          ANDROID_KEYSTORE_PASSWORD: ${{ secrets.ANDROID_KEYSTORE_PASSWORD }}
-          ANDROID_KEY_ALIAS: ${{ secrets.ANDROID_KEY_ALIAS }}
-          ANDROID_KEY_PASSWORD: ${{ secrets.ANDROID_KEY_PASSWORD }}
+          KS_PATH: ${{ steps.ks.outputs.path }}
+          KS_PASSWORD: ${{ secrets.ANDROID_KEYSTORE_PASSWORD || 'correctiv-test' }}
+          KS_ALIAS: ${{ secrets.ANDROID_KEY_ALIAS || 'correctiv-test' }}
+          KS_KEY_PASSWORD: ${{ secrets.ANDROID_KEY_PASSWORD || 'correctiv-test' }}
         run: |
           ns build android --release \
-            --key-store-path "$KEYSTORE_PATH" \
-            --key-store-password "$ANDROID_KEYSTORE_PASSWORD" \
-            --key-store-alias "$ANDROID_KEY_ALIAS" \
-            --key-store-alias-password "$ANDROID_KEY_PASSWORD"
+            --key-store-path "$KS_PATH" \
+            --key-store-password "$KS_PASSWORD" \
+            --key-store-alias "$KS_ALIAS" \
+            --key-store-alias-password "$KS_KEY_PASSWORD"
 
-      - name: Build signed AAB
+      # The AAB is only useful for the Play Store, so build it for real releases
+      # only (skipped on the TEST-keystore fallback).
+      - name: Build signed AAB (Play Store)
+        if: steps.ks.outputs.real == 'true'
         env:
-          ANDROID_KEYSTORE_PASSWORD: ${{ secrets.ANDROID_KEYSTORE_PASSWORD }}
-          ANDROID_KEY_ALIAS: ${{ secrets.ANDROID_KEY_ALIAS }}
-          ANDROID_KEY_PASSWORD: ${{ secrets.ANDROID_KEY_PASSWORD }}
+          KS_PATH: ${{ steps.ks.outputs.path }}
+          KS_PASSWORD: ${{ secrets.ANDROID_KEYSTORE_PASSWORD }}
+          KS_ALIAS: ${{ secrets.ANDROID_KEY_ALIAS }}
+          KS_KEY_PASSWORD: ${{ secrets.ANDROID_KEY_PASSWORD }}
         run: |
           ns build android --release --aab \
-            --key-store-path "$KEYSTORE_PATH" \
-            --key-store-password "$ANDROID_KEYSTORE_PASSWORD" \
-            --key-store-alias "$ANDROID_KEY_ALIAS" \
-            --key-store-alias-password "$ANDROID_KEY_PASSWORD"
+            --key-store-path "$KS_PATH" \
+            --key-store-password "$KS_PASSWORD" \
+            --key-store-alias "$KS_ALIAS" \
+            --key-store-alias-password "$KS_KEY_PASSWORD"
 
       - name: SBG diagnostics on failure
         if: failure()
@@ -136,7 +151,8 @@ jobs:
           mkdir -p dist
           NAME="correctiv-app-${GITHUB_REF_NAME}"
           cp platforms/android/app/build/outputs/apk/release/*.apk "dist/${NAME}.apk"
-          cp platforms/android/app/build/outputs/bundle/release/*.aab "dist/${NAME}.aab"
+          # AAB only exists for real releases; ignore if absent (TEST fallback).
+          cp platforms/android/app/build/outputs/bundle/release/*.aab "dist/${NAME}.aab" 2>/dev/null || true
           ls -lh dist
 
       - name: Upload artifacts to the run
@@ -157,5 +173,8 @@ jobs:
           files: |
             dist/*.apk
             dist/*.aab
-          fail_on_unmatched_files: true
+          # In the TEST-keystore fallback there is no AAB, so don't fail on it.
+          fail_on_unmatched_files: false
           generate_release_notes: true
+          append_body: true
+          body: "${{ steps.ks.outputs.real == 'true' && '' || '> ⚠️ **Test build** — signed with the in-repo test key, **not** for the Play Store. For sideloading/testing only.' }}"
