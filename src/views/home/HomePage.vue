@@ -107,7 +107,7 @@
 
         <!-- 8. Backstage module (SAMPLE) -->
         <template #backstage="{ item }">
-          <StackLayout class="pt-l">
+          <StackLayout>
             <BackstageTile
               :diaryTitle="item.diary.title"
               :diaryTeaser="item.diary.teaser"
