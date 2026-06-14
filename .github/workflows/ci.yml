@@ -29,7 +29,7 @@ jobs:
       - name: Set up Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: 20
+          node-version: 24
           cache: npm
 
       - name: Set up JDK 17
@@ -54,6 +54,17 @@ jobs:
 
       - name: Build Android (debug)
         run: ns build android
+
+      # Surface the real Static Binding Generator error if the build fails:
+      # the top-level log only says "error in the JS Parser execution".
+      - name: SBG diagnostics on failure
+        if: failure()
+        run: |
+          echo "=== which node / version ==="; which node; node --version
+          echo "=== runSbg.log ==="
+          cat platforms/android/build-tools/runSbg.log 2>/dev/null || echo "(no runSbg.log found)"
+          echo "=== js_parser verbose (enableErrorLogging) ==="
+          node platforms/android/build-tools/jsparser/js_parser.js enableErrorLogging 2>&1 | tail -60 || true
 
       - name: Upload debug APK
         uses: actions/upload-artifact@v4

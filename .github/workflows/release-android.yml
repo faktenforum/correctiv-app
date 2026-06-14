@@ -41,7 +41,7 @@ jobs:
       - name: Set up Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: 20
+          node-version: 24
           cache: npm
 
       - name: Set up JDK 17
@@ -113,6 +113,15 @@ jobs:
             --key-store-password "$ANDROID_KEYSTORE_PASSWORD" \
             --key-store-alias "$ANDROID_KEY_ALIAS" \
             --key-store-alias-password "$ANDROID_KEY_PASSWORD"
+
+      - name: SBG diagnostics on failure
+        if: failure()
+        run: |
+          echo "=== which node / version ==="; which node; node --version
+          echo "=== runSbg.log ==="
+          cat platforms/android/build-tools/runSbg.log 2>/dev/null || echo "(no runSbg.log found)"
+          echo "=== js_parser verbose (enableErrorLogging) ==="
+          node platforms/android/build-tools/jsparser/js_parser.js enableErrorLogging 2>&1 | tail -60 || true
 
       # Collect from the stable Gradle output paths and give them a versioned
       # name. ref_name is the tag on tag runs, the branch on manual runs.
