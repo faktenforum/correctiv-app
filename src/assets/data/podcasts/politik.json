@@ -1,0 +1,149 @@
+{
+ "id": "politik",
+ "title": "Geld, Macht und Leben",
+ "publisher": "Salon5",
+ "description": "Du hörst nur das Wort “Politik” und schaltest direkt ab? So geht es vielen von uns! In dieser Podcast-Serie dreht sich alles um Politik, Wirtschaft und unsere Gesellschaft. Wir zeigen: Das muss gar nicht so langweilig sein! Wir sprechen üb…",
+ "imageUrl": "https://salon5.correctiv.net/media/podcasts/politik/cover_feed.png",
+ "episodes": [
+  {
+   "id": "https://salon5.correctiv.net/@politik/episodes/rennt-nicht-geht-konsumieren-wir-zu-viel",
+   "title": "Rennt nicht, geht! Konsumieren wir zu viel?",
+   "date": "2026-06-08T11:26:44.000Z",
+   "durationLabel": "21 Min.",
+   "audio": "https://salon5.correctiv.net/audio/@politik/rennt-nicht-geht-konsumieren-wir-zu-viel.mp3"
+  },
+  {
+   "id": "https://salon5.correctiv.net/@politik/episodes/ordnung-im-kopf-aufraumexpertin-gibt-tipps",
+   "title": "Ordnung im Kopf: Aufräumexpertin gibt Tipps",
+   "date": "2026-06-01T22:01:00.000Z",
+   "durationLabel": "24 Min.",
+   "audio": "https://salon5.correctiv.net/audio/@politik/ordnung-im-kopf-aufraumexpertin-gibt-tipps.mp3"
+  },
+  {
+   "id": "https://salon5.correctiv.net/@politik/episodes/schummeln-fur-den-fuhrerschein",
+   "title": "Schummeln für den Führerschein?",
+   "date": "2026-05-13T10:38:55.000Z",
+   "durationLabel": "14 Min.",
+   "audio": "https://salon5.correctiv.net/audio/@politik/schummeln-fur-den-fuhrerschein.mp3"
+  },
+  {
+   "id": "https://salon5.correctiv.net/@politik/episodes/ein-jahr-bundesregierung-warum-wir-salty-sind",
+   "title": "Ein Jahr Bundesregierung: Warum wir salty sind",
+   "date": "2026-05-07T00:00:00.000Z",
+   "durationLabel": "18 Min.",
+   "audio": "https://salon5.correctiv.net/audio/@politik/ein-jahr-bundesregierung-warum-wir-salty-sind.mp3"
+  },
+  {
+   "id": "https://salon5.correctiv.net/@politik/episodes/recap-ein-jahr-bundesregierung",
+   "title": "Recap: Ein Jahr Bundesregierung",
+   "date": "2026-05-04T23:00:00.000Z",
+   "durationLabel": "5 Min.",
+   "audio": "https://salon5.correctiv.net/audio/@politik/recap-ein-jahr-bundesregierung.mp3"
+  },
+  {
+   "id": "https://salon5.correctiv.net/@politik/episodes/zu-besuch-beim-europaischen-jugendparlament",
+   "title": "Zu Besuch beim Europäischen Jugendparlament",
+   "date": "2026-04-09T09:24:15.000Z",
+   "durationLabel": "19 Min.",
+   "audio": "https://salon5.correctiv.net/audio/@politik/zu-besuch-beim-europaischen-jugendparlament.mp3"
+  },
+  {
+   "id": "https://salon5.correctiv.net/@politik/episodes/klassismus-wie-unsere-soziale-herkunft-unser-leben-bestimmt",
+   "title": "Klassismus: Wie unsere soziale Herkunft unser Leben bestimmt",
+   "date": "2026-04-06T22:01:00.000Z",
+   "durationLabel": "3 Min.",
+   "audio": "https://salon5.correctiv.net/audio/@politik/klassismus-wie-unsere-soziale-herkunft-unser-leben-bestimmt.mp3"
+  },
+  {
+   "id": "https://salon5.correctiv.net/@politik/episodes/schaufenstergesprach-warum-geht-jemand-freiwillig-zum-wehrdienst-nikos",
+   "title": "Schaufenstergespräch: Warum geht jemand freiwillig zum Wehrdienst, Nikos?",
+   "date": "2026-04-02T08:48:40.000Z",
+   "durationLabel": "56 Min.",
+   "audio": "https://salon5.correctiv.net/audio/@politik/schaufenstergesprach-warum-geht-jemand-freiwillig-zum-wehrdienst-nikos.mp3"
+  },
+  {
+   "id": "https://salon5.correctiv.net/@politik/episodes/wie-viel-wusste-der-vatikan-uber-den-missbrauch-in-der-katholischen-kirche",
+   "title": "Wie viel wusste der Vatikan über den Missbrauch in der katholischen Kirche?",
+   "date": "2026-03-31T10:28:07.000Z",
+   "durationLabel": "35 Min.",
+   "audio": "https://salon5.correctiv.net/audio/@politik/wie-viel-wusste-der-vatikan-uber-den-missbrauch-in-der-katholischen-kirche.mp3"
+  },
+  {
+   "id": "https://salon5.correctiv.net/@politik/episodes/interview-mit-philipp-dienstbier-was-ist-da-jetzt-eigentlich-im-iran-passiert",
+   "title": "Interview mit Philipp Dienstbier: Was ist da jetzt eigentlich im Iran passiert?",
+   "date": "2026-03-06T08:44:58.000Z",
+   "durationLabel": "24 Min.",
+   "audio": "https://salon5.correctiv.net/audio/@politik/interview-mit-philipp-dienstbier-was-ist-da-jetzt-eigentlich-im-iran-passiert.mp3"
+  },
+  {
+   "id": "https://salon5.correctiv.net/@politik/episodes/was-bringt-ein-handy-und-social-media-verbot",
+   "title": "Was bringt ein Handy- und Social-Media-Verbot?",
+   "date": "2026-02-09T10:44:27.000Z",
+   "durationLabel": "13 Min.",
+   "audio": "https://salon5.correctiv.net/audio/@politik/was-bringt-ein-handy-und-social-media-verbot.mp3"
+  },
+  {
+   "id": "https://salon5.correctiv.net/@politik/episodes/kurz-erklart-cybermobbing-und-seine-folgen",
+   "title": "Kurz erklärt: Cybermobbing und seine Folgen",
+   "date": "2026-02-09T10:39:06.000Z",
+   "durationLabel": "5 Min.",
+   "audio": "https://salon5.correctiv.net/audio/@politik/kurz-erklart-cybermobbing-und-seine-folgen.mp3"
+  },
+  {
+   "id": "https://salon5.correctiv.net/@politik/episodes/kurz-erklart-darum-steht-gronland-so-im-fokus",
+   "title": "Kurz Erklärt: Darum steht Grönland so im Fokus",
+   "date": "2026-02-06T08:44:48.000Z",
+   "durationLabel": "4 Min.",
+   "audio": "https://salon5.correctiv.net/audio/@politik/kurz-erklart-darum-steht-gronland-so-im-fokus.mp3"
+  },
+  {
+   "id": "https://salon5.correctiv.net/@politik/episodes/warum-plotzlich-alle-uber-gronland-reden",
+   "title": "Warum plötzlich alle über Grönland reden",
+   "date": "2026-02-04T10:32:13.000Z",
+   "durationLabel": "14 Min.",
+   "audio": "https://salon5.correctiv.net/audio/@politik/warum-plotzlich-alle-uber-gronland-reden.mp3"
+  },
+  {
+   "id": "https://salon5.correctiv.net/@politik/episodes/eis-macht-und-zukunft-warum-die-grosmachte-sich-so-fur-gronland-interessieren",
+   "title": "Eis, Macht und Zukunft: Warum die Großmächte sich so für Grönland interessieren",
+   "date": "2026-02-03T00:30:00.000Z",
+   "durationLabel": "12 Min.",
+   "audio": "https://salon5.correctiv.net/audio/@politik/eis-macht-und-zukunft-warum-die-grosmachte-sich-so-fur-gronland-interessieren.mp3"
+  },
+  {
+   "id": "https://salon5.correctiv.net/@politik/episodes/kann-ich-statt-zivildienst-auch-ein-fsj-machen",
+   "title": "Kann ich statt Zivildienst auch ein FSJ machen?",
+   "date": "2026-01-28T15:09:16.000Z",
+   "durationLabel": "4 Min.",
+   "audio": "https://salon5.correctiv.net/audio/@politik/kann-ich-statt-zivildienst-auch-ein-fsj-machen.mp3"
+  },
+  {
+   "id": "https://salon5.correctiv.net/@politik/episodes/wehrdienst-comeback-was-bedeutet-das-fur-euch",
+   "title": "Wehrdienst-Comeback – Was bedeutet das für euch?",
+   "date": "2026-01-25T23:00:00.000Z",
+   "durationLabel": "5 Min.",
+   "audio": "https://salon5.correctiv.net/audio/@politik/wehrdienst-comeback-was-bedeutet-das-fur-euch.mp3"
+  },
+  {
+   "id": "https://salon5.correctiv.net/@politik/episodes/fur-oder-gegen-wehrpflicht-das-denken-wir",
+   "title": "Für oder gegen Wehrpflicht – das denken wir!",
+   "date": "2026-01-19T23:01:00.000Z",
+   "durationLabel": "18 Min.",
+   "audio": "https://salon5.correctiv.net/audio/@politik/fur-oder-gegen-wehrpflicht-das-denken-wir.mp3"
+  },
+  {
+   "id": "https://salon5.correctiv.net/@politik/episodes/wie-konnen-wir-mit-der-ki-videoflut-umgehen",
+   "title": "Wie können wir mit der KI-Videoflut umgehen?",
+   "date": "2025-12-22T23:01:00.000Z",
+   "durationLabel": "27 Min.",
+   "audio": "https://salon5.correctiv.net/audio/@politik/wie-konnen-wir-mit-der-ki-videoflut-umgehen.mp3"
+  },
+  {
+   "id": "https://salon5.correctiv.net/@politik/episodes/schulstreik-gegen-wehrpflicht-malte-vom-orga-team-im-interview",
+   "title": "Schulstreik gegen Wehrpflicht: Malte vom Orga-Team im Interview",
+   "date": "2025-12-05T11:34:24.000Z",
+   "durationLabel": "26 Min.",
+   "audio": "https://salon5.correctiv.net/audio/@politik/schulstreik-gegen-wehrpflicht-malte-vom-orga-team-im-interview.mp3"
+  }
+ ]
+}

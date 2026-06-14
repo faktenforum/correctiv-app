@@ -15,9 +15,10 @@
   border-radius: t.$radius-md;
   background-color: t.$color-grey-700;
 }
-.series-tile__cover--pausenbrot { background-color: #2f5e8c; }
-.series-tile__cover--deeptalk { background-color: #5a3d7a; }
-.series-tile__cover--mission-klima { background-color: #2e7d4f; }
+.series-tile__cover-img {
+  height: 120;
+  border-radius: t.$radius-md;
+}
 .series-tile__icon {
   font-size: 32;
   color: t.$color-grey-100;

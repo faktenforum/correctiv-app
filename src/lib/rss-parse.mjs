@@ -73,3 +73,49 @@ export function parseYoutubeFeed(xml) {
   }
   return videos;
 }
+
+/** iTunes <itunes:duration> is either seconds ("1478") or HH:MM:SS / MM:SS. */
+function parseDuration(value) {
+  if (!value) return 0;
+  if (/^\d+$/.test(value)) return parseInt(value, 10);
+  return value.split(':').reduce((acc, p) => acc * 60 + (parseInt(p, 10) || 0), 0);
+}
+
+/**
+ * Podcast RSS 2.0 (iTunes namespace) → one series with its episodes.
+ * Used for the Salon5 Castopod feeds (salon5.correctiv.net/@<handle>/feed.xml):
+ * each episode carries a real MP3 <enclosure> and an <itunes:duration>.
+ * @returns {{title:string, description:string, imageUrl:string|null,
+ *   episodes:Array<{id:string, title:string, date:string, durationSec:number, audioUrl:string}>}}
+ */
+export function parsePodcastFeed(xml) {
+  // The channel header is everything before the first <item>.
+  const channel = xml.split('<item>')[0];
+  const image =
+    channel.match(/<itunes:image[^>]+href="([^"]+)"/) ||
+    channel.match(/<image>[\s\S]*?<url>([\s\S]*?)<\/url>/);
+
+  const episodes = [];
+  const itemRe = /<item>([\s\S]*?)<\/item>/g;
+  let m;
+  while ((m = itemRe.exec(xml))) {
+    const block = m[1];
+    const enclosure = block.match(/<enclosure[^>]+url="([^"]+)"/);
+    if (!enclosure) continue; // no audio → not a playable episode
+    const pub = blockTag(block, 'pubDate');
+    episodes.push({
+      id: blockTag(block, 'guid') || enclosure[1],
+      title: blockTag(block, 'title'),
+      date: pub ? new Date(pub).toISOString() : new Date(0).toISOString(),
+      durationSec: parseDuration(blockTag(block, 'itunes:duration')),
+      audioUrl: enclosure[1],
+    });
+  }
+
+  return {
+    title: blockTag(channel, 'title'),
+    description: blockTag(channel, 'description'),
+    imageUrl: image ? image[1].trim() : null,
+    episodes,
+  };
+}

@@ -1,0 +1,149 @@
+{
+ "id": "klima",
+ "title": "Mission Klima",
+ "publisher": "Salon5",
+ "description": "Klima ist nicht nur Fridays for Future. Sondern auch shoppen, Burger essen und in den Urlaub fahren. Es ist ein Thema, das uns alle betrifft. In dieser Podcast-Serie erfahrt ihr, was der Klimawandel ist und warum er jeden Teil unseres Allt…",
+ "imageUrl": "https://salon5.correctiv.net/media/podcasts/klima/cover_feed.png",
+ "episodes": [
+  {
+   "id": "https://salon5.correctiv.net/@klima/episodes/umwelt-und-klimaschutz-aktiv-mitbestimmen",
+   "title": "Umwelt- und Klimaschutz aktiv mitbestimmen",
+   "date": "2026-05-22T07:56:34.000Z",
+   "durationLabel": "12 Min.",
+   "audio": "https://salon5.correctiv.net/audio/@klima/umwelt-und-klimaschutz-aktiv-mitbestimmen.mp3"
+  },
+  {
+   "id": "https://salon5.correctiv.net/@klima/episodes/warum-es-ums-klima-so-still-geworden-ist",
+   "title": "Warum es um´s Klima so still geworden ist",
+   "date": "2026-03-23T09:26:43.000Z",
+   "durationLabel": "14 Min.",
+   "audio": "https://salon5.correctiv.net/audio/@klima/warum-es-ums-klima-so-still-geworden-ist.mp3"
+  },
+  {
+   "id": "https://salon5.correctiv.net/@klima/episodes/der-okologische-fus-nein-handabdruck",
+   "title": "Der ökologische Fuß-… nein Handabdruck!",
+   "date": "2025-11-02T11:35:03.000Z",
+   "durationLabel": "29 Min.",
+   "audio": "https://salon5.correctiv.net/audio/@klima/der-okologische-fus-nein-handabdruck.mp3"
+  },
+  {
+   "id": "https://salon5.correctiv.net/@klima/episodes/wie-schadlich-ist-fast-fashion-fur-das-klima",
+   "title": "Wie schädlich ist Fast Fashion für das Klima?",
+   "date": "2025-08-25T09:10:06.000Z",
+   "durationLabel": "12 Min.",
+   "audio": "https://salon5.correctiv.net/audio/@klima/wie-schadlich-ist-fast-fashion-fur-das-klima.mp3"
+  },
+  {
+   "id": "https://salon5.correctiv.net/@klima/episodes/jugendklimarat-im-gesprach-mit-steffi-blau-von-co2online",
+   "title": "Jugendklimarat – Im Gespräch mit Steffi Blau von co2online",
+   "date": "2025-07-31T07:00:00.000Z",
+   "durationLabel": "17 Min.",
+   "audio": "https://salon5.correctiv.net/audio/@klima/jugendklimarat-im-gesprach-mit-steffi-blau-von-co2online.mp3"
+  },
+  {
+   "id": "https://salon5.correctiv.net/@klima/episodes/klimaangst-und-unsere-zukunft",
+   "title": "Klimaangst und unsere Zukunft",
+   "date": "2025-07-14T07:59:48.000Z",
+   "durationLabel": "30 Min.",
+   "audio": "https://salon5.correctiv.net/audio/@klima/klimaangst-und-unsere-zukunft.mp3"
+  },
+  {
+   "id": "https://salon5.correctiv.net/@klima/episodes/luisa-neubauer-was-passiert-jetzt-mit-dem-klima",
+   "title": "Luisa Neubauer: Was passiert jetzt mit dem Klima?",
+   "date": "2025-06-20T07:59:57.000Z",
+   "durationLabel": "29 Min.",
+   "audio": "https://salon5.correctiv.net/audio/@klima/luisa-neubauer-was-passiert-jetzt-mit-dem-klima.mp3"
+  },
+  {
+   "id": "https://salon5.correctiv.net/@klima/episodes/kurz-erklart-das-plant-friedrich-merz-in-sachen-klima",
+   "title": "Kurz erklärt: Das plant Friedrich Merz in Sachen Klima",
+   "date": "2025-05-28T22:01:00.000Z",
+   "durationLabel": "4 Min.",
+   "audio": "https://salon5.correctiv.net/audio/@klima/kurz-erklart-das-plant-friedrich-merz-in-sachen-klima.mp3"
+  },
+  {
+   "id": "https://salon5.correctiv.net/@klima/episodes/kurz-erklart-wie-wird-aus-regen-grundwasser",
+   "title": "Kurz Erklärt: Wie wird aus Regen Grundwasser?",
+   "date": "2025-05-19T14:05:15.000Z",
+   "durationLabel": "6 Min.",
+   "audio": "https://salon5.correctiv.net/audio/@klima/kurz-erklart-wie-wird-aus-regen-grundwasser.mp3"
+  },
+  {
+   "id": "https://salon5.correctiv.net/@klima/episodes/zugvogel-und-das-klima-simon-piro-im-interview",
+   "title": "Zugvögel und das Klima - Simon Piro im Interview",
+   "date": "2025-05-16T12:58:40.000Z",
+   "durationLabel": "12 Min.",
+   "audio": "https://salon5.correctiv.net/audio/@klima/zugvogel-und-das-klima-simon-piro-im-interview.mp3"
+  },
+  {
+   "id": "https://salon5.correctiv.net/@klima/episodes/saisonstart-wie-nachhaltig-ist-die-formel-1",
+   "title": "Saisonstart! Wie nachhaltig ist die Formel 1?",
+   "date": "2025-03-14T09:25:23.000Z",
+   "durationLabel": "18 Min.",
+   "audio": "https://salon5.correctiv.net/audio/@klima/saisonstart-wie-nachhaltig-ist-die-formel-1.mp3"
+  },
+  {
+   "id": "5faa3b1d-742e-11ef-88b8-a85e453daa56",
+   "title": "Kreislaufwirtschaft: Weniger ist mehr!",
+   "date": "2025-03-03T14:08:39.000Z",
+   "durationLabel": "21 Min.",
+   "audio": "https://salon5.correctiv.net/audio/@klima/kreislaufwirtschaft-weniger-ist-mehr-ijtcm.mp3"
+  },
+  {
+   "id": "586b3ecc-dfb9-11ef-97fe-a85e453daa56",
+   "title": "Desinformation rund um die Klima-Krise",
+   "date": "2025-01-31T09:54:18.000Z",
+   "durationLabel": "11 Min.",
+   "audio": "https://salon5.correctiv.net/audio/@klima/desinformation-rund-um-die-klima-krise-ke5ev.mp3"
+  },
+  {
+   "id": "56f7c88f-8628-11ef-88b8-a85e453daa56",
+   "title": "Das Problem der großen Eisschmelze",
+   "date": "2024-10-09T10:22:02.000Z",
+   "durationLabel": "25 Min.",
+   "audio": "https://salon5.correctiv.net/audio/@klima/das-problem-der-grossen-eisschmelze-m6cdt.mp3"
+  },
+  {
+   "id": "876a2a79-80d7-11ef-88b8-a85e453daa56",
+   "title": "Kollaps der Atlantikzirkulation – eine Bedrohung für unser Klima?",
+   "date": "2024-10-02T16:01:00.000Z",
+   "durationLabel": "19 Min.",
+   "audio": "https://salon5.correctiv.net/audio/@klima/kollaps-der-atlantikzirkulation-eine-bedrohung-fuer-unser-klima-msn3e.mp3"
+  },
+  {
+   "id": "1bcfd68d-80d7-11ef-88b8-a85e453daa56",
+   "title": "Was sind eigentlich Klimakipppunkte?",
+   "date": "2024-10-02T15:58:00.000Z",
+   "durationLabel": "18 Min.",
+   "audio": "https://salon5.correctiv.net/audio/@klima/was-sind-eigentlich-klimakipppunkte-demrq.mp3"
+  },
+  {
+   "id": "b9564007-742e-11ef-88b8-a85e453daa56",
+   "title": "Was ist Upcycling?",
+   "date": "2024-09-16T13:22:24.000Z",
+   "durationLabel": "14 Min.",
+   "audio": "https://salon5.correctiv.net/audio/@klima/was-ist-upcycling-l5zoh.mp3"
+  },
+  {
+   "id": "edb08f35-742d-11ef-88b8-a85e453daa56",
+   "title": "Städte, die im Müll baden, wie groß ist das Problem?",
+   "date": "2024-09-16T13:16:41.000Z",
+   "durationLabel": "23 Min.",
+   "audio": "https://salon5.correctiv.net/audio/@klima/staedte-die-im-muell-baden-wie-gross-ist-das-problem-1gvtm.mp3"
+  },
+  {
+   "id": "7241191c-70ea-11ef-88b8-a85e453daa56",
+   "title": "Warum recyceln wir?",
+   "date": "2024-09-12T09:36:05.000Z",
+   "durationLabel": "17 Min.",
+   "audio": "https://salon5.correctiv.net/audio/@klima/warum-recyceln-wir-cqq4r.mp3"
+  },
+  {
+   "id": "46be4dd1-5496-11ef-ac9c-a85e453daa56",
+   "title": "Zu Besuch im Atomkraftwerk",
+   "date": "2024-08-07T08:23:01.000Z",
+   "durationLabel": "16 Min.",
+   "audio": "https://salon5.correctiv.net/audio/@klima/zu-besuch-im-atomkraftwerk-a3txx.mp3"
+  }
+ ]
+}
