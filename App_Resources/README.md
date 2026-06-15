@@ -13,6 +13,6 @@ To regenerate every icon (Android legacy + adaptive, iOS) after changing the log
 magick -background none -density 1536 App_Resources/icon.svg -resize 700x700 \
   -gravity center -background none -extent 1024x1024 App_Resources/icon.png
 
-# 2. generate the icon set on the brand-red background
-ns resources generate icons App_Resources/icon.png --background '#FF5064'
+# 2. generate the icon set on a white background
+ns resources generate icons App_Resources/icon.png --background '#FFFFFF'
 ```
