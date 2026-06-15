@@ -28,6 +28,7 @@
     "@nativescript/vite": "^2.0.3",
     "@types/node": "^20.19.43",
     "concurrently": "^9.0.0",
+    "cross-env": "^10.1.0",
     "sass": "^1.101.0",
     "typescript": "~5.8.0",
     "vue": "^3.5.38",
@@ -40,6 +41,8 @@
     "dev:server:android": "vite serve -- --env.android --env.hmr",
     "ios": "ns debug ios",
     "android": "ns debug android",
+    "build:android": "cross-env NS_VITE_DIST_DIR=platforms/android/app/src/main/assets/app ns build android --release --key-store-path signing/correctiv-test.keystore --key-store-password correctiv-test --key-store-alias correctiv-test --key-store-alias-password correctiv-test",
+    "build:android:debug": "cross-env NS_VITE_DIST_DIR=platforms/android/app/src/main/assets/app ns build android",
     "tokens": "node scripts/sync-tokens.mjs",
     "offline-articles": "node scripts/fetch-offline-articles.mjs",
     "offline-podcasts": "node scripts/fetch-offline-podcasts.mjs"
