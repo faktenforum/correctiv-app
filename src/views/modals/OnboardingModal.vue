@@ -6,6 +6,7 @@
        modal root by useThemeForModal() — turns dark. -->
   <Page
     actionBarHidden="true"
+    @loaded="onPageLoaded"
     :androidStatusBarBackground="step === 0 ? '#ff5064' : isDarkAppearance ? '#1a1a1a' : '#ffffff'"
     :statusBarStyle="step === 0 || isDarkAppearance ? 'light' : 'dark'"
   >
@@ -129,14 +130,14 @@
 </template>
 
 <script setup lang="ts">
-import { ref, watch, onMounted } from 'nativescript-vue';
+import { ref, watch } from 'nativescript-vue';
 import { $closeModal } from 'nativescript-vue';
 import { interests as allInterests } from '../../data/interests';
 import { useInterestsStore } from '../../stores/interests';
 import { useSettingsStore } from '../../stores/settings';
 import { useJoinFlow } from '../../composables/useJoinFlow';
 import { useThemeForModal, isDarkAppearance } from '../../composables/useTheme';
-import { setNavBar, setNavBarThemeDefault, BRAND_RED } from '../../lib/system-bars';
+import { setNavBarOnWindow, BRAND_RED } from '../../lib/system-bars';
 
 useThemeForModal();
 const step = ref(0);
@@ -144,20 +145,29 @@ const interestsStore = useInterestsStore();
 const settings = useSettingsStore();
 const { openJoinFlow } = useJoinFlow();
 
-// The top status bar is set via the Page properties above; the bottom nav bar has
-// no core property, so drive it here: red on the mission screen, theme default else.
+// The top status bar is set via the Page properties above. The bottom nav bar has
+// no core property — and this is a modal with its OWN window — so set it on the
+// modal's window (page.getClosestWindow()): red on the mission screen, theme
+// default on later steps. The main app's nav bar is handled by AppShell.
+let modalWindow: any = null;
 function updateNav() {
-  if (step.value === 0) setNavBar(BRAND_RED, true);
-  else setNavBarThemeDefault(isDarkAppearance.value);
+  if (!modalWindow) return;
+  if (step.value === 0) setNavBarOnWindow(modalWindow, BRAND_RED, true);
+  else setNavBarOnWindow(modalWindow, isDarkAppearance.value ? '#1a1a1a' : '#ffffff', isDarkAppearance.value);
 }
-onMounted(updateNav);
+function onPageLoaded(args: any) {
+  try {
+    modalWindow = args.object?.getClosestWindow?.() ?? null;
+  } catch {
+    modalWindow = null;
+  }
+  updateNav();
+}
 watch(step, updateNav);
 
 function finish(withJoin: boolean) {
   settings.completeOnboarding();
   $closeModal();
-  // Back on the main app -> restore the theme-default bars.
-  setNavBarThemeDefault(isDarkAppearance.value);
   if (withJoin) {
     // Open the join flow after closing
     setTimeout(() => openJoinFlow(), 350);

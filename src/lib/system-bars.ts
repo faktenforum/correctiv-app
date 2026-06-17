@@ -37,22 +37,30 @@ function iconController(window: any): any | null {
   }
 }
 
-/** Set the bottom navigation/gesture bar color + icon brightness.
+/** Color a specific window's bottom navigation bar + icon brightness.
+ *  Use this for modals: their own (dialog) window is NOT the activity window, so
+ *  the activity window's nav color is not visible — get the modal's window via
+ *  `page.getClosestWindow()` and pass it here.
  *  `lightIcons: true` => white icons (use on dark/colored backgrounds). */
-export function setNavBar(colorHex: string, lightIcons: boolean): boolean {
-  if (!__ANDROID__) return true;
-  const window = getWindow();
-  if (!window) return false;
+export function setNavBarOnWindow(window: any, colorHex: string, lightIcons: boolean): void {
+  if (!__ANDROID__ || !window) return;
   try {
     ensureDrawsBarBackgrounds(window);
     window.setNavigationBarColor(android.graphics.Color.parseColor(colorHex));
     const c = iconController(window);
     if (c) c.setAppearanceLightNavigationBars(!lightIcons); // appearanceLight = dark icons
-    return true;
   } catch (err) {
-    console.error('[system-bars] setNavBar failed:', err);
-    return false;
+    console.error('[system-bars] setNavBarOnWindow failed:', err);
   }
+}
+
+/** Color the foreground activity's navigation bar (the main app, not modals). */
+export function setNavBar(colorHex: string, lightIcons: boolean): boolean {
+  if (!__ANDROID__) return true;
+  const window = getWindow();
+  if (!window) return false;
+  setNavBarOnWindow(window, colorHex, lightIcons);
+  return true;
 }
 
 /** Set both bars (color + icon brightness) in one call — used for the app default. */
