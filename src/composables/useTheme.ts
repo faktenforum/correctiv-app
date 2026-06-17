@@ -6,6 +6,8 @@ import { useSettingsStore } from '../stores/settings';
 // natively and does not re-apply CSS when the root class changes, so pages with a
 // CollectionView bind this to `:key` to force a fresh render on theme change.
 export const themeTick = ref(0);
+// Current applied appearance (true = dark). Drives the system-bar colors.
+export const isDarkAppearance = ref(false);
 let lastAppliedClass = '';
 
 // Internal NativeScript members we use to drive the appearance class ourselves.
@@ -58,6 +60,7 @@ function resolveDark(theme: string): boolean {
 // every page at runtime.
 function applyAppearance(dark: boolean): void {
   try {
+    isDarkAppearance.value = dark;
     const cls = dark ? 'ns-dark' : 'ns-light';
     const root = App.getRootView?.();
     if (!root || typeof App.applyCssClass !== 'function') return;

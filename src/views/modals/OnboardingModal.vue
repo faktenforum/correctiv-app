@@ -4,7 +4,11 @@
        (step 0) is the coral brand screen (design: bg-accent), theme-independent;
        later steps use bg-grey-100, which the .ns-dark class — applied to this
        modal root by useThemeForModal() — turns dark. -->
-  <Page actionBarHidden="true">
+  <Page
+    actionBarHidden="true"
+    :androidStatusBarBackground="step === 0 ? '#ff5064' : isDarkAppearance ? '#1a1a1a' : '#ffffff'"
+    :statusBarStyle="step === 0 || isDarkAppearance ? 'light' : 'dark'"
+  >
     <GridLayout rows="auto, *, auto" :class="step === 0 ? 'onboarding--mission' : 'bg-grey-100'">
       <!-- Header: step dots + skip (from step 2 onwards) -->
       <GridLayout row="0" columns="*, auto" class="px-sm py-s">
@@ -125,13 +129,14 @@
 </template>
 
 <script setup lang="ts">
-import { ref } from 'nativescript-vue';
+import { ref, watch, onMounted } from 'nativescript-vue';
 import { $closeModal } from 'nativescript-vue';
 import { interests as allInterests } from '../../data/interests';
 import { useInterestsStore } from '../../stores/interests';
 import { useSettingsStore } from '../../stores/settings';
 import { useJoinFlow } from '../../composables/useJoinFlow';
-import { useThemeForModal } from '../../composables/useTheme';
+import { useThemeForModal, isDarkAppearance } from '../../composables/useTheme';
+import { setNavBar, setNavBarThemeDefault, BRAND_RED } from '../../lib/system-bars';
 
 useThemeForModal();
 const step = ref(0);
@@ -139,9 +144,20 @@ const interestsStore = useInterestsStore();
 const settings = useSettingsStore();
 const { openJoinFlow } = useJoinFlow();
 
+// The top status bar is set via the Page properties above; the bottom nav bar has
+// no core property, so drive it here: red on the mission screen, theme default else.
+function updateNav() {
+  if (step.value === 0) setNavBar(BRAND_RED, true);
+  else setNavBarThemeDefault(isDarkAppearance.value);
+}
+onMounted(updateNav);
+watch(step, updateNav);
+
 function finish(withJoin: boolean) {
   settings.completeOnboarding();
   $closeModal();
+  // Back on the main app -> restore the theme-default bars.
+  setNavBarThemeDefault(isDarkAppearance.value);
   if (withJoin) {
     // Open the join flow after closing
     setTimeout(() => openJoinFlow(), 350);
