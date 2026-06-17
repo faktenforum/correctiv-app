@@ -4,7 +4,12 @@
        (step 0) is the coral brand screen (design: bg-accent), theme-independent;
        later steps use bg-grey-100, which the .ns-dark class — applied to this
        modal root by useThemeForModal() — turns dark. -->
-  <Page actionBarHidden="true">
+  <Page
+    actionBarHidden="true"
+    @loaded="onPageLoaded"
+    :androidStatusBarBackground="step === 0 ? '#ff5064' : isDarkAppearance ? '#1a1a1a' : '#ffffff'"
+    :statusBarStyle="step === 0 || isDarkAppearance ? 'light' : 'dark'"
+  >
     <GridLayout rows="auto, *, auto" :class="step === 0 ? 'onboarding--mission' : 'bg-grey-100'">
       <!-- Header: step dots + skip (from step 2 onwards) -->
       <GridLayout row="0" columns="*, auto" class="px-sm py-s">
@@ -125,19 +130,40 @@
 </template>
 
 <script setup lang="ts">
-import { ref } from 'nativescript-vue';
+import { ref, watch } from 'nativescript-vue';
 import { $closeModal } from 'nativescript-vue';
 import { interests as allInterests } from '../../data/interests';
 import { useInterestsStore } from '../../stores/interests';
 import { useSettingsStore } from '../../stores/settings';
 import { useJoinFlow } from '../../composables/useJoinFlow';
-import { useThemeForModal } from '../../composables/useTheme';
+import { useThemeForModal, isDarkAppearance } from '../../composables/useTheme';
+import { setNavBarOnWindow, BRAND_RED } from '../../lib/system-bars';
 
 useThemeForModal();
 const step = ref(0);
 const interestsStore = useInterestsStore();
 const settings = useSettingsStore();
 const { openJoinFlow } = useJoinFlow();
+
+// The top status bar is set via the Page properties above. The bottom nav bar has
+// no core property — and this is a modal with its OWN window — so set it on the
+// modal's window (page.getClosestWindow()): red on the mission screen, theme
+// default on later steps. The main app's nav bar is handled by AppShell.
+let modalWindow: any = null;
+function updateNav() {
+  if (!modalWindow) return;
+  if (step.value === 0) setNavBarOnWindow(modalWindow, BRAND_RED, true);
+  else setNavBarOnWindow(modalWindow, isDarkAppearance.value ? '#1a1a1a' : '#ffffff', isDarkAppearance.value);
+}
+function onPageLoaded(args: any) {
+  try {
+    modalWindow = args.object?.getClosestWindow?.() ?? null;
+  } catch {
+    modalWindow = null;
+  }
+  updateNav();
+}
+watch(step, updateNav);
 
 function finish(withJoin: boolean) {
   settings.completeOnboarding();

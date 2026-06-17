@@ -10,7 +10,12 @@ android {
 
   defaultConfig {
     minSdkVersion 24
-    targetSdkVersion 35
+    // Target 34 (not 35): on Android 15+ a targetSdk of 35 forces transparent
+    // system bars (edge-to-edge), which NativeScript core 9.0.0 does not handle
+    // here — the status bar can then no longer be tinted. Targeting 34 keeps the
+    // classic, reliable status bar coloring (androidStatusBarBackground +
+    // statusBarStyle) with a normal header bar. Revisit when NS supports E2E.
+    targetSdkVersion 34
 
     // Version Information
     versionCode 1

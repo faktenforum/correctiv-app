@@ -30,7 +30,7 @@
 </template>
 
 <script setup lang="ts">
-import { onMounted } from 'nativescript-vue';
+import { onMounted, watch } from 'nativescript-vue';
 import { $showModal } from 'nativescript-vue';
 import TabBar from './components/shell/TabBar.vue';
 import MiniPlayer from './components/shell/MiniPlayer.vue';
@@ -45,7 +45,8 @@ import MediaPage from './views/media/MediaPage.vue';
 import ParticipatePage from './views/participate/ParticipatePage.vue';
 import ProfilePage from './views/profile/ProfilePage.vue';
 import { useSettingsStore, type TabId } from './stores/settings';
-import { useThemeController } from './composables/useTheme';
+import { useThemeController, isDarkAppearance } from './composables/useTheme';
+import { applyThemeDefault } from './lib/system-bars';
 
 const settings = useSettingsStore();
 const audioStore = useAudioStore();
@@ -56,7 +57,18 @@ const videoStore = useVideoStore();
 // appearance — see composables/useTheme.ts for why a nested :class can't.
 useThemeController();
 
+// App default system-bar colors follow the theme (white bars/dark icons in light,
+// dark bars/light icons in dark). The onboarding modal overrides while shown.
+watch(isDarkAppearance, () => applyThemeDefault(isDarkAppearance.value));
+
 onMounted(() => {
+  // The activity window may not exist yet at mount — retry until the bars apply.
+  let tries = 0;
+  const initBars = () => {
+    if (!applyThemeDefault(isDarkAppearance.value) && tries++ < 40) setTimeout(initBars, 50);
+  };
+  initBars();
+
   if (!settings.onboardingDone) {
     // briefly delayed until the shell is rendered — otherwise the modal host is missing
     setTimeout(() => $showModal(OnboardingModal, { fullscreen: true }), 250);
