@@ -21,6 +21,7 @@ import { registerExclusiveMedium } from '@correctiv/app-core/media/exclusive-pla
 // @nativescript/vite only applies a file named app.css automatically —
 // therefore import the SCSS as a string and register it ourselves.
 import appCss from './app.scss?inline';
+import { runAudioSpike } from './spike/audio-spike';
 
 // Hand the core its platform capabilities BEFORE any store or service is touched
 // (persist() below reads through the KeyValueStore port).
@@ -92,5 +93,15 @@ Application.on(Application.resumeEvent, () => {
   feeds.fetch('recherchen', { force: true });
   feeds.fetch('faktencheck', { force: true });
 });
+
+// AUDIO SPIKE — off by default. Flip to true, start
+// `node scripts/spike-audio-server.mjs`, deploy to a device and read logcat for
+// `SPIKE:`. See docs/adr/0003-audio-capability-spike.md.
+const RUN_AUDIO_SPIKE = false;
+if (__ANDROID__ && RUN_AUDIO_SPIKE) {
+  Application.on(Application.launchEvent, () => {
+    setTimeout(() => void runAudioSpike(), 2500);
+  });
+}
 
 app.start();
