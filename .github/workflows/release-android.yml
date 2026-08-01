@@ -46,7 +46,7 @@ jobs:
       # `ns build` has no IPC, so the bundle never reaches assets/app and the
       # Static Binding Generator fails. Point Vite's output dir straight at the
       # platform assets dir so the bundle lands where the build expects it.
-      NS_VITE_DIST_DIR: ${{ github.workspace }}/platforms/android/app/src/main/assets/app
+      NS_VITE_DIST_DIR: ${{ github.workspace }}/apps/mobile/platforms/android/app/src/main/assets/app
     steps:
       - uses: actions/checkout@v4
 
@@ -88,7 +88,7 @@ jobs:
             echo "real=true" >> "$GITHUB_OUTPUT"
           else
             echo "::warning::No ANDROID_KEYSTORE_* secrets set — signing with the committed TEST keystore. The result is NOT for the Play Store."
-            echo "path=${GITHUB_WORKSPACE}/signing/correctiv-test.keystore" >> "$GITHUB_OUTPUT"
+            echo "path=${GITHUB_WORKSPACE}/apps/mobile/signing/correctiv-test.keystore" >> "$GITHUB_OUTPUT"
             echo "real=false" >> "$GITHUB_OUTPUT"
           fi
 
@@ -101,12 +101,13 @@ jobs:
           VERSION_NAME="${GITHUB_REF_NAME#v}"
           VERSION_CODE="${GITHUB_RUN_NUMBER}"
           echo "versionName=$VERSION_NAME versionCode=$VERSION_CODE"
-          sed -i -E "s/versionName \"[^\"]*\"/versionName \"${VERSION_NAME}\"/" App_Resources/Android/app.gradle
-          sed -i -E "s/versionCode [0-9]+/versionCode ${VERSION_CODE}/" App_Resources/Android/app.gradle
+          sed -i -E "s/versionName \"[^\"]*\"/versionName \"${VERSION_NAME}\"/" apps/mobile/App_Resources/Android/app.gradle
+          sed -i -E "s/versionCode [0-9]+/versionCode ${VERSION_CODE}/" apps/mobile/App_Resources/Android/app.gradle
 
       # Passwords/alias fall back to the TEST keystore's known values when the
       # secrets are absent (GitHub returns '' for an unset secret).
       - name: Build signed APK
+        working-directory: apps/mobile
         env:
           KS_PATH: ${{ steps.ks.outputs.path }}
           KS_PASSWORD: ${{ secrets.ANDROID_KEYSTORE_PASSWORD || 'correctiv-test' }}
@@ -123,6 +124,7 @@ jobs:
       # only (skipped on the TEST-keystore fallback).
       - name: Build signed AAB (Play Store)
         if: steps.ks.outputs.real == 'true'
+        working-directory: apps/mobile
         env:
           KS_PATH: ${{ steps.ks.outputs.path }}
           KS_PASSWORD: ${{ secrets.ANDROID_KEYSTORE_PASSWORD }}
@@ -137,6 +139,7 @@ jobs:
 
       - name: SBG diagnostics on failure
         if: failure()
+        working-directory: apps/mobile
         run: |
           echo "=== which node / version ==="; which node; node --version
           echo "=== runSbg.log ==="
@@ -150,9 +153,9 @@ jobs:
         run: |
           mkdir -p dist
           NAME="correctiv-app-${GITHUB_REF_NAME}"
-          cp platforms/android/app/build/outputs/apk/release/*.apk "dist/${NAME}.apk"
+          cp apps/mobile/platforms/android/app/build/outputs/apk/release/*.apk "dist/${NAME}.apk"
           # AAB only exists for real releases; ignore if absent (TEST fallback).
-          cp platforms/android/app/build/outputs/bundle/release/*.aab "dist/${NAME}.aab" 2>/dev/null || true
+          cp apps/mobile/platforms/android/app/build/outputs/bundle/release/*.aab "dist/${NAME}.aab" 2>/dev/null || true
           ls -lh dist
 
       - name: Upload artifacts to the run

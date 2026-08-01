@@ -1,6 +1,12 @@
-# Compile check for every PR and every push to main.
-# Builds an unsigned debug APK so we catch native/build breakage early.
-# No signing secrets are required for this workflow.
+# Quality gate for every PR and every push to main.
+#
+# Two jobs, cheapest first:
+#   check          — typecheck both workspace packages + the headless core suite
+#                    (~1 min incl. install; no Android SDK, no emulator)
+#   android-debug  — unsigned debug APK, so native/build breakage surfaces early
+#
+# The repo is an npm workspace: `npm ci` runs at the root, the NativeScript
+# project lives in apps/mobile (see docs/adr/0001-monorepo-and-platform-free-core.md).
 name: CI
 
 on:
@@ -15,9 +21,30 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
+  check:
+    name: Typecheck & tests
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      # tsc + vue-tsc over both packages, then vitest over @correctiv/app-core.
+      # Includes the boundary guard that keeps the core free of platform SDKs.
+      - name: Check
+        run: npm run check
+
   android-debug:
     name: Android debug build
     runs-on: ubuntu-latest
+    needs: check
     # Skip the NativeScript doctor preflight: a build-only runner has no
     # emulator/SDK images, which the doctor otherwise treats as a fatal error
     # even though a compilation-capable SDK is present.
@@ -28,7 +55,7 @@ jobs:
       # `ns build` has no IPC, so the bundle never reaches assets/app and the
       # Static Binding Generator fails. Point Vite's output dir straight at the
       # platform assets dir so the bundle lands where the build expects it.
-      NS_VITE_DIST_DIR: ${{ github.workspace }}/platforms/android/app/src/main/assets/app
+      NS_VITE_DIST_DIR: ${{ github.workspace }}/apps/mobile/platforms/android/app/src/main/assets/app
     steps:
       - uses: actions/checkout@v4
 
@@ -52,6 +79,7 @@ jobs:
           yes | "$SDKMANAGER" --licenses >/dev/null 2>&1 || true
           "$SDKMANAGER" "platform-tools" "platforms;android-35" "build-tools;35.0.0" >/dev/null || true
 
+      # Workspace root — installs every package, links @correctiv/app-core.
       - name: Install dependencies
         run: npm ci
 
@@ -59,12 +87,14 @@ jobs:
         run: npm install -g nativescript
 
       - name: Build Android (debug)
+        working-directory: apps/mobile
         run: ns build android
 
       # Surface the real Static Binding Generator error if the build fails:
       # the top-level log only says "error in the JS Parser execution".
       - name: SBG diagnostics on failure
         if: failure()
+        working-directory: apps/mobile
         run: |
           echo "=== which node / version ==="; which node; node --version
           echo "=== runSbg.log ==="
@@ -76,6 +106,6 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: correctiv-app-debug-apk
-          path: platforms/android/app/build/outputs/apk/**/*.apk
+          path: apps/mobile/platforms/android/app/build/outputs/apk/**/*.apk
           if-no-files-found: warn
           retention-days: 14
