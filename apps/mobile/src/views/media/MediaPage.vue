@@ -33,7 +33,12 @@
                   />
                   <Label v-else :text="icons.mic" class="lucide series-tile__icon" />
                 </GridLayout>
-                <Label :text="series.title" class="series-tile__title" textWrap="true" :maxLines="2" />
+                <Label
+                  :text="series.title"
+                  class="series-tile__title"
+                  textWrap="true"
+                  :maxLines="2"
+                />
                 <Label :text="series.publisher" class="series-tile__publisher" />
               </StackLayout>
             </StackLayout>
@@ -51,7 +56,11 @@
                 :subtitle="formatDateShortDe(video.publishedAt)"
                 @open="openVideo(video, 'CORRECTIV im Gespräch')"
               />
-              <Label v-if="media.byKey.gespraech.status === 'error'" text="Videos derzeit nicht erreichbar." class="ty-text-s text-grey-600 px-sm" />
+              <Label
+                v-if="media.byKey.gespraech.status === 'error'"
+                text="Videos derzeit nicht erreichbar."
+                class="ty-text-s text-grey-600 px-sm"
+              />
             </StackLayout>
           </ScrollView>
 
@@ -68,7 +77,11 @@
                 :durationLabel="video.durationSec ? formatTimeHm(video.durationSec) : ''"
                 @open="openVideo(video, 'FunFacts')"
               />
-              <Label v-if="media.byKey.funfacts.status === 'error'" text="Videos derzeit nicht erreichbar." class="ty-text-s text-grey-600 px-sm" />
+              <Label
+                v-if="media.byKey.funfacts.status === 'error'"
+                text="Videos derzeit nicht erreichbar."
+                class="ty-text-s text-grey-600 px-sm"
+              />
             </StackLayout>
           </ScrollView>
 
@@ -85,7 +98,11 @@
             <StackLayout col="1" verticalAlignment="center">
               <Label :text="bonus.title" class="episode-row__title" textWrap="true" />
               <Label
-                :text="membership.isMember ? bonus.durationLabel : `${bonus.durationLabel} · 60 Sek. anspielen`"
+                :text="
+                  membership.isMember
+                    ? bonus.durationLabel
+                    : `${bonus.durationLabel} · 60 Sek. anspielen`
+                "
                 class="episode-row__meta"
               />
             </StackLayout>

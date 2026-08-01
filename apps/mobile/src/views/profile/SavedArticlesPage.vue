@@ -3,7 +3,12 @@
     <GridLayout rows="auto, *" class="bg-grey-100">
       <GridLayout row="0" columns="auto, *" class="px-sm py-s hairline-bottom">
         <Label col="0" :text="icons.arrowLeft" class="lucide back-icon" @tap="goBack()" />
-        <Label col="1" text="Gespeicherte Artikel" class="ty-headline-xs text-grey-700 ml-s" verticalAlignment="center" />
+        <Label
+          col="1"
+          text="Gespeicherte Artikel"
+          class="ty-headline-xs text-grey-700 ml-s"
+          verticalAlignment="center"
+        />
       </GridLayout>
       <ScrollView row="1">
         <StackLayout class="py-s">
@@ -21,11 +26,28 @@
             @tap="open(article.url)"
           >
             <StackLayout col="0">
-              <Label v-if="article.topline" :text="article.topline.toUpperCase()" class="ty-text-s text-emphasis" />
-              <Label :text="article.title" class="ty-text-m font-sans-semibold text-grey-700" textWrap="true" :maxLines="2" />
-              <Label :text="`gespeichert ${formatDateShortDe(article.savedAt)}`" class="ty-text-s text-grey-500 mt-xs" />
+              <Label
+                v-if="article.topline"
+                :text="article.topline.toUpperCase()"
+                class="ty-text-s text-emphasis"
+              />
+              <Label
+                :text="article.title"
+                class="ty-text-m font-sans-semibold text-grey-700"
+                textWrap="true"
+                :maxLines="2"
+              />
+              <Label
+                :text="`gespeichert ${formatDateShortDe(article.savedAt)}`"
+                class="ty-text-s text-grey-500 mt-xs"
+              />
             </StackLayout>
-            <Label col="1" :text="icons.x" class="lucide saved-remove" @tap="saved.remove(article.url)" />
+            <Label
+              col="1"
+              :text="icons.x"
+              class="lucide saved-remove"
+              @tap="saved.remove(article.url)"
+            />
           </GridLayout>
         </StackLayout>
       </ScrollView>

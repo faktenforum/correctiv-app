@@ -13,10 +13,15 @@
   "ignorePatterns": [
     "docs/**",
     "media/**",
+    "apps/mobile/App_Resources/**",
+    ".github/**",
+    "**/*.md",
+    "**/*.scss",
     "apps/mobile/src/assets/**",
     "apps/mobile/src/fonts/**",
     "packages/app-core/test/__fixtures__/**",
     "**/*.d.mts",
     "package-lock.json"
-  ]
+  ],
+  "sortPackageJson": false
 }

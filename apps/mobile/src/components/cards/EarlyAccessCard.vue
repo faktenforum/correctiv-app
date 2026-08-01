@@ -15,7 +15,12 @@
         class="early-access-card__when"
         textWrap="true"
       />
-      <Button text="Jetzt lesen" class="btn-dark btn-compact mt-s" horizontalAlignment="left" @tap="onTap" />
+      <Button
+        text="Jetzt lesen"
+        class="btn-dark btn-compact mt-s"
+        horizontalAlignment="left"
+        @tap="onTap"
+      />
     </template>
   </StackLayout>
 </template>

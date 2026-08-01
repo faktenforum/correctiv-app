@@ -23,7 +23,8 @@ function getOfflineIndex(): OfflineIndexEntry[] {
   try {
     const file = appPath('assets', 'data', 'articles', 'index.json');
     offlineIndex = File.exists(file)
-      ? (JSON.parse(File.fromPath(file).readTextSync()) as { articles: OfflineIndexEntry[] }).articles
+      ? (JSON.parse(File.fromPath(file).readTextSync()) as { articles: OfflineIndexEntry[] })
+          .articles
       : [];
   } catch {
     offlineIndex = [];
@@ -116,7 +117,10 @@ const RATING_LABELS: Record<string, string> = {
   mostly_true: 'Größtenteils richtig',
 };
 
-export function ratingLabel(rating: string | null | undefined, ratingText?: string | null): string | null {
+export function ratingLabel(
+  rating: string | null | undefined,
+  ratingText?: string | null,
+): string | null {
   if (!rating) return null;
   // ratingText from the page is the most reliable ("Falsch Über diese Bewertung")
   const fromPage = ratingText?.replace(/Über diese Bewertung.*/i, '').trim();

@@ -1,7 +1,13 @@
 <template>
   <GridLayout columns="*, auto" class="section-header">
     <Label col="0" :text="title" class="section-header__title" />
-    <Label v-if="action" col="1" :text="action" class="section-header__action" @tap="$emit('action')" />
+    <Label
+      v-if="action"
+      col="1"
+      :text="action"
+      class="section-header__action"
+      @tap="$emit('action')"
+    />
   </GridLayout>
 </template>
 

@@ -67,11 +67,16 @@ export const claimsResponse = {
         id: 'claim-003',
         shortId: 'FF-2423',
         quote: 'Supermärkte dürfen ab Juli keine Bargeldzahlungen über 50 Euro mehr annehmen.',
-        synopsis: 'Mehrere Nutzer:innen haben den Claim eingereicht; die Community trägt Quellen zusammen.',
+        synopsis:
+          'Mehrere Nutzer:innen haben den Claim eingereicht; die Community trägt Quellen zusammen.',
         status: 'checking',
         submittedAt: '2026-06-11T19:45:00+02:00',
         sources: [
-          { url: 'https://example.social/post/839221', credibility: 'niedrig', note: 'Ursprungspost' },
+          {
+            url: 'https://example.social/post/839221',
+            credibility: 'niedrig',
+            note: 'Ursprungspost',
+          },
         ],
       },
       {
@@ -123,17 +128,20 @@ export const claimsResponse = {
 export const claims = claimsResponse.data.claims;
 
 const RATING_TEXT: Record<NonNullable<Claim['rating']>, string> = {
-  'falsch': 'Falsch',
+  falsch: 'Falsch',
   'fehlender-kontext': 'Fehlender Kontext',
-  'richtig': 'Richtig',
-  'unbelegt': 'Unbelegt',
+  richtig: 'Richtig',
+  unbelegt: 'Unbelegt',
 };
 
 /** Status tag for claim lists and the claim detail page (shared UI helper). */
 export function claimStatusTag(claim: Claim): { text: string; cls: string } {
   if (claim.status === 'checked') {
     const text = `Geprüft: ${claim.rating ? RATING_TEXT[claim.rating] : 'Abgeschlossen'}`;
-    return { text, cls: claim.rating === 'richtig' ? 'status-tag--checked-true' : 'status-tag--checked' };
+    return {
+      text,
+      cls: claim.rating === 'richtig' ? 'status-tag--checked-true' : 'status-tag--checked',
+    };
   }
   if (claim.status === 'checking') return { text: 'In Prüfung', cls: 'status-tag--checking' };
   return { text: 'Eingereicht', cls: 'status-tag--submitted' };

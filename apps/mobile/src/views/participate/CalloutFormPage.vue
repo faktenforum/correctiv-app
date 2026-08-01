@@ -3,7 +3,13 @@
     <GridLayout rows="auto, auto, *, auto" class="bg-grey-100">
       <GridLayout row="0" columns="auto, *" class="px-sm py-s hairline-bottom">
         <Label col="0" :text="icons.x" class="lucide back-icon" @tap="goBack()" />
-        <Label col="1" :text="callout.title" class="ty-headline-xs text-grey-700 ml-s" verticalAlignment="center" :maxLines="1" />
+        <Label
+          col="1"
+          :text="callout.title"
+          class="ty-headline-xs text-grey-700 ml-s"
+          verticalAlignment="center"
+          :maxLines="1"
+        />
       </GridLayout>
 
       <!-- Step indicator -->
@@ -19,10 +25,21 @@
 
       <ScrollView row="2">
         <StackLayout class="px-sm py-m">
-          <Label :text="`Schritt ${step + 1} von ${slides.length}`" class="ty-text-s text-grey-500" />
-          <Label :text="currentSlide.title" class="ty-headline-l text-grey-700 mt-xs" textWrap="true" />
+          <Label
+            :text="`Schritt ${step + 1} von ${slides.length}`"
+            class="ty-text-s text-grey-500"
+          />
+          <Label
+            :text="currentSlide.title"
+            class="ty-headline-l text-grey-700 mt-xs"
+            textWrap="true"
+          />
 
-          <StackLayout v-for="component in currentSlide.components" :key="component.key" class="mt-m">
+          <StackLayout
+            v-for="component in currentSlide.components"
+            :key="component.key"
+            class="mt-m"
+          >
             <Label :text="component.label" class="ty-headline-xs text-grey-700" textWrap="true" />
             <Label
               v-if="component.description"
@@ -32,7 +49,10 @@
             />
 
             <!-- radio / selectboxes -->
-            <StackLayout v-if="component.type === 'radio' || component.type === 'selectboxes'" class="mt-s">
+            <StackLayout
+              v-if="component.type === 'radio' || component.type === 'selectboxes'"
+              class="mt-s"
+            >
               <GridLayout
                 v-for="value in component.values"
                 :key="value.value"
@@ -65,11 +85,20 @@
             />
 
             <!-- file (mock) -->
-            <GridLayout v-else-if="component.type === 'file'" columns="auto, *" class="form-file mt-s" @tap="toggleFile(component.key)">
+            <GridLayout
+              v-else-if="component.type === 'file'"
+              columns="auto, *"
+              class="form-file mt-s"
+              @tap="toggleFile(component.key)"
+            >
               <Label col="0" :text="icons.camera" class="lucide form-file__icon" />
               <Label
                 col="1"
-                :text="fileAttached[component.key] ? 'foto_2026-06-12.jpg angehängt ✓' : 'Foto oder Dokument auswählen (simuliert)'"
+                :text="
+                  fileAttached[component.key]
+                    ? 'foto_2026-06-12.jpg angehängt ✓'
+                    : 'Foto oder Dokument auswählen (simuliert)'
+                "
                 class="form-file__label"
                 textWrap="true"
               />

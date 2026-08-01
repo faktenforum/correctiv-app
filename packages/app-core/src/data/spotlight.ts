@@ -50,7 +50,8 @@ export const spotlightIssues: SpotlightIssue[] = [
         time: '07:25',
         title: 'Großstädte warnen vor neuem Heizungsgesetz',
         text: 'Mehrere Großstädte sehen die kommunale Wärmeplanung durch die Reform gefährdet. Die Dokumente liegen CORRECTIV vor.',
-        articleUrl: 'https://correctiv.org/aktuelles/klimawandel/2026/06/10/grossstaedte-warnen-vor-reiches-heizungsgesetz/',
+        articleUrl:
+          'https://correctiv.org/aktuelles/klimawandel/2026/06/10/grossstaedte-warnen-vor-reiches-heizungsgesetz/',
       },
     ],
   },
@@ -70,13 +71,15 @@ export const spotlightIssues: SpotlightIssue[] = [
         time: '07:18',
         title: 'Die perfekte Frau der Autokraten',
         text: 'Wie autoritäre Bewegungen ein Frauenideal konstruieren — und was das über ihre Gesellschaftsbilder verrät.',
-        articleUrl: 'https://correctiv.org/aktuelles/international/2026/06/12/die-perfekte-frau-wie-autokraten-ein-ideal-erschaffen/',
+        articleUrl:
+          'https://correctiv.org/aktuelles/international/2026/06/12/die-perfekte-frau-wie-autokraten-ein-ideal-erschaffen/',
       },
       {
         time: '07:31',
         title: 'Neuer Höchststand bei Förderschülern',
         text: 'Immer mehr Kinder besuchen Förderschulen — die Inklusion stockt. Die Zahlen im Überblick.',
-        articleUrl: 'https://correctiv.org/aktuelles/bildung/2026/06/12/neuer-hoechststand-bei-foerderschuelern/',
+        articleUrl:
+          'https://correctiv.org/aktuelles/bildung/2026/06/12/neuer-hoechststand-bei-foerderschuelern/',
       },
     ],
   },
@@ -89,19 +92,22 @@ export const spotlightIssues: SpotlightIssue[] = [
         time: '07:05',
         title: 'Dürre bedroht Europas Landwirtschaft',
         text: 'Wassermangel setzt Bauern in ganz Europa zu. Unsere Klima-Redaktion hat die Daten ausgewertet.',
-        articleUrl: 'https://correctiv.org/aktuelles/klimawandel/2026/06/11/duerre-trockenheit-wassermangel-landwirtschaft-europa/',
+        articleUrl:
+          'https://correctiv.org/aktuelles/klimawandel/2026/06/11/duerre-trockenheit-wassermangel-landwirtschaft-europa/',
       },
       {
         time: '07:20',
         title: 'Wo reicht Ihr Geld zum Wohnen?',
         text: 'CORRECTIV.Schweiz hat Miet- und Kaufpreise verglichen — ein interaktiver Überblick.',
-        articleUrl: 'https://correctiv.org/wohnen/2026/06/04/wo-reicht-ihr-geld-zum-wohnen-schweiz-miete-kauf-preise/',
+        articleUrl:
+          'https://correctiv.org/wohnen/2026/06/04/wo-reicht-ihr-geld-zum-wohnen-schweiz-miete-kauf-preise/',
       },
       {
         time: '07:33',
         title: 'Sieben Forderungen für den Lokaljournalismus',
         text: 'Was sich ändern muss, damit lokale Recherchen überleben — das Netzwerk CORRECTIV.Lokal legt vor.',
-        articleUrl: 'https://correctiv.org/in-eigener-sache/2025/05/28/sieben-forderungen-um-lokaljournalismus-zu-verbessern/',
+        articleUrl:
+          'https://correctiv.org/in-eigener-sache/2025/05/28/sieben-forderungen-um-lokaljournalismus-zu-verbessern/',
       },
     ],
   },

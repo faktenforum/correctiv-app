@@ -8,7 +8,12 @@
 
       <!-- :key re-renders the list on a theme flip — CollectionView recycles
            cells natively and won't re-apply .ns-dark/.ns-light otherwise -->
-      <CollectionView row="1" :key="themeTick" :items="modules" :itemTemplateSelector="templateSelector">
+      <CollectionView
+        row="1"
+        :key="themeTick"
+        :items="modules"
+        :itemTemplateSelector="templateSelector"
+      >
         <!-- 1. Hero: top investigation (LIVE) — flat, directly below the header -->
         <template #hero="{ item }">
           <ArticleCard :item="item.article" variant="hero" badge="Recherche" @open="openArticle" />
@@ -17,7 +22,11 @@
         <!-- 2. Spotlight briefing (SAMPLE) -->
         <template #briefing="{ item }">
           <StackLayout>
-            <SectionHeader title="Das Wichtigste heute" action="Alle Ausgaben" @action="openSpotlight" />
+            <SectionHeader
+              title="Das Wichtigste heute"
+              action="Alle Ausgaben"
+              @action="openSpotlight"
+            />
             <SpotlightBriefing :issue="item.issue" @open="openUrl" />
           </StackLayout>
         </template>
@@ -38,7 +47,12 @@
         </template>
         <template #default="{ item }">
           <StackLayout class="list-pad">
-            <ArticleCard :item="item.article" variant="standard" :badge="item.badge" @open="openArticle" />
+            <ArticleCard
+              :item="item.article"
+              variant="standard"
+              :badge="item.badge"
+              @open="openArticle"
+            />
           </StackLayout>
         </template>
 
@@ -56,8 +70,18 @@
                   @tap="openArticle(check)"
                 >
                   <ProjectBadge text="Faktencheck" />
-                  <Label :text="check.title" class="factcheck-rail-card__title" textWrap="true" :maxLines="4" />
-                  <Label :text="check.teaser" class="factcheck-rail-card__teaser" textWrap="true" :maxLines="3" />
+                  <Label
+                    :text="check.title"
+                    class="factcheck-rail-card__title"
+                    textWrap="true"
+                    :maxLines="4"
+                  />
+                  <Label
+                    :text="check.teaser"
+                    class="factcheck-rail-card__teaser"
+                    textWrap="true"
+                    :maxLines="3"
+                  />
                 </StackLayout>
               </StackLayout>
             </ScrollView>
@@ -180,7 +204,11 @@ const modules = computed((): HomeModule[] => {
     return [{ id: 'status', kind: 'status', text: 'Aktuelle Recherchen werden geladen …' }];
   }
   if (recherchen.status === 'offline') {
-    result.push({ id: 'offline', kind: 'status', text: 'Offline — gebündelte Inhalte werden angezeigt.' });
+    result.push({
+      id: 'offline',
+      kind: 'status',
+      text: 'Offline — gebündelte Inhalte werden angezeigt.',
+    });
   }
 
   const articles = recherchen.items;
@@ -205,11 +233,18 @@ const modules = computed((): HomeModule[] => {
   // Personalization (onboarding): selected interests move modules up
   const boosted = interestsStore.boostedModules;
   if (railModule && boosted.includes('factcheckRail')) {
-    result.splice(result.findIndex((m) => m.id === 'sec-recherchen'), 0, railModule);
+    result.splice(
+      result.findIndex((m) => m.id === 'sec-recherchen'),
+      0,
+      railModule,
+    );
   }
   if (boosted.includes('mediaRow')) {
     const anchor = result.findIndex((m) => m.id === 'sec-recherchen');
-    result.splice(anchor >= 0 ? anchor : result.length, 0, { ...mediaModule, id: 'mediaRow-boost' });
+    result.splice(anchor >= 0 ? anchor : result.length, 0, {
+      ...mediaModule,
+      id: 'mediaRow-boost',
+    });
   }
 
   if (railModule && !boosted.includes('factcheckRail')) result.push(railModule);
@@ -220,7 +255,12 @@ const modules = computed((): HomeModule[] => {
     if (feedItems.length > 0) {
       result.push({ id: `sec-${interest.id}`, kind: 'sectionInterest', title: interest.label });
       for (const article of feedItems) {
-        result.push({ id: `${interest.id}-${article.id}`, kind: 'article', article, badge: interest.label });
+        result.push({
+          id: `${interest.id}-${article.id}`,
+          kind: 'article',
+          article,
+          badge: interest.label,
+        });
       }
     }
   }
@@ -256,7 +296,11 @@ let loaded = false;
 async function onLoaded() {
   if (loaded) return;
   loaded = true;
-  await Promise.all([feeds.fetch('recherchen'), feeds.fetch('faktencheck'), media.fetch('funfacts')]);
+  await Promise.all([
+    feeds.fetch('recherchen'),
+    feeds.fetch('faktencheck'),
+    media.fetch('funfacts'),
+  ]);
   // Load interest feeds afterwards (personalization)
   for (const interest of interestsStore.extraFeeds) {
     feeds.fetch(interest.feed!);

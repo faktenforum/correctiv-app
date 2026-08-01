@@ -3,16 +3,29 @@
     <GridLayout rows="auto, *, auto" class="bg-grey-100">
       <GridLayout row="0" columns="auto, *" class="px-sm py-s hairline-bottom">
         <Label col="0" :text="icons.arrowLeft" class="lucide back-icon" @tap="goBack()" />
-        <Label col="1" text="Mitmachen" class="ty-headline-xs text-grey-700 ml-s" verticalAlignment="center" />
+        <Label
+          col="1"
+          text="Mitmachen"
+          class="ty-headline-xs text-grey-700 ml-s"
+          verticalAlignment="center"
+        />
       </GridLayout>
 
       <ScrollView row="1">
         <StackLayout class="px-sm py-m">
           <Label text="CROWDNEWSROOM" class="callout-kicker" />
-          <Label :text="callout.title" class="ty-headline-xl text-grey-700 font-serif-bold mt-xs" textWrap="true" />
+          <Label
+            :text="callout.title"
+            class="ty-headline-xl text-grey-700 font-serif-bold mt-xs"
+            textWrap="true"
+          />
           <GridLayout columns="auto, auto" class="mt-s">
             <Label col="0" :text="icons.users" class="lucide callout-count-icon" />
-            <Label col="1" :text="`${formatNumberDe(totalCount)} Beiträge bisher`" class="callout-count" />
+            <Label
+              col="1"
+              :text="`${formatNumberDe(totalCount)} Beiträge bisher`"
+              class="callout-count"
+            />
           </GridLayout>
 
           <Label

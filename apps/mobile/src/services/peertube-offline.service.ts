@@ -16,7 +16,10 @@
 
 import { Utils, File, Folder } from '@nativescript/core';
 import { fetchText } from '@correctiv/app-core/services/http';
-import type { PeerTubeVideo, PeerTubeRendition } from '@correctiv/app-core/services/peertube.service';
+import type {
+  PeerTubeVideo,
+  PeerTubeRendition,
+} from '@correctiv/app-core/services/peertube.service';
 
 export interface OfflineBundle {
   masterPath: string;
@@ -84,7 +87,8 @@ function buildLocalMaster(
     );
   }
   const audioAttr = audioPlaylist ? ',AUDIO="audio"' : '';
-  const resolution = video.width && video.height ? `,RESOLUTION=${video.width}x${video.height}` : '';
+  const resolution =
+    video.width && video.height ? `,RESOLUTION=${video.width}x${video.height}` : '';
   // H.264 High@L4 + AAC-LC — what tube.funfacts.de transcodes to; ExoPlayer only
   // needs CODECS present, not exact, to pick this single variant.
   lines.push(
@@ -95,7 +99,9 @@ function buildLocalMaster(
 }
 
 function downloadManager(): android.app.DownloadManager {
-  return context().getSystemService(android.content.Context.DOWNLOAD_SERVICE) as android.app.DownloadManager;
+  return context().getSystemService(
+    android.content.Context.DOWNLOAD_SERVICE,
+  ) as android.app.DownloadManager;
 }
 
 /** Enqueue a streamed download into <externalFilesDir>/<relSubPath>; returns its id. */
@@ -175,7 +181,9 @@ export async function downloadForOffline(
   }
 
   // 3) A trimmed master.m3u8 referencing only the downloaded variant + audio.
-  await File.fromPath(localMasterPath(video.id)).writeText(buildLocalMaster(videoR, vPlaylist, aPlaylist));
+  await File.fromPath(localMasterPath(video.id)).writeText(
+    buildLocalMaster(videoR, vPlaylist, aPlaylist),
+  );
 
   return {
     masterPath: localMasterPath(video.id),

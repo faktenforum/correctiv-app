@@ -3,13 +3,22 @@
     <GridLayout rows="auto, *" class="bg-grey-100">
       <GridLayout row="0" columns="auto, *" class="px-sm py-s hairline-bottom">
         <Label col="0" :text="icons.arrowLeft" class="lucide back-icon" @tap="goBack()" />
-        <Label col="1" :text="series.title" class="ty-headline-xs text-grey-700 ml-s" verticalAlignment="center" />
+        <Label
+          col="1"
+          :text="series.title"
+          class="ty-headline-xs text-grey-700 ml-s"
+          verticalAlignment="center"
+        />
       </GridLayout>
       <ScrollView row="1">
         <StackLayout class="py-s">
           <StackLayout class="px-sm pb-s">
             <Label :text="series.publisher" class="ty-text-s text-emphasis" />
-            <Label :text="series.description" class="ty-text-m text-grey-600 mt-xs" textWrap="true" />
+            <Label
+              :text="series.description"
+              class="ty-text-m text-grey-600 mt-xs"
+              textWrap="true"
+            />
           </StackLayout>
           <GridLayout
             v-for="episode in series.episodes"
@@ -18,10 +27,19 @@
             class="episode-row hairline-bottom"
             @tap="play(episode)"
           >
-            <Label col="0" :text="isCurrent(episode) && audioStore.status === 'playing' ? icons.pause : icons.play" class="lucide episode-row__play" />
+            <Label
+              col="0"
+              :text="
+                isCurrent(episode) && audioStore.status === 'playing' ? icons.pause : icons.play
+              "
+              class="lucide episode-row__play"
+            />
             <StackLayout col="1" verticalAlignment="center">
               <Label :text="episode.title" class="episode-row__title" textWrap="true" />
-              <Label :text="`${formatDateShortDe(episode.date)} · ${episode.durationLabel}`" class="episode-row__meta" />
+              <Label
+                :text="`${formatDateShortDe(episode.date)} · ${episode.durationLabel}`"
+                class="episode-row__meta"
+              />
             </StackLayout>
             <ClubBadge v-if="episode.club" col="2" verticalAlignment="center" />
           </GridLayout>

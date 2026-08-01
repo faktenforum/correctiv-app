@@ -104,16 +104,24 @@ export function extractArticle(html) {
   let authors = null;
   if (authorsBlock) {
     // "von Max Bernhard" — the <time> element is not part of the authors
-    authors = stripTags(authorsBlock.replace(/<time[\s\S]*?<\/time>/gi, '')).replace(/^von\s+/i, '');
+    authors = stripTags(authorsBlock.replace(/<time[\s\S]*?<\/time>/gi, '')).replace(
+      /^von\s+/i,
+      '',
+    );
   }
 
-  const dateM = html.match(/<time[^>]*class="[^"]*detail__date[^"]*"[^>]*datetime="([^"]+)"[^>]*>([\s\S]*?)<\/time>/);
+  const dateM = html.match(
+    /<time[^>]*class="[^"]*detail__date[^"]*"[^>]*datetime="([^"]+)"[^>]*>([\s\S]*?)<\/time>/,
+  );
   const dateIso = dateM ? dateM[1] : null;
   const dateText = dateM ? stripTags(dateM[2]) : null;
 
   const ratingM = html.match(/\/rating\/([a-z0-9_-]+)\.svg/i);
   const rating = ratingM ? ratingM[1] : null;
-  const ratingTextBlock = balancedBlock(html, /<\w+[^>]*class="[^"]*detail__rating-text[^"]*"[^>]*>/);
+  const ratingTextBlock = balancedBlock(
+    html,
+    /<\w+[^>]*class="[^"]*detail__rating-text[^"]*"[^>]*>/,
+  );
   const ratingText = ratingTextBlock ? stripTags(ratingTextBlock) : null;
 
   const bodyBlock = balancedBlock(html, /<div[^>]*class="[^"]*detail__content[^"]*"[^>]*>/);
@@ -135,6 +143,8 @@ export function extractArticle(html) {
 
 /** Reading time in minutes (~200 words/min) from article HTML. */
 export function readingMinutes(bodyHtml) {
-  const words = stripTags(bodyHtml || '').split(/\s+/).filter(Boolean).length;
+  const words = stripTags(bodyHtml || '')
+    .split(/\s+/)
+    .filter(Boolean).length;
   return Math.max(1, Math.round(words / 200));
 }

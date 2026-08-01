@@ -7,7 +7,13 @@
     </GridLayout>
     <ClubBadge v-if="club" class="mt-xs" />
     <Label :text="title" class="media-card__title" textWrap="true" :maxLines="2" />
-    <Label v-if="subtitle" :text="subtitle" class="media-card__subtitle" textWrap="true" :maxLines="1" />
+    <Label
+      v-if="subtitle"
+      :text="subtitle"
+      class="media-card__subtitle"
+      textWrap="true"
+      :maxLines="1"
+    />
   </StackLayout>
 </template>
 

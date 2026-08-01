@@ -15,10 +15,20 @@
         <StackLayout class="uplayer__meta">
           <GridLayout columns="auto, *" class="uplayer__kicker-row">
             <Label col="0" :text="kicker" class="kicker" verticalAlignment="center" />
-            <Label col="1" :text="dateLabel" class="uplayer__episode ml-s" verticalAlignment="center" />
+            <Label
+              col="1"
+              :text="dateLabel"
+              class="uplayer__episode ml-s"
+              verticalAlignment="center"
+            />
           </GridLayout>
           <Label :text="video.title" class="uplayer__title" textWrap="true" />
-          <Label v-if="channel" :text="channel" class="uplayer__source hairline-bottom" textWrap="true" />
+          <Label
+            v-if="channel"
+            :text="channel"
+            class="uplayer__source hairline-bottom"
+            textWrap="true"
+          />
           <Label
             v-if="video.description"
             :text="video.description"
@@ -26,8 +36,18 @@
             textWrap="true"
           />
           <GridLayout columns="auto, auto, *" class="uplayer__watch" @tap="openExternal">
-            <Label col="0" text="Auf YouTube ansehen" class="uplayer__watch-text" verticalAlignment="center" />
-            <Label col="1" :text="icons.arrowUpRight" class="lucide uplayer__watch-icon ml-xs" verticalAlignment="center" />
+            <Label
+              col="0"
+              text="Auf YouTube ansehen"
+              class="uplayer__watch-text"
+              verticalAlignment="center"
+            />
+            <Label
+              col="1"
+              :text="icons.arrowUpRight"
+              class="lucide uplayer__watch-icon ml-xs"
+              verticalAlignment="center"
+            />
           </GridLayout>
           <StackLayout class="uplayer__bande">
             <Label

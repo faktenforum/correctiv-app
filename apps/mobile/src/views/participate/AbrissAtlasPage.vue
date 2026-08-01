@@ -3,7 +3,12 @@
     <GridLayout rows="auto, *" class="bg-grey-100">
       <GridLayout row="0" columns="auto, *" class="px-sm py-s hairline-bottom">
         <Label col="0" :text="icons.arrowLeft" class="lucide back-icon" @tap="goBack()" />
-        <Label col="1" text="Abriss-Atlas" class="ty-headline-xs text-grey-700 ml-s" verticalAlignment="center" />
+        <Label
+          col="1"
+          text="Abriss-Atlas"
+          class="ty-headline-xs text-grey-700 ml-s"
+          verticalAlignment="center"
+        />
       </GridLayout>
       <ScrollView row="1">
         <StackLayout class="px-sm py-m">
@@ -30,10 +35,19 @@
               <Label :text="entry.building" class="ty-text-m text-grey-700" textWrap="true" />
               <Label :text="`${entry.place} · ${entry.year}`" class="ty-text-s text-grey-500" />
             </StackLayout>
-            <Label col="2" :text="entry.status" class="ty-text-s text-grey-500" verticalAlignment="center" />
+            <Label
+              col="2"
+              :text="entry.status"
+              class="ty-text-s text-grey-500"
+              verticalAlignment="center"
+            />
           </GridLayout>
 
-          <Button text="Abriss melden auf abriss-atlas.de" class="btn-primary mt-m" @tap="openAtlas" />
+          <Button
+            text="Abriss melden auf abriss-atlas.de"
+            class="btn-primary mt-m"
+            @tap="openAtlas"
+          />
         </StackLayout>
       </ScrollView>
     </GridLayout>

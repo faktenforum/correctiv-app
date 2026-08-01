@@ -31,7 +31,8 @@ export async function playUrl(url: string, callbacks: AudioServiceCallbacks = {}
     // iOS in theory: playback category so audio keeps playing in the background
     sessionCategory: 'AVAudioSessionCategoryPlayback',
     completeCallback: () => callbacks.onComplete?.(),
-    errorCallback: (args: unknown) => callbacks.onError?.(String((args as { error?: unknown })?.error ?? args)),
+    errorCallback: (args: unknown) =>
+      callbacks.onError?.(String((args as { error?: unknown })?.error ?? args)),
   });
 }
 
@@ -45,7 +46,8 @@ export async function playFile(path: string, callbacks: AudioServiceCallbacks = 
     autoPlay: true,
     sessionCategory: 'AVAudioSessionCategoryPlayback',
     completeCallback: () => callbacks.onComplete?.(),
-    errorCallback: (args: unknown) => callbacks.onError?.(String((args as { error?: unknown })?.error ?? args)),
+    errorCallback: (args: unknown) =>
+      callbacks.onError?.(String((args as { error?: unknown })?.error ?? args)),
   });
 }
 
@@ -58,7 +60,9 @@ export function resume(): void {
 }
 
 export async function stop(): Promise<void> {
-  await getPlayer().stop().catch(() => undefined);
+  await getPlayer()
+    .stop()
+    .catch(() => undefined);
 }
 
 export async function seekTo(seconds: number): Promise<void> {

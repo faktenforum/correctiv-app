@@ -45,7 +45,11 @@
             >
               <Label col="0" :text="sampleIcon(hit.kind)" class="lucide hub-card__icon" />
               <StackLayout col="1">
-                <Label :text="hit.title" class="ty-text-m font-sans-semibold text-grey-700" textWrap="true" />
+                <Label
+                  :text="hit.title"
+                  class="ty-text-m font-sans-semibold text-grey-700"
+                  textWrap="true"
+                />
                 <Label :text="hit.subtitle" class="ty-text-s text-grey-500" />
               </StackLayout>
             </GridLayout>
@@ -152,11 +156,16 @@ const sampleHits = computed((): SearchSample[] => {
 
 function sampleIcon(kind: SearchSample['kind']): string {
   switch (kind) {
-    case 'podcast': return icons.headphones;
-    case 'callout': return icons.megaphone;
-    case 'backstage': return icons.sparkles;
-    case 'verlag': return icons.fileText;
-    default: return icons.compass;
+    case 'podcast':
+      return icons.headphones;
+    case 'callout':
+      return icons.megaphone;
+    case 'backstage':
+      return icons.sparkles;
+    case 'verlag':
+      return icons.fileText;
+    default:
+      return icons.compass;
   }
 }
 

@@ -6,7 +6,12 @@
     <GridLayout rows="auto, *" class="bg-grey-100">
       <GridLayout row="0" columns="auto, *, auto" class="px-sm py-s hairline-bottom">
         <Label col="0" :text="icons.arrowLeft" class="lucide back-icon" @tap="goBack()" />
-        <Label col="1" text="Backstage" class="ty-headline-xs text-grey-700 ml-s" verticalAlignment="center" />
+        <Label
+          col="1"
+          text="Backstage"
+          class="ty-headline-xs text-grey-700 ml-s"
+          verticalAlignment="center"
+        />
         <ClubBadge col="2" verticalAlignment="center" />
       </GridLayout>
 
@@ -15,16 +20,20 @@
           <!-- Greeting -->
           <StackLayout class="px-sm pt-m">
             <Label
-              :text="membership.isMember
-                ? 'Schön, dass Sie da sind.'
-                : 'Backstage ist der Bereich für Clubmitglieder.'"
+              :text="
+                membership.isMember
+                  ? 'Schön, dass Sie da sind.'
+                  : 'Backstage ist der Bereich für Clubmitglieder.'
+              "
               class="ty-headline-xl text-grey-700 font-serif-bold"
               textWrap="true"
             />
             <Label
-              :text="membership.isMember
-                ? `Mitglied seit ${memberSinceLabel} — hier ist, was diese Woche hinter den Kulissen passiert.`
-                : 'Alles hier können Sie sehen — ganz lesen, hören und dabei sein können Mitglieder. Werden Sie Teil davon.'"
+              :text="
+                membership.isMember
+                  ? `Mitglied seit ${memberSinceLabel} — hier ist, was diese Woche hinter den Kulissen passiert.`
+                  : 'Alles hier können Sie sehen — ganz lesen, hören und dabei sein können Mitglieder. Werden Sie Teil davon.'
+              "
               class="ty-text-m text-grey-600 mt-xs"
               textWrap="true"
             />
@@ -72,7 +81,11 @@
             <StackLayout col="1" verticalAlignment="center">
               <Label :text="bonus.title" class="episode-row__title" textWrap="true" />
               <Label
-                :text="membership.isMember ? bonus.durationLabel : `${bonus.durationLabel} · 60 Sek. anspielen`"
+                :text="
+                  membership.isMember
+                    ? bonus.durationLabel
+                    : `${bonus.durationLabel} · 60 Sek. anspielen`
+                "
                 class="episode-row__meta"
               />
             </StackLayout>
@@ -82,8 +95,15 @@
           <!-- Club newsletter -->
           <SectionHeader title="Club-Newsletter" />
           <StackLayout class="card mx-sm">
-            <Label :text="clubNewsletter.subject" class="ty-headline-xs text-grey-700" textWrap="true" />
-            <Label :text="formatDateDe(clubNewsletter.date)" class="ty-text-s text-grey-500 mt-xs" />
+            <Label
+              :text="clubNewsletter.subject"
+              class="ty-headline-xs text-grey-700"
+              textWrap="true"
+            />
+            <Label
+              :text="formatDateDe(clubNewsletter.date)"
+              class="ty-text-s text-grey-500 mt-xs"
+            />
             <Label
               v-for="(paragraph, i) in newsletterParagraphs"
               :key="i"
@@ -105,7 +125,11 @@
             <Label :text="qa.description" class="ty-text-s text-grey-600 mt-xs" textWrap="true" />
             <Label :text="qa.deadlineLabel" class="ty-text-s text-emphasis mt-xs" />
             <template v-if="membership.isMember">
-              <TextView v-model="question" hint="Ihre Frage an das Rechercheteam …" class="form-textarea mt-s" />
+              <TextView
+                v-model="question"
+                hint="Ihre Frage an das Rechercheteam …"
+                class="form-textarea mt-s"
+              />
               <Button
                 :text="questionSent ? '✓ Frage eingereicht' : 'Frage einreichen'"
                 class="btn-secondary mt-s"
@@ -113,7 +137,11 @@
                 @tap="sendQuestion"
               />
             </template>
-            <Label v-else text="Fragen stellen können Mitglieder." class="ty-text-s text-grey-500 mt-s" />
+            <Label
+              v-else
+              text="Fragen stellen können Mitglieder."
+              class="ty-text-s text-grey-500 mt-s"
+            />
           </StackLayout>
 
           <!-- Events -->
@@ -126,7 +154,12 @@
             <StackLayout col="1">
               <Label :text="event.title" class="ty-headline-xs text-grey-700" textWrap="true" />
               <Label :text="event.location" class="ty-text-s text-grey-600 mt-xs" textWrap="true" />
-              <Label :text="event.description" class="ty-text-s text-grey-600 mt-xs" textWrap="true" :maxLines="2" />
+              <Label
+                :text="event.description"
+                class="ty-text-s text-grey-600 mt-xs"
+                textWrap="true"
+                :maxLines="2"
+              />
             </StackLayout>
           </GridLayout>
 
@@ -134,7 +167,11 @@
           <SectionHeader title="Ihr Verlags-Vorteil" />
           <StackLayout class="verlag-card mx-sm" @tap="openShop">
             <Label :text="verlagPerk.title" class="ty-headline-xs text-grey-700" textWrap="true" />
-            <Label :text="verlagPerk.description" class="ty-text-s text-grey-600 mt-xs" textWrap="true" />
+            <Label
+              :text="verlagPerk.description"
+              class="ty-text-s text-grey-600 mt-xs"
+              textWrap="true"
+            />
             <Label
               v-if="membership.isMember"
               :text="`Ihr Rabattcode: ${verlagPerk.code}`"
@@ -157,7 +194,17 @@ import ClubBadge from '../../components/ui/ClubBadge.vue';
 import EarlyAccessCard from '../../components/cards/EarlyAccessCard.vue';
 import DiaryPage from './DiaryPage.vue';
 import ArticleReaderPage from '../reader/ArticleReaderPage.vue';
-import { earlyAccess, diaries, bonusMedia, clubNewsletter, qa, events, verlagPerk, type DiaryEntry, type BonusMedia } from '@correctiv/app-core/data/backstage';
+import {
+  earlyAccess,
+  diaries,
+  bonusMedia,
+  clubNewsletter,
+  qa,
+  events,
+  verlagPerk,
+  type DiaryEntry,
+  type BonusMedia,
+} from '@correctiv/app-core/data/backstage';
 import { useMembershipStore } from '@correctiv/app-core/stores/membership';
 import { useAudioStore } from '../../stores/audio';
 import { useNavigation } from '../../composables/useNavigation';

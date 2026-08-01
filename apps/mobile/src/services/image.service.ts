@@ -18,7 +18,13 @@ let localCovers: Map<string, string> | null | undefined;
 export function localCoverFor(url: string): string | null {
   if (localCovers === undefined) {
     try {
-      const indexFile = path.join(knownFolders.currentApp().path, 'assets', 'data', 'articles', 'index.json');
+      const indexFile = path.join(
+        knownFolders.currentApp().path,
+        'assets',
+        'data',
+        'articles',
+        'index.json',
+      );
       if (File.exists(indexFile)) {
         const index = JSON.parse(File.fromPath(indexFile).readTextSync()) as {
           articles: { url: string; localImage: string | null }[];

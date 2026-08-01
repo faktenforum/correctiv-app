@@ -136,7 +136,11 @@ export const useFeedsStore = defineStore('feeds', {
       const image = await loadOgImage(item.url);
       if (image) {
         item.imageUrl = image;
-        setCached(CACHE_NS, key, state.items.map((i) => ({ ...i })));
+        setCached(
+          CACHE_NS,
+          key,
+          state.items.map((i) => ({ ...i })),
+        );
       }
     },
   },

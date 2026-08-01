@@ -41,7 +41,12 @@
                 />
               </GridLayout>
               <GridLayout columns="*, *" class="mt-s">
-                <Button col="0" text="Beitrag ändern" class="btn-secondary mr-s" @tap="openJoinFlow()" />
+                <Button
+                  col="0"
+                  text="Beitrag ändern"
+                  class="btn-secondary mr-s"
+                  @tap="openJoinFlow()"
+                />
                 <Button
                   col="1"
                   :text="membership.paused ? 'Fortsetzen' : 'Pausieren'"
@@ -67,7 +72,12 @@
                 class="impact-card__article mt-s"
                 @tap="openArticle(article.url)"
               >
-                <Label :text="article.title" class="ty-text-m font-sans-semibold text-grey-700" textWrap="true" :maxLines="2" />
+                <Label
+                  :text="article.title"
+                  class="ty-text-m font-sans-semibold text-grey-700"
+                  textWrap="true"
+                  :maxLines="2"
+                />
               </StackLayout>
             </StackLayout>
 
@@ -77,7 +87,11 @@
               <Label col="0" :text="icons.fileText" class="lucide hub-card__icon" />
               <StackLayout col="1">
                 <Label :text="quarterlyReport.quarter" class="hub-card__title" textWrap="true" />
-                <Label text="Wohin Ihr Beitrag fließt — transparent aufgeschlüsselt." class="hub-card__teaser" textWrap="true" />
+                <Label
+                  text="Wohin Ihr Beitrag fließt — transparent aufgeschlüsselt."
+                  class="hub-card__teaser"
+                  textWrap="true"
+                />
               </StackLayout>
               <Label col="2" :text="icons.chevronRight" class="lucide hub-card__chevron" />
             </GridLayout>
@@ -99,7 +113,11 @@
               <Label col="0" :text="icons.sparkles" class="lucide hub-card__icon" />
               <StackLayout col="1">
                 <Label text="Backstage ansehen" class="hub-card__title" />
-                <Label text="Was Clubmitglieder erwartet — offen angeteasert." class="hub-card__teaser" textWrap="true" />
+                <Label
+                  text="Was Clubmitglieder erwartet — offen angeteasert."
+                  class="hub-card__teaser"
+                  textWrap="true"
+                />
               </StackLayout>
               <Label col="2" :text="icons.chevronRight" class="lucide hub-card__chevron" />
             </GridLayout>
@@ -131,7 +149,11 @@
                 <Label text="Spotlight Schweiz" class="ty-text-m text-grey-700" />
                 <Label text="Recherchen aus der Schweiz" class="ty-text-s text-grey-500" />
               </StackLayout>
-              <Switch col="1" v-model="settings.newsletter.spotlightCh" class="onboarding__switch" />
+              <Switch
+                col="1"
+                v-model="settings.newsletter.spotlightCh"
+                class="onboarding__switch"
+              />
             </GridLayout>
             <GridLayout columns="*, auto" class="newsletter-row hairline-top">
               <StackLayout col="0">
@@ -148,7 +170,11 @@
             <Label col="0" :text="icons.settings" class="lucide hub-card__icon" />
             <StackLayout col="1">
               <Label text="App-Einstellungen" class="hub-card__title" />
-              <Label text="Benachrichtigungen, Textgröße, Über CORRECTIV" class="hub-card__teaser" textWrap="true" />
+              <Label
+                text="Benachrichtigungen, Textgröße, Über CORRECTIV"
+                class="hub-card__teaser"
+                textWrap="true"
+              />
             </StackLayout>
             <Label col="2" :text="icons.chevronRight" class="lucide hub-card__chevron" />
           </GridLayout>
@@ -210,7 +236,13 @@ interface ImpactArticle {
 /** Three real investigations from the bundled offline index */
 const impactArticles = computed((): ImpactArticle[] => {
   try {
-    const file = path.join(knownFolders.currentApp().path, 'assets', 'data', 'articles', 'index.json');
+    const file = path.join(
+      knownFolders.currentApp().path,
+      'assets',
+      'data',
+      'articles',
+      'index.json',
+    );
     const index = JSON.parse(File.fromPath(file).readTextSync()) as {
       articles: { slug: string; title: string; url: string; feed: string }[];
     };

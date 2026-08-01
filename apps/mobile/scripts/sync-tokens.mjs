@@ -110,4 +110,6 @@ ${util.join('\n')}
 
 mkdirSync(dirname(OUT), { recursive: true });
 writeFileSync(OUT, out);
-console.log(`tokens.generated.scss written (${scssVars.length} variables, ${util.length} utilities)`);
+console.log(
+  `tokens.generated.scss written (${scssVars.length} variables, ${util.length} utilities)`,
+);

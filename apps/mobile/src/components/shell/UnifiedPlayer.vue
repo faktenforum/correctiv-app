@@ -10,8 +10,19 @@
     :class="video.expanded ? 'uplayer--expanded' : 'uplayer--bar hairline-top'"
   >
     <!-- Expanded header: minimieren (left) + source badge (right), per design draft -->
-    <GridLayout v-if="video.expanded" row="0" col="0" columns="auto, *, auto" class="uplayer__header">
-      <StackLayout col="0" orientation="horizontal" class="uplayer__minimize" @tap="video.collapse()">
+    <GridLayout
+      v-if="video.expanded"
+      row="0"
+      col="0"
+      columns="auto, *, auto"
+      class="uplayer__header"
+    >
+      <StackLayout
+        col="0"
+        orientation="horizontal"
+        class="uplayer__minimize"
+        @tap="video.collapse()"
+      >
         <Label :text="icons.chevronDown" class="lucide uplayer__icon" verticalAlignment="center" />
         <Label text="Minimieren" class="uplayer__hint ml-xs" verticalAlignment="center" />
       </StackLayout>
@@ -65,7 +76,12 @@
       <StackLayout class="uplayer__meta">
         <GridLayout columns="auto, *" class="uplayer__kicker-row">
           <Label col="0" :text="kicker" class="kicker" verticalAlignment="center" />
-          <Label col="1" :text="episodeMeta" class="uplayer__episode ml-s" verticalAlignment="center" />
+          <Label
+            col="1"
+            :text="episodeMeta"
+            class="uplayer__episode ml-s"
+            verticalAlignment="center"
+          />
         </GridLayout>
         <Label :text="video.current?.title" class="uplayer__title" textWrap="true" />
         <Label :text="sourceMeta" class="uplayer__source hairline-bottom" textWrap="true" />
@@ -76,8 +92,18 @@
           textWrap="true"
         />
         <GridLayout columns="auto, auto, *" class="uplayer__watch" @tap="openWatch">
-          <Label col="0" :text="watchLabel" class="uplayer__watch-text" verticalAlignment="center" />
-          <Label col="1" :text="icons.arrowUpRight" class="lucide uplayer__watch-icon ml-xs" verticalAlignment="center" />
+          <Label
+            col="0"
+            :text="watchLabel"
+            class="uplayer__watch-text"
+            verticalAlignment="center"
+          />
+          <Label
+            col="1"
+            :text="icons.arrowUpRight"
+            class="lucide uplayer__watch-icon ml-xs"
+            verticalAlignment="center"
+          />
         </GridLayout>
         <StackLayout class="uplayer__bande">
           <Label
@@ -141,7 +167,8 @@ const sourceMeta = computed(() => {
 
 /** External link label using the PeerTube host, e.g. "Auf tube.funfacts.de ansehen". */
 const watchLabel = computed(() => {
-  const host = (video.current?.url ?? '').replace(/^https?:\/\//, '').split('/')[0] || 'tube.funfacts.de';
+  const host =
+    (video.current?.url ?? '').replace(/^https?:\/\//, '').split('/')[0] || 'tube.funfacts.de';
   return `Auf ${host} ansehen`;
 });
 

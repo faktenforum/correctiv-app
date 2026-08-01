@@ -2,7 +2,12 @@
   <!-- nativescript-vue 3 does not export withModifiers — do not use @tap.stop modifiers -->
   <GridLayout columns="auto, *, auto" class="mini-player hairline-top">
     <!-- Round red play/pause button (design draft) -->
-    <GridLayout col="0" class="mini-player__button" verticalAlignment="center" @tap="audioStore.togglePlay()">
+    <GridLayout
+      col="0"
+      class="mini-player__button"
+      verticalAlignment="center"
+      @tap="audioStore.togglePlay()"
+    >
       <Label
         :text="audioStore.status === 'playing' ? icons.pause : icons.play"
         class="lucide mini-player__button-icon"

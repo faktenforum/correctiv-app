@@ -73,7 +73,8 @@ export const diaries: DiaryEntry[] = [
     id: 'diary-bern-2',
     series: 'Pensionskassen-Recherche',
     title: 'Woche 2: Zahlen, die nicht zusammenpassen',
-    teaser: 'Die Renditeangaben im Geschäftsbericht widersprechen den internen Unterlagen. Wir rechnen nach.',
+    teaser:
+      'Die Renditeangaben im Geschäftsbericht widersprechen den internen Unterlagen. Wir rechnen nach.',
     date: new Date(Date.now() - 9 * 864e5).toISOString(),
     body: [
       'Wer Geschäftsberichte liest, braucht Geduld — und ein gutes Tabellenprogramm. Die ausgewiesene Rendite von 4,2 Prozent hält der Überprüfung nicht stand.',
@@ -118,7 +119,8 @@ export const events = [
     title: 'Buchpremiere: „Akten des Missbrauchs“',
     date: '2026-06-25T19:00:00+02:00',
     location: 'CORRECTIV-Buchhandlung, Essen',
-    description: 'Lesung und Gespräch mit dem Rechercheteam. Clubmitglieder erhalten bevorzugt Plätze.',
+    description:
+      'Lesung und Gespräch mit dem Rechercheteam. Clubmitglieder erhalten bevorzugt Plätze.',
   },
 ];
 

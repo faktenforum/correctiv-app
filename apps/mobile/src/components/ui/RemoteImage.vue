@@ -8,7 +8,11 @@
     <Image v-if="directLocal" :src="directLocal" :stretch="stretch" />
     <Image v-else-if="source" :src="source" :stretch="stretch" />
     <Image v-else-if="fallbackCover" :src="fallbackCover" :stretch="stretch" />
-    <GridLayout v-else class="remote-image__placeholder" :class="`remote-image__placeholder--${kind}`">
+    <GridLayout
+      v-else
+      class="remote-image__placeholder"
+      :class="`remote-image__placeholder--${kind}`"
+    >
       <Label v-if="placeholderIcon" :text="placeholderIcon" class="lucide remote-image__icon" />
     </GridLayout>
   </GridLayout>

@@ -9,9 +9,7 @@ import { decodeEntities } from './extract.mjs';
 function blockTag(block, name) {
   const m = block.match(new RegExp(`<${name}[^>]*>([\\s\\S]*?)</${name}>`));
   if (!m) return '';
-  return decodeEntities(
-    m[1].replace(/<!\[CDATA\[([\s\S]*?)\]\]>/g, '$1').replace(/<[^>]*>/g, ' '),
-  )
+  return decodeEntities(m[1].replace(/<!\[CDATA\[([\s\S]*?)\]\]>/g, '$1').replace(/<[^>]*>/g, ' '))
     .replace(/\s+/g, ' ')
     .trim();
 }

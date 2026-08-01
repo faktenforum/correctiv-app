@@ -24,12 +24,21 @@
           >
             <Label text="CROWDNEWSROOM" class="callout-kicker" />
             <Label :text="callout.title" class="callout-list-card__title" textWrap="true" />
-            <Label :text="callout.excerpt" class="callout-list-card__teaser" textWrap="true" :maxLines="2" />
+            <Label
+              :text="callout.excerpt"
+              class="callout-list-card__teaser"
+              textWrap="true"
+              :maxLines="2"
+            />
             <GridLayout columns="*, auto" class="mt-s">
               <StackLayout col="0" class="callout-progress" verticalAlignment="center">
                 <StackLayout class="callout-progress__fill" :width="progressWidth(callout)" />
               </StackLayout>
-              <Label col="1" :text="`${formatNumberDe(totalCount(callout))} Beiträge`" class="callout-list-card__count ml-s" />
+              <Label
+                col="1"
+                :text="`${formatNumberDe(totalCount(callout))} Beiträge`"
+                class="callout-list-card__count ml-s"
+              />
             </GridLayout>
             <Label
               v-if="participation.hasSubmitted(callout.slug)"

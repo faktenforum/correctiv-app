@@ -12,7 +12,11 @@
           <!-- Search entry -->
           <GridLayout columns="auto, *" class="search-entry mx-sm mt-s" @tap="openSearch">
             <Label col="0" :text="icons.search" class="lucide search-entry__icon" />
-            <Label col="1" text="Recherchen, Projekte, Podcasts suchen …" class="search-entry__hint" />
+            <Label
+              col="1"
+              text="Recherchen, Projekte, Podcasts suchen …"
+              class="search-entry__hint"
+            />
           </GridLayout>
 
           <!-- Topic chips → live topic pages -->
@@ -41,7 +45,12 @@
               <Label col="0" :text="groupIcon(group.id)" class="lucide hub-card__icon" />
               <StackLayout col="1">
                 <Label :text="project.name" class="hub-card__title" textWrap="true" />
-                <Label :text="project.description" class="hub-card__teaser" textWrap="true" :maxLines="2" />
+                <Label
+                  :text="project.description"
+                  class="hub-card__teaser"
+                  textWrap="true"
+                  :maxLines="2"
+                />
               </StackLayout>
               <Label
                 col="2"

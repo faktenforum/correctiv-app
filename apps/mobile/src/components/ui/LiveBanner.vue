@@ -2,7 +2,10 @@
   <GridLayout columns="auto, *" class="live-banner" @tap="onTap">
     <!-- Round red play/pause button (design draft) -->
     <GridLayout col="0" class="live-banner__button" verticalAlignment="center">
-      <Label :text="isThisPlaying ? icons.pause : icons.play" class="lucide live-banner__button-icon" />
+      <Label
+        :text="isThisPlaying ? icons.pause : icons.play"
+        class="lucide live-banner__button-icon"
+      />
     </GridLayout>
     <StackLayout col="1" verticalAlignment="center" class="live-banner__text">
       <GridLayout columns="auto, auto">

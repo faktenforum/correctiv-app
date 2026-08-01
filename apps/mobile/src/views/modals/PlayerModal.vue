@@ -13,7 +13,11 @@
             :class="{ 'player__artwork-icon--live': audioStore.isLive }"
           />
         </GridLayout>
-        <Label :text="audioStore.track?.title" class="ty-headline-l text-grey-700 mt-m" textWrap="true" />
+        <Label
+          :text="audioStore.track?.title"
+          class="ty-headline-l text-grey-700 mt-m"
+          textWrap="true"
+        />
         <Label
           :text="audioStore.isLive ? '● LIVE — 24/7 aus Bottrop' : audioStore.track?.subtitle"
           class="ty-text-s mt-xs"
@@ -37,7 +41,12 @@
             <Label col="2" :text="formatTimeHm(audioStore.durationSec)" class="player__time" />
           </GridLayout>
         </template>
-        <Label v-else text="Livestream — Salon5 sendet rund um die Uhr." class="ty-text-s text-grey-600 mb-s" textWrap="true" />
+        <Label
+          v-else
+          text="Livestream — Salon5 sendet rund um die Uhr."
+          class="ty-text-s text-grey-600 mb-s"
+          textWrap="true"
+        />
 
         <GridLayout columns="*, auto, *" class="mt-s">
           <Label

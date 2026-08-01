@@ -11,12 +11,19 @@ import { useSettingsStore, type TabId } from '@correctiv/app-core/stores/setting
 export function useNavigation() {
   const settings = useSettingsStore();
 
-  function navigate(component: Component, options: NavigateToOptions<Record<string, unknown>> = {}) {
+  function navigate(
+    component: Component,
+    options: NavigateToOptions<Record<string, unknown>> = {},
+  ) {
     return $navigateTo(component, { frame: `tab-${settings.activeTab}`, ...options });
   }
 
   /** Cross-jump: switch tab and push a page there (e.g. home participate card → tab 4). */
-  function navigateInTab(tab: TabId, component?: Component, options: NavigateToOptions<Record<string, unknown>> = {}) {
+  function navigateInTab(
+    tab: TabId,
+    component?: Component,
+    options: NavigateToOptions<Record<string, unknown>> = {},
+  ) {
     settings.setActiveTab(tab);
     if (component) return $navigateTo(component, { frame: `tab-${tab}`, ...options });
   }

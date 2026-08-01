@@ -25,7 +25,15 @@ const MAX_EPISODES = 20;
 const MAX_DESCRIPTION = 240;
 
 // Keep in sync with PODCAST_CHANNELS in src/data/feeds.config.ts
-const CHANNELS = ['pausenbrot', 'klima', 'salon5_erklart', 'politik', 'europa_was_geht', 'sport', 'pyjama_party'];
+const CHANNELS = [
+  'pausenbrot',
+  'klima',
+  'salon5_erklart',
+  'politik',
+  'europa_was_geht',
+  'sport',
+  'pyjama_party',
+];
 
 const minutes = (sec) => `${Math.max(1, Math.round(sec / 60))} Min.`;
 const clip = (t, max) => (t.length > max ? `${t.slice(0, max - 1).trimEnd()}…` : t);
@@ -57,7 +65,10 @@ for (const handle of CHANNELS) {
         audio: e.audioUrl,
       })),
     };
-    writeFileSync(resolve(SRC, `assets/data/podcasts/${handle}.json`), JSON.stringify(series, null, 1));
+    writeFileSync(
+      resolve(SRC, `assets/data/podcasts/${handle}.json`),
+      JSON.stringify(series, null, 1),
+    );
     index.push({ id: handle, title: series.title, episodes: series.episodes.length });
     console.log(`✓ ${series.title} (${series.episodes.length} Episoden)`);
   } catch (err) {

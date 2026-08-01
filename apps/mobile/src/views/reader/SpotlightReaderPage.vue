@@ -10,13 +10,26 @@
 
       <ScrollView row="1">
         <StackLayout class="px-sm py-m">
-          <Label :text="issue.subject" class="ty-headline-xl text-grey-700 font-serif-bold" textWrap="true" />
+          <Label
+            :text="issue.subject"
+            class="ty-headline-xl text-grey-700 font-serif-bold"
+            textWrap="true"
+          />
           <Label :text="formatDateDe(issue.date)" class="ty-text-s text-grey-500 mt-xs" />
 
-          <StackLayout v-for="item in issue.items" :key="item.title" class="spotlight-reader-item mt-m">
+          <StackLayout
+            v-for="item in issue.items"
+            :key="item.title"
+            class="spotlight-reader-item mt-m"
+          >
             <GridLayout columns="auto, *">
               <Label col="0" :text="item.time" class="spotlight-card__time" />
-              <Label col="1" :text="item.title" class="ty-headline-m text-grey-700" textWrap="true" />
+              <Label
+                col="1"
+                :text="item.title"
+                class="ty-headline-m text-grey-700"
+                textWrap="true"
+              />
             </GridLayout>
             <Label :text="item.text" class="ty-text-article text-grey-700 mt-xs" textWrap="true" />
             <Label
@@ -47,7 +60,13 @@
           :isEnabled="index < spotlightIssues.length - 1"
           @tap="index += 1"
         />
-        <Button col="1" text="Neuere Ausgabe →" class="btn-secondary" :isEnabled="index > 0" @tap="index -= 1" />
+        <Button
+          col="1"
+          text="Neuere Ausgabe →"
+          class="btn-secondary"
+          :isEnabled="index > 0"
+          @tap="index -= 1"
+        />
       </GridLayout>
     </GridLayout>
   </Page>

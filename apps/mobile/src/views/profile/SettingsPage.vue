@@ -3,7 +3,12 @@
     <GridLayout rows="auto, *" class="bg-grey-100">
       <GridLayout row="0" columns="auto, *" class="px-sm py-s hairline-bottom">
         <Label col="0" :text="icons.arrowLeft" class="lucide back-icon" @tap="goBack()" />
-        <Label col="1" text="Einstellungen" class="ty-headline-xs text-grey-700 ml-s" verticalAlignment="center" />
+        <Label
+          col="1"
+          text="Einstellungen"
+          class="ty-headline-xs text-grey-700 ml-s"
+          verticalAlignment="center"
+        />
       </GridLayout>
       <ScrollView row="1">
         <StackLayout class="pb-l">
@@ -12,7 +17,11 @@
             <GridLayout columns="*, auto">
               <StackLayout col="0">
                 <Label text="Push-Mitteilungen" class="ty-text-m text-grey-700" />
-                <Label text="Neue Recherchen und Mitmach-Aufrufe (simuliert)" class="ty-text-s text-grey-500" textWrap="true" />
+                <Label
+                  text="Neue Recherchen und Mitmach-Aufrufe (simuliert)"
+                  class="ty-text-s text-grey-500"
+                  textWrap="true"
+                />
               </StackLayout>
               <Switch col="1" v-model="settings.pushOptIn" class="onboarding__switch" />
             </GridLayout>
@@ -21,7 +30,12 @@
           <SectionHeader title="Darstellung" />
           <StackLayout class="card mx-sm">
             <GridLayout columns="*, auto">
-              <Label col="0" text="An Systemeinstellung orientieren" class="ty-text-m text-grey-700" textWrap="true" />
+              <Label
+                col="0"
+                text="An Systemeinstellung orientieren"
+                class="ty-text-m text-grey-700"
+                textWrap="true"
+              />
               <Switch col="1" v-model="followSystem" class="onboarding__switch" />
             </GridLayout>
             <GridLayout v-if="!followSystem" columns="*, auto" class="mt-s">
@@ -57,9 +71,21 @@
               class="ty-text-m text-grey-700"
               textWrap="true"
             />
-            <Button text="correctiv.org öffnen" class="btn-secondary mt-s" @tap="open('https://correctiv.org/ueber-uns/')" />
-            <Button text="Impressum" class="btn-quiet mt-xs" @tap="open('https://correctiv.org/impressum/')" />
-            <Button text="Datenschutz" class="btn-quiet" @tap="open('https://correctiv.org/datenschutz/')" />
+            <Button
+              text="correctiv.org öffnen"
+              class="btn-secondary mt-s"
+              @tap="open('https://correctiv.org/ueber-uns/')"
+            />
+            <Button
+              text="Impressum"
+              class="btn-quiet mt-xs"
+              @tap="open('https://correctiv.org/impressum/')"
+            />
+            <Button
+              text="Datenschutz"
+              class="btn-quiet"
+              @tap="open('https://correctiv.org/datenschutz/')"
+            />
           </StackLayout>
 
           <SectionHeader title="Demo" />
@@ -70,7 +96,12 @@
               textWrap="true"
             />
             <Button text="Demo-Zustand zurücksetzen" class="btn-secondary mt-s" @tap="resetDemo" />
-            <Label v-if="resetDone" text="✓ Zurückgesetzt — App neu starten für das Onboarding." class="ty-text-s callout-submitted mt-s" textWrap="true" />
+            <Label
+              v-if="resetDone"
+              text="✓ Zurückgesetzt — App neu starten für das Onboarding."
+              class="ty-text-s callout-submitted mt-s"
+              textWrap="true"
+            />
           </StackLayout>
         </StackLayout>
       </ScrollView>

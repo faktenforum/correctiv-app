@@ -5,14 +5,23 @@
     <GridLayout rows="auto, *" class="bg-grey-100">
       <GridLayout row="0" columns="auto, *" class="px-sm py-s hairline-bottom">
         <Label col="0" :text="icons.arrowLeft" class="lucide back-icon" @tap="goBack()" />
-        <Label col="1" :text="project.name" class="ty-headline-xs text-grey-700 ml-s" verticalAlignment="center" />
+        <Label
+          col="1"
+          :text="project.name"
+          class="ty-headline-xs text-grey-700 ml-s"
+          verticalAlignment="center"
+        />
       </GridLayout>
 
       <ScrollView row="1">
         <StackLayout class="pb-l">
           <StackLayout class="px-sm pt-m">
             <ProjectBadge :text="project.name" />
-            <Label :text="project.description" class="ty-text-m text-grey-600 mt-s" textWrap="true" />
+            <Label
+              :text="project.description"
+              class="ty-text-m text-grey-600 mt-s"
+              textWrap="true"
+            />
           </StackLayout>
 
           <!-- Project-specific action -->
@@ -20,8 +29,16 @@
             <GridLayout columns="auto, *" class="hub-card" @tap="openWhatsApp">
               <Label col="0" :text="icons.messageCircle" class="lucide hub-card__icon" />
               <StackLayout col="1">
-                <Label text="Tipp an die Faktencheck-Redaktion" class="hub-card__title" textWrap="true" />
-                <Label text="Verdächtige Behauptung per WhatsApp schicken" class="hub-card__teaser" textWrap="true" />
+                <Label
+                  text="Tipp an die Faktencheck-Redaktion"
+                  class="hub-card__title"
+                  textWrap="true"
+                />
+                <Label
+                  text="Verdächtige Behauptung per WhatsApp schicken"
+                  class="hub-card__teaser"
+                  textWrap="true"
+                />
               </StackLayout>
             </GridLayout>
           </StackLayout>
@@ -32,8 +49,16 @@
             <GridLayout columns="auto, *" class="hub-card" @tap="openLokal">
               <Label col="0" :text="icons.users" class="lucide hub-card__icon" />
               <StackLayout col="1">
-                <Label text="Teil des Lokal-Netzwerks werden" class="hub-card__title" textWrap="true" />
-                <Label text="Über 1.300 Lokaljournalist:innen arbeiten zusammen" class="hub-card__teaser" textWrap="true" />
+                <Label
+                  text="Teil des Lokal-Netzwerks werden"
+                  class="hub-card__title"
+                  textWrap="true"
+                />
+                <Label
+                  text="Über 1.300 Lokaljournalist:innen arbeiten zusammen"
+                  class="hub-card__teaser"
+                  textWrap="true"
+                />
               </StackLayout>
             </GridLayout>
           </StackLayout>
@@ -46,7 +71,11 @@
               text="Wird geladen …"
               class="ty-text-s text-grey-600 px-sm"
             />
-            <StackLayout v-for="item in feedState.items.slice(0, 12)" :key="item.id" class="list-pad">
+            <StackLayout
+              v-for="item in feedState.items.slice(0, 12)"
+              :key="item.id"
+              class="list-pad"
+            >
               <ArticleCard :item="item" variant="standard" @open="openArticle" />
             </StackLayout>
           </template>

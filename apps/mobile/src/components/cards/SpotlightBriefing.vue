@@ -4,7 +4,12 @@
       <Label col="0" text="SPOTLIGHT" class="spotlight-card__brand" />
       <Label col="1" :text="dateLabel" class="spotlight-card__date" />
     </GridLayout>
-    <StackLayout v-for="entry in issue.items" :key="entry.title" class="spotlight-card__item" @tap="open(entry)">
+    <StackLayout
+      v-for="entry in issue.items"
+      :key="entry.title"
+      class="spotlight-card__item"
+      @tap="open(entry)"
+    >
       <GridLayout columns="auto, *">
         <Label col="0" :text="entry.time" class="spotlight-card__time" />
         <Label col="1" :text="entry.title" class="spotlight-card__title" textWrap="true" />

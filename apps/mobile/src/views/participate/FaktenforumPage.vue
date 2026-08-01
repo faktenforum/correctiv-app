@@ -3,7 +3,12 @@
     <GridLayout rows="auto, *" class="bg-grey-100">
       <GridLayout row="0" columns="auto, *" class="px-sm py-s hairline-bottom">
         <Label col="0" :text="icons.arrowLeft" class="lucide back-icon" @tap="goBack()" />
-        <Label col="1" text="Faktenforum" class="ty-headline-xs text-grey-700 ml-s" verticalAlignment="center" />
+        <Label
+          col="1"
+          text="Faktenforum"
+          class="ty-headline-xs text-grey-700 ml-s"
+          verticalAlignment="center"
+        />
       </GridLayout>
       <ScrollView row="1">
         <StackLayout class="py-s">
@@ -21,10 +26,18 @@
             @tap="openClaim(claim)"
           >
             <GridLayout columns="auto, *">
-              <Label col="0" :text="claimStatusTag(claim).text" class="status-tag" :class="claimStatusTag(claim).cls" />
+              <Label
+                col="0"
+                :text="claimStatusTag(claim).text"
+                class="status-tag"
+                :class="claimStatusTag(claim).cls"
+              />
             </GridLayout>
             <Label :text="`„${claim.quote}“`" class="claim-card__quote" textWrap="true" />
-            <Label :text="claim.shortId + ' · eingereicht ' + formatDateShortDe(claim.submittedAt)" class="claim-card__meta" />
+            <Label
+              :text="claim.shortId + ' · eingereicht ' + formatDateShortDe(claim.submittedAt)"
+              class="claim-card__meta"
+            />
           </StackLayout>
         </StackLayout>
       </ScrollView>

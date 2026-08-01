@@ -27,7 +27,9 @@ interface WpPost {
 }
 
 function stripHtml(html: string): string {
-  return decodeEntities(html.replace(/<[^>]*>/g, ' ')).replace(/\s+/g, ' ').trim();
+  return decodeEntities(html.replace(/<[^>]*>/g, ' '))
+    .replace(/\s+/g, ' ')
+    .trim();
 }
 
 /** Best-effort feed bucket from the article URL (FeedItem.feed is display-only here). */

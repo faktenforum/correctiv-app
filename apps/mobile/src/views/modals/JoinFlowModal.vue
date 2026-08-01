@@ -19,7 +19,11 @@
       <!-- Step 1: why — impact with real numbers -->
       <ScrollView v-if="step === 0" row="2">
         <StackLayout class="px-m py-m">
-          <Label text="CORRECTIV gehört niemandem. Außer allen." class="ty-headline-xl text-grey-700 font-serif-bold" textWrap="true" />
+          <Label
+            text="CORRECTIV gehört niemandem. Außer allen."
+            class="ty-headline-xl text-grey-700 font-serif-bold"
+            textWrap="true"
+          />
           <Label
             text="Unser Journalismus bleibt frei. Für alle. Ihr Beitrag macht genau das möglich."
             class="ty-text-l text-grey-700 mt-s"
@@ -27,15 +31,30 @@
           />
           <GridLayout columns="auto, *" class="mt-m">
             <Label col="0" text="247" class="join-stat__number" />
-            <Label col="1" text="Recherchen im letzten Jahr — alle frei zugänglich" class="join-stat__label" textWrap="true" />
+            <Label
+              col="1"
+              text="Recherchen im letzten Jahr — alle frei zugänglich"
+              class="join-stat__label"
+              textWrap="true"
+            />
           </GridLayout>
           <GridLayout columns="auto, *" class="mt-s">
             <Label col="0" text="31.000+" class="join-stat__number" />
-            <Label col="1" text="Menschen tragen CORRECTIV bereits" class="join-stat__label" textWrap="true" />
+            <Label
+              col="1"
+              text="Menschen tragen CORRECTIV bereits"
+              class="join-stat__label"
+              textWrap="true"
+            />
           </GridLayout>
           <GridLayout columns="auto, *" class="mt-s">
             <Label col="0" text="0" class="join-stat__number" />
-            <Label col="1" text="Artikel hinter einer Paywall — heute und in Zukunft" class="join-stat__label" textWrap="true" />
+            <Label
+              col="1"
+              text="Artikel hinter einer Paywall — heute und in Zukunft"
+              class="join-stat__label"
+              textWrap="true"
+            />
           </GridLayout>
         </StackLayout>
       </ScrollView>
@@ -107,9 +126,18 @@
           <Label text="Name" class="ty-headline-xs text-grey-700 mt-m" />
           <TextField v-model="name" hint="Vor- und Nachname" class="form-textfield mt-xs" />
           <Label text="E-Mail" class="ty-headline-xs text-grey-700 mt-s" />
-          <TextField v-model="email" hint="name@beispiel.de" keyboardType="email" class="form-textfield mt-xs" />
+          <TextField
+            v-model="email"
+            hint="name@beispiel.de"
+            keyboardType="email"
+            class="form-textfield mt-xs"
+          />
           <StackLayout class="card mt-m">
-            <Label text="Zahlungsart: SEPA-Lastschrift (simuliert)" class="ty-text-s text-grey-600" textWrap="true" />
+            <Label
+              text="Zahlungsart: SEPA-Lastschrift (simuliert)"
+              class="ty-text-s text-grey-600"
+              textWrap="true"
+            />
           </StackLayout>
         </StackLayout>
       </ScrollView>
@@ -136,10 +164,26 @@
       <!-- Footer actions -->
       <StackLayout row="3" class="px-sm py-s hairline-top">
         <Button v-if="step === 0" text="Weiter" class="btn-primary" @tap="step = 1" />
-        <Button v-else-if="step === 1" :text="`Mit ${displayAmount} € unterstützen`" class="btn-primary" @tap="step = 2" />
-        <Button v-else-if="step === 2" text="Jetzt Mitglied werden" class="btn-primary" :isEnabled="dataValid" @tap="join" />
+        <Button
+          v-else-if="step === 1"
+          :text="`Mit ${displayAmount} € unterstützen`"
+          class="btn-primary"
+          @tap="step = 2"
+        />
+        <Button
+          v-else-if="step === 2"
+          text="Jetzt Mitglied werden"
+          class="btn-primary"
+          :isEnabled="dataValid"
+          @tap="join"
+        />
         <Button v-else text="Ins Backstage" class="btn-dark" @tap="finishToBackstage" />
-        <Button v-if="step < 3" text="Erstmal umsehen" class="btn-quiet mt-xs" @tap="$closeModal()" />
+        <Button
+          v-if="step < 3"
+          text="Erstmal umsehen"
+          class="btn-quiet mt-xs"
+          @tap="$closeModal()"
+        />
       </StackLayout>
     </GridLayout>
   </Page>

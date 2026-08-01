@@ -31,4 +31,3 @@ const tabs: { id: TabId; label: string; icon: string }[] = [
 
 <!-- No <style> block: @nativescript/vite 2.0.3 extracts SFC styles into a CSS file
      that is never applied at runtime. All styles live in src/styles/ (via app.scss). -->
-

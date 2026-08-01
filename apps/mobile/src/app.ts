@@ -41,7 +41,14 @@ app.use(CollectionViewPlugin);
 const settings = useSettingsStore(pinia);
 persist(settings, PERSISTED_KEYS);
 persist(useSavedArticlesStore(pinia), ['items']);
-persist(useMembershipStore(pinia), ['isMember', 'name', 'memberSince', 'amountEur', 'interval', 'paused']);
+persist(useMembershipStore(pinia), [
+  'isMember',
+  'name',
+  'memberSince',
+  'amountEur',
+  'interval',
+  'paused',
+]);
 persist(useInterestsStore(pinia), ['selected']);
 persist(useParticipationStore(pinia), ['submissions']);
 
@@ -77,7 +84,6 @@ if (__ANDROID__) {
     }
   });
 }
-
 
 // Refresh live content when the app returns to the foreground — keeps the
 // "fresh every day" promise without a pull-to-refresh plugin dependency.

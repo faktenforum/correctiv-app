@@ -26,10 +26,19 @@
         />
         <StackLayout v-if="status === 'loading'" verticalAlignment="center" class="px-m">
           <ActivityIndicator busy="true" class="reader-spinner" />
-          <Label text="Artikel wird geladen …" class="ty-text-m text-grey-600 mt-s" textWrap="true" horizontalAlignment="center" />
+          <Label
+            text="Artikel wird geladen …"
+            class="ty-text-m text-grey-600 mt-s"
+            textWrap="true"
+            horizontalAlignment="center"
+          />
         </StackLayout>
         <StackLayout v-if="status === 'error'" verticalAlignment="center" class="px-m">
-          <Label :text="icons.wifiOff" class="lucide reader-error-icon" horizontalAlignment="center" />
+          <Label
+            :text="icons.wifiOff"
+            class="lucide reader-error-icon"
+            horizontalAlignment="center"
+          />
           <Label
             text="Der Artikel konnte nicht geladen werden. Prüfen Sie Ihre Internetverbindung."
             class="ty-text-m text-grey-600 mt-s"

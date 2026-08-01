@@ -23,7 +23,12 @@ type AppInternals = {
   // `newClass` on the view AND the GLOBAL system css class set, bumps the CSS
   // selector version, and calls _onCssStateChange() — so descendant pages (incl.
   // navigated subpages in tab frames) re-match. A nested class swap can't.
-  applyCssClass?: (view: AnyView, cssClasses: string[], newClass: string, skipCssUpdate?: boolean) => void;
+  applyCssClass?: (
+    view: AnyView,
+    cssClasses: string[],
+    newClass: string,
+    skipCssUpdate?: boolean,
+  ) => void;
 };
 const App = Application as unknown as AppInternals;
 const APPEARANCE_CLASSES = ['ns-light', 'ns-dark'];

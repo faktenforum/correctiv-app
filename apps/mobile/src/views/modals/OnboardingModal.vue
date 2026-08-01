@@ -19,7 +19,10 @@
             :key="i"
             text="●"
             class="onboarding__dot"
-            :class="{ 'onboarding__dot--active': step === i - 1, 'onboarding__dot--light': step === 0 }"
+            :class="{
+              'onboarding__dot--active': step === i - 1,
+              'onboarding__dot--light': step === 0,
+            }"
           />
         </StackLayout>
         <Label
@@ -44,15 +47,30 @@
                v-for over layout containers renders unreliably in nativescript-vue 3. -->
           <GridLayout rows="auto" columns="auto, *" class="mt-s">
             <Label col="0" text="●" class="onboarding__bullet" />
-            <Label col="1" text="Gemeinnützig — uns gehört niemand" class="onboarding__fact" textWrap="true" />
+            <Label
+              col="1"
+              text="Gemeinnützig — uns gehört niemand"
+              class="onboarding__fact"
+              textWrap="true"
+            />
           </GridLayout>
           <GridLayout rows="auto" columns="auto, *" class="mt-s">
             <Label col="0" text="●" class="onboarding__bullet" />
-            <Label col="1" text="Spendenfinanziert — von Tausenden getragen" class="onboarding__fact" textWrap="true" />
+            <Label
+              col="1"
+              text="Spendenfinanziert — von Tausenden getragen"
+              class="onboarding__fact"
+              textWrap="true"
+            />
           </GridLayout>
           <GridLayout rows="auto" columns="auto, *" class="mt-s">
             <Label col="0" text="●" class="onboarding__bullet" />
-            <Label col="1" text="Ohne Paywall — Journalismus für alle" class="onboarding__fact" textWrap="true" />
+            <Label
+              col="1"
+              text="Ohne Paywall — Journalismus für alle"
+              class="onboarding__fact"
+              textWrap="true"
+            />
           </GridLayout>
         </StackLayout>
       </StackLayout>
@@ -60,7 +78,11 @@
       <!-- Step 2: interests -->
       <ScrollView v-if="step === 1" row="1">
         <StackLayout class="px-sm py-m">
-          <Label text="Was interessiert Sie?" class="ty-headline-xl text-grey-700" textWrap="true" />
+          <Label
+            text="Was interessiert Sie?"
+            class="ty-headline-xl text-grey-700"
+            textWrap="true"
+          />
           <Label
             text="Ihre Auswahl ordnet die Startseite — alles bleibt trotzdem zugänglich."
             class="ty-text-m text-grey-600 mt-xs"
@@ -82,7 +104,11 @@
       <!-- Step 3: participate + push -->
       <ScrollView v-if="step === 2" row="1">
         <StackLayout class="px-sm py-m">
-          <Label text="Recherchen, bei denen Sie mitmachen" class="ty-headline-xl text-grey-700" textWrap="true" />
+          <Label
+            text="Recherchen, bei denen Sie mitmachen"
+            class="ty-headline-xl text-grey-700"
+            textWrap="true"
+          />
           <Label
             text="Im CrowdNewsroom tragen tausende Menschen zu Recherchen bei. Im Faktenforum prüft die Community Behauptungen. Beides finden Sie im Tab „Mitmachen“."
             class="ty-text-m text-grey-600 mt-s"
@@ -104,7 +130,11 @@
 
       <!-- Step 4: club soft pitch (no dark pattern: two equal paths) -->
       <StackLayout v-if="step === 3" row="1" verticalAlignment="center" class="px-m">
-        <Label text="CORRECTIV gehört niemandem. Außer allen." class="ty-headline-xl text-grey-700 font-serif-bold" textWrap="true" />
+        <Label
+          text="CORRECTIV gehört niemandem. Außer allen."
+          class="ty-headline-xl text-grey-700 font-serif-bold"
+          textWrap="true"
+        />
         <Label
           text="Unser Journalismus bleibt frei — ermöglicht von Menschen, die ihn unterstützen. Der Club ist Nähe, keine Paywall: Recherchen früher lesen, Backstage-Einblicke, Bonusfolgen."
           class="ty-text-m text-grey-600 mt-s"
@@ -153,7 +183,12 @@ let modalWindow: any = null;
 function updateNav() {
   if (!modalWindow) return;
   if (step.value === 0) setNavBarOnWindow(modalWindow, BRAND_RED, true);
-  else setNavBarOnWindow(modalWindow, isDarkAppearance.value ? '#1a1a1a' : '#ffffff', isDarkAppearance.value);
+  else
+    setNavBarOnWindow(
+      modalWindow,
+      isDarkAppearance.value ? '#1a1a1a' : '#ffffff',
+      isDarkAppearance.value,
+    );
 }
 function onPageLoaded(args: any) {
   try {

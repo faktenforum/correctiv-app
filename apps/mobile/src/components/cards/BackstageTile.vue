@@ -8,7 +8,13 @@
     <Label :text="diaryTeaser" class="backstage-tile__teaser" textWrap="true" :maxLines="2" />
     <GridLayout columns="auto, *" class="backstage-tile__bonus mt-s">
       <Label col="0" :text="icons.headphones" class="lucide backstage-tile__bonus-icon" />
-      <Label col="1" :text="bonusTitle" class="backstage-tile__bonus-title" textWrap="true" :maxLines="2" />
+      <Label
+        col="1"
+        :text="bonusTitle"
+        class="backstage-tile__bonus-title"
+        textWrap="true"
+        :maxLines="2"
+      />
     </GridLayout>
     <Label text="Alles aus Backstage →" class="backstage-tile__link mt-s" />
   </StackLayout>

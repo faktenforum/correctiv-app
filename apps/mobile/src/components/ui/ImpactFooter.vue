@@ -1,9 +1,11 @@
 <template>
   <StackLayout class="impact-footer">
     <Label
-      :text="membership.isMember
-        ? 'Ermöglicht durch Unterstützer:innen wie Sie — danke, dass Sie dabei sind.'
-        : 'Ermöglicht durch Unterstützer:innen wie Sie.'"
+      :text="
+        membership.isMember
+          ? 'Ermöglicht durch Unterstützer:innen wie Sie — danke, dass Sie dabei sind.'
+          : 'Ermöglicht durch Unterstützer:innen wie Sie.'
+      "
       class="impact-footer__line"
       textWrap="true"
     />

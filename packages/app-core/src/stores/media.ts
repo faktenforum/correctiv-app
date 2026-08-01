@@ -44,7 +44,10 @@ export const useMediaStore = defineStore('media', {
         state.status = 'ready';
         setCached(source, key, videos);
       } catch (err) {
-        console.error(`Media feed '${key}' (${source}) failed:`, err instanceof Error ? err.message : err);
+        console.error(
+          `Media feed '${key}' (${source}) failed:`,
+          err instanceof Error ? err.message : err,
+        );
         const stale = getStale<Video[]>(source, key);
         if (stale) {
           state.videos = stale;

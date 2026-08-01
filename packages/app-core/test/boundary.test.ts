@@ -36,7 +36,8 @@ function sourceFiles(dir: string): string[] {
   });
 }
 
-const IMPORT_RE = /(?:^|\s)(?:import|export)[\s\S]*?from\s+['"]([^'"]+)['"]|import\s*\(\s*['"]([^'"]+)['"]\s*\)/g;
+const IMPORT_RE =
+  /(?:^|\s)(?:import|export)[\s\S]*?from\s+['"]([^'"]+)['"]|import\s*\(\s*['"]([^'"]+)['"]\s*\)/g;
 
 describe('core stays platform-free', () => {
   const files = sourceFiles(SRC);
@@ -45,19 +46,22 @@ describe('core stays platform-free', () => {
     expect(files.length).toBeGreaterThan(25);
   });
 
-  it.each(files.map((f) => [f.slice(SRC.length + 1), f]))('%s imports no platform SDK', (_name, full) => {
-    const source = readFileSync(full, 'utf8');
-    const offenders: string[] = [];
+  it.each(files.map((f) => [f.slice(SRC.length + 1), f]))(
+    '%s imports no platform SDK',
+    (_name, full) => {
+      const source = readFileSync(full, 'utf8');
+      const offenders: string[] = [];
 
-    for (const match of source.matchAll(IMPORT_RE)) {
-      const spec = match[1] ?? match[2];
-      if (!spec || spec.startsWith('.')) continue;
-      const hit = FORBIDDEN.find((f) => f.pattern.test(spec));
-      if (hit) offenders.push(`${spec} (${hit.why})`);
-    }
+      for (const match of source.matchAll(IMPORT_RE)) {
+        const spec = match[1] ?? match[2];
+        if (!spec || spec.startsWith('.')) continue;
+        const hit = FORBIDDEN.find((f) => f.pattern.test(spec));
+        if (hit) offenders.push(`${spec} (${hit.why})`);
+      }
 
-    expect(offenders).toEqual([]);
-  });
+      expect(offenders).toEqual([]);
+    },
+  );
 
   it('routes every platform capability through a declared port', () => {
     // Anything the core needs from its host must appear in ports/index.ts.

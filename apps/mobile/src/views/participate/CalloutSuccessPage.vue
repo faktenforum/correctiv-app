@@ -3,7 +3,12 @@
     <GridLayout rows="*, auto" class="bg-grey-100">
       <StackLayout row="0" verticalAlignment="center" class="px-m">
         <Label :text="icons.check" class="lucide success-icon" horizontalAlignment="center" />
-        <Label text="Danke für Ihren Beitrag!" class="ty-headline-xl text-grey-700 mt-m" textWrap="true" horizontalAlignment="center" />
+        <Label
+          text="Danke für Ihren Beitrag!"
+          class="ty-headline-xl text-grey-700 mt-m"
+          textWrap="true"
+          horizontalAlignment="center"
+        />
         <Label
           text="Ihr Beitrag fließt in die Recherche ein. Die Redaktion prüft alle Hinweise — bei Rückfragen melden wir uns."
           class="ty-text-m text-grey-600 mt-s"

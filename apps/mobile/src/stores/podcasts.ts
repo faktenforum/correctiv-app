@@ -60,9 +60,7 @@ export const usePodcastsStore = defineStore('podcasts', {
           }
         }),
       );
-      const series = results.filter(
-        (s): s is PodcastSeries => !!s && s.episodes.length > 0,
-      );
+      const series = results.filter((s): s is PodcastSeries => !!s && s.episodes.length > 0);
 
       if (series.length) {
         this.series = series;

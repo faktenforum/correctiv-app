@@ -11,7 +11,11 @@
 import { writeFileSync, mkdirSync } from 'node:fs';
 import { dirname, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { extractArticle, readingMinutes, decodeEntities } from '../../../packages/app-core/src/lib/extract.mjs';
+import {
+  extractArticle,
+  readingMinutes,
+  decodeEntities,
+} from '../../../packages/app-core/src/lib/extract.mjs';
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const SRC = resolve(__dirname, '../src');
@@ -51,7 +55,9 @@ function parseItems(xml, feed) {
     const tag = (name) => {
       const t = block.match(new RegExp(`<${name}[^>]*>([\\s\\S]*?)</${name}>`));
       if (!t) return '';
-      return decodeEntities(t[1].replace(/<!\[CDATA\[([\s\S]*?)\]\]>/g, '$1').replace(/<[^>]*>/g, ' '))
+      return decodeEntities(
+        t[1].replace(/<!\[CDATA\[([\s\S]*?)\]\]>/g, '$1').replace(/<[^>]*>/g, ' '),
+      )
         .replace(/\s+/g, ' ')
         .trim();
     };
@@ -134,7 +140,10 @@ for (const [feed, feedUrl] of Object.entries(FEEDS)) {
         readingMinutes: readingMinutes(extracted.bodyHtml),
         localImage,
       };
-      writeFileSync(resolve(SRC, `assets/data/articles/${slug}.json`), JSON.stringify(detail, null, 1));
+      writeFileSync(
+        resolve(SRC, `assets/data/articles/${slug}.json`),
+        JSON.stringify(detail, null, 1),
+      );
       indexEntries.push({
         slug,
         url: item.url,
@@ -158,4 +167,6 @@ writeFileSync(
   resolve(SRC, 'assets/data/articles/index.json'),
   JSON.stringify({ generatedAt: new Date().toISOString(), articles: indexEntries }, null, 1),
 );
-console.log(`\nOffline bundle: ${indexEntries.length} articles, ${Object.keys(FEEDS).length} feed snapshots`);
+console.log(
+  `\nOffline bundle: ${indexEntries.length} articles, ${Object.keys(FEEDS).length} feed snapshots`,
+);
