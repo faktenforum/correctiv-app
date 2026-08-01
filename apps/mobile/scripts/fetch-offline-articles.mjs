@@ -8,7 +8,7 @@
  *
  * Usage: npm run offline-articles
  */
-import { writeFileSync, mkdirSync, readFileSync } from 'node:fs';
+import { writeFileSync, mkdirSync } from 'node:fs';
 import { dirname, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { extractArticle, readingMinutes, decodeEntities } from '../../../packages/app-core/src/lib/extract.mjs';

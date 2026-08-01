@@ -20,14 +20,20 @@
   ],
   "devDependencies": {
     "@types/node": "^20.19.43",
+    "oxfmt": "^0.61.0",
+    "oxlint": "^1.76.0",
     "typescript": "~5.8.0",
     "vitest": "^3.2.4"
   },
   "scripts": {
-    "check": "npm run typecheck && npm run test",
+    "check": "npm run typecheck && npm run lint && npm run test",
     "typecheck": "npm run typecheck --workspaces --if-present",
+    "lint": "oxlint",
+    "lint:fix": "oxlint --fix",
+    "format": "oxfmt",
+    "format:check": "oxfmt --check",
     "test": "npm run test --workspaces --if-present",
-    "test:watch": "npm run test:watch -w @correctiv/core",
+    "test:watch": "npm run test:watch -w @correctiv/app-core",
     "android": "npm run android -w @correctiv/mobile",
     "ios": "npm run ios -w @correctiv/mobile",
     "dev:android": "npm run dev:android -w @correctiv/mobile",
