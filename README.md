@@ -176,7 +176,7 @@ sync so the trap cannot be re-armed by a "consistency" rename. Details in the AD
 
 | Problem | Rule |
 | --- | --- |
-| `@nativescript/vite@8.0.0-beta.0` (Vite 8 / Rolldown) does not build this project — `Could not resolve entry module "index.html"`, with the plugin's own unmodified config too | stay on `@nativescript/vite@2.0.3` (Vite 7) until the beta stabilises; re-test with `npm i -D -w @correctiv/mobile @nativescript/vite@beta` |
+| Vite 8 / Rolldown builds this project but silently drops the NativeScript polyfills (`installPolyfills` 12x -> 0x, `XMLHttpRequest` 25x -> 2x) — every network call then fails on device with `XMLHttpRequest is not defined` while the build stays green | stay on Vite 7. See [ADR 0002](docs/adr/0002-vite-8-rolldown-evaluation.md) for the full measurement, what it fixes, and how to reproduce |
 | `@nativescript/vite` hijacks `@nativescript/core` if a `packages/core` dir exists two levels above the app | never name a workspace package directory `core` — ours is `packages/app-core` ([ADR 0001](docs/adr/0001-monorepo-and-platform-free-core.md)) |
 | `@nativescript/vite` only auto-applies a file named `app.css` | import `app.scss?inline` + `Application.addCss()` (see `apps/mobile/src/app.ts`) |
 | SFC `<style>` blocks are extracted but never applied at runtime | no `<style>` in `.vue` files — everything lives in `apps/mobile/src/styles/` |
