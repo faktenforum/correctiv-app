@@ -10,8 +10,9 @@
 name: CI
 
 on:
+  # Every pull request, not just those targeting main — otherwise a stacked PR
+  # (e.g. a spike branched off a feature branch) silently gets no gate at all.
   pull_request:
-    branches: [main]
   push:
     branches: [main]
 
