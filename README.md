@@ -55,9 +55,15 @@ cd apps/mobile
 ns run android --no-hmr        # build, deploy and run on the emulator/device
 ```
 
-`npm run check` is the fast inner loop: it covers the feed/article parsers, the German
-formatters, the cache and the platform ports without an emulator. Reach for a device only
-when the change touches UI, the WebView or audio.
+`npm run check` is the fast inner loop — typecheck → lint → format:check → tests, under a
+second in total. It covers the feed/article parsers, the German formatters, the cache and
+the platform ports without an emulator. Reach for a device only when the change touches
+UI, the WebView or audio.
+
+Tooling is [oxlint](https://oxc.rs) + [oxfmt](https://oxc.rs) rather than ESLint/Prettier:
+same ecosystem as Vite, no plugin/parser config to maintain, and they understand Vue SFCs.
+SCSS, Markdown, `.github/` and `App_Resources/` are deliberately excluded from formatting —
+see `.oxfmtrc.json` and the commit that introduced it.
 
 The design tokens are pre-generated and committed (`apps/mobile/src/styles/tokens.generated.scss`),
 so the app builds without any sibling checkout. For demos, refresh the bundled
@@ -76,6 +82,9 @@ Convenience scripts (run from the repo root; they delegate into `apps/mobile`):
 npm run tokens                 # regenerate tokens from a wp-design-tokens checkout (optional, see below)
 npm run android                # ns debug android
 npm run test:watch             # vitest in watch mode on the core
+npm run lint                   # oxlint (178 rules, ~240 ms)
+npm run lint:fix               # oxlint --fix
+npm run format                 # oxfmt
 ```
 
 ### Design tokens
@@ -167,6 +176,7 @@ sync so the trap cannot be re-armed by a "consistency" rename. Details in the AD
 
 | Problem | Rule |
 | --- | --- |
+| `@nativescript/vite@8.0.0-beta.0` (Vite 8 / Rolldown) does not build this project — `Could not resolve entry module "index.html"`, with the plugin's own unmodified config too | stay on `@nativescript/vite@2.0.3` (Vite 7) until the beta stabilises; re-test with `npm i -D -w @correctiv/mobile @nativescript/vite@beta` |
 | `@nativescript/vite` hijacks `@nativescript/core` if a `packages/core` dir exists two levels above the app | never name a workspace package directory `core` — ours is `packages/app-core` ([ADR 0001](docs/adr/0001-monorepo-and-platform-free-core.md)) |
 | `@nativescript/vite` only auto-applies a file named `app.css` | import `app.scss?inline` + `Application.addCss()` (see `apps/mobile/src/app.ts`) |
 | SFC `<style>` blocks are extracted but never applied at runtime | no `<style>` in `.vue` files — everything lives in `apps/mobile/src/styles/` |

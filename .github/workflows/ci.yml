@@ -1,7 +1,7 @@
 # Quality gate for every PR and every push to main.
 #
 # Two jobs, cheapest first:
-#   check          — typecheck both workspace packages + the headless core suite
+#   check          — typecheck both packages, oxlint, oxfmt --check, headless tests
 #                    (~1 min incl. install; no Android SDK, no emulator)
 #   android-debug  — unsigned debug APK, so native/build breakage surfaces early
 #
@@ -36,7 +36,7 @@ jobs:
       - name: Install dependencies
         run: npm ci
 
-      # tsc + vue-tsc over both packages, then vitest over @correctiv/app-core.
+      # tsc + vue-tsc over both packages, then oxlint, oxfmt --check and vitest.
       # Includes the boundary guard that keeps the core free of platform SDKs.
       - name: Check
         run: npm run check

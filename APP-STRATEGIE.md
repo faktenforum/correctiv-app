@@ -55,7 +55,7 @@ Qualitätsbefund, verifiziert: `npx tsc --noEmit` und `npx vue-tsc --noEmit` lau
 
 1. `targetSdkVersion 34` (verifiziert in `App_Resources/Android/app.gradle`) — Google Play fordert seit 31.08.2025 API 35 und ab 31.08.2026 API 36. **Die App ist heute nicht einreichbar.** Der Grund ist architektonisch: `targetSdk 35` erzwingt Edge-to-Edge, was die 96 Zeilen imperatives `setStatusBarColor` in `src/lib/system-bars.ts` bricht.
 2. `LICENSE` ist AGPL-3.0-or-later — inkompatibel mit App-Store-Distribution (VLC-Präzedenz). CORRECTIV hält das Copyright, ist also lösbar — aber **vor** dem ersten externen Commit.
-3. Release-Builds funktionieren nur mit abgeschalteter Minification (`vite.config.ts`), Ursache unbekannt und **upstream nicht gemeldet**. Dieselbe Fehlersignatur (`Module evaluation promise rejected: bundle.mjs`) bricht auch HMR.
+3. Release-Builds funktionieren nur mit abgeschalteter Minification (`vite.config.ts`), Ursache unbekannt und **upstream nicht gemeldet**. Dieselbe Fehlersignatur (`Module evaluation promise rejected: bundle.mjs`) bricht auch HMR. Der naheliegende Ausweg — Vite 8 mit Rolldown, das esbuild und Rollup ersetzt — ist **geprüft und geht nicht**: `@nativescript/vite@8.0.0-beta.0` (`vite: ^8.0.0`) scheitert an diesem Projekt mit `Could not resolve entry module "index.html"`, auch mit der unveränderten Plugin-Config und über den echten `ns build android`-Pfad. Erneut testen, wenn die Beta stabil wird.
 4. iOS wurde nie gebaut: `@nativescript/ios` ist nicht einmal installiert, null `__IOS__`-Zweige.
 
 **Was auf jeden Fall bleibt** (stack-unabhängig, das ist der eigentliche Wert): die Datenmodelle, `format.ts`, der RSS-Parser, die Cache-Kaskade, die Design-Token-Pipeline, die Callout-Journey (`CalloutFormPage.vue` spricht schon beabees echtes Formio-Schema), die Webview-Bridge-Logik in `ArticleReaderPage.vue:105-119`, das `modules[]`-Feed-Muster der Homepage — und, am wertvollsten, die 17-zeilige „Toolchain gotchas"-Tabelle im README.
@@ -178,7 +178,7 @@ Alle Aufwände sind **grobe Schätzungen** in Entwicklertagen. `[NICHT APP]` mar
 | 0.4 | `[NICHT APP]` D-U-N-S-Nummer, Apple-Enrollment, EU-DSA-Trader-Status, Entitlement-Antrag | — | 2 | D-U-N-S beantragt (dauert Wochen!) |
 | 0.5 | `[NICHT APP]` **Staging-Umgebungen + 8 Test-Identitäten** (0 €, >0 €, nur-Lokal, Manual, expiring, gekündigt-in-Karenz, Geschenk, App-Review) + `docs/API-CONTRACT.md` | — | 3 | kein App-Code gegen Produktion nötig |
 | 0.6 | **Entitlement-Matrix** als Wahrheitstabelle (~8 Zahlerzustände × ~6 Oberflächen), gezeichnet von Philipp + beabee-Owner | `docs/entitlements.md` | 0,5 | jede Zelle allow/deny, unterschrieben |
-| 0.7 | ⏳ **teilweise erledigt** — typecheck/test/check + Vitest mit echten Fixtures + CI-Gate stehen; **offen: ESLint** und Repo-Governance (CODEOWNERS, Renovate, PR-Template, SECURITY.md) | `package.json`, `.github/` | 1 | CI grün, `check` blockiert Merges |
+| 0.7 | ✅ **erledigt** — typecheck + **oxlint** + **oxfmt** + Vitest mit echten Fixtures, alles in `npm run check` und als CI-Gate. Offen nur noch: Repo-Governance (CODEOWNERS, Renovate, PR-Template, SECURITY.md) | `package.json`, `.github/` | 0,5 | CI grün, `check` blockiert Merges |
 | 0.8 | **Spike targetSdk 36 + Edge-to-Edge** — 2 Stunden, nicht 5 Tage | `app.gradle`, `src/lib/system-bars.ts` | 0,5 | belegt, ob Per-Screen-Tinting überlebt |
 | 0.9 | Toter Code + Demo-Ballast weg (~240 LOC ohne Importeure, 4,9 MB Binaries, 30 Snapshots) | `src/data/`, `src/assets/` | 1 | Repo an Externe übergabefähig |
 
