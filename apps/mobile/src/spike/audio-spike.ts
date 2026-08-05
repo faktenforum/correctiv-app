@@ -17,7 +17,7 @@
  * headers. So the tests below drive the platform API directly, no plugin.
  *
  * Every result is logged with the `SPIKE:` prefix so it can be pulled out of
- * logcat. Run against scripts/spike-audio-server.mjs, which returns 401 without
+ * logcat. Run against the repo root scripts/spike-audio-server.mjs, which returns 401 without
  * `Authorization: Bearer spike-token` — so T2 passing PROVES the header arrived;
  * it cannot succeed by accident.
  */

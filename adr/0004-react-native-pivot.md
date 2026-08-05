@@ -401,7 +401,7 @@ aufnimmt und die Standardeinstellung sonst `RECORD_AUDIO` verlangt.
   zeigt die Mediathek darum echte FunFacts-Videos, aber Podcast-Beispieldaten mit
   dem Hinweis „Ohne Verbindung — Sie sehen Beispielfolgen."
 - **Vor dem Swap (Phase 5) herausholen, sonst löscht ihn der `git rm`:**
-  `apps/mobile/scripts/spike-audio-server.mjs` (verlangt `Authorization: Bearer
+  `scripts/spike-audio-server.mjs` (verlangt `Authorization: Bearer
   spike-token`, sonst 401 — der beweisende Test für den authentifizierten
   Castopod-Podcast, den die Expo-App genauso braucht) und
   `apps/mobile/src/assets/data/feeds/*.json` samt
@@ -417,7 +417,7 @@ aufnimmt und die Standardeinstellung sonst `RECORD_AUDIO` verlangt.
   Browser bringt ein echter Klick auf „Radio abspielen" die Mini-Leiste hoch — dass
   aber wirklich Ton aus dem Icecast-Stream kommt, dass Hintergrund-Wiedergabe und
   Lockscreen-Steuerung funktionieren, kann nur ein Android- oder iOS-Build zeigen.
-  `apps/mobile/scripts/spike-audio-server.mjs` bleibt für den authentifizierten
+  `scripts/spike-audio-server.mjs` bleibt für den authentifizierten
   Podcast der beweisende Test (401 ohne Bearer-Token).
 - **Der Artikel-/Reader-Typ ist noch doppelt.** `Article` (App) gegen `ArticleDetail` (Core)
   sind anders geschnitten, nicht bloß anders benannt: `kicker`/`topline`,

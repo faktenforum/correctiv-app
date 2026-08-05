@@ -13,7 +13,7 @@
  *
  * The emulator reaches the host at 10.0.2.2.
  *
- * Usage: node scripts/spike-audio-server.mjs [port]
+ * Usage: node scripts/spike-audio-server.mjs [port]   (from the repo root)
  */
 import { createServer } from 'node:http';
 import { createReadStream, statSync } from 'node:fs';
@@ -21,7 +21,15 @@ import { fileURLToPath } from 'node:url';
 
 const PORT = Number(process.argv[2] ?? 8099);
 const TOKEN = 'spike-token';
-const FILE = fileURLToPath(new URL('../src/assets/audio/sample-episode.mp3', import.meta.url));
+/**
+ * The sample episode, taken from the Expo app — deliberately not from apps/mobile,
+ * which phase 5 deletes. This server outlives the NativeScript app because the
+ * authenticated-podcast question outlives it too: the Expo build has to prove the
+ * same thing, and expo-audio is the reason it can (headers on AudioSource).
+ */
+const FILE = fileURLToPath(
+  new URL('../apps/mobile-rn/assets/audio/sample-episode.mp3', import.meta.url),
+);
 const SIZE = statSync(FILE).size;
 
 let requests = 0;
