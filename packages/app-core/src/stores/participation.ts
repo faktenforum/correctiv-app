@@ -1,4 +1,4 @@
-import { createStore } from 'zustand/vanilla';
+import { createStore } from './create-store';
 
 /**
  * Locally persisted participation state: callout submissions (incrementing the
@@ -27,7 +27,7 @@ export function extraCount(state: Submissions, slug: string): number {
   return state.submissions.filter((s) => s.calloutSlug === slug).length;
 }
 
-export const participationStore = createStore<ParticipationState>()((set) => ({
+export const participationStore = createStore<ParticipationState>((set) => ({
   submissions: [],
 
   submit: (calloutSlug, answers) =>

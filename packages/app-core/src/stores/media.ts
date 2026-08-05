@@ -1,4 +1,4 @@
-import { createStore } from 'zustand/vanilla';
+import { createStore } from './create-store';
 import type { Video } from '../types/models';
 import { YOUTUBE_FEEDS, MEDIA_SOURCE, PEERTUBE_CHANNELS } from '../data/feeds.config';
 import { fetchYoutubeFeed } from '../services/rss.service';
@@ -19,8 +19,8 @@ export interface MediaState {
   fetch: (key: YoutubeKey) => Promise<void>;
 }
 
-export const mediaStore = createStore<MediaState>()((set, get) => {
-  /** Replaces one channel's slice immutably — zustand's set is a shallow merge. */
+export const mediaStore = createStore<MediaState>((set, get) => {
+  /** Replaces one channel's slice immutably — set is a shallow merge. */
   const patch = (key: YoutubeKey, slice: Partial<VideoListState>) =>
     set((state) => ({
       byKey: { ...state.byKey, [key]: { ...state.byKey[key], ...slice } },

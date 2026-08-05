@@ -1,20 +1,20 @@
-import type { StoreApi } from 'zustand/vanilla';
+import type { Store } from './create-store';
 import { platform } from '../ports';
 
 /**
  * Minimal persistence adapter: hydrates a store through the KeyValueStore port
  * and writes the given state keys back, debounced.
  *
- * Not zustand's own persist middleware: that wants a storage object and a JSON
- * codec of its own, while this core already declares exactly what it needs from
- * a host as a port. Going through the port keeps one storage seam instead of two
+ * Deliberately not a storage middleware with its own codec: this core already
+ * declares exactly what it needs from a host as a port, so going through the port
+ * keeps one storage seam instead of two
  * — the NativeScript host maps it to ApplicationSettings, the Expo host to
  * AsyncStorage or localStorage, and tests to memory.
  *
- * `id` is explicit because a vanilla zustand store, unlike a Pinia store, has no
- * identity of its own — the caller owns the storage key.
+ * `id` is explicit because a vanilla store, unlike a Pinia store, has no identity
+ * of its own — the caller owns the storage key.
  */
-export function persist<T extends object>(id: string, store: StoreApi<T>, keys: string[]): void {
+export function persist<T extends object>(id: string, store: Store<T>, keys: string[]): void {
   const storageKey = `store.${id}`;
   const kv = platform().keyValue;
 

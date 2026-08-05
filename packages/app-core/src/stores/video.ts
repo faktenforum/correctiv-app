@@ -1,4 +1,4 @@
-import { createStore } from 'zustand/vanilla';
+import { createStore } from './create-store';
 import type { Video } from '../types/models';
 import { fetchVideoDetail } from '../services/peertube.service';
 import { stopOtherMedia } from '../media/exclusive-playback';
@@ -30,7 +30,7 @@ export function isActive(state: Pick<VideoState, 'current'>): boolean {
   return state.current !== null;
 }
 
-export const videoStore = createStore<VideoState>()((set, get) => ({
+export const videoStore = createStore<VideoState>((set, get) => ({
   current: null,
   hlsUrl: '',
   status: 'idle',

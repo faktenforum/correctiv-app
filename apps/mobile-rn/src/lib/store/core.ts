@@ -12,6 +12,7 @@
  * Always select the narrowest slice you need. `useStore(store)` without a
  * selector re-renders on every change to any field in that store.
  */
+import { useMemo } from 'react';
 import { useStore } from 'zustand';
 
 import {
@@ -55,9 +56,30 @@ export const useSavedArticles = () => useStore(savedArticlesStore, (s) => s.item
 export const useIsSaved = (url: string) =>
   useStore(savedArticlesStore, (s) => selectIsSaved(s, url));
 
-export const useSelectedInterests = () => useStore(interestsStore, selectSelectedInterests);
-export const useBoostedModules = () => useStore(interestsStore, selectBoostedModules);
-export const useExtraFeeds = () => useStore(interestsStore, selectExtraFeeds);
+/**
+ * These three selectors build a NEW array on every call (`filter`/`map`), and
+ * zustand v5's `useStore` passes the selector straight to React's
+ * `useSyncExternalStore` — no equality function. A snapshot with a fresh identity
+ * each render makes React throw "The result of getSnapshot should be cached to
+ * avoid an infinite loop".
+ *
+ * So subscribe to the raw `selected` array — a stable reference between changes,
+ * because the store updates immutably — and derive under `useMemo`.
+ */
+export const useSelectedInterests = () => {
+  const selected = useStore(interestsStore, (s) => s.selected);
+  return useMemo(() => selectSelectedInterests({ selected }), [selected]);
+};
+
+export const useBoostedModules = () => {
+  const selected = useStore(interestsStore, (s) => s.selected);
+  return useMemo(() => selectBoostedModules({ selected }), [selected]);
+};
+
+export const useExtraFeeds = () => {
+  const selected = useStore(interestsStore, (s) => s.selected);
+  return useMemo(() => selectExtraFeeds({ selected }), [selected]);
+};
 
 export const useHasSubmitted = (slug: string) =>
   useStore(participationStore, (s) => selectHasSubmitted(s, slug));

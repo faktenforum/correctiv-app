@@ -16,7 +16,7 @@ import { extraCount, hasSubmitted, participationStore } from '../src/stores/part
 import { isActive, videoStore } from '../src/stores/video';
 
 /**
- * The stores moved from Pinia to zustand/vanilla so the core can drive both a Vue
+ * The stores moved from Pinia to the core's own createStore so it can drive both a Vue
  * and a React host (ADR 0004). These tests pin the behaviour that move could
  * quietly change: immutable updates, action semantics, and the pure selectors
  * that replaced Pinia's computed getters.

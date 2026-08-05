@@ -1,4 +1,4 @@
-import { createStore } from 'zustand/vanilla';
+import { createStore } from './create-store';
 
 export type TabId = 'home' | 'discover' | 'media' | 'participate' | 'profile';
 export type ThemePreference = 'system' | 'light' | 'dark';
@@ -26,7 +26,7 @@ export interface SettingsState {
   setTheme: (theme: ThemePreference) => void;
 }
 
-export const settingsStore = createStore<SettingsState>()((set) => ({
+export const settingsStore = createStore<SettingsState>((set) => ({
   onboardingDone: false,
   pushOptIn: false,
   textScale: 1,

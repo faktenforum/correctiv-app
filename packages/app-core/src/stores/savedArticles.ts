@@ -1,4 +1,4 @@
-import { createStore } from 'zustand/vanilla';
+import { createStore } from './create-store';
 
 export interface SavedArticle {
   url: string;
@@ -19,7 +19,7 @@ export function isSaved(state: Pick<SavedArticlesState, 'items'>, url: string): 
   return state.items.some((a) => a.url === url);
 }
 
-export const savedArticlesStore = createStore<SavedArticlesState>()((set) => ({
+export const savedArticlesStore = createStore<SavedArticlesState>((set) => ({
   items: [],
 
   toggle: (article) =>

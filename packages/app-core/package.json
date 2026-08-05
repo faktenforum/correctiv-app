@@ -9,9 +9,6 @@
     ".": "./src/index.ts",
     "./*": "./src/*"
   },
-  "dependencies": {
-    "zustand": "^5.0.14"
-  },
   "scripts": {
     "typecheck": "tsc --noEmit",
     "test": "vitest run",

@@ -1,4 +1,4 @@
-import { createStore } from 'zustand/vanilla';
+import { createStore } from './create-store';
 
 export type MembershipInterval = 'monatlich' | 'jährlich';
 
@@ -30,7 +30,7 @@ const INITIAL = {
   paused: false,
 };
 
-export const membershipStore = createStore<MembershipState>()((set, get) => ({
+export const membershipStore = createStore<MembershipState>((set, get) => ({
   ...INITIAL,
 
   join: (amountEur, interval, name) =>

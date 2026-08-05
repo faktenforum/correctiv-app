@@ -1,4 +1,4 @@
-import { createStore } from 'zustand/vanilla';
+import { createStore } from './create-store';
 import { interests, type Interest } from '../data/interests';
 
 /**
@@ -31,7 +31,7 @@ export function extraFeeds(state: Pick<InterestsState, 'selected'>): Interest[] 
   return selectedInterests(state).filter((i) => i.feed && i.feed !== 'salon5');
 }
 
-export const interestsStore = createStore<InterestsState>()((set) => ({
+export const interestsStore = createStore<InterestsState>((set) => ({
   selected: [],
 
   toggle: (id) =>

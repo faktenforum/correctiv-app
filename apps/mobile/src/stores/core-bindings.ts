@@ -1,9 +1,9 @@
 /**
  * Vue bindings for the framework-neutral core stores.
  *
- * `@correctiv/app-core` no longer ships Pinia stores — it ships plain
- * zustand/vanilla stores plus pure selector functions, so the same state logic
- * can also drive the React Native app. Each host adds its own reactivity here.
+ * `@correctiv/app-core` no longer ships Pinia stores — it ships plain observable
+ * stores (its own `createStore`) plus pure selector functions, so the same state
+ * logic can also drive the React Native app. Each host adds its own reactivity here.
  *
  * The bound objects deliberately reproduce the surface the templates already
  * used: state as properties, actions as methods, derived values as properties
@@ -21,7 +21,7 @@
  *     status flip has to become visible everywhere at once.
  */
 import { computed, reactive, type ComputedRef } from 'vue';
-import type { StoreApi } from 'zustand/vanilla';
+import type { Store } from '@correctiv/app-core/stores/create-store';
 
 import { settingsStore, type SettingsState } from '@correctiv/app-core/stores/settings';
 import { membershipStore, type MembershipState } from '@correctiv/app-core/stores/membership';
@@ -57,7 +57,7 @@ export type { VideoStatus } from '@correctiv/app-core/stores/video';
 export type { YoutubeKey, VideoListState } from '@correctiv/app-core/stores/media';
 
 /** Mirrors a vanilla store into a Vue reactive object, once per store. */
-function bind<T extends object>(store: StoreApi<T>): T {
+function bind<T extends object>(store: Store<T>): T {
   const state = reactive({ ...store.getState() }) as T;
   store.subscribe((next) => Object.assign(state, next));
   return state;
@@ -145,7 +145,7 @@ function videoView(): Pick<VideoState, 'current'> {
 export type BoundVideo = VideoState & { isActive: boolean };
 export const useVideoStore = (): BoundVideo => video as BoundVideo;
 
-// --- raw vanilla stores, for persist() and anything needing subscribe --------
+// --- raw stores, for persist() and anything needing subscribe ---------------
 
 export const coreStores = {
   settings: settingsStore,
