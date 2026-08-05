@@ -3,8 +3,8 @@ import { router, useLocalSearchParams } from 'expo-router';
 import { useEffect, useState } from 'react';
 import { ActivityIndicator, Linking, Pressable, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { WebView, type WebViewNavigation } from 'react-native-webview';
 
+import { ReaderView } from '@/components/reader/ReaderView';
 import { Typo } from '@/components/ui';
 import { loadArticle } from '@/lib/articles/loadArticle';
 import { buildReaderHtml, type ReaderArticle } from '@/lib/articles/readerHtml';
@@ -47,8 +47,7 @@ export default function ArtikelScreen() {
     };
   }, [url, badge]);
 
-  const onNavigate = (req: WebViewNavigation): boolean => {
-    const target = req.url;
+  const onNavigate = (target: string): boolean => {
     if (target === 'about:blank' || target.startsWith('data:') || target.startsWith('file:'))
       return true;
     if (target.startsWith('correctiv://join')) {
@@ -71,14 +70,7 @@ export default function ArtikelScreen() {
   return (
     <View className="flex-1 bg-grey-100">
       {article ? (
-        <WebView
-          originWhitelist={['*']}
-          source={{ html: buildReaderHtml(article), baseUrl: 'https://correctiv.org/' }}
-          onShouldStartLoadWithRequest={onNavigate}
-          showsVerticalScrollIndicator={false}
-          // Inhalt unter dem transparenten Header beginnen lassen.
-          contentInsetAdjustmentBehavior="never"
-        />
+        <ReaderView html={buildReaderHtml(article)} onNavigate={onNavigate} />
       ) : (
         <View className="flex-1 items-center justify-center px-m">
           {error ? (

@@ -1,12 +1,15 @@
 # Quality gate for every PR and every push to main.
 #
-# Two jobs, cheapest first:
-#   check          — typecheck both packages, oxlint, oxfmt --check, headless tests
+# Three jobs, cheapest first:
+#   check          — typecheck every package, oxlint, oxfmt --check, headless tests
 #                    (~1 min incl. install; no Android SDK, no emulator)
+#   expo-web       — static web export of apps/mobile-rn, plus assertions that it
+#                    is not silently broken (see the job for why that is needed)
 #   android-debug  — unsigned debug APK, so native/build breakage surfaces early
 #
-# The repo is an npm workspace: `npm ci` runs at the root, the NativeScript
-# project lives in apps/mobile (see adr/0001-monorepo-and-platform-free-core.md).
+# The repo is an npm workspace: `npm ci` runs at the root. apps/mobile is the
+# NativeScript app (being replaced), apps/mobile-rn the Expo one that supersedes
+# it — see adr/0001-monorepo-and-platform-free-core.md.
 name: CI
 
 on:
@@ -41,6 +44,53 @@ jobs:
       # Includes the boundary guard that keeps the core free of platform SDKs.
       - name: Check
         run: npm run check
+
+  expo-web:
+    name: Expo web export
+    runs-on: ubuntu-latest
+    needs: check
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Export web bundle
+        working-directory: apps/mobile-rn
+        run: npm run build:web
+
+      # The export succeeding is NOT sufficient on its own: a component with no
+      # web implementation still exports fine. react-native-webview in
+      # particular renders "React Native WebView does not support this platform."
+      # So assert the built output does not contain that text, and that the
+      # routes we expect were actually emitted.
+      - name: Assert the web bundle is not silently broken
+        working-directory: apps/mobile-rn
+        run: |
+          set -euo pipefail
+          if grep -rq "does not support this platform" dist/; then
+            echo "::error::A component without web support reached the web bundle."
+            grep -rl "does not support this platform" dist/ | head
+            exit 1
+          fi
+          for route in index artikel entdecken mediathek mitmachen profil; do
+            test -f "dist/$route.html" || { echo "::error::missing dist/$route.html"; exit 1; }
+          done
+          echo "web export OK — $(find dist -name '*.html' | wc -l) routes, no unsupported-platform stubs"
+
+      - name: Upload web bundle
+        uses: actions/upload-artifact@v4
+        with:
+          name: correctiv-app-web
+          path: apps/mobile-rn/dist
+          if-no-files-found: error
+          retention-days: 14
 
   android-debug:
     name: Android debug build
