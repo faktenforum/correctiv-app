@@ -1,30 +1,24 @@
-import { ScrollView } from 'react-native';
-
-import { Chip } from '@/components/ui';
+import { Chip, Rail } from '@/components/ui';
 import { interests } from '@correctiv/app-core/data/interests';
 
 /**
- * Nur Themen mit Feed: ein Chip ohne Feed hätte keine Seite zu zeigen. Modul-
- * konstant, damit die Liste nicht pro Render neu entsteht.
- * `resolveProject` im Core spiegelt dieselbe Bedingung — dort als Test gepinnt.
+ * Topics with a feed only: a chip without one would have no page to open. Module
+ * constant, so the list is not rebuilt on every render. `resolveProject` in the
+ * core mirrors the same condition — pinned by a test there.
  */
 const TOPICS = interests.filter((topic) => topic.feed);
 
 /**
- * Themenschiene unter dem Sucheinstieg. Die Chips sind Navigation, keine
- * Auswahl — deshalb ohne `selected`. Die Auswahl derselben Interessen passiert
- * im Onboarding (Phase 4e) und steuert dort das Home-Ranking.
+ * The topic rail below the search entry. These chips are navigation, not selection,
+ * hence no `selected` state. Selecting the same interests happens in onboarding,
+ * where it drives the ranking on Home.
  */
 export function TopicRail({ onOpenTopic }: { onOpenTopic: (id: string) => void }) {
   return (
-    <ScrollView
-      horizontal
-      showsHorizontalScrollIndicator={false}
-      contentContainerStyle={{ paddingRight: 24, gap: 8 }}
-    >
+    <Rail gap="xs">
       {TOPICS.map((topic) => (
         <Chip key={topic.id} label={topic.label} onPress={() => onOpenTopic(topic.id)} />
       ))}
-    </ScrollView>
+    </Rail>
   );
 }

@@ -1,9 +1,9 @@
-import { Pressable, ScrollView } from 'react-native';
+import { Pressable } from 'react-native';
 
-import { Badge, Typo } from '@/components/ui';
+import { Badge, Rail, Typo } from '@/components/ui';
 import type { FeedItem } from '@correctiv/app-core/types/models';
 
-/** Horizontal scrollbare Faktencheck-Karten (Home-Rail). */
+/** The horizontally scrolling fact-check cards on Home. */
 export function FaktencheckRail({
   items,
   onPress,
@@ -13,15 +13,13 @@ export function FaktencheckRail({
 }) {
   if (items.length === 0) return null;
   return (
-    <ScrollView
-      horizontal
-      showsHorizontalScrollIndicator={false}
-      contentContainerStyle={{ paddingRight: 24, gap: 12 }}
-    >
+    <Rail>
       {items.map((item) => (
         <Pressable
           key={item.id}
           onPress={() => onPress(item)}
+          accessibilityRole="link"
+          accessibilityLabel={item.title}
           className="w-64 rounded-md bg-grey-200 p-s active:opacity-80"
         >
           <Badge label="Faktencheck" tone="emphasis" className="mb-2xs" />
@@ -30,6 +28,6 @@ export function FaktencheckRail({
           </Typo>
         </Pressable>
       ))}
-    </ScrollView>
+    </Rail>
   );
 }
