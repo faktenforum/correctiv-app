@@ -8,14 +8,51 @@ import type { FeedKey } from '../types/models';
  * exist exclusively under /category/<slug>/feed/ — the exception is the
  * main feed correctiv.org/feed/.
  */
-export const FEEDS: Record<FeedKey, { label: string; url: string }> = {
+export interface FeedConfig {
+  label: string;
+  url: string;
+  /** Default badge for articles from this feed. The main feed carries none. */
+  badge?: string;
+  /**
+   * Upstream returns no items today, so the feed must not be presented as a
+   * content source — only as a teaser for the project. Guarded by a test.
+   */
+  empty?: true;
+}
+
+export const FEEDS: Record<FeedKey, FeedConfig> = {
   recherchen: { label: 'Recherchen', url: 'https://correctiv.org/feed/' },
-  faktencheck: { label: 'Faktencheck', url: 'https://correctiv.org/category/faktencheck/feed/' },
-  klima: { label: 'Klima', url: 'https://correctiv.org/category/klimawandel/feed/' },
-  schweiz: { label: 'CORRECTIV.Schweiz', url: 'https://correctiv.org/category/schweiz/feed/' },
-  lokal: { label: 'CORRECTIV.Lokal', url: 'https://correctiv.org/category/lokal/feed/' },
-  salon5: { label: 'Salon5', url: 'https://correctiv.org/category/salon5/feed/' },
+  faktencheck: {
+    label: 'Faktencheck',
+    url: 'https://correctiv.org/category/faktencheck/feed/',
+    badge: 'Faktencheck',
+  },
+  klima: {
+    label: 'Klima',
+    url: 'https://correctiv.org/category/klimawandel/feed/',
+    badge: 'Klima',
+  },
+  schweiz: {
+    label: 'CORRECTIV.Schweiz',
+    url: 'https://correctiv.org/category/schweiz/feed/',
+    badge: 'Schweiz',
+  },
+  lokal: {
+    label: 'CORRECTIV.Lokal',
+    url: 'https://correctiv.org/category/lokal/feed/',
+    badge: 'Lokal',
+  },
+  salon5: { label: 'Salon5', url: 'https://correctiv.org/category/salon5/feed/', badge: 'Salon5' },
+  europe: {
+    label: 'CORRECTIV.Europe',
+    url: 'https://correctiv.org/category/europe/feed/',
+    badge: 'Europe',
+    empty: true,
+  },
 };
+
+/** Feeds that actually carry articles — everything a list should offer to load. */
+export const CONTENT_FEEDS = (Object.keys(FEEDS) as FeedKey[]).filter((k) => !FEEDS[k].empty);
 
 export const YOUTUBE_FEEDS = {
   /** CORRECTIV im Gespräch (playlist) */

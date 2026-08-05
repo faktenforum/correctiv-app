@@ -1,8 +1,8 @@
+import { formatDateDe } from '@correctiv/app-core/lib/format';
+
 import { THEME_CSS } from '@/lib/theme/readerCss.generated';
 import { READER_FONTS_CSS } from '@/lib/theme/readerFonts.generated';
-import type { FactcheckRating } from '@/lib/models';
-
-import { formatDate } from '@/lib/format';
+import type { FactcheckRating } from '@/lib/articles/types';
 
 export interface ReaderArticle {
   title: string;
@@ -97,7 +97,7 @@ h1{font-family:'Merriweather',Georgia,serif;font-weight:700;font-size:var(--var-
 export function buildReaderHtml(article: ReaderArticle): string {
   const meta = [
     article.authors.length ? `von ${article.authors.join(', ')}` : '',
-    formatDate(article.publishedAt),
+    formatDateDe(article.publishedAt),
     `${article.readingMinutes} Min. Lesezeit`,
   ]
     .filter(Boolean)

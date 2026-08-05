@@ -6,16 +6,27 @@
  */
 import { decodeEntities } from './extract.mjs';
 
-function blockTag(block, name) {
-  const m = block.match(new RegExp(`<${name}[^>]*>([\\s\\S]*?)</${name}>`));
-  if (!m) return '';
-  return decodeEntities(m[1].replace(/<!\[CDATA\[([\s\S]*?)\]\]>/g, '$1').replace(/<[^>]*>/g, ' '))
+function clean(raw) {
+  return decodeEntities(raw.replace(/<!\[CDATA\[([\s\S]*?)\]\]>/g, '$1').replace(/<[^>]*>/g, ' '))
     .replace(/\s+/g, ' ')
     .trim();
 }
 
+function blockTag(block, name) {
+  const m = block.match(new RegExp(`<${name}[^>]*>([\\s\\S]*?)</${name}>`));
+  return m ? clean(m[1]) : '';
+}
+
 /**
  * WordPress RSS → items.
+ *
+ * `author` is a single string, not a list. The Expo prototype assumed co-bylines
+ * arrive as repeated <dc:creator> elements; measured against 200 live items
+ * (correctiv.org/feed/ and /category/faktencheck/feed/) every single one has
+ * exactly one, and none is a composite value. If CORRECTIV ever adds a
+ * co-authors plugin this takes the first — that is the known limit, and it is
+ * cheaper to fix then than to carry an always-length-1 array everywhere now.
+ *
  * @returns {Array<{id:string, feed:string, title:string, url:string, teaser:string,
  *   author?:string, publishedAt:string, categories:string[], imageUrl:null}>}
  */
@@ -47,11 +58,17 @@ export function parseWpFeed(xml, feed) {
 }
 
 /**
- * YouTube Atom → videos.
+ * YouTube Atom → videos (channel or playlist feed).
+ *
+ * `channel` is passed in because the feed does not identify which of the app's
+ * media channels it is — the caller knows, the XML does not.
+ *
+ * @param {string} xml
+ * @param {'gespraech'|'funfacts'|'hauptkanal'} [channel]
  * @returns {Array<{id:string, title:string, url:string, thumbnailUrl:string,
- *   publishedAt:string, description?:string}>}
+ *   publishedAt:string, description?:string, channel?:string, source:'youtube'}>}
  */
-export function parseYoutubeFeed(xml) {
+export function parseYoutubeFeed(xml, channel) {
   const videos = [];
   const entryRe = /<entry>([\s\S]*?)<\/entry>/g;
   let m;
@@ -67,6 +84,8 @@ export function parseYoutubeFeed(xml) {
       thumbnailUrl: thumb ? thumb[1] : `https://i.ytimg.com/vi/${id}/hqdefault.jpg`,
       publishedAt: blockTag(block, 'published'),
       description: blockTag(block, 'media:description').slice(0, 300) || undefined,
+      channel,
+      source: 'youtube',
     });
   }
   return videos;

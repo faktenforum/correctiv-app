@@ -1,8 +1,8 @@
 import { Pressable, View } from 'react-native';
 
 import { Typo } from '@/components/ui';
-import type { FeedItem } from '@/lib/models';
-import { formatDate } from '@/lib/format';
+import { formatDateDe } from '@correctiv/app-core/lib/format';
+import type { FeedItem } from '@correctiv/app-core/types/models';
 
 /** Kompakte Listenzeile für „Neueste Recherchen" — Titel (Serif) + Meta, ohne Bild. */
 export function ArticleRow({
@@ -18,14 +18,14 @@ export function ArticleRow({
         {item.title}
       </Typo>
       <View className="mt-3xs flex-row flex-wrap items-center gap-2xs">
-        {item.authors[0] && (
+        {item.author && (
           <Typo variant="text-s" color="grey-600">
-            {item.authors[0]}
+            {item.author}
           </Typo>
         )}
         {item.publishedAt && (
           <Typo variant="text-s" color="grey-500">
-            · {formatDate(item.publishedAt)}
+            · {formatDateDe(item.publishedAt)}
           </Typo>
         )}
       </View>

@@ -19,7 +19,7 @@ import { colors } from '@/lib/theme';
  * Early-Access-Karte. In M3–M5 kommen Mediathek-Reihe, Mitmach- und Backstage-Modul hinzu.
  */
 export default function HomeScreen() {
-  const recherchen = useFeed('haupt');
+  const recherchen = useFeed('recherchen');
   const faktenchecks = useFeed('faktencheck');
 
   const hero = recherchen.data?.[0];

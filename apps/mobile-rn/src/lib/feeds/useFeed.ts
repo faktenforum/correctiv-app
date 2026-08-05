@@ -1,9 +1,8 @@
 import { useCallback, useEffect, useState } from 'react';
 
-import type { FeedItem, FeedSourceId, Video } from '@/lib/models';
+import type { FeedItem, FeedKey } from '@correctiv/app-core/types/models';
 
-import { getFeed, getVideos } from './client';
-import type { YoutubeChannel } from './sources';
+import { getFeed, getFeeds } from './client';
 
 export interface AsyncState<T> {
   data: T | null;
@@ -19,9 +18,9 @@ interface InternalState<T> {
 }
 
 /**
- * Lädt asynchrone Daten neu, wenn sich `run` (memoisiert pro Schlüssel) ändert
- * oder reload() aufgerufen wird. Die setState-Aufrufe leben in der inneren
- * async-Funktion, nicht synchron im Effekt-Body (React-Compiler-konform).
+ * Reloads when `run` (memoised per key) changes or reload() is called. The
+ * setState calls live inside the inner async function rather than synchronously
+ * in the effect body, which is what keeps this React-Compiler-safe.
  */
 function useAsyncData<T>(run: () => Promise<T>): AsyncState<T> {
   const [state, setState] = useState<InternalState<T>>({ data: null, loading: true, error: null });
@@ -54,14 +53,18 @@ function useAsyncData<T>(run: () => Promise<T>): AsyncState<T> {
   return { ...state, reload };
 }
 
-/** Ein RSS-Feed. */
-export function useFeed(sourceId: FeedSourceId): AsyncState<FeedItem[]> {
-  const run = useCallback(() => getFeed(sourceId), [sourceId]);
+/** One RSS feed. */
+export function useFeed(feed: FeedKey): AsyncState<FeedItem[]> {
+  const run = useCallback(() => getFeed(feed), [feed]);
   return useAsyncData(run);
 }
 
-/** YouTube-Videos eines Kanals/einer Playlist. */
-export function useVideos(channel: YoutubeChannel): AsyncState<Video[]> {
-  const run = useCallback(() => getVideos(channel), [channel]);
+/**
+ * Several feeds merged, newest first and deduplicated by URL. Pass a stable
+ * array (a module constant or a useMemo result) — a fresh literal on every
+ * render would refetch on every render.
+ */
+export function useMergedFeeds(feeds: FeedKey[]): AsyncState<FeedItem[]> {
+  const run = useCallback(() => getFeeds(feeds), [feeds]);
   return useAsyncData(run);
 }

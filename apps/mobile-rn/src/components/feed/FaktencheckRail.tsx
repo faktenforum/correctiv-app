@@ -1,7 +1,7 @@
 import { Pressable, ScrollView } from 'react-native';
 
 import { Badge, Typo } from '@/components/ui';
-import type { FeedItem } from '@/lib/models';
+import type { FeedItem } from '@correctiv/app-core/types/models';
 
 /** Horizontal scrollbare Faktencheck-Karten (Home-Rail). */
 export function FaktencheckRail({

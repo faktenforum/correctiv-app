@@ -3,13 +3,19 @@ import { Image } from 'expo-image';
 import { Pressable, View } from 'react-native';
 
 import { Badge, Typo } from '@/components/ui';
-import { useVideos } from '@/lib/feeds/useFeed';
+import { useVideoChannel } from '@/lib/store/core';
 import { colors } from '@/lib/theme';
 
-/** Home-Mediathek-Reihe: Video des Tages (FunFacts, LIVE) + Live-Radio-Kachel. */
+/**
+ * Home media row: video of the day (FunFacts, LIVE) + a live radio tile.
+ *
+ * Via the core's media store, which routes FunFacts to CORRECTIV's PeerTube
+ * instance. This app used to pull it from the YouTube Atom feed — the legacy
+ * path the core's MEDIA_SOURCE map exists to correct.
+ */
 export function MediathekReihe({ onOpenMediathek }: { onOpenMediathek: () => void }) {
-  const { data } = useVideos('funfacts');
-  const video = data?.[0];
+  const { videos } = useVideoChannel('funfacts');
+  const video = videos[0];
 
   return (
     <View className="flex-row gap-s">
