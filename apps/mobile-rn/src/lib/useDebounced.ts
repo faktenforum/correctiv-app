@@ -1,12 +1,11 @@
 import { useEffect, useState } from 'react';
 
 /**
- * `value`, sobald es sich `delayMs` lang nicht mehr geändert hat.
+ * `value` once it has stopped changing for `delayMs`.
  *
- * Damit tippt die Suche nicht pro Tastendruck eine Anfrage. Der Timer hängt am
- * Effekt, wird also beim nächsten Zeichen und beim Unmount aufgeräumt — anders
- * als die frühere Variante mit einem Modul-Timer, die nach dem Verlassen des
- * Bildschirms noch einmal gefeuert hätte.
+ * Keeps the search from firing a request per keystroke. The timer hangs off the
+ * effect, so it is cleared on the next character and on unmount — unlike a
+ * module-level timer, which would fire once more after leaving the screen.
  */
 export function useDebounced<T>(value: T, delayMs: number): T {
   const [settled, setSettled] = useState(value);
