@@ -10,7 +10,7 @@ Two app implementations live here while the stack transitions:
 | App | Stack | Targets | Role |
 | --- | --- | --- | --- |
 | [`apps/mobile-rn`](apps/mobile-rn) | **Expo SDK 56 · React Native 0.85 · React 19 · expo-router · NativeWind 4 · Zustand** | iOS, Android, **web** | The app going forward |
-| [`apps/mobile`](apps/mobile) | NativeScript 9 · Vue 3 · Vite · Pinia | iOS, Android | Being replaced — still the most complete UI, kept as the reference to port from |
+| [`apps/mobile`](apps/mobile) | NativeScript 9 · Vue 3 · Vite | iOS, Android | Being replaced — still the most complete UI, kept as the reference to port from |
 
 Both share [`packages/app-core`](packages/app-core), the platform-free core.
 See [ADR 0004](adr/0004-react-native-pivot.md) for why the stack changed.
@@ -62,7 +62,7 @@ a real web build of the actual app ([ADR 0004](adr/0004-react-native-pivot.md)).
 
 ```bash
 npm install                    # installs the whole workspace
-npm run check                  # every typecheck + 98 headless tests, ~1 s, no device
+npm run check                  # every typecheck + 134 headless tests, ~2 s, no device
 ```
 
 **The app going forward** (`apps/mobile-rn`) — no emulator needed for the web target:
@@ -113,6 +113,7 @@ Convenience scripts (run from the repo root; they delegate into `apps/mobile`):
 npm run tokens                 # regenerate tokens from a wp-design-tokens checkout (optional, see below)
 npm run android                # ns debug android
 npm run test:watch             # vitest in watch mode on the core
+npm run test                   # all workspaces: 101 core + 7 Vue bindings + 26 Expo
 npm run lint                   # oxlint (178 rules, ~240 ms)
 npm run lint:fix               # oxlint --fix
 npm run format                 # oxfmt
@@ -166,11 +167,19 @@ expects a `wp-design-tokens` checkout next to this repository. Never import
   Icecast MP3 directly). `apps/mobile/src/stores/audio.ts` owns all player state including the
   60-second preview gate for club bonus content (invitation, never a lock).
   Known iOS gap: AVAudioPlayer cannot play live streams (needs an AVPlayer wrapper).
-- **State:** Pinia stores persisted through the `KeyValueStore` port
-  (`packages/app-core/src/stores/persist.ts`, wired to `ApplicationSettings` in
-  `apps/mobile/src/platform/nativescript.ts`). `membership.isMember` is the central demo lever — every
-  club touchpoint reads it reactively in the render path; never snapshot it into
-  local refs.
+- **State:** the core's stores are **framework-neutral** (`zustand/vanilla`), so the
+  same state logic drives both apps. Each host adds its own reactivity:
+  `apps/mobile/src/stores/core-bindings.ts` (Vue `reactive` mirror) and
+  `apps/mobile-rn/src/lib/store/core.ts` (zustand `useStore`). Derived values are
+  exported **selectors taking state**, never store methods — a method would read
+  past Vue's dependency tracking and templates would silently stop updating
+  ([ADR 0004](adr/0004-react-native-pivot.md)).
+  Persistence goes through the `KeyValueStore` port
+  (`packages/app-core/src/stores/persist.ts`), wired to `ApplicationSettings` in
+  `apps/mobile/src/platform/nativescript.ts` and to AsyncStorage/localStorage in
+  `apps/mobile-rn/src/lib/platform/expo.ts`. `membership.isMember` is the central
+  demo lever — every club touchpoint reads it in the render path; never snapshot
+  it into a local ref.
 
 ## Repository layout
 
@@ -182,7 +191,8 @@ and [`adr/0004-react-native-pivot.md`](adr/0004-react-native-pivot.md).
 packages/app-core/          @correctiv/app-core — NO platform SDK, headless-testable
   src/ports/                KeyValueStore, FileStore — what the core needs from a host
   src/media/                exclusive-playback (only one medium plays at a time)
-  src/stores/               membership, interests, savedArticles, settings, media, video, persist
+  src/stores/               membership, interests, savedArticles, settings, media, video,
+                            persist — zustand/vanilla + pure selectors, NO UI framework
   src/services/             http, cache, rss, search, podcast, peertube
   src/data/                 feeds.config, callouts, claims, spotlight, … (typed sample data)
   src/lib/                  extract.mjs, rss-parse.mjs, format.ts (dependency-free)
@@ -194,7 +204,8 @@ apps/mobile/                @correctiv/mobile — the NativeScript app
   src/platform/             the ONLY place the core's ports meet the NativeScript SDK
   src/components/           cards, shell, sheets, ui (incl. RemoteImage)
   src/views/                home, discover, media, participate, reader, backstage, profile, modals
-  src/stores/               audio, feeds, podcasts (all NativeScript-coupled)
+  src/stores/               audio, feeds, podcasts (Pinia, NativeScript-coupled)
+                            core-bindings.ts — Vue binding for the core's stores
   src/services/             article, audio, image, peertube-offline
   src/lib/                  system-bars.ts
   src/styles/               tokens.generated.scss + typography/components/cards/… (all global)
