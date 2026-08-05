@@ -43,10 +43,20 @@ Order in each image: **draft · NativeScript · Expo**.
 | No date in Home's masthead | never built; `formatDateWeekdayDe` sat unused in the core | both |
 | Hero without kicker or byline, image inset instead of edge to edge | never built | both |
 | No participate module and no Backstage card on Home | never built | both |
+| All three callouts introduced themselves as CROWDNEWSROOM with the same coral button | the kind was not in the data | draft, which gives a survey its own words and a quieter button |
+| Nothing marked which profile entries the club unlocks | never built | draft, with its yellow CLUB badge |
+| The reader's error state was a dead end, and links to date-less articles left the app | an internal-link rule written from one URL shape; Spotlight pieces have no date in the path | neither — found while shooting the reader |
 
-Fixed in [#30](https://github.com/faktenforum/correctiv-app/pull/30), which also
-adds `__tests__/no-numeric-utilities.test.ts` so the token-scale trap cannot come
-back silently.
+Fixed in [#30](https://github.com/faktenforum/correctiv-app/pull/30) (which also adds
+`__tests__/no-numeric-utilities.test.ts`, so the token-scale trap cannot come back
+silently), [#31](https://github.com/faktenforum/correctiv-app/pull/31) and
+[#32](https://github.com/faktenforum/correctiv-app/pull/32).
+
+One finding came from the capture itself rather than from a comparison: the tour's
+article deep link used a URL I had reconstructed from a headline, and it 404s. The
+screenshot then documented the reader's error state — which turned out to be a dead
+end with no retry and no way to open the page in a browser. Both are fixed; the tours
+now use a URL read off the live feed.
 
 Two differences are deliberate and stay: Expo shows video channels as horizontal
 rails where the draft uses a vertical list (the rail is what NativeScript settled

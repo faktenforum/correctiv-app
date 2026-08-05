@@ -5,17 +5,19 @@ import { ActivityIndicator, Linking, Pressable, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { ReaderView } from '@/components/reader/ReaderView';
-import { Typo } from '@/components/ui';
+import { Button, Typo } from '@/components/ui';
+import { isInternalArticleUrl } from '@/lib/articles/articleUrl';
 import { loadArticle } from '@/lib/articles/loadArticle';
 import { buildReaderHtml, type ReaderArticle } from '@/lib/articles/readerHtml';
 import { coreActions, useIsSaved } from '@/lib/store/core';
 import { colors, sizes } from '@/lib/theme';
 
 /**
- * Artikel-Reader: Voll-Seiten-WebView mit bereinigtem Artikel-HTML (Token-CSS +
- * eingebettete Fonts, offline-fähig). Nativer Overlay-Header (Zurück/Speichern).
- * Links werden abgefangen: correctiv.org-Artikel → neuer Reader, correctiv://join →
- * Beitritts-Flow (M5), externe Links → System-Browser.
+ * Article reader: full-page webview over cleaned-up article HTML (token CSS and
+ * embedded fonts, so it works offline). Native overlay header for back and save.
+ *
+ * Links are intercepted: a correctiv.org article pushes another reader,
+ * `correctiv://join` opens the join flow, anything else goes to the system browser.
  */
 export default function ArtikelScreen() {
   const { url, title, badge } = useLocalSearchParams<{
@@ -25,6 +27,8 @@ export default function ArtikelScreen() {
   }>();
   const [article, setArticle] = useState<ReaderArticle | null>(null);
   const [error, setError] = useState(false);
+  /** Bumped to retry: the effect depends on it, so a tap re-runs the load. */
+  const [attempt, setAttempt] = useState(0);
   // Subscribes to just this one article's saved flag, so bookmarking another
   // article does not re-render the reader.
   const saved = useIsSaved(url ?? '');
@@ -46,7 +50,7 @@ export default function ArtikelScreen() {
     return () => {
       active = false;
     };
-  }, [url, badge]);
+  }, [url, badge, attempt]);
 
   const onNavigate = (target: string): boolean => {
     if (target === 'about:blank' || target.startsWith('data:') || target.startsWith('file:'))
@@ -55,12 +59,11 @@ export default function ArtikelScreen() {
       router.push('/(tabs)/profil');
       return false;
     }
-    // Interne Artikel-Links → neuer Reader-Push.
-    if (/^https:\/\/correctiv\.org\/.+\/\d{4}\/\d{2}\/\d{2}\//.test(target)) {
+    if (isInternalArticleUrl(target)) {
       router.push({ pathname: '/artikel', params: { url: target } });
       return false;
     }
-    // Übrige externe Links → System-Browser.
+    // Everything else external → system browser.
     if (/^https?:/.test(target)) {
       Linking.openURL(target);
       return false;
@@ -80,8 +83,18 @@ export default function ArtikelScreen() {
                 Artikel konnte nicht geladen werden
               </Typo>
               <Typo variant="text-m" color="grey-600" className="mt-2xs text-center">
-                {title ?? 'Bitte später erneut versuchen.'}
+                {title ?? 'Vielleicht hilft ein zweiter Versuch.'}
               </Typo>
+              <View className="mt-m flex-row gap-s">
+                <Button title="Erneut versuchen" onPress={() => setAttempt((n) => n + 1)} />
+                {url && (
+                  <Button
+                    title="Im Browser öffnen"
+                    variant="outline"
+                    onPress={() => Linking.openURL(url)}
+                  />
+                )}
+              </View>
             </>
           ) : (
             <ActivityIndicator color={colors.emphasis} />
