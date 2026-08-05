@@ -20,8 +20,11 @@
     "apps/mobile/src/assets/**",
     "apps/mobile/src/fonts/**",
     "packages/app-core/test/__fixtures__/**",
+    "apps/mobile-rn/__fixtures__/**",
+    "apps/mobile-rn/assets/**",
     "**/*.d.mts",
-    "package-lock.json"
+    "package-lock.json",
+    "**/*.generated.*"
   ],
   "sortPackageJson": false
 }

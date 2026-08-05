@@ -1,6 +1,23 @@
 {
   "$schema": "./node_modules/oxlint/configuration_schema.json",
-  "plugins": ["typescript", "unicorn", "oxc", "vue", "import", "promise"],
+  // NOTE: this file is JSONC — comments are supported and are the only place
+  // rule decisions are recorded. Do not silence a rule without saying why.
+  "plugins": [
+    "typescript",
+    "unicorn",
+    "oxc",
+    "vue",
+    "react",
+    "jsx-a11y",
+    "import",
+    "promise",
+    "jest"
+  ],
+  // react-perf is deliberately NOT enabled. Its jsx-no-new-{object,function,array}-as-prop
+  // rules flagged 37 sites in apps/mobile-rn, all of them inline props that the
+  // React Compiler memoizes automatically — the app turns it on via
+  // app.json "experiments": { "reactCompiler": true }. Enabling the plugin would
+  // mean hand-memoizing what the compiler already does, i.e. fighting the toolchain.
   "categories": {
     "correctness": "error",
     "suspicious": "warn",
@@ -26,16 +43,35 @@
     "media/**",
     "apps/mobile/platforms/**",
     "apps/mobile/src/assets/**",
-    "packages/app-core/test/__fixtures__/**"
+    "packages/app-core/test/__fixtures__/**",
+    "apps/mobile-rn/__fixtures__/**"
   ],
   "rules": {
     "no-console": "off",
 
     "no-underscore-dangle": "off",
 
+    // Suggests the ES2023 toSorted(), which the ES2020 NativeScript runtime lacks.
     "unicorn/no-array-sort": "off",
 
-    "oxc/no-map-spread": "warn"
+    "oxc/no-map-spread": "warn",
+
+    // Obsolete since React 17's automatic JSX runtime: JSX no longer expands to
+    // React.createElement, so React need not be in scope. apps/mobile-rn compiles
+    // JSX with jsxImportSource "nativewind" (babel.config.js) and React 19.
+    // Left on, this produced 132 false positives in one pass.
+    "react/react-in-jsx-scope": "off",
+
+    // Assumes `style` is always a style object. expo-status-bar's StatusBar takes
+    // a StatusBarStyle string union ("dark" | "light" | "auto"), so <StatusBar
+    // style="dark" /> is correct and the rule cannot tell the difference.
+    "react/style-prop-object": "off",
+
+    // apps/mobile-rn/__tests__/tokens.test.ts binds `it` or `it.skip` to
+    // itWithSource at load time, so the drift check can report itself as SKIPPED
+    // where the token source repo is absent instead of quietly passing. Teach the
+    // rule about the alias rather than lose the distinction.
+    "jest/no-standalone-expect": ["error", { "additionalTestBlockFunctions": ["itWithSource"] }]
   },
   "overrides": [
     {
@@ -45,9 +81,20 @@
       }
     },
     {
-      "files": ["apps/mobile/scripts/**"],
+      // Both apps' generator scripts fetch upstream resources one at a time on
+      // purpose — sequential requests are gentler on correctiv.org than a burst.
+      "files": ["apps/mobile/scripts/**", "apps/mobile-rn/scripts/**"],
       "rules": {
         "no-await-in-loop": "off"
+      }
+    },
+    {
+      // Side-effect-only imports are how Expo Router and NativeWind are wired up:
+      // `import 'expo-router/entry'` registers the root component, `import
+      // '@/global.css'` feeds the NativeWind transform. There is nothing to assign.
+      "files": ["apps/mobile-rn/index.js", "apps/mobile-rn/src/app/_layout.tsx"],
+      "rules": {
+        "import/no-unassigned-import": "off"
       }
     },
     {
