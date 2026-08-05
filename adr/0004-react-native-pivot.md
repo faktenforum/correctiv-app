@@ -324,6 +324,24 @@ Nebenbei aufgefallen: **typisierte Routen entstehen bei `expo start`, nicht bei
 lokal scheitern, bis Metro einmal gelaufen ist, während CI ohne `.expo/types` jeden
 href durchwinkt. Ein grüner CI-Typecheck ist damit **kein** Beweis über hrefs.
 
+**Profil steht** (Phase 4e, erster Teil): Profil für Gast und Mitglied,
+Einstellungen, gespeicherte Artikel, Quartalsbericht. Offen bleiben Beitritts-Flow,
+Onboarding und Backstage.
+
+Dabei hat der Core **drei Aktionen bekommen, die es nur scheinbar schon gab**:
+`membership.setPaused`, `settings.setNewsletter/setTextScale/setPushOptIn/resetForDemo`
+und `interests.clear`. Der Vue-Host kam ohne sie aus, weil sein reaktiver Spiegel
+direkte Zuweisungen erlaubte (`membership.paused = !membership.paused`). Ein Store,
+der seine Übergänge besitzt, braucht die Aktion — und beide Hosts lesen die Regel
+dann aus derselben Stelle. Beim Pausieren ist diese Regel inhaltlich wichtig: es ist
+**keine** Kündigung, `isMember` bleibt wahr und Backstage offen (Konzept). Ein Test
+hält das fest.
+
+Der „Mein Impact"-Block zeigt drei echte Recherchen. Der NativeScript-Stand filterte
+dafür den gebündelten Artikelindex auf `feed === 'recherchen'`; das Expo-Bundle ist
+nach URL geschlüsselt und trägt kein Feed-Feld, also entscheidet die URL —
+Faktenchecks sind keine Impact-Recherchen.
+
 ## Offen
 
 - **Das Web-Target sieht keine Live-Artikel.** `correctiv.org` sendet keinen
