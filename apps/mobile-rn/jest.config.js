@@ -16,11 +16,22 @@ module.exports = {
     '^.+\\.mjs$': 'babel-jest',
   },
   moduleNameMapper: {
+    /**
+     * This ONE entry has to come before the preset's.
+     *
+     * jest-expo derives its moduleNameMapper from tsconfig.json "paths" (verified:
+     * the preset already carries ^@/(.*)$, ^@/assets/(.*)$ and both
+     * @correctiv/app-core patterns — so none of those need mirroring here). But
+     * jest takes the first pattern that MATCHES and does not fall through when the
+     * file is missing, while tsc consults only the first matching pattern and needs
+     * the generic one there so that `declare module '*.mp3'` can apply.
+     *
+     * Two tools, opposite orders. tsconfig.json keeps the order tsc needs and this
+     * line carries the difference: without it, importing the bundled sample episode
+     * makes the whole suite fail to run with "Could not locate module".
+     */
+    '^@/assets/(.*)$': '<rootDir>/assets/$1',
     ...preset.moduleNameMapper,
-    // tsconfig paths are not visible to jest; mirror the two aliases it needs.
-    '^@correctiv/app-core$': '<rootDir>/../../packages/app-core/src/index.ts',
-    '^@correctiv/app-core/(.*)$': '<rootDir>/../../packages/app-core/src/$1',
-    '^@/(.*)$': '<rootDir>/src/$1',
   },
   transformIgnorePatterns: [
     'node_modules/(?!((jest-)?react-native|@react-native(-community)?|expo(nent)?|@expo(nent)?/.*|@expo-google-fonts/.*|react-navigation|@react-navigation/.*|@unimodules/.*|unimodules|sentry-expo|native-base|react-native-svg|nativewind|react-native-css-interop|htmlparser2|css-select|css-what|domutils|dom-serializer|domhandler|domelementtype|entities|boolbase|nth-check))',

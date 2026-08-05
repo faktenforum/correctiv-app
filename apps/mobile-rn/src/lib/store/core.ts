@@ -22,6 +22,7 @@ import {
   selectedInterests as selectSelectedInterests,
 } from '@correctiv/app-core/stores/interests';
 import { membershipStore } from '@correctiv/app-core/stores/membership';
+import { findSeries, podcastsStore } from '@correctiv/app-core/stores/podcasts';
 import {
   participationStore,
   extraCount as selectExtraCount,
@@ -102,6 +103,27 @@ export const useVideoChannel = (key: YoutubeKey) => {
   return slice;
 };
 
+/**
+ * The whole podcast library, loaded on first use — same shape as
+ * `useVideoChannel`. Two narrow subscriptions rather than one whole-store read:
+ * `series` is a stable reference between updates and `status` is a string, so
+ * neither can produce the fresh-snapshot loop described above.
+ */
+export const usePodcastLibrary = () => {
+  const series = useStore(podcastsStore, (s) => s.series);
+  const status = useStore(podcastsStore, (s) => s.status);
+  useEffect(() => {
+    if (status === 'idle') void podcastsStore.getState().fetchAll();
+  }, [status]);
+  return { series, status };
+};
+
+/** One series by id, with the same lazy load. */
+export const usePodcastSeries = (id: string) => {
+  const { series, status } = usePodcastLibrary();
+  return { series: useMemo(() => findSeries({ series }, id), [series, id]), status };
+};
+
 export const useHasSubmitted = (slug: string) =>
   useStore(participationStore, (s) => selectHasSubmitted(s, slug));
 export const useExtraCount = (slug: string) =>
@@ -116,6 +138,7 @@ export const useExtraCount = (slug: string) =>
  */
 export const coreActions = {
   settings: () => settingsStore.getState(),
+  podcasts: () => podcastsStore.getState(),
   membership: () => membershipStore.getState(),
   interests: () => interestsStore.getState(),
   savedArticles: () => savedArticlesStore.getState(),
@@ -127,6 +150,7 @@ export const coreActions = {
 /** Raw stores, for persist() and anything needing subscribe/getState. */
 export const coreStores = {
   settings: settingsStore,
+  podcasts: podcastsStore,
   membership: membershipStore,
   interests: interestsStore,
   savedArticles: savedArticlesStore,

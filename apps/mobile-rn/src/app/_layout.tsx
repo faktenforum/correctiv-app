@@ -8,15 +8,25 @@ import { useEffect, useState } from 'react';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
 
 import { configurePlatform } from '@correctiv/app-core';
+import { registerExclusiveMedium } from '@correctiv/app-core/media/exclusive-playback';
 import { persist } from '@correctiv/app-core/stores/persist';
 import { PERSISTED_KEYS } from '@correctiv/app-core/stores/settings';
 
+import { stop as stopAudio } from '@/lib/audio/player';
 import { expoPlatform, hydratePlatform } from '@/lib/platform/expo';
 import { coreStores } from '@/lib/store/core';
 import { fontAssets } from '@/lib/theme';
 
 // Hand the core its platform capabilities before anything reads a store.
 configurePlatform(expoPlatform);
+
+/**
+ * Exclusive playback: starting audio stops video and vice versa. Registered here
+ * rather than inside either store, so neither has to import the other (the core's
+ * media/exclusive-playback.ts explains why that import cycle had to go).
+ */
+registerExclusiveMedium('audio', stopAudio);
+registerExclusiveMedium('video', () => coreStores.video.getState().close());
 
 // Splash bleibt sichtbar, bis Merriweather + Source Sans 3 geladen sind
 // (kein Font-Flash beim ersten Render).
@@ -77,6 +87,9 @@ export default function RootLayout() {
       <StatusBar style="dark" />
       <Stack screenOptions={{ headerShown: false }}>
         <Stack.Screen name="(tabs)" />
+        {/* Der Vollplayer ist eine Ansicht auf den laufenden Singleton, kein
+            eigener Zustand — als Modal, weil er nichts ersetzt. */}
+        <Stack.Screen name="player" options={{ presentation: 'modal' }} />
       </Stack>
     </GestureHandlerRootView>
   );

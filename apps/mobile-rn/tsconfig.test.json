@@ -4,10 +4,21 @@
     "customConditions": null,
     "types": ["node", "jest"]
   },
-  // nativewind-env.d.ts is what teaches react-native's components the `className`
-  // prop. The main tsconfig lists it; without it here, any test that renders a
-  // real component — rather than a bare <Text> — fails on every className in the
-  // tree, including in files that typecheck fine for the app itself.
-  "include": ["__tests__/**/*.ts", "__tests__/**/*.tsx", "scripts/**/*.mjs", "nativewind-env.d.ts"],
+  // The two ambient declaration files have to be listed explicitly, because this
+  // config's include does not cover the package root. Both bit exactly once, both
+  // only when a test first reached the code that needs them, and both while the
+  // app's own typecheck stayed green:
+  //   nativewind-env.d.ts — `className` on react-native components; missing it,
+  //     the first test that renders a real component (not a bare <Text>) fails on
+  //     every className in the tree.
+  //   assets.d.ts — `declare module '*.mp3'`; missing it, the first test that
+  //     reaches the bundled sample episode fails to resolve it.
+  "include": [
+    "__tests__/**/*.ts",
+    "__tests__/**/*.tsx",
+    "scripts/**/*.mjs",
+    "nativewind-env.d.ts",
+    "assets.d.ts"
+  ],
   "exclude": ["node_modules", "android", "ios"]
 }

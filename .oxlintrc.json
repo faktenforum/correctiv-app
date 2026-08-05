@@ -98,6 +98,19 @@
       }
     },
     {
+      // `allow-scripts` + `allow-same-origin` is the combination the rule warns
+      // about, because for a SAME-ORIGIN frame it lets the document remove its own
+      // sandbox. This frame is cross-origin (youtube-nocookie.com), so
+      // `allow-same-origin` keeps YouTube's origin — not ours — and there is
+      // nothing to escape into. Dropping it instead breaks the player: it needs
+      // storage access to initialise. What the sandbox still buys us is the part
+      // that matters here — the embed cannot navigate the top-level page.
+      "files": ["apps/mobile-rn/src/components/media/VideoFrame.web.tsx"],
+      "rules": {
+        "react/iframe-missing-sandbox": "off"
+      }
+    },
+    {
       // The search screen exists for nothing but searching, and it is only ever
       // reached by an explicit tap on the search entry — so focusing the field is
       // what the user just asked for, and it saves a second tap plus a keyboard
