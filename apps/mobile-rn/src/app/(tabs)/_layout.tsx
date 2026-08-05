@@ -7,9 +7,15 @@ import { colors } from '@/lib/theme';
 type IoniconName = keyof typeof Ionicons.glyphMap;
 
 function tabIcon(active: IoniconName, inactive: IoniconName) {
-  const TabIcon = ({ focused, color, size }: { focused: boolean; color: ColorValue; size: number }) => (
-    <Ionicons name={focused ? active : inactive} size={size} color={color} />
-  );
+  const TabIcon = ({
+    focused,
+    color,
+    size,
+  }: {
+    focused: boolean;
+    color: ColorValue;
+    size: number;
+  }) => <Ionicons name={focused ? active : inactive} size={size} color={color} />;
   TabIcon.displayName = `TabIcon(${active})`;
   return TabIcon;
 }
@@ -29,7 +35,8 @@ export default function TabsLayout() {
           elevation: 0,
         },
         tabBarLabelStyle: { fontFamily: 'SourceSans3_600SemiBold', fontSize: 11 },
-      }}>
+      }}
+    >
       <Tabs.Screen
         name="index"
         options={{ title: 'Home', tabBarIcon: tabIcon('home', 'home-outline') }}

@@ -7,7 +7,6 @@ export type CardProps = ViewProps & {
 };
 
 export function Card({ tone = 'outline', className, ...rest }: CardProps) {
-  const base =
-    tone === 'surface' ? 'bg-grey-200' : 'bg-grey-100 border border-grey-300';
+  const base = tone === 'surface' ? 'bg-grey-200' : 'bg-grey-100 border border-grey-300';
   return <View className={['rounded-md p-m', base, className ?? ''].join(' ')} {...rest} />;
 }

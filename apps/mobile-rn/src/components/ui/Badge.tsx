@@ -28,7 +28,12 @@ const TEXT_COLOR: Record<Tone, string> = {
 export function Badge({ label, tone = 'emphasis', className }: BadgeProps) {
   return (
     <View
-      className={['flex-row items-center self-start rounded-s px-2xs py-4xs', SURFACE[tone], className ?? ''].join(' ')}>
+      className={[
+        'flex-row items-center self-start rounded-s px-2xs py-4xs',
+        SURFACE[tone],
+        className ?? '',
+      ].join(' ')}
+    >
       {tone === 'live' && (
         <View className="mr-3xs rounded-full bg-emphasis" style={{ width: 7, height: 7 }} />
       )}
@@ -36,7 +41,8 @@ export function Badge({ label, tone = 'emphasis', className }: BadgeProps) {
         style={[
           typography['text-s'],
           { color: TEXT_COLOR[tone], fontSize: 11, letterSpacing: 0.4, textTransform: 'uppercase' },
-        ]}>
+        ]}
+      >
         {label}
       </Text>
     </View>

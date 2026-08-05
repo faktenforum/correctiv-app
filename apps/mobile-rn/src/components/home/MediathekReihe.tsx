@@ -15,10 +15,16 @@ export function MediathekReihe({ onOpenMediathek }: { onOpenMediathek: () => voi
     <View className="flex-row gap-s">
       <Pressable
         onPress={onOpenMediathek}
-        className="flex-1 overflow-hidden rounded-md bg-grey-200 active:opacity-80">
+        className="flex-1 overflow-hidden rounded-md bg-grey-200 active:opacity-80"
+      >
         <View className="bg-grey-300" style={{ aspectRatio: 16 / 9 }}>
           {video?.thumbnailUrl ? (
-            <Image source={{ uri: video.thumbnailUrl }} style={{ flex: 1 }} contentFit="cover" transition={200} />
+            <Image
+              source={{ uri: video.thumbnailUrl }}
+              style={{ flex: 1 }}
+              contentFit="cover"
+              transition={200}
+            />
           ) : null}
         </View>
         <View className="p-s">
@@ -31,7 +37,8 @@ export function MediathekReihe({ onOpenMediathek }: { onOpenMediathek: () => voi
 
       <Pressable
         onPress={onOpenMediathek}
-        className="w-36 justify-between rounded-md bg-grey-700 p-s active:opacity-80">
+        className="w-36 justify-between rounded-md bg-grey-700 p-s active:opacity-80"
+      >
         <Badge label="● Live" tone="live" />
         <View>
           <Ionicons name="radio-outline" size={24} color={colors['grey-100']} />

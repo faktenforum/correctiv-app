@@ -36,7 +36,11 @@ function useAsyncData<T>(run: () => Promise<T>): AsyncState<T> {
         if (active) setState({ data: result, loading: false, error: null });
       } catch (err) {
         if (active) {
-          setState({ data: null, loading: false, error: err instanceof Error ? err : new Error(String(err)) });
+          setState({
+            data: null,
+            loading: false,
+            error: err instanceof Error ? err : new Error(String(err)),
+          });
         }
       }
     };

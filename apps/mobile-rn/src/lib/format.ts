@@ -1,8 +1,18 @@
 // Deutsche Formatierung für Datum, Uhrzeit und Dauer.
 
 const MONTHS = [
-  'Jan.', 'Feb.', 'März', 'Apr.', 'Mai', 'Juni',
-  'Juli', 'Aug.', 'Sept.', 'Okt.', 'Nov.', 'Dez.',
+  'Jan.',
+  'Feb.',
+  'März',
+  'Apr.',
+  'Mai',
+  'Juni',
+  'Juli',
+  'Aug.',
+  'Sept.',
+  'Okt.',
+  'Nov.',
+  'Dez.',
 ];
 
 export function formatDate(iso: string): string {

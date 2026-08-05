@@ -16,6 +16,18 @@ export type TypoProps = TextProps & {
  * `color` die Farbe (Token), `className` Layout. So bleibt Typografie token-treu
  * und unabhängig vom Android-fontWeight-Verhalten.
  */
-export function Typo({ variant = 'text-m', color = 'grey-700', style, className, ...rest }: TypoProps) {
-  return <Text className={className} style={[typography[variant], { color: colors[color] }, style]} {...rest} />;
+export function Typo({
+  variant = 'text-m',
+  color = 'grey-700',
+  style,
+  className,
+  ...rest
+}: TypoProps) {
+  return (
+    <Text
+      className={className}
+      style={[typography[variant], { color: colors[color] }, style]}
+      {...rest}
+    />
+  );
 }

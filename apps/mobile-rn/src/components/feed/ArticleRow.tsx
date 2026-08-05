@@ -5,7 +5,13 @@ import type { FeedItem } from '@/lib/models';
 import { formatDate } from '@/lib/format';
 
 /** Kompakte Listenzeile für „Neueste Recherchen" — Titel (Serif) + Meta, ohne Bild. */
-export function ArticleRow({ item, onPress }: { item: FeedItem; onPress: (item: FeedItem) => void }) {
+export function ArticleRow({
+  item,
+  onPress,
+}: {
+  item: FeedItem;
+  onPress: (item: FeedItem) => void;
+}) {
   return (
     <Pressable onPress={() => onPress(item)} className="py-s active:opacity-70">
       <Typo variant="headline-s" numberOfLines={3}>

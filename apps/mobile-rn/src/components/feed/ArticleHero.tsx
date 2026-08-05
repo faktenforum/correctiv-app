@@ -7,7 +7,13 @@ import { useOgImage } from '@/lib/articles/useOgImage';
 import { FEED_SOURCES } from '@/lib/feeds/sources';
 
 /** Große Top-Recherche auf Home: Titelbild (og:image nachgeladen) + Serif-Headline. */
-export function ArticleHero({ item, onPress }: { item: FeedItem; onPress: (item: FeedItem) => void }) {
+export function ArticleHero({
+  item,
+  onPress,
+}: {
+  item: FeedItem;
+  onPress: (item: FeedItem) => void;
+}) {
   const image = useOgImage(item.link, item.heroImageUrl);
   const badge = FEED_SOURCES[item.sourceId]?.badge;
 

@@ -26,7 +26,14 @@ const LABEL_COLOR: Record<Variant, string> = {
   club: colors['grey-700'],
 };
 
-export function Button({ title, variant = 'primary', fullWidth, className, disabled, ...rest }: ButtonProps) {
+export function Button({
+  title,
+  variant = 'primary',
+  fullWidth,
+  className,
+  disabled,
+  ...rest
+}: ButtonProps) {
   return (
     <Pressable
       accessibilityRole="button"
@@ -38,7 +45,8 @@ export function Button({ title, variant = 'primary', fullWidth, className, disab
         disabled ? 'opacity-40' : '',
         className ?? '',
       ].join(' ')}
-      {...rest}>
+      {...rest}
+    >
       <Text style={[typography.button, { color: LABEL_COLOR[variant] }]}>{title}</Text>
     </Pressable>
   );

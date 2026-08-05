@@ -18,7 +18,11 @@ import { colors } from '@/lib/theme';
  * Beitritts-Flow (M5), externe Links → System-Browser.
  */
 export default function ArtikelScreen() {
-  const { url, title, badge } = useLocalSearchParams<{ url?: string; title?: string; badge?: string }>();
+  const { url, title, badge } = useLocalSearchParams<{
+    url?: string;
+    title?: string;
+    badge?: string;
+  }>();
   const [article, setArticle] = useState<ReaderArticle | null>(null);
   const [error, setError] = useState(false);
   const { isSaved, toggle } = useSavedStore();
@@ -45,7 +49,8 @@ export default function ArtikelScreen() {
 
   const onNavigate = (req: WebViewNavigation): boolean => {
     const target = req.url;
-    if (target === 'about:blank' || target.startsWith('data:') || target.startsWith('file:')) return true;
+    if (target === 'about:blank' || target.startsWith('data:') || target.startsWith('file:'))
+      return true;
     if (target.startsWith('correctiv://join')) {
       router.push('/(tabs)/profil');
       return false;
@@ -107,13 +112,20 @@ export default function ArtikelScreen() {
   );
 }
 
-function HeaderButton({ icon, onPress }: { icon: keyof typeof Ionicons.glyphMap; onPress: () => void }) {
+function HeaderButton({
+  icon,
+  onPress,
+}: {
+  icon: keyof typeof Ionicons.glyphMap;
+  onPress: () => void;
+}) {
   return (
     <Pressable
       onPress={onPress}
       hitSlop={8}
       className="h-10 w-10 items-center justify-center rounded-full bg-grey-100 active:opacity-70"
-      style={{ opacity: 0.92 }}>
+      style={{ opacity: 0.92 }}
+    >
       <Ionicons name={icon} size={22} color={colors['grey-700']} />
     </Pressable>
   );

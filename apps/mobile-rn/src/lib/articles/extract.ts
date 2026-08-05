@@ -20,13 +20,44 @@ export type ExtractedArticle = Pick<
 
 // Tags, die im Reader erhalten bleiben (alles andere wird entpackt oder entfernt).
 const KEEP = new Set([
-  'p', 'h2', 'h3', 'h4', 'h5', 'ul', 'ol', 'li', 'blockquote', 'figure',
-  'figcaption', 'img', 'a', 'strong', 'em', 'b', 'i', 'u', 'br', 'hr',
+  'p',
+  'h2',
+  'h3',
+  'h4',
+  'h5',
+  'ul',
+  'ol',
+  'li',
+  'blockquote',
+  'figure',
+  'figcaption',
+  'img',
+  'a',
+  'strong',
+  'em',
+  'b',
+  'i',
+  'u',
+  'br',
+  'hr',
 ]);
 // Tags, die komplett entfernt werden (inkl. Inhalt).
 const DROP = new Set([
-  'script', 'style', 'noscript', 'iframe', 'form', 'button', 'input', 'svg',
-  'video', 'audio', 'ins', 'aside', 'nav', 'header', 'footer',
+  'script',
+  'style',
+  'noscript',
+  'iframe',
+  'form',
+  'button',
+  'input',
+  'svg',
+  'video',
+  'audio',
+  'ins',
+  'aside',
+  'nav',
+  'header',
+  'footer',
 ]);
 // Erlaubte Attribute pro Tag.
 const ATTRS: Record<string, string[]> = { a: ['href'], img: ['src', 'alt'] };
@@ -63,7 +94,8 @@ function sanitizeChildren(children: AnyNode[]): AnyNode[] {
       );
       // Leere Absätze/Überschriften ohne Text und ohne Bild verwerfen.
       const hasText = textContent(node).trim().length > 0;
-      const hasMedia = tag === 'img' || tag === 'br' || tag === 'hr' || selectOne('img', node) != null;
+      const hasMedia =
+        tag === 'img' || tag === 'br' || tag === 'hr' || selectOne('img', node) != null;
       if (!hasText && !hasMedia) continue;
       out.push(node);
     } else {
@@ -86,7 +118,10 @@ const RATING_MAP: { test: RegExp; value: FactcheckRating }[] = [
 
 function detectRating(doc: Document): FactcheckRating | undefined {
   // Bewertungs-Plakette: Element mit Klasse, die "claim"/"rating"/"bewertung" enthält.
-  const badge = one('[class*="claim"],[class*="rating"],[class*="bewertung"],[class*="verdict"]', doc);
+  const badge = one(
+    '[class*="claim"],[class*="rating"],[class*="bewertung"],[class*="verdict"]',
+    doc,
+  );
   if (!badge) return undefined;
   const text = textContent(badge);
   return RATING_MAP.find((r) => r.test.test(text))?.value;

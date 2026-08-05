@@ -70,7 +70,12 @@ export default function HomeScreen() {
       )}
 
       <View className="mt-l">
-        <SectionHeader title="Mediathek" className="mb-s" actionLabel="Alles ansehen →" onAction={() => router.push('/(tabs)/mediathek')} />
+        <SectionHeader
+          title="Mediathek"
+          className="mb-s"
+          actionLabel="Alles ansehen →"
+          onAction={() => router.push('/(tabs)/mediathek')}
+        />
         <MediathekReihe onOpenMediathek={() => router.push('/(tabs)/mediathek')} />
       </View>
 

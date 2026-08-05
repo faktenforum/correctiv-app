@@ -21,10 +21,30 @@ const GF = resolve(ROOT, 'node_modules', '@expo-google-fonts');
 const UNICODES = 'U+0020-024F,U+2010-2030,U+20AC,U+2122';
 
 const FONTS = [
-  { file: `${GF}/merriweather/400Regular/Merriweather_400Regular.ttf`, family: 'Merriweather', weight: 400, style: 'normal' },
-  { file: `${GF}/merriweather/700Bold/Merriweather_700Bold.ttf`, family: 'Merriweather', weight: 700, style: 'normal' },
-  { file: `${GF}/merriweather/400Regular_Italic/Merriweather_400Regular_Italic.ttf`, family: 'Merriweather', weight: 400, style: 'italic' },
-  { file: `${GF}/source-sans-3/600SemiBold/SourceSans3_600SemiBold.ttf`, family: 'SourceSans3', weight: 600, style: 'normal' },
+  {
+    file: `${GF}/merriweather/400Regular/Merriweather_400Regular.ttf`,
+    family: 'Merriweather',
+    weight: 400,
+    style: 'normal',
+  },
+  {
+    file: `${GF}/merriweather/700Bold/Merriweather_700Bold.ttf`,
+    family: 'Merriweather',
+    weight: 700,
+    style: 'normal',
+  },
+  {
+    file: `${GF}/merriweather/400Regular_Italic/Merriweather_400Regular_Italic.ttf`,
+    family: 'Merriweather',
+    weight: 400,
+    style: 'italic',
+  },
+  {
+    file: `${GF}/source-sans-3/600SemiBold/SourceSans3_600SemiBold.ttf`,
+    family: 'SourceSans3',
+    weight: 600,
+    style: 'normal',
+  },
 ];
 
 const tmp = mkdtempSync(resolve(tmpdir(), 'correctiv-fonts-'));
@@ -35,7 +55,13 @@ try {
     const out = resolve(tmp, `${font.family}-${font.weight}-${font.style}.woff`);
     execFileSync(
       'pyftsubset',
-      [font.file, `--unicodes=${UNICODES}`, '--layout-features=kern,liga', '--flavor=woff', `--output-file=${out}`],
+      [
+        font.file,
+        `--unicodes=${UNICODES}`,
+        '--layout-features=kern,liga',
+        '--flavor=woff',
+        `--output-file=${out}`,
+      ],
       { stdio: 'pipe' },
     );
     const b64 = readFileSync(out).toString('base64');
@@ -43,7 +69,9 @@ try {
       `@font-face{font-family:'${font.family}';font-weight:${font.weight};font-style:${font.style};` +
         `font-display:swap;src:url(data:font/woff;base64,${b64}) format('woff');}`,
     );
-    console.log(`  ${font.family} ${font.weight} ${font.style}: ${(b64.length / 1024).toFixed(0)} KB base64`);
+    console.log(
+      `  ${font.family} ${font.weight} ${font.style}: ${(b64.length / 1024).toFixed(0)} KB base64`,
+    );
   }
 } finally {
   rmSync(tmp, { recursive: true, force: true });

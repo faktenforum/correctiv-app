@@ -64,7 +64,11 @@ async function writeCache(key: string, body: string, now: number): Promise<void>
   }
 }
 
-async function fetchText(url: string, timeoutMs: number, headers: Record<string, string>): Promise<string> {
+async function fetchText(
+  url: string,
+  timeoutMs: number,
+  headers: Record<string, string>,
+): Promise<string> {
   const controller = new AbortController();
   const timer = setTimeout(() => controller.abort(), timeoutMs);
   try {

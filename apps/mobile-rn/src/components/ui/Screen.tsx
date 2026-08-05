@@ -20,7 +20,8 @@ export function Screen({ children, scroll = true, noPadding = false, className }
         <ScrollView
           className="flex-1"
           contentContainerClassName={[pad, 'pt-m pb-2xl', className ?? ''].join(' ')}
-          showsVerticalScrollIndicator={false}>
+          showsVerticalScrollIndicator={false}
+        >
           {children}
         </ScrollView>
       </SafeAreaView>

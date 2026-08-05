@@ -15,7 +15,8 @@ import { extractArticle } from '../src/lib/articles/extract';
 const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), '..');
 const OUT = resolve(ROOT, 'src', 'lib', 'articles', 'offlineArticles.generated.ts');
 
-const UA = 'Mozilla/5.0 (Linux; Android 14; Pixel 8) AppleWebKit/537.36 Chrome/124 Mobile Safari/537.36';
+const UA =
+  'Mozilla/5.0 (Linux; Android 14; Pixel 8) AppleWebKit/537.36 Chrome/124 Mobile Safari/537.36';
 
 // Feeds + Default-Badge; pro Feed die obersten N Artikel bündeln.
 const FEEDS: { url: string; badge: string; take: number }[] = [
@@ -32,9 +33,11 @@ async function fetchText(url: string): Promise<string> {
 }
 
 function articleLinks(rssXml: string, take: number): string[] {
-  const links = [...rssXml.matchAll(/<link>(https:\/\/correctiv\.org\/[^<]+?\/\d{4}\/\d{2}\/\d{2}\/[^<]+?)<\/link>/g)].map(
-    (m) => m[1],
-  );
+  const links = [
+    ...rssXml.matchAll(
+      /<link>(https:\/\/correctiv\.org\/[^<]+?\/\d{4}\/\d{2}\/\d{2}\/[^<]+?)<\/link>/g,
+    ),
+  ].map((m) => m[1]);
   return [...new Set(links)].slice(0, take);
 }
 

@@ -30,7 +30,8 @@ export default function MediathekScreen() {
           accessibilityRole="button"
           accessibilityLabel={playing ? 'Radio pausieren' : 'Radio abspielen'}
           onPress={toggle}
-          className="h-12 w-12 items-center justify-center rounded-full bg-emphasis active:opacity-80">
+          className="h-12 w-12 items-center justify-center rounded-full bg-emphasis active:opacity-80"
+        >
           <Ionicons name={playing ? 'pause' : 'play'} size={22} color={colors['grey-100']} />
         </Pressable>
       </Card>

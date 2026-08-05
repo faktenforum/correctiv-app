@@ -16,14 +16,13 @@ export function EarlyAccessCard({
   return (
     <Pressable
       onPress={onPress}
-      className="overflow-hidden rounded-md border border-grey-300 active:opacity-90">
+      className="overflow-hidden rounded-md border border-grey-300 active:opacity-90"
+    >
       <View className="bg-alternative px-m py-s">
         <Badge label="Backstage · Früher lesen" tone="club" />
       </View>
       <View className="p-m">
-        <Typo variant="headline-s">
-          Die Pensionskassen-Recherche – exklusiv vorab
-        </Typo>
+        <Typo variant="headline-s">Die Pensionskassen-Recherche – exklusiv vorab</Typo>
         <Typo variant="text-m" color="grey-600" className="mt-2xs">
           {isMember
             ? 'Als Clubmitglied lesen Sie jetzt – drei Tage vor allen anderen.'

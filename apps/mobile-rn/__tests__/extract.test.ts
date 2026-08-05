@@ -7,7 +7,10 @@ import { resolve } from 'node:path';
 
 import { extractArticle } from '../src/lib/articles/extract';
 
-const html = readFileSync(resolve(__dirname, '..', '__fixtures__', 'articles', 'faktencheck-1.html'), 'utf8');
+const html = readFileSync(
+  resolve(__dirname, '..', '__fixtures__', 'articles', 'faktencheck-1.html'),
+  'utf8',
+);
 const article = extractArticle(html);
 
 describe('extractArticle (correctiv.org Faktencheck)', () => {

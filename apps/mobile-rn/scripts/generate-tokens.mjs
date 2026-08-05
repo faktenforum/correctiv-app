@@ -174,7 +174,8 @@ const twLetterSpacing = Object.fromEntries(
 );
 const twLineHeight = Object.fromEntries(Object.entries(leading).map(([k, v]) => [k, String(v)]));
 
-const HEADER = '// AUTO-GENERATED von scripts/generate-tokens.mjs — nicht von Hand editieren.\n// Quelle: ../wp-design-tokens/css/theme.css · Regenerieren: npm run tokens\n';
+const HEADER =
+  '// AUTO-GENERATED von scripts/generate-tokens.mjs — nicht von Hand editieren.\n// Quelle: ../wp-design-tokens/css/theme.css · Regenerieren: npm run tokens\n';
 
 const tailwindOut = `${HEADER}
 /* eslint-disable */

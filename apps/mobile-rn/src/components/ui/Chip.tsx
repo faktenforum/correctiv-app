@@ -20,12 +20,17 @@ export function Chip({ label, selected = false, onPress, className }: ChipProps)
         'rounded-md px-s py-2xs active:opacity-80',
         selected ? 'bg-emphasis' : 'bg-grey-200 border border-grey-300',
         className ?? '',
-      ].join(' ')}>
+      ].join(' ')}
+    >
       <Text
         style={[
           typography['text-s'],
-          { color: selected ? colors['grey-100'] : colors['grey-700'], fontFamily: 'SourceSans3_600SemiBold' },
-        ]}>
+          {
+            color: selected ? colors['grey-100'] : colors['grey-700'],
+            fontFamily: 'SourceSans3_600SemiBold',
+          },
+        ]}
+      >
         {label}
       </Text>
     </Pressable>
