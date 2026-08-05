@@ -1,5 +1,6 @@
-// Token-Barrel: ein Import-Pfad für Farben, Spacing, Typografie & Fonts.
+// Token barrel: one import path for colors, spacing, typography, fonts and sizes.
 export * from './tokens.generated';
 export * from './fonts';
+export * from './sizes';
 export * from './typography';
 export { THEME_CSS } from './readerCss.generated';

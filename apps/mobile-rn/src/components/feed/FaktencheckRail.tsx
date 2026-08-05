@@ -2,6 +2,7 @@ import { Pressable } from 'react-native';
 
 import { Badge, Rail, Typo } from '@/components/ui';
 import type { FeedItem } from '@correctiv/app-core/types/models';
+import { sizes } from '@/lib/theme';
 
 /** The horizontally scrolling fact-check cards on Home. */
 export function FaktencheckRail({
@@ -20,7 +21,8 @@ export function FaktencheckRail({
           onPress={() => onPress(item)}
           accessibilityRole="link"
           accessibilityLabel={item.title}
-          className="w-64 rounded-md bg-grey-200 p-s active:opacity-80"
+          className="rounded-md border border-grey-300 bg-grey-100 p-s active:opacity-80"
+          style={{ width: sizes.railCard }}
         >
           <Badge label="Faktencheck" tone="emphasis" className="mb-2xs" />
           <Typo variant="headline-xs" numberOfLines={4}>

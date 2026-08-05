@@ -8,7 +8,7 @@ import { Typo } from '@/components/ui';
 import { formatTimeHm } from '@correctiv/app-core/lib/format';
 import { seekTo, setSpeed, togglePlay } from '@/lib/audio/player';
 import { useAudio } from '@/lib/audio/useAudio';
-import { colors } from '@/lib/theme';
+import { colors, sizes } from '@/lib/theme';
 
 const SPEEDS = [1, 1.2, 1.5];
 
@@ -28,7 +28,8 @@ export default function PlayerScreen() {
           accessibilityLabel="Player schließen"
           onPress={() => router.back()}
           hitSlop={8}
-          className="h-10 w-10 items-center justify-center active:opacity-70"
+          className="items-center justify-center active:opacity-70"
+          style={{ width: sizes.iconButton, height: sizes.iconButton }}
         >
           <Ionicons name="close" size={24} color={colors['grey-700']} />
         </Pressable>
@@ -107,7 +108,8 @@ export default function PlayerScreen() {
                 accessibilityRole="button"
                 accessibilityLabel={status === 'playing' ? 'Pausieren' : 'Abspielen'}
                 onPress={togglePlay}
-                className="h-16 w-16 items-center justify-center rounded-full bg-emphasis active:opacity-80"
+                className="items-center justify-center rounded-full bg-emphasis active:opacity-80"
+                style={{ width: sizes.playButtonLarge, height: sizes.playButtonLarge }}
               >
                 {status === 'loading' ? (
                   <ActivityIndicator color={colors['grey-100']} />

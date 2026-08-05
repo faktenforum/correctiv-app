@@ -9,7 +9,7 @@ import { Typo } from '@/components/ui';
 import { loadArticle } from '@/lib/articles/loadArticle';
 import { buildReaderHtml, type ReaderArticle } from '@/lib/articles/readerHtml';
 import { coreActions, useIsSaved } from '@/lib/store/core';
-import { colors } from '@/lib/theme';
+import { colors, sizes } from '@/lib/theme';
 
 /**
  * Artikel-Reader: Voll-Seiten-WebView mit bereinigtem Artikel-HTML (Token-CSS +
@@ -124,8 +124,8 @@ function HeaderButton({
     <Pressable
       onPress={onPress}
       hitSlop={8}
-      className="h-10 w-10 items-center justify-center rounded-full bg-grey-100 active:opacity-70"
-      style={{ opacity: 0.92 }}
+      className="items-center justify-center rounded-full bg-grey-100 active:opacity-70"
+      style={{ width: sizes.iconButton, height: sizes.iconButton, opacity: 0.92 }}
     >
       <Ionicons name={icon} size={22} color={colors['grey-700']} />
     </Pressable>

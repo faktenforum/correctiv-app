@@ -4,19 +4,27 @@ import { ActivityIndicator, View } from 'react-native';
 import { ArticleHero } from '@/components/feed/ArticleHero';
 import { ArticleRow } from '@/components/feed/ArticleRow';
 import { FaktencheckRail } from '@/components/feed/FaktencheckRail';
+import { BackstageTeaser } from '@/components/home/BackstageTeaser';
+import { CalloutTeaser } from '@/components/home/CalloutTeaser';
 import { EarlyAccessCard } from '@/components/home/EarlyAccessCard';
+import { HomeHeader } from '@/components/home/HomeHeader';
 import { ImpactFooter } from '@/components/home/ImpactFooter';
 import { MediathekReihe } from '@/components/home/MediathekReihe';
 import { SpotlightBriefing } from '@/components/home/SpotlightBriefing';
-import { Hairline, Screen, SectionHeader, Typo } from '@/components/ui';
+import { Hairline, Screen, SectionHeader } from '@/components/ui';
+import { callouts } from '@correctiv/app-core/data/callouts';
 import { useFeed } from '@/lib/feeds/useFeed';
 import { openArticle } from '@/lib/openArticle';
 import { colors } from '@/lib/theme';
 
 /**
- * Home — kuratierter Querschnitt durchs Ökosystem. LIVE: Hero + Neueste
- * Recherchen (Haupt-Feed), Faktencheck-Rail. SAMPLE: Spotlight-Briefing,
- * Early-Access-Karte. In M3–M5 kommen Mediathek-Reihe, Mitmach- und Backstage-Modul hinzu.
+ * Home — a curated cross-section of the ecosystem, in the draft's order: lead
+ * research, today's briefing, the club's early access, the latest research, fact
+ * checks, one open callout, the media row, backstage, and a quiet thank-you.
+ *
+ * LIVE from the feeds: hero, "Neueste Recherchen", the fact-check rail and the
+ * FunFacts tile. Sample data: briefing, early access, callout, backstage — each
+ * one exists to show a flow the feeds cannot supply.
  */
 export default function HomeScreen() {
   const recherchen = useFeed('recherchen');
@@ -24,13 +32,11 @@ export default function HomeScreen() {
 
   const hero = recherchen.data?.[0];
   const neueste = recherchen.data?.slice(1, 6) ?? [];
+  const callout = callouts.find((entry) => entry.status === 'open');
 
   return (
     <Screen>
-      <Typo variant="headline-xl">CORRECTIV</Typo>
-      <Typo variant="text-s" color="grey-600" className="mb-m">
-        Recherchen für die Gesellschaft
-      </Typo>
+      <HomeHeader />
 
       {recherchen.loading && !recherchen.data && (
         <View className="py-2xl">
@@ -64,8 +70,24 @@ export default function HomeScreen() {
 
       {(faktenchecks.data?.length ?? 0) > 0 && (
         <View className="mt-l">
-          <SectionHeader title="Faktenchecks" className="mb-s" />
+          <SectionHeader
+            title="Faktenchecks"
+            className="mb-s"
+            actionLabel="Alle ansehen →"
+            onAction={() => router.push('/(tabs)/entdecken')}
+          />
           <FaktencheckRail items={faktenchecks.data!.slice(0, 8)} onPress={openArticle} />
+        </View>
+      )}
+
+      {callout && (
+        <View className="mt-l">
+          <CalloutTeaser
+            callout={callout}
+            onPress={(entry) =>
+              router.push({ pathname: '/aufruf/[slug]', params: { slug: entry.slug } })
+            }
+          />
         </View>
       )}
 
@@ -77,6 +99,13 @@ export default function HomeScreen() {
           onAction={() => router.push('/(tabs)/mediathek')}
         />
         <MediathekReihe onOpenMediathek={() => router.push('/(tabs)/mediathek')} />
+      </View>
+
+      <View className="mt-l">
+        <BackstageTeaser
+          onOpenDiary={(id) => router.push({ pathname: '/tagebuch/[id]', params: { id } })}
+          onOpenBackstage={() => router.push('/backstage')}
+        />
       </View>
 
       <ImpactFooter onJoin={() => router.push('/(tabs)/profil')} />

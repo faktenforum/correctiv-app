@@ -1,0 +1,32 @@
+/**
+ * Element sizes in dp, taken from the design draft in `docs/*.dc.html`.
+ *
+ * Why not Tailwind utilities: `tailwind.config.js` replaces Tailwind's spacing
+ * scale with the design system's own, and that one steps 2px per unit and stops
+ * at 48. So `w-64` does not exist — NativeWind drops the class without a word and
+ * the element sizes to its content instead — while `w-32` means 64px, not
+ * Tailwind's 128. Every numeric size utility in this app was therefore either
+ * half its intended size or gone.
+ *
+ * Spacing keeps the named tokens (`p-s`, `gap-m`, `mt-2xs`); anything that needs
+ * a pixel size belongs here, where the number is visible and the draft's value is
+ * cited. `__tests__/no-numeric-utilities.test.ts` keeps the trap out.
+ */
+export const sizes = {
+  /** Card in a horizontal rail — draft: `w-[240px]`. */
+  railCard: 240,
+  /** Square podcast cover in the series rail — draft: `w-[116px]`. */
+  railTile: 116,
+  /** Round play button on the live/radio card — draft: `h-[48px]`. */
+  playButton: 48,
+  /** Round play mark over a video thumbnail — draft: `h-[52px]`. */
+  playOverlay: 52,
+  /** The player's transport button — draft: `h-[68px]`. */
+  playButtonLarge: 68,
+  /** Tappable icon button: back, bookmark, mini-player transport. */
+  iconButton: 40,
+  /** Icon button inside a list row, where 40 crowds the text. */
+  iconButtonSmall: 36,
+  /** Progress and scrub bars — draft: `h-[4px]`. */
+  progressBar: 4,
+} as const;

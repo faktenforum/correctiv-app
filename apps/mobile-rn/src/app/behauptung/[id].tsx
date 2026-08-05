@@ -109,10 +109,9 @@ function ReviewProgress({ stage }: { stage: number }) {
         <View key={label} className="flex-1 flex-row items-start">
           {i > 0 && (
             <View
-              className={[
-                'mt-1 flex-1 self-start',
-                i <= stage ? 'bg-emphasis' : 'bg-grey-300',
-              ].join(' ')}
+              className={['flex-1 self-start', i <= stage ? 'bg-emphasis' : 'bg-grey-300'].join(
+                ' ',
+              )}
               style={{ height: 2, marginTop: 5 }}
             />
           )}

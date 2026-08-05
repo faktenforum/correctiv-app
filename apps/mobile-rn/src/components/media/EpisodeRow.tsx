@@ -3,7 +3,7 @@ import { ActivityIndicator, Pressable, View } from 'react-native';
 
 import { Badge, Typo } from '@/components/ui';
 import { useEpisodeStatus } from '@/lib/audio/useAudio';
-import { colors } from '@/lib/theme';
+import { colors, sizes } from '@/lib/theme';
 
 /**
  * Eine Folge in einer Liste: Play/Pause links, Titel und Meta, Club-Marke rechts.
@@ -38,7 +38,10 @@ export function EpisodeRow({
       accessibilityLabel={playing ? `${title} pausieren` : `${title} abspielen`}
       className="flex-row items-center border-b border-grey-300 py-s active:opacity-70"
     >
-      <View className="mr-s h-9 w-9 items-center justify-center rounded-full bg-grey-200">
+      <View
+        className="mr-s items-center justify-center rounded-full bg-grey-200"
+        style={{ width: sizes.iconButtonSmall, height: sizes.iconButtonSmall }}
+      >
         {loading ? (
           <ActivityIndicator color={colors.emphasis} />
         ) : (
