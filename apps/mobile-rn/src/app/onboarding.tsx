@@ -98,7 +98,7 @@ export default function OnboardingScreen() {
               {MISSION.map((line) => (
                 <View key={line} className="mt-s flex-row items-start">
                   <View
-                    className="mt-1 rounded-full bg-alternative"
+                    className="rounded-full bg-alternative"
                     style={{ width: 8, height: 8, marginTop: 7 }}
                   />
                   <Typo variant="text-l" color="grey-100" className="ml-s flex-1">

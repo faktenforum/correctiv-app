@@ -7,7 +7,7 @@ import { formatDateShortDe } from '@correctiv/app-core/lib/format';
 import type { SavedArticle } from '@correctiv/app-core/stores/savedArticles';
 import { openArticle } from '@/lib/openArticle';
 import { coreActions, useSavedArticles } from '@/lib/store/core';
-import { colors } from '@/lib/theme';
+import { colors, sizes } from '@/lib/theme';
 
 /**
  * Gespeicherte Artikel. Dieselbe Liste, die das Lesezeichen im Reader füllt —
@@ -65,7 +65,8 @@ function SavedRow({ article }: { article: SavedArticle }) {
         accessibilityLabel={`${article.title} entfernen`}
         hitSlop={8}
         onPress={() => coreActions.savedArticles().remove(article.url)}
-        className="h-9 w-9 items-center justify-center active:opacity-70"
+        className="items-center justify-center active:opacity-70"
+        style={{ width: sizes.iconButtonSmall, height: sizes.iconButtonSmall }}
       >
         <Ionicons name="close" size={18} color={colors['grey-500']} />
       </Pressable>

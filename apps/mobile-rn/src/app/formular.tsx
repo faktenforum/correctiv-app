@@ -8,7 +8,7 @@ import { Button, Hairline, ScreenHeader, Typo } from '@/components/ui';
 import { callouts, type CalloutComponent, type Callout } from '@correctiv/app-core/data/callouts';
 import { formatNumberDe } from '@correctiv/app-core/lib/format';
 import { coreActions, useExtraCount } from '@/lib/store/core';
-import { colors } from '@/lib/theme';
+import { colors, sizes } from '@/lib/theme';
 
 /**
  * Der Mitmach-Fluss: mehrstufiges Formular nach dem Schema des Aufrufs, danach die
@@ -97,9 +97,8 @@ export default function FormularScreen() {
         {slides.map((s, i) => (
           <View
             key={s.id}
-            className={['h-1 flex-1 rounded-s', i <= step ? 'bg-emphasis' : 'bg-grey-300'].join(
-              ' ',
-            )}
+            className={['flex-1 rounded-s', i <= step ? 'bg-emphasis' : 'bg-grey-300'].join(' ')}
+            style={{ height: sizes.progressBar }}
           />
         ))}
       </View>

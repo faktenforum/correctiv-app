@@ -6,7 +6,7 @@ import { Hairline, Typo } from '@/components/ui';
 import { formatTimeHm } from '@correctiv/app-core/lib/format';
 import { stop, togglePlay } from '@/lib/audio/player';
 import { useAudio } from '@/lib/audio/useAudio';
-import { colors } from '@/lib/theme';
+import { colors, sizes } from '@/lib/theme';
 
 /**
  * Die Leiste über der Tab-Bar, solange Audio läuft. Sitzt im Tab-Layout (als Teil
@@ -39,7 +39,8 @@ export function MiniPlayer() {
           accessibilityRole="button"
           accessibilityLabel={playing ? 'Pausieren' : 'Abspielen'}
           onPress={togglePlay}
-          className="h-10 w-10 items-center justify-center rounded-full bg-emphasis active:opacity-80"
+          className="items-center justify-center rounded-full bg-emphasis active:opacity-80"
+          style={{ width: sizes.iconButton, height: sizes.iconButton }}
         >
           {status === 'loading' ? (
             <ActivityIndicator color={colors['grey-100']} />
@@ -67,7 +68,8 @@ export function MiniPlayer() {
           accessibilityLabel="Wiedergabe beenden"
           onPress={stop}
           hitSlop={8}
-          className="ml-2xs h-10 w-10 items-center justify-center active:opacity-70"
+          className="ml-2xs items-center justify-center active:opacity-70"
+          style={{ width: sizes.iconButton, height: sizes.iconButton }}
         >
           <Ionicons name="close" size={20} color={colors['grey-600']} />
         </Pressable>

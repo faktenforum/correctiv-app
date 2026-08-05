@@ -1,0 +1,129 @@
+[
+  {
+    "name": "01-onboarding-welcome"
+  },
+  {
+    "name": "02-onboarding-interests",
+    "clicks": [
+      "Los geht's"
+    ]
+  },
+  {
+    "name": "03-onboarding-push",
+    "clicks": [
+      "Klima",
+      "Faktenchecks",
+      "Weiter"
+    ]
+  },
+  {
+    "name": "04-onboarding-club",
+    "clicks": [
+      "Weiter"
+    ]
+  },
+  {
+    "name": "10-home-top",
+    "clicks": [
+      "Erstmal umsehen"
+    ]
+  },
+  {
+    "name": "11-home-mid",
+    "scrollY": 700
+  },
+  {
+    "name": "12-home-bottom",
+    "scrollY": 1500
+  },
+  {
+    "name": "13-home-end",
+    "scrollY": 2400
+  },
+  {
+    "name": "30-entdecken",
+    "tapAt": [
+      [
+        26,
+        60
+      ]
+    ],
+    "clicks": [
+      "Entdecken"
+    ]
+  },
+  {
+    "name": "31-entdecken-mid",
+    "scrollY": 700
+  },
+  {
+    "name": "32-entdecken-end",
+    "scrollY": 1600
+  },
+  {
+    "name": "40-mediathek",
+    "clicks": [
+      "Mediathek"
+    ]
+  },
+  {
+    "name": "41-mediathek-mid",
+    "scrollY": 700
+  },
+  {
+    "name": "42-mediathek-end",
+    "scrollY": 1600
+  },
+  {
+    "name": "50-mitmachen",
+    "clicks": [
+      "Mitmachen"
+    ]
+  },
+  {
+    "name": "51-mitmachen-mid",
+    "scrollY": 700
+  },
+  {
+    "name": "60-profil",
+    "clicks": [
+      "Profil"
+    ]
+  },
+  {
+    "name": "61-profil-mid",
+    "scrollY": 700
+  },
+  {
+    "name": "80-player-mini",
+    "clicks": [
+      "Mediathek",
+      "Salon5 Radio"
+    ],
+    "pause": 1200
+  },
+  {
+    "name": "81-player-expanded",
+    "tapAt": [
+      [
+        200,
+        790
+      ]
+    ],
+    "pause": 1200
+  },
+  {
+    "name": "70-join-1",
+    "clicks": [
+      "Profil",
+      "Unterstützer:in werden"
+    ],
+    "pause": 1000
+  },
+  {
+    "name": "71-join-2",
+    "clicks": [
+      "Weiter"
+    ]
+  }
+]

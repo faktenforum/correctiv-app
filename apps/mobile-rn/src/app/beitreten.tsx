@@ -7,7 +7,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { Button, Card, Hairline, Typo } from '@/components/ui';
 import type { MembershipInterval } from '@correctiv/app-core/stores/membership';
 import { coreActions } from '@/lib/store/core';
-import { colors, typography } from '@/lib/theme';
+import { colors, sizes, typography } from '@/lib/theme';
 
 /** Echte Zahlen aus dem Konzept — der erste Schritt argumentiert, er drängt nicht. */
 const FACTS = [
@@ -63,7 +63,8 @@ export default function BeitretenScreen() {
             accessibilityLabel="Schließen"
             onPress={() => router.back()}
             hitSlop={8}
-            className="h-10 w-10 items-center justify-center active:opacity-70"
+            className="items-center justify-center active:opacity-70"
+            style={{ width: sizes.iconButton, height: sizes.iconButton }}
           >
             <Ionicons name="close" size={24} color={colors['grey-700']} />
           </Pressable>
@@ -74,9 +75,8 @@ export default function BeitretenScreen() {
         {[0, 1, 2, 3].map((i) => (
           <View
             key={i}
-            className={['h-1 flex-1 rounded-s', i <= step ? 'bg-emphasis' : 'bg-grey-300'].join(
-              ' ',
-            )}
+            className={['flex-1 rounded-s', i <= step ? 'bg-emphasis' : 'bg-grey-300'].join(' ')}
+            style={{ height: sizes.progressBar }}
           />
         ))}
       </View>
