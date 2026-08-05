@@ -98,7 +98,7 @@ function fail(message: string): void {
 }
 
 function onStatus(status: AudioStatus): void {
-  const { track, previewEnded } = audioStore.getState();
+  const { track, previewEnded, status: current } = audioStore.getState();
   if (!track) return; // gestoppt — nachlaufende Meldungen ignorieren
 
   if (status.error) {
@@ -106,6 +106,18 @@ function onStatus(status: AudioStatus): void {
     fail(`Wiedergabe unterbrochen. ${NETWORK_HINT}`);
     return;
   }
+
+  /**
+   * Ein Fehler bleibt stehen, bis ein neuer Start ihn löscht.
+   *
+   * Ohne diese Zeile kippt der nächste Status-Tick die Anzeige zurück auf
+   * „Lädt …“: `status.error` ist dann wieder null und `isLoaded` weiter false, also
+   * mappt die Zuordnung unten auf `loading`. Ergebnis ist genau der ewige Spinner,
+   * gegen den der Wachhund existiert — auf dem Gerät gesehen, als der
+   * Icecast-Stream am SSL-Handshake scheiterte und die Mini-Leiste danach
+   * unverändert „Lädt …“ zeigte.
+   */
+  if (current === 'error') return;
 
   // Das Vorschau-Tor. Muss VOR der normalen Zustandsübernahme greifen, sonst
   // läuft die Folge weiter, während die Einladung eingeblendet wird.
