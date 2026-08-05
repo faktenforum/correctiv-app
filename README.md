@@ -13,7 +13,10 @@ Two app implementations live here while the stack transitions:
 | [`apps/mobile`](apps/mobile) | NativeScript 9 · Vue 3 · Vite | iOS, Android | Being replaced — still the most complete UI, kept as the reference to port from |
 
 Both share [`packages/app-core`](packages/app-core), the platform-free core.
-See [ADR 0004](adr/0004-react-native-pivot.md) for why the stack changed.
+See [ADR 0004](adr/0004-react-native-pivot.md) for why the stack changed, and
+[ADR 0005](adr/0005-react-native-over-nativescript.md) for why it stays changed —
+including what NativeScript was better at, and the conditions under which that
+decision should be revisited.
 
 <p align="center">
   <img src="media/demo.gif" alt="Demo walkthrough of the CORRECTIV app prototype on Android: live home feed, article reader, media library and the persistent Salon5 live-radio mini player" width="270">
