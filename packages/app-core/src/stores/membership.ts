@@ -17,6 +17,13 @@ export interface MembershipState {
   paused: boolean;
 
   join: (amountEur: number, interval: MembershipInterval, name?: string) => void;
+  /**
+   * Pausing is simulated, and it deliberately does NOT revoke membership:
+   * Backstage stays open, per the concept. The Vue host used to assign
+   * `membership.paused` directly through its reactive mirror — a store that owns
+   * its transitions needs the action, and both hosts read the same rule from it.
+   */
+  setPaused: (paused: boolean) => void;
   /** Dev helper for demo resets (settings) */
   reset: () => void;
 }
@@ -42,5 +49,6 @@ export const membershipStore = createStore<MembershipState>((set, get) => ({
       interval,
       paused: false,
     }),
+  setPaused: (paused) => set({ paused }),
   reset: () => set({ ...INITIAL }),
 }));

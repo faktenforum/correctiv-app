@@ -62,7 +62,7 @@ a real web build of the actual app ([ADR 0004](adr/0004-react-native-pivot.md)).
 
 ```bash
 npm install                    # installs the whole workspace
-npm run check                  # every typecheck + 248 headless tests, ~2 s, no device
+npm run check                  # every typecheck + 261 headless tests, ~2 s, no device
 ```
 
 **The app going forward** (`apps/mobile-rn`) — no emulator needed for the web target:
@@ -232,11 +232,12 @@ apps/mobile/                @correctiv/mobile — the NativeScript app
 apps/mobile-rn/             @correctiv/mobile-rn — the Expo app (iOS, Android, web)
   src/app/                  expo-router routes: (tabs)/ + artikel, suche, projekt/[id],
                             serie/[id], video, player, aufruf/[slug], formular,
-                            faktenforum, behauptung/[id], atlas
+                            faktenforum, behauptung/[id], atlas, einstellungen,
+                            gespeichert, bericht
   src/components/reader|media/  the TWO platform splits: ReaderView and VideoFrame
                             (each .tsx | .web.tsx | shared props type)
   src/components/ui/        design system (Typo, Button, Card, Badge, Chip, Screen, …)
-  src/components/feed|home|discover|media|player|participate/  blocks per area
+  src/components/feed|home|discover|media|player|participate|profile/  per area
   src/lib/audio/            the app's ONE audio player (expo-audio, module-level)
   src/lib/theme/            token-bridge output, typography, fonts
   src/lib/feeds/            transport only: client, useFeed, the offline search corpus

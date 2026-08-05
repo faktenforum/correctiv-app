@@ -70,6 +70,17 @@ describe('settings store', () => {
 });
 
 describe('membership store', () => {
+  it('pausing keeps the membership', () => {
+    membershipStore.getState().join(10, 'monatlich', 'Testperson');
+    membershipStore.getState().setPaused(true);
+
+    // Per the concept a pause is not a cancellation — Backstage stays open, so
+    // isMember must survive it. Rejoining clears the pause.
+    expect(membershipStore.getState()).toMatchObject({ isMember: true, paused: true });
+    membershipStore.getState().join(20, 'monatlich');
+    expect(membershipStore.getState().paused).toBe(false);
+  });
+
   it('joining sets the member flag and keeps the first memberSince', () => {
     const { join } = membershipStore.getState();
     join(25, 'jährlich', 'Testperson');

@@ -83,9 +83,10 @@ prüft alle Workspaces zusammen); ESLint ist hier entfallen.
 src/
   app/                  expo-router-Routen: (tabs)/ + artikel, suche, projekt/[id],
                         serie/[id], video, player, aufruf/[slug], formular,
-                        faktenforum, behauptung/[id], atlas
+                        faktenforum, behauptung/[id], atlas, einstellungen,
+                        gespeichert, bericht
   components/ui/        Design-System (Typo, Button, Card, Badge, Chip, Screen, …)
-  components/feed|home|discover|media|player|participate/  Bausteine je Bereich
+  components/feed|home|discover|media|player|participate|profile/  je Bereich
   lib/audio/            der EINE Audio-Player der App (expo-audio, auf Modulebene)
   lib/theme/            Token-Brücke-Outputs + Typografie + Fonts
   lib/feeds/            nur Transport: client, useFeed, Suchkorpus für offline
@@ -121,9 +122,12 @@ Icecast-Streaming + Hintergrund-Audio + Lockscreen-Controls). Audio ist in `src/
   und der Mitmach-Fluss trägt bis in Schritt 1 des Formulars
 - ✅ **M4** Mitmachen — drei CrowdNewsroom-Aufrufe mit mehrstufigem Formular aus dem
   eigenen Schema, Faktenforum mit Prüfstatus, Abriss-Atlas, WhatsApp-Tippkanal
-- ⏳ M5 Club & Profil · M6 Onboarding + Demo-Härtung
+- 🔶 **M5** Club & Profil — Profil (Gast und Mitglied), Einstellungen, gespeicherte
+  Artikel, Quartalsbericht stehen. **Offen: Beitritts-Flow und Backstage** — bis
+  dahin führt „Unterstützer:in werden" nach Mitmachen statt ins Leere
+- ⏳ M6 Onboarding + Demo-Härtung
 
-Nur `profil` ist noch ein Stub. Vorlage für den Nachbau ist
+Kein Tab ist mehr ein Stub. Vorlage für den Nachbau ist
 [`../mobile`](../mobile) — dort liegen 43 fertige SFCs.
 
 ## Was noch aus dem Core kommen soll

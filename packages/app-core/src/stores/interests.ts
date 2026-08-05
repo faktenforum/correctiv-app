@@ -12,6 +12,8 @@ import { interests, type Interest } from '../data/interests';
 export interface InterestsState {
   selected: string[];
   toggle: (id: string) => void;
+  /** Demo reset (Settings → Demo). The Vue host assigned `selected = []` directly. */
+  clear: () => void;
 }
 
 /** The full interest objects for the selected ids. */
@@ -40,4 +42,6 @@ export const interestsStore = createStore<InterestsState>((set) => ({
         ? state.selected.filter((s) => s !== id)
         : [...state.selected, id],
     })),
+
+  clear: () => set({ selected: [] }),
 }));
