@@ -5,7 +5,15 @@ organisation's investigations, fact-checks, Salon5 radio, CrowdNewsroom callouts
 the Faktenforum and the membership club — built on the principle of *closeness,
 not a paywall* (journalism stays free for everyone; membership adds proximity).
 
-Built with **NativeScript 9 · Vue 3 (nativescript-vue 3) · Vite · TypeScript · Pinia**.
+Two app implementations live here while the stack transitions:
+
+| App | Stack | Targets | Role |
+| --- | --- | --- | --- |
+| [`apps/mobile-rn`](apps/mobile-rn) | **Expo SDK 56 · React Native 0.85 · React 19 · expo-router · NativeWind 4 · Zustand** | iOS, Android, **web** | The app going forward |
+| [`apps/mobile`](apps/mobile) | NativeScript 9 · Vue 3 · Vite · Pinia | iOS, Android | Being replaced — still the most complete UI, kept as the reference to port from |
+
+Both share [`packages/app-core`](packages/app-core), the platform-free core.
+See [ADR 0004](adr/0004-react-native-pivot.md) for why the stack changed.
 
 <p align="center">
   <img src="media/demo.gif" alt="Demo walkthrough of the CORRECTIV app prototype on Android: live home feed, article reader, media library and the persistent Salon5 live-radio mini player" width="270">
@@ -37,20 +45,43 @@ HTML/React mockup, hosted via GitHub Pages ([`docs/`](docs/)) — the same demo
 journey in any browser, no build. It shows layout and flow but is *not* the
 running app; the NativeScript code was aligned to it, with minor differences.
 
+It is **generated**, not authored here: `scripts/deploy-demo.sh` copies it from the
+sibling `design-entwurf/project` repo. It stays the design source of truth — and it
+is about to stop being the thing at that URL, because `apps/mobile-rn` now produces
+a real web build of the actual app ([ADR 0004](adr/0004-react-native-pivot.md)).
+
 ## Requirements
 
-- Node ≥ 20.19 (Vite 7)
-- NativeScript CLI 9 — `npm i -g nativescript`
+- Node ≥ 20.19
 - Android SDK + an emulator or device (`ANDROID_HOME` set), JDK 17
-- iOS builds additionally require macOS + Xcode (the iOS platform package is not
-  installed here; the code paths are kept but unbuilt)
+- For `apps/mobile` only: NativeScript CLI 9 — `npm i -g nativescript`
+- iOS: `apps/mobile-rn` builds via **EAS Build in the cloud, no Mac required**;
+  `apps/mobile` would need macOS + Xcode and has never been built
 
 ## Getting started
 
 ```bash
 npm install                    # installs the whole workspace
-npm run check                  # both typechecks + 82 headless tests, ~0.4 s, no device
+npm run check                  # every typecheck + 98 headless tests, ~1 s, no device
+```
 
+**The app going forward** (`apps/mobile-rn`) — no emulator needed for the web target:
+
+```bash
+npm run web        -w @correctiv/mobile-rn   # browser, Fast Refresh
+npm run android    -w @correctiv/mobile-rn   # dev build on emulator/device (once)
+npm start          -w @correctiv/mobile-rn   # then: Metro (dev client, NOT Expo Go)
+npm run build:web  -w @correctiv/mobile-rn   # static export to dist/
+```
+
+> Serving the static export yourself? Use **clean URLs** (`/artikel`, not
+> `/artikel.html`). A plain `python3 -m http.server` makes Expo Router match nothing
+> and render its *unmatched route* page — which looks like an app failure but is a
+> server artefact.
+
+**The app being replaced** (`apps/mobile`):
+
+```bash
 cd apps/mobile
 ns run android --no-hmr        # build, deploy and run on the emulator/device
 ```
@@ -100,6 +131,11 @@ expects a `wp-design-tokens` checkout next to this repository. Never import
 
 ## Architecture in one minute
 
+> Describes **`apps/mobile`** (NativeScript), which is still the most complete
+> implementation and therefore the specification for the port. `apps/mobile-rn`
+> reaches the same features through expo-router routes, NativeWind and Zustand;
+> its own layout is in [`apps/mobile-rn/README.md`](apps/mobile-rn/README.md).
+
 - **Shell:** `apps/mobile/src/AppShell.vue` — a GridLayout with five parallel `<Frame>`s
   (one per tab, lazily mounted, never destroyed → per-tab navigation stacks and
   app-wide reactivity for the membership status flip), a persistent audio
@@ -138,8 +174,9 @@ expects a `wp-design-tokens` checkout next to this repository. Never import
 
 ## Repository layout
 
-An npm workspace with two packages — see
-[`adr/0001-monorepo-and-platform-free-core.md`](adr/0001-monorepo-and-platform-free-core.md).
+An npm workspace with three packages — see
+[`adr/0001-monorepo-and-platform-free-core.md`](adr/0001-monorepo-and-platform-free-core.md)
+and [`adr/0004-react-native-pivot.md`](adr/0004-react-native-pivot.md).
 
 ```
 packages/app-core/          @correctiv/app-core — NO platform SDK, headless-testable
@@ -165,6 +202,20 @@ apps/mobile/                @correctiv/mobile — the NativeScript app
   src/fonts/                Merriweather, Source Sans 3, Lucide (see fonts/LICENSES.md)
   scripts/                  sync-tokens.mjs, fetch-offline-*.mjs, deploy-emulator.sh
   App_Resources/            Android (manifest, icons) and iOS (Info.plist) platform resources
+
+apps/mobile-rn/             @correctiv/mobile-rn — the Expo app (iOS, Android, web)
+  src/app/                  expo-router routes: (tabs)/ + artikel
+  src/components/reader/    ReaderView.tsx | .web.tsx | types.ts — the ONE platform split
+  src/components/ui/        design system (Typo, Button, Card, Badge, Chip, Screen, …)
+  src/components/feed|home/ feed and home building blocks
+  src/lib/theme/            token-bridge output, typography, fonts
+  src/lib/feeds|articles/   sources, parsers, extraction, reader HTML  (to be replaced
+                            by packages/app-core — see ADR 0004 "Offen")
+  src/lib/net/              cachedFetch (network-first / cache-first policies)
+  src/lib/store/            Zustand stores (persisted via AsyncStorage)
+  __tests__/                jest-expo, incl. the web-target guard
+  scripts/                  generate-tokens, embed-fonts, fetch-offline-articles
+  app.json  metro.config.js tailwind.config.js  babel.config.js
 ```
 
 **Why the directory is `packages/app-core` and not `packages/core`:** `@nativescript/vite`
@@ -192,12 +243,24 @@ sync so the trap cannot be re-armed by a "consistency" rename. Details in the AD
 | `adb shell pm clear` deletes the synced JS bundle | uninstall + fresh deploy afterwards |
 | WordPress feeds: only `/category/<slug>/feed/` URLs deliver article streams | see `packages/app-core/src/data/feeds.config.ts` |
 | Icecast answers HEAD requests with 400 | availability = try to play |
+| **Expo:** `react-native-webview` has no web build — it renders "React Native WebView does not support this platform.", and `expo export --platform web` still succeeds, so CI can go green on a broken route | platform-split behind `components/reader/ReaderView`, enforced by `apps/mobile-rn/__tests__/web-target.test.ts` ([ADR 0004](adr/0004-react-native-pivot.md)) |
+| **Expo:** serving a static export without clean URLs makes Expo Router render its *unmatched route* page — looks like an app bug, is a server bug | map `/artikel` → `artikel.html`; plain `python3 -m http.server` will not do |
+| **Expo:** Metro's `getDefaultConfig` assumes a single-project layout, so in this workspace `packages/app-core` is invisible and hoisted deps do not resolve | `watchFolders` + `resolver.nodeModulesPaths` + `disableHierarchicalLookup` in `apps/mobile-rn/metro.config.js` |
+| Token bridges resolve `wp-design-tokens` by walking **up** the tree, not by counting `../` | a hard-coded depth silently broke both when the apps moved into `apps/*`; only the Expo side had a test that caught it |
 
 ## Licensing & attribution
 
 - **Code:** GNU Affero General Public License v3.0 — see [`LICENSE`](LICENSE).
+- ⚠️ **Open question — `apps/mobile-rn` arrived under MIT.** It was imported from a
+  separate prototype repo whose `LICENSE` is the MIT License; that file is kept at
+  [`apps/mobile-rn/LICENSE`](apps/mobile-rn/LICENSE) so the provenance stays visible.
+  MIT code can be incorporated into an AGPL project, but which licence this subtree
+  carries going forward is **CORRECTIV's decision to make**, not one to settle by a
+  silent file deletion. See [ADR 0004](adr/0004-react-native-pivot.md).
 - **Bundled fonts:** Merriweather and Source Sans 3 (SIL OFL 1.1), Lucide (ISC) —
   see [`apps/mobile/src/fonts/LICENSES.md`](apps/mobile/src/fonts/LICENSES.md).
+  `apps/mobile-rn` loads the same families via `@expo-google-fonts` (SIL OFL 1.1)
+  and Ionicons (MIT) through `@expo/vector-icons`.
 - **Sample content & images** (article titles, covers, the demo audio clip) are
   CORRECTIV material, included for prototyping purposes.
 - This is a prototype, not a released product, and is not affiliated with any

@@ -1,29 +1,52 @@
 # CORRECTIV App — Prototyp (React Native / Expo)
 
-Prototyp der CORRECTIV-App gemäß `../app/KONZEPT.md` und `../app/DATENQUELLEN.md`.
-Eine vergleichende Vue-Variante entsteht parallel in `../app-prototype`.
+Die CORRECTIV-App auf Expo/React Native — **iOS, Android und ein Web-Target für Demos**.
+
+Dies ist die App, auf die umgestellt wird. Die NativeScript/Vue-Variante liegt weiterhin
+als Referenz in [`../mobile`](../mobile) und ist bei der UI noch vollständiger (4.346 zu
+828 LOC) — sie ist damit die Vorlage für den Nachbau, nicht ein Konkurrent.
+Warum gewechselt wurde: [ADR 0004](../../adr/0004-react-native-pivot.md).
+
+Fachliche Vorgaben: `KONZEPT.md` und `DATENQUELLEN.md` im Schwester-Repo `../../../app`.
 
 ## Stack
 
 - **Expo SDK 56** (React Native 0.85, New Architecture), **TypeScript**, **expo-router** (Tabs + Stack)
-- **NativeWind v4** + **Token-Brücke** aus `../wp-design-tokens` (Tailwind v4 → px-Werte + TS-Konstanten)
+- **NativeWind v4** + **Token-Brücke** aus dem Schwester-Repo `wp-design-tokens`
+  (Tailwind v4 → px-Werte + TS-Konstanten). Der Pfad wird nach oben gesucht, nicht
+  gezählt — siehe `scripts/generate-tokens.mjs`.
 - **expo-audio** für Live-Radio (Icecast) + Podcasts inkl. Hintergrund-Audio/Lockscreen
   (react-native-track-player ist mit RN 0.85 / New Arch inkompatibel — siehe unten)
-- **react-native-webview** für den Artikel-Reader (bereinigtes HTML + eingebettete Fonts)
+- **react-native-webview** für den Artikel-Reader (bereinigtes HTML + eingebettete Fonts).
+  Auf **Web** gibt es dafür keine Implementierung — dort rendert ein iframe dasselbe
+  HTML. Beide Wege liegen hinter `components/reader/ReaderView`, abgesichert durch
+  `__tests__/web-target.test.ts`.
 - **Zustand** (+ AsyncStorage-Persist) für lokalen State
 - **fast-xml-parser** (RSS/YouTube-Atom), **htmlparser2 + css-select + domutils** (Artikel-Extraktion)
 
 ## Entwicklung
 
-Voraussetzungen: Node ≥ 20, JDK 17, Android SDK (`ANDROID_HOME`), ein Emulator oder Gerät.
+Voraussetzungen: Node ≥ 20. Für Android zusätzlich JDK 17 und Android SDK
+(`ANDROID_HOME`) mit Emulator oder Gerät. **Für Web nichts davon.**
+
+`npm install` läuft in der **Repo-Wurzel** (npm-Workspace), nicht hier.
 
 ```bash
-npm install
+npm run web            # Browser mit Fast Refresh — kein Emulator, kein SDK
 npm run android        # Dev-Build bauen + auf Emulator/Gerät installieren (einmalig)
 npm start              # danach: Metro mit Fast Refresh (Dev-Client, kein Expo Go!)
+npm run build:web      # statischer Export nach dist/
 ```
 
 Expo Go funktioniert NICHT (native Module). Immer Dev-Build / Release-APK verwenden.
+
+Den statischen Export **mit Clean URLs** servieren (`/artikel`, nicht `/artikel.html`).
+Ein einfaches `python3 -m http.server` liefert den Pfad wörtlich, Expo Router matcht dann
+nichts und zeigt seine „unmatched route"-Seite — das sieht wie ein App-Fehler aus, ist
+aber der Server.
+
+iOS: über **EAS Build in der Cloud, ohne Mac**. `ios/` existiert noch nicht und wird von
+`expo prebuild` erzeugt.
 
 ### Release-APK (Demo-Gerät)
 
@@ -39,16 +62,20 @@ signiert (für die Demo ausreichend; vor echter Verteilung eigenen Keystore erze
 
 | Skript | Erzeugt | Zweck |
 |---|---|---|
-| `npm run tokens` | `tailwind.tokens.generated.js`, `src/lib/theme/tokens.generated.ts`, `readerCss.generated.ts` | Design-Tokens aus `../wp-design-tokens` |
+| `npm run tokens` | `tailwind.tokens.generated.js`, `src/lib/theme/tokens.generated.ts`, `readerCss.generated.ts` | Design-Tokens aus dem `wp-design-tokens`-Repo |
 | `npm run fonts` | `src/lib/theme/readerFonts.generated.ts` | Subsetted base64-Fonts für die Reader-WebView (braucht `pyftsubset`) |
 | `npm run offline-articles` | `src/lib/articles/offlineArticles.generated.ts` | ~15 vor-extrahierte Artikel (Offline-Cache) |
 
 ## Qualität
 
 ```bash
-npm run check   # tsc (App) + tsc (Tests) + eslint
-npm test        # jest: Token-Snapshot, Feed-Parser, Artikel-Extraktion (gegen echte Fixtures)
+npm test        # jest: Token-Snapshot, Feed-Parser, Artikel-Extraktion (echte Fixtures),
+                #       Web-Target-Guard
+npm run typecheck   # tsc (App) + tsc (Tests)
 ```
+
+Gelintet und formatiert wird aus der **Repo-Wurzel** mit oxlint/oxfmt (`npm run check`
+prüft alle Workspaces zusammen); ESLint ist hier entfallen.
 
 ## Architektur
 
@@ -77,4 +104,20 @@ Icecast-Streaming + Hintergrund-Audio + Lockscreen-Controls). Audio ist in `src/
 ## Status (Roadmap aus dem Konzept)
 
 - ✅ **M0** Fundament · ✅ **M1** Datenlayer + Home · ✅ **M2** Artikel-Reader
+- ✅ **Web-Target** — im Browser verifiziert: Home mit vollem Inhalt und allen fünf Tabs,
+  Reader mit Artikel im iframe (korrektes `h1`, 19 Absätze, eingebettete Fonts)
 - ⏳ M3 Audio/Mediathek · M4 Mitmachen · M5 Club & Profil · M6 Onboarding + Demo-Härtung · M7 Entdecken/Suche
+
+Die Screens `entdecken`, `mediathek`, `mitmachen` und `profil` sind noch Stubs. Vorlage
+für den Nachbau ist [`../mobile`](../mobile) — dort liegen 43 fertige SFCs.
+
+## Was noch aus dem Core kommen soll
+
+`src/lib/models.ts`, `src/lib/format.ts`, `src/lib/feeds/*` und
+`src/lib/articles/extract.ts` doppeln rund 560 LOC aus `@correctiv/app-core`. Der Core
+gewinnt: seine `data/feeds.config.ts` ist eine **Obermenge** von `feeds/sources.ts` —
+dieselben zwei Fallen (Kategorie-Feeds, Icecast-HEAD), plus PeerTube-Migration,
+Castopod-Host und sieben kuratierte Shows. Umgekehrt sollen die zwei Cache-Policies aus
+`lib/net/cachedFetch.ts` in den Core wandern, dort aber hinter dessen `FileStore`-Port
+statt direkt auf AsyncStorage, damit sie auch auf Web tragen. Siehe
+[ADR 0004](../../adr/0004-react-native-pivot.md).
