@@ -9,7 +9,8 @@
 #
 # The repo is an npm workspace: `npm ci` runs at the root. apps/mobile is the
 # NativeScript app (being replaced), apps/mobile-rn the Expo one that supersedes
-# it — see adr/0001-monorepo-and-platform-free-core.md.
+# it — see adr/0001-monorepo-and-platform-free-core.md and
+# adr/0004-react-native-pivot.md.
 name: CI
 
 on:
