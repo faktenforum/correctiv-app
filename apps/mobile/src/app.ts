@@ -95,7 +95,7 @@ Application.on(Application.resumeEvent, () => {
 });
 
 // AUDIO SPIKE — off by default. Flip to true, start
-// `node scripts/spike-audio-server.mjs`, deploy to a device and read logcat for
+// `node scripts/spike-audio-server.mjs (repo root)`, deploy to a device and read logcat for
 // `SPIKE:`. See adr/0003-audio-capability-spike.md.
 const RUN_AUDIO_SPIKE = false;
 if (__ANDROID__ && RUN_AUDIO_SPIKE) {

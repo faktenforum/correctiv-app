@@ -18,7 +18,7 @@ behind secret auth that only the app can talk to". Ohne Header keine exklusiven 
 
 ## Aufbau
 
-`apps/mobile/scripts/spike-audio-server.mjs` liefert die gebündelte Beispielepisode und
+`scripts/spike-audio-server.mjs` liefert die gebündelte Beispielepisode und
 **verlangt `Authorization: Bearer spike-token`; ohne Header 401**. Damit ist ein
 bestandener Test ein Beweis, kein Zufall. Range-Requests werden unterstützt, weil Androids
 MediaPlayer sie stellt.
@@ -98,7 +98,7 @@ Arbeit wäre, aber sie gehört vor die Beta-Planung.
 ## Artefakte
 
 - `apps/mobile/src/spike/audio-spike.ts` — die Tests, kommentiert
-- `apps/mobile/scripts/spike-audio-server.mjs` — der 401-Server
+- `scripts/spike-audio-server.mjs` — der 401-Server
 - `apps/mobile/App_Resources/Android/src/main/res/xml/network_security_config.xml` —
   Cleartext nur für `10.0.2.2`/`localhost`, damit der Emulator den lokalen Testserver
   erreicht. Für die Produktion irrelevant, aber für jeden weiteren Geräte-Spike nützlich.
