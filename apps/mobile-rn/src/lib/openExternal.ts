@@ -1,20 +1,20 @@
 import { Linking } from 'react-native';
 
 /**
- * Öffnet ein Ziel außerhalb der App: System-Browser für http(s), zuständige App
- * für alles andere.
+ * Opens a target outside the app: the system browser for http(s), the registered
+ * handler for everything else.
  *
- * Bewusst `Linking` und nicht der In-App-Browser aus expo-web-browser: ein Teil
- * der Ziele hier sind Übergaben an andere Apps (`https://wa.me/…` → WhatsApp),
- * und der In-App-Browser würde daraus die WhatsApp-*Webseite* machen. Für die
- * Projektlinks ist der System-Browser außerdem das, was der NativeScript-Stand
- * mit `Utils.openUrl` tat — gleiches Verhalten, kein neues Fenstermodell.
+ * Deliberately `Linking` and not expo-web-browser's in-app browser: some of the
+ * targets here are handoffs to other apps (`https://wa.me/…` → WhatsApp), and the
+ * in-app browser would turn that into WhatsApp's *web page*. For the project links
+ * the system browser is also what the NativeScript build did with
+ * `Utils.openUrl` — same behaviour, no new window model.
  *
- * Fehler werden geloggt, nicht geworfen: „kein Handler installiert" hat keine
- * sinnvolle Behandlung, und eine unbehandelte Rejection wäre schlimmer.
+ * Failures are logged, not thrown: "no handler installed" has no useful recovery,
+ * and an unhandled rejection would be worse.
  */
 export function openExternal(url: string): void {
   Linking.openURL(url).catch((err: unknown) => {
-    console.warn('[app] konnte Ziel nicht öffnen:', url, err);
+    console.warn('[app] could not open target:', url, err);
   });
 }

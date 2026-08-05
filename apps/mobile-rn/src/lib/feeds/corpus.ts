@@ -4,31 +4,30 @@ import type { FeedItem } from '@correctiv/app-core/types/models';
 import { getFeeds } from './client';
 
 /**
- * Der Offline-Rückfall der Suche: alles, was dieses Gerät ohne Netz über
- * correctiv.org weiß.
+ * The search's offline fallback: everything this device knows about correctiv.org
+ * without a network.
  *
- * Die Volltextsuche läuft serverseitig (WordPress REST). Wenn die nicht
- * erreichbar ist — oder auf Web gar nicht erst darf, siehe die CORS-Notiz in
- * ADR 0004 —, sucht die App in den bereits geladenen Feeds. `getFeeds` fällt
- * pro Feed auf den AsyncStorage-Cache zurück, der Rückfall trägt also auch im
- * Flugmodus.
+ * Full-text search runs server-side (WordPress REST). When that is unreachable — or
+ * simply not allowed, as in a browser: see the CORS note in ADR 0004 — the app
+ * searches the feeds it has already loaded. `getFeeds` falls back to the
+ * AsyncStorage cache per feed, so the fallback holds in airplane mode too.
  *
- * Der NativeScript-Stand hat dafür beim Öffnen der Suche alle sechs Feeds
- * angestoßen. Hier passiert das erst, wenn der Rückfall wirklich gebraucht
- * wird: der Normalfall (Server antwortet) kostet dann keine sechs Requests.
+ * The NativeScript build kicked off all six feeds when the search screen opened.
+ * Here that happens only when the fallback is actually needed: the normal case
+ * (server answers) then costs no six requests.
  */
 let pending: Promise<FeedItem[]> | null = null;
 
 async function feedCorpus(): Promise<FeedItem[]> {
   const items = await (pending ??= getFeeds(CONTENT_FEEDS));
-  // Leeres Ergebnis nicht festschreiben: das heißt „alle sechs Feeds sind
-  // fehlgeschlagen und es lag nichts im Cache", und beim nächsten Versuch kann
-  // das Netz wieder da sein. `getFeeds` selbst wirft nie (allSettled).
+  // Do not cement an empty result: it means "all six feeds failed and nothing was
+  // cached", and the next attempt may have a network again. `getFeeds` itself never
+  // throws (allSettled).
   if (items.length === 0) pending = null;
   return items;
 }
 
-/** Titel- und Teasersuche über den lokalen Bestand, neueste zuerst. */
+/** Title and teaser search over the local corpus, newest first. */
 export async function searchFeedCorpus(query: string, limit = 12): Promise<FeedItem[]> {
   const needle = query.trim().toLowerCase();
   if (needle.length < 2) return [];
@@ -41,7 +40,7 @@ export async function searchFeedCorpus(query: string, limit = 12): Promise<FeedI
     .slice(0, limit);
 }
 
-/** Nur für Tests: erzwingt beim nächsten Aufruf ein frisches Laden. */
+/** Tests only: forces a fresh load on the next call. */
 export function resetFeedCorpus(): void {
   pending = null;
 }

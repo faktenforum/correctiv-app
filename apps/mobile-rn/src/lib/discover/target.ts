@@ -1,22 +1,21 @@
 import type { Project } from '@correctiv/app-core/data/projects';
 
 export type ProjectTarget =
-  /** Querverweis in einen anderen Tab (CrowdNewsroom, Faktenforum, Abriss-Atlas). */
+  /** Cross-link into another tab (CrowdNewsroom, Faktenforum, Abriss-Atlas). */
   | { kind: 'tab'; path: '/(tabs)/mitmachen' }
-  /** Rein externes Projekt — System-Browser. */
+  /** Purely external project — system browser. */
   | { kind: 'external'; url: string }
-  /** Projekt- oder Themenseite in dieser App. */
+  /** A project or topic page inside this app. */
   | { kind: 'project'; id: string };
 
 /**
- * Was ein Tippen auf einen Verzeichnis-Eintrag bedeutet — als reine Funktion,
- * weil zwei Stellen dieselbe Antwort brauchen: der Bildschirm zum Navigieren und
- * die Zeile für ihr Pfeil-Icon. Als zwei Bedingungen waren das zwei Wahrheiten,
- * die auseinanderlaufen können.
+ * What tapping a directory entry means — as a pure function, because two places
+ * need the same answer: the screen that navigates, and the row that draws the
+ * arrow. As two separate conditions they were two truths that could drift apart.
  *
- * Die Reihenfolge ist die Entscheidung: `tab` schlägt `url`, und ein Projekt mit
- * Feed UND url (Salon5) bleibt in der App — dort ist die url eine Zusatzquelle,
- * kein Ersatz für die Projektseite mit Feed und eigener Aktion.
+ * The order IS the decision: `tab` beats `url`, and a project with both a feed AND
+ * a url (Salon5) stays inside the app — there the url is an extra source, not a
+ * replacement for the project page with its feed and its own action.
  */
 export function projectTarget(project: Project): ProjectTarget {
   if (project.tab === 'participate') return { kind: 'tab', path: '/(tabs)/mitmachen' };

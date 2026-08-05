@@ -3,27 +3,26 @@ import { useStore } from 'zustand';
 import { audioStore, isLive, type AudioState, type PlayerStatus } from './player';
 
 /**
- * React-Bindung an den Audio-Singleton.
+ * React bindings for the audio singleton.
  *
- * Der Status tickt zweimal pro Sekunde (`updateInterval: 500`), deshalb gibt es
- * hier absichtlich schmale Selektoren, die **primitive Werte** liefern: nur wer die
- * Position wirklich anzeigt, soll auch zweimal pro Sekunde neu rendern. Ein
- * Selektor, der ein frisches Objekt baut, wäre außerdem ein Problem für sich —
- * zustand v5 gibt ihn ohne Vergleichsfunktion an `useSyncExternalStore` weiter
- * (siehe die Notiz in lib/store/core.ts).
+ * The status ticks twice a second (`updateInterval: 500`), so the selectors here
+ * deliberately return **primitive values**: only whoever actually displays the
+ * position should re-render twice a second. A selector that builds a fresh object
+ * would be a problem of its own — zustand v5 hands it to `useSyncExternalStore`
+ * with no equality function (see the note in lib/store/core.ts).
  */
 
-/** Voller Zustand — für die Player-Oberflächen, die Position und Länge zeigen. */
+/** Full state — for the player surfaces that show position and duration. */
 export const useAudio = (): AudioState => useStore(audioStore);
 
 export const useAudioIsActive = (): boolean => useStore(audioStore, (s) => s.track !== null);
 
 export const useAudioIsLive = (): boolean => useStore(audioStore, isLive);
 
-/** Ist die Club-Vorschau abgelaufen? Öffnet die Einladung (Phase 4e). */
+/** Has the club preview run out? Opens the invitation (phase 4e). */
 export const usePreviewEnded = (): boolean => useStore(audioStore, (s) => s.previewEnded);
 
-/** Radio-Zustand als ein Wort — `off`, sobald etwas anderes läuft. */
+/** The radio's state in one word — `off` as soon as something else is playing. */
 export type RadioState = 'off' | 'loading' | 'playing' | 'paused' | 'error';
 
 export const useRadioState = (): RadioState =>
@@ -31,6 +30,6 @@ export const useRadioState = (): RadioState =>
     s.track?.kind !== 'radio' || s.status === 'idle' ? 'off' : (s.status as RadioState),
   );
 
-/** Spielt gerade DIESE Folge? Primitiv, also kein Render pro Positionstick. */
+/** Is THIS episode playing? Primitive, so no render per position tick. */
 export const useEpisodeStatus = (episodeId: string): PlayerStatus | 'off' =>
   useStore(audioStore, (s) => (s.track?.episodeId === episodeId ? s.status : 'off'));

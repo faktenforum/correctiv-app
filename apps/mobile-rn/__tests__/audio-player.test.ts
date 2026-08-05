@@ -191,6 +191,30 @@ describe('failures', () => {
     expect(audioStore.getState().errorMessage).toMatch(/Internetverbindung/);
   });
 
+  it('keeps the error visible when the next status tick looks merely unloaded', async () => {
+    await playRadio();
+    emit?.(status({ error: 'Source error' }));
+    expect(audioStore.getState().status).toBe('error');
+
+    // What the player really sends after a failed source: no error field any more,
+    // still not loaded. Seen on a device — the mini bar fell back to "Lädt …" and
+    // sat there, which is the endless spinner the watchdog exists to prevent.
+    emit?.(status({ error: null, isLoaded: false, playing: false }));
+
+    expect(audioStore.getState().status).toBe('error');
+    expect(audioStore.getState().errorMessage).toMatch(/Internetverbindung/);
+  });
+
+  it('clears the error when a new track starts', async () => {
+    await playRadio();
+    emit?.(status({ error: 'Source error' }));
+    expect(audioStore.getState().status).toBe('error');
+
+    await playEpisode(EPISODE);
+
+    expect(audioStore.getState()).toMatchObject({ status: 'loading', errorMessage: null });
+  });
+
   it('gives up on a stream that never loads', async () => {
     jest.useFakeTimers();
     await playRadio();

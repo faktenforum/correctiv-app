@@ -1,6 +1,6 @@
 import { RADIO_STREAM_URL } from '@correctiv/app-core/data/feeds.config';
 
-/** Metadaten + Quelle des Salon5-Live-Streams (Icecast). Für Player + Lockscreen. */
+/** Metadata and source of the Salon5 live stream (Icecast). For player and lock screen. */
 export const SALON5_RADIO = {
   id: 'salon5-radio',
   url: RADIO_STREAM_URL,
