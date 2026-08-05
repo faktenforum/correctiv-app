@@ -14,13 +14,38 @@
  *
  * Aufruf:  npm run tokens
  */
-import { readFileSync, writeFileSync, mkdirSync } from 'node:fs';
+import { existsSync, readFileSync, writeFileSync, mkdirSync } from 'node:fs';
 import { dirname, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const ROOT = resolve(__dirname, '..');
-const TOKENS_REPO = resolve(ROOT, '..', 'wp-design-tokens', 'css');
+
+/**
+ * Das Token-Repo ist ein SIBLING-Checkout, keine Abhängigkeit dieses Repos — wo
+ * es liegt, hängt also davon ab, wie tief diese App steckt. Ein festes '..'
+ * zeigte nach dem Umzug von der Repo-Wurzel nach apps/mobile-rn/ auf
+ * apps/wp-design-tokens/ und damit ins Leere.
+ *
+ * Nach oben suchen statt Ebenen zählen heißt: der nächste Umzug bricht es nicht
+ * wieder. (Dieselbe Korrektur steckt in apps/mobile/scripts/sync-tokens.mjs.)
+ */
+function findTokensCssDir(from) {
+  for (let dir = from; ; dir = dirname(dir)) {
+    const candidate = resolve(dir, 'wp-design-tokens/css');
+    if (existsSync(resolve(candidate, 'theme.css'))) return candidate;
+    if (dirname(dir) === dir) return null; // Dateisystem-Wurzel erreicht
+  }
+}
+
+const TOKENS_REPO = findTokensCssDir(ROOT);
+if (!TOKENS_REPO) {
+  throw new Error(
+    'wp-design-tokens/css/theme.css in keinem übergeordneten Verzeichnis gefunden.\n' +
+      'Es ist ein eigenes Repo (github.com/correctiv/wp-design-tokens) und muss als\n' +
+      `Geschwister-Checkout vorliegen — siehe README. Gesucht ab:\n  ${ROOT}`,
+  );
+}
 const THEME_CSS_PATH = resolve(TOKENS_REPO, 'theme.css');
 
 const REM_BASE = 16; // wp-design-tokens nimmt 16px-Basis an

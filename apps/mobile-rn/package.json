@@ -1,5 +1,6 @@
 {
-  "name": "app-prototype-react-native",
+  "name": "@correctiv/mobile-rn",
+  "description": "CORRECTIV app on Expo/React Native — iOS, Android and a web target for demos. Will replace @correctiv/mobile (NativeScript).",
   "main": "./index.js",
   "version": "1.0.0",
   "dependencies": {
