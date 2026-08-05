@@ -240,6 +240,63 @@ URLs. Zweiter Fund derselben Art: `tsconfig.test.json` listete `nativewind-env.d
 nicht, weshalb der erste Test, der eine echte Komponente rendert, an jedem
 `className` im Baum scheiterte — latent, solange Tests nur `<Text>` rendern.
 
+**Die Mediathek steht** (Phase 4c): Live-Radio, sieben Castopod-Serien, zwei
+Video-Kanäle, Club-Bonusspur, Mini- und Vollplayer, Serien- und Videoseite.
+
+*Der Player ist ein Modul, kein Hook.* `useAudioPlayer` bindet die Instanz an eine
+Komponente und gibt sie beim Unmount frei — genau das darf nicht passieren, wenn
+Wiedergabe Tabwechsel, geschobene Routen und den Hintergrund überleben soll. Also
+`createAudioPlayer` auf Modulebene, ein zustand-Store daneben, und React abonniert
+nur. Zwei NativeScript-Notbehelfe entfallen dabei: die Positions-Rückschritt-
+Erkennung (Androids MediaPlayer sprang bei Ende auf 0, ohne den Complete-Callback
+zu feuern) und der 1-Sekunden-Poll-Timer. expo-audio meldet `didJustFinish`,
+`isLoaded`, `isBuffering` und `error` selbst. Geblieben ist der Wachhund: die
+Lektion war, dass Netzfehler manchmal *gar nicht* ankommen, und ein ewiger Spinner
+ist die schlechteste Auskunft.
+
+*Ein Loch im Vorschau-Tor geschlossen.* Der NativeScript-Stand pausierte Club-Audio
+bei 60 Sekunden, aber sein Limit feuerte genau einmal (`!this.previewEnded`) —
+ein zweiter Druck auf Play spielte die Folge zu Ende und gab damit Club-Inhalt
+frei. Hier verweigert `togglePlay` das Fortsetzen jenseits der Grenze und zeigt die
+Einladung erneut; ein Test hält es fest.
+
+*Video: eine Route, zwei Quellen, kein Umhängen.* PeerTube spielt nativ über
+expo-video (nur die HLS-Master-Playlist mischt Video- und Audio-Spur, die
+Renditionen sind getrennt), YouTube bleibt bei der nocookie-Einbettung. Bewusst
+**ohne** die Kollaps-Leiste des NativeScript-Stands: dort lag die Videofläche über
+den Tab-Frames und schrumpfte beim Verlassen. React Native kann eine Videofläche
+nicht umhängen, ohne sie neu zu erzeugen — die nativ passende Antwort ist
+Picture-in-Picture, die expo-video mitbringt. Nebenbei ist
+`react-native-youtube-iframe` entfallen: die Einbettung, die der NativeScript-Stand
+schon benutzte, braucht kein eigenes Player-Paket (und das Paket setzte selbst
+wieder auf WebView auf). Dafür ist `VideoFrame` das zweite Plattform-Paar neben dem
+Reader, erzwungen durch denselben Guard.
+
+*Der Core hat einen Podcast-Store bekommen* (vorher NativeScript-lokal), mit einer
+Schicht weniger: die gebündelten Pro-Show-Snapshots lasen NativeScripts `File`, was
+im Core nicht vorkommen darf. Stale-Cache und typisierter Seed decken dasselbe ab.
+Und `videoStore.play` fragt die PeerTube-API jetzt nur noch für PeerTube-Videos —
+für ein YouTube-Item war das ein garantierter 404, der als „Video defekt" ankam.
+
+**Der teuerste Fund dieser Phase kam wieder erst aus dem Browser.** Um die
+Mini-Leiste über die Tab-Bar zu setzen, lag es nahe, die `tabBar`-Prop mit dem
+`BottomTabBar` aus `expo-router/tabs` zu bauen. Dieser Import zieht eine **zweite
+React-Instanz** ins Bundle; die App stirbt beim Start mit dem minifizierten
+React-Fehler #321 („invalid hook call"). Build grün, Typecheck grün, 78 Tests grün,
+Seite weiß. Gefunden, indem der statische Export in Chrome geladen wurde — und
+eingekreist, indem `Runtime.exceptionThrown` mitgeschnitten wurde: unbehandelte
+Ausnahmen tauchen in `console.*` nicht auf, ohne das sieht ein Absturz wie eine
+leere Seite aus. Lösung: ein absolut positioniertes Overlay im Tab-Layout, kein
+react-navigation-Import.
+
+Zwei kleinere Funde derselben Sorte: `tsconfig.test.json` listete auch `assets.d.ts`
+nicht (nach `nativewind-env.d.ts` der zweite Fall — beide bissen erst, als ein Test
+den betreffenden Code erreichte), und die Pfad-Aliase wollen in tsc und jest die
+**umgekehrte** Reihenfolge: jest-expo leitet einen moduleNameMapper aus
+`tsconfig.json` ab, wo der erste Treffer ohne Rückfall gewinnt, während tsc den
+generischen `@/*` zuerst braucht, damit `declare module '*.mp3'` überhaupt greift.
+Die Differenz trägt jetzt eine Zeile in `jest.config.js`.
+
 ## Offen
 
 - **Das Web-Target sieht keine Live-Artikel.** `correctiv.org` sendet keinen
@@ -253,6 +310,19 @@ nicht, weshalb der erste Test, der eine echte Komponente rendert, an jedem
   Seit Phase 4b behauptet das Web-Demo dabei wenigstens nichts Falsches: die Suche
   fällt auf den lokalen Korpus zurück, und die Projektseite schreibt „Beiträge
   konnten nicht geladen werden" statt endlos zu drehen (im Browser verifiziert).
+  Phase 4c hat den Befund vervollständigt: von allen Quellen sendet **nur**
+  `tube.funfacts.de` den Header (`*`, auch auf den HLS-Playlists — die FunFacts-
+  Videos laufen im Browser also wirklich), während `correctiv.org`,
+  `salon5.correctiv.net` (Castopod) und `youtube.com/feeds` keinen senden. Auf Web
+  zeigt die Mediathek darum echte FunFacts-Videos, aber Podcast-Beispieldaten mit
+  dem Hinweis „Ohne Verbindung — Sie sehen Beispielfolgen."
+- **Audio ist auf keinem Gerät geprüft.** Die Regeln des Players (Vorschau-Grenze,
+  Exklusivität, Wachhund, Lockscreen-Aufruf) sind mit 16 Tests festgehalten, und im
+  Browser bringt ein echter Klick auf „Radio abspielen" die Mini-Leiste hoch — dass
+  aber wirklich Ton aus dem Icecast-Stream kommt, dass Hintergrund-Wiedergabe und
+  Lockscreen-Steuerung funktionieren, kann nur ein Android- oder iOS-Build zeigen.
+  `apps/mobile/scripts/spike-audio-server.mjs` bleibt für den authentifizierten
+  Podcast der beweisende Test (401 ohne Bearer-Token).
 - **Der Artikel-/Reader-Typ ist noch doppelt.** `Article` (App) gegen `ArticleDetail` (Core)
   sind anders geschnitten, nicht bloß anders benannt: `kicker`/`topline`,
   `title`/`headline`, `badge`/`ratingText`, plus `dateText`/`excerpt` nur im Core und

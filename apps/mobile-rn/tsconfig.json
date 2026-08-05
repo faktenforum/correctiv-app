@@ -3,6 +3,9 @@
   "compilerOptions": {
     "strict": true,
     "paths": {
+      // jest-expo turns these into a moduleNameMapper, where the FIRST match wins
+      // with no fallback — so "@/assets/*" has to be reinstated ahead of "@/*"
+      // there. See the note in jest.config.js.
       "@/*": ["./src/*"],
       "@/assets/*": ["./assets/*"],
       // Point at the core's sources directly. It ships TypeScript, not a build,

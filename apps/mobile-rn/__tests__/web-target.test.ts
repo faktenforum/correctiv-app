@@ -25,7 +25,11 @@ const NATIVE_ONLY = [/\.native\.[jt]sx?$/, /\.(android|ios)\.[jt]sx?$/];
  * ReaderView.web.tsx on web, so the bare .tsx never reaches a browser. Verified
  * below by asserting the .web.tsx sibling exists.
  */
-const PLATFORM_PAIRED = ['components/reader/ReaderView.tsx'];
+const PLATFORM_PAIRED = [
+  'components/reader/ReaderView.tsx',
+  // Fremd-Einbettung (YouTube). Same deal: .web.tsx renders a real <iframe>.
+  'components/media/VideoFrame.tsx',
+];
 
 function sourceFiles(dir: string): string[] {
   return readdirSync(dir).flatMap((entry) => {

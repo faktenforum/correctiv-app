@@ -81,9 +81,11 @@ prüft alle Workspaces zusammen); ESLint ist hier entfallen.
 
 ```
 src/
-  app/                  expo-router-Routen: (tabs)/ + artikel, suche, projekt/[id]
+  app/                  expo-router-Routen: (tabs)/ + artikel, suche, projekt/[id],
+                        serie/[id], video, player
   components/ui/        Design-System (Typo, Button, Card, Badge, Chip, Screen, …)
-  components/feed|home|discover/  Feed-, Home- und Verzeichnis-Bausteine
+  components/feed|home|discover|media|player/  Bausteine je Bereich
+  lib/audio/            der EINE Audio-Player der App (expo-audio, auf Modulebene)
   lib/theme/            Token-Brücke-Outputs + Typografie + Fonts
   lib/feeds/            nur Transport: client, useFeed, Suchkorpus für offline
                         (Modell, Katalog und Parser kommen aus @correctiv/app-core)
@@ -107,13 +109,18 @@ Icecast-Streaming + Hintergrund-Audio + Lockscreen-Controls). Audio ist in `src/
 - ✅ **M0** Fundament · ✅ **M1** Datenlayer + Home · ✅ **M2** Artikel-Reader
 - ✅ **M7** Entdecken/Suche — Verzeichnis (7 Gruppen), Themenschiene, Volltextsuche
   mit lokalem Rückfall, Projekt- und Themenseiten
+- ✅ **M3** Audio/Mediathek — ein Audio-Singleton (expo-audio), Live-Radio,
+  7 Castopod-Serien, PeerTube nativ (HLS) + YouTube-Einbettung, Mini- und Vollplayer,
+  Club-Vorschau mit 60-Sekunden-Grenze
 - ✅ **Web-Target** — im Browser verifiziert: Home mit vollem Inhalt und allen fünf Tabs,
   Reader mit Artikel im iframe (korrektes `h1`, 19 Absätze, eingebettete Fonts),
-  Entdecken mit allen 17 Einträgen, jede Projektseite unter ihrer eigenen URL
-- ⏳ M3 Audio/Mediathek · M4 Mitmachen · M5 Club & Profil · M6 Onboarding + Demo-Härtung
+  Entdecken mit allen 17 Einträgen, jede Projektseite unter ihrer eigenen URL,
+  Mediathek mit echten FunFacts-Videos, und ein echter Klick auf „Radio abspielen"
+  bringt die Mini-Leiste hoch (Wiedergabe selbst ist auf Gerät noch nicht geprüft)
+- ⏳ M4 Mitmachen · M5 Club & Profil · M6 Onboarding + Demo-Härtung
 
-Die Screens `mediathek`, `mitmachen` und `profil` sind noch Stubs. Vorlage
-für den Nachbau ist [`../mobile`](../mobile) — dort liegen 43 fertige SFCs.
+Die Screens `mitmachen` und `profil` sind noch Stubs. Vorlage für den Nachbau ist
+[`../mobile`](../mobile) — dort liegen 43 fertige SFCs.
 
 ## Was noch aus dem Core kommen soll
 

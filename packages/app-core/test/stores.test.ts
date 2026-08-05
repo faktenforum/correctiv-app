@@ -195,6 +195,39 @@ describe('video store', () => {
     expect(isActive(videoStore.getState())).toBe(false);
   });
 
+  it('does not ask the PeerTube API about a YouTube video', async () => {
+    // It would be a guaranteed 404 — landing as status 'error', which reads as
+    // "this video is broken". YouTube plays in an embed and has no stream URL.
+    await videoStore.getState().play({
+      id: 'yt-1',
+      title: 'Im Gespräch',
+      url: 'https://www.youtube.com/watch?v=yt-1',
+      thumbnailUrl: '',
+      publishedAt: '2026-06-12T10:00:00.000Z',
+      source: 'youtube',
+    } as never);
+
+    expect(videoStore.getState()).toMatchObject({ status: 'ready', hlsUrl: '' });
+  });
+
+  it('takes the HLS url straight from a PeerTube item that already has one', async () => {
+    await videoStore.getState().play({
+      id: 'pt-1',
+      title: 'FunFacts',
+      url: 'https://tube.funfacts.de/w/pt-1',
+      thumbnailUrl: '',
+      publishedAt: '2026-08-04T10:00:00.000Z',
+      source: 'peertube',
+      hlsMasterUrl: 'https://tube.funfacts.de/media/x-master.m3u8',
+    } as never);
+
+    // No detail request needed, so no network in this test either.
+    expect(videoStore.getState()).toMatchObject({
+      status: 'ready',
+      hlsUrl: 'https://tube.funfacts.de/media/x-master.m3u8',
+    });
+  });
+
   it('close clears the whole session', () => {
     videoStore.setState({
       current: { id: 'v1' } as never,

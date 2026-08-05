@@ -45,6 +45,16 @@ export const videoStore = createStore<VideoState>((set, get) => ({
       set({ status: 'ready' });
       return;
     }
+    /**
+     * Only PeerTube has an HLS master to resolve. A YouTube item plays in an
+     * embed and carries no stream URL at all, so asking the PeerTube API for its
+     * id is a guaranteed 404 — one that would land as `status: 'error'` and look
+     * like the video was broken.
+     */
+    if (video.source !== 'peertube') {
+      set({ status: 'ready' });
+      return;
+    }
     // The list payload has no stream URL — resolve the HLS master on open.
     set({ status: 'loading' });
     try {
