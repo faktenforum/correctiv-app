@@ -1,0 +1,93 @@
+/**
+ * React bindings for the framework-neutral core stores.
+ *
+ * `@correctiv/app-core` ships zustand/vanilla stores plus pure selector functions
+ * (ADR 0004); each host adds its own reactivity. This is the React half — the Vue
+ * half lives in apps/mobile/src/stores/core-bindings.ts.
+ *
+ * On this side there is barely anything to add, which is the point: zustand's
+ * `useStore` subscribes a component to a vanilla store directly, and the
+ * selectors are ordinary functions of state, so they compose with it as-is.
+ *
+ * Always select the narrowest slice you need. `useStore(store)` without a
+ * selector re-renders on every change to any field in that store.
+ */
+import { useStore } from 'zustand';
+
+import {
+  interestsStore,
+  boostedModules as selectBoostedModules,
+  extraFeeds as selectExtraFeeds,
+  selectedInterests as selectSelectedInterests,
+} from '@correctiv/app-core/stores/interests';
+import { membershipStore } from '@correctiv/app-core/stores/membership';
+import {
+  participationStore,
+  extraCount as selectExtraCount,
+  hasSubmitted as selectHasSubmitted,
+} from '@correctiv/app-core/stores/participation';
+import {
+  savedArticlesStore,
+  isSaved as selectIsSaved,
+} from '@correctiv/app-core/stores/savedArticles';
+import { settingsStore } from '@correctiv/app-core/stores/settings';
+import { videoStore, isActive as selectIsActive } from '@correctiv/app-core/stores/video';
+import { mediaStore } from '@correctiv/app-core/stores/media';
+
+// --- whole-store hooks (use a selector below where you can) -------------------
+
+export const useSettings = () => useStore(settingsStore);
+export const useMembership = () => useStore(membershipStore);
+export const useMedia = () => useStore(mediaStore);
+export const useVideo = () => useStore(videoStore);
+
+// --- narrow selectors --------------------------------------------------------
+
+/** The demo's central lever — read it per render, never snapshot it. */
+export const useIsMember = () => useStore(membershipStore, (s) => s.isMember);
+export const useActiveTab = () => useStore(settingsStore, (s) => s.activeTab);
+export const useTextScale = () => useStore(settingsStore, (s) => s.textScale);
+export const useTheme = () => useStore(settingsStore, (s) => s.theme);
+
+export const useVideoIsActive = () => useStore(videoStore, selectIsActive);
+
+export const useSavedArticles = () => useStore(savedArticlesStore, (s) => s.items);
+export const useIsSaved = (url: string) =>
+  useStore(savedArticlesStore, (s) => selectIsSaved(s, url));
+
+export const useSelectedInterests = () => useStore(interestsStore, selectSelectedInterests);
+export const useBoostedModules = () => useStore(interestsStore, selectBoostedModules);
+export const useExtraFeeds = () => useStore(interestsStore, selectExtraFeeds);
+
+export const useHasSubmitted = (slug: string) =>
+  useStore(participationStore, (s) => selectHasSubmitted(s, slug));
+export const useExtraCount = (slug: string) =>
+  useStore(participationStore, (s) => selectExtraCount(s, slug));
+
+// --- actions -----------------------------------------------------------------
+
+/**
+ * Actions live in the store state and their identities are stable, so reading
+ * them outside React (no hook, no re-render) is both safe and cheaper than
+ * selecting them.
+ */
+export const coreActions = {
+  settings: () => settingsStore.getState(),
+  membership: () => membershipStore.getState(),
+  interests: () => interestsStore.getState(),
+  savedArticles: () => savedArticlesStore.getState(),
+  participation: () => participationStore.getState(),
+  media: () => mediaStore.getState(),
+  video: () => videoStore.getState(),
+};
+
+/** Raw stores, for persist() and anything needing subscribe/getState. */
+export const coreStores = {
+  settings: settingsStore,
+  membership: membershipStore,
+  interests: interestsStore,
+  savedArticles: savedArticlesStore,
+  participation: participationStore,
+  media: mediaStore,
+  video: videoStore,
+};

@@ -61,9 +61,9 @@ import { icons } from '@correctiv/app-core/ui/icons';
 import type { ArticleDetail } from '@correctiv/app-core/types/models';
 import { loadArticle, buildReaderHtml } from '../../services/article.service';
 import { useNavigation } from '../../composables/useNavigation';
-import { useSettingsStore } from '@correctiv/app-core/stores/settings';
-import { useSavedArticlesStore } from '@correctiv/app-core/stores/savedArticles';
-import { useMembershipStore } from '@correctiv/app-core/stores/membership';
+import { useSettingsStore } from '../../stores/core-bindings';
+import { useSavedArticlesStore } from '../../stores/core-bindings';
+import { useMembershipStore } from '../../stores/core-bindings';
 import { useJoinFlow } from '../../composables/useJoinFlow';
 import ArticleReaderPage from './ArticleReaderPage.vue';
 

@@ -26,6 +26,12 @@ const FORBIDDEN = [
   { pattern: /^react-native/, why: 'React Native' },
   { pattern: /^expo(-|$)/, why: 'Expo' },
   { pattern: /^node:/, why: 'Node built-in (the core runs on device and in a browser too)' },
+  // The core was Pinia-based until the React Native pivot; these two keep it from
+  // drifting back. A UI framework in here would re-tie the core to one host, which
+  // is exactly what the stores were rewritten to zustand/vanilla to avoid.
+  { pattern: /^vue$|^@vue\//, why: 'Vue (hosts bind the stores themselves)' },
+  { pattern: /^pinia$/, why: 'Pinia (replaced by zustand/vanilla — see ADR 0004)' },
+  { pattern: /^react$|^react-dom$/, why: 'React (hosts bind the stores themselves)' },
 ];
 
 function sourceFiles(dir: string): string[] {

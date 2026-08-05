@@ -116,7 +116,7 @@ import CalloutDetailPage from './CalloutDetailPage.vue';
 import FaktenforumPage from './FaktenforumPage.vue';
 import AbrissAtlasPage from './AbrissAtlasPage.vue';
 import { useNavigation } from '../../composables/useNavigation';
-import { useParticipationStore } from '@correctiv/app-core/stores/participation';
+import { useParticipationStore } from '../../stores/core-bindings';
 import { formatNumberDe } from '@correctiv/app-core/lib/format';
 
 const { navigate } = useNavigation();

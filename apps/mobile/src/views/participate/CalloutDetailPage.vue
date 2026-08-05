@@ -66,7 +66,7 @@ import { icons } from '@correctiv/app-core/ui/icons';
 import type { Callout } from '@correctiv/app-core/data/callouts';
 import CalloutFormPage from './CalloutFormPage.vue';
 import { useNavigation } from '../../composables/useNavigation';
-import { useParticipationStore } from '@correctiv/app-core/stores/participation';
+import { useParticipationStore } from '../../stores/core-bindings';
 import { formatNumberDe } from '@correctiv/app-core/lib/format';
 
 const props = defineProps<{ callout: Callout }>();

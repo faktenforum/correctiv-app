@@ -163,8 +163,8 @@
 import { ref, watch } from 'nativescript-vue';
 import { $closeModal } from 'nativescript-vue';
 import { interests as allInterests } from '@correctiv/app-core/data/interests';
-import { useInterestsStore } from '@correctiv/app-core/stores/interests';
-import { useSettingsStore } from '@correctiv/app-core/stores/settings';
+import { useInterestsStore } from '../../stores/core-bindings';
+import { useSettingsStore } from '../../stores/core-bindings';
 import { useJoinFlow } from '../../composables/useJoinFlow';
 import { useThemeForModal, isDarkAppearance } from '../../composables/useTheme';
 import { setNavBarOnWindow, BRAND_RED } from '../../lib/system-bars';

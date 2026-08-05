@@ -114,9 +114,9 @@ import { ref, computed } from 'nativescript-vue';
 import { Utils } from '@nativescript/core';
 import { icons } from '@correctiv/app-core/ui/icons';
 import SectionHeader from '../../components/ui/SectionHeader.vue';
-import { useSettingsStore } from '@correctiv/app-core/stores/settings';
-import { useMembershipStore } from '@correctiv/app-core/stores/membership';
-import { useInterestsStore } from '@correctiv/app-core/stores/interests';
+import { useSettingsStore } from '../../stores/core-bindings';
+import { useMembershipStore } from '../../stores/core-bindings';
+import { useInterestsStore } from '../../stores/core-bindings';
 import { useNavigation } from '../../composables/useNavigation';
 
 const settings = useSettingsStore();

@@ -38,13 +38,13 @@ import UnifiedPlayer from './components/shell/UnifiedPlayer.vue';
 import OnboardingModal from './views/modals/OnboardingModal.vue';
 import ClubInviteSheet from './components/sheets/ClubInviteSheet.vue';
 import { useAudioStore } from './stores/audio';
-import { useVideoStore } from '@correctiv/app-core/stores/video';
+import { useVideoStore } from './stores/core-bindings';
 import HomePage from './views/home/HomePage.vue';
 import DiscoverPage from './views/discover/DiscoverPage.vue';
 import MediaPage from './views/media/MediaPage.vue';
 import ParticipatePage from './views/participate/ParticipatePage.vue';
 import ProfilePage from './views/profile/ProfilePage.vue';
-import { useSettingsStore, type TabId } from '@correctiv/app-core/stores/settings';
+import { useSettingsStore, type TabId } from './stores/core-bindings';
 import { useThemeController, isDarkAppearance } from './composables/useTheme';
 import { applyThemeDefault } from './lib/system-bars';
 

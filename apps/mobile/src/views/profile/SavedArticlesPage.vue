@@ -58,7 +58,7 @@
 <script setup lang="ts">
 import { icons } from '@correctiv/app-core/ui/icons';
 import ArticleReaderPage from '../reader/ArticleReaderPage.vue';
-import { useSavedArticlesStore } from '@correctiv/app-core/stores/savedArticles';
+import { useSavedArticlesStore } from '../../stores/core-bindings';
 import { useNavigation } from '../../composables/useNavigation';
 import { formatDateShortDe } from '@correctiv/app-core/lib/format';
 
