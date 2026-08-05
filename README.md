@@ -53,6 +53,10 @@ sibling `design-entwurf/project` repo. It stays the design source of truth — a
 is about to stop being the thing at that URL, because `apps/mobile-rn` now produces
 a real web build of the actual app ([ADR 0004](adr/0004-react-native-pivot.md)).
 
+For how far the built app has got: [`screens/`](screens/) holds every screen of the
+draft, the NativeScript build and the Expo build shot the same way, side by side,
+with the remaining divergences named.
+
 ## Requirements
 
 - Node ≥ 20.19
@@ -253,6 +257,10 @@ apps/mobile-rn/             @correctiv/mobile-rn — the Expo app (iOS, Android,
   __tests__/                jest-expo, incl. the web-target guard
   scripts/                  generate-tokens, embed-fonts, fetch-offline-articles
   app.json  metro.config.js tailwind.config.js  babel.config.js
+
+screens/                    every screen in all three versions, shot the same way
+  draft/ nativescript/ expo/ compare/   see screens/README.md for what the comparison found
+  tools/                    the capture scripts (emulator tour, draft tour)
 ```
 
 **Why the directory is `packages/app-core` and not `packages/core`:** `@nativescript/vite`
@@ -295,6 +303,8 @@ sync so the trap cannot be re-armed by a "consistency" rename. Details in the AD
 | **Expo:** Metro's `getDefaultConfig` assumes a single-project layout, so in this workspace `packages/app-core` is invisible and hoisted deps do not resolve | `watchFolders` + `resolver.nodeModulesPaths` + `disableHierarchicalLookup` in `apps/mobile-rn/metro.config.js` |
 | A token bridge that searches **upwards** for its source can find a *foreign* checkout: here one at `17b87c8` while the repo's own copy was `501ee10`, so a developer and CI would generate from different sources and call it agreement | tokens vendored into [`tokens/`](tokens/README.md), resolved to exactly one path by `scripts/tokens-source.mjs`; drift check now unconditional |
 | Counting `../` levels to reach a shared file breaks on the next move — a hard-coded depth silently broke both token bridges when the apps moved into `apps/*` | resolve via a marker (root `package.json` name + `workspaces`), not by depth |
+| **NativeWind:** `tailwind.config.js` replaces Tailwind's spacing scale with the design system's, which steps **2px per unit and stops at 48**. Every numeric utility then means something else than it says — `w-10` is 20px, `w-32` is 64px — and anything above 48 does not exist, so NativeWind drops it in silence and the element sizes to its content. `w-64` on a rail card turned into a full-screen black rectangle, because `aspectRatio` scaled the height off the title's width. Build, typecheck and 120 tests stayed green | named tokens for spacing (`p-s`, `gap-m`), pixel sizes from `apps/mobile-rn/src/lib/theme/sizes.ts`, and `__tests__/no-numeric-utilities.test.ts` fails on any numeric size or spacing class. Found by putting emulator screenshots next to the draft — see [`screens/`](screens/) |
+| **expo-image:** a thumbnail that cannot be loaded gets expo-image's own broken-image glyph on a black field, which reads as an app defect. On this project failing thumbnails are routine (see the YR-chain row above) | wrap remote previews in `components/ui/Thumbnail`, which degrades to an empty frame |
 
 ## Licensing & attribution
 
