@@ -1,0 +1,24 @@
+{
+  "name": "@correctiv/app-core",
+  "description": "Platform-free core of the CORRECTIV app: models, feed/article parsing, HTTP, caching and Pinia stores. Imports no platform SDK — hosts supply capabilities via ports.",
+  "version": "1.0.0",
+  "private": true,
+  "license": "AGPL-3.0-or-later",
+  "type": "module",
+  "exports": {
+    ".": "./src/index.ts",
+    "./*": "./src/*"
+  },
+  "peerDependencies": {
+    "pinia": ">=3"
+  },
+  "devDependencies": {
+    "pinia": "~3.0.4",
+    "vue": "^3.5.38"
+  },
+  "scripts": {
+    "typecheck": "tsc --noEmit",
+    "test": "vitest run",
+    "test:watch": "vitest"
+  }
+}

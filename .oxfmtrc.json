@@ -1,0 +1,27 @@
+{
+  "$schema": "./node_modules/oxfmt/configuration_schema.json",
+  "singleQuote": true,
+  "semi": true,
+  "tabWidth": 2,
+  "printWidth": 100,
+  "trailingComma": "all",
+  "endOfLine": "lf",
+  "insertFinalNewline": true,
+  "bracketSpacing": true,
+  "arrowParens": "always",
+  "vueIndentScriptAndStyle": false,
+  "ignorePatterns": [
+    "docs/**",
+    "media/**",
+    "apps/mobile/App_Resources/**",
+    ".github/**",
+    "**/*.md",
+    "**/*.scss",
+    "apps/mobile/src/assets/**",
+    "apps/mobile/src/fonts/**",
+    "packages/app-core/test/__fixtures__/**",
+    "**/*.d.mts",
+    "package-lock.json"
+  ],
+  "sortPackageJson": false
+}

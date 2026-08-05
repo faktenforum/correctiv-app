@@ -1,0 +1,60 @@
+{
+  "$schema": "./node_modules/oxlint/configuration_schema.json",
+  "plugins": ["typescript", "unicorn", "oxc", "vue", "import", "promise"],
+  "categories": {
+    "correctness": "error",
+    "suspicious": "warn",
+    "perf": "warn"
+  },
+  "env": {
+    "es2022": true,
+    "browser": true
+  },
+  "globals": {
+    "__ANDROID__": "readonly",
+    "__IOS__": "readonly",
+    "__VISIONOS__": "readonly",
+    "__DEV__": "readonly",
+    "java": "readonly",
+    "android": "readonly",
+    "androidx": "readonly",
+    "NSObject": "readonly",
+    "UIApplication": "readonly"
+  },
+  "ignorePatterns": [
+    "docs/**",
+    "media/**",
+    "apps/mobile/platforms/**",
+    "apps/mobile/src/assets/**",
+    "packages/app-core/test/__fixtures__/**"
+  ],
+  "rules": {
+    "no-console": "off",
+
+    "no-underscore-dangle": "off",
+
+    "unicorn/no-array-sort": "off",
+
+    "oxc/no-map-spread": "warn"
+  },
+  "overrides": [
+    {
+      "files": ["**/*.d.ts"],
+      "rules": {
+        "typescript/triple-slash-reference": "off"
+      }
+    },
+    {
+      "files": ["apps/mobile/scripts/**"],
+      "rules": {
+        "no-await-in-loop": "off"
+      }
+    },
+    {
+      "files": ["apps/mobile/src/views/reader/ArticleReaderPage.vue"],
+      "rules": {
+        "import/no-self-import": "off"
+      }
+    }
+  ]
+}
