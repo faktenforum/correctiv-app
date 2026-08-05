@@ -1,4 +1,4 @@
-import { act, create, type ReactTestRenderer } from 'react-test-renderer';
+import { act } from 'react-test-renderer';
 
 import { bonusMedia } from '@correctiv/app-core/data/backstage';
 import { PODCAST_CHANNELS } from '@correctiv/app-core/data/feeds.config';
@@ -49,7 +49,8 @@ jest.mock('@expo/vector-icons', () => {
 });
 
 import { router } from 'expo-router';
-import { SafeAreaProvider, type Metrics } from 'react-native-safe-area-context';
+
+import { press, render, renderedText } from './support/rendering';
 
 import MediathekScreen from '@/app/(tabs)/mediathek';
 import { playEpisode, playPreview } from '@/lib/audio/player';
@@ -59,10 +60,7 @@ const push = router.push as jest.Mock;
 const playEpisodeMock = playEpisode as jest.Mock;
 const playPreviewMock = playPreview as jest.Mock;
 
-const METRICS: Metrics = {
-  frame: { x: 0, y: 0, width: 402, height: 760 },
-  insets: { top: 47, left: 0, right: 0, bottom: 34 },
-};
+const BONUS = bonusMedia[0];
 
 const initialMembership = coreStores.membership.getState();
 const initialPodcasts = coreStores.podcasts.getState();
@@ -90,8 +88,8 @@ beforeEach(() => {
   act(() => {
     coreStores.membership.setState(initialMembership, true);
     // Everything starts 'ready', or the screen's lazy loaders fire real network
-    // requests on mount — which is both slow and a source of stray console noise
-    // from the store's error path.
+    // requests on mount — slow, and a source of stray console noise from the
+    // store's error path.
     coreStores.media.setState(
       {
         ...initialMedia,
@@ -107,61 +105,16 @@ beforeEach(() => {
   });
 });
 
-const mounted: ReactTestRenderer[] = [];
-afterEach(() => {
-  act(() => {
-    for (const tree of mounted) tree.unmount();
-  });
-  mounted.length = 0;
-});
-
-function render(): ReactTestRenderer {
-  let tree!: ReactTestRenderer;
-  act(() => {
-    tree = create(
-      <SafeAreaProvider initialMetrics={METRICS}>
-        <MediathekScreen />
-      </SafeAreaProvider>,
-    );
-  });
-  mounted.push(tree);
-  return tree;
-}
-
-function renderedText(tree: ReactTestRenderer): string {
-  const walk = (node: unknown): string[] => {
-    if (typeof node === 'string') return [node];
-    if (Array.isArray(node)) return node.flatMap(walk);
-    if (node && typeof node === 'object' && 'children' in node) {
-      return walk((node as { children: unknown }).children);
-    }
-    return [];
-  };
-  return walk(tree.toJSON()).join('\n');
-}
-
-/** Presses a Pressable by its accessibility label. */
-function press(tree: ReactTestRenderer, label: string): void {
-  const node = tree.root.find(
-    (n) => n.props?.accessibilityLabel === label && typeof n.props?.onPress === 'function',
-  );
-  act(() => {
-    node.props.onPress();
-  });
-}
-
-const BONUS = bonusMedia[0];
-
 describe('Mediathek', () => {
   it('offers radio, podcasts and the club bonus', () => {
-    const text = renderedText(render());
+    const text = renderedText(render(<MediathekScreen />));
     expect(text).toContain('Salon5 Radio');
     expect(text).toContain('Pausenbrot');
     expect(text).toContain(BONUS.title);
   });
 
   it('opens a series page rather than playing the whole show', () => {
-    press(render(), 'Pausenbrot');
+    press(render(<MediathekScreen />), 'Pausenbrot');
     expect(push).toHaveBeenCalledWith({
       pathname: '/serie/[id]',
       params: { id: PODCAST_CHANNELS[0] },
@@ -177,13 +130,13 @@ describe('Mediathek', () => {
         },
       });
     });
-    expect(renderedText(render())).toContain('Videos derzeit nicht erreichbar');
+    expect(renderedText(render(<MediathekScreen />))).toContain('Videos derzeit nicht erreichbar');
   });
 });
 
 describe('the club bonus gate', () => {
   it('gives a guest 60 seconds, and says so before the tap', () => {
-    const tree = render();
+    const tree = render(<MediathekScreen />);
     expect(renderedText(tree)).toContain('60 Sek. anspielen');
 
     press(tree, `${BONUS.title} abspielen`);
@@ -200,7 +153,7 @@ describe('the club bonus gate', () => {
     act(() => {
       coreStores.membership.getState().join(10, 'monatlich', 'Test');
     });
-    const tree = render();
+    const tree = render(<MediathekScreen />);
 
     expect(renderedText(tree)).not.toContain('60 Sek. anspielen');
     press(tree, `${BONUS.title} abspielen`);
@@ -211,10 +164,10 @@ describe('the club bonus gate', () => {
 
   it('keeps the club badge either way', () => {
     // The badge is the invitation's label, not a lock — it stays for members too.
-    expect(renderedText(render())).toContain('CLUB');
+    expect(renderedText(render(<MediathekScreen />))).toContain('CLUB');
     act(() => {
       coreStores.membership.getState().join(10, 'monatlich', 'Test');
     });
-    expect(renderedText(render())).toContain('CLUB');
+    expect(renderedText(render(<MediathekScreen />))).toContain('CLUB');
   });
 });

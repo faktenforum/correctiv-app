@@ -37,6 +37,10 @@ export function Button({
   return (
     <Pressable
       accessibilityRole="button"
+      // Explicit, rather than relying on the label being read off the child Text —
+      // and it gives tests a stable handle on a button.
+      accessibilityLabel={title}
+      accessibilityState={{ disabled: Boolean(disabled) }}
       disabled={disabled}
       className={[
         'rounded-md px-m py-s items-center justify-center active:opacity-80',
