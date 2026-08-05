@@ -3,6 +3,7 @@
  * (per concept). Live projects reference feed keys; external ones deep-link.
  */
 import type { FeedKey } from '../types/models';
+import { interests } from './interests';
 
 export interface Project {
   id: string;
@@ -187,3 +188,35 @@ export const projectGroups: ProjectGroup[] = [
     ],
   },
 ];
+
+/**
+ * The project behind an id — what a route like `/projekt/<id>` needs.
+ *
+ * TWO id spaces arrive here, and that is deliberate: real project ids from
+ * `projectGroups`, and topic ids from `interests` (the chip rail on Entdecken,
+ * which offers every interest that has a feed). They OVERLAP — `klima`, `lokal`
+ * and `schweiz` exist in both — and the project always wins, because its page
+ * is strictly the richer one: own description, own action, no invented copy.
+ *
+ * That is one behaviour change against the NativeScript app, which built a
+ * synthetic topic page for every chip and so showed "Alle Beiträge zum Thema
+ * Klima." where a real project description existed. Only interests WITHOUT a
+ * project of the same id still get the synthetic page.
+ */
+export function resolveProject(id: string): Project | null {
+  for (const group of projectGroups) {
+    const project = group.projects.find((p) => p.id === id);
+    if (project) return project;
+  }
+
+  // A topic without its own project page: build one from the interest. Only
+  // interests with a feed can produce a page — there would be nothing to show.
+  const topic = interests.find((i) => i.id === id && i.feed);
+  if (!topic) return null;
+  return {
+    id: topic.id,
+    name: topic.label,
+    description: `Alle Beiträge zum Thema ${topic.label}.`,
+    feed: topic.feed,
+  };
+}

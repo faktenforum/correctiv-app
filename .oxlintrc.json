@@ -96,6 +96,18 @@
       "rules": {
         "import/no-self-import": "off"
       }
+    },
+    {
+      // The search screen exists for nothing but searching, and it is only ever
+      // reached by an explicit tap on the search entry — so focusing the field is
+      // what the user just asked for, and it saves a second tap plus a keyboard
+      // animation. jsx-a11y's concern (focus stolen on page load, context lost)
+      // applies to web forms that happen to contain an input, not to a pushed
+      // search route. The field carries an accessibilityLabel.
+      "files": ["apps/mobile-rn/src/app/suche.tsx"],
+      "rules": {
+        "jsx-a11y/no-autofocus": "off"
+      }
     }
   ]
 }

@@ -81,15 +81,16 @@ prüft alle Workspaces zusammen); ESLint ist hier entfallen.
 
 ```
 src/
-  app/                 expo-router-Routen ((tabs)/ + artikel, …)
+  app/                  expo-router-Routen: (tabs)/ + artikel, suche, projekt/[id]
   components/ui/        Design-System (Typo, Button, Card, Badge, Chip, Screen, …)
-  components/feed|home/ Feed- und Home-Bausteine
+  components/feed|home|discover/  Feed-, Home- und Verzeichnis-Bausteine
   lib/theme/            Token-Brücke-Outputs + Typografie + Fonts
-  lib/feeds/            Quellen-Registry, RSS/Atom-Parser, Client, useFeed-Hook
+  lib/feeds/            nur Transport: client, useFeed, Suchkorpus für offline
+                        (Modell, Katalog und Parser kommen aus @correctiv/app-core)
   lib/articles/         Extraktion, Reader-HTML, og:image, Offline-Bundle
+  lib/discover/         projectTarget — was ein Tippen im Verzeichnis bedeutet
   lib/net/              cachedFetch (network-first / cache-first Policies)
-  lib/store/            Zustand-Stores (persist)
-data/                   Beispieldaten (Form künftiger API-Antworten)
+  lib/store/            React-Bindung an die Core-Stores (zustand/vanilla)
 scripts/                Generatoren (Token-Brücke, Fonts, Offline-Artikel)
 __tests__/ + __fixtures__/  Unit-Tests gegen echte Feed-/Artikel-Snapshots
 ```
@@ -104,20 +105,22 @@ Icecast-Streaming + Hintergrund-Audio + Lockscreen-Controls). Audio ist in `src/
 ## Status (Roadmap aus dem Konzept)
 
 - ✅ **M0** Fundament · ✅ **M1** Datenlayer + Home · ✅ **M2** Artikel-Reader
+- ✅ **M7** Entdecken/Suche — Verzeichnis (7 Gruppen), Themenschiene, Volltextsuche
+  mit lokalem Rückfall, Projekt- und Themenseiten
 - ✅ **Web-Target** — im Browser verifiziert: Home mit vollem Inhalt und allen fünf Tabs,
-  Reader mit Artikel im iframe (korrektes `h1`, 19 Absätze, eingebettete Fonts)
-- ⏳ M3 Audio/Mediathek · M4 Mitmachen · M5 Club & Profil · M6 Onboarding + Demo-Härtung · M7 Entdecken/Suche
+  Reader mit Artikel im iframe (korrektes `h1`, 19 Absätze, eingebettete Fonts),
+  Entdecken mit allen 17 Einträgen, jede Projektseite unter ihrer eigenen URL
+- ⏳ M3 Audio/Mediathek · M4 Mitmachen · M5 Club & Profil · M6 Onboarding + Demo-Härtung
 
-Die Screens `entdecken`, `mediathek`, `mitmachen` und `profil` sind noch Stubs. Vorlage
+Die Screens `mediathek`, `mitmachen` und `profil` sind noch Stubs. Vorlage
 für den Nachbau ist [`../mobile`](../mobile) — dort liegen 43 fertige SFCs.
 
 ## Was noch aus dem Core kommen soll
 
-`src/lib/models.ts`, `src/lib/format.ts`, `src/lib/feeds/*` und
-`src/lib/articles/extract.ts` doppeln rund 560 LOC aus `@correctiv/app-core`. Der Core
-gewinnt: seine `data/feeds.config.ts` ist eine **Obermenge** von `feeds/sources.ts` —
-dieselben zwei Fallen (Kategorie-Feeds, Icecast-HEAD), plus PeerTube-Migration,
-Castopod-Host und sieben kuratierte Shows. Umgekehrt sollen die zwei Cache-Policies aus
-`lib/net/cachedFetch.ts` in den Core wandern, dort aber hinter dessen `FileStore`-Port
-statt direkt auf AsyncStorage, damit sie auch auf Web tragen. Siehe
+Der Daten-Layer ist vereinheitlicht: Modell, Feed-Katalog und Parser kommen aus
+`@correctiv/app-core`, hier bleibt nur der Transport. Offen ist die Gegenrichtung —
+die zwei Cache-Policies aus `lib/net/cachedFetch.ts` sollen in den Core wandern,
+dort aber hinter dessen `FileStore`-Port statt direkt auf AsyncStorage, damit sie
+auch auf Web tragen. Der Port ist heute **synchron** und wird beim Start komplett
+hydriert; für ein Megabyte gecachter Feeds ist das die falsche Form. Siehe
 [ADR 0004](../../adr/0004-react-native-pivot.md).
