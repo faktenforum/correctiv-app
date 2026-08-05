@@ -172,7 +172,7 @@ Alle Aufwände sind **grobe Schätzungen** in Entwicklertagen. `[NICHT APP]` mar
 
 | # | Ziel | Dateien | ET | Fertig, wenn … |
 |---|---|---|---|---|
-| 0.1 | Stack-Entscheidung als ADR, Prototyp read-only archivieren, KONZEPT.md ablösen, README korrigieren | `docs/adr/0001…`, `KONZEPT.md`, `README.md` | 1 | ADR protokolliert, inkl. Falsifikationskriterien |
+| 0.1 | Stack-Entscheidung als ADR, Prototyp read-only archivieren, KONZEPT.md ablösen, README korrigieren | `adr/0001…`, `KONZEPT.md`, `README.md` | 1 | ADR protokolliert, inkl. Falsifikationskriterien |
 | 0.2 | AGPL-3.0 ablösen, Copyright-Abtretung in Vertragsvorlagen, Test-Keystore + Klartext-Passwort raus | `LICENSE`, `package.json`, `signing/` | 1 | Lizenz entschieden, Keys außerhalb des Repos |
 | 0.3 | Bundle-ID, App-Name, publizierende juristische Person festlegen | `nativescript.config.ts` bzw. `app.json` | 0,5 | vor Anlegen der Store-Accounts erledigt |
 | 0.4 | `[NICHT APP]` D-U-N-S-Nummer, Apple-Enrollment, EU-DSA-Trader-Status, Entitlement-Antrag | — | 2 | D-U-N-S beantragt (dauert Wochen!) |

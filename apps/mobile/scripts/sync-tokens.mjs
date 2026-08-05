@@ -1,5 +1,5 @@
 /**
- * Converts ../wp-design-tokens/css/theme.css into NativeScript-compatible SCSS.
+ * Converts the sibling wp-design-tokens/css/theme.css into NativeScript-compatible SCSS.
  *
  * NativeScript CSS knows no rem, no :root and no unitless line-height —
  * that is why this script is the only permitted way to bring tokens into
@@ -14,12 +14,38 @@
  *
  * Usage: npm run tokens
  */
-import { readFileSync, writeFileSync, mkdirSync } from 'node:fs';
+import { existsSync, readFileSync, writeFileSync, mkdirSync } from 'node:fs';
 import { dirname, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
-const SRC = resolve(__dirname, '../../wp-design-tokens/css/theme.css');
+
+/**
+ * The token repo is a SIBLING checkout, not a dependency of this repo — so its
+ * location depends on how deep this app sits. A hard-coded '../../' silently
+ * broke when the app moved from the repo root to apps/mobile/: it then pointed at
+ * apps/wp-design-tokens/, which does not exist. Nobody noticed, because the
+ * generated SCSS below is committed and the script is only run by hand.
+ *
+ * Walking up instead of counting levels means the next move cannot re-break it.
+ */
+function findThemeCss(from) {
+  for (let dir = from; ; dir = dirname(dir)) {
+    const candidate = resolve(dir, 'wp-design-tokens/css/theme.css');
+    if (existsSync(candidate)) return candidate;
+    if (dirname(dir) === dir) return null; // reached the filesystem root
+  }
+}
+
+const SRC = findThemeCss(__dirname);
+if (!SRC) {
+  throw new Error(
+    'wp-design-tokens/css/theme.css not found in any parent directory.\n' +
+      'It is a separate repo (github.com/correctiv/wp-design-tokens) and must be\n' +
+      'checked out as a sibling of this one — see README. Searched upwards from:\n' +
+      `  ${__dirname}`,
+  );
+}
 const OUT = resolve(__dirname, '../src/styles/tokens.generated.scss');
 
 const css = readFileSync(SRC, 'utf8');

@@ -6,7 +6,7 @@
 #   android-debug  — unsigned debug APK, so native/build breakage surfaces early
 #
 # The repo is an npm workspace: `npm ci` runs at the root, the NativeScript
-# project lives in apps/mobile (see docs/adr/0001-monorepo-and-platform-free-core.md).
+# project lives in apps/mobile (see adr/0001-monorepo-and-platform-free-core.md).
 name: CI
 
 on:

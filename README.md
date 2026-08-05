@@ -139,7 +139,7 @@ expects a `wp-design-tokens` checkout next to this repository. Never import
 ## Repository layout
 
 An npm workspace with two packages — see
-[`docs/adr/0001-monorepo-and-platform-free-core.md`](docs/adr/0001-monorepo-and-platform-free-core.md).
+[`adr/0001-monorepo-and-platform-free-core.md`](adr/0001-monorepo-and-platform-free-core.md).
 
 ```
 packages/app-core/          @correctiv/app-core — NO platform SDK, headless-testable
@@ -176,8 +176,8 @@ sync so the trap cannot be re-armed by a "consistency" rename. Details in the AD
 
 | Problem | Rule |
 | --- | --- |
-| Vite 8 / Rolldown builds this project but silently drops the NativeScript polyfills (`installPolyfills` 12x -> 0x, `XMLHttpRequest` 25x -> 2x) — every network call then fails on device with `XMLHttpRequest is not defined` while the build stays green | stay on Vite 7. See [ADR 0002](docs/adr/0002-vite-8-rolldown-evaluation.md) for the full measurement, what it fixes, and how to reproduce |
-| `@nativescript/vite` hijacks `@nativescript/core` if a `packages/core` dir exists two levels above the app | never name a workspace package directory `core` — ours is `packages/app-core` ([ADR 0001](docs/adr/0001-monorepo-and-platform-free-core.md)) |
+| Vite 8 / Rolldown builds this project but silently drops the NativeScript polyfills (`installPolyfills` 12x -> 0x, `XMLHttpRequest` 25x -> 2x) — every network call then fails on device with `XMLHttpRequest is not defined` while the build stays green | stay on Vite 7. See [ADR 0002](adr/0002-vite-8-rolldown-evaluation.md) for the full measurement, what it fixes, and how to reproduce |
+| `@nativescript/vite` hijacks `@nativescript/core` if a `packages/core` dir exists two levels above the app | never name a workspace package directory `core` — ours is `packages/app-core` ([ADR 0001](adr/0001-monorepo-and-platform-free-core.md)) |
 | `@nativescript/vite` only auto-applies a file named `app.css` | import `app.scss?inline` + `Application.addCss()` (see `apps/mobile/src/app.ts`) |
 | SFC `<style>` blocks are extracted but never applied at runtime | no `<style>` in `.vue` files — everything lives in `apps/mobile/src/styles/` |
 | Android `line-height` = extra spacing, iOS = total height | use the `ty-*` classes; values are generated per platform |

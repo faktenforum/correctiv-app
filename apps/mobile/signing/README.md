@@ -11,7 +11,7 @@ that testers can update in place (same signature = no uninstall needed).
 - key alias: `correctiv-test`
 
 **Never use this key for the Google Play Store or any production release.** For real
-releases, set the `ANDROID_KEYSTORE_*` repository secrets (see `../docs/release.md`);
+releases, set the `ANDROID_KEYSTORE_*` repository secrets (see `../../../RELEASE.md`);
 the workflow then signs with your real upload key instead and also builds the AAB.
 
 Regenerate (if ever needed):
