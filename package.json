@@ -1,6 +1,6 @@
 {
   "name": "correctiv-app",
-  "description": "CORRECTIV community app \u2014 npm workspace root (NativeScript mobile app + platform-free core).",
+  "description": "CORRECTIV community app — npm workspace root (NativeScript mobile app + platform-free core).",
   "version": "1.0.0",
   "private": true,
   "license": "AGPL-3.0-or-later",
@@ -23,7 +23,9 @@
     "oxfmt": "^0.61.0",
     "oxlint": "^1.76.0",
     "typescript": "~5.8.0",
-    "vitest": "^3.2.4"
+    "vitest": "^3.2.4",
+    "react": "19.2.3",
+    "react-dom": "19.2.3"
   },
   "scripts": {
     "check": "npm run typecheck && npm run lint && npm run format:check && npm run test",
