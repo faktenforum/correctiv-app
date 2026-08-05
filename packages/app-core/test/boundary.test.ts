@@ -26,6 +26,16 @@ const FORBIDDEN = [
   { pattern: /^react-native/, why: 'React Native' },
   { pattern: /^expo(-|$)/, why: 'Expo' },
   { pattern: /^node:/, why: 'Node built-in (the core runs on device and in a browser too)' },
+  // The core was Pinia-based until the React Native pivot; these two keep it from
+  // drifting back. A UI framework in here would re-tie the core to one host, which
+  // is exactly what rewriting the stores onto the core's own createStore avoided.
+  { pattern: /^vue$|^@vue\//, why: 'Vue (hosts bind the stores themselves)' },
+  { pattern: /^pinia$/, why: 'Pinia (replaced by stores/create-store — see ADR 0004)' },
+  // zustand resolves to its CommonJS build under @nativescript/vite, which broke
+  // the Android bundle. The core ships its own createStore instead; hosts may
+  // still use zustand for their bindings.
+  { pattern: /^zustand/, why: 'zustand (core has its own createStore — see ADR 0004)' },
+  { pattern: /^react$|^react-dom$/, why: 'React (hosts bind the stores themselves)' },
 ];
 
 function sourceFiles(dir: string): string[] {

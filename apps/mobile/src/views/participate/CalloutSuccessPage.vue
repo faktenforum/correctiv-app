@@ -33,8 +33,8 @@ import { computed } from 'nativescript-vue';
 import { Frame } from '@nativescript/core';
 import { icons } from '@correctiv/app-core/ui/icons';
 import type { Callout } from '@correctiv/app-core/data/callouts';
-import { useParticipationStore } from '@correctiv/app-core/stores/participation';
-import { useSettingsStore } from '@correctiv/app-core/stores/settings';
+import { useParticipationStore } from '../../stores/core-bindings';
+import { useSettingsStore } from '../../stores/core-bindings';
 import { formatNumberDe } from '@correctiv/app-core/lib/format';
 
 const props = defineProps<{ callout: Callout }>();

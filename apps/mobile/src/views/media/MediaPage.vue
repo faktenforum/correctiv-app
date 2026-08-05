@@ -124,13 +124,13 @@ import RemoteImage from '../../components/ui/RemoteImage.vue';
 import MediaCard from '../../components/cards/MediaCard.vue';
 import SeriesPage from './SeriesPage.vue';
 import VideoPlayerPage from './VideoPlayerPage.vue';
-import { useVideoStore } from '@correctiv/app-core/stores/video';
+import { useVideoStore } from '../../stores/core-bindings';
 import type { PodcastSeries } from '@correctiv/app-core/data/podcasts';
 import { bonusMedia, type BonusMedia } from '@correctiv/app-core/data/backstage';
-import { useMediaStore } from '@correctiv/app-core/stores/media';
+import { useMediaStore } from '../../stores/core-bindings';
 import { usePodcastsStore } from '../../stores/podcasts';
 import { useAudioStore } from '../../stores/audio';
-import { useMembershipStore } from '@correctiv/app-core/stores/membership';
+import { useMembershipStore } from '../../stores/core-bindings';
 import { useNavigation } from '../../composables/useNavigation';
 import { formatDateShortDe, formatTimeHm } from '@correctiv/app-core/lib/format';
 

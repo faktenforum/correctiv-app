@@ -8,7 +8,7 @@ import { ReaderView } from '@/components/reader/ReaderView';
 import { Typo } from '@/components/ui';
 import { loadArticle } from '@/lib/articles/loadArticle';
 import { buildReaderHtml, type ReaderArticle } from '@/lib/articles/readerHtml';
-import { useSavedStore } from '@/lib/store/saved';
+import { coreActions, useIsSaved } from '@/lib/store/core';
 import { colors } from '@/lib/theme';
 
 /**
@@ -25,8 +25,9 @@ export default function ArtikelScreen() {
   }>();
   const [article, setArticle] = useState<ReaderArticle | null>(null);
   const [error, setError] = useState(false);
-  const { isSaved, toggle } = useSavedStore();
-  const saved = url ? isSaved(url) : false;
+  // Subscribes to just this one article's saved flag, so bookmarking another
+  // article does not re-render the reader.
+  const saved = useIsSaved(url ?? '');
 
   useEffect(() => {
     if (!url) return;
@@ -95,7 +96,15 @@ export default function ArtikelScreen() {
           {url && (
             <HeaderButton
               icon={saved ? 'bookmark' : 'bookmark-outline'}
-              onPress={() => toggle({ url, title: title ?? article?.title ?? '' })}
+              onPress={() =>
+                coreActions.savedArticles().toggle({
+                  url,
+                  title: title ?? article?.title ?? '',
+                  topline: article?.badge ?? null,
+                  rating: article?.rating ?? null,
+                  savedAt: new Date().toISOString(),
+                })
+              }
             />
           )}
         </View>

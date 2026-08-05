@@ -122,7 +122,7 @@
 import { computed } from 'nativescript-vue';
 import { Screen, Utils } from '@nativescript/core';
 import { icons } from '@correctiv/app-core/ui/icons';
-import { useVideoStore } from '@correctiv/app-core/stores/video';
+import { useVideoStore } from '../../stores/core-bindings';
 import { formatDateDe, formatMinutesDe, formatNumberDe } from '@correctiv/app-core/lib/format';
 
 const video = useVideoStore();

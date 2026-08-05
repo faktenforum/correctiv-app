@@ -118,15 +118,51 @@ Falle für den nächsten Test: **mit Clean URLs servieren.** `python3 -m http.se
   sichtbar ist. **Offene Entscheidung für CORRECTIV**, nicht stillschweigend umgestellt.
 - **Zwei Apps im CI**, bis der Swap erfolgt.
 
+## Erledigt nach dieser Entscheidung (2026-08-05)
+
+**Der Core ist frameworkfrei.** Die 8 Stores laufen auf `zustand/vanilla`;
+`boundary.test.ts` verbietet jetzt zusätzlich `vue`, `pinia`, `react` und `react-dom`.
+Beide Hosts binden selbst: `apps/mobile/src/stores/core-bindings.ts` (Vue-`reactive`-Spiegel,
+reproduziert die alte Pinia-Oberfläche, weshalb keine einzige Aufrufstelle umziehen musste)
+und `apps/mobile-rn/src/lib/store/core.ts` (zustand `useStore`).
+
+Eine Falle dabei, weil sie sich nicht meldet: **abgeleitete Werte sind exportierte
+Selektoren, die State als Argument nehmen — keine Methoden am Store.** Eine Methode
+schließt über das `get()` des Vanilla-Stores; ein Vue-`computed`, das sie aufruft, liest
+damit State, den Vue nie gesehen hat. Die Abhängigkeit wird nicht registriert, das Template
+hört still auf zu aktualisieren — kein Fehler, keine Warnung, Typecheck und Android-Build
+bleiben grün. Genau so hatte ich es zuerst geschrieben;
+`apps/mobile/test/core-bindings.test.ts` hat es gefunden und schlägt nachweislich fehl,
+wenn man es wieder so baut.
+
+**Der Port war synchron, AsyncStorage ist es nicht.** `KeyValueStore.getString` ist
+synchron — geerbt von NativeScripts `ApplicationSettings`.
+`apps/mobile-rn/src/lib/platform/expo.ts` löst das mit einem In-Memory-Spiegel:
+`hydratePlatform()` lädt einmal vor dem ersten Render, Lesen kommt aus dem Speicher,
+Schreiben fließt im Hintergrund ab. Gefährlich ist **Lesen vor der Hydration** — die App
+startet dann mit leerem State und überschreibt beim ersten Schreiben den echten, was sich
+als „Einstellungen setzen sich zufällig zurück" zeigt. Deshalb hängt der Render an der
+Hydration und `persist()` wird erst danach registriert. Ein Codepfad deckt alle drei
+Targets, weil AsyncStorage einen Web-Build auf localStorage-Basis mitbringt.
+
+`apps/mobile-rn/src/lib/store/saved.ts` ist entfallen — der Reader nutzt den
+`savedArticles`-Store des Core. Damit fährt derselbe Store einen Vue- und einen
+React-Screen.
+
 ## Offen
 
-- `packages/app-core` ist noch Pinia-gebunden (8 Stores, 321 LOC ≈ 13 % des Core). Plan:
-  `zustand/vanilla` im Core, React-Bindung in der App; `boundary.test.ts` verbietet dann
-  zusätzlich `vue` und `pinia`.
-- Der Expo-Prototyp dupliziert ~560 LOC des Core (`models`, `format`, `feeds/*`,
-  `articles/extract`). Der Core gewinnt — `data/feeds.config.ts` ist eine Obermenge von
-  `sources.ts` (dieselben zwei Fallen, plus PeerTube-Migration, Castopod-Host und sieben
-  kuratierte Shows).
+- Der Expo-Prototyp dupliziert noch die **Modelltypen** (`models.ts`, `format.ts`,
+  `feeds/*`, `articles/extract.ts`). Sie sind nicht bloß anders benannt, sondern anders
+  geschnitten: `FeedKey` (6 Werte, `recherchen`) gegen `FeedSourceId` (7, `haupt` +
+  `europe`), `url` gegen `link`, `feed` gegen `sourceId`, `author?: string` gegen
+  `authors: string[]`, `ArticleDetail` gegen `Article`. Vereinheitlichen heißt: Daten-Layer
+  plus 11 Komponentendateien umschreiben — direkt bevor Phase 4 die meisten dieser Screens
+  ohnehin neu baut. Deshalb **pro Screen beim Neubau**, nicht als Big Bang.
+  Der Core gewinnt dabei: `data/feeds.config.ts` ist eine Obermenge von `sources.ts`
+  (dieselben zwei Fallen, plus PeerTube-Migration, Castopod-Host und sieben kuratierte
+  Shows) — es fehlt ihm nur `europe`.
+- Die zwei Cache-Policies aus `lib/net/cachedFetch.ts` sollen in den Core wandern, dort
+  aber hinter dessen `FileStore`-Port statt direkt auf AsyncStorage.
 - GitHub Pages steht noch auf `legacy` (`main:/docs`) und serviert den Designentwurf.
   Umstellen auf `build_type: workflow`, damit der Web-Build deployt wird ohne
   Build-Output zu committen.

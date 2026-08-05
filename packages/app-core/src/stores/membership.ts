@@ -1,36 +1,46 @@
-import { defineStore } from 'pinia';
+import { createStore } from './create-store';
+
+export type MembershipInterval = 'monatlich' | 'jährlich';
 
 /**
  * Club membership — local state (the prototype simulates joining/payment).
- * isMember is the central demo lever: all club touchpoints read it
- * reactively in the template render path (NEVER snapshot it into local refs!).
+ * isMember is the central demo lever: all club touchpoints must read it through
+ * the binding on every render, never snapshot it into a local variable, or the
+ * app-wide status flip stops being visible.
  */
-export const useMembershipStore = defineStore('membership', {
-  state: () => ({
-    isMember: false,
-    name: '' as string,
-    memberSince: null as string | null,
-    amountEur: 10,
-    interval: 'monatlich' as 'monatlich' | 'jährlich',
-    paused: false,
-  }),
-  actions: {
-    join(amountEur: number, interval: 'monatlich' | 'jährlich', name?: string) {
-      this.isMember = true;
-      if (name) this.name = name;
-      this.memberSince = this.memberSince ?? new Date().toISOString();
-      this.amountEur = amountEur;
-      this.interval = interval;
-      this.paused = false;
-    },
-    /** Dev helper for demo resets (settings) */
-    reset() {
-      this.isMember = false;
-      this.name = '';
-      this.memberSince = null;
-      this.amountEur = 10;
-      this.interval = 'monatlich';
-      this.paused = false;
-    },
-  },
-});
+export interface MembershipState {
+  isMember: boolean;
+  name: string;
+  memberSince: string | null;
+  amountEur: number;
+  interval: MembershipInterval;
+  paused: boolean;
+
+  join: (amountEur: number, interval: MembershipInterval, name?: string) => void;
+  /** Dev helper for demo resets (settings) */
+  reset: () => void;
+}
+
+const INITIAL = {
+  isMember: false,
+  name: '',
+  memberSince: null as string | null,
+  amountEur: 10,
+  interval: 'monatlich' as MembershipInterval,
+  paused: false,
+};
+
+export const membershipStore = createStore<MembershipState>((set, get) => ({
+  ...INITIAL,
+
+  join: (amountEur, interval, name) =>
+    set({
+      isMember: true,
+      ...(name ? { name } : {}),
+      memberSince: get().memberSince ?? new Date().toISOString(),
+      amountEur,
+      interval,
+      paused: false,
+    }),
+  reset: () => set({ ...INITIAL }),
+}));

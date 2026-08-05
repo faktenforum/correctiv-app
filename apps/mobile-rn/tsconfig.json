@@ -4,7 +4,13 @@
     "strict": true,
     "paths": {
       "@/*": ["./src/*"],
-      "@/assets/*": ["./assets/*"]
+      "@/assets/*": ["./assets/*"],
+      // Point at the core's sources directly. It ships TypeScript, not a build,
+      // so without these tsc cannot follow the subpath exports and reports every
+      // @correctiv/app-core/* import as a missing module. Metro resolves them at
+      // runtime through the workspace symlink and the package's exports map.
+      "@correctiv/app-core": ["../../packages/app-core/src/index.ts"],
+      "@correctiv/app-core/*": ["../../packages/app-core/src/*"]
     }
   },
   "include": ["**/*.ts", "**/*.tsx", ".expo/types/**/*.ts", "expo-env.d.ts", "nativewind-env.d.ts"],

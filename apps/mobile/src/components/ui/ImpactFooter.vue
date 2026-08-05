@@ -19,7 +19,7 @@
 </template>
 
 <script setup lang="ts">
-import { useMembershipStore } from '@correctiv/app-core/stores/membership';
+import { useMembershipStore } from '../../stores/core-bindings';
 import { useJoinFlow } from '../../composables/useJoinFlow';
 
 const membership = useMembershipStore();

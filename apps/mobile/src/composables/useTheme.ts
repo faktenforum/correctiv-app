@@ -1,6 +1,6 @@
 import { onMounted, watch, ref } from 'nativescript-vue';
 import { Application } from '@nativescript/core';
-import { useSettingsStore } from '@correctiv/app-core/stores/settings';
+import { useSettingsStore } from '../stores/core-bindings';
 
 // Increments on every ACTUAL appearance flip. CollectionView recycles its cells
 // natively and does not re-apply CSS when the root class changes, so pages with a

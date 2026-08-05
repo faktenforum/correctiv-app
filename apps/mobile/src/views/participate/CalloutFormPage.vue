@@ -127,7 +127,7 @@ import { icons } from '@correctiv/app-core/ui/icons';
 import type { Callout, CalloutComponent } from '@correctiv/app-core/data/callouts';
 import CalloutSuccessPage from './CalloutSuccessPage.vue';
 import { useNavigation } from '../../composables/useNavigation';
-import { useParticipationStore } from '@correctiv/app-core/stores/participation';
+import { useParticipationStore } from '../../stores/core-bindings';
 
 const props = defineProps<{ callout: Callout }>();
 const { navigate, goBack } = useNavigation();

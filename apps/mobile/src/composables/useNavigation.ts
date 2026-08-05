@@ -1,7 +1,7 @@
 import { $navigateTo, $navigateBack } from 'nativescript-vue';
 import type { NavigateToOptions } from 'nativescript-vue/dist/plugins/navigation';
 import type { Component } from 'nativescript-vue';
-import { useSettingsStore, type TabId } from '@correctiv/app-core/stores/settings';
+import { useSettingsStore, type TabId } from '../stores/core-bindings';
 
 /**
  * Encapsulates the frame-per-tab navigation. With five parallel frames

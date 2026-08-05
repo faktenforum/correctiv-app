@@ -29,6 +29,7 @@
   },
   "scripts": {
     "typecheck": "vue-tsc --noEmit",
+    "test": "vitest run",
     "dev:ios": "concurrently -k -n vite,ns \"npm run dev:server:ios\" \"wait-on tcp:5173 && npm run ios\"",
     "dev:android": "concurrently -k -n vite,ns \"npm run dev:server:android\" \"wait-on tcp:5173 && npm run android\"",
     "dev:server:ios": "vite serve -- --env.ios --env.hmr",

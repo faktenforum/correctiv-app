@@ -205,7 +205,7 @@ import {
   type DiaryEntry,
   type BonusMedia,
 } from '@correctiv/app-core/data/backstage';
-import { useMembershipStore } from '@correctiv/app-core/stores/membership';
+import { useMembershipStore } from '../../stores/core-bindings';
 import { useAudioStore } from '../../stores/audio';
 import { useNavigation } from '../../composables/useNavigation';
 import { useJoinFlow } from '../../composables/useJoinFlow';

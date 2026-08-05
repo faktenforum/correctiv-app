@@ -194,7 +194,7 @@ import { ref, computed } from 'nativescript-vue';
 import { $closeModal } from 'nativescript-vue';
 import { icons } from '@correctiv/app-core/ui/icons';
 import BackstagePage from '../backstage/BackstagePage.vue';
-import { useMembershipStore } from '@correctiv/app-core/stores/membership';
+import { useMembershipStore } from '../../stores/core-bindings';
 import { useNavigation } from '../../composables/useNavigation';
 import { useThemeForModal } from '../../composables/useTheme';
 

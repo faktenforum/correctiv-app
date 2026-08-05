@@ -15,7 +15,7 @@
 
 <script setup lang="ts">
 import { icons } from '@correctiv/app-core/ui/icons';
-import type { TabId } from '@correctiv/app-core/stores/settings';
+import type { TabId } from '../../stores/core-bindings';
 
 defineProps<{ activeTab: TabId }>();
 defineEmits<{ (e: 'select', tab: TabId): void }>();

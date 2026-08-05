@@ -29,7 +29,7 @@
 import { computed } from 'nativescript-vue';
 import type { EarlyAccessItem } from '@correctiv/app-core/data/backstage';
 import ClubBadge from '../ui/ClubBadge.vue';
-import { useMembershipStore } from '@correctiv/app-core/stores/membership';
+import { useMembershipStore } from '../../stores/core-bindings';
 import { useJoinFlow } from '../../composables/useJoinFlow';
 
 const props = defineProps<{ item: EarlyAccessItem }>();

@@ -8,14 +8,10 @@ import { Video as ExoVideoElement } from '@nstudio/nativescript-exoplayer';
 import { configurePlatform } from '@correctiv/app-core';
 import AppShell from './AppShell.vue';
 import { nativeScriptPlatform } from './platform/nativescript';
-import { useSettingsStore, PERSISTED_KEYS } from '@correctiv/app-core/stores/settings';
-import { useSavedArticlesStore } from '@correctiv/app-core/stores/savedArticles';
-import { useMembershipStore } from '@correctiv/app-core/stores/membership';
-import { useInterestsStore } from '@correctiv/app-core/stores/interests';
-import { useParticipationStore } from '@correctiv/app-core/stores/participation';
+import { coreStores, useSettingsStore, useVideoStore } from './stores/core-bindings';
+import { PERSISTED_KEYS } from '@correctiv/app-core/stores/settings';
 import { useFeedsStore } from './stores/feeds';
 import { useAudioStore } from './stores/audio';
-import { useVideoStore } from '@correctiv/app-core/stores/video';
 import { persist } from '@correctiv/app-core/stores/persist';
 import { registerExclusiveMedium } from '@correctiv/app-core/media/exclusive-playback';
 // @nativescript/vite only applies a file named app.css automatically —
@@ -39,10 +35,12 @@ const app = createApp(AppShell);
 app.use(pinia);
 app.use(CollectionViewPlugin);
 
-const settings = useSettingsStore(pinia);
-persist(settings, PERSISTED_KEYS);
-persist(useSavedArticlesStore(pinia), ['items']);
-persist(useMembershipStore(pinia), [
+// Persistence runs against the RAW vanilla stores, not the Vue bindings: it only
+// needs subscribe/setState, and going through the mirror would mean writing on
+// every reactive read path instead of on real state changes.
+persist('settings', coreStores.settings, PERSISTED_KEYS);
+persist('savedArticles', coreStores.savedArticles, ['items']);
+persist('membership', coreStores.membership, [
   'isMember',
   'name',
   'memberSince',
@@ -50,14 +48,16 @@ persist(useMembershipStore(pinia), [
   'interval',
   'paused',
 ]);
-persist(useInterestsStore(pinia), ['selected']);
-persist(useParticipationStore(pinia), ['submissions']);
+persist('interests', coreStores.interests, ['selected']);
+persist('participation', coreStores.participation, ['submissions']);
+
+const settings = useSettingsStore();
 
 // Only one medium plays at a time. Registering the two players here (instead of
 // letting the stores import each other) is what keeps the video store free of
 // any NativeScript dependency.
 registerExclusiveMedium('audio', () => useAudioStore(pinia).stop());
-registerExclusiveMedium('video', () => useVideoStore(pinia).close());
+registerExclusiveMedium('video', () => useVideoStore().close());
 
 if (__ANDROID__) {
   // The native image fetcher (org.nativescript.widgets) caches remote images in
