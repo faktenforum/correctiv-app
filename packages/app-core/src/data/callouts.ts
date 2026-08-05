@@ -23,6 +23,13 @@ export interface CalloutSlide {
 
 export interface Callout {
   slug: string;
+  /**
+   * Which kind of ask this is. The design draft labels the two differently and
+   * gives the survey the quieter button — a CrowdNewsroom asks for evidence, a
+   * survey asks for an opinion, and three identically loud coral buttons hid that
+   * difference. Presentation stays in the app; this is the fact behind it.
+   */
+  kind: 'crowdnewsroom' | 'survey';
   title: string;
   excerpt: string;
   intro: string[];
@@ -40,6 +47,7 @@ export interface Callout {
 export const callouts: Callout[] = [
   {
     slug: 'zukunft-von-correctiv',
+    kind: 'survey',
     title: 'Die Zukunft von CORRECTIV: Wir fragen Sie',
     excerpt:
       'CORRECTIV verändert sich — und Sie gestalten mit. Was sollen wir recherchieren, welche Formate fehlen Ihnen?',
@@ -107,6 +115,7 @@ export const callouts: Callout[] = [
   },
   {
     slug: 'wem-gehoert-die-stadt',
+    kind: 'crowdnewsroom',
     title: 'Wem gehört die Stadt?',
     excerpt:
       'Steigende Mieten, anonyme Eigentümer: Helfen Sie uns aufzudecken, wem die Häuser in Ihrer Nachbarschaft gehören.',
@@ -180,6 +189,7 @@ export const callouts: Callout[] = [
   },
   {
     slug: 'klimaanpassung-vor-ort',
+    kind: 'crowdnewsroom',
     title: 'Hitze, Starkregen, Dürre: Wie gut ist Ihr Ort vorbereitet?',
     excerpt:
       'Klimafolgen treffen Kommunen unterschiedlich hart. Berichten Sie uns, was vor Ihrer Haustür passiert — oder eben nicht.',

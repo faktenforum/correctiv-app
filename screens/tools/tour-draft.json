@@ -4,29 +4,19 @@
   },
   {
     "name": "02-onboarding-interests",
-    "clicks": [
-      "Los geht's"
-    ]
+    "clicks": ["Los geht's"]
   },
   {
     "name": "03-onboarding-push",
-    "clicks": [
-      "Klima",
-      "Faktenchecks",
-      "Weiter"
-    ]
+    "clicks": ["Klima", "Faktenchecks", "Weiter"]
   },
   {
     "name": "04-onboarding-club",
-    "clicks": [
-      "Weiter"
-    ]
+    "clicks": ["Weiter"]
   },
   {
     "name": "10-home-top",
-    "clicks": [
-      "Erstmal umsehen"
-    ]
+    "clicks": ["Erstmal umsehen"]
   },
   {
     "name": "11-home-mid",
@@ -42,15 +32,8 @@
   },
   {
     "name": "30-entdecken",
-    "tapAt": [
-      [
-        26,
-        60
-      ]
-    ],
-    "clicks": [
-      "Entdecken"
-    ]
+    "tapAt": [[26, 60]],
+    "clicks": ["Entdecken"]
   },
   {
     "name": "31-entdecken-mid",
@@ -62,9 +45,7 @@
   },
   {
     "name": "40-mediathek",
-    "clicks": [
-      "Mediathek"
-    ]
+    "clicks": ["Mediathek"]
   },
   {
     "name": "41-mediathek-mid",
@@ -76,9 +57,7 @@
   },
   {
     "name": "50-mitmachen",
-    "clicks": [
-      "Mitmachen"
-    ]
+    "clicks": ["Mitmachen"]
   },
   {
     "name": "51-mitmachen-mid",
@@ -86,9 +65,7 @@
   },
   {
     "name": "60-profil",
-    "clicks": [
-      "Profil"
-    ]
+    "clicks": ["Profil"]
   },
   {
     "name": "61-profil-mid",
@@ -96,34 +73,21 @@
   },
   {
     "name": "80-player-mini",
-    "clicks": [
-      "Mediathek",
-      "Salon5 Radio"
-    ],
+    "clicks": ["Mediathek", "Salon5 Radio"],
     "pause": 1200
   },
   {
     "name": "81-player-expanded",
-    "tapAt": [
-      [
-        200,
-        790
-      ]
-    ],
+    "tapAt": [[200, 790]],
     "pause": 1200
   },
   {
     "name": "70-join-1",
-    "clicks": [
-      "Profil",
-      "Unterstützer:in werden"
-    ],
+    "clicks": ["Profil", "Unterstützer:in werden"],
     "pause": 1000
   },
   {
     "name": "71-join-2",
-    "clicks": [
-      "Weiter"
-    ]
+    "clicks": ["Weiter"]
   }
 ]

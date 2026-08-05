@@ -59,7 +59,9 @@ ws.onmessage = (ev) => {
     return;
   }
   if (msg.method === 'Runtime.exceptionThrown') {
-    problems.push(`UNCAUGHT ${msg.params.exceptionDetails.exception?.description ?? ''}`.slice(0, 300));
+    problems.push(
+      `UNCAUGHT ${msg.params.exceptionDetails.exception?.description ?? ''}`.slice(0, 300),
+    );
   }
   if (msg.method === 'Log.entryAdded' && msg.params.entry.level === 'error') {
     problems.push(`ERROR ${msg.params.entry.text}`.slice(0, 300));
@@ -70,7 +72,9 @@ function send(method, params = {}) {
   const id = ++msgId;
   ws.send(JSON.stringify({ id, method, params }));
   return new Promise((resolve, reject) => {
-    pending.set(id, (msg) => (msg.error ? reject(new Error(msg.error.message)) : resolve(msg.result)));
+    pending.set(id, (msg) =>
+      msg.error ? reject(new Error(msg.error.message)) : resolve(msg.result),
+    );
   });
 }
 const evaluate = async (expression) => {
@@ -188,7 +192,9 @@ for (const step of tour) {
     await wait(600);
   }
   const clip = await shot(step.name);
-  log.push(`shot ${step.name} clip=${clip ? `${Math.round(clip.width)}x${Math.round(clip.height)}` : 'full'}`);
+  log.push(
+    `shot ${step.name} clip=${clip ? `${Math.round(clip.width)}x${Math.round(clip.height)}` : 'full'}`,
+  );
   if (step.labels) log.push(`  labels: ${await labels()}`);
 }
 

@@ -4,6 +4,7 @@ import { Pressable, View } from 'react-native';
 import { Button, Overline, Typo } from '@/components/ui';
 import type { Callout } from '@correctiv/app-core/data/callouts';
 import { formatNumberDe } from '@correctiv/app-core/lib/format';
+import { calloutStyle } from '@/lib/participate/calloutStyle';
 import { colors } from '@/lib/theme';
 
 /**
@@ -21,6 +22,8 @@ export function CalloutTeaser({
   callout: Callout;
   onPress: (callout: Callout) => void;
 }) {
+  const style = calloutStyle(callout);
+
   return (
     <Pressable
       onPress={() => onPress(callout)}
@@ -28,7 +31,7 @@ export function CalloutTeaser({
       accessibilityLabel={callout.title}
       className="rounded-md bg-grey-700 p-m active:opacity-90"
     >
-      <Overline label="Mitmachen · Aufruf" color="grey-400" />
+      <Overline label={`Mitmachen · ${style.kicker}`} color="grey-400" />
       <Typo variant="headline-s" color="grey-100" className="mt-2xs">
         {callout.title}
       </Typo>
@@ -38,14 +41,14 @@ export function CalloutTeaser({
       <View className="mt-s flex-row items-center">
         <Ionicons name="people-outline" size={16} color={colors['grey-400']} />
         <Typo variant="text-s" color="grey-400" className="ml-2xs">
-          {formatNumberDe(callout.responseCount)} Beiträge bisher
+          {formatNumberDe(callout.responseCount)} {style.unit} bisher
         </Typo>
       </View>
       <Button
-        title="Jetzt mitmachen"
+        title={style.cta}
         className="mt-s"
         onPress={() => onPress(callout)}
-        accessibilityLabel={`Jetzt mitmachen: ${callout.title}`}
+        accessibilityLabel={`${style.cta}: ${callout.title}`}
       />
     </Pressable>
   );
