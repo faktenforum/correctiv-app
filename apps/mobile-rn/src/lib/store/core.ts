@@ -12,7 +12,7 @@
  * Always select the narrowest slice you need. `useStore(store)` without a
  * selector re-renders on every change to any field in that store.
  */
-import { useMemo } from 'react';
+import { useEffect, useMemo } from 'react';
 import { useStore } from 'zustand';
 
 import {
@@ -33,7 +33,7 @@ import {
 } from '@correctiv/app-core/stores/savedArticles';
 import { settingsStore } from '@correctiv/app-core/stores/settings';
 import { videoStore, isActive as selectIsActive } from '@correctiv/app-core/stores/video';
-import { mediaStore } from '@correctiv/app-core/stores/media';
+import { mediaStore, type YoutubeKey } from '@correctiv/app-core/stores/media';
 
 // --- whole-store hooks (use a selector below where you can) -------------------
 
@@ -79,6 +79,27 @@ export const useBoostedModules = () => {
 export const useExtraFeeds = () => {
   const selected = useStore(interestsStore, (s) => s.selected);
   return useMemo(() => selectExtraFeeds({ selected }), [selected]);
+};
+
+/**
+ * One media channel's videos, loaded on first use.
+ *
+ * The core store owns what this app previously got wrong on its own: FunFacts
+ * moved to CORRECTIV's PeerTube instance, and fetching it from the YouTube Atom
+ * feed is the legacy path. `mediaStore` routes per MEDIA_SOURCE and brings the
+ * cache plus stale fallback with it, so this hook only subscribes and kicks off
+ * the load.
+ *
+ * `byKey[key]` is a stable reference between updates (the store patches
+ * immutably), so it is safe to select directly — see the note above about
+ * selectors that build fresh objects.
+ */
+export const useVideoChannel = (key: YoutubeKey) => {
+  const slice = useStore(mediaStore, (s) => s.byKey[key]);
+  useEffect(() => {
+    if (slice.status === 'idle') void mediaStore.getState().fetch(key);
+  }, [key, slice.status]);
+  return slice;
 };
 
 export const useHasSubmitted = (slug: string) =>

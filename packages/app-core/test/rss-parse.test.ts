@@ -87,6 +87,47 @@ describe('parseYoutubeFeed', () => {
   it('returns no duplicates', () => {
     expect(new Set(videos.map((v) => v.id)).size).toBe(videos.length);
   });
+
+  /**
+   * The Atom feed does not say which of the app's channels it is, so the caller
+   * passes it in. Without this the media store cannot tell a FunFacts video from
+   * a main-channel one after the fact.
+   */
+  it('tags entries with the channel it was asked for, and the platform', () => {
+    const tagged = parseYoutubeFeed(YT_ATOM, 'funfacts');
+    expect(tagged.every((v) => v.channel === 'funfacts')).toBe(true);
+    expect(tagged.every((v) => v.source === 'youtube')).toBe(true);
+  });
+
+  it('leaves the channel unset when none is given', () => {
+    expect(videos.every((v) => v.channel === undefined)).toBe(true);
+  });
+});
+
+describe('author handling', () => {
+  /**
+   * Measured, not assumed: across 200 live items (correctiv.org/feed/ and
+   * /category/faktencheck/feed/) every item carries exactly ONE <dc:creator>,
+   * and none is a composite like "A und B". The Expo app modelled this as
+   * `authors: string[]`; this test records why the singular string is right, so
+   * the array does not come back on a hunch.
+   */
+  it('yields one author per item, never a list', () => {
+    const withAuthor = parseWpFeed(WP_RSS, 'faktencheck').filter((i) => i.author);
+    expect(withAuthor.length).toBeGreaterThan(50);
+    for (const item of withAuthor) {
+      expect(typeof item.author).toBe('string');
+      expect(item.author).not.toMatch(/\bund\b|,|&/);
+    }
+  });
+
+  it('leaves author undefined rather than empty when the tag is missing', () => {
+    const [item] = parseWpFeed(
+      '<rss><channel><item><link>https://correctiv.org/a/</link></item></channel></rss>',
+      'recherchen',
+    );
+    expect(item.author).toBeUndefined();
+  });
 });
 
 describe('malformed input', () => {

@@ -11,7 +11,7 @@ import { textContent, getAttributeValue } from 'domutils';
 import serialize from 'dom-serializer';
 import type { AnyNode, Document, Element } from 'domhandler';
 
-import type { Article, FactcheckRating } from '../models';
+import type { Article, FactcheckRating } from './types';
 
 export type ExtractedArticle = Pick<
   Article,

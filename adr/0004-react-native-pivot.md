@@ -171,20 +171,59 @@ im CI selbst übersprungen, weil dort die Quelle fehlte — also genau dort, wo 
 muss. Verifiziert, indem `#ff5064` in `tokens/theme.css` verschoben und nicht regeneriert
 wurde: der Test schlägt fehl.
 
+**Der Feed-Daten-Layer ist vereinheitlicht.** Ein `FeedItem`, ein Parser-Satz, ein
+Feed-Katalog — alles im Core. Gelöscht: `models.ts`, `feeds/{sources,rss,xml,youtubeAtom}.ts`,
+`format.ts`, `sample-data/`, die zwei byte-identischen Feed-Fixtures und `fast-xml-parser`.
+
+Dabei fielen drei Dinge auf, die Messung statt Annahme brauchten:
+
+1. **`authors: string[]` war spekulativ.** Der Prototyp modellierte Ko-Bylines als
+   wiederholte `<dc:creator>`-Elemente. Über 200 Live-Items (Haupt-Feed + Faktencheck)
+   trägt **jedes** genau eines, und keines ist ein zusammengesetzter Wert. Der Core
+   behält `author?: string`; ein Test hält den Befund fest, damit das Array nicht auf
+   Vermutung zurückkommt.
+2. **Sieben von vierzehn Modelltypen des Prototyps waren toter Code** (`Callout`, `Claim`,
+   `PodcastSeries`, `MembershipState` …) — Modelle für Screens, die nie gebaut wurden.
+   Der Core hat sie alle, mit echten Beispieldaten. Phase 4c–4e baut darauf, nicht auf
+   leeren Hüllen.
+3. **Der Browser-User-Agent ist rein defensiv.** Der Kommentar im Prototyp behauptete
+   Bot-Filter bei WordPress/CDN. Gegen Feed und Artikel-HTML mit beiden UAs gemessen:
+   byte-identische Antworten, HTTP 200. Kein latenter Bug im Core-UA.
+
+**FunFacts läuft jetzt über PeerTube** (`mediaStore` statt eigenem YouTube-Client) — und
+das behebt mehr als den Legacy-Pfad: `tube.funfacts.de` sendet
+`access-control-allow-origin: *`, der YouTube-Atom-Feed nicht. Im Browser verifiziert, mit
+echtem Videotitel.
+
+**Zwei Defekte nebenbei gefunden und behoben:** `services/http.ts` hat seinen
+Timeout-`setTimeout` nie gelöscht — nach jedem erfolgreichen Request lief er noch bis zu
+8 s weiter (Promise.race verwirft die späte Rejection, es sah also nach nichts aus; sichtbar
+wurde es, weil Jest nicht mehr beendete). Und `core-store-binding.test.tsx` hat seine
+gerenderten Bäume nie abgebaut: ein montierter Probe bleibt am Store abonniert, reagiert
+auf den Reset im `beforeEach` und verschiebt den Zustand für den nächsten Test.
+
 ## Offen
 
-- Der Expo-Prototyp dupliziert noch die **Modelltypen** (`models.ts`, `format.ts`,
-  `feeds/*`, `articles/extract.ts`). Sie sind nicht bloß anders benannt, sondern anders
-  geschnitten: `FeedKey` (6 Werte, `recherchen`) gegen `FeedSourceId` (7, `haupt` +
-  `europe`), `url` gegen `link`, `feed` gegen `sourceId`, `author?: string` gegen
-  `authors: string[]`, `ArticleDetail` gegen `Article`. Vereinheitlichen heißt: Daten-Layer
-  plus 11 Komponentendateien umschreiben — direkt bevor Phase 4 die meisten dieser Screens
-  ohnehin neu baut. Deshalb **pro Screen beim Neubau**, nicht als Big Bang.
-  Der Core gewinnt dabei: `data/feeds.config.ts` ist eine Obermenge von `sources.ts`
-  (dieselben zwei Fallen, plus PeerTube-Migration, Castopod-Host und sieben kuratierte
-  Shows) — es fehlt ihm nur `europe`.
-- Die zwei Cache-Policies aus `lib/net/cachedFetch.ts` sollen in den Core wandern, dort
-  aber hinter dessen `FileStore`-Port statt direkt auf AsyncStorage.
+- **Das Web-Target sieht keine Live-Artikel.** `correctiv.org` sendet keinen
+  `Access-Control-Allow-Origin`-Header, der Browser blockt damit jeden RSS-Request
+  (am 05.08.2026 gemessen; native Targets sind nicht betroffen). Das Web-Demo zeigt Shell,
+  Beispieldaten und PeerTube-Inhalte — aber keinen Hero, keine „Neueste Recherchen", keine
+  Faktenchecks. Drei Wege: (a) CORRECTIV-Ops setzen den Header (ein CDN-/WordPress-Header,
+  RSS ist öffentliche Daten — billigster und korrektester Weg), (b) ein gebündelter
+  Feed-Snapshot als Web-Fallback (die NS-App generiert schon
+  `assets/data/feeds/<key>.json`), (c) ein Proxy. Entscheidung steht aus.
+- **Der Artikel-/Reader-Typ ist noch doppelt.** `Article` (App) gegen `ArticleDetail` (Core)
+  sind anders geschnitten, nicht bloß anders benannt: `kicker`/`topline`,
+  `title`/`headline`, `badge`/`ratingText`, plus `dateText`/`excerpt` nur im Core und
+  `relatedLinks` nur in der App. Vereinheitlichen heißt `extract.ts` und den
+  Reader-HTML-Builder umschreiben — am **einzigen fertigen Screen**. Bewusst zurückgestellt:
+  `src/lib/articles/types.ts` sagt, warum.
+- **Der Blob-Cache bleibt beim Host.** Die Cache-Policies in den Core zu ziehen scheitert
+  vorerst am Port: `FileStore` ist synchron, und der Expo-Adapter hydriert dafür beim Start
+  *alles* eager in einen Memory-Spiegel. Für kleine Settings richtig, für ~1 MB Feed-JSON
+  vor dem ersten Render falsch. Der Port müsste async werden (er wird an genau einer Stelle
+  benutzt, `cache.service.ts`) — eigener Schritt, kein Beiwerk dieser Umstellung.
+
 - GitHub Pages steht noch auf `legacy` (`main:/docs`) und serviert den Designentwurf.
   Umstellen auf `build_type: workflow`, damit der Web-Build deployt wird ohne
   Build-Output zu committen.

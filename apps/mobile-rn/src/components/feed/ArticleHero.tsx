@@ -2,9 +2,10 @@ import { Image } from 'expo-image';
 import { Pressable, View } from 'react-native';
 
 import { Badge, Typo } from '@/components/ui';
-import type { FeedItem } from '@/lib/models';
+import { FEEDS } from '@correctiv/app-core/data/feeds.config';
+import type { FeedItem } from '@correctiv/app-core/types/models';
+
 import { useOgImage } from '@/lib/articles/useOgImage';
-import { FEED_SOURCES } from '@/lib/feeds/sources';
 
 /** Große Top-Recherche auf Home: Titelbild (og:image nachgeladen) + Serif-Headline. */
 export function ArticleHero({
@@ -14,8 +15,8 @@ export function ArticleHero({
   item: FeedItem;
   onPress: (item: FeedItem) => void;
 }) {
-  const image = useOgImage(item.link, item.heroImageUrl);
-  const badge = FEED_SOURCES[item.sourceId]?.badge;
+  const image = useOgImage(item.url, item.imageUrl ?? undefined);
+  const badge = FEEDS[item.feed]?.badge;
 
   return (
     <Pressable onPress={() => onPress(item)} className="active:opacity-90">

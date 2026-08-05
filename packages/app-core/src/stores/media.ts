@@ -47,7 +47,7 @@ export const mediaStore = createStore<MediaState>((set, get) => {
             ? await fetchPeertubeChannelAsVideos(
                 PEERTUBE_CHANNELS[key as keyof typeof PEERTUBE_CHANNELS],
               )
-            : await fetchYoutubeFeed(YOUTUBE_FEEDS[key]);
+            : await fetchYoutubeFeed(YOUTUBE_FEEDS[key], key);
         patch(key, { videos, status: 'ready' });
         setCached(source, key, videos);
       } catch (err) {

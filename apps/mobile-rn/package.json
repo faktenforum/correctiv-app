@@ -28,7 +28,6 @@
     "expo-symbols": "~56.0.6",
     "expo-system-ui": "~56.0.5",
     "expo-web-browser": "~56.0.5",
-    "fast-xml-parser": "^5.8.0",
     "htmlparser2": "^12.0.0",
     "nativewind": "^4.2.5",
     "react": "19.2.7",
