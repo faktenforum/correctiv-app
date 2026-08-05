@@ -1,6 +1,6 @@
 import '@/global.css';
 
-import { Stack } from 'expo-router';
+import { router, Stack, usePathname } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
 import { useFonts } from 'expo-font';
 import * as SplashScreen from 'expo-splash-screen';
@@ -53,6 +53,8 @@ function registerPersistence(): void {
   persist('participation', coreStores.participation, ['submissions']);
 }
 
+let gated = false;
+
 export default function RootLayout() {
   const [fontsLoaded] = useFonts(fontAssets);
   const [storeReady, setStoreReady] = useState(false);
@@ -80,6 +82,27 @@ export default function RootLayout() {
     if (fontsLoaded && storeReady) SplashScreen.hideAsync();
   }, [fontsLoaded, storeReady]);
 
+  /**
+   * Erststart: einmal pro Sitzung ins Onboarding, sobald der Zustand hydriert ist
+   * (vorher wäre `onboardingDone` immer false — genau der Fehler, den
+   * registerPersistence oben vermeidet).
+   *
+   * NUR wenn die App auf der Startseite startet. Sonst überschreibt der Sprung auf
+   * dem Web-Target jeden geteilten Link: wer `/backstage` aufruft, soll Backstage
+   * sehen und nicht zuerst das Onboarding. Nativ gibt es diesen Fall nicht — dort
+   * startet die App immer auf `/`.
+   *
+   * `replace`, nicht `push`: das Onboarding ist kein Ort, zu dem man zurückkehrt.
+   * Das Modul-Flag verhindert, dass ein späterer Render denselben Sprung wiederholt.
+   */
+  const pathname = usePathname();
+  useEffect(() => {
+    if (!storeReady || gated) return;
+    gated = true;
+    if (pathname !== '/') return;
+    if (!coreStores.settings.getState().onboardingDone) router.replace('/onboarding');
+  }, [storeReady, pathname]);
+
   if (!fontsLoaded || !storeReady) return null;
 
   return (
@@ -90,6 +113,9 @@ export default function RootLayout() {
         {/* Der Vollplayer ist eine Ansicht auf den laufenden Singleton, kein
             eigener Zustand — als Modal, weil er nichts ersetzt. */}
         <Stack.Screen name="player" options={{ presentation: 'modal' }} />
+        {/* Beide sind Abläufe über der App, keine Orte in ihr. */}
+        <Stack.Screen name="onboarding" options={{ presentation: 'modal' }} />
+        <Stack.Screen name="beitreten" options={{ presentation: 'modal' }} />
       </Stack>
     </GestureHandlerRootView>
   );

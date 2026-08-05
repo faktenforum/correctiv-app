@@ -84,7 +84,8 @@ src/
   app/                  expo-router-Routen: (tabs)/ + artikel, suche, projekt/[id],
                         serie/[id], video, player, aufruf/[slug], formular,
                         faktenforum, behauptung/[id], atlas, einstellungen,
-                        gespeichert, bericht
+                        gespeichert, bericht, onboarding, beitreten, backstage,
+                        tagebuch/[id]
   components/ui/        Design-System (Typo, Button, Card, Badge, Chip, Screen, …)
   components/feed|home|discover|media|player|participate|profile/  je Bereich
   lib/audio/            der EINE Audio-Player der App (expo-audio, auf Modulebene)
@@ -122,10 +123,11 @@ Icecast-Streaming + Hintergrund-Audio + Lockscreen-Controls). Audio ist in `src/
   und der Mitmach-Fluss trägt bis in Schritt 1 des Formulars
 - ✅ **M4** Mitmachen — drei CrowdNewsroom-Aufrufe mit mehrstufigem Formular aus dem
   eigenen Schema, Faktenforum mit Prüfstatus, Abriss-Atlas, WhatsApp-Tippkanal
-- 🔶 **M5** Club & Profil — Profil (Gast und Mitglied), Einstellungen, gespeicherte
-  Artikel, Quartalsbericht stehen. **Offen: Beitritts-Flow und Backstage** — bis
-  dahin führt „Unterstützer:in werden" nach Mitmachen statt ins Leere
-- ⏳ M6 Onboarding + Demo-Härtung
+- ✅ **M5** Club & Profil — Profil (Gast und Mitglied), Einstellungen, gespeicherte
+  Artikel, Quartalsbericht, Beitritts-Flow (der app-weite Statuswechsel) und
+  Backstage mit Recherchetagebuch
+- ✅ **M6** Onboarding — Mission, Interessen, Push, Club-Angebot; beim Erststart
+  automatisch, aber nur wenn die App auf „/" startet (geteilte Links bleiben heil)
 
 Kein Tab ist mehr ein Stub. Vorlage für den Nachbau ist
 [`../mobile`](../mobile) — dort liegen 43 fertige SFCs.
