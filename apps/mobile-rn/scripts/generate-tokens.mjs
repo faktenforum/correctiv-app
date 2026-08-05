@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 /**
- * Token-Brücke: liest die verbindlichen Design-Tokens aus dem Schwester-Repo
- * `wp-design-tokens` (Tailwind v4 CSS) und generiert daraus drei Artefakte für
+ * Token-Brücke: liest die verbindlichen Design-Tokens aus tokens/theme.css
+ * (vendored aus wp-design-tokens, Tailwind v4 CSS) und generiert drei Artefakte für
  * die React-Native-App (NativeWind v4 = Tailwind v3, kein @theme inline):
  *
  *   1. tailwind.tokens.generated.js     – theme-Map für tailwind.config.js (px-Strings)
@@ -14,39 +14,18 @@
  *
  * Aufruf:  npm run tokens
  */
-import { existsSync, readFileSync, writeFileSync, mkdirSync } from 'node:fs';
+import { readFileSync, writeFileSync, mkdirSync } from 'node:fs';
 import { dirname, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
+
+import { themeCssPath } from '../../../scripts/tokens-source.mjs';
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const ROOT = resolve(__dirname, '..');
 
-/**
- * Das Token-Repo ist ein SIBLING-Checkout, keine Abhängigkeit dieses Repos — wo
- * es liegt, hängt also davon ab, wie tief diese App steckt. Ein festes '..'
- * zeigte nach dem Umzug von der Repo-Wurzel nach apps/mobile-rn/ auf
- * apps/wp-design-tokens/ und damit ins Leere.
- *
- * Nach oben suchen statt Ebenen zählen heißt: der nächste Umzug bricht es nicht
- * wieder. (Dieselbe Korrektur steckt in apps/mobile/scripts/sync-tokens.mjs.)
- */
-function findTokensCssDir(from) {
-  for (let dir = from; ; dir = dirname(dir)) {
-    const candidate = resolve(dir, 'wp-design-tokens/css');
-    if (existsSync(resolve(candidate, 'theme.css'))) return candidate;
-    if (dirname(dir) === dir) return null; // Dateisystem-Wurzel erreicht
-  }
-}
-
-const TOKENS_REPO = findTokensCssDir(ROOT);
-if (!TOKENS_REPO) {
-  throw new Error(
-    'wp-design-tokens/css/theme.css in keinem übergeordneten Verzeichnis gefunden.\n' +
-      'Es ist ein eigenes Repo (github.com/correctiv/wp-design-tokens) und muss als\n' +
-      `Geschwister-Checkout vorliegen — siehe README. Gesucht ab:\n  ${ROOT}`,
-  );
-}
-const THEME_CSS_PATH = resolve(TOKENS_REPO, 'theme.css');
+// Quelle ist tokens/theme.css im Repo (siehe tokens/README.md) — warum die
+// Auflösung in scripts/tokens-source.mjs liegt und nicht hier, steht dort.
+const THEME_CSS_PATH = themeCssPath();
 
 const REM_BASE = 16; // wp-design-tokens nimmt 16px-Basis an
 
@@ -175,7 +154,7 @@ const twLetterSpacing = Object.fromEntries(
 const twLineHeight = Object.fromEntries(Object.entries(leading).map(([k, v]) => [k, String(v)]));
 
 const HEADER =
-  '// AUTO-GENERATED von scripts/generate-tokens.mjs — nicht von Hand editieren.\n// Quelle: ../wp-design-tokens/css/theme.css · Regenerieren: npm run tokens\n';
+  '// AUTO-GENERATED von scripts/generate-tokens.mjs — nicht von Hand editieren.\n// Quelle: tokens/theme.css · Regenerieren: npm run tokens\n';
 
 const tailwindOut = `${HEADER}
 /* eslint-disable */

@@ -62,7 +62,7 @@ a real web build of the actual app ([ADR 0004](adr/0004-react-native-pivot.md)).
 
 ```bash
 npm install                    # installs the whole workspace
-npm run check                  # every typecheck + 134 headless tests, ~2 s, no device
+npm run check                  # every typecheck + 156 headless tests, ~2 s, no device
 ```
 
 **The app going forward** (`apps/mobile-rn`) — no emulator needed for the web target:
@@ -96,9 +96,9 @@ same ecosystem as Vite, no plugin/parser config to maintain, and they understand
 SCSS, Markdown, `.github/` and `App_Resources/` are deliberately excluded from formatting —
 see `.oxfmtrc.json` and the commit that introduced it.
 
-The design tokens are pre-generated and committed (`apps/mobile/src/styles/tokens.generated.scss`),
-so the app builds without any sibling checkout. For demos, refresh the bundled
-offline content first:
+The design tokens are pre-generated and committed
+(`apps/mobile/src/styles/tokens.generated.scss`), so the app builds on a fresh
+clone with no extra setup. For demos, refresh the bundled offline content first:
 
 ```bash
 npm run offline-articles       # refresh the offline article bundle (~15 real articles)
@@ -110,10 +110,10 @@ Convenience scripts (run from the repo root; they delegate into `apps/mobile`):
 ```bash
 ./apps/mobile/scripts/deploy-emulator.sh   # deterministic one-shot deploy (kills zombie
                                            # watchers, verifies the bundle is fresh)
-npm run tokens                 # regenerate tokens from a wp-design-tokens checkout (optional, see below)
+npm run tokens                 # regenerate the NativeScript SCSS from tokens/ (see below)
 npm run android                # ns debug android
 npm run test:watch             # vitest in watch mode on the core
-npm run test                   # all workspaces: 101 core + 7 Vue bindings + 26 Expo
+npm run test                   # all workspaces: 115 core + 7 Vue bindings + 34 Expo
 npm run lint                   # oxlint (178 rules, ~240 ms)
 npm run lint:fix               # oxlint --fix
 npm run format                 # oxfmt
@@ -121,14 +121,29 @@ npm run format                 # oxfmt
 
 ### Design tokens
 
-Branding comes from CORRECTIV's [`wp-design-tokens`](https://github.com/correctiv/wp-design-tokens).
-`apps/mobile/scripts/sync-tokens.mjs` converts that repo's `css/theme.css` into
-NativeScript-compatible SCSS (rem→dip, letter-spacing→em, platform-specific
-line-height under `.ns-android`/`.ns-ios`). The generated file is committed, so
-running `npm run tokens` is only needed when the upstream tokens change; it
-expects a `wp-design-tokens` checkout next to this repository. Never import
-`theme.css` directly — the NativeScript CSS subset does not support `rem`,
-`:root` or unitless line-heights.
+Branding comes from CORRECTIV's
+[`wp-design-tokens`](https://github.com/correctiv/wp-design-tokens), **vendored
+into [`tokens/`](tokens/README.md)** at a recorded upstream commit. It used to be
+a sibling checkout; see `tokens/README.md` for why vendoring beat a submodule and
+why an npm dependency is not available (the package wants Tailwind v4, NativeWind
+v4 wants v3).
+
+Two generators read `tokens/theme.css`, both resolving it through
+`scripts/tokens-source.mjs`:
+
+| Script | Output |
+|---|---|
+| `apps/mobile/scripts/sync-tokens.mjs` | NativeScript SCSS — rem→dip, letter-spacing→em, platform line-heights under `.ns-android`/`.ns-ios` |
+| `apps/mobile-rn/scripts/generate-tokens.mjs` | NativeWind theme map, typed TS constants, and `theme.css` verbatim for the reader WebView |
+
+All outputs are committed, so `npm run tokens` is only needed when the tokens
+change — and `apps/mobile-rn/__tests__/tokens.test.ts` regenerates and
+byte-compares on **every** CI run, so forgetting it fails the PR. That check used
+to skip itself in CI for want of the source; vendoring is what made it
+unconditional.
+
+Never import `theme.css` directly into the NativeScript app — its CSS subset
+supports neither `rem`, `:root` nor unitless line-heights.
 
 ## Architecture in one minute
 
@@ -257,17 +272,24 @@ sync so the trap cannot be re-armed by a "consistency" rename. Details in the AD
 | **Expo:** `react-native-webview` has no web build — it renders "React Native WebView does not support this platform.", and `expo export --platform web` still succeeds, so CI can go green on a broken route | platform-split behind `components/reader/ReaderView`, enforced by `apps/mobile-rn/__tests__/web-target.test.ts` ([ADR 0004](adr/0004-react-native-pivot.md)) |
 | **Expo:** serving a static export without clean URLs makes Expo Router render its *unmatched route* page — looks like an app bug, is a server bug | map `/artikel` → `artikel.html`; plain `python3 -m http.server` will not do |
 | **Expo:** Metro's `getDefaultConfig` assumes a single-project layout, so in this workspace `packages/app-core` is invisible and hoisted deps do not resolve | `watchFolders` + `resolver.nodeModulesPaths` + `disableHierarchicalLookup` in `apps/mobile-rn/metro.config.js` |
-| Token bridges resolve `wp-design-tokens` by walking **up** the tree, not by counting `../` | a hard-coded depth silently broke both when the apps moved into `apps/*`; only the Expo side had a test that caught it |
+| A token bridge that searches **upwards** for its source can find a *foreign* checkout: here one at `17b87c8` while the repo's own copy was `501ee10`, so a developer and CI would generate from different sources and call it agreement | tokens vendored into [`tokens/`](tokens/README.md), resolved to exactly one path by `scripts/tokens-source.mjs`; drift check now unconditional |
+| Counting `../` levels to reach a shared file breaks on the next move — a hard-coded depth silently broke both token bridges when the apps moved into `apps/*` | resolve via a marker (root `package.json` name + `workspaces`), not by depth |
 
 ## Licensing & attribution
 
-- **Code:** GNU Affero General Public License v3.0 — see [`LICENSE`](LICENSE).
-- ⚠️ **Open question — `apps/mobile-rn` arrived under MIT.** It was imported from a
-  separate prototype repo whose `LICENSE` is the MIT License; that file is kept at
-  [`apps/mobile-rn/LICENSE`](apps/mobile-rn/LICENSE) so the provenance stays visible.
-  MIT code can be incorporated into an AGPL project, but which licence this subtree
-  carries going forward is **CORRECTIV's decision to make**, not one to settle by a
-  silent file deletion. See [ADR 0004](adr/0004-react-native-pivot.md).
+- **Code:** GNU Affero General Public License v3.0 or later — see
+  [`LICENSE`](LICENSE). This covers **every** workspace, `apps/mobile-rn`
+  included; each `package.json` declares `AGPL-3.0-or-later`.
+- **`apps/mobile-rn` was scaffolded by `create-expo-app`**, so it arrived carrying
+  the Expo templates' MIT `LICENSE` file. AGPL applies to it going forward
+  (CORRECTIV's decision, 2026-08-05); the MIT notice is retained as an
+  attribution for the scaffolded portions in
+  [`apps/mobile-rn/NOTICE.md`](apps/mobile-rn/NOTICE.md) — which is what MIT
+  requires and what a silent deletion would have got wrong.
+- **Design tokens** in [`tokens/`](tokens/README.md) are vendored from
+  [correctiv/wp-design-tokens](https://github.com/correctiv/wp-design-tokens)
+  (GPL-2.0-or-later), which is compatible with AGPL-3.0-or-later. The upstream
+  commit is recorded in `tokens/README.md`.
 - **Bundled fonts:** Merriweather and Source Sans 3 (SIL OFL 1.1), Lucide (ISC) —
   see [`apps/mobile/src/fonts/LICENSES.md`](apps/mobile/src/fonts/LICENSES.md).
   `apps/mobile-rn` loads the same families via `@expo-google-fonts` (SIL OFL 1.1)

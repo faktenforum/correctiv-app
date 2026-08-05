@@ -1,5 +1,5 @@
 // AUTO-GENERATED von scripts/generate-tokens.mjs — nicht von Hand editieren.
-// Quelle: ../wp-design-tokens/css/theme.css · Regenerieren: npm run tokens
+// Quelle: tokens/theme.css · Regenerieren: npm run tokens
 
 /* eslint-disable */
 export const colors = {

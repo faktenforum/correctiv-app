@@ -113,9 +113,11 @@ Falle für den nächsten Test: **mit Clean URLs servieren.** `python3 -m http.se
   nimmt der App diese Nähe zu beabee und faktenforum. Bewusst in Kauf genommen.
 - **Die UI muss nachgezogen werden.** NativeScript liegt mit 4.346 zu 828 LOC vorn;
   `entdecken`, `mediathek`, `mitmachen` und `profil` sind im Expo-Stand Stubs.
-- **Lizenz:** der Prototyp stand unter **MIT**, dieses Repo unter **AGPL-3.0-or-later**.
-  Sein `LICENSE` bleibt zunächst unter `apps/mobile-rn/` liegen, damit die Herkunft
-  sichtbar ist. **Offene Entscheidung für CORRECTIV**, nicht stillschweigend umgestellt.
+- **Lizenz:** entschieden am 05.08.2026 — **AGPL-3.0-or-later für alles**, `apps/mobile-rn`
+  eingeschlossen. Der Prototyp trug das MIT-`LICENSE` der `create-expo-app`-Vorlage; es
+  liegt jetzt als `apps/mobile-rn/NOTICE.md` und nennt MIT in der Rolle, die es wirklich
+  hat: Attribution für den Scaffold. Weder gelöscht (MIT verlangt den Hinweis) noch als
+  `LICENSE` belassen (das liest sich als „dieser Teilbaum ist MIT").
 - **Zwei Apps im CI**, bis der Swap erfolgt.
 
 ## Erledigt nach dieser Entscheidung (2026-08-05)
@@ -149,6 +151,26 @@ Targets, weil AsyncStorage einen Web-Build auf localStorage-Basis mitbringt.
 `savedArticles`-Store des Core. Damit fährt derselbe Store einen Vue- und einen
 React-Screen.
 
+**Die Design-Tokens sind ins Repo übernommen** (`tokens/`, vendored aus
+wp-design-tokens bei `501ee10` / `v0.1.1`). Vorher war es ein Sibling-Checkout, den beide
+Brücken nach oben suchten — und eine Aufwärtssuche kann das eigene Repo nicht von einem
+fremden Checkout unterscheiden: auf dieser Maschine fand sie `17b87c8`, während das Repo
+`501ee10` meint. Entwickler und CI hätten aus verschiedenen Quellen generiert und das
+Übereinstimmung genannt.
+
+Vendoring statt Submodul oder npm-Dependency, begründet in `tokens/README.md`: die
+npm-Variante ist nicht verfügbar (das Paket verlangt `tailwindcss >=4.1`, NativeWind v4
+verlangt v3 — bliebe nur `--force` oder repo-weites `legacy-peer-deps`), und ein Submodul
+ist für 11 KB CSS zu viel Apparat. Die Auflösung liegt jetzt zentral in
+`scripts/tokens-source.mjs` und trifft **genau einen** Pfad; gefunden wird die Repo-Wurzel
+über einen Marker (Name + `workspaces` in der Root-`package.json`), nicht über `../`-Ebenen
+— Ebenen zählen war es, was beim Umzug nach `apps/*` brach.
+
+Der eigentliche Gewinn: **der Drift-Test läuft jetzt bedingungslos.** Vorher hat er sich
+im CI selbst übersprungen, weil dort die Quelle fehlte — also genau dort, wo Drift auffallen
+muss. Verifiziert, indem `#ff5064` in `tokens/theme.css` verschoben und nicht regeneriert
+wurde: der Test schlägt fehl.
+
 ## Offen
 
 - Der Expo-Prototyp dupliziert noch die **Modelltypen** (`models.ts`, `format.ts`,
@@ -166,7 +188,4 @@ React-Screen.
 - GitHub Pages steht noch auf `legacy` (`main:/docs`) und serviert den Designentwurf.
   Umstellen auf `build_type: workflow`, damit der Web-Build deployt wird ohne
   Build-Output zu committen.
-- `wp-design-tokens` liegt außerhalb des Repos. Beide Token-Brücken suchen es jetzt nach
-  oben statt Ebenen zu zählen, aber im CI existiert es nicht — die generierten Dateien
-  sind committet. Wie es sauber hereinkommt (Submodul, npm-Dependency, vendoring), ist
-  eine offene Infrastrukturentscheidung.
+

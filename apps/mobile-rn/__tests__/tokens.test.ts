@@ -4,10 +4,12 @@
  * aber `npm run tokens` vergisst — oder ein Generat von Hand editiert.
  */
 import { execFileSync } from 'node:child_process';
-import { existsSync, readFileSync } from 'node:fs';
-import { dirname, resolve } from 'node:path';
+import { readFileSync } from 'node:fs';
+import { resolve } from 'node:path';
 
 import { colors, spacingPx } from '../src/lib/theme/tokens.generated';
+// Resolves the vendored tokens/ and nothing else — see scripts/tokens-source.mjs.
+import { themeCssPath } from '../../../scripts/tokens-source.mjs';
 
 const ROOT = resolve(__dirname, '..');
 
@@ -15,41 +17,21 @@ function read(rel: string): string {
   return readFileSync(resolve(ROOT, rel), 'utf8');
 }
 
-/** Same upward search the generator uses — see scripts/generate-tokens.mjs. */
-function findThemeCss(from: string): string | null {
-  for (let dir = from; ; dir = dirname(dir)) {
-    const candidate = resolve(dir, 'wp-design-tokens/css/theme.css');
-    if (existsSync(candidate)) return candidate;
-    if (dirname(dir) === dir) return null;
-  }
-}
-
 /**
- * The drift check needs the SOURCE tokens, and wp-design-tokens is a separate
- * repo that is only present as a sibling checkout — CI does not have it, because
- * the generated files are committed instead. So this one test runs where the
- * source exists (every developer machine, i.e. where drift is actually
- * introduced) and reports itself as skipped where it does not.
- *
- * It is skipped LOUDLY on purpose: a check that quietly disappears is worse than
- * no check. The two assertions below need no source and always run, so token
- * VALUES stay guarded even in CI.
- *
- * Making this unconditional requires deciding how wp-design-tokens enters this
- * repo (submodule, dependency, or vendoring the three CSS files) — see
- * adr/0004-react-native-pivot.md, "Offen".
+ * The drift check used to skip itself wherever the token source was missing,
+ * because wp-design-tokens was a sibling checkout that CI did not have. The
+ * tokens are vendored into tokens/ now, so the source is present everywhere and
+ * this check is unconditional — which is the point: drift is introduced on
+ * developer machines, but it has to be *caught* on the PR.
  */
-const THEME_CSS = findThemeCss(ROOT);
-if (!THEME_CSS) {
-  console.warn(
-    '\n[tokens.test] SKIPPING the drift check: wp-design-tokens not found in any parent\n' +
-      '              directory. Token VALUES are still asserted. See ADR 0004.\n',
-  );
-}
-const itWithSource = THEME_CSS ? it : it.skip;
-
 describe('Token-Brücke', () => {
-  itWithSource('generierte Dateien sind aktuell (kein Drift gegenüber theme.css)', () => {
+  it('liest die Tokens aus dem Repo, nicht aus einem Fremd-Checkout', () => {
+    // An upward search once found a foreign checkout at a different commit than
+    // the repo's own copy; asserting the path is inside the repo forecloses that.
+    expect(themeCssPath()).toBe(resolve(ROOT, '../../tokens/theme.css'));
+  });
+
+  it('generierte Dateien sind aktuell (kein Drift gegenüber theme.css)', () => {
     const before = {
       tw: read('tailwind.tokens.generated.js'),
       ts: read('src/lib/theme/tokens.generated.ts'),

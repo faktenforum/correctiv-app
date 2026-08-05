@@ -24,7 +24,11 @@
     "apps/mobile-rn/assets/**",
     "**/*.d.mts",
     "package-lock.json",
-    "**/*.generated.*"
+    "**/*.generated.*",
+    // Vendored design tokens — must stay byte-identical to upstream so a plain diff
+    // against a fresh checkout is meaningful, and because theme.css is embedded
+    // verbatim into the reader WebView. See tokens/README.md.
+    "tokens/**"
   ],
   "sortPackageJson": false
 }
