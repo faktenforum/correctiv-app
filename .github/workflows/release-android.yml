@@ -9,7 +9,7 @@
 # run only (no release is created) — useful for testing the pipeline.
 #
 # Signing:
-#   - If the ANDROID_KEYSTORE_* secrets are set (see docs/release.md), the build
+#   - If the ANDROID_KEYSTORE_* secrets are set (see RELEASE.md), the build
 #     is signed with your real upload key -> Play-ready APK + AAB.
 #   - If they are NOT set, it falls back to the committed throwaway TEST keystore
 #     (signing/correctiv-test.keystore) -> installable test APK only (no AAB).

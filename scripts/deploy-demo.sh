@@ -15,8 +15,14 @@ DEST="$HERE/../docs"
 [ -d "$SRC" ] || { echo "Design source not found: $SRC" >&2; exit 1; }
 mkdir -p "$DEST"
 
-# Wipe previous deploy (keep .nojekyll).
-find "$DEST" -mindepth 1 -maxdepth 1 ! -name '.nojekyll' -exec rm -rf {} +
+# Remove ONLY what this script deploys. It used to wipe everything in $DEST
+# except .nojekyll, which silently made docs/ unusable for anything else — the
+# ADRs lived at docs/adr/ for a while and one demo deploy would have deleted them.
+# They now live in adr/, but a deploy must not be able to destroy a sibling
+# directory it knows nothing about.
+rm -rf "$DEST"/css
+rm -f "$DEST"/*.dc.html "$DEST"/index.html "$DEST"/content.js "$DEST"/support.js \
+  "$DEST"/image-slot.js "$DEST"/ios-frame.jsx "$DEST"/.image-slots.state.json
 
 # Screen/overlay components + main entry.
 cp "$SRC"/*.dc.html "$DEST"/
