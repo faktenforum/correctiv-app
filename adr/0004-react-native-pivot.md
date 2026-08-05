@@ -202,6 +202,44 @@ wurde es, weil Jest nicht mehr beendete). Und `core-store-binding.test.tsx` hat 
 gerenderten Bäume nie abgebaut: ein montierter Probe bleibt am Store abonniert, reagiert
 auf den Reset im `beforeEach` und verschiebt den Zustand für den nächsten Test.
 
+**Entdecken steht** (Phase 4b): Verzeichnis mit 7 Gruppen, Themenschiene, Suche mit
+lokalem Rückfall, eine Vorlage für alle Projekt- und Themenseiten. Drei
+Entscheidungen darin sind erklärungsbedürftig.
+
+*Der Designentwurf gewinnt gegen den NativeScript-Stand, wo sie sich widersprechen.*
+Der NS-Stand baute das Verzeichnis aus grauen `hub-card`s mit Icon;
+`docs/DiscoverScreen.dc.html` zeigt Hairline-getrennte Zeilen mit kleinem
+Gruppenlabel. Bei 17 Einträgen in 7 Gruppen liest die Liste sich schlicht besser —
+und der Entwurf ist laut Plan die Optik-Referenz, der NS-Bestand die
+Funktions-Spezifikation. Dasselbe bei der projekteigenen Aktion: eine
+Outline-Schaltfläche statt einer zweiten Karte.
+
+*Zwei Namensräume treffen auf eine Route.* `/projekt/<id>` bedient Projekte aus
+`projectGroups` **und** Themen aus `interests`; `klima`, `lokal` und `schweiz` gibt
+es in beiden. `resolveProject` im Core entscheidet: Projekt gewinnt, weil seine
+Seite die redaktionelle Beschreibung und die eigene Aktion hat. Der NS-Stand baute
+für jeden Chip eine synthetische Themenseite und überschrieb damit echte
+Beschreibungen mit „Alle Beiträge zum Thema Klima." — das ist bewusst geändert.
+
+*Ein nativer Header-Suchbalken wäre der falsche Weg.* `Stack.SearchBar` /
+`headerSearchBarOptions` ist die Expo-Empfehlung, aber diese App setzt durchgehend
+`headerShown: false` und baut ihre Kopfzeilen selbst, damit iOS, Android und Web
+dieselbe Marke zeigen. Ein nativer Balken sieht auf jeder Plattform anders aus und
+auf Web gar nicht. Deshalb `ScreenHeader` + `TextInput`. Der `autoFocus` dort ist
+eine bewusste Ausnahme von `jsx-a11y/no-autofocus`, mit Begründung in
+`.oxlintrc.json`: der Bildschirm existiert für nichts anderes und wird nur durch
+einen ausdrücklichen Tipp auf den Sucheinstieg erreicht.
+
+**Ein Defekt, den erst der Browser zeigte:** eine dynamische Route exportiert als
+*eine* Datei `projekt/[id].html`. Auf einem statischen Host ohne Rewrites — also
+genau GitHub Pages — antwortet damit jede echte URL darunter mit 404;
+`/projekt/klima` tat es, während Build, Typecheck und alle Tests grün blieben.
+`generateStaticParams()` in der Route löst es: der Export erzeugt jetzt eine Datei
+pro Kennung (21 Stück, verifiziert). Nativ war nie betroffen, dort gibt es keine
+URLs. Zweiter Fund derselben Art: `tsconfig.test.json` listete `nativewind-env.d.ts`
+nicht, weshalb der erste Test, der eine echte Komponente rendert, an jedem
+`className` im Baum scheiterte — latent, solange Tests nur `<Text>` rendern.
+
 ## Offen
 
 - **Das Web-Target sieht keine Live-Artikel.** `correctiv.org` sendet keinen
@@ -212,6 +250,9 @@ auf den Reset im `beforeEach` und verschiebt den Zustand für den nächsten Test
   RSS ist öffentliche Daten — billigster und korrektester Weg), (b) ein gebündelter
   Feed-Snapshot als Web-Fallback (die NS-App generiert schon
   `assets/data/feeds/<key>.json`), (c) ein Proxy. Entscheidung steht aus.
+  Seit Phase 4b behauptet das Web-Demo dabei wenigstens nichts Falsches: die Suche
+  fällt auf den lokalen Korpus zurück, und die Projektseite schreibt „Beiträge
+  konnten nicht geladen werden" statt endlos zu drehen (im Browser verifiziert).
 - **Der Artikel-/Reader-Typ ist noch doppelt.** `Article` (App) gegen `ArticleDetail` (Core)
   sind anders geschnitten, nicht bloß anders benannt: `kicker`/`topline`,
   `title`/`headline`, `badge`/`ratingText`, plus `dateText`/`excerpt` nur im Core und

@@ -62,7 +62,7 @@ a real web build of the actual app ([ADR 0004](adr/0004-react-native-pivot.md)).
 
 ```bash
 npm install                    # installs the whole workspace
-npm run check                  # every typecheck + 156 headless tests, ~2 s, no device
+npm run check                  # every typecheck + 198 headless tests, ~2 s, no device
 ```
 
 **The app going forward** (`apps/mobile-rn`) — no emulator needed for the web target:
@@ -230,13 +230,15 @@ apps/mobile/                @correctiv/mobile — the NativeScript app
   App_Resources/            Android (manifest, icons) and iOS (Info.plist) platform resources
 
 apps/mobile-rn/             @correctiv/mobile-rn — the Expo app (iOS, Android, web)
-  src/app/                  expo-router routes: (tabs)/ + artikel
+  src/app/                  expo-router routes: (tabs)/ + artikel, suche, projekt/[id]
   src/components/reader/    ReaderView.tsx | .web.tsx | types.ts — the ONE platform split
   src/components/ui/        design system (Typo, Button, Card, Badge, Chip, Screen, …)
-  src/components/feed|home/ feed and home building blocks
+  src/components/feed|home|discover/  feed, home and directory building blocks
   src/lib/theme/            token-bridge output, typography, fonts
-  src/lib/feeds|articles/   sources, parsers, extraction, reader HTML  (to be replaced
-                            by packages/app-core — see ADR 0004 "Offen")
+  src/lib/feeds/            transport only: client, useFeed, the offline search corpus
+                            (model, catalogue and parsers come from packages/app-core)
+  src/lib/articles/         extraction, reader HTML, offline bundle
+  src/lib/discover/         projectTarget — what tapping a directory entry means
   src/lib/net/              cachedFetch (network-first / cache-first policies)
   src/lib/store/            Zustand stores (persisted via AsyncStorage)
   __tests__/                jest-expo, incl. the web-target guard
@@ -272,6 +274,7 @@ sync so the trap cannot be re-armed by a "consistency" rename. Details in the AD
 | **Expo:** `react-native-webview` has no web build — it renders "React Native WebView does not support this platform.", and `expo export --platform web` still succeeds, so CI can go green on a broken route | platform-split behind `components/reader/ReaderView`, enforced by `apps/mobile-rn/__tests__/web-target.test.ts` ([ADR 0004](adr/0004-react-native-pivot.md)) |
 | **Expo:** serving a static export without clean URLs makes Expo Router render its *unmatched route* page — looks like an app bug, is a server bug | map `/artikel` → `artikel.html`; plain `python3 -m http.server` will not do |
 | **Web target:** `correctiv.org` sends no `Access-Control-Allow-Origin`, so a browser blocks every RSS request — the web demo renders the shell, the sample data and PeerTube content, but **no live articles**. Native is unaffected (no CORS there) | measured 2026-08-05; `tube.funfacts.de` does send `*`, which is why the media row works. Needs either a response header from CORRECTIV ops or a bundled feed snapshot as the web fallback — see [ADR 0004](adr/0004-react-native-pivot.md) |
+| **Expo:** a dynamic route exports as one `[id].html`, so on a static host without rewrites every real URL under it 404s — `/projekt/klima` did, while the build and every test stayed green | export `generateStaticParams()` from the route (see `apps/mobile-rn/src/app/projekt/[id].tsx`); the export then pre-renders one file per id. Native never notices — it has no URLs |
 | **Expo:** Metro's `getDefaultConfig` assumes a single-project layout, so in this workspace `packages/app-core` is invisible and hoisted deps do not resolve | `watchFolders` + `resolver.nodeModulesPaths` + `disableHierarchicalLookup` in `apps/mobile-rn/metro.config.js` |
 | A token bridge that searches **upwards** for its source can find a *foreign* checkout: here one at `17b87c8` while the repo's own copy was `501ee10`, so a developer and CI would generate from different sources and call it agreement | tokens vendored into [`tokens/`](tokens/README.md), resolved to exactly one path by `scripts/tokens-source.mjs`; drift check now unconditional |
 | Counting `../` levels to reach a shared file breaks on the next move — a hard-coded depth silently broke both token bridges when the apps moved into `apps/*` | resolve via a marker (root `package.json` name + `workspaces`), not by depth |

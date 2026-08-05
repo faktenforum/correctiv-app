@@ -123,3 +123,13 @@ function buildStyle(spec: Spec): TextStyle {
 export const typography: Record<TypoVariant, TextStyle> = Object.fromEntries(
   (Object.keys(SPECS) as TypoVariant[]).map((v) => [v, buildStyle(SPECS[v])]),
 ) as Record<TypoVariant, TextStyle>;
+
+/**
+ * Which typeface a variant uses, so a caller can change the WEIGHT without
+ * losing the family. typography.css treats the two as separate axes
+ * (`ty-text-m font-sans-semibold`), and the design uses that combination for
+ * list titles — 15 px sans semibold, which no single variant provides.
+ */
+export const typoFamily: Record<TypoVariant, FontFamily> = Object.fromEntries(
+  (Object.keys(SPECS) as TypoVariant[]).map((v) => [v, SPECS[v].family]),
+) as Record<TypoVariant, FontFamily>;
