@@ -47,6 +47,13 @@ const push = router.push as jest.Mock;
 const params = useLocalSearchParams as jest.Mock;
 
 const CALLOUT = callouts[0];
+/**
+ * What the counter counts and what the button says now follow the callout's kind —
+ * a survey asks for Teilnahmen, a CrowdNewsroom for Beiträge. Derived here rather
+ * than hard-coded, so the test keeps testing the wiring and not the fixture.
+ */
+const UNIT = CALLOUT.kind === 'survey' ? 'Teilnahmen' : 'Beiträge';
+const CTA = CALLOUT.kind === 'survey' ? 'Teilnehmen' : 'Mitmachen';
 const SLIDES = CALLOUT.formSchema.slides;
 const initialParticipation = coreStores.participation.getState();
 
@@ -82,13 +89,25 @@ describe('Mitmachen hub', () => {
 
   it('shows the live contribution count per callout', () => {
     expect(renderedText(render(<MitmachenScreen />))).toContain(
-      `${formatNumberDe(CALLOUT.responseCount)} Beiträge`,
+      `${formatNumberDe(CALLOUT.responseCount)} ${UNIT}`,
     );
+  });
+
+  it('asks a survey and a CrowdNewsroom in their own words', () => {
+    const text = renderedText(render(<MitmachenScreen />));
+    // Both kinds exist in the data, and each brings its own kicker, counter unit
+    // and button label. All three callouts used to read CROWDNEWSROOM · Mitmachen.
+    expect(text).toContain('UMFRAGE');
+    expect(text).toContain('Teilnehmen');
+    expect(text).toContain('CROWDNEWSROOM');
+    expect(text).toContain('Mitmachen');
+    expect(text).toContain('Teilnahmen');
+    expect(text).toContain('Beiträge');
   });
 
   it('opens the callout page, not the form', () => {
     // The privacy section comes BEFORE the form — that ordering is the product.
-    press(render(<MitmachenScreen />), 'Mitmachen');
+    press(render(<MitmachenScreen />), CTA);
     expect(push).toHaveBeenCalledWith({
       pathname: '/aufruf/[slug]',
       params: { slug: CALLOUT.slug },
@@ -102,7 +121,7 @@ describe('Mitmachen hub', () => {
     const text = renderedText(render(<MitmachenScreen />));
     expect(text).toContain('✓ Sie haben beigetragen');
     // …and the count has moved by one.
-    expect(text).toContain(`${formatNumberDe(CALLOUT.responseCount + 1)} Beiträge`);
+    expect(text).toContain(`${formatNumberDe(CALLOUT.responseCount + 1)} ${UNIT}`);
   });
 });
 

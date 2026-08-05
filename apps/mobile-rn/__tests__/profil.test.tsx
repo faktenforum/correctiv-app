@@ -24,7 +24,7 @@ jest.mock('@expo/vector-icons', () => {
 
 import { router } from 'expo-router';
 
-import { press, render, renderedText } from './support/rendering';
+import { findAllPressable, press, render, renderedText } from './support/rendering';
 
 import EinstellungenScreen from '@/app/einstellungen';
 import GespeichertScreen from '@/app/gespeichert';
@@ -73,11 +73,16 @@ describe('Profil as a guest', () => {
   });
 
   it('hides the member-only sections but keeps Backstage visible', () => {
-    const text = renderedText(render(<ProfilScreen />));
+    const tree = render(<ProfilScreen />);
+    const text = renderedText(tree);
     expect(text).not.toContain('Ihr Beitrag');
     expect(text).not.toContain(quarterlyReport.quarter);
     // Backstage is teased openly to guests — that is the concept, not an oversight.
     expect(text).toContain('Backstage ansehen');
+    // …and it is marked as the club's, so the tease reads as an invitation. Asserted
+    // on the row's accessibility label rather than on the badge text, because
+    // "Club" also occurs in the subtitle — and this way a screen reader is covered too.
+    expect(findAllPressable(tree, 'Backstage ansehen, Club')).toHaveLength(1);
   });
 });
 
@@ -116,7 +121,7 @@ describe('Profil as a member', () => {
     join();
     const tree = render(<ProfilScreen />);
 
-    press(tree, quarterlyReport.quarter);
+    press(tree, `${quarterlyReport.quarter}, Club`);
     press(tree, 'Gespeicherte Artikel');
     press(tree, 'App-Einstellungen');
 

@@ -11,8 +11,8 @@ import { openArticle } from '@/lib/openArticle';
 import { coreActions, useMembership, useSavedArticles, useSettings } from '@/lib/store/core';
 
 /**
- * Die drei Newsletter aus dem Konzept. Der Zustand liegt im Core-Store, damit die
- * Auswahl einen Neustart übersteht.
+ * The three newsletters from the concept. State lives in the core store, so a
+ * choice survives a restart.
  */
 const NEWSLETTERS = [
   {
@@ -25,11 +25,11 @@ const NEWSLETTERS = [
 ] as const;
 
 /**
- * Drei echte Recherchen aus dem gebündelten Offline-Index.
+ * Three real investigations from the bundled offline index.
  *
- * Der NativeScript-Stand filterte dafür auf `feed === 'recherchen'`; der Index
- * hier ist nach URL geschlüsselt und trägt kein Feed-Feld, also entscheidet die
- * URL — Faktenchecks sind keine Impact-Recherchen.
+ * The NativeScript build filtered on `feed === 'recherchen'`; this index is keyed by
+ * URL and carries no feed field, so the URL decides — fact checks are not impact
+ * investigations.
  */
 const IMPACT_ARTICLES = Object.entries(OFFLINE_ARTICLES)
   .filter(([url]) => !url.includes('/faktencheck/'))
@@ -37,12 +37,12 @@ const IMPACT_ARTICLES = Object.entries(OFFLINE_ARTICLES)
   .map(([url, article]) => ({ url, title: article.title }));
 
 /**
- * Profil — Mitgliedschaft, Impact, Bericht, Backstage, Gespeichertes, Newsletter,
- * Einstellungen.
+ * Profil — membership, impact, report, backstage, saved articles, newsletters,
+ * settings.
  *
- * `isMember` steuert praktisch jeden Abschnitt und wird deshalb pro Render gelesen,
- * niemals in eine lokale Variable gelegt: der app-weite Statuswechsel ist der
- * Vorführeffekt der Demo (ADR 0004).
+ * `isMember` drives nearly every section, which is why it is read per render and
+ * never parked in a local variable: the app-wide status flip is the demo's moment
+ * (ADR 0004).
  */
 export default function ProfilScreen() {
   const membership = useMembership();
@@ -124,13 +124,14 @@ export default function ProfilScreen() {
       )}
 
       <View className="mt-m">
-        <Overline label={membership.isMember ? 'Ihr Bereich' : 'Entdecken'} />
+        <Overline label={membership.isMember ? 'Ihr Bereich' : 'Meine App'} />
         <View className="mt-2xs">
           {membership.isMember && (
             <NavCard
               icon="document-text-outline"
               title={quarterlyReport.quarter}
               subtitle="Wohin Ihr Beitrag fließt — transparent aufgeschlüsselt."
+              club
               onPress={() => router.push('/bericht')}
             />
           )}
@@ -142,6 +143,7 @@ export default function ProfilScreen() {
                 ? 'Tagebücher, Bonusfolgen, Events'
                 : 'Was Clubmitglieder erwartet — offen angeteasert.'
             }
+            club
             onPress={() => router.push('/backstage')}
           />
           <NavCard
@@ -181,7 +183,7 @@ export default function ProfilScreen() {
   );
 }
 
-/** Wie lange schon dabei — grob, aber nie „seit 0 Monaten". */
+/** How long they have been aboard — rough, but never "for 0 months". */
 function impactLine(memberSince: string | null): string {
   if (!memberSince) return '';
   const months = Math.max(
