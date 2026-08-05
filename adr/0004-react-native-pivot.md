@@ -297,6 +297,33 @@ den betreffenden Code erreichte), und die Pfad-Aliase wollen in tsc und jest die
 generischen `@/*` zuerst braucht, damit `declare module '*.mp3'` überhaupt greift.
 Die Differenz trägt jetzt eine Zeile in `jest.config.js`.
 
+**Mitmachen steht** (Phase 4d): drei CrowdNewsroom-Aufrufe, das mehrstufige
+Formular aus dem Schema des jeweiligen Aufrufs, Faktenforum mit Prüfstatus und
+Quellenbewertung, Abriss-Atlas, Tippkanal.
+
+*Der Zähler ist das Produkt.* „Ihr Beitrag zählt" ist die Zusage, also erhöht eine
+Einreichung die sichtbare Zahl sofort und dauerhaft — auf der Übersicht, auf der
+Aufrufseite und auf der Dankeseite dieselbe Rechnung
+(`responseCount + extraCount(slug)`). Ein Test hält es fest, weil eine Einreichung,
+die die Zahl nicht bewegt, still das Versprechen bricht.
+
+*Vertrauen steht vor dem Formular.* „Wer fragt?" und „Was passiert mit Ihren
+Daten?" stehen auf der Aufrufseite über dem Knopf, nicht im Kleingedruckten — so
+schon im NativeScript-Stand, und die Reihenfolge ist Absicht.
+
+*Eine Falle beim Bauen vermieden:* im Formular hieß der Kopfzeilen-Knopf zunächst
+auch „Zurück" — derselbe Text wie der Schritt-zurück-Knopf darunter, mit völlig
+anderer Wirkung (Formular verlassen vs. eine Folie zurück). Jetzt „Abbrechen".
+
+*Der Dateianhang bleibt eine Attrappe.* Ein echter Bildwähler wäre ein weiteres
+natives Modul für einen Fluss, der ohne Backend nirgends ankommt — die
+Beschriftung sagt „simuliert", statt es zu verschweigen.
+
+Nebenbei aufgefallen: **typisierte Routen entstehen bei `expo start`, nicht bei
+`expo export`** — und `.expo/` ist gitignoriert. Eine neue Route lässt `tsc` also
+lokal scheitern, bis Metro einmal gelaufen ist, während CI ohne `.expo/types` jeden
+href durchwinkt. Ein grüner CI-Typecheck ist damit **kein** Beweis über hrefs.
+
 ## Offen
 
 - **Das Web-Target sieht keine Live-Artikel.** `correctiv.org` sendet keinen

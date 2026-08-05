@@ -82,9 +82,10 @@ prüft alle Workspaces zusammen); ESLint ist hier entfallen.
 ```
 src/
   app/                  expo-router-Routen: (tabs)/ + artikel, suche, projekt/[id],
-                        serie/[id], video, player
+                        serie/[id], video, player, aufruf/[slug], formular,
+                        faktenforum, behauptung/[id], atlas
   components/ui/        Design-System (Typo, Button, Card, Badge, Chip, Screen, …)
-  components/feed|home|discover|media|player/  Bausteine je Bereich
+  components/feed|home|discover|media|player|participate/  Bausteine je Bereich
   lib/audio/            der EINE Audio-Player der App (expo-audio, auf Modulebene)
   lib/theme/            Token-Brücke-Outputs + Typografie + Fonts
   lib/feeds/            nur Transport: client, useFeed, Suchkorpus für offline
@@ -115,11 +116,14 @@ Icecast-Streaming + Hintergrund-Audio + Lockscreen-Controls). Audio ist in `src/
 - ✅ **Web-Target** — im Browser verifiziert: Home mit vollem Inhalt und allen fünf Tabs,
   Reader mit Artikel im iframe (korrektes `h1`, 19 Absätze, eingebettete Fonts),
   Entdecken mit allen 17 Einträgen, jede Projektseite unter ihrer eigenen URL,
-  Mediathek mit echten FunFacts-Videos, und ein echter Klick auf „Radio abspielen"
-  bringt die Mini-Leiste hoch (Wiedergabe selbst ist auf Gerät noch nicht geprüft)
-- ⏳ M4 Mitmachen · M5 Club & Profil · M6 Onboarding + Demo-Härtung
+  Mediathek mit echten FunFacts-Videos, ein echter Klick auf „Radio abspielen"
+  bringt die Mini-Leiste hoch (Wiedergabe selbst ist auf Gerät noch nicht geprüft),
+  und der Mitmach-Fluss trägt bis in Schritt 1 des Formulars
+- ✅ **M4** Mitmachen — drei CrowdNewsroom-Aufrufe mit mehrstufigem Formular aus dem
+  eigenen Schema, Faktenforum mit Prüfstatus, Abriss-Atlas, WhatsApp-Tippkanal
+- ⏳ M5 Club & Profil · M6 Onboarding + Demo-Härtung
 
-Die Screens `mitmachen` und `profil` sind noch Stubs. Vorlage für den Nachbau ist
+Nur `profil` ist noch ein Stub. Vorlage für den Nachbau ist
 [`../mobile`](../mobile) — dort liegen 43 fertige SFCs.
 
 ## Was noch aus dem Core kommen soll

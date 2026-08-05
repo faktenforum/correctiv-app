@@ -1,4 +1,4 @@
-import { act, create, type ReactTestRenderer } from 'react-test-renderer';
+import { act } from 'react-test-renderer';
 
 import { projectGroups } from '@correctiv/app-core/data/projects';
 import { searchSamples } from '@correctiv/app-core/data/search-samples';
@@ -47,7 +47,8 @@ jest.mock('@/lib/feeds/useFeed', () => ({
 
 // Imported after the mocks so the screens pick them up.
 import { router, useLocalSearchParams } from 'expo-router';
-import { SafeAreaProvider, type Metrics } from 'react-native-safe-area-context';
+
+import { press, render, renderedText, typeInto } from './support/rendering';
 
 import { searchArticles } from '@correctiv/app-core/services/search.service';
 
@@ -72,59 +73,6 @@ beforeEach(() => {
   params.mockReturnValue({});
   useFeedMock.mockReturnValue({ data: null, loading: false, error: null, reload: jest.fn() });
 });
-
-// Trees are unmounted after every test: a mounted screen keeps timers and store
-// subscriptions alive and would run its effects into the next test.
-const mounted: ReactTestRenderer[] = [];
-afterEach(() => {
-  act(() => {
-    for (const tree of mounted) tree.unmount();
-  });
-  mounted.length = 0;
-});
-
-/**
- * The screens use SafeAreaView, which needs metrics — there is no native view to
- * measure here. Not react-native-safe-area-context/jest/mock: NativeWind's
- * css-interop patches the real module's SafeAreaView, and the mock has no such
- * component for it to patch (`Cannot read properties of undefined`).
- */
-const METRICS: Metrics = {
-  frame: { x: 0, y: 0, width: 402, height: 760 },
-  insets: { top: 47, left: 0, right: 0, bottom: 34 },
-};
-
-function render(element: React.ReactElement): ReactTestRenderer {
-  let tree!: ReactTestRenderer;
-  act(() => {
-    tree = create(<SafeAreaProvider initialMetrics={METRICS}>{element}</SafeAreaProvider>);
-  });
-  mounted.push(tree);
-  return tree;
-}
-
-/** Every string the tree renders, joined — enough to assert what a screen shows. */
-function renderedText(tree: ReactTestRenderer): string {
-  const walk = (node: unknown): string[] => {
-    if (typeof node === 'string') return [node];
-    if (Array.isArray(node)) return node.flatMap(walk);
-    if (node && typeof node === 'object' && 'children' in node) {
-      return walk((node as { children: unknown }).children);
-    }
-    return [];
-  };
-  return walk(tree.toJSON()).join('\n');
-}
-
-/** The one element these tests drive: the search field, found by its label. */
-function typeInSearchField(tree: ReactTestRenderer, text: string): void {
-  const field = tree.root.find(
-    (node) => node.props?.accessibilityLabel === 'Suchbegriff' && !!node.props?.onChangeText,
-  );
-  act(() => {
-    field.props.onChangeText(text);
-  });
-}
 
 describe('projectTarget', () => {
   it('gives every directory entry a target', () => {
@@ -192,29 +140,20 @@ describe('Entdecken', () => {
 
   it('offers the search entry', () => {
     const tree = render(<EntdeckenScreen />);
-    const entry = tree.root.find((node) => node.props?.accessibilityLabel === 'Suche öffnen');
-    act(() => {
-      entry.props.onPress();
-    });
+    press(tree, 'Suche öffnen');
     expect(push).toHaveBeenCalledWith('/suche');
   });
 
   it('opens an external project in the browser instead of navigating', () => {
     const tree = render(<EntdeckenScreen />);
-    const row = tree.root.find((node) => node.props?.accessibilityLabel === 'FunFacts');
-    act(() => {
-      row.props.onPress();
-    });
+    press(tree, 'FunFacts');
     expect(openExternalMock).toHaveBeenCalledWith('https://www.youtube.com/@funfacts');
     expect(push).not.toHaveBeenCalled();
   });
 
   it('opens a project with a feed as a page', () => {
     const tree = render(<EntdeckenScreen />);
-    const row = tree.root.find((node) => node.props?.accessibilityLabel === 'Recherchen');
-    act(() => {
-      row.props.onPress();
-    });
+    press(tree, 'Recherchen');
     expect(push).toHaveBeenCalledWith({ pathname: '/projekt/[id]', params: { id: 'recherchen' } });
   });
 });
@@ -293,7 +232,7 @@ describe('Suche', () => {
 
   it('asks nothing before the query is long enough', async () => {
     const tree = render(<SucheScreen />);
-    typeInSearchField(tree, 'k');
+    typeInto(tree, 'Suchbegriff', 'k');
     await settle();
     expect(searchArticlesMock).not.toHaveBeenCalled();
     expect(renderedText(tree)).toContain('Suchen Sie über Recherchen');
@@ -301,7 +240,7 @@ describe('Suche', () => {
 
   it('searches once per settled query, not per keystroke', async () => {
     const tree = render(<SucheScreen />);
-    for (const q of ['kl', 'kli', 'klim', 'klima']) typeInSearchField(tree, q);
+    for (const q of ['kl', 'kli', 'klim', 'klima']) typeInto(tree, 'Suchbegriff', q);
     await settle();
     expect(searchArticlesMock).toHaveBeenCalledTimes(1);
     expect(searchArticlesMock).toHaveBeenCalledWith('klima', 15);
@@ -310,7 +249,7 @@ describe('Suche', () => {
   it('shows the live hits', async () => {
     searchArticlesMock.mockResolvedValue([hit('a', 'Die Klimakrise vor Gericht')]);
     const tree = render(<SucheScreen />);
-    typeInSearchField(tree, 'klima');
+    typeInto(tree, 'Suchbegriff', 'klima');
     await settle();
     expect(renderedText(tree)).toContain('Die Klimakrise vor Gericht');
     expect(searchCorpusMock).not.toHaveBeenCalled();
@@ -321,7 +260,7 @@ describe('Suche', () => {
     searchArticlesMock.mockRejectedValue(new Error('Network request failed'));
     searchCorpusMock.mockResolvedValue([hit('b', 'Aus dem Cache')]);
     const tree = render(<SucheScreen />);
-    typeInSearchField(tree, 'klima');
+    typeInto(tree, 'Suchbegriff', 'klima');
     await settle();
     expect(searchCorpusMock).toHaveBeenCalledWith('klima');
     expect(renderedText(tree)).toContain('Aus dem Cache');
@@ -331,7 +270,7 @@ describe('Suche', () => {
     searchArticlesMock.mockResolvedValue([]);
     searchCorpusMock.mockResolvedValue([hit('c', 'Nur lokal gefunden')]);
     const tree = render(<SucheScreen />);
-    typeInSearchField(tree, 'klima');
+    typeInto(tree, 'Suchbegriff', 'klima');
     await settle();
     expect(renderedText(tree)).toContain('Nur lokal gefunden');
   });
@@ -339,14 +278,14 @@ describe('Suche', () => {
   it('finds project content that is in no feed', async () => {
     const sample = searchSamples.find((s) => s.kind === 'podcast')!;
     const tree = render(<SucheScreen />);
-    typeInSearchField(tree, sample.title.slice(0, 8));
+    typeInto(tree, 'Suchbegriff', sample.title.slice(0, 8));
     await settle();
     expect(renderedText(tree)).toContain(sample.title);
   });
 
   it('reports an empty result instead of staying blank', async () => {
     const tree = render(<SucheScreen />);
-    typeInSearchField(tree, 'zzzzzz');
+    typeInto(tree, 'Suchbegriff', 'zzzzzz');
     await settle();
     // Two assertions rather than one: the interpolated query is its own text
     // node, so the rendered string has a line break where the JSX has none.
