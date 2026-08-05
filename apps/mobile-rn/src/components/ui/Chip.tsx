@@ -14,6 +14,9 @@ export function Chip({ label, selected = false, onPress, className }: ChipProps)
   return (
     <Pressable
       accessibilityRole="button"
+      // Explicit, like Button: the label is otherwise only read off the child Text,
+      // and it gives a test a stable handle on one chip among many.
+      accessibilityLabel={label}
       accessibilityState={{ selected }}
       onPress={onPress}
       className={[

@@ -342,6 +342,28 @@ dafür den gebündelten Artikelindex auf `feed === 'recherchen'`; das Expo-Bundl
 nach URL geschlüsselt und trägt kein Feed-Feld, also entscheidet die URL —
 Faktenchecks sind keine Impact-Recherchen.
 
+**Phase 4 ist fertig** (4e, zweiter Teil): Onboarding, Beitritts-Fluss, Backstage,
+Recherchetagebuch. Alle fünf Tabs und alle Nebenbildschirme stehen.
+
+*Der Statuswechsel funktioniert.* `join()` im Beitritts-Fluss setzt `isMember`, und
+jeder Club-Berührungspunkt reagiert im selben Tick — im Browser durchgeklickt:
+Onboarding → App → Profil → Beitritt → Beitrag → Daten.
+
+*Kein Dark Pattern, und das ist getestet.* Bis zum Abschluss steht neben jedem
+„Weiter" ein gleichwertiges „Erstmal umsehen", ab Schritt 2 des Onboardings ein
+„Überspringen" — und Überspringen **zählt als abgeschlossen**, fragt also nicht beim
+nächsten Start erneut. Backstage ist für Gäste vollständig sichtbar; die Knöpfe
+laden ein, statt zu sperren („der Club ist Nähe, keine Paywall").
+
+*Beitrag als Presets statt Slider.* React Native hat keinen Slider mehr, und für
+Geld ist Antippen genauer als Ziehen — dieselbe Abweichung vom Designentwurf wie
+beim Fortschrittsbalken des Players, aus demselben Grund.
+
+*Der Erststart-Sprung greift nur auf „/".* Erst war er unbedingt — und hätte damit
+auf dem Web-Target jeden geteilten Link überschrieben: wer `/backstage` aufruft,
+soll Backstage sehen. Im Browser gefunden, als der Deep-Link ins Onboarding
+umsprang. Nativ existiert der Fall nicht, dort startet die App immer auf `/`.
+
 ## Offen
 
 - **Das Web-Target sieht keine Live-Artikel.** `correctiv.org` sendet keinen

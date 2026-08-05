@@ -142,7 +142,7 @@ export default function ProfilScreen() {
                 ? 'Tagebücher, Bonusfolgen, Events'
                 : 'Was Clubmitglieder erwartet — offen angeteasert.'
             }
-            onPress={() => router.push('/(tabs)/mediathek')}
+            onPress={() => router.push('/backstage')}
           />
           <NavCard
             icon="bookmark-outline"
@@ -192,10 +192,6 @@ function impactLine(memberSince: string | null): string {
   return `Sie unterstützen CORRECTIV ${time} — unter anderem diese Recherchen wurden mit ermöglicht:`;
 }
 
-/**
- * Der Beitritts-Fluss selbst kommt in 4e-2. Bis dahin führt der Knopf dorthin, wo
- * er schon etwas tut, statt ins Leere zu tippen.
- */
 function openJoinFlow(): void {
-  router.push('/(tabs)/mitmachen');
+  router.push('/beitreten');
 }
