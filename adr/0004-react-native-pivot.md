@@ -364,6 +364,23 @@ auf dem Web-Target jeden geteilten Link überschrieben: wer `/backstage` aufruft
 soll Backstage sehen. Im Browser gefunden, als der Deep-Link ins Onboarding
 umsprang. Nativ existiert der Fall nicht, dort startet die App immer auf `/`.
 
+**Der erste Android-Build dieser App überhaupt** (05.08.2026, lokal): `BUILD
+SUCCESSFUL`, 518 Gradle-Tasks. Damit ist belegt, dass `expo-audio`, `expo-video`,
+`react-native-webview` und `@expo/ui` unter RN 0.85 mit New Architecture zusammen
+durchkompilieren. Nebenbei aufgefallen: **der CI-Job „Android debug build" baut
+`apps/mobile`**, die NativeScript-App. Für die Expo-App lief in CI nur der
+Web-Export — der Swap in Phase 5 würde den Job also auf etwas umstellen, das dort
+noch nie gebaut wurde.
+
+Und der Build hat einen Defekt sichtbar gemacht, den kein Test finden konnte:
+**Autolinking bindet das native Modul ein, aber nur das Config-Plugin bearbeitet
+die nativen Projekte.** `expo-audio` stand nicht in `app.json` → kein
+`FOREGROUND_SERVICE_MEDIA_PLAYBACK`, kein Media-Service, kein
+`UIBackgroundModes: [audio]`. Hintergrund-Wiedergabe und Lockscreen-Steuerung
+hätten also nicht funktioniert, während Build, Typecheck und 273 Tests grün waren.
+Behoben und am Generat verifiziert; `recordAudioAndroid: false`, weil die App nicht
+aufnimmt und die Standardeinstellung sonst `RECORD_AUDIO` verlangt.
+
 ## Offen
 
 - **Das Web-Target sieht keine Live-Artikel.** `correctiv.org` sendet keinen
@@ -383,6 +400,18 @@ umsprang. Nativ existiert der Fall nicht, dort startet die App immer auf `/`.
   `salon5.correctiv.net` (Castopod) und `youtube.com/feeds` keinen senden. Auf Web
   zeigt die Mediathek darum echte FunFacts-Videos, aber Podcast-Beispieldaten mit
   dem Hinweis „Ohne Verbindung — Sie sehen Beispielfolgen."
+- **Vor dem Swap (Phase 5) herausholen, sonst löscht ihn der `git rm`:**
+  `apps/mobile/scripts/spike-audio-server.mjs` (verlangt `Authorization: Bearer
+  spike-token`, sonst 401 — der beweisende Test für den authentifizierten
+  Castopod-Podcast, den die Expo-App genauso braucht) und
+  `apps/mobile/src/assets/data/feeds/*.json` samt
+  `fetch-offline-{articles,podcasts}.mjs` — das ist Option (b) der CORS-Frage
+  oben. Die NativeScript-Fallen aus der README gehören in diese ADR, wo sie
+  Geschichte sind statt Gebrauchsanweisung. Empfehlung: NS-Stand als
+  **annotierter Tag** `nativescript-final` (ein Branch lädt zu Commits ein, ein
+  Tag sagt Schnappschuss; auschecken geht gleich). Und: beide Apps tragen dieselbe
+  Package-ID `org.correctiv.app.prototype` — auf einem Gerät geht nur eine, was
+  einen Parallelbetrieb zum Vergleichen faktisch ausschließt.
 - **Audio ist auf keinem Gerät geprüft.** Die Regeln des Players (Vorschau-Grenze,
   Exklusivität, Wachhund, Lockscreen-Aufruf) sind mit 16 Tests festgehalten, und im
   Browser bringt ein echter Klick auf „Radio abspielen" die Mini-Leiste hoch — dass
