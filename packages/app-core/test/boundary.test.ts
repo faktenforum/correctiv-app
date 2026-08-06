@@ -74,10 +74,29 @@ describe('core stays platform-free', () => {
   );
 
   it('routes every platform capability through a declared port', () => {
-    // Anything the core needs from its host must appear in ports/index.ts.
+    // Anything the core needs from its host must appear in ports/index.ts — one
+    // file to read to know what implementing a new host costs.
     const ports = readFileSync(join(SRC, 'ports/index.ts'), 'utf8');
-    expect(ports).toMatch(/export interface KeyValueStore/);
-    expect(ports).toMatch(/export interface FileStore/);
+    for (const port of ['KeyValueStore', 'BlobStore', 'ContentBundle', 'AudioBackend']) {
+      expect(ports).toMatch(new RegExp(`export interface ${port}`));
+    }
     expect(ports).toMatch(/export interface CorePlatform/);
+  });
+
+  /**
+   * The DOM extraction backend is the one place in the core that has runtime
+   * dependencies, and it exists precisely so the NativeScript app does not have
+   * to. Nothing the NativeScript app can reach may import it — an accidental
+   * import somewhere central would pull htmlparser2 into a bundle whose resolver
+   * cannot handle it, and that failure shows up on a device, not here.
+   */
+  it('keeps the HTML parser inside the DOM extraction backend', () => {
+    const parserImports = files.filter((full) => {
+      if (full.endsWith(join('articles', 'extract', 'dom.ts'))) return false;
+      return /from '(?:htmlparser2|css-select|domutils|dom-serializer|domhandler)'/.test(
+        readFileSync(full, 'utf8'),
+      );
+    });
+    expect(parserImports.map((f) => f.slice(SRC.length + 1))).toEqual([]);
   });
 });

@@ -53,7 +53,7 @@
 import { icons } from '@correctiv/app-core/ui/icons';
 import type { PodcastSeries, PodcastEpisode } from '@correctiv/app-core/data/podcasts';
 import ClubBadge from '../../components/ui/ClubBadge.vue';
-import { useAudioStore } from '../../stores/audio';
+import { useAudioStore } from '../../stores/core-bindings';
 import { useMembershipStore } from '../../stores/core-bindings';
 import { useNavigation } from '../../composables/useNavigation';
 import { formatDateShortDe } from '@correctiv/app-core/lib/format';

@@ -1,25 +1,32 @@
 import { platform } from '../ports';
+import { fetchText, type FetchTextOptions } from './http';
 
 /**
- * Two layers: in-memory (session) + a namespaced blob cache behind the FileStore
- * port. The KeyValueStore port stays reserved for the small store persistences
- * (see stores/persist.ts).
+ * The one cache in this codebase, in two layers: an in-memory session map on top
+ * of the host's `BlobStore` port.
  *
- * On NativeScript the FileStore writes to documents/cache/<ns>/; in a browser it
- * would be backed by IndexedDB/Cache API; in tests it is in-memory.
+ * There used to be two of these — the core's, behind a synchronous port, and the
+ * Expo app's `cachedFetch`, straight onto AsyncStorage with its own policies and
+ * headers. Same job, two TTLs, two sets of failure behaviour. This is both,
+ * merged: `getCached`/`setCached` for typed objects (feeds, videos, articles) and
+ * `fetchCachedText` for the raw bodies that produce them.
+ *
+ * Everything here is best-effort. A read that fails is a miss, a write that fails
+ * is forgotten — a broken cache must never take a screen down with it.
  */
+
 const memory = new Map<string, { data: unknown; ts: number }>();
 
 function fileKey(key: string): string {
-  // djb2 — stable and short enough for file names
+  // djb2 — stable, and short enough to be a file name on every host
   let h = 5381;
   for (let i = 0; i < key.length; i++) h = ((h << 5) + h + key.charCodeAt(i)) >>> 0;
   return h.toString(36);
 }
 
-function readEntry<T>(ns: string, key: string): { data: T; ts: number } | null {
+async function readEntry<T>(ns: string, key: string): Promise<{ data: T; ts: number } | null> {
   try {
-    const raw = platform().files.read(ns, `${fileKey(key)}.json`);
+    const raw = await platform().blobs.read(ns, `${fileKey(key)}.json`);
     if (raw === null) return null;
     return JSON.parse(raw) as { data: T; ts: number };
   } catch {
@@ -27,37 +34,92 @@ function readEntry<T>(ns: string, key: string): { data: T; ts: number } | null {
   }
 }
 
-export function getCached<T>(ns: string, key: string, ttlMs: number): T | null {
+/** A cached value, but only while it is younger than `ttlMs`. */
+export async function getCached<T>(ns: string, key: string, ttlMs: number): Promise<T | null> {
   const memKey = `${ns}:${key}`;
-  const mem = memory.get(memKey);
   const now = Date.now();
-  if (mem && now - mem.ts < ttlMs) return mem.data as T;
+  const mem = memory.get(memKey);
+  if (mem) return now - mem.ts < ttlMs ? (mem.data as T) : null;
 
-  const entry = readEntry<T>(ns, key);
+  const entry = await readEntry<T>(ns, key);
   if (!entry) return null;
-  if (now - entry.ts >= ttlMs) return null;
   memory.set(memKey, entry);
-  return entry.data;
+  return now - entry.ts < ttlMs ? entry.data : null;
 }
 
 /** Also returns expired entries — for stale-while-revalidate and offline fallback. */
-export function getStale<T>(ns: string, key: string): T | null {
+export async function getStale<T>(ns: string, key: string): Promise<T | null> {
   const mem = memory.get(`${ns}:${key}`);
   if (mem) return mem.data as T;
-  return readEntry<T>(ns, key)?.data ?? null;
+  return (await readEntry<T>(ns, key))?.data ?? null;
 }
 
-export function setCached(ns: string, key: string, data: unknown): void {
+export async function setCached(ns: string, key: string, data: unknown): Promise<void> {
   const entry = { data, ts: Date.now() };
   memory.set(`${ns}:${key}`, entry);
   try {
-    platform().files.write(ns, `${fileKey(key)}.json`, JSON.stringify(entry));
+    await platform().blobs.write(ns, `${fileKey(key)}.json`, JSON.stringify(entry));
   } catch {
     // the blob cache is a nicety, not a must
   }
 }
 
-/** Test helper — clears the session layer (the FileStore is owned by the host). */
+/**
+ * Which of network and cache gets asked first.
+ *
+ * - `network-first` — feeds. Keeps the home screen current (that is the demo's
+ *   first impression) and falls back to the cache when the request fails.
+ * - `cache-first` — article pages and other rarely changing resources. A fresh
+ *   entry answers without touching the network at all.
+ *
+ * Both end at the same place: stale beats nothing. Deliberately not a query
+ * library — the offline order has to be explicit and identical on both hosts.
+ */
+export type CachePolicy = 'network-first' | 'cache-first';
+
+export interface FetchCachedOptions extends FetchTextOptions {
+  policy?: CachePolicy;
+  /** Freshness window for `cache-first` (ms). Default 10 minutes. */
+  ttlMs?: number;
+}
+
+const TEXT_NS = 'http';
+const DEFAULT_TTL_MS = 10 * 60 * 1000;
+
+/** A text resource, cached under `key`. See `CachePolicy` for the two orders. */
+export async function fetchCachedText(
+  key: string,
+  url: string,
+  options: FetchCachedOptions = {},
+): Promise<string> {
+  const { policy = 'network-first', ttlMs = DEFAULT_TTL_MS, ...fetchOptions } = options;
+
+  if (policy === 'cache-first') {
+    const fresh = await getCached<string>(TEXT_NS, key, ttlMs);
+    if (fresh !== null) return fresh;
+    try {
+      const body = await fetchText(url, fetchOptions);
+      await setCached(TEXT_NS, key, body);
+      return body;
+    } catch (err) {
+      const stale = await getStale<string>(TEXT_NS, key);
+      if (stale !== null) return stale;
+      throw err;
+    }
+  }
+
+  try {
+    const body = await fetchText(url, fetchOptions);
+    await setCached(TEXT_NS, key, body);
+    return body;
+  } catch (err) {
+    const stale = await getStale<string>(TEXT_NS, key);
+    if (stale !== null) return stale;
+    throw err;
+  }
+}
+
+/** Test helper — clears the session layer (the BlobStore is owned by the host). */
 export function clearMemoryCache(): void {
   memory.clear();
 }

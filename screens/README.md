@@ -157,8 +157,8 @@ unmatched-route page — which looks exactly like a broken route in the app.
   (`correctiv://<route>`) instead, which cannot drift when a layout changes.
 - Podcast series show sample data in the Expo shots: Castopod, Icecast and
   `tube.funfacts.de` serve a Let's Encrypt chain that this emulator image does not
-  trust. That is an ops finding, not an app defect — see the traps table in the
-  root [`README.md`](../README.md).
+  trust. That is an ops finding, not an app defect — see
+  [`TROUBLESHOOTING.md`](../TROUBLESHOOTING.md#data-sources).
 - The draft's content is fixed sample data with a fixed date; both builds pull live
   feeds, so the articles differ between the sets by design.
 - `83-video` shows a black frame. The embed's error message is gone, but this

@@ -1,0 +1,125 @@
+# ADR 0006 — One core, two hosts
+
+Status: accepted, 2026-08-06. Amends [ADR 0005](0005-react-native-over-nativescript.md):
+the stack decision stands, the removal schedule does not.
+
+## Context
+
+ADR 0005 chose Expo / React Native and scheduled `apps/mobile` (NativeScript) for
+removal in phase 5. Its case against keeping both rested on two costs:
+
+1. **Parity is the cost** — a comparison only means something if both apps keep
+   feature parity, which doubles every screen and every change.
+2. **The core is already not shared** — the NativeScript app carried its own audio
+   and podcast stores, and the core's new podcasts store went unused there. "The
+   drift happened inside one session, with nobody doing anything wrong."
+
+The second cost was not a property of having two hosts. It was a property of the
+core stopping halfway. An audit found the duplication had grown well past those two
+stores:
+
+| Concern | `apps/mobile` | `apps/mobile-rn` |
+| --- | --- | --- |
+| Article extraction | regex, in the core | htmlparser2, in the app (175 lines) |
+| Article model | `ArticleDetail` | its own `Article`, cut differently |
+| Reader document | `template.html` + builder | a template literal (136 lines) |
+| Fact-check vocabulary | English slugs | German slugs |
+| HTTP cache | core, synchronous port | `cachedFetch`, AsyncStorage |
+| Feed state | Pinia store (147 lines) | `client` + `useFeed` (113 lines) |
+| Podcast state | Pinia clone (78 lines) | the core's store |
+| Audio | store + service (282 lines) | its own store (269 lines) |
+| Offline bundle script | one | another |
+
+Every row is one behaviour with two implementations, and several of them had
+already diverged in ways a user would notice. The Expo audio store fixed two bugs
+the NativeScript one still had — a club preview that a second tap released in full,
+and an error state that flipped back to a spinner. The NativeScript feed store did
+stale-while-revalidate and borrowed bundled cover images offline; the Expo one did
+neither. Neither app knew what the other had learned.
+
+## Decision
+
+**`packages/app-core` holds the behaviour; the two apps hold their view layer and
+their platform adapters. Both stay, `apps/mobile-rn` is still the app going
+forward, and no removal date is set.**
+
+Concretely, the core gained the article domain (one model, one fact-check
+vocabulary, one reader document, one load cascade), the feed store, the audio state
+machine, one cached fetch, and the collection half of the offline-bundle scripts.
+What is left in each app is its screens, its bindings, and one file that implements
+the ports.
+
+Four ports, all declared in `packages/app-core/src/ports/index.ts`:
+
+| Port | What the host answers | NativeScript | Expo |
+| --- | --- | --- | --- |
+| `KeyValueStore` | small settings, synchronously | `ApplicationSettings` | AsyncStorage + a hydrated mirror |
+| `BlobStore` | the HTTP cache, asynchronously | `File` in `documents/cache/` | AsyncStorage |
+| `ContentBundle` | what shipped inside the app | JSON in the app folder | a generated TS module |
+| `AudioBackend` | playback, as status ticks | `TNSPlayer` + a polling timer | expo-audio's status events |
+
+`BlobStore` was `FileStore` and synchronous, which was NativeScript's `File` shape
+leaking into the contract: it forced the Expo adapter to pull its entire cache into
+memory before the first frame just to answer a read. It is asynchronous now, and
+`KeyValueStore` stays synchronous because `persist()` reads it while a store is
+being constructed.
+
+## Two extraction backends, on purpose
+
+The one thing that is deliberately *not* single is HTML extraction. The core ships
+both, behind one `ArticleExtractor` type:
+
+- `articles/extract/string.ts` — regular expressions, no dependencies. Runs in the
+  NativeScript runtime, whose bundler resolves parser packages to their CommonJS
+  builds and then fails on them, and in a plain Node script.
+- `articles/extract/dom.ts` — htmlparser2 + css-select. Sanitises the body with a
+  tag **allowlist** instead of a denylist, which is measurably cleaner markup for
+  the reader, at the cost of four dependencies.
+
+Everything downstream of extraction is shared — the model, the vocabulary, the
+reading time, the reader document. And the two backends are pinned to each other:
+`test/articles.test.ts` runs both over the same captured page and asserts they agree
+on every field except body markup, so the choice cannot quietly become a fork.
+A second test asserts that nothing outside `extract/dom.ts` imports the parser, so
+the NativeScript bundle cannot acquire it by accident. Verified: the parser appears
+0 times in the built NativeScript bundle.
+
+## Consequences
+
+- **The parity cost is now the view layer only.** That is real and unchanged: a new
+  screen still has to be built twice. What no longer doubles is the behaviour behind
+  it — a fix to the preview gate, the feed cascade or the reader lands in both apps
+  at once. Both apps are checked by the same `npm run check`.
+- **Pinia is gone** from `apps/mobile`. Its last three stores were the duplicated
+  ones; the core's stores plus the existing Vue binding cover them, so the
+  dependency went with them.
+- **Both apps gained the other's fixes.** NativeScript got the preview gate that
+  holds on a second tap and the sticky error state; Expo got stale-while-revalidate,
+  the bundled-cover fallback and one shared feed load across screens.
+- **The root `package.json` no longer favours one app.** `npm run android` is the
+  Expo app; the NativeScript scripts are prefixed `ns:`. Previously the unprefixed
+  scripts silently built the app that was being replaced.
+- **The scripts run under `tsx`.** That retired the `.mjs` + hand-written `.d.mts`
+  pairs in the core (`extract`, `rss-parse`), whose declarations nothing checked
+  against their implementations.
+- **`SavedArticle.topline` is now `kicker`.** Persisted state, so articles saved by
+  an older build lose their badge — they keep their title and URL. Acceptable in a
+  prototype; worth a migration if this ever ships.
+- **When ADR 0005's removal happens**, it is a smaller change than it was: deleting
+  `apps/mobile` now removes screens and one adapter, not a second data layer. The
+  reason to revisit ADR 0005 is unchanged (no web target needed plus a Mac
+  available); nothing here argues for NativeScript on the merits.
+
+## What is still open
+
+- **CORS on the web target.** `correctiv.org`, `salon5.correctiv.net` and
+  `youtube.com/feeds` send no `Access-Control-Allow-Origin`, so the browser demo
+  renders the shell, the sample data and PeerTube content but no live articles. The
+  core's `ContentBundle` port is now the place to fix it — the Expo host bundles
+  articles but no feed snapshots, and the NativeScript generator that produces them
+  already writes the shared format.
+- **Lock-screen metadata on NativeScript.** `TNSPlayer` offers none, so
+  `AudioBackend.load` accepts `nowPlaying` and the NativeScript backend drops it.
+  Named in that file rather than silently missing.
+- **iOS live radio on NativeScript.** `AVAudioPlayer` cannot play a live stream; it
+  needs an `AVPlayer` wrapper. Unchanged by this ADR, and Expo is unaffected.

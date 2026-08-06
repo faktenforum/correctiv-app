@@ -71,7 +71,7 @@
 <script setup lang="ts">
 import { $closeModal } from 'nativescript-vue';
 import { icons } from '@correctiv/app-core/ui/icons';
-import { useAudioStore } from '../../stores/audio';
+import { useAudioStore } from '../../stores/core-bindings';
 import { useThemeForModal } from '../../composables/useTheme';
 import { formatTimeHm } from '@correctiv/app-core/lib/format';
 

@@ -75,7 +75,7 @@ import SectionHeader from '../../components/ui/SectionHeader.vue';
 import ArticleCard from '../../components/cards/ArticleCard.vue';
 import ArticleReaderPage from '../reader/ArticleReaderPage.vue';
 import { searchSamples, type SearchSample } from '@correctiv/app-core/data/search-samples';
-import { useFeedsStore } from '../../stores/feeds';
+import { useFeedsStore } from '../../stores/core-bindings';
 import { searchArticles } from '@correctiv/app-core/services/search.service';
 import { useNavigation } from '../../composables/useNavigation';
 import type { FeedKey } from '@correctiv/app-core/types/models';

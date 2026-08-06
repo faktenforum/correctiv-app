@@ -9,7 +9,7 @@
    "teaser": "Ein Bild soll zeigen, wie Mitarbeiter im Mai 2026 die US-Botschaft in Kiew evakuieren. Elon Musks KI-Programm Grok hält das Bild für authentisch. Aber es ist mit KI generiert.",
    "author": "Max Bernhard",
    "publishedAt": "2026-06-12T12:40:05.000Z",
-   "rating": "false",
+   "rating": "falsch",
    "localImage": "~/assets/images/articles/usa-botschaft-in-kiew-wurde-nicht-evakuiert-grok-und-community-notes-liegen-bei-.jpg"
   },
   {
@@ -20,7 +20,7 @@
    "teaser": "Deepfakes mit ZDF-Moderator Christian Sievers verbreiten eine erfundene Geschichte über einen Ukrainer. Hinweise von CORRECTIV.Faktencheck an Tiktok führten zur Löschung einzelner Beiträge. Der Fall zeigt, wie lückenhaft der Konzern dabei vorgeht.",
    "author": "Kimberly Nicolaus",
    "publishedAt": "2026-06-12T13:04:18.000Z",
-   "rating": "false",
+   "rating": "falsch",
    "localImage": "~/assets/images/articles/deepfakes-mit-zdf-moderator-christian-sievers-weiter-bei-tiktok-online.jpg"
   },
   {
@@ -75,7 +75,7 @@
    "teaser": "Online sollen Zweifel an der Berichterstattung zur Ukraine gesät werden: Das Foto von einer Frau, die ihre Katze nach einem Tornado in den USA rettete, sei für Berichte über einen Bombenangriff in der Ukraine verwendet worden. Doch das stimmt nicht.",
    "author": "Paulina Thom",
    "publishedAt": "2026-06-09T13:02:56.000Z",
-   "rating": "false",
+   "rating": "falsch",
    "localImage": "~/assets/images/articles/kein-ukraine-bezug-foto-von-geretteter-katze-ist-aus-den-usa.jpg"
   },
   {
@@ -86,7 +86,7 @@
    "teaser": "Online heißt es, 80 Prozent der Schwangeren hätten während der Teilnahme an einer Covid-19-Impfstudie von Pfizer ihre Babys verloren. Die Behauptung wird in ähnlicher Form auch von der US-Impfgegnerin Naomi Wolf verbreitet. Doch sie ist falsch.",
    "author": "Paulina Thom",
    "publishedAt": "2026-06-08T10:36:50.000Z",
-   "rating": "false",
+   "rating": "falsch",
    "localImage": "~/assets/images/articles/coronavirus-pfizer-dokument-belegt-keine-80-prozent-fehlgeburten-bei-geimpften-s.jpg"
   },
   {
@@ -108,7 +108,7 @@
    "teaser": "Fotovergleiche von Stränden werden immer wieder herangezogen, um den Anstieg des Meeresspiegels infrage zu stellen. Doch die Datenlage ist klar, der Meeresspiegel steigt – auch in Sydney.",
    "author": "Sara Pichireddu",
    "publishedAt": "2026-05-29T10:15:19.000Z",
-   "rating": "false",
+   "rating": "falsch",
    "localImage": "~/assets/images/articles/meeresspiegel-steigt-auch-in-sydney-fotovergleich-sagt-nichts-aus.jpg"
   },
   {

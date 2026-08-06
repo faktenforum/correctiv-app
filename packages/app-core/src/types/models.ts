@@ -21,7 +21,7 @@ export interface FeedItem {
    * elements. Checked against 200 live items (main feed + faktencheck): all 200
    * carry exactly one <dc:creator>, and none of those values is a composite
    * ("A und B", "A, B"). The array was speculative, so this stays a string —
-   * see the note in lib/rss-parse.mjs before changing it back.
+   * see the note in lib/rss-parse.ts before changing it back.
    */
   author?: string;
   /** ISO-8601 */
@@ -31,23 +31,12 @@ export interface FeedItem {
   imageUrl?: string | null;
 }
 
-export interface ArticleDetail {
-  url: string;
-  topline?: string | null;
-  headline: string;
-  excerpt?: string | null;
-  authors?: string | null;
-  dateIso?: string | null;
-  dateText?: string | null;
-  /** Fact-check rating: false | mostly-false | missing-context | unproven | true … */
-  rating?: string | null;
-  ratingText?: string | null;
-  bodyHtml: string;
-  ogImage?: string | null;
-  readingMinutes: number;
-  /** true if loaded from the bundled offline content */
-  offline?: boolean;
-}
+/**
+ * The article model lives in `articles/types.ts` — it used to be a second,
+ * differently-cut `ArticleDetail` here. Re-exported so `types/models` stays the
+ * one place to look for "what shape is a thing in this app".
+ */
+export type { Article, FactcheckRating } from '../articles/types';
 
 /** The media library's channels. See MEDIA_SOURCE for which platform each streams from. */
 export type MediaChannel = 'gespraech' | 'funfacts' | 'hauptkanal';

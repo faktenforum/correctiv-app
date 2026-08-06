@@ -1,0 +1,170 @@
+import { escapeHtml } from '../lib/html';
+import { formatDateDe } from '../lib/format';
+import { ratingLabel, ratingTone } from './rating';
+import type { Article } from './types';
+
+/**
+ * The reader document — one builder for both apps.
+ *
+ * There were two: a `template.html` with `{{placeholders}}` read off the
+ * NativeScript app folder, and a template literal in the Expo app. Same article,
+ * same German copy, two sets of class names, two rating vocabularies and two
+ * chances to get the support footer wrong.
+ *
+ * What is shared is the part a reader would notice: the structure, the class
+ * names, the wording and which verdict gets which tone. What stays with the host
+ * is the CSS — and that is a real split, not a leftover. The two hosts deliver
+ * fonts by completely different means (bundled `.ttf` files behind a `file://`
+ * base url versus base64 embedded in a `<style>`), and each already has a
+ * stylesheet built for its own delivery.
+ *
+ * The class vocabulary below is the contract. `READER_LAYOUT_CSS` implements it
+ * for a host that has no stylesheet of its own; `apps/mobile/src/assets/reader/
+ * reader.css` implements the same names against bundled font files.
+ */
+
+export interface ReaderHtmlOptions {
+  /** Inline CSS, in order — token variables and `@font-face` first, layout last. */
+  css?: string[];
+  /** Stylesheet hrefs, resolved against the WebView's base url. */
+  stylesheets?: string[];
+  /** The app's text-size setting; scales the root font size. 1 = default. */
+  textScale?: number;
+  /** Members are thanked; everyone else is invited. Never a barrier. */
+  isMember?: boolean;
+}
+
+const ROOT_FONT_PX = 16;
+
+export function buildReaderHtml(article: Article, options: ReaderHtmlOptions = {}): string {
+  const { css = [], stylesheets = [], textScale = 1, isMember = false } = options;
+
+  const rootStyle = `font-size:${ROOT_FONT_PX * textScale}px`;
+  const links = stylesheets
+    .map((href) => `<link rel="stylesheet" href="${escapeHtml(href)}">`)
+    .join('');
+  const styles = css.length > 0 ? `<style>${css.join('\n')}</style>` : '';
+
+  const hero = article.heroImageUrl
+    ? `<figure class="hero"><img src="${escapeHtml(article.heroImageUrl)}" alt=""></figure>`
+    : '';
+
+  // A fact check announces itself; everything else shows its section.
+  const badgeText = article.rating ? 'FAKTENCHECK' : (article.kicker ?? '').toUpperCase();
+  const badge = badgeText ? `<p class="badge">${escapeHtml(badgeText)}</p>` : '';
+
+  const rating = article.rating
+    ? `<div class="rating rating--${ratingTone(article.rating)}">` +
+      `<span class="rating__label">${escapeHtml(ratingLabel(article.rating))}</span></div>`
+    : '';
+
+  const metaLine = [
+    article.authors.length > 0 ? `von ${article.authors.join(', ')}` : '',
+    article.publishedText || formatDateDe(article.publishedAt),
+    `${article.readingMinutes} Min. Lesezeit`,
+  ]
+    .filter(Boolean)
+    .join(' · ');
+
+  const excerpt = article.excerpt ? `<p class="excerpt">${escapeHtml(article.excerpt)}</p>` : '';
+
+  const footer = isMember
+    ? `<p class="support-line">Ermöglicht durch Unterstützer:innen wie Sie — danke, dass Sie dabei sind.</p>`
+    : `<p class="support-line">Diese Recherche war nur möglich durch Unterstützer:innen wie Sie.</p>
+       <a class="support-btn" href="correctiv://join">Unterstützer:in werden</a>`;
+
+  return `<!DOCTYPE html>
+<html lang="de" style="${rootStyle}">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+${links}${styles}
+</head>
+<body>
+<article>
+${hero}
+<header class="reader-header">
+${badge}
+<h1>${escapeHtml(article.title)}</h1>
+${rating}
+<p class="meta">${escapeHtml(metaLine)}</p>
+</header>
+${excerpt}
+<div class="reader-body">${article.bodyHtml}</div>
+<footer class="reader-footer">
+${footer}
+</footer>
+</article>
+</body>
+</html>`;
+}
+
+/**
+ * The reader's layout, written against the generated `--var-*` design tokens.
+ *
+ * For hosts that ship no reader stylesheet of their own. Every value comes from a
+ * token rather than a transcribed number — the NativeScript stylesheet was
+ * hand-derived from the same tokens and has been drifting from them one rounded
+ * rem at a time.
+ *
+ * The three `.rating--*` tones and the plain-CSS colour fallbacks are the only
+ * places a literal appears, because the design tokens carry no semantic colour
+ * for "verdict".
+ */
+export const READER_LAYOUT_CSS = `
+*{margin:0;padding:0;box-sizing:border-box}
+html{-webkit-text-size-adjust:100%}
+body{background:var(--var-color-grey-100);color:var(--var-color-grey-700);
+  font-family:'Merriweather',Georgia,serif}
+article{max-width:38.75rem;margin:0 auto;padding-bottom:var(--var-spacing-3xl)}
+.hero{display:block;margin:0 0 var(--var-spacing-m)}
+.hero img{display:block;width:100%;height:auto;aspect-ratio:16/9;object-fit:cover;
+  background:var(--var-color-grey-200)}
+.reader-header{padding:0 var(--var-spacing-m)}
+.badge{display:inline-block;font-family:'SourceSans3',sans-serif;font-weight:700;font-size:11px;
+  letter-spacing:.4px;text-transform:uppercase;color:#fff;background:var(--var-color-emphasis);
+  padding:3px 8px;border-radius:var(--var-radius-s);margin-bottom:var(--var-spacing-xs)}
+h1{font-family:'Merriweather',Georgia,serif;font-weight:700;font-size:var(--var-font-size-headline-xl);
+  line-height:var(--var-leading-tight);letter-spacing:var(--var-letter-spacing-tighter);
+  margin-bottom:var(--var-spacing-s)}
+.rating{display:inline-block;font-family:'SourceSans3',sans-serif;font-weight:700;font-size:13px;
+  letter-spacing:.3px;text-transform:uppercase;padding:6px 12px;border-radius:var(--var-radius-md);
+  margin-bottom:var(--var-spacing-s);background:var(--var-color-grey-300);color:var(--var-color-grey-700)}
+.rating--refuted{background:var(--var-color-emphasis);color:#fff}
+.rating--qualified{background:var(--var-color-alternative);color:var(--var-color-grey-700)}
+.rating--confirmed{background:var(--var-color-grey-600);color:#fff}
+.meta{font-family:'SourceSans3',sans-serif;font-size:var(--var-font-size-text-s);
+  color:var(--var-color-grey-600);margin-bottom:var(--var-spacing-m);
+  padding-bottom:var(--var-spacing-m);border-bottom:1px solid var(--var-color-grey-300)}
+.excerpt{font-family:'Merriweather',Georgia,serif;font-style:italic;color:var(--var-color-grey-600);
+  font-size:var(--var-font-size-text-l);line-height:var(--var-leading-relaxed);
+  padding:0 var(--var-spacing-m) var(--var-spacing-m)}
+.reader-body{padding:0 var(--var-spacing-m);font-size:var(--var-font-size-text-article);
+  line-height:var(--var-leading-looser);letter-spacing:var(--var-letter-spacing-wider)}
+.reader-body p{margin-bottom:var(--var-spacing-m)}
+.reader-body h2{font-family:'SourceSans3',sans-serif;font-weight:700;
+  font-size:var(--var-font-size-headline-m);line-height:var(--var-leading-snug);letter-spacing:0;
+  margin:var(--var-spacing-l) 0 var(--var-spacing-xs)}
+.reader-body h3{font-family:'SourceSans3',sans-serif;font-weight:700;
+  font-size:var(--var-font-size-headline-s);margin:var(--var-spacing-m) 0 var(--var-spacing-2xs)}
+.reader-body a{color:var(--var-color-emphasis);text-decoration:none}
+.reader-body img{max-width:100%;height:auto;border-radius:var(--var-radius-md);
+  margin:var(--var-spacing-xs) 0}
+.reader-body figure{margin:var(--var-spacing-m) 0}
+.reader-body figcaption{font-family:'SourceSans3',sans-serif;
+  font-size:var(--var-font-size-text-s);color:var(--var-color-grey-600);
+  margin-top:var(--var-spacing-2xs)}
+.reader-body ul,.reader-body ol{margin:0 0 var(--var-spacing-m) var(--var-spacing-m)}
+.reader-body li{margin-bottom:var(--var-spacing-2xs)}
+.reader-body blockquote{border-left:3px solid var(--var-color-emphasis);
+  padding-left:var(--var-spacing-s);margin:var(--var-spacing-m) 0;color:var(--var-color-grey-600)}
+.reader-footer{margin:var(--var-spacing-xl) var(--var-spacing-m) 0;
+  background:var(--var-color-grey-200);border-radius:var(--var-radius-md);
+  padding:var(--var-spacing-l);text-align:center}
+.support-line{font-family:'Merriweather',Georgia,serif;color:var(--var-color-grey-700);
+  font-size:var(--var-font-size-text-m);line-height:var(--var-leading-loose);
+  margin-bottom:var(--var-spacing-s)}
+.support-btn{display:inline-block;font-family:'SourceSans3',sans-serif;font-weight:700;
+  background:var(--var-color-emphasis);color:#fff;text-decoration:none;
+  padding:var(--var-spacing-s) var(--var-spacing-m);border-radius:var(--var-radius-md)}
+`;

@@ -2,8 +2,13 @@
 //
 // FunFacts is served from CORRECTIV's own PeerTube instance instead of YouTube;
 // the other video channels stay on YouTube (hybrid). Public read-only REST API,
-// no auth. See SPIKE-PEERTUBE.md for the on-device verification of native HLS
-// playback + offline.
+// no auth.
+//
+// Verified on an Android device: the HLS master playlist plays natively, and it has
+// to be the master — PeerTube splits audio and video into separate renditions, so a
+// per-resolution playlist gives picture without sound. `fetchVideoDetail` is
+// therefore the only source of `hlsMasterUrl`; the channel list payload carries no
+// streaming URLs at all.
 
 import type { Video } from '../types/models';
 import { fetchText } from './http';

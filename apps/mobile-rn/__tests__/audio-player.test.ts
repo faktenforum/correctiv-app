@@ -6,13 +6,16 @@ import {
 } from '@correctiv/app-core/media/exclusive-playback';
 
 /**
- * The audio singleton's policy, not expo-audio's plumbing.
+ * The audio policy, not expo-audio's plumbing.
  *
  * Three things here are product rules that no typecheck can protect: the club
  * preview stops at 60 seconds, only one medium plays at a time, and a stream that
- * never loads has to say so instead of spinning. The NativeScript version got the
- * first one subtly wrong — its limit fired once, so a second tap on play released
- * the whole club episode — which is exactly why it is pinned here.
+ * never loads has to say so instead of spinning.
+ *
+ * The state machine under test lives in `@correctiv/app-core/stores/audio` and is
+ * shared with the NativeScript app, so these assertions now cover both. Only the
+ * translation from expo-audio's status ticks is local (`lib/audio/backend.ts`) —
+ * which is why the mock below is still an expo player.
  */
 
 /**
@@ -42,15 +45,16 @@ jest.mock('expo-audio', () => ({
   setAudioModeAsync: jest.fn(() => Promise.resolve()),
 }));
 
+import { configurePlatform, createMemoryPlatform } from '@correctiv/app-core';
+import { audioStore, isLive, resetAudioStore } from '@correctiv/app-core/stores/audio';
+
+import { expoAudio, resetExpoAudio } from '@/lib/audio/backend';
 import {
   acknowledgePreviewEnd,
-  audioStore,
-  isLive,
   playEpisode,
   playPreview,
   playRadio,
   PREVIEW_LIMIT_SEC,
-  resetAudioForTests,
   setSpeed,
   stop,
   togglePlay,
@@ -90,11 +94,18 @@ const EPISODE = {
 beforeEach(() => {
   jest.clearAllMocks();
   resetExclusiveMedia();
-  resetAudioForTests();
   emit = null;
+  resetExpoAudio();
+  resetAudioStore();
+  // The store asks the platform for its audio backend on first use, so the
+  // registration has to be in place before any action runs.
+  configurePlatform({ ...createMemoryPlatform(), audio: expoAudio });
 });
 
 afterEach(() => {
+  // Clears the loading watchdog too — a pending 12-second timer keeps the jest
+  // worker alive past the run.
+  resetAudioStore();
   jest.useRealTimers();
 });
 

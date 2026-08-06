@@ -1,6 +1,6 @@
 {
   "name": "@correctiv/mobile",
-  "description": "CORRECTIV community app — NativeScript 9 + Vue 3 + Vite (iOS/Android).",
+  "description": "CORRECTIV community app \u2014 NativeScript 9 + Vue 3 + Vite (iOS/Android).",
   "main": "src/app.ts",
   "version": "1.0.0",
   "private": true,
@@ -13,8 +13,7 @@
     "@nativescript/core": "~9.0.0",
     "@nativescript/social-share": "^2.3.0",
     "@nstudio/nativescript-exoplayer": "^6.2.0",
-    "nativescript-vue": "^3.0.0",
-    "pinia": "~3.0.4"
+    "nativescript-vue": "^3.0.0"
   },
   "devDependencies": {
     "@nativescript/android": "9.0.4",
@@ -39,7 +38,7 @@
     "build:android": "cross-env NS_VITE_DIST_DIR=platforms/android/app/src/main/assets/app ns build android --release --key-store-path signing/correctiv-test.keystore --key-store-password correctiv-test --key-store-alias correctiv-test --key-store-alias-password correctiv-test",
     "build:android:debug": "cross-env NS_VITE_DIST_DIR=platforms/android/app/src/main/assets/app ns build android",
     "tokens": "node scripts/sync-tokens.mjs",
-    "offline-articles": "node scripts/fetch-offline-articles.mjs",
-    "offline-podcasts": "node scripts/fetch-offline-podcasts.mjs"
+    "offline-articles": "tsx scripts/fetch-offline-articles.ts",
+    "offline-podcasts": "tsx scripts/fetch-offline-podcasts.ts"
   }
 }

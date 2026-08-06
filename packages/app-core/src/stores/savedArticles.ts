@@ -1,10 +1,12 @@
+import type { FactcheckRating } from '../articles/types';
 import { createStore } from './create-store';
 
 export interface SavedArticle {
   url: string;
   title: string;
-  topline: string | null;
-  rating: string | null;
+  /** Section or verdict badge, as the reader showed it. */
+  kicker: string | null;
+  rating: FactcheckRating | null;
   savedAt: string;
 }
 

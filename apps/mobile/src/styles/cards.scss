@@ -44,21 +44,19 @@
   border-radius: t.$radius-s;
   horizontal-align: left;
 }
-.rating-plaque--false {
+/* Three tones, emitted by the core (articles/rating.ts) — a new verdict needs
+   no new selector, and the reader's plaque uses the same three names. */
+.rating-plaque--refuted {
   background-color: t.$color-emphasis;
   color: t.$color-grey-100;
 }
-.rating-plaque--context {
+.rating-plaque--qualified {
   background-color: t.$color-alternative;
   color: t.$color-grey-700;
 }
-.rating-plaque--true {
+.rating-plaque--confirmed {
   background-color: #2e7d4f;
   color: t.$color-grey-100;
-}
-.rating-plaque--neutral {
-  background-color: t.$color-grey-300;
-  color: t.$color-grey-700;
 }
 
 /* ── ArticleCard ──────────────────────────────────────────── */

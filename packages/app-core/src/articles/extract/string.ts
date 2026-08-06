@@ -1,0 +1,96 @@
+import { balancedBlock, stripTags } from '../../lib/html';
+import { estimateReadingMinutes, extractPageMeta } from '../page-meta';
+import { ratingFromPage, ratingFromText } from '../rating';
+import type { ArticleExtractor, ExtractedArticle } from '../types';
+
+/**
+ * Article extraction with regular expressions — the backend for runtimes that
+ * cannot carry an HTML parser.
+ *
+ * That is the NativeScript app (its bundler resolves parser packages to their
+ * CommonJS builds and then fails to bundle them) and, historically, the offline
+ * script. It walks the correctiv.org WordPress theme's `detail__*` BEM classes.
+ *
+ * The body is cleaned with a **denylist**: known-bad elements are cut out and
+ * everything else survives, wrappers and classes included. `extract/dom.ts` uses
+ * an allowlist instead and produces tighter markup — see `types.ts` for why both
+ * exist and `test/articles.test.ts` for what holds them together.
+ */
+
+/** Elements that are never article content. Removed with their contents. */
+const DROP_TAGS = ['script', 'noscript', 'iframe', 'form', 'style', 'svg', 'button'];
+
+function sanitizeBody(body: string): string {
+  let out = body;
+  for (const tag of DROP_TAGS) {
+    out = out.replace(new RegExp(`<${tag}[\\s\\S]*?</${tag}>`, 'gi'), '');
+  }
+  // Tracking pixels (1×1) and empty lazyload imgs without a src.
+  out = out.replace(/<img[^>]+(facebook\.com\/tr|height="1")[^>]*>/gi, '');
+  // Reduce <picture>/<source> variants to the <img> — the reader loads srcset itself.
+  out = out.replace(/<source[^>]*>/gi, '');
+  return out.trim();
+}
+
+function blockText(html: string, className: string): string | undefined {
+  const block = balancedBlock(html, new RegExp(`<\\w+[^>]*class="[^"]*${className}[^"]*"[^>]*>`));
+  return block ? stripTags(block) || undefined : undefined;
+}
+
+export const extractArticleFromString: ArticleExtractor = (html: string): ExtractedArticle => {
+  const meta = extractPageMeta(html);
+
+  const h1 = /<h1[^>]*>([\s\S]*?)<\/h1>/.exec(html);
+  const title = (h1 ? stripTags(h1[1]) : '') || meta.title || '';
+
+  const kicker = blockText(html, '\\btopline\\b');
+  const excerpt = blockText(html, 'detail__excerpt') ?? meta.excerpt;
+
+  // "von Max Bernhard" — the <time> element sits inside the same block but is
+  // not part of the byline.
+  const authorsBlock = balancedBlock(html, /<\w+[^>]*class="[^"]*detail__authors\b[^"]*"[^>]*>/);
+  const authorLine = authorsBlock
+    ? stripTags(authorsBlock.replace(/<time[\s\S]*?<\/time>/gi, '')).replace(/^von\s+/i, '')
+    : '';
+  const authors = authorLine ? splitAuthors(authorLine) : [];
+
+  const dateMatch =
+    /<time[^>]*class="[^"]*detail__date[^"]*"[^>]*datetime="([^"]+)"[^>]*>([\s\S]*?)<\/time>/.exec(
+      html,
+    );
+  const publishedAt = dateMatch ? toIso(dateMatch[1]) : '';
+  const publishedText = dateMatch ? stripTags(dateMatch[2]) || undefined : undefined;
+
+  // The verdict, from the rating image path first (a closed set) and from the
+  // prose next to it second.
+  const rating = ratingFromPage(html) ?? ratingFromText(blockText(html, 'detail__rating-text'));
+
+  const bodyBlock = balancedBlock(html, /<div[^>]*class="[^"]*detail__content[^"]*"[^>]*>/);
+  const bodyHtml = bodyBlock ? sanitizeBody(bodyBlock) : '';
+
+  return {
+    title,
+    kicker,
+    excerpt,
+    authors,
+    publishedAt,
+    publishedText,
+    readingMinutes: meta.readingMinutes ?? estimateReadingMinutes(stripTags(bodyHtml)),
+    heroImageUrl: meta.heroImageUrl,
+    bodyHtml,
+    rating,
+  };
+};
+
+/** "Max Bernhard und Anna Meier", "Max Bernhard, Anna Meier" → two names. */
+function splitAuthors(line: string): string[] {
+  return line
+    .split(/\s*(?:,|\bund\b|&)\s*/i)
+    .map((name) => name.trim())
+    .filter(Boolean);
+}
+
+function toIso(value: string): string {
+  const date = new Date(value);
+  return Number.isNaN(date.getTime()) ? '' : date.toISOString();
+}

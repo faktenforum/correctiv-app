@@ -23,7 +23,7 @@
 
 <script setup lang="ts">
 import ClubBadge from '../ui/ClubBadge.vue';
-import { useAudioStore } from '../../stores/audio';
+import { useAudioStore } from '../../stores/core-bindings';
 import { useJoinFlow } from '../../composables/useJoinFlow';
 
 const audioStore = useAudioStore();

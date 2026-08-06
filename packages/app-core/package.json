@@ -1,6 +1,6 @@
 {
   "name": "@correctiv/app-core",
-  "description": "Platform-free core of the CORRECTIV app: models, feed/article parsing, HTTP, caching and framework-neutral stores. Imports no UI framework and no platform SDK — hosts supply capabilities via ports and bind the stores themselves.",
+  "description": "Platform-free core of the CORRECTIV app: model, feed/article parsing, HTTP, caching and framework-neutral stores. Imports no UI framework and no platform SDK — hosts supply capabilities via ports and bind the stores themselves.",
   "version": "1.0.0",
   "private": true,
   "license": "AGPL-3.0-or-later",
@@ -8,6 +8,12 @@
   "exports": {
     ".": "./src/index.ts",
     "./*": "./src/*"
+  },
+  "dependencies": {
+    "css-select": "^7.0.0",
+    "dom-serializer": "^3.1.1",
+    "domutils": "^4.0.2",
+    "htmlparser2": "^12.0.0"
   },
   "scripts": {
     "typecheck": "tsc --noEmit",

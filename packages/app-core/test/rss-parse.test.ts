@@ -1,7 +1,7 @@
 import { readFileSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 import { describe, expect, it } from 'vitest';
-import { parseWpFeed, parseYoutubeFeed } from '../src/lib/rss-parse.mjs';
+import { parseWpFeed, parseYoutubeFeed } from '../src/lib/rss-parse';
 
 const fixture = (name: string) =>
   readFileSync(fileURLToPath(new URL(`./__fixtures__/${name}`, import.meta.url)), 'utf8');

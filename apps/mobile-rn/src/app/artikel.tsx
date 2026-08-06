@@ -7,10 +7,11 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { ReaderView } from '@/components/reader/ReaderView';
 import { Button, Typo } from '@/components/ui';
 import { isInternalArticleUrl } from '@/lib/articles/articleUrl';
-import { loadArticle } from '@/lib/articles/loadArticle';
-import { buildReaderHtml, type ReaderArticle } from '@/lib/articles/readerHtml';
+import { loadArticle } from '@correctiv/app-core/articles/load';
+import type { Article } from '@correctiv/app-core/articles/types';
+import { readerHtml } from '@/lib/articles/reader';
 import { goBack } from '@/lib/navigation/goBack';
-import { coreActions, useIsSaved } from '@/lib/store/core';
+import { coreActions, useIsMember, useIsSaved, useTextScale } from '@/lib/store/core';
 import { colors, sizes } from '@/lib/theme';
 
 /**
@@ -26,13 +27,17 @@ export default function ArtikelScreen() {
     title?: string;
     badge?: string;
   }>();
-  const [article, setArticle] = useState<ReaderArticle | null>(null);
+  const [article, setArticle] = useState<Article | null>(null);
   const [error, setError] = useState(false);
   /** Bumped to retry: the effect depends on it, so a tap re-runs the load. */
   const [attempt, setAttempt] = useState(0);
   // Subscribes to just this one article's saved flag, so bookmarking another
   // article does not re-render the reader.
   const saved = useIsSaved(url ?? '');
+  // Both are read per render, never snapshotted: the membership flip has to reach
+  // the reader's support footer, and the text-size setting its root font size.
+  const isMember = useIsMember();
+  const textScale = useTextScale();
 
   useEffect(() => {
     if (!url) return;
@@ -41,7 +46,7 @@ export default function ArtikelScreen() {
       setArticle(null);
       setError(false);
       try {
-        const a = await loadArticle(url, badge);
+        const a = await loadArticle(url, { kicker: badge });
         if (active) setArticle(a);
       } catch {
         if (active) setError(true);
@@ -75,7 +80,7 @@ export default function ArtikelScreen() {
   return (
     <View className="flex-1 bg-grey-100">
       {article ? (
-        <ReaderView html={buildReaderHtml(article)} onNavigate={onNavigate} />
+        <ReaderView html={readerHtml(article, { isMember, textScale })} onNavigate={onNavigate} />
       ) : (
         <View className="flex-1 items-center justify-center px-m">
           {error ? (
@@ -114,7 +119,7 @@ export default function ArtikelScreen() {
                 coreActions.savedArticles().toggle({
                   url,
                   title: title ?? article?.title ?? '',
-                  topline: article?.badge ?? null,
+                  kicker: article?.kicker ?? null,
                   rating: article?.rating ?? null,
                   savedAt: new Date().toISOString(),
                 })

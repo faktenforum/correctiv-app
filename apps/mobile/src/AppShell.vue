@@ -37,7 +37,7 @@ import MiniPlayer from './components/shell/MiniPlayer.vue';
 import UnifiedPlayer from './components/shell/UnifiedPlayer.vue';
 import OnboardingModal from './views/modals/OnboardingModal.vue';
 import ClubInviteSheet from './components/sheets/ClubInviteSheet.vue';
-import { useAudioStore } from './stores/audio';
+import { useAudioStore } from './stores/core-bindings';
 import { useVideoStore } from './stores/core-bindings';
 import HomePage from './views/home/HomePage.vue';
 import DiscoverPage from './views/discover/DiscoverPage.vue';

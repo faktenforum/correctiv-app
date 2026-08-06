@@ -1,7 +1,7 @@
 import type { PodcastSeries, PodcastEpisode } from '../data/podcasts';
 import { PODCAST_HOST } from '../data/feeds.config';
 import { fetchText } from './http';
-import { parsePodcastFeed } from '../lib/rss-parse.mjs';
+import { parsePodcastFeed } from '../lib/rss-parse';
 import { formatMinutesDe } from '../lib/format';
 
 /**
@@ -23,7 +23,7 @@ function clip(text: string, max: number): string {
 
 /** Fetch one Salon5 show as the app's PodcastSeries (newest episodes first). */
 export async function fetchPodcastSeries(handle: string): Promise<PodcastSeries> {
-  const feed = parsePodcastFeed(await fetchText(feedUrl(handle), 12000));
+  const feed = parsePodcastFeed(await fetchText(feedUrl(handle), { timeoutMs: 12000 }));
   const episodes: PodcastEpisode[] = feed.episodes.slice(0, MAX_EPISODES).map((e) => ({
     id: e.id,
     title: e.title,

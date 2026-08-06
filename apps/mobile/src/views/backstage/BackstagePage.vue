@@ -206,7 +206,7 @@ import {
   type BonusMedia,
 } from '@correctiv/app-core/data/backstage';
 import { useMembershipStore } from '../../stores/core-bindings';
-import { useAudioStore } from '../../stores/audio';
+import { useAudioStore } from '../../stores/core-bindings';
 import { useNavigation } from '../../composables/useNavigation';
 import { useJoinFlow } from '../../composables/useJoinFlow';
 import { formatDateDe, formatDateShortDe } from '@correctiv/app-core/lib/format';

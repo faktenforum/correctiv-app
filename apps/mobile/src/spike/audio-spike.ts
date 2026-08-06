@@ -1,8 +1,9 @@
 /**
  * AUDIO SPIKE — not production code.
  *
- * Answers the one question that decides whether the app can stay on NativeScript
- * (APP-STRATEGIE.md §8): can the audio stack do what the feature scope requires —
+ * Answers the one question that decided whether the app could stay on NativeScript
+ * (see adr/0003-audio-capability-spike.md): can the audio stack do what the feature
+ * scope requires —
  * an AUTHENTICATED stream (the "separate Castopod behind secret auth that only the
  * app can talk to"), playing in the BACKGROUND, with LOCK-SCREEN controls, and
  * available OFFLINE — without writing native modules for two platforms?

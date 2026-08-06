@@ -7,10 +7,14 @@
 #                    is not silently broken (see the job for why that is needed)
 #   android-debug  — unsigned debug APK, so native/build breakage surfaces early
 #
-# The repo is an npm workspace: `npm ci` runs at the root. apps/mobile is the
-# NativeScript app (being replaced), apps/mobile-rn the Expo one that supersedes
-# it — see adr/0001-monorepo-and-platform-free-core.md and
-# adr/0004-react-native-pivot.md.
+# The repo is an npm workspace: `npm ci` runs at the root. Behaviour lives in
+# packages/app-core and is shared by both apps, so `check` covers it once for both;
+# apps/mobile-rn is the Expo app going forward, apps/mobile the NativeScript one it
+# replaces — see ARCHITECTURE.md and adr/0006-one-core-two-hosts.md.
+#
+# Note: android-debug builds the NATIVESCRIPT app. The Expo Android build has never
+# run in CI (it was first built locally on 2026-08-05); adding it is a cost decision,
+# not an oversight.
 name: CI
 
 on:

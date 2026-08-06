@@ -58,8 +58,9 @@ import { Utils } from '@nativescript/core';
 import * as SocialShare from '@nativescript/social-share';
 import type { AWebView, ShouldOverrideUrlLoadEventData } from '@nativescript-community/ui-webview';
 import { icons } from '@correctiv/app-core/ui/icons';
-import type { ArticleDetail } from '@correctiv/app-core/types/models';
-import { loadArticle, buildReaderHtml } from '../../services/article.service';
+import type { Article } from '@correctiv/app-core/articles/types';
+import { loadArticle } from '@correctiv/app-core/articles/load';
+import { readerHtml } from '../../services/reader';
 import { useNavigation } from '../../composables/useNavigation';
 import { useSettingsStore } from '../../stores/core-bindings';
 import { useSavedArticlesStore } from '../../stores/core-bindings';
@@ -77,10 +78,10 @@ const { openJoinFlow } = useJoinFlow();
 
 const webviewRef = ref<{ nativeView?: AWebView }>();
 const status = ref<'loading' | 'ready' | 'error'>('loading');
-const detail = ref<ArticleDetail | null>(null);
+const article = ref<Article | null>(null);
 
 const badgeText = computed(() =>
-  detail.value?.rating ? 'FAKTENCHECK' : (detail.value?.topline ?? '').toUpperCase(),
+  article.value?.rating ? 'FAKTENCHECK' : (article.value?.kicker ?? '').toUpperCase(),
 );
 const isSaved = computed(() => saved.isSaved(props.url));
 
@@ -95,8 +96,8 @@ function onPageLoaded() {
 async function load() {
   status.value = 'loading';
   try {
-    detail.value = await loadArticle(props.url);
-    const html = buildReaderHtml(detail.value, {
+    article.value = await loadArticle(props.url);
+    const html = readerHtml(article.value, {
       isMember: membership.isMember,
       textScale: settings.textScale,
     });
@@ -128,17 +129,17 @@ function onShouldOverrideUrlLoading(args: ShouldOverrideUrlLoadEventData) {
 }
 
 function share() {
-  if (!detail.value) return;
-  SocialShare.shareText(`${detail.value.headline}\n${props.url}`, 'Artikel teilen');
+  if (!article.value) return;
+  SocialShare.shareText(`${article.value.title}\n${props.url}`, 'Artikel teilen');
 }
 
 function toggleSave() {
-  if (!detail.value) return;
+  if (!article.value) return;
   saved.toggle({
     url: props.url,
-    title: detail.value.headline,
-    topline: detail.value.topline ?? null,
-    rating: detail.value.rating ?? null,
+    title: article.value.title,
+    kicker: article.value.kicker ?? null,
+    rating: article.value.rating ?? null,
     savedAt: new Date().toISOString(),
   });
 }

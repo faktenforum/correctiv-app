@@ -1,15 +1,21 @@
 import { useStore } from 'zustand';
 
-import { audioStore, isLive, type AudioState, type PlayerStatus } from './player';
+import {
+  audioStore,
+  isLive,
+  type AudioState,
+  type PlayerStatus,
+} from '@correctiv/app-core/stores/audio';
 
 /**
- * React bindings for the audio singleton.
+ * React bindings for the core's audio store.
  *
- * The status ticks twice a second (`updateInterval: 500`), so the selectors here
- * deliberately return **primitive values**: only whoever actually displays the
- * position should re-render twice a second. A selector that builds a fresh object
- * would be a problem of its own — zustand v5 hands it to `useSyncExternalStore`
- * with no equality function (see the note in lib/store/core.ts).
+ * The status ticks twice a second (`updateInterval: 500` in `./backend.ts`), so
+ * the selectors here deliberately return **primitive values**: only whoever
+ * actually displays the position should re-render twice a second. A selector that
+ * built a fresh object would be a problem of its own — zustand v5 hands it to
+ * `useSyncExternalStore` with no equality function (see the note in
+ * lib/store/core.ts).
  */
 
 /** Full state — for the player surfaces that show position and duration. */
@@ -19,7 +25,7 @@ export const useAudioIsActive = (): boolean => useStore(audioStore, (s) => s.tra
 
 export const useAudioIsLive = (): boolean => useStore(audioStore, isLive);
 
-/** Has the club preview run out? Opens the invitation (phase 4e). */
+/** Has the club preview run out? Opens the invitation. */
 export const usePreviewEnded = (): boolean => useStore(audioStore, (s) => s.previewEnded);
 
 /** The radio's state in one word — `off` as soon as something else is playing. */

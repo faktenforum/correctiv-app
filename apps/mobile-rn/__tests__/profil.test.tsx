@@ -43,7 +43,7 @@ const initial = {
 const ARTICLE = {
   url: 'https://correctiv.org/x/2026/06/12/eine-recherche/',
   title: 'Eine Recherche',
-  topline: 'Recherche',
+  kicker: 'Recherche',
   rating: null,
   savedAt: '2026-06-12T10:00:00.000Z',
 };
