@@ -34,10 +34,6 @@ Both APKs are signed with the **same** key. Gradle signs the Expo release varian
 with the Expo template's debug key, so the workflow re-signs it with `apksigner`
 afterwards — otherwise one release would carry two APKs under two identities.
 
-Test the pipeline without cutting a release: run the workflow manually
-(`workflow_dispatch`). It builds both APKs and uploads them to the run without
-creating a release.
-
 ## Signing modes
 
 The release build works **with or without** your own signing key:
@@ -88,8 +84,37 @@ rm keystore.b64
 ## Testing the pipeline without a release
 
 Run the **Release Android** workflow manually (Actions tab → Run workflow, or
-`gh workflow run release-android.yml`). It builds the APK and uploads it to the run as
-an artifact, without creating a release. No secrets required — it uses the test key.
+`gh workflow run release-android.yml`). It builds both APKs and uploads them to the run
+as artifacts, without creating a release. No secrets required — it uses the test key.
+
+Done once on 2026-08-06 from `9842b27`
+([run 31105467974](https://github.com/faktenforum/correctiv-app/actions/runs/31105467974)),
+before anyone relies on a real tag. What it proved:
+
+- Both jobs green; both artifacts on the run, named `correctiv-app-{expo,nativescript}-main.apk`
+  (on a manual run `GITHUB_REF_NAME` is the branch, not a version — see the gap below).
+- **Both APKs carry the same certificate**, which is the one claim worth checking here:
+  SHA-256 `f3ee1b52…`, `CN=CORRECTIV App TEST KEY (not for Play)`. The re-signing step
+  works. Both verify under signature scheme v2 (the Expo one additionally v3), so both
+  install on everything the app supports (`minSdkVersion 24`).
+- The test-key fallback was taken, since no `ANDROID_KEYSTORE_*` secrets are set: a
+  workflow warning, an APK and **no AAB** — as intended.
+- The attach job was correctly **skipped** without a tag.
+- The NativeScript APK installs and runs: it is the build `screens/nativescript/` was
+  shot from, so the artifact is known-good, not merely present.
+
+**What a tagless run cannot cover**, because both steps are `if:` a tag — the two
+`Set version from tag` steps and the attach job. The version steps were checked
+separately by running them verbatim against the real files with `GITHUB_REF_NAME=v1.2.3`
+and `GITHUB_RUN_NUMBER=47`: `app.gradle` went to `versionCode 47` / `versionName "1.2.3"`
+(both `sed` patterns match — a `sed` that matches nothing changes nothing and says so
+nowhere), and `app.json` to `version 1.2.3` with `android.versionCode 47`, keeping
+`package`, the adaptive icon and the permissions. Attaching to a release stays unproven
+until the first real tag.
+
+One cosmetic thing: `apksigner` writes a v4 `.apk.idsig` next to the Expo APK, so it
+rides along in the run artifact. It cannot reach a GitHub Release — that step globs
+`*.apk` and `*.aab`.
 
 ## iOS (not yet wired up)
 
