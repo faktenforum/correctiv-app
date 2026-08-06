@@ -47,7 +47,7 @@ export default function HomeScreen() {
       {hero && <ArticleHero item={hero} onPress={openArticle} />}
 
       <View className="mt-l">
-        <SpotlightBriefing />
+        <SpotlightBriefing onOpenArchive={() => router.push('/spotlight')} />
       </View>
 
       <View className="mt-l">
