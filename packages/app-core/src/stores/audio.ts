@@ -9,25 +9,23 @@ import { createStore } from './create-store';
  *
  * This was the largest duplication in the repo: 280 lines of Pinia store plus
  * service in the NativeScript app, 270 lines of zustand store in the Expo app,
- * both implementing the same seven-field state, the same watchdog and the same
- * 60-second club preview — and neither knowing about the bugs the other had
- * found. Everything platform-specific now sits behind `AudioBackend`
- * (`ports/index.ts`), which each host implements over its own SDK.
+ * both implementing the same state, the same watchdog and the same club preview —
+ * and neither knowing about the bugs the other had found. Everything
+ * platform-specific now sits behind `AudioBackend` (`ports/index.ts`), which each
+ * host implements over its own SDK.
  *
- * Two fixes the Expo version had and the NativeScript one did not, now shared:
+ * There is no length limit on club content: bonus episodes play in full for
+ * everyone. Both apps used to stop a non-member at 60 seconds and offer the club —
+ * dropped on 2026-08-06, which also puts audio in line with "closeness, not a
+ * paywall". The `CLUB` badge stays as a label; it no longer withholds anything.
  *
- *  - The preview gate holds on the SECOND tap too. The old NativeScript check was
- *    `>= limit && !previewEnded`, so acknowledging the invitation and pressing
- *    play again ran the episode to the end and gave away club content.
- *  - An error state is sticky until the next start. Without that, the following
- *    status tick — no error, not loaded yet — mapped straight back to "loading",
- *    which is exactly the endless spinner the watchdog exists to prevent.
+ * One fix the Expo version had and the NativeScript one did not, now shared: an
+ * error state is sticky until the next start. Without that, the following status
+ * tick — no error, not loaded yet — maps straight back to "loading", which is
+ * exactly the endless spinner the watchdog exists to prevent.
  */
 
 export type PlayerStatus = 'idle' | 'loading' | 'playing' | 'paused' | 'error';
-
-/** Club bonus content for non-members: 60 seconds. An invitation, not a lock. */
-export const PREVIEW_LIMIT_SEC = 60;
 
 /**
  * Both SDKs report playback errors — and on both, a network failure sometimes
@@ -47,19 +45,14 @@ export interface AudioState {
   durationSec: number;
   /** Playback rate; in state because the full player shows it. */
   speed: number;
-  /** Set once the 60-second preview has run out (→ club invitation). */
-  previewEnded: boolean;
   errorMessage: string | null;
 
   playRadio: () => Promise<void>;
   playEpisode: (track: Omit<AudioTrack, 'kind'>) => Promise<void>;
-  playPreview: (track: Omit<AudioTrack, 'kind'>) => Promise<void>;
   togglePlay: () => void;
   seekTo: (seconds: number) => Promise<void>;
   setSpeed: (rate: number) => void;
   stop: () => void;
-  /** The invitation has been seen — clear the flag, keep the track loaded. */
-  acknowledgePreviewEnd: () => void;
 }
 
 const IDLE = {
@@ -68,18 +61,10 @@ const IDLE = {
   positionSec: 0,
   durationSec: 0,
   speed: 1,
-  previewEnded: false,
   errorMessage: null,
 } satisfies Omit<
   AudioState,
-  | 'playRadio'
-  | 'playEpisode'
-  | 'playPreview'
-  | 'togglePlay'
-  | 'seekTo'
-  | 'setSpeed'
-  | 'stop'
-  | 'acknowledgePreviewEnd'
+  'playRadio' | 'playEpisode' | 'togglePlay' | 'seekTo' | 'setSpeed' | 'stop'
 >;
 
 /** Pure selectors — live playback has neither a length nor a position. */
@@ -115,32 +100,22 @@ export const audioStore = createStore<AudioState>((set, get) => {
     const state = get();
     if (!state.track) return; // stopped — ignore trailing updates
 
+    /**
+     * An error stays until the next start clears it, and this guard comes FIRST.
+     *
+     * Two reasons, both learned the hard way. A tick that merely looks unloaded
+     * would otherwise map back to "loading" — the endless spinner the watchdog
+     * exists to prevent. And `fail()` below calls `AudioBackend.pause()`: a backend
+     * that reports back from inside that call arrives here with the same error still
+     * attached, so anything after the `status.error` branch is too late to stop the
+     * recursion. That was a real crash on a device, and moving this line up is what
+     * makes it structurally impossible rather than merely unlikely.
+     */
+    if (state.status === 'error') return;
+
     if (status.error) {
       console.warn('[audio] playback error:', status.error);
       fail(`Wiedergabe unterbrochen. ${NETWORK_HINT}`);
-      return;
-    }
-    // An error stays until the next start clears it. See the note at the top.
-    if (state.status === 'error') return;
-
-    // The preview gate applies BEFORE the normal mapping, or the episode keeps
-    // playing underneath the invitation.
-    //
-    // `previewEnded` is already true on a re-entrant tick, so the guard above sends
-    // the second call straight back out — which is what stops the recursion this
-    // pairing used to produce. Setting state before pausing is the other half.
-    if (
-      state.track.kind === 'preview' &&
-      !state.previewEnded &&
-      status.positionSec >= PREVIEW_LIMIT_SEC
-    ) {
-      set({
-        status: 'paused',
-        positionSec: PREVIEW_LIMIT_SEC,
-        durationSec: status.durationSec,
-        previewEnded: true,
-      });
-      platform().audio?.pause();
       return;
     }
 
@@ -217,7 +192,6 @@ export const audioStore = createStore<AudioState>((set, get) => {
       }),
 
     playEpisode: (track) => start({ ...track, kind: 'episode' }),
-    playPreview: (track) => start({ ...track, kind: 'preview' }),
 
     togglePlay: () => {
       const state = get();
@@ -227,11 +201,6 @@ export const audioStore = createStore<AudioState>((set, get) => {
       if (state.status === 'playing') {
         set({ status: 'paused' });
         audio.pause();
-        return;
-      }
-      // Past the 60-second mark a preview does not resume — it re-offers the club.
-      if (state.track.kind === 'preview' && state.positionSec >= PREVIEW_LIMIT_SEC) {
-        set({ previewEnded: true });
         return;
       }
       audio.play();
@@ -255,8 +224,6 @@ export const audioStore = createStore<AudioState>((set, get) => {
       backend()?.release();
       set({ ...IDLE });
     },
-
-    acknowledgePreviewEnd: () => set({ previewEnded: false }),
   };
 });
 

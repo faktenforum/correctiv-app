@@ -80,7 +80,7 @@ function play(episode: PodcastEpisode) {
   };
   // Bonus content: non-members listen to 60s, then the sheet extends an invitation
   if (episode.club && !membership.isMember) {
-    audioStore.playPreview(track);
+    audioStore.playEpisode(track);
   } else {
     audioStore.playEpisode(track);
   }

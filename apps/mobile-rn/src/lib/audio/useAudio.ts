@@ -25,9 +25,6 @@ export const useAudioIsActive = (): boolean => useStore(audioStore, (s) => s.tra
 
 export const useAudioIsLive = (): boolean => useStore(audioStore, isLive);
 
-/** Has the club preview run out? Opens the invitation. */
-export const usePreviewEnded = (): boolean => useStore(audioStore, (s) => s.previewEnded);
-
 /** The radio's state in one word — `off` as soon as something else is playing. */
 export type RadioState = 'off' | 'loading' | 'playing' | 'paused' | 'error';
 

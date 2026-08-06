@@ -7,7 +7,7 @@ import {
   type AudioBackend,
   type PlaybackStatus,
 } from '../src/ports';
-import { audioStore, isLive, PREVIEW_LIMIT_SEC, resetAudioStore } from '../src/stores/audio';
+import { audioStore, isLive, resetAudioStore } from '../src/stores/audio';
 
 /**
  * The audio state machine, driven through the port rather than through a real SDK.
@@ -120,65 +120,32 @@ describe('starting playback', () => {
   });
 });
 
-describe('the 60-second club preview', () => {
-  it('pauses exactly at the limit and asks for the invitation', async () => {
-    await audioStore.getState().playPreview(EPISODE);
-    backend.tick({ playing: true, positionSec: PREVIEW_LIMIT_SEC, durationSec: 1380 });
-
-    expect(backend.calls).toContain('pause');
-    expect(audioStore.getState()).toMatchObject({
-      status: 'paused',
-      positionSec: PREVIEW_LIMIT_SEC,
-      previewEnded: true,
-    });
-  });
-
+describe('failures', () => {
   /**
-   * The regression this file exists for.
+   * The regression this fake's awkward shape exists for.
    *
-   * The NativeScript backend emitted from inside `pause()`. The gate called
-   * `pause()`, `pause()` re-entered the handler, the position was unchanged and
-   * `previewEnded` was not set yet — so the gate fired again, forever. On a device
-   * that was `RangeError: Maximum call stack size exceeded`, one minute into a club
-   * preview, with every test green.
+   * The store calls `AudioBackend.pause()` when it gives up on a track. The
+   * NativeScript backend used to emit a status tick from inside `pause()`, so the
+   * store re-entered its own handler mid-decision and called `pause()` again — on a
+   * device that was `RangeError: Maximum call stack size exceeded`. expo-audio does
+   * not re-enter, so the Expo suite could not see it.
+   *
+   * Two things stop it now and this asserts both: the store sets state BEFORE
+   * issuing a command, and the sticky-error guard turns the re-entrant tick around.
    */
   it('survives a backend that reports back from inside pause()', async () => {
+    const warn = vi.spyOn(console, 'warn').mockImplementation(() => {});
     backend.reentrant = true;
-    await audioStore.getState().playPreview(EPISODE);
+    await audioStore.getState().playEpisode(EPISODE);
 
-    expect(() =>
-      backend.tick({ playing: true, positionSec: PREVIEW_LIMIT_SEC, durationSec: 1380 }),
-    ).not.toThrow();
+    expect(() => backend.tick({ error: 'Source unavailable' })).not.toThrow();
 
     // Once, not once per stack frame.
     expect(backend.calls.filter((c) => c === 'pause')).toHaveLength(1);
-    expect(audioStore.getState()).toMatchObject({ status: 'paused', previewEnded: true });
+    expect(audioStore.getState().status).toBe('error');
+    warn.mockRestore();
   });
 
-  it('does not resume past the limit on a second tap', async () => {
-    await audioStore.getState().playPreview(EPISODE);
-    backend.tick({ playing: true, positionSec: PREVIEW_LIMIT_SEC });
-    audioStore.getState().acknowledgePreviewEnd();
-    backend.calls.length = 0;
-
-    audioStore.getState().togglePlay();
-
-    // The old NativeScript hole: its limit fired once, and the next tap played the
-    // club episode to the end.
-    expect(backend.calls).not.toContain('play');
-    expect(audioStore.getState().previewEnded).toBe(true);
-  });
-
-  it('leaves a full episode alone at the same position', async () => {
-    await audioStore.getState().playEpisode(EPISODE);
-    backend.tick({ playing: true, positionSec: PREVIEW_LIMIT_SEC + 5, durationSec: 1380 });
-
-    expect(backend.calls).not.toContain('pause');
-    expect(audioStore.getState()).toMatchObject({ status: 'playing', previewEnded: false });
-  });
-});
-
-describe('failures', () => {
   it('surfaces a playback error with a hint, and stops', async () => {
     const warn = vi.spyOn(console, 'warn').mockImplementation(() => {});
     await audioStore.getState().playEpisode(EPISODE);

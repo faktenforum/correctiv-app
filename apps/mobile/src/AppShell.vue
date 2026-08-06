@@ -25,7 +25,6 @@
     <TabBar row="2" :activeTab="settings.activeTab" @select="settings.setActiveTab" />
 
     <!-- Global bottom sheet: invitation after the 60s preview (above all rows) -->
-    <ClubInviteSheet v-if="audioStore.previewEnded" row="0" rowSpan="3" />
   </GridLayout>
 </template>
 
@@ -36,7 +35,6 @@ import TabBar from './components/shell/TabBar.vue';
 import MiniPlayer from './components/shell/MiniPlayer.vue';
 import UnifiedPlayer from './components/shell/UnifiedPlayer.vue';
 import OnboardingModal from './views/modals/OnboardingModal.vue';
-import ClubInviteSheet from './components/sheets/ClubInviteSheet.vue';
 import { useAudioStore } from './stores/core-bindings';
 import { useVideoStore } from './stores/core-bindings';
 import HomePage from './views/home/HomePage.vue';

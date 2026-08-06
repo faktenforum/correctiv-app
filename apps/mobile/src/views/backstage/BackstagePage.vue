@@ -84,7 +84,7 @@
                 :text="
                   membership.isMember
                     ? bonus.durationLabel
-                    : `${bonus.durationLabel} · 60 Sek. anspielen`
+                    : `${bonus.durationLabel} · Für alle hörbar`
                 "
                 class="episode-row__meta"
               />
@@ -249,7 +249,7 @@ function playBonus(bonus: BonusMedia) {
   if (membership.isMember) {
     audioStore.playEpisode(track);
   } else {
-    audioStore.playPreview(track);
+    audioStore.playEpisode(track);
   }
 }
 

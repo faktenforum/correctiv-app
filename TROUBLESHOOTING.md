@@ -25,6 +25,17 @@ screenshot and look at it**. `screens/tools/tour-android.sh` walks a build on th
 emulator; [`screens/README.md`](screens/) holds the three versions side by side and
 what the last comparison found.
 
+And it is worse than weak for anything that *changes*: **`uiautomator dump` returns a
+stale tree.** A React Native text node that ticks — a player position, a countdown —
+keeps reporting its old value until something else invalidates the accessibility tree.
+Watching a mini player's `0:00 / 1:37` this way produced three wrong conclusions in a
+row: "playback never started", "the app is frozen", "the refactor broke audio". The
+audio had been playing the whole time. → To observe a changing value, ask the system
+that owns it, not the UI tree. For audio that is
+`adb shell dumpsys audio | grep "u/pid:<uid>"`, which reports `state:started` /
+`state:stopped` per player. `adb shell dumpsys window`, `pidof` and logcat are the
+equivalents for focus, liveness and errors.
+
 ## Expo / React Native
 
 - **`react-native-webview` has no web build.** It renders "React Native WebView does
@@ -93,16 +104,18 @@ what the last comparison found.
 ## Shared code, two hosts
 
 - **A port needs a re-entrancy rule, or each host invents one.** The core's audio
-  state machine calls `AudioBackend.pause()` when the 60-second club preview runs
-  out. The NativeScript backend emitted a status tick from inside `pause()`, so the
-  store re-entered its own handler, saw an unchanged position and a flag it had not
-  set yet, and called `pause()` again — `RangeError: Maximum call stack size
-  exceeded`, on a device, one minute into an episode. expo-audio does not re-enter,
-  so every test stayed green. → A command must never call the status listener
-  synchronously (stated on `AudioBackend` in `ports/index.ts`), the store sets state
-  before issuing a command, and `test/audio-store.test.ts` drives it through a
-  deliberately re-entrant fake. Found by playing a bonus episode on the emulator and
-  waiting sixty seconds — no faster route exists.
+  state machine calls `AudioBackend.pause()` when it stops a track. The NativeScript
+  backend emitted a status tick from inside `pause()`, so the store re-entered its own
+  handler, decided the same thing again and called `pause()` again — `RangeError:
+  Maximum call stack size exceeded`, on a device, a minute into an episode.
+  expo-audio does not re-enter, so every test stayed green. Found by playing a bonus
+  episode on the emulator and waiting. → Three things, and the order matters: a
+  command must never call the status listener synchronously (stated on
+  `AudioBackend` in `ports/index.ts`); the store sets state **before** issuing a
+  command; and the guard that makes an error state sticky sits **first** in the
+  handler, so the error path cannot recurse either. `test/audio-store.test.ts` drives
+  the store through a deliberately re-entrant fake — a polite test double would have
+  missed this too, and the second recursion was only found because that fake exists.
 
 ## The web target
 

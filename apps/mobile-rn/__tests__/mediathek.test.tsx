@@ -19,7 +19,6 @@ jest.mock('expo-router', () => ({
 }));
 jest.mock('@/lib/audio/player', () => ({
   playEpisode: jest.fn(() => Promise.resolve()),
-  playPreview: jest.fn(() => Promise.resolve()),
   playRadio: jest.fn(() => Promise.resolve()),
   togglePlay: jest.fn(),
   stop: jest.fn(),
@@ -32,7 +31,6 @@ jest.mock('@/lib/audio/useAudio', () => ({
     positionSec: 0,
     durationSec: 0,
     speed: 1,
-    previewEnded: false,
     errorMessage: null,
   }),
   useEpisodeStatus: () => 'off',
@@ -53,12 +51,11 @@ import { router } from 'expo-router';
 import { press, render, renderedText } from './support/rendering';
 
 import MediathekScreen from '@/app/(tabs)/mediathek';
-import { playEpisode, playPreview } from '@/lib/audio/player';
+import { playEpisode } from '@/lib/audio/player';
 import { coreStores } from '@/lib/store/core';
 
 const push = router.push as jest.Mock;
 const playEpisodeMock = playEpisode as jest.Mock;
-const playPreviewMock = playPreview as jest.Mock;
 
 const BONUS = bonusMedia[0];
 
@@ -134,32 +131,36 @@ describe('Mediathek', () => {
   });
 });
 
-describe('the club bonus gate', () => {
-  it('gives a guest 60 seconds, and says so before the tap', () => {
+/**
+ * Club bonus content plays in full for everyone — the 60-second preview was dropped
+ * on 2026-08-06. The `CLUB` badge and the note are labels now; they withhold nothing.
+ * What is worth pinning is exactly that: a guest and a member get the SAME call.
+ */
+describe('the club bonus', () => {
+  it('gives a guest the full episode, and says it is open to all', () => {
     const tree = render(<MediathekScreen />);
-    expect(renderedText(tree)).toContain('60 Sek. anspielen');
+    expect(renderedText(tree)).toContain('Für alle hörbar');
 
     press(tree, `${BONUS.title} abspielen`);
 
-    expect(playPreviewMock).toHaveBeenCalledTimes(1);
-    expect(playEpisodeMock).not.toHaveBeenCalled();
-    expect(playPreviewMock.mock.calls[0][0]).toMatchObject({
+    expect(playEpisodeMock).toHaveBeenCalledTimes(1);
+    expect(playEpisodeMock.mock.calls[0][0]).toMatchObject({
       episodeId: BONUS.id,
       url: BONUS.source,
     });
   });
 
-  it('gives a member the full episode, with no preview note', () => {
+  it('gives a member the same episode, without the note', () => {
     act(() => {
       coreStores.membership.getState().join(10, 'monatlich', 'Test');
     });
     const tree = render(<MediathekScreen />);
 
-    expect(renderedText(tree)).not.toContain('60 Sek. anspielen');
+    expect(renderedText(tree)).not.toContain('Für alle hörbar');
     press(tree, `${BONUS.title} abspielen`);
 
     expect(playEpisodeMock).toHaveBeenCalledTimes(1);
-    expect(playPreviewMock).not.toHaveBeenCalled();
+    expect(playEpisodeMock.mock.calls[0][0]).toMatchObject({ episodeId: BONUS.id });
   });
 
   it('keeps the club badge either way', () => {

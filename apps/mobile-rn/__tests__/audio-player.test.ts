@@ -8,9 +8,8 @@ import {
 /**
  * The audio policy, not expo-audio's plumbing.
  *
- * Three things here are product rules that no typecheck can protect: the club
- * preview stops at 60 seconds, only one medium plays at a time, and a stream that
- * never loads has to say so instead of spinning.
+ * Two things here are product rules that no typecheck can protect: only one medium
+ * plays at a time, and a stream that never loads has to say so instead of spinning.
  *
  * The state machine under test lives in `@correctiv/app-core/stores/audio` and is
  * shared with the NativeScript app, so these assertions now cover both. Only the
@@ -49,16 +48,7 @@ import { configurePlatform, createMemoryPlatform } from '@correctiv/app-core';
 import { audioStore, isLive, resetAudioStore } from '@correctiv/app-core/stores/audio';
 
 import { expoAudio, resetExpoAudio } from '@/lib/audio/backend';
-import {
-  acknowledgePreviewEnd,
-  playEpisode,
-  playPreview,
-  playRadio,
-  PREVIEW_LIMIT_SEC,
-  setSpeed,
-  stop,
-  togglePlay,
-} from '@/lib/audio/player';
+import { playEpisode, playRadio, setSpeed, stop } from '@/lib/audio/player';
 
 /** A status update with only the fields under test spelled out. */
 function status(partial: Partial<AudioStatus>): AudioStatus {
@@ -153,42 +143,6 @@ describe('starting playback', () => {
     const source = mockPlayer.replace.mock.calls.at(-1)?.[0];
     expect(typeof source).toBe('number'); // a Metro asset id, not { uri }
     expect(audioStore.getState().status).toBe('loading');
-  });
-});
-
-describe('the 60-second club preview', () => {
-  it('pauses exactly at the limit and asks for the invitation', async () => {
-    await playPreview(EPISODE);
-    emit?.(status({ playing: true, currentTime: PREVIEW_LIMIT_SEC, duration: 1380 }));
-
-    expect(mockPlayer.pause).toHaveBeenCalled();
-    expect(audioStore.getState()).toMatchObject({
-      status: 'paused',
-      positionSec: PREVIEW_LIMIT_SEC,
-      previewEnded: true,
-    });
-  });
-
-  it('does not resume past the limit on a second tap', async () => {
-    await playPreview(EPISODE);
-    emit?.(status({ playing: true, currentTime: PREVIEW_LIMIT_SEC }));
-    mockPlayer.play.mockClear();
-    acknowledgePreviewEnd();
-
-    togglePlay();
-
-    // The NativeScript hole: its limit fired once, and the next tap played the
-    // club episode to the end.
-    expect(mockPlayer.play).not.toHaveBeenCalled();
-    expect(audioStore.getState().previewEnded).toBe(true);
-  });
-
-  it('leaves a full episode alone at the same position', async () => {
-    await playEpisode(EPISODE);
-    emit?.(status({ playing: true, currentTime: PREVIEW_LIMIT_SEC + 5, duration: 1380 }));
-
-    expect(mockPlayer.pause).not.toHaveBeenCalled();
-    expect(audioStore.getState()).toMatchObject({ status: 'playing', previewEnded: false });
   });
 });
 

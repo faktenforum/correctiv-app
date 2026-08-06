@@ -106,9 +106,10 @@ TROUBLESHOOTING.md).
 
 Every tab is real; no stubs. Onboarding, home, reader, discover/search, media
 (live radio, seven Castopod series, PeerTube HLS, YouTube embeds, mini and full
-player, the 60-second club preview), participate (three CrowdNewsroom callouts with
-a multi-step form, Faktenforum, Abriss-Atlas), club and profile (join flow with the
-app-wide status flip, Backstage, quarterly report, saved articles, settings).
+player; club bonus content plays in full for everyone), participate (three
+CrowdNewsroom callouts with a multi-step form, Faktenforum, Abriss-Atlas), club and
+profile (join flow with the app-wide status flip, Backstage, quarterly report, saved
+articles, settings).
 
 Verified in the browser: home with full content and all five tabs, the reader with a
 real article in an iframe, discover with all 17 entries, every project page under its

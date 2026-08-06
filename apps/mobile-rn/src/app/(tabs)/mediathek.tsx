@@ -10,7 +10,7 @@ import { bonusMedia, type BonusMedia } from '@correctiv/app-core/data/backstage'
 import type { PodcastSeries } from '@correctiv/app-core/data/podcasts';
 import type { YoutubeKey } from '@correctiv/app-core/stores/media';
 import type { Video } from '@correctiv/app-core/types/models';
-import { playEpisode, playPreview, togglePlay } from '@/lib/audio/player';
+import { playEpisode, togglePlay } from '@/lib/audio/player';
 import { useEpisodeStatus } from '@/lib/audio/useAudio';
 import { coreActions, useIsMember, usePodcastLibrary, useVideoChannel } from '@/lib/store/core';
 
@@ -103,7 +103,7 @@ function BonusRow({ bonus }: { bonus: BonusMedia }) {
       episodeId={bonus.id}
       title={bonus.title}
       meta={bonus.durationLabel}
-      metaSuffix={isMember ? undefined : '60 Sek. anspielen'}
+      metaSuffix={isMember ? undefined : 'Für alle hörbar'}
       club={bonus.club}
       onPress={() => {
         // If this episode is already loaded, the tap is play/pause, not a restart.
@@ -111,7 +111,7 @@ function BonusRow({ bonus }: { bonus: BonusMedia }) {
           togglePlay();
           return;
         }
-        void (isMember ? playEpisode(track) : playPreview(track));
+        void playEpisode(track);
       }}
     />
   );

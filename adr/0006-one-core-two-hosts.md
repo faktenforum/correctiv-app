@@ -89,13 +89,15 @@ the NativeScript bundle cannot acquire it by accident. Verified: the parser appe
 Moving the state machine into the core means the two hosts now drive the *same*
 code — and that surfaced a bug neither app had on its own.
 
-The store's preview gate calls `AudioBackend.pause()`. The NativeScript backend
-emitted a status tick from inside `pause()`, so the store re-entered its own handler
-mid-decision, found an unchanged position and a `previewEnded` flag it had not set
-yet, and called `pause()` again. On a device: `RangeError: Maximum call stack size
-exceeded`, one minute into a club preview. Everything was green — expo-audio does not
-re-enter, so the Expo tests could not see it, and the crash needs sixty seconds of
-playback to appear.
+The store calls `AudioBackend.pause()` when it stops a track. The NativeScript
+backend emitted a status tick from inside `pause()`, so the store re-entered its own
+handler mid-decision, reached the same conclusion again and called `pause()` again. On
+a device: `RangeError: Maximum call stack size exceeded`, a minute into an episode.
+Everything was green — expo-audio does not re-enter, so the Expo tests could not see
+it, and the crash needs a minute of real playback to appear.
+
+The re-entrant fake written to pin it then found a **second** instance on the error
+path, where the sticky-error guard sat after the branch it was supposed to protect.
 
 Two things came out of it, and they are the general lesson rather than the specific
 fix:
@@ -115,14 +117,21 @@ finds the new state rather than the old one.
 
 - **The parity cost is now the view layer only.** That is real and unchanged: a new
   screen still has to be built twice. What no longer doubles is the behaviour behind
-  it — a fix to the preview gate, the feed cascade or the reader lands in both apps
-  at once. Both apps are checked by the same `npm run check`.
+  it — a fix to the audio state machine, the feed cascade or the reader lands in both
+  apps at once. Both apps are checked by the same `npm run check`.
 - **Pinia is gone** from `apps/mobile`. Its last three stores were the duplicated
   ones; the core's stores plus the existing Vue binding cover them, so the
   dependency went with them.
-- **Both apps gained the other's fixes.** NativeScript got the preview gate that
-  holds on a second tap and the sticky error state; Expo got stale-while-revalidate,
-  the bundled-cover fallback and one shared feed load across screens.
+- **Both apps gained the other's fixes.** NativeScript got the sticky error state;
+  Expo got stale-while-revalidate, the bundled-cover fallback and one shared feed load
+  across screens.
+- **The 60-second club preview is gone** (2026-08-06, product decision): bonus content
+  plays in full for everyone, which also puts audio in line with "closeness, not a
+  paywall". The `CLUB` badge stays as a label. `apps/mobile`'s `ClubInviteSheet.vue`
+  was the invitation it opened and had no other trigger, so it went with it — in the
+  git history if the ask is ever wanted back in another form. Worth knowing: the Expo
+  app never showed that invitation at all, before this refactor either, because
+  nothing consumed `usePreviewEnded`.
 - **The root `package.json` no longer favours one app.** `npm run android` is the
   Expo app; the NativeScript scripts are prefixed `ns:`. Previously the unprefixed
   scripts silently built the app that was being replaced.

@@ -73,7 +73,6 @@ export type { YoutubeKey, VideoListState } from '@correctiv/app-core/stores/medi
 export type { FeedStatus, FeedSlice } from '@correctiv/app-core/stores/feeds';
 export type { PodcastsStatus } from '@correctiv/app-core/stores/podcasts';
 export type { PlayerStatus } from '@correctiv/app-core/stores/audio';
-export { PREVIEW_LIMIT_SEC } from '@correctiv/app-core/stores/audio';
 
 /** Mirrors a vanilla store into a Vue reactive object, once per store. */
 function bind<T extends object>(store: Store<T>): T {

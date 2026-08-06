@@ -6,7 +6,7 @@ import { ScreenHeader, Typo } from '@/components/ui';
 import { PODCAST_CHANNELS } from '@correctiv/app-core/data/feeds.config';
 import type { PodcastEpisode, PodcastSeries } from '@correctiv/app-core/data/podcasts';
 import { formatDateShortDe } from '@correctiv/app-core/lib/format';
-import { playEpisode, playPreview, togglePlay } from '@/lib/audio/player';
+import { playEpisode, togglePlay } from '@/lib/audio/player';
 import { useEpisodeStatus } from '@/lib/audio/useAudio';
 import { useIsMember, usePodcastSeries } from '@/lib/store/core';
 import { colors } from '@/lib/theme';
@@ -80,7 +80,7 @@ function SeriesEpisodeRow({ series, episode }: { series: PodcastSeries; episode:
       title={episode.title}
       meta={`${formatDateShortDe(episode.date)} · ${episode.durationLabel}`}
       club={episode.club}
-      metaSuffix={previewOnly ? '60 Sek. anspielen' : undefined}
+      metaSuffix={previewOnly ? 'Für alle hörbar' : undefined}
       onPress={() => {
         if (status !== 'off') {
           togglePlay();
@@ -92,7 +92,7 @@ function SeriesEpisodeRow({ series, episode }: { series: PodcastSeries; episode:
           url: episode.audio,
           episodeId: episode.id,
         };
-        void (previewOnly ? playPreview(track) : playEpisode(track));
+        void playEpisode(track);
       }}
     />
   );

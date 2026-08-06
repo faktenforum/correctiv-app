@@ -61,7 +61,7 @@ export interface Video {
 }
 
 export interface AudioTrack {
-  kind: 'radio' | 'episode' | 'preview';
+  kind: 'radio' | 'episode';
   title: string;
   subtitle?: string;
   artworkUrl?: string;
