@@ -1,5 +1,4 @@
 import { Ionicons } from '@expo/vector-icons';
-import { router } from 'expo-router';
 import { Pressable, ScrollView, View } from 'react-native';
 
 import { Overline, ScreenHeader, Typo } from '@/components/ui';
@@ -18,7 +17,7 @@ export default function GespeichertScreen() {
 
   return (
     <View className="flex-1 bg-grey-100">
-      <ScreenHeader onBack={() => router.back()} />
+      <ScreenHeader />
       <ScrollView
         className="flex-1"
         contentContainerClassName="px-m pt-m pb-2xl"

@@ -28,8 +28,8 @@ configurePlatform(expoPlatform);
 registerExclusiveMedium('audio', stopAudio);
 registerExclusiveMedium('video', () => coreStores.video.getState().close());
 
-// Splash bleibt sichtbar, bis Merriweather + Source Sans 3 geladen sind
-// (kein Font-Flash beim ersten Render).
+// The splash screen stays up until Merriweather and Source Sans 3 are loaded, so
+// the first render does not flash an unstyled font.
 SplashScreen.preventAutoHideAsync();
 
 /**
@@ -52,6 +52,15 @@ function registerPersistence(): void {
   persist('interests', coreStores.interests, ['selected']);
   persist('participation', coreStores.participation, ['submissions']);
 }
+
+/**
+ * Anchor: a pushed route keeps the tabs underneath it, even when it is the entry
+ * point. Without this, `correctiv://backstage` — or the shared address
+ * `/backstage`, its own page in the static export — builds a stack of exactly one
+ * screen, and back has nowhere to go. `lib/navigation/goBack.ts` is the floor
+ * under this, for the cases where even an anchor cannot help.
+ */
+export const unstable_settings = { anchor: '(tabs)' };
 
 let gated = false;
 
@@ -83,17 +92,17 @@ export default function RootLayout() {
   }, [fontsLoaded, storeReady]);
 
   /**
-   * Erststart: einmal pro Sitzung ins Onboarding, sobald der Zustand hydriert ist
-   * (vorher wäre `onboardingDone` immer false — genau der Fehler, den
-   * registerPersistence oben vermeidet).
+   * First start: into the onboarding once per session, as soon as the state is
+   * hydrated — before that `onboardingDone` would always be false, which is the
+   * very fault registerPersistence above avoids.
    *
-   * NUR wenn die App auf der Startseite startet. Sonst überschreibt der Sprung auf
-   * dem Web-Target jeden geteilten Link: wer `/backstage` aufruft, soll Backstage
-   * sehen und nicht zuerst das Onboarding. Nativ gibt es diesen Fall nicht — dort
-   * startet die App immer auf `/`.
+   * ONLY when the app starts on the home route. Otherwise the jump overwrites every
+   * shared link on the web target: someone opening `/backstage` should see
+   * Backstage, not the onboarding first. Natively the case does not arise, because
+   * the app always starts at `/`.
    *
-   * `replace`, nicht `push`: das Onboarding ist kein Ort, zu dem man zurückkehrt.
-   * Das Modul-Flag verhindert, dass ein späterer Render denselben Sprung wiederholt.
+   * `replace`, not `push`: the onboarding is not a place one returns to. The module
+   * flag keeps a later render from repeating the same jump.
    */
   const pathname = usePathname();
   useEffect(() => {

@@ -28,7 +28,7 @@ export default function AufrufScreen() {
 
   return (
     <View className="flex-1 bg-grey-100">
-      <ScreenHeader onBack={() => router.back()} />
+      <ScreenHeader />
 
       {!callout ? (
         <View className="flex-1 items-center justify-center px-m">

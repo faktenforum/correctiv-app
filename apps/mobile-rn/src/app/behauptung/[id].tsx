@@ -1,4 +1,4 @@
-import { router, useLocalSearchParams } from 'expo-router';
+import { useLocalSearchParams } from 'expo-router';
 import { Pressable, ScrollView, View } from 'react-native';
 
 import { ClaimStatusTag } from '@/components/participate/ClaimStatusTag';
@@ -31,7 +31,7 @@ export default function BehauptungScreen() {
 
   return (
     <View className="flex-1 bg-grey-100">
-      <ScreenHeader onBack={() => router.back()} />
+      <ScreenHeader />
 
       {!claim ? (
         <View className="flex-1 items-center justify-center px-m">

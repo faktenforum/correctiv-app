@@ -69,7 +69,7 @@ export default function ProjektScreen() {
 
   return (
     <View className="flex-1 bg-grey-100">
-      <ScreenHeader onBack={() => router.back()} />
+      <ScreenHeader />
 
       {!project ? (
         <View className="flex-1 items-center justify-center px-m">

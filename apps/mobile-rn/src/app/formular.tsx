@@ -35,7 +35,7 @@ export default function FormularScreen() {
   if (!callout) {
     return (
       <View className="flex-1 bg-grey-100">
-        <ScreenHeader onBack={() => router.back()} />
+        <ScreenHeader />
         <View className="flex-1 items-center justify-center px-m">
           <Typo variant="headline-s" className="text-center">
             Dieses Formular gibt es nicht
@@ -90,7 +90,7 @@ export default function FormularScreen() {
 
   return (
     <View className="flex-1 bg-grey-100">
-      <ScreenHeader onBack={() => router.back()} backLabel="Abbrechen" />
+      <ScreenHeader backLabel="Abbrechen" />
 
       {/* Schrittanzeige: ein Balken je Folie, gefüllt bis zur aktuellen. */}
       <View className="flex-row gap-3xs px-m pt-2xs">

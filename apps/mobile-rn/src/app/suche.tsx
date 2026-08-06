@@ -86,7 +86,7 @@ export default function SucheScreen() {
 
   return (
     <View className="flex-1 bg-grey-100">
-      <ScreenHeader onBack={() => router.back()}>
+      <ScreenHeader>
         <TextInput
           value={query}
           onChangeText={setQuery}

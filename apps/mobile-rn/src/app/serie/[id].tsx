@@ -1,4 +1,4 @@
-import { router, useLocalSearchParams } from 'expo-router';
+import { useLocalSearchParams } from 'expo-router';
 import { ActivityIndicator, ScrollView, View } from 'react-native';
 
 import { EpisodeRow } from '@/components/media/EpisodeRow';
@@ -27,7 +27,7 @@ export default function SerieScreen() {
 
   return (
     <View className="flex-1 bg-grey-100">
-      <ScreenHeader onBack={() => router.back()} />
+      <ScreenHeader />
 
       {!series ? (
         <View className="flex-1 items-center justify-center px-m">

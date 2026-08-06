@@ -1,5 +1,4 @@
 import { Ionicons } from '@expo/vector-icons';
-import { router } from 'expo-router';
 import { ScrollView, View } from 'react-native';
 
 import { Button, Hairline, ScreenHeader, Typo } from '@/components/ui';
@@ -16,7 +15,7 @@ import { colors } from '@/lib/theme';
 export default function AtlasScreen() {
   return (
     <View className="flex-1 bg-grey-100">
-      <ScreenHeader onBack={() => router.back()} />
+      <ScreenHeader />
       <ScrollView
         className="flex-1"
         contentContainerClassName="px-m pt-m pb-2xl"

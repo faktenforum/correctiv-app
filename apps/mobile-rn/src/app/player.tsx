@@ -1,5 +1,4 @@
 import { Ionicons } from '@expo/vector-icons';
-import { router } from 'expo-router';
 import { ActivityIndicator, Pressable, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
@@ -8,6 +7,7 @@ import { Typo } from '@/components/ui';
 import { formatTimeHm } from '@correctiv/app-core/lib/format';
 import { seekTo, setSpeed, togglePlay } from '@/lib/audio/player';
 import { useAudio } from '@/lib/audio/useAudio';
+import { goBack } from '@/lib/navigation/goBack';
 import { colors, sizes } from '@/lib/theme';
 
 const SPEEDS = [1, 1.2, 1.5];
@@ -26,7 +26,7 @@ export default function PlayerScreen() {
         <Pressable
           accessibilityRole="button"
           accessibilityLabel="Player schließen"
-          onPress={() => router.back()}
+          onPress={goBack}
           hitSlop={8}
           className="items-center justify-center active:opacity-70"
           style={{ width: sizes.iconButton, height: sizes.iconButton }}
