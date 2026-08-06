@@ -1,4 +1,3 @@
-import { router } from 'expo-router';
 import { ScrollView, View } from 'react-native';
 
 import { Badge, ScreenHeader, Typo } from '@/components/ui';
@@ -12,7 +11,7 @@ import { quarterlyReport } from '@correctiv/app-core/data/quartalsbericht';
 export default function BerichtScreen() {
   return (
     <View className="flex-1 bg-grey-100">
-      <ScreenHeader onBack={() => router.back()} />
+      <ScreenHeader />
       <ScrollView
         className="flex-1"
         contentContainerClassName="px-m pt-m pb-2xl"

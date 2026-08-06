@@ -15,8 +15,11 @@ typecheck and a green test run, and each one was found by looking at a picture.
 | [`nativescript/`](nativescript/) | `apps/mobile`, superseded by [ADR 0004](../adr/0004-react-native-pivot.md) | Still the closest match to the draft in places. Read it for layout decisions, do not add features to it |
 | [`expo/`](expo/) | `apps/mobile-rn`, the live app | The thing under test |
 
-Captured 2026-08-05 at commit `26ef0c9`, emulator `Medium_Phone` (Android 7.0 API
-36, 1080×2400). The draft is pinned to light mode so it matches the emulator's.
+Emulator `Medium_Phone` (Android 7.0 API 36, 1080×2400); the draft is pinned to
+light mode so it matches. The draft and NativeScript sets were captured 2026-08-05
+at commit `26ef0c9` and are not re-shot — neither of those builds changes. The Expo
+set is from 2026-08-06 and is re-shot whenever its screens change, so the montages
+always compare the current build against the two fixed references.
 
 ## Three-way comparison
 
@@ -63,6 +66,41 @@ rails where the draft uses a vertical list (the rail is what NativeScript settle
 on too), and app settings live on their own route instead of inline in the profile,
 because they need to be deep-linkable.
 
+## Second round, 2026-08-06
+
+Same method, on the set above. Four came from reading the draft's markup next to the
+screenshots, three from walking the app.
+
+| Seen | Cause | Which version was right |
+| --- | --- | --- |
+| The hero had no kicker at all on most days | it came from the feed's badge, and the main feed deliberately defines none | draft & NativeScript, which give the hero one unconditionally |
+| No reading time in the byline | never built. correctiv.org publishes its own figure as a `twitter:label`/`twitter:data` pair, so it is read, not estimated | draft |
+| The briefing quoted one item in full where the draft indexes three | teasers in a card the draft built as an agenda | draft |
+| "Spotlight →" / "Alle Ausgaben" led nowhere | no archive route existed, although the core carries several issues | both — hence `/spotlight` |
+| Rails clipped 24px short of the screen edge, the second card cut mid-word | the scroller sat inside the text column instead of bleeding out of it | draft, whose rail is a full-width scroller with the padding inside |
+| Back was a dead end on any directly opened route | 15 screens called `router.back()` with no history to go back to | neither — found by opening `/spotlight` as a web address |
+| Tab switches did not animate | bottom tabs default to `animation: 'none'` | NativeScript, whose native tabs animate |
+
+Two of these were faults in the tour rather than in the app, and both had produced a
+committed screenshot that documented nothing:
+
+- `82-player` was blank because the step tapped the bonus episode on the *backstage*
+  route, where it does not exist — it is on Mediathek. The step reported MISS, the
+  tour walked on, and nobody looked at the picture.
+- `83-video` documented "Kein Video ausgewählt." because `correctiv://video` carries
+  no video: that screen takes it from the core's store.
+- `20-detail-article` and `21-detail-mid` are gone. They showed Home, not an article
+  detail, they were stale, and the Expo app has no counterpart to the draft's detail
+  overlay — the reader (`22`, `23`) is it.
+
+Fixing `83-video` surfaced the round's one real defect: the YouTube embed answered
+**Error 153, "Video player configuration error"**. The embed was the WebView's
+top-level document, which sends no referrer, and YouTube requires one — the same URL
+fails identically in the emulator's own Chrome. It now loads inside an `<iframe>` on
+a page with a `baseUrl`, which is what the web target always did. The error text is
+gone; the frame stays black on this emulator, so **that playback works is not
+verified** and belongs on the device test.
+
 ## Regenerating
 
 The emulator needs a window — headless dies on SELinux denying `execheap` to
@@ -87,11 +125,30 @@ node screens/tools/tour-draft.mjs http://localhost:8098/index.html out/draft \
 ```
 
 Then convert for the repo — full-resolution PNGs are ~1.1 MB each, WebP at 540px
-is ~50 KB and still legible:
+is ~50 KB and still legible — and rebuild the montages from the three sets:
 
 ```bash
-magick in.png -resize 540x -strip -quality 82 out.webp
+for p in out/expo/*.png; do
+  magick "$p" -resize 540x -strip -quality 82 "screens/expo/$(basename "$p" .png).webp"
+done
+
+for n in 10-home-top 30-entdecken 40-mediathek 50-mitmachen 60-profil; do
+  magick "screens/draft/$n.webp" "screens/nativescript/$n.webp" "screens/expo/$n.webp" \
+    -resize 405x -background white +append -strip -quality 82 "screens/compare/$n.webp"
+done
 ```
+
+The web export is worth a look in the same pass, because it is the only place where
+back-without-history and a directly opened route can be tested at all:
+
+```bash
+npm run build:web -w apps/mobile-rn
+node screens/tools/serve-clean.mjs apps/mobile-rn/dist 8099
+```
+
+`serve-clean.mjs` maps `/artikel` to `artikel.html` the way GitHub Pages does. A
+plain `python3 -m http.server` does not, and then Expo Router renders its
+unmatched-route page — which looks exactly like a broken route in the app.
 
 ## Caveats
 
@@ -104,3 +161,9 @@ magick in.png -resize 540x -strip -quality 82 out.webp
   root [`README.md`](../README.md).
 - The draft's content is fixed sample data with a fixed date; both builds pull live
   feeds, so the articles differ between the sets by design.
+- `83-video` shows a black frame. The embed's error message is gone, but this
+  emulator image renders no YouTube video — see the second round above.
+- On the web export, Home has no articles at all: correctiv.org sends no
+  `Access-Control-Allow-Origin`, so every feed request fails in a browser. That is
+  the open CORS decision, not a layout fault, and it is why the layout is judged on
+  the emulator shots.

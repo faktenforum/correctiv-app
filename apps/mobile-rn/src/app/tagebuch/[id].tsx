@@ -1,4 +1,4 @@
-import { router, useLocalSearchParams } from 'expo-router';
+import { useLocalSearchParams } from 'expo-router';
 import { ScrollView, View } from 'react-native';
 
 import { Overline, ScreenHeader, Typo } from '@/components/ui';
@@ -17,7 +17,7 @@ export default function TagebuchScreen() {
 
   return (
     <View className="flex-1 bg-grey-100">
-      <ScreenHeader onBack={() => router.back()} />
+      <ScreenHeader />
 
       {!entry ? (
         <View className="flex-1 items-center justify-center px-m">

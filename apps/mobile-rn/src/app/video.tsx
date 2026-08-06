@@ -1,4 +1,3 @@
-import { router } from 'expo-router';
 import { useVideoPlayer, VideoView } from 'expo-video';
 import { ActivityIndicator, ScrollView, View } from 'react-native';
 
@@ -35,7 +34,7 @@ export default function VideoScreen() {
 
   return (
     <View className="flex-1 bg-grey-100">
-      <ScreenHeader onBack={() => router.back()} />
+      <ScreenHeader />
       {!current ? (
         <View className="flex-1 items-center justify-center px-m">
           <Typo variant="text-m" color="grey-600">

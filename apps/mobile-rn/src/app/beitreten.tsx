@@ -6,6 +6,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { Button, Card, Hairline, Typo } from '@/components/ui';
 import type { MembershipInterval } from '@correctiv/app-core/stores/membership';
+import { goBack } from '@/lib/navigation/goBack';
 import { coreActions } from '@/lib/store/core';
 import { colors, sizes, typography } from '@/lib/theme';
 
@@ -61,7 +62,7 @@ export default function BeitretenScreen() {
           <Pressable
             accessibilityRole="button"
             accessibilityLabel="Schließen"
-            onPress={() => router.back()}
+            onPress={goBack}
             hitSlop={8}
             className="items-center justify-center active:opacity-70"
             style={{ width: sizes.iconButton, height: sizes.iconButton }}
@@ -257,7 +258,7 @@ export default function BeitretenScreen() {
               title="Ins Backstage"
               fullWidth
               onPress={() => {
-                router.back();
+                goBack();
                 router.push('/backstage');
               }}
             />
@@ -268,7 +269,7 @@ export default function BeitretenScreen() {
               variant="outline"
               fullWidth
               className="mt-2xs"
-              onPress={() => router.back()}
+              onPress={goBack}
             />
           )}
         </View>

@@ -9,6 +9,7 @@ import { Button, Typo } from '@/components/ui';
 import { isInternalArticleUrl } from '@/lib/articles/articleUrl';
 import { loadArticle } from '@/lib/articles/loadArticle';
 import { buildReaderHtml, type ReaderArticle } from '@/lib/articles/readerHtml';
+import { goBack } from '@/lib/navigation/goBack';
 import { coreActions, useIsSaved } from '@/lib/store/core';
 import { colors, sizes } from '@/lib/theme';
 
@@ -105,7 +106,7 @@ export default function ArtikelScreen() {
       {/* Transparenter Overlay-Header */}
       <SafeAreaView edges={['top']} className="absolute left-0 right-0 top-0">
         <View className="flex-row items-center justify-between px-s py-2xs">
-          <HeaderButton icon="chevron-back" onPress={() => router.back()} />
+          <HeaderButton icon="chevron-back" onPress={goBack} />
           {url && (
             <HeaderButton
               icon={saved ? 'bookmark' : 'bookmark-outline'}

@@ -38,6 +38,13 @@ export default function TabsLayout() {
       <Tabs
         screenOptions={{
           headerShown: false,
+          /**
+           * Bottom tabs default to `animation: 'none'` — the screen is simply
+           * replaced, which on five sibling tabs reads as a redraw rather than a
+           * move. 'shift' slides the outgoing and incoming screen against each
+           * other in the direction of the tab order, so a switch looks like one.
+           */
+          animation: 'shift',
           tabBarActiveTintColor: colors.emphasis,
           tabBarInactiveTintColor: colors['grey-500'],
           // Weiß, Hairline oben, keine Schatten (Designvorgabe).

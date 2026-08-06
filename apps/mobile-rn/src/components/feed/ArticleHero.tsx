@@ -5,7 +5,7 @@ import { FEEDS } from '@correctiv/app-core/data/feeds.config';
 import { formatDateShortDe } from '@correctiv/app-core/lib/format';
 import type { FeedItem } from '@correctiv/app-core/types/models';
 
-import { useOgImage } from '@/lib/articles/useOgImage';
+import { useArticleMeta } from '@/lib/articles/useArticleMeta';
 
 /**
  * The lead research item on Home: edge-to-edge image, kicker, serif headline,
@@ -15,6 +15,12 @@ import { useOgImage } from '@/lib/articles/useOgImage';
  * as an article opening where this one read as a card: the image runs to the
  * screen edge, the kicker is set type rather than a filled badge (the coral
  * surface competed with the headline), and the byline says who did the work.
+ *
+ * Both references give the hero a kicker unconditionally, so a feed without a
+ * badge of its own falls back to "Recherche" — and the main feed deliberately has
+ * none, which is the common case and left the hero bare. The byline carries
+ * CORRECTIV's own reading time when the page states one; see pageMeta.ts for why
+ * it is read rather than computed.
  */
 export function ArticleHero({
   item,
@@ -23,9 +29,15 @@ export function ArticleHero({
   item: FeedItem;
   onPress: (item: FeedItem) => void;
 }) {
-  const image = useOgImage(item.url, item.imageUrl ?? undefined);
-  const kicker = FEEDS[item.feed]?.badge;
-  const byline = [item.author, formatDateShortDe(item.publishedAt)].filter(Boolean).join(' · ');
+  const { imageUrl, readingMinutes } = useArticleMeta(item.url, item.imageUrl ?? undefined);
+  const kicker = FEEDS[item.feed]?.badge ?? 'Recherche';
+  const byline = [
+    item.author,
+    formatDateShortDe(item.publishedAt),
+    readingMinutes ? `${readingMinutes} Min. Lesezeit` : undefined,
+  ]
+    .filter(Boolean)
+    .join(' · ');
 
   return (
     <Pressable
@@ -35,9 +47,9 @@ export function ArticleHero({
       className="active:opacity-90"
     >
       <Bleed>
-        <Thumbnail uri={image} aspectRatio={16 / 9} icon="image-outline" />
+        <Thumbnail uri={imageUrl} aspectRatio={16 / 9} icon="image-outline" />
       </Bleed>
-      {kicker && <Overline label={kicker} color="emphasis" className="mt-s" />}
+      <Overline label={kicker} color="emphasis" className="mt-s" />
       <Typo variant="headline-l" className="mt-2xs">
         {item.title}
       </Typo>

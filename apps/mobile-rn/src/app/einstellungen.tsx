@@ -1,4 +1,3 @@
-import { router } from 'expo-router';
 import { useState } from 'react';
 import { Pressable, ScrollView, View } from 'react-native';
 
@@ -28,7 +27,7 @@ export default function EinstellungenScreen() {
 
   return (
     <View className="flex-1 bg-grey-100">
-      <ScreenHeader onBack={() => router.back()} />
+      <ScreenHeader />
       <ScrollView
         className="flex-1"
         contentContainerClassName="px-m pt-m pb-2xl"
