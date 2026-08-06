@@ -16,10 +16,20 @@ typecheck and a green test run, and each one was found by looking at a picture.
 | [`expo/`](expo/) | `apps/mobile-rn`, the live app | The thing under test |
 
 Emulator `Medium_Phone` (Android 7.0 API 36, 1080×2400); the draft is pinned to
-light mode so it matches. The draft and NativeScript sets were captured 2026-08-05
-at commit `26ef0c9` and are not re-shot — neither of those builds changes. The Expo
-set is from 2026-08-06 and is re-shot whenever its screens change, so the montages
-always compare the current build against the two fixed references.
+light mode so it matches.
+
+The draft is fixed — it only moves when the design does (last shot 2026-08-05 at
+`26ef0c9`). **Both app sets are re-shot together**, because since
+[ADR 0006](../adr/0006-one-core-two-hosts.md)
+they share a core and a core change lands in both — the NativeScript set stopped
+being a frozen reference the moment its behaviour started coming from the same place
+as the Expo app's. Both are from 2026-08-06 at `9842b27`.
+
+**A screenshot is only evidence of the build it came from.** The set this commit
+replaces was shot between 13:40 and 14:21 from APKs built at 14:46, and `9842b27`
+landed at 15:12 — so every picture in it showed an app one commit out of date, and
+one of them showed a feature that commit had deleted (see the third round below).
+Shoot after building, from the build you mean to document, and write down the commit.
 
 ## Three-way comparison
 
@@ -27,11 +37,26 @@ Order in each image: **draft · NativeScript · Expo**.
 
 | | |
 | --- | --- |
+| [Onboarding 1 — welcome](compare/01-onboarding-welcome.webp) | ![Onboarding 1](compare/01-onboarding-welcome.webp) |
+| [Onboarding 2 — interests](compare/02-onboarding-interests.webp) | ![Onboarding 2](compare/02-onboarding-interests.webp) |
+| [Onboarding 3 — push](compare/03-onboarding-push.webp) | ![Onboarding 3](compare/03-onboarding-push.webp) |
+| [Onboarding 4 — club](compare/04-onboarding-club.webp) | ![Onboarding 4](compare/04-onboarding-club.webp) |
 | [Home](compare/10-home-top.webp) | ![Home](compare/10-home-top.webp) |
 | [Entdecken](compare/30-entdecken.webp) | ![Entdecken](compare/30-entdecken.webp) |
 | [Mediathek](compare/40-mediathek.webp) | ![Mediathek](compare/40-mediathek.webp) |
+| [Mediathek, scrolled](compare/41-mediathek-mid.webp) | ![Mediathek mid](compare/41-mediathek-mid.webp) |
 | [Mitmachen](compare/50-mitmachen.webp) | ![Mitmachen](compare/50-mitmachen.webp) |
 | [Profil](compare/60-profil.webp) | ![Profil](compare/60-profil.webp) |
+
+The reader has no montage: the draft has no reader screen to compare against — its
+detail view is an overlay the Expo app does not build — and the NativeScript tour
+has no reader step, because it reaches its screens by tapping rather than by deep
+link. Read [`expo/22-reader.webp`](expo/22-reader.webp) on its own.
+
+At mid-scroll the Mediathek columns are not showing the same section: the draft
+organises the Mediathek per channel, so scrolling twice lands it inside FunFacts
+while both apps are still on the shared rails. It is in the table because the club's
+bonus row only becomes visible there.
 
 ## What the comparison found
 
@@ -101,24 +126,57 @@ a page with a `baseUrl`, which is what the web target always did. The error text
 gone; the frame stays black on this emulator, so **that playback works is not
 verified** and belongs on the device test.
 
+## Third round, 2026-08-06 — both apps re-shot at `9842b27`
+
+Rebuilt first this time, which is where the rule at the top of this file comes from.
+
+| Seen | Cause | Which version was right |
+| --- | --- | --- |
+| The replaced set stopped the bonus episode at 60 seconds, offered the club in a sheet, and labelled the row "60 Sek. anspielen" | those APKs predated `9842b27`, which dropped the preview gate — club audio has no length limit any more | HEAD, where both apps read "Für alle hörbar" |
+| The reader's byline reads "04. August 2026" where every other date in the app reads "4. August" | `reader-html.ts` prefers `article.publishedText` — the date as the page printed it — over `formatDateDe`, and correctiv.org prints the leading zero. The field's own doc comment gives "4. August 2026" as its example | undecided, see below |
+| The draft's onboarding bullets have yellow markers; both apps draw them white | never built | draft |
+| NativeScript puts the onboarding block at the top where the draft and Expo sit it at the bottom | — | draft & Expo |
+| Home's hero is a grey placeholder in both apps | today's lead article has no cover at all — no `og:image` on the page, no image in the feed item. Both hosts degrade quietly, which is what the first round asked for | both, and not a defect |
+
+The result this round existed to check is the one that is easy to miss because
+nothing looks wrong: the preview gate was removed **in the core**, and it is visibly
+gone from both hosts — the NativeScript build reads "Für alle hörbar" without a line
+of NativeScript changing. That is [ADR 0006](../adr/0006-one-core-two-hosts.md)
+working, and a screenshot is the only place it shows.
+
+The date row is a decision rather than a defect. Preferring the publisher's own
+wording is defensible, and `publishedText` exists because `publishedAt` is empty when
+a page carries no parsable date. Making the app's dates uniform is one line —
+`formatDateDe(article.publishedAt) || article.publishedText` — and it keeps that
+fallback, because the formatter returns an empty string for a date it cannot parse.
+
 ## Regenerating
 
 The emulator needs a window — headless dies on SELinux denying `execheap` to
 SwiftShader's shader JIT.
 
+Both apps share the package id, so only one is installed at a time and each install
+needs the other uninstalled first — they are signed with different keys, and `adb
+install -r` answers a mismatch with `INSTALL_FAILED_UPDATE_INCOMPATIBLE`.
+
 ```bash
 # Expo build
-cd apps/mobile-rn/android && ./gradlew assembleRelease
-adb install -r app/build/outputs/apk/release/app-release.apk
+cd apps/mobile-rn/android && ./gradlew assembleRelease && cd -
+adb uninstall org.correctiv.app.prototype
+adb install apps/mobile-rn/android/app/build/outputs/apk/release/app-release.apk
 OUT=out/expo bash screens/tools/tour-android.sh          # the five tabs
 OUT=out/expo bash screens/tools/tour-android-routes.sh   # the pushed routes, by deep link
 
-# NativeScript build — same package id, so it replaces the Expo one
+# NativeScript build — let CI do it. `ns build` needs the two workarounds in
+# .github/workflows/release-android.yml (a skipped doctor preflight and a
+# redirected Vite output dir) before it produces an APK at all.
+gh workflow run release-android.yml --ref main        # or reuse the last run
+gh run download <run-id> -n release-nativescript -D /tmp/ns
 adb uninstall org.correctiv.app.prototype
-adb install apps/mobile/platforms/android/app/build/outputs/apk/debug/app-debug.apk
+adb install /tmp/ns/correctiv-app-nativescript-*.apk
 OUT=out/nativescript ACTIVITY=com.tns.NativeScriptActivity bash screens/tools/tour-android.sh
 
-# Design draft
+# Design draft — only when the design itself changed
 python3 -m http.server 8098 --directory docs &
 node screens/tools/tour-draft.mjs http://localhost:8098/index.html out/draft \
   --tour=screens/tools/tour-draft.json
@@ -128,11 +186,15 @@ Then convert for the repo — full-resolution PNGs are ~1.1 MB each, WebP at 540
 is ~50 KB and still legible — and rebuild the montages from the three sets:
 
 ```bash
-for p in out/expo/*.png; do
-  magick "$p" -resize 540x -strip -quality 82 "screens/expo/$(basename "$p" .png).webp"
+for set in expo nativescript; do
+  for p in "out/$set"/*.png; do
+    magick "$p" -resize 540x -strip -quality 82 "screens/$set/$(basename "$p" .png).webp"
+  done
 done
 
-for n in 10-home-top 30-entdecken 40-mediathek 50-mitmachen 60-profil; do
+for n in 01-onboarding-welcome 02-onboarding-interests 03-onboarding-push \
+         04-onboarding-club 10-home-top 30-entdecken 40-mediathek \
+         41-mediathek-mid 50-mitmachen 60-profil; do
   magick "screens/draft/$n.webp" "screens/nativescript/$n.webp" "screens/expo/$n.webp" \
     -resize 405x -background white +append -strip -quality 82 "screens/compare/$n.webp"
 done
@@ -160,7 +222,11 @@ unmatched-route page — which looks exactly like a broken route in the app.
   trust. That is an ops finding, not an app defect — see
   [`TROUBLESHOOTING.md`](../TROUBLESHOOTING.md#data-sources).
 - The draft's content is fixed sample data with a fixed date; both builds pull live
-  feeds, so the articles differ between the sets by design.
+  feeds, so the articles differ between the sets by design — and Home's hero can be
+  an article with no cover image, as it is in this round.
+- The NativeScript set is shot from the release APK the CI workflow builds, signed
+  with the in-repo test key, where earlier rounds used a local debug build. Nothing
+  visible depends on that, but it is a different artifact.
 - `83-video` shows a black frame. The embed's error message is gone, but this
   emulator image renders no YouTube video — see the second round above.
 - On the web export, Home has no articles at all: correctiv.org sends no
