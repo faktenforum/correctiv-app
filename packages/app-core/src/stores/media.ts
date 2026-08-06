@@ -35,7 +35,7 @@ export const mediaStore = createStore<MediaState>((set, get) => {
 
     fetch: async (key) => {
       const source = MEDIA_SOURCE[key];
-      const cached = getCached<Video[]>(source, key, TTL_MS);
+      const cached = await getCached<Video[]>(source, key, TTL_MS);
       if (cached) {
         patch(key, { videos: cached, status: 'ready' });
         return;
@@ -49,13 +49,13 @@ export const mediaStore = createStore<MediaState>((set, get) => {
               )
             : await fetchYoutubeFeed(YOUTUBE_FEEDS[key], key);
         patch(key, { videos, status: 'ready' });
-        setCached(source, key, videos);
+        await setCached(source, key, videos);
       } catch (err) {
         console.error(
           `Media feed '${key}' (${source}) failed:`,
           err instanceof Error ? err.message : err,
         );
-        const stale = getStale<Video[]>(source, key);
+        const stale = await getStale<Video[]>(source, key);
         if (stale) patch(key, { videos: stale, status: 'ready' });
         else patch(key, { status: 'error' });
       }

@@ -118,20 +118,3 @@
   color: t.$color-emphasis;
 }
 
-/* Bottom sheet overlay */
-.sheet-overlay {
-  background-color: rgba(51, 51, 51, 0.5);
-}
-.sheet {
-  background-color: t.$color-grey-100;
-  border-radius: t.$radius-md t.$radius-md 0 0;
-  padding: t.$spacing-s t.$spacing-sm t.$spacing-sm t.$spacing-sm;
-}
-.sheet__handle {
-  width: 36;
-  height: 4;
-  background-color: t.$color-grey-300;
-  border-radius: 2;
-  horizontal-align: center;
-  margin-bottom: t.$spacing-s;
-}

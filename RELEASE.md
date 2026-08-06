@@ -4,8 +4,8 @@ Two GitHub Actions workflows live in `.github/workflows/`:
 
 | Workflow | File | Trigger | What it does |
 | --- | --- | --- | --- |
-| **CI** | `ci.yml` | PR to `main`, push to `main` | Builds an unsigned **debug** APK as a compile check. No secrets needed. |
-| **Release Android** | `release-android.yml` | push of a `v*` tag (or manual) | Signs with your upload key (**APK + AAB**, Play-ready) when secrets are set, otherwise with the bundled **test key** (**APK only**). Attaches the result to the GitHub Release. |
+| **CI** | `ci.yml` | PR to `main`, push to `main` | Checks, web export, and an Android APK for **each** app as a compile check. No secrets needed. |
+| **Release Android** | `release-android.yml` | push of a `v*` tag (or manual) | Builds **one APK per app**, signs both with the same key — your upload key when the secrets are set (plus a Play-ready AAB for the NativeScript app), otherwise the bundled **test key**. Attaches everything to the GitHub Release. |
 
 ## Cutting a release
 
@@ -16,13 +16,27 @@ git push origin v1.2.3
 
 This creates a GitHub Release for the tag with auto-generated notes and attaches:
 
-- `correctiv-app-v1.2.3.apk` — for direct install / sideloading
-- `correctiv-app-v1.2.3.aab` — for upload to the Google Play Console
+- `correctiv-app-expo-v1.2.3.apk` — the app going forward
+- `correctiv-app-nativescript-v1.2.3.apk` — the app it replaces
+- `correctiv-app-nativescript-v1.2.3.aab` — for the Google Play Console (real key only)
+
+**Both apps ship** while both are maintained ([ADR 0006](adr/0006-one-core-two-hosts.md)),
+and they declare the same package id `org.correctiv.app.prototype` — so only one can
+be installed on a device at a time. The asset names are the only thing telling them
+apart; installing the second one replaces the first.
 
 The tag also drives the app version: `vX.Y.Z` becomes `versionName X.Y.Z`, and the
 workflow run number becomes the `versionCode` (Play requires it to increase on every
-upload). `App_Resources/Android/app.gradle` is patched only inside CI — it is not
-committed.
+upload). `App_Resources/Android/app.gradle` and `apps/mobile-rn/app.json` are patched
+only inside CI — neither change is committed.
+
+Both APKs are signed with the **same** key. Gradle signs the Expo release variant
+with the Expo template's debug key, so the workflow re-signs it with `apksigner`
+afterwards — otherwise one release would carry two APKs under two identities.
+
+Test the pipeline without cutting a release: run the workflow manually
+(`workflow_dispatch`). It builds both APKs and uploads them to the run without
+creating a release.
 
 ## Signing modes
 

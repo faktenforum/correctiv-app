@@ -1,5 +1,6 @@
 import { PODCAST_CHANNELS } from '../data/feeds.config';
 import { podcastSeries as sampleSeries, type PodcastSeries } from '../data/podcasts';
+import { platform } from '../ports';
 import { getCached, getStale, setCached } from '../services/cache.service';
 import { fetchPodcastSeries } from '../services/podcast.service';
 import { createStore } from './create-store';
@@ -11,7 +12,7 @@ const TTL_MS = 60 * 60 * 1000;
  * How much of the list is real.
  *
  * - `ready`   — every curated show came back live.
- * - `partial` — some shows failed; the list mixes live and cached entries.
+ * - `partial` — some shows failed; the list mixes live, cached and bundled entries.
  * - `offline` — nothing was reachable, this is the typed sample seed.
  *
  * The NativeScript store had one flag for the last two, which is exactly the
@@ -34,49 +35,55 @@ export function findSeries(state: Pick<PodcastsState, 'series'>, id: string): Po
 /**
  * The Salon5 podcast library (Castopod).
  *
- * Cascade, deliberately explicit: fresh cache → the seven curated shows live →
- * stale cache → typed sample seed. The list is never empty, online or off —
- * same promise the feed cache makes.
+ * Cascade, deliberately explicit: fresh cache → the seven curated shows live,
+ * each falling back to the host's bundled snapshot → stale cache → typed sample
+ * seed. The list is never empty, online or off — the same promise the feed cache
+ * makes.
  *
- * One layer of the NativeScript version is gone: it could also read a bundled
- * per-show snapshot from `assets/data/podcasts/<id>.json`, using NativeScript's
- * `File`. That is a platform API the core must not touch, and the Expo app ships
- * no such snapshots. The stale cache and the seed cover the same ground.
+ * The per-show bundled snapshot used to be NativeScript-only, read with its
+ * `File` API from a Pinia copy of this store. It reaches the core through the
+ * `ContentBundle` port instead, so both hosts can offer it and neither needs a
+ * second store to do it.
  */
 export const podcastsStore = createStore<PodcastsState>((set, get) => ({
   series: [],
   status: 'idle',
 
   fetchAll: async (options = {}) => {
-    const cached = options.force ? null : getCached<PodcastSeries[]>(CACHE_NS, 'all', TTL_MS);
+    const cached = options.force ? null : await getCached<PodcastSeries[]>(CACHE_NS, 'all', TTL_MS);
     if (cached?.length) {
       set({ series: cached, status: 'ready' });
       return;
     }
     if (get().series.length === 0) set({ status: 'loading' });
 
+    let liveCount = 0;
     const results = await Promise.all(
       PODCAST_CHANNELS.map(async (handle) => {
         try {
-          return await fetchPodcastSeries(handle);
+          const series = await fetchPodcastSeries(handle);
+          liveCount += 1;
+          return series;
         } catch {
-          return null;
+          return platform().content.podcastSeries(handle);
         }
       }),
     );
-    const live = results.filter((s): s is PodcastSeries => s !== null && s.episodes.length > 0);
+    const series = results.filter((s): s is PodcastSeries => !!s && s.episodes.length > 0);
 
-    if (live.length > 0) {
-      set({
-        series: live,
-        status: live.length === PODCAST_CHANNELS.length ? 'ready' : 'partial',
-      });
-      setCached(CACHE_NS, 'all', live);
+    if (series.length > 0) {
+      // The status describes what is on screen, not how many requests succeeded:
+      // a show whose feed parsed but carried no episodes is just as missing as one
+      // that timed out, and an empty tile is worse than no tile.
+      set({ series, status: series.length === PODCAST_CHANNELS.length ? 'ready' : 'partial' });
+      // Only cache when at least one show is live: caching a bundle-only list
+      // would freeze the offline state in for a whole hour after the network came back.
+      if (liveCount > 0) await setCached(CACHE_NS, 'all', series);
       return;
     }
 
     // Nothing reachable. Stale beats nothing, and the seed beats an empty screen.
-    const stale = getStale<PodcastSeries[]>(CACHE_NS, 'all');
+    const stale = await getStale<PodcastSeries[]>(CACHE_NS, 'all');
     set({
       series: stale?.length ? stale : sampleSeries,
       status: stale?.length ? 'partial' : 'offline',

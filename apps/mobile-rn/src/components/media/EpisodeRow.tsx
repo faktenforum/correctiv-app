@@ -16,7 +16,7 @@ export function EpisodeRow({
   title,
   meta,
   club = false,
-  /** Zusatz für Nicht-Mitglieder bei Club-Inhalt („60 Sek. anspielen"). */
+  /** Extra line under the title, e.g. a club note. */
   metaSuffix,
   onPress,
 }: {

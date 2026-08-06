@@ -29,7 +29,10 @@ export function ArticleHero({
   item: FeedItem;
   onPress: (item: FeedItem) => void;
 }) {
-  const { imageUrl, readingMinutes } = useArticleMeta(item.url, item.imageUrl ?? undefined);
+  const { heroImageUrl: imageUrl, readingMinutes } = useArticleMeta(
+    item.url,
+    item.imageUrl ?? undefined,
+  );
   const kicker = FEEDS[item.feed]?.badge ?? 'Recherche';
   const byline = [
     item.author,

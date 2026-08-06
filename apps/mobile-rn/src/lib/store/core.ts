@@ -35,6 +35,8 @@ import {
 import { settingsStore } from '@correctiv/app-core/stores/settings';
 import { videoStore, isActive as selectIsActive } from '@correctiv/app-core/stores/video';
 import { mediaStore, type YoutubeKey } from '@correctiv/app-core/stores/media';
+import { audioStore } from '@correctiv/app-core/stores/audio';
+import { feedsStore } from '@correctiv/app-core/stores/feeds';
 
 // --- whole-store hooks (use a selector below where you can) -------------------
 
@@ -138,6 +140,8 @@ export const useExtraCount = (slug: string) =>
  */
 export const coreActions = {
   settings: () => settingsStore.getState(),
+  audio: () => audioStore.getState(),
+  feeds: () => feedsStore.getState(),
   podcasts: () => podcastsStore.getState(),
   membership: () => membershipStore.getState(),
   interests: () => interestsStore.getState(),
@@ -150,6 +154,8 @@ export const coreActions = {
 /** Raw stores, for persist() and anything needing subscribe/getState. */
 export const coreStores = {
   settings: settingsStore,
+  audio: audioStore,
+  feeds: feedsStore,
   podcasts: podcastsStore,
   membership: membershipStore,
   interests: interestsStore,

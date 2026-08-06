@@ -1,6 +1,6 @@
 import type { FeedItem, FeedKey, MediaChannel, Video } from '../types/models';
 import { fetchText } from './http';
-import { parseWpFeed, parseYoutubeFeed } from '../lib/rss-parse.mjs';
+import { parseWpFeed, parseYoutubeFeed } from '../lib/rss-parse';
 
 /** WordPress RSS 2.0 feed → FeedItem[] */
 export async function fetchFeed(feed: FeedKey, url: string): Promise<FeedItem[]> {

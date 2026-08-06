@@ -110,15 +110,17 @@ h1 {
   background: var(--grey-300);
   color: var(--grey-700);
 }
-.rating--false, .rating--mostly-false, .rating--mostly_false, .rating--manipulated {
+/* Three tones rather than one class per verdict — the core emits the tone
+   (articles/rating.ts), so a new verdict needs no new selector here. */
+.rating--refuted {
   background: var(--emphasis);
   color: var(--grey-100);
 }
-.rating--missing-context, .rating--missing_context, .rating--misleading, .rating--unproven {
+.rating--qualified {
   background: var(--alternative);
   color: var(--grey-700);
 }
-.rating--true, .rating--mostly-true, .rating--mostly_true {
+.rating--confirmed {
   background: #2e7d4f;
   color: var(--grey-100);
 }

@@ -171,7 +171,7 @@ import ImpactFooter from '../../components/ui/ImpactFooter.vue';
 import ArticleReaderPage from '../reader/ArticleReaderPage.vue';
 import SpotlightReaderPage from '../reader/SpotlightReaderPage.vue';
 import BackstagePage from '../backstage/BackstagePage.vue';
-import { useFeedsStore } from '../../stores/feeds';
+import { useFeedsStore } from '../../stores/core-bindings';
 import { useMediaStore } from '../../stores/core-bindings';
 import { useVideoStore } from '../../stores/core-bindings';
 import { themeTick } from '../../composables/useTheme';

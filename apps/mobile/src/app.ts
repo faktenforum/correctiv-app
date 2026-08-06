@@ -1,5 +1,4 @@
 import { createApp, registerElement } from 'nativescript-vue';
-import { createPinia } from 'pinia';
 import { Application, Frame, Utils } from '@nativescript/core';
 import type { AndroidActivityBackPressedEventData } from '@nativescript/core/application/application-interfaces';
 import CollectionViewPlugin from '@nativescript-community/ui-collectionview/vue3';
@@ -8,10 +7,14 @@ import { Video as ExoVideoElement } from '@nstudio/nativescript-exoplayer';
 import { configurePlatform } from '@correctiv/app-core';
 import AppShell from './AppShell.vue';
 import { nativeScriptPlatform } from './platform/nativescript';
-import { coreStores, useSettingsStore, useVideoStore } from './stores/core-bindings';
+import {
+  coreStores,
+  useAudioStore,
+  useFeedsStore,
+  useSettingsStore,
+  useVideoStore,
+} from './stores/core-bindings';
 import { PERSISTED_KEYS } from '@correctiv/app-core/stores/settings';
-import { useFeedsStore } from './stores/feeds';
-import { useAudioStore } from './stores/audio';
 import { persist } from '@correctiv/app-core/stores/persist';
 import { registerExclusiveMedium } from '@correctiv/app-core/media/exclusive-playback';
 // @nativescript/vite only applies a file named app.css automatically —
@@ -30,9 +33,7 @@ registerElement('AWebView', () => AWebView);
 // Native video element (ExoPlayer on Android, AVPlayer on iOS) for PeerTube HLS.
 registerElement('ExoVideo', () => ExoVideoElement);
 
-const pinia = createPinia();
 const app = createApp(AppShell);
-app.use(pinia);
 app.use(CollectionViewPlugin);
 
 // Persistence runs against the RAW vanilla stores, not the Vue bindings: it only
@@ -56,7 +57,7 @@ const settings = useSettingsStore();
 // Only one medium plays at a time. Registering the two players here (instead of
 // letting the stores import each other) is what keeps the video store free of
 // any NativeScript dependency.
-registerExclusiveMedium('audio', () => useAudioStore(pinia).stop());
+registerExclusiveMedium('audio', () => useAudioStore().stop());
 registerExclusiveMedium('video', () => useVideoStore().close());
 
 if (__ANDROID__) {
@@ -89,9 +90,9 @@ if (__ANDROID__) {
 // Refresh live content when the app returns to the foreground — keeps the
 // "fresh every day" promise without a pull-to-refresh plugin dependency.
 Application.on(Application.resumeEvent, () => {
-  const feeds = useFeedsStore(pinia);
-  feeds.fetch('recherchen', { force: true });
-  feeds.fetch('faktencheck', { force: true });
+  const feeds = useFeedsStore();
+  void feeds.fetch('recherchen', { force: true });
+  void feeds.fetch('faktencheck', { force: true });
 });
 
 // AUDIO SPIKE — off by default. Flip to true, start

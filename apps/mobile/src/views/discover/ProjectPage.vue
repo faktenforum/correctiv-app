@@ -106,7 +106,7 @@ import SectionHeader from '../../components/ui/SectionHeader.vue';
 import LiveBanner from '../../components/ui/LiveBanner.vue';
 import ArticleCard from '../../components/cards/ArticleCard.vue';
 import ArticleReaderPage from '../reader/ArticleReaderPage.vue';
-import { useFeedsStore } from '../../stores/feeds';
+import { useFeedsStore } from '../../stores/core-bindings';
 import { useNavigation } from '../../composables/useNavigation';
 
 const props = defineProps<{ project: Project }>();

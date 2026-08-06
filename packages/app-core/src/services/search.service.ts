@@ -1,6 +1,6 @@
 import type { FeedItem, FeedKey } from '../types/models';
 import { fetchText } from './http';
-import { decodeEntities } from '../lib/extract.mjs';
+import { decodeEntities } from '../lib/html';
 import { getCached, setCached } from './cache.service';
 
 /**
@@ -60,12 +60,12 @@ export async function searchArticles(query: string, count = 15): Promise<FeedIte
   if (q.length < 2) return [];
 
   const cacheKey = q.toLowerCase();
-  const cached = getCached<FeedItem[]>(CACHE_NS, cacheKey, TTL_MS);
+  const cached = await getCached<FeedItem[]>(CACHE_NS, cacheKey, TTL_MS);
   if (cached) return cached;
 
   const url = `${ENDPOINT}?search=${encodeURIComponent(q)}&per_page=${count}&_fields=${FIELDS}`;
-  const posts = JSON.parse(await fetchText(url, 10000)) as WpPost[];
+  const posts = JSON.parse(await fetchText(url, { timeoutMs: 10000 })) as WpPost[];
   const items = Array.isArray(posts) ? posts.filter((p) => p?.link).map(toFeedItem) : [];
-  setCached(CACHE_NS, cacheKey, items);
+  await setCached(CACHE_NS, cacheKey, items);
   return items;
 }

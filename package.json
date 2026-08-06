@@ -1,6 +1,6 @@
 {
   "name": "correctiv-app",
-  "description": "CORRECTIV community app — npm workspace root (NativeScript mobile app + platform-free core).",
+  "description": "CORRECTIV community app \u2014 npm workspace: the platform-free core plus two app hosts (Expo/React Native and NativeScript).",
   "version": "1.0.0",
   "private": true,
   "license": "AGPL-3.0-or-later",
@@ -22,10 +22,11 @@
     "@types/node": "^20.19.43",
     "oxfmt": "^0.61.0",
     "oxlint": "^1.76.0",
-    "typescript": "~5.8.0",
-    "vitest": "^3.2.4",
     "react": "19.2.3",
-    "react-dom": "19.2.3"
+    "react-dom": "19.2.3",
+    "tsx": "^4.22.4",
+    "typescript": "~5.8.0",
+    "vitest": "^3.2.4"
   },
   "scripts": {
     "check": "npm run typecheck && npm run lint && npm run format:check && npm run test",
@@ -36,14 +37,18 @@
     "format:check": "oxfmt --check",
     "test": "npm run test --workspaces --if-present",
     "test:watch": "npm run test:watch -w @correctiv/app-core",
-    "android": "npm run android -w @correctiv/mobile",
-    "ios": "npm run ios -w @correctiv/mobile",
-    "dev:android": "npm run dev:android -w @correctiv/mobile",
-    "dev:ios": "npm run dev:ios -w @correctiv/mobile",
-    "build:android": "npm run build:android -w @correctiv/mobile",
-    "build:android:debug": "npm run build:android:debug -w @correctiv/mobile",
-    "tokens": "npm run tokens -w @correctiv/mobile",
-    "offline-articles": "npm run offline-articles -w @correctiv/mobile",
+    "web": "npm run web -w @correctiv/mobile-rn",
+    "start": "npm start -w @correctiv/mobile-rn",
+    "android": "npm run android -w @correctiv/mobile-rn",
+    "ios": "npm run ios -w @correctiv/mobile-rn",
+    "build:web": "npm run build:web -w @correctiv/mobile-rn",
+    "ns:android": "npm run android -w @correctiv/mobile",
+    "ns:ios": "npm run ios -w @correctiv/mobile",
+    "ns:dev:android": "npm run dev:android -w @correctiv/mobile",
+    "ns:dev:ios": "npm run dev:ios -w @correctiv/mobile",
+    "ns:build:android": "npm run build:android -w @correctiv/mobile",
+    "tokens": "npm run tokens -w @correctiv/mobile-rn && npm run tokens -w @correctiv/mobile",
+    "offline-articles": "npm run offline-articles -w @correctiv/mobile-rn && npm run offline-articles -w @correctiv/mobile",
     "offline-podcasts": "npm run offline-podcasts -w @correctiv/mobile"
   }
 }

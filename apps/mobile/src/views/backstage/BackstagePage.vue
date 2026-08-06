@@ -84,7 +84,7 @@
                 :text="
                   membership.isMember
                     ? bonus.durationLabel
-                    : `${bonus.durationLabel} · 60 Sek. anspielen`
+                    : `${bonus.durationLabel} · Für alle hörbar`
                 "
                 class="episode-row__meta"
               />
@@ -206,7 +206,7 @@ import {
   type BonusMedia,
 } from '@correctiv/app-core/data/backstage';
 import { useMembershipStore } from '../../stores/core-bindings';
-import { useAudioStore } from '../../stores/audio';
+import { useAudioStore } from '../../stores/core-bindings';
 import { useNavigation } from '../../composables/useNavigation';
 import { useJoinFlow } from '../../composables/useJoinFlow';
 import { formatDateDe, formatDateShortDe } from '@correctiv/app-core/lib/format';
@@ -249,7 +249,7 @@ function playBonus(bonus: BonusMedia) {
   if (membership.isMember) {
     audioStore.playEpisode(track);
   } else {
-    audioStore.playPreview(track);
+    audioStore.playEpisode(track);
   }
 }
 

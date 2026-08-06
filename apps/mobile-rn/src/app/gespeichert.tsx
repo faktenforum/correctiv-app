@@ -51,7 +51,7 @@ function SavedRow({ article }: { article: SavedArticle }) {
         onPress={() => openArticle(article)}
         className="flex-1 pr-s active:opacity-70"
       >
-        {article.topline && <Overline label={article.topline} color="emphasis" />}
+        {article.kicker && <Overline label={article.kicker} color="emphasis" />}
         <Typo variant="text-m" weight="bold" numberOfLines={2} className="mt-4xs">
           {article.title}
         </Typo>

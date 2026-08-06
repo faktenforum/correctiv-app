@@ -40,7 +40,7 @@ beforeEach(() => {
   podcastsStore.setState(initial, true);
   fetchMock.mockReset();
   clearMemoryCache();
-  // A fresh in-memory FileStore, so no blob cache survives into the next test.
+  // A fresh in-memory BlobStore, so no blob cache survives into the next test.
   resetPlatform();
 });
 
@@ -97,7 +97,7 @@ describe('podcasts store', () => {
   });
 
   it('prefers a stale cache over the seed', async () => {
-    setCached('podcasts', 'all', [series('pausenbrot')]);
+    await setCached('podcasts', 'all', [series('pausenbrot')]);
     clearMemoryCache(); // force the read to go through the blob layer
     // Past the one-hour TTL: fresh cache and stale cache are the same bytes, and
     // only the clock tells the two code paths apart.

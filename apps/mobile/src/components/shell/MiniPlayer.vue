@@ -31,7 +31,7 @@
 import { computed } from 'nativescript-vue';
 import { $showModal } from 'nativescript-vue';
 import { icons } from '@correctiv/app-core/ui/icons';
-import { useAudioStore } from '../../stores/audio';
+import { useAudioStore } from '../../stores/core-bindings';
 import PlayerModal from '../../views/modals/PlayerModal.vue';
 
 const audioStore = useAudioStore();

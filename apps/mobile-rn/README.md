@@ -1,143 +1,117 @@
-# CORRECTIV App — Prototyp (React Native / Expo)
+# @correctiv/mobile-rn — the Expo app
 
-Die CORRECTIV-App auf Expo/React Native — **iOS, Android und ein Web-Target für Demos**.
+The CORRECTIV app on Expo / React Native: **iOS, Android and a web target**. This is
+the app going forward ([ADR 0004](../../adr/0004-react-native-pivot.md),
+[ADR 0005](../../adr/0005-react-native-over-nativescript.md)). Its behaviour comes
+from [`@correctiv/app-core`](../../packages/app-core); what lives here is the view
+layer plus one adapter.
 
-Dies ist die App, auf die umgestellt wird. Die NativeScript/Vue-Variante liegt weiterhin
-als Referenz in [`../mobile`](../mobile) und ist bei der UI noch vollständiger (4.346 zu
-828 LOC) — sie ist damit die Vorlage für den Nachbau, nicht ein Konkurrent.
-Warum gewechselt wurde: [ADR 0004](../../adr/0004-react-native-pivot.md).
-
-Fachliche Vorgaben: `KONZEPT.md` und `DATENQUELLEN.md` im Schwester-Repo `../../../app`.
+The NativeScript app in [`../mobile`](../mobile) stays for now and is still the more
+complete UI — the reference to port from, not a competitor
+([ADR 0006](../../adr/0006-one-core-two-hosts.md)).
 
 ## Stack
 
-- **Expo SDK 56** (React Native 0.85, New Architecture), **TypeScript**, **expo-router** (Tabs + Stack)
-- **NativeWind v4** + **Token-Brücke** aus dem Schwester-Repo `wp-design-tokens`
-  (Tailwind v4 → px-Werte + TS-Konstanten). Der Pfad wird nach oben gesucht, nicht
-  gezählt — siehe `scripts/generate-tokens.mjs`.
-- **expo-audio** für Live-Radio (Icecast) + Podcasts inkl. Hintergrund-Audio/Lockscreen
-  (react-native-track-player ist mit RN 0.85 / New Arch inkompatibel — siehe unten)
-- **react-native-webview** für den Artikel-Reader (bereinigtes HTML + eingebettete Fonts).
-  Auf **Web** gibt es dafür keine Implementierung — dort rendert ein iframe dasselbe
-  HTML. Beide Wege liegen hinter `components/reader/ReaderView`, abgesichert durch
-  `__tests__/web-target.test.ts`.
-- **Zustand** (+ AsyncStorage-Persist) für lokalen State
-- **fast-xml-parser** (RSS/YouTube-Atom), **htmlparser2 + css-select + domutils** (Artikel-Extraktion)
+- **Expo SDK 56** (React Native 0.85, New Architecture), TypeScript,
+  **expo-router** (tabs + stack), **NativeWind 4**
+- **zustand** binds the core's stores; **AsyncStorage** backs the core's two storage
+  ports (and works unchanged on web, where it is localStorage)
+- **expo-audio** behind the core's `AudioBackend` port. Not
+  react-native-track-player: it needs a Kotlin patch to compile under RN 0.85 and
+  then crashes at runtime under the New Architecture, and RN 0.85 offers no
+  old-architecture option. expo-audio brings background playback, lock-screen
+  controls and a web implementation.
+- **react-native-webview** for the article reader, **iframe** on web. Both sit behind
+  `components/reader/ReaderView`, guarded by `__tests__/web-target.test.ts`.
+- **htmlparser2 + css-select + domutils** — this app uses the core's DOM extraction
+  backend, registered in `app/_layout.tsx`
 
-## Entwicklung
+## Development
 
-Voraussetzungen: Node ≥ 20. Für Android zusätzlich JDK 17 und Android SDK
-(`ANDROID_HOME`) mit Emulator oder Gerät. **Für Web nichts davon.**
-
-`npm install` läuft in der **Repo-Wurzel** (npm-Workspace), nicht hier.
+`npm install` runs at the **repo root** (npm workspace), not here.
 
 ```bash
-npm run web            # Browser mit Fast Refresh — kein Emulator, kein SDK
-npm run android        # Dev-Build bauen + auf Emulator/Gerät installieren (einmalig)
-npm start              # danach: Metro mit Fast Refresh (Dev-Client, kein Expo Go!)
-npm run build:web      # statischer Export nach dist/
+npm run web            # browser with Fast Refresh — no emulator, no Android SDK
+npm run android        # build a dev build and install it (once)
+npm start              # then: Metro with Fast Refresh (dev client, NOT Expo Go)
+npm run build:web      # static export to dist/
 ```
 
-Expo Go funktioniert NICHT (native Module). Immer Dev-Build / Release-APK verwenden.
+Expo Go does **not** work (native modules). Always a dev build or a release APK.
 
-Den statischen Export **mit Clean URLs** servieren (`/artikel`, nicht `/artikel.html`).
-Ein einfaches `python3 -m http.server` liefert den Pfad wörtlich, Expo Router matcht dann
-nichts und zeigt seine „unmatched route"-Seite — das sieht wie ein App-Fehler aus, ist
-aber der Server.
+Serve the static export **with clean URLs** (`/artikel`, not `/artikel.html`), or
+Expo Router matches nothing and shows its "unmatched route" page — which looks like
+an app bug and is the server. See [TROUBLESHOOTING.md](../../TROUBLESHOOTING.md).
 
-iOS: über **EAS Build in der Cloud, ohne Mac**. `ios/` existiert noch nicht und wird von
-`expo prebuild` erzeugt.
+iOS builds via **EAS in the cloud, no Mac**. `ios/` does not exist yet and is
+produced by `expo prebuild`.
 
-### Release-APK (Demo-Gerät)
+### Release APK (demo device)
 
 ```bash
-cd android && ./gradlew assembleRelease                          # universal (alle ABIs)
-./gradlew assembleRelease -PreactNativeArchitectures=arm64-v8a   # nur arm64 (echtes Gerät)
+cd android && ./gradlew assembleRelease                          # all ABIs
+./gradlew assembleRelease -PreactNativeArchitectures=arm64-v8a   # a real device
 adb install -r app/build/outputs/apk/release/app-release.apk
 ```
-Release ist selbst-enthaltend (JS gebündelt, kein Metro nötig) und mit dem Debug-Keystore
-signiert (für die Demo ausreichend; vor echter Verteilung eigenen Keystore erzeugen).
 
-## Generierte Artefakte (nicht von Hand editieren)
+Self-contained (JS bundled, no Metro) and signed with the debug keystore — enough
+for a demo. Generate a real keystore before any distribution.
 
-| Skript | Erzeugt | Zweck |
-|---|---|---|
-| `npm run tokens` | `tailwind.tokens.generated.js`, `src/lib/theme/tokens.generated.ts`, `readerCss.generated.ts` | Design-Tokens aus dem `wp-design-tokens`-Repo |
-| `npm run fonts` | `src/lib/theme/readerFonts.generated.ts` | Subsetted base64-Fonts für die Reader-WebView (braucht `pyftsubset`) |
-| `npm run offline-articles` | `src/lib/articles/offlineArticles.generated.ts` | ~15 vor-extrahierte Artikel (Offline-Cache) |
+## Layout
 
-## Qualität
+```
+src/app/                 expo-router routes: (tabs)/ + artikel, suche, projekt/[id],
+                         serie/[id], video, player, aufruf/[slug], formular,
+                         faktenforum, behauptung/[id], atlas, einstellungen,
+                         gespeichert, bericht, onboarding, beitreten, backstage,
+                         tagebuch/[id]
+src/components/ui/       the design system (Typo, Button, Card, Badge, Chip, Screen…)
+src/components/          feed | home | discover | media | player | participate |
+                         profile — one folder per area
+src/components/reader|media/   the two platform splits (.tsx | .web.tsx | props type)
+src/lib/platform/expo.ts the core's ports: storage and the bundled content
+src/lib/audio/           backend.ts (expo-audio → the core's port), plus thin action
+                         and hook wrappers over the core's audio store
+src/lib/feeds/           React hooks over the core's feed store, and the search corpus
+src/lib/articles/        reader CSS wiring, the bundled articles, in-app URL rules
+src/lib/store/core.ts    React bindings for the core's stores
+src/lib/theme/           token-bridge output, typography, fonts, pixel sizes
+scripts/                 generators (tokens, fonts, offline articles)
+__tests__/               jest-expo against real captured feeds and pages
+```
+
+## Generated, never hand-edited
+
+| Command | Produces |
+| --- | --- |
+| `npm run tokens` | `tailwind.tokens.generated.js`, `src/lib/theme/tokens.generated.ts`, `readerCss.generated.ts` |
+| `npm run fonts` | `src/lib/theme/readerFonts.generated.ts` — base64-subsetted reader fonts (needs `pyftsubset`) |
+| `npm run offline-articles` | `src/lib/articles/offlineArticles.generated.ts` — ~15 pre-extracted articles |
+
+## Checks
 
 ```bash
-npm test        # jest: Token-Snapshot, Feed-Parser, Artikel-Extraktion (echte Fixtures),
-                #       Web-Target-Guard
-npm run typecheck   # tsc (App) + tsc (Tests)
+npm test           # jest: token snapshot, cascades, guards
+npm run typecheck  # tsc (app) + tsc (tests)
 ```
 
-Gelintet und formatiert wird aus der **Repo-Wurzel** mit oxlint/oxfmt (`npm run check`
-prüft alle Workspaces zusammen); ESLint ist hier entfallen.
+Lint and format run from the **repo root** with oxlint/oxfmt (`npm run check` covers
+every workspace). Two guards worth knowing about:
+`__tests__/web-target.test.ts` (nothing web-incompatible outside a `.web.tsx` split)
+and `__tests__/no-numeric-utilities.test.ts` (no numeric NativeWind size or spacing
+class — the scale is the design system's, so `w-32` does not mean 32 px; see
+TROUBLESHOOTING.md).
 
-## Architektur
+## Status
 
-```
-src/
-  app/                  expo-router-Routen: (tabs)/ + artikel, suche, projekt/[id],
-                        serie/[id], video, player, aufruf/[slug], formular,
-                        faktenforum, behauptung/[id], atlas, einstellungen,
-                        gespeichert, bericht, onboarding, beitreten, backstage,
-                        tagebuch/[id]
-  components/ui/        Design-System (Typo, Button, Card, Badge, Chip, Screen, …)
-  components/feed|home|discover|media|player|participate|profile/  je Bereich
-  lib/audio/            der EINE Audio-Player der App (expo-audio, auf Modulebene)
-  lib/theme/            Token-Brücke-Outputs + Typografie + Fonts
-  lib/feeds/            nur Transport: client, useFeed, Suchkorpus für offline
-                        (Modell, Katalog und Parser kommen aus @correctiv/app-core)
-  lib/articles/         Extraktion, Reader-HTML, og:image, Offline-Bundle
-  lib/discover/         projectTarget — was ein Tippen im Verzeichnis bedeutet
-  lib/net/              cachedFetch (network-first / cache-first Policies)
-  lib/store/            React-Bindung an die Core-Stores (zustand/vanilla)
-scripts/                Generatoren (Token-Brücke, Fonts, Offline-Artikel)
-__tests__/ + __fixtures__/  Unit-Tests gegen echte Feed-/Artikel-Snapshots
-```
+Every tab is real; no stubs. Onboarding, home, reader, discover/search, media
+(live radio, seven Castopod series, PeerTube HLS, YouTube embeds, mini and full
+player; club bonus content plays in full for everyone), participate (three
+CrowdNewsroom callouts with a multi-step form, Faktenforum, Abriss-Atlas), club and
+profile (join flow with the app-wide status flip, Backstage, quarterly report, saved
+articles, settings).
 
-## Wichtige Entscheidung: Audio
-
-`react-native-track-player@4.1` kompiliert unter RN 0.85 erst nach Kotlin-Patch und
-crasht dann zur Laufzeit unter der New Architecture (`TurboModule … returnType == void`).
-RN 0.85 bietet keine Old-Architecture-Option. Daher **expo-audio** (offiziell, New-Arch-kompatibel,
-Icecast-Streaming + Hintergrund-Audio + Lockscreen-Controls). Audio ist in `src/lib/audio/` gekapselt.
-
-## Status (Roadmap aus dem Konzept)
-
-- ✅ **M0** Fundament · ✅ **M1** Datenlayer + Home · ✅ **M2** Artikel-Reader
-- ✅ **M7** Entdecken/Suche — Verzeichnis (7 Gruppen), Themenschiene, Volltextsuche
-  mit lokalem Rückfall, Projekt- und Themenseiten
-- ✅ **M3** Audio/Mediathek — ein Audio-Singleton (expo-audio), Live-Radio,
-  7 Castopod-Serien, PeerTube nativ (HLS) + YouTube-Einbettung, Mini- und Vollplayer,
-  Club-Vorschau mit 60-Sekunden-Grenze
-- ✅ **Web-Target** — im Browser verifiziert: Home mit vollem Inhalt und allen fünf Tabs,
-  Reader mit Artikel im iframe (korrektes `h1`, 19 Absätze, eingebettete Fonts),
-  Entdecken mit allen 17 Einträgen, jede Projektseite unter ihrer eigenen URL,
-  Mediathek mit echten FunFacts-Videos, ein echter Klick auf „Radio abspielen"
-  bringt die Mini-Leiste hoch (Wiedergabe selbst ist auf Gerät noch nicht geprüft),
-  und der Mitmach-Fluss trägt bis in Schritt 1 des Formulars
-- ✅ **M4** Mitmachen — drei CrowdNewsroom-Aufrufe mit mehrstufigem Formular aus dem
-  eigenen Schema, Faktenforum mit Prüfstatus, Abriss-Atlas, WhatsApp-Tippkanal
-- ✅ **M5** Club & Profil — Profil (Gast und Mitglied), Einstellungen, gespeicherte
-  Artikel, Quartalsbericht, Beitritts-Flow (der app-weite Statuswechsel) und
-  Backstage mit Recherchetagebuch
-- ✅ **M6** Onboarding — Mission, Interessen, Push, Club-Angebot; beim Erststart
-  automatisch, aber nur wenn die App auf „/" startet (geteilte Links bleiben heil)
-
-Kein Tab ist mehr ein Stub. Vorlage für den Nachbau ist
-[`../mobile`](../mobile) — dort liegen 43 fertige SFCs.
-
-## Was noch aus dem Core kommen soll
-
-Der Daten-Layer ist vereinheitlicht: Modell, Feed-Katalog und Parser kommen aus
-`@correctiv/app-core`, hier bleibt nur der Transport. Offen ist die Gegenrichtung —
-die zwei Cache-Policies aus `lib/net/cachedFetch.ts` sollen in den Core wandern,
-dort aber hinter dessen `FileStore`-Port statt direkt auf AsyncStorage, damit sie
-auch auf Web tragen. Der Port ist heute **synchron** und wird beim Start komplett
-hydriert; für ein Megabyte gecachter Feeds ist das die falsche Form. Siehe
-[ADR 0004](../../adr/0004-react-native-pivot.md).
+Verified in the browser: home with full content and all five tabs, the reader with a
+real article in an iframe, discover with all 17 entries, every project page under its
+own URL, media with real FunFacts videos, and the participate flow into step 1 of the
+form. Playback itself is verified on a device, not in the browser.

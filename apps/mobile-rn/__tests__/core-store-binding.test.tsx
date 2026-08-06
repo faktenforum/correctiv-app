@@ -122,7 +122,7 @@ describe('zustand useStore over the core store', () => {
     act(() => {
       coreStores.savedArticles
         .getState()
-        .toggle({ url, title: 'X', topline: null, rating: null, savedAt: 'now' });
+        .toggle({ url, title: 'X', kicker: null, rating: null, savedAt: 'now' });
     });
 
     expect(value()).toBe(true);

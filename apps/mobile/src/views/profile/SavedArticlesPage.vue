@@ -27,8 +27,8 @@
           >
             <StackLayout col="0">
               <Label
-                v-if="article.topline"
-                :text="article.topline.toUpperCase()"
+                v-if="article.kicker"
+                :text="article.kicker.toUpperCase()"
                 class="ty-text-s text-emphasis"
               />
               <Label

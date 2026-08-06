@@ -2,7 +2,7 @@ import { Pressable, Text, type PressableProps } from 'react-native';
 
 import { typography, colors } from '@/lib/theme';
 
-type Variant = 'primary' | 'secondary' | 'outline' | 'club';
+type Variant = 'primary' | 'secondary' | 'outline' | 'club' | 'onEmphasis';
 
 export type ButtonProps = Omit<PressableProps, 'children' | 'style'> & {
   title: string;
@@ -11,19 +11,25 @@ export type ButtonProps = Omit<PressableProps, 'children' | 'style'> & {
   className?: string;
 };
 
-// Marken-Logik: Rot (emphasis) für den Journalismus-CTA, Gelb (alternative) für
-// den Club. Keine Schatten — Form über Flächen + Radius md (5px).
+// Brand logic: red (emphasis) for the journalism CTA, yellow (alternative) for the
+// club. No shadows — shape comes from surfaces plus radius md (5px).
+//
+// `onEmphasis` is the CTA on a brand surface: white, not yellow. Yellow is the
+// club's colour and carries meaning there; on red it is also loud and low-contrast.
+// The draft and the NativeScript build both use white here.
 const SURFACE: Record<Variant, string> = {
   primary: 'bg-emphasis',
   secondary: 'bg-grey-200',
   outline: 'bg-grey-100 border border-grey-300',
   club: 'bg-alternative',
+  onEmphasis: 'bg-grey-100',
 };
 const LABEL_COLOR: Record<Variant, string> = {
   primary: colors['grey-100'],
   secondary: colors['grey-700'],
   outline: colors['grey-700'],
   club: colors['grey-700'],
+  onEmphasis: colors['grey-700'],
 };
 
 export function Button({

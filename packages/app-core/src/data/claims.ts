@@ -1,3 +1,6 @@
+import { ratingLabel } from '../articles/rating';
+import type { FactcheckRating } from '../articles/types';
+
 /**
  * Faktenforum claims — SAMPLE in the Hasura/GraphQL response shape
  * ({ data: { claims: [...] } }) used by the real Faktenforum backend
@@ -20,7 +23,8 @@ export interface Claim {
   quote: string;
   synopsis: string;
   status: ClaimStatus;
-  rating?: 'falsch' | 'fehlender-kontext' | 'richtig' | 'unbelegt';
+  /** Same vocabulary as an article's verdict — one fact-check language app-wide. */
+  rating?: FactcheckRating;
   submittedAt: string;
   sources: ClaimSource[];
 }
@@ -127,17 +131,10 @@ export const claimsResponse = {
 
 export const claims = claimsResponse.data.claims;
 
-const RATING_TEXT: Record<NonNullable<Claim['rating']>, string> = {
-  falsch: 'Falsch',
-  'fehlender-kontext': 'Fehlender Kontext',
-  richtig: 'Richtig',
-  unbelegt: 'Unbelegt',
-};
-
 /** Status tag for claim lists and the claim detail page (shared UI helper). */
 export function claimStatusTag(claim: Claim): { text: string; cls: string } {
   if (claim.status === 'checked') {
-    const text = `Geprüft: ${claim.rating ? RATING_TEXT[claim.rating] : 'Abgeschlossen'}`;
+    const text = `Geprüft: ${claim.rating ? ratingLabel(claim.rating) : 'Abgeschlossen'}`;
     return {
       text,
       cls: claim.rating === 'richtig' ? 'status-tag--checked-true' : 'status-tag--checked',

@@ -53,7 +53,7 @@
 import { icons } from '@correctiv/app-core/ui/icons';
 import type { PodcastSeries, PodcastEpisode } from '@correctiv/app-core/data/podcasts';
 import ClubBadge from '../../components/ui/ClubBadge.vue';
-import { useAudioStore } from '../../stores/audio';
+import { useAudioStore } from '../../stores/core-bindings';
 import { useMembershipStore } from '../../stores/core-bindings';
 import { useNavigation } from '../../composables/useNavigation';
 import { formatDateShortDe } from '@correctiv/app-core/lib/format';
@@ -80,7 +80,7 @@ function play(episode: PodcastEpisode) {
   };
   // Bonus content: non-members listen to 60s, then the sheet extends an invitation
   if (episode.club && !membership.isMember) {
-    audioStore.playPreview(track);
+    audioStore.playEpisode(track);
   } else {
     audioStore.playEpisode(track);
   }

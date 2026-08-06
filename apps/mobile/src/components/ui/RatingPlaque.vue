@@ -4,16 +4,16 @@
 
 <script setup lang="ts">
 import { computed } from 'nativescript-vue';
-import { ratingLabel } from '../../services/article.service';
+import { ratingLabel, ratingTone } from '@correctiv/app-core/articles/rating';
+import type { FactcheckRating } from '@correctiv/app-core/articles/types';
 
-const props = defineProps<{ rating: string; ratingText?: string | null }>();
+/**
+ * The label and the tone both come from the core, so this plaque, the reader's
+ * plaque and a Faktenforum claim tag can never disagree about what a verdict is
+ * called or which colour it gets.
+ */
+const props = defineProps<{ rating: FactcheckRating }>();
 
-const label = computed(() => ratingLabel(props.rating, props.ratingText) ?? '');
-const plaqueClass = computed(() => {
-  const r = props.rating.replace(/_/g, '-');
-  if (['false', 'mostly-false', 'manipulated'].includes(r)) return 'rating-plaque--false';
-  if (['missing-context', 'misleading', 'unproven'].includes(r)) return 'rating-plaque--context';
-  if (['true', 'mostly-true'].includes(r)) return 'rating-plaque--true';
-  return 'rating-plaque--neutral';
-});
+const label = computed(() => ratingLabel(props.rating));
+const plaqueClass = computed(() => `rating-plaque--${ratingTone(props.rating)}`);
 </script>

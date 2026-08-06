@@ -23,6 +23,7 @@ jest.mock('@react-native-async-storage/async-storage', () => {
     __store: store,
     getAllKeys: jest.fn(async () => [...store.keys()]),
     multiGet: jest.fn(async (keys: string[]) => keys.map((k) => [k, store.get(k) ?? null])),
+    getItem: jest.fn(async (k: string) => store.get(k) ?? null),
     setItem: jest.fn(async (k: string, v: string) => void store.set(k, v)),
     removeItem: jest.fn(async (k: string) => void store.delete(k)),
   };
@@ -114,20 +115,53 @@ describe('keyValue port', () => {
   });
 });
 
-describe('files port', () => {
+/**
+ * The blob port is asynchronous by contract and therefore NOT mirrored in memory:
+ * it holds cached feeds, and pulling a megabyte of them in before the first frame
+ * is what the sync version of this port used to force.
+ */
+describe('blobs port', () => {
   it('namespaces blobs so two feeds cannot collide', async () => {
-    await hydratePlatform();
-    expoPlatform.files.write('rss', 'faktencheck', 'A');
-    expoPlatform.files.write('peertube', 'faktencheck', 'B');
+    await expoPlatform.blobs.write('rss', 'faktencheck', 'A');
+    await expoPlatform.blobs.write('peertube', 'faktencheck', 'B');
 
-    expect(expoPlatform.files.read('rss', 'faktencheck')).toBe('A');
-    expect(expoPlatform.files.read('peertube', 'faktencheck')).toBe('B');
-    await flushed();
-    expect(backing.get('file:rss/faktencheck')).toBe('A');
+    expect(await expoPlatform.blobs.read('rss', 'faktencheck')).toBe('A');
+    expect(await expoPlatform.blobs.read('peertube', 'faktencheck')).toBe('B');
+    expect(backing.get('blob:rss/faktencheck')).toBe('A');
   });
 
   it('returns null for an unknown blob', async () => {
-    await hydratePlatform();
-    expect(expoPlatform.files.read('rss', 'nope')).toBeNull();
+    expect(await expoPlatform.blobs.read('rss', 'nope')).toBeNull();
+  });
+
+  it('needs no hydration — a cold read goes straight to storage', async () => {
+    backing.set('blob:rss/klima', 'cached xml');
+    expect(isPlatformHydrated()).toBe(false);
+    expect(await expoPlatform.blobs.read('rss', 'klima')).toBe('cached xml');
+  });
+
+  it('treats a storage fault as a cache miss rather than an error', async () => {
+    (AsyncStorage.getItem as jest.Mock).mockRejectedValueOnce(new Error('disk gone'));
+    expect(await expoPlatform.blobs.read('rss', 'klima')).toBeNull();
+  });
+});
+
+/**
+ * The bundle is this host's offline promise: the reader has to open without a
+ * network, which is the whole reason `npm run offline-articles` exists.
+ */
+describe('content bundle', () => {
+  it('serves a bundled article by its url, and null for anything else', () => {
+    const [url] = Object.keys(
+      // eslint-disable-next-line @typescript-eslint/no-require-imports
+      require('../src/lib/articles/offlineArticles.generated').OFFLINE_ARTICLES,
+    );
+    expect(expoPlatform.content.article(url)?.bodyHtml.length).toBeGreaterThan(200);
+    expect(expoPlatform.content.article('https://correctiv.org/nope/')).toBeNull();
+  });
+
+  it('says plainly that this host bundles no feed or podcast snapshots', () => {
+    expect(expoPlatform.content.feed('recherchen')).toBeNull();
+    expect(expoPlatform.content.podcastSeries('klima')).toBeNull();
   });
 });

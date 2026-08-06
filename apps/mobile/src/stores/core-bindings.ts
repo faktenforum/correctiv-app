@@ -46,7 +46,22 @@ import {
 } from '@correctiv/app-core/stores/participation';
 import { mediaStore, type MediaState } from '@correctiv/app-core/stores/media';
 import { videoStore, isActive, type VideoState } from '@correctiv/app-core/stores/video';
+import {
+  feedsStore,
+  mergedFeedItems,
+  mergedFeedStatus,
+  type FeedsState,
+} from '@correctiv/app-core/stores/feeds';
+import { podcastsStore, findSeries, type PodcastsState } from '@correctiv/app-core/stores/podcasts';
+import {
+  audioStore,
+  isActive as isAudioActive,
+  isLive as isAudioLive,
+  type AudioState,
+} from '@correctiv/app-core/stores/audio';
 import type { Interest } from '@correctiv/app-core/data/interests';
+import type { FeedItem, FeedKey } from '@correctiv/app-core/types/models';
+import type { PodcastSeries } from '@correctiv/app-core/data/podcasts';
 
 // Re-exported so consumers have one import for both the binding and the types
 // that describe it — the store modules stay an implementation detail of this file.
@@ -55,6 +70,9 @@ export type { MembershipInterval } from '@correctiv/app-core/stores/membership';
 export type { CalloutSubmission } from '@correctiv/app-core/stores/participation';
 export type { VideoStatus } from '@correctiv/app-core/stores/video';
 export type { YoutubeKey, VideoListState } from '@correctiv/app-core/stores/media';
+export type { FeedStatus, FeedSlice } from '@correctiv/app-core/stores/feeds';
+export type { PodcastsStatus } from '@correctiv/app-core/stores/podcasts';
+export type { PlayerStatus } from '@correctiv/app-core/stores/audio';
 
 /** Mirrors a vanilla store into a Vue reactive object, once per store. */
 function bind<T extends object>(store: Store<T>): T {
@@ -145,6 +163,53 @@ function videoView(): Pick<VideoState, 'current'> {
 export type BoundVideo = VideoState & { isActive: boolean };
 export const useVideoStore = (): BoundVideo => video as BoundVideo;
 
+// --- feeds -------------------------------------------------------------------
+
+const feeds = bind(feedsStore);
+
+export type BoundFeeds = FeedsState & {
+  items: (key: FeedKey) => FeedItem[];
+  merged: (keys: FeedKey[]) => FeedItem[];
+  mergedStatus: (keys: FeedKey[]) => ReturnType<typeof mergedFeedStatus>;
+};
+
+/**
+ * The parameterised selectors stay functions, but they read `feeds` — the
+ * reactive mirror — so a template that calls `feeds.items('recherchen')` is
+ * tracked and re-renders when that slice changes. Reading the vanilla store
+ * instead would silently stop updating; see the note at the top of this file.
+ */
+const boundFeeds = Object.assign(feeds, {
+  items: (key: FeedKey) => feeds.byKey[key].items,
+  merged: (keys: FeedKey[]) => mergedFeedItems(feeds, keys),
+  mergedStatus: (keys: FeedKey[]) => mergedFeedStatus(feeds, keys),
+});
+
+export const useFeedsStore = (): BoundFeeds => boundFeeds as BoundFeeds;
+
+// --- podcasts ----------------------------------------------------------------
+
+const podcastsMirror = bind(podcastsStore);
+const podcasts = Object.assign(podcastsMirror, {
+  find: (id: string) => findSeries(podcastsMirror, id),
+});
+
+export type BoundPodcasts = PodcastsState & { find: (id: string) => PodcastSeries | null };
+export const usePodcastsStore = (): BoundPodcasts => podcasts;
+
+// --- audio -------------------------------------------------------------------
+
+const audio = withDerived(bind(audioStore), {
+  isLive: computed(() => isAudioLive(audioView())),
+  isActive: computed(() => isAudioActive(audioView())),
+});
+function audioView(): Pick<AudioState, 'track'> {
+  return audio;
+}
+
+export type BoundAudio = AudioState & { isLive: boolean; isActive: boolean };
+export const useAudioStore = (): BoundAudio => audio as BoundAudio;
+
 // --- raw stores, for persist() and anything needing subscribe ---------------
 
 export const coreStores = {
@@ -155,4 +220,7 @@ export const coreStores = {
   participation: participationStore,
   media: mediaStore,
   video: videoStore,
+  feeds: feedsStore,
+  podcasts: podcastsStore,
+  audio: audioStore,
 };

@@ -8,17 +8,31 @@ import { useEffect, useState } from 'react';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
 
 import { configurePlatform } from '@correctiv/app-core';
+import { extractArticleFromDom } from '@correctiv/app-core/articles/extract/dom';
+import { configureArticleExtractor } from '@correctiv/app-core/articles/load';
 import { registerExclusiveMedium } from '@correctiv/app-core/media/exclusive-playback';
 import { persist } from '@correctiv/app-core/stores/persist';
 import { PERSISTED_KEYS } from '@correctiv/app-core/stores/settings';
 
+import { expoAudio } from '@/lib/audio/backend';
 import { stop as stopAudio } from '@/lib/audio/player';
 import { expoPlatform, hydratePlatform } from '@/lib/platform/expo';
 import { coreStores } from '@/lib/store/core';
 import { fontAssets } from '@/lib/theme';
 
-// Hand the core its platform capabilities before anything reads a store.
-configurePlatform(expoPlatform);
+// Hand the core its platform capabilities before anything reads a store. Storage
+// and bundled content come from the adapter; the audio backend is composed in
+// here, so this one line is the whole answer to "what does this host give the core".
+configurePlatform({ ...expoPlatform, audio: expoAudio });
+
+/**
+ * This app carries an HTML parser, so it uses the core's DOM extraction backend
+ * rather than the string one that is the default. The difference is a tag
+ * allowlist instead of a denylist — measurably cleaner markup in the reader. See
+ * @correctiv/app-core/articles/types.ts for the trade-off and the test that keeps
+ * the two backends in agreement.
+ */
+configureArticleExtractor(extractArticleFromDom);
 
 /**
  * Exclusive playback: starting audio stops video and vice versa. Registered here

@@ -1,40 +1,38 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
-import type { CorePlatform, FileStore, KeyValueStore } from '@correctiv/app-core';
+import type { BlobStore, ContentBundle, CorePlatform, KeyValueStore } from '@correctiv/app-core';
+import type { Article } from '@correctiv/app-core/articles/types';
+
+import { OFFLINE_ARTICLES } from '@/lib/articles/offlineArticles.generated';
 
 /**
- * The Expo host's implementation of the core's platform ports — the only place in
- * this app that decides where persisted state physically lives. Works unchanged
+ * The Expo host's half of `@correctiv/app-core`'s platform ports — the only place
+ * in this app that decides where persisted state physically lives. Works unchanged
  * on iOS, Android and web, because AsyncStorage ships a web build backed by
  * localStorage.
  *
- * ## Why there is a cache instead of a direct pass-through
+ * ## Why one port is mirrored in memory and the other is not
  *
- * The core's KeyValueStore port is SYNCHRONOUS: `getString(key): string | null`.
- * That shape came from NativeScript's ApplicationSettings, which is synchronous.
- * AsyncStorage is not. Rather than make every core consumer async — the port is
- * read on the hot path by `persist()` at startup and by services on every cache
- * lookup — this adapter keeps an in-memory mirror:
+ * `KeyValueStore` is SYNCHRONOUS by contract: `persist()` reads it while a store
+ * is being constructed, before anything can await. So this adapter hydrates those
+ * keys once at startup and answers reads from memory, flushing writes in the
+ * background. The cost is bounded and explicit: state written in the same tick is
+ * readable immediately, but a write is not yet durable when the call returns.
+ * Losing the last few hundred milliseconds of settings on a hard kill is
+ * acceptable. Reading BEFORE hydration is not — `hydratePlatform()` must be
+ * awaited before the first render, or the app starts with empty state and then
+ * overwrites the real state on the first write.
  *
- *   - `hydrate()` loads everything once, before the app renders.
- *   - Reads are served from memory, so they stay synchronous.
- *   - Writes update memory immediately and flush to AsyncStorage in the
- *     background.
- *
- * The cost is explicit and bounded: state written in the same tick is readable
- * immediately, but a write is not yet durable when the call returns. Both
- * consumers of these ports already treat persistence as best-effort — the file
- * cache is a nicety, and losing the last few hundred milliseconds of settings on
- * a hard kill is acceptable. What is NOT acceptable is reading before hydration,
- * which is why `hydrate()` must be awaited before the first render; skip it and
- * the app starts with empty state and then overwrites the real state on first
- * write.
+ * `BlobStore` needs none of that, because it is asynchronous by contract. It used
+ * to be sync too, which forced this adapter to pull every cached feed — a megabyte
+ * of them — into memory before the first frame just to be able to answer a read.
+ * Those go straight to AsyncStorage now.
  */
 
 const KV_PREFIX = 'kv:';
-const FILE_PREFIX = 'file:';
+const BLOB_PREFIX = 'blob:';
 
-/** Everything this adapter owns, mirrored in memory so reads can be sync. */
+/** The KeyValueStore's keys, mirrored so reads can stay synchronous. */
 const memory = new Map<string, string>();
 
 let hydrated = false;
@@ -49,15 +47,15 @@ function flush(key: string, value: string | null): void {
 }
 
 /**
- * Loads persisted state into memory. Await this before rendering — see the note
- * above about why reading first is a correctness problem, not a performance one.
+ * Loads the synchronous half of storage into memory. Await this before rendering —
+ * see the note above about why reading first is a correctness problem, not a
+ * performance one.
  */
 export async function hydratePlatform(): Promise<void> {
   try {
-    const keys = await AsyncStorage.getAllKeys();
-    const ours = keys.filter((k) => k.startsWith(KV_PREFIX) || k.startsWith(FILE_PREFIX));
-    if (ours.length > 0) {
-      for (const [key, value] of await AsyncStorage.multiGet(ours)) {
+    const keys = (await AsyncStorage.getAllKeys()).filter((k) => k.startsWith(KV_PREFIX));
+    if (keys.length > 0) {
+      for (const [key, value] of await AsyncStorage.multiGet(keys)) {
         if (value !== null) memory.set(key, value);
       }
     }
@@ -87,20 +85,50 @@ const keyValue: KeyValueStore = {
 };
 
 /**
- * The core's FileStore is a namespaced text-blob store, not a filesystem — so
- * key/value storage satisfies it directly and the same code works on web, where
+ * The core's BlobStore is a namespaced text-blob store, not a filesystem, so
+ * key/value storage satisfies it directly — and the same code works on web, where
  * there is no filesystem to speak of.
  */
-const files: FileStore = {
-  read: (namespace, name) => memory.get(`${FILE_PREFIX}${namespace}/${name}`) ?? null,
-  write: (namespace, name, contents) => {
-    const key = `${FILE_PREFIX}${namespace}/${name}`;
-    memory.set(key, contents);
-    flush(key, contents);
+const blobs: BlobStore = {
+  async read(namespace, name) {
+    try {
+      return await AsyncStorage.getItem(`${BLOB_PREFIX}${namespace}/${name}`);
+    } catch {
+      return null; // a cache miss and a broken cache are the same thing to a caller
+    }
+  },
+  async write(namespace, name, contents) {
+    try {
+      await AsyncStorage.setItem(`${BLOB_PREFIX}${namespace}/${name}`, contents);
+    } catch (err) {
+      console.warn('[platform] caching a blob failed:', err);
+    }
   },
 };
 
-export const expoPlatform: CorePlatform = { keyValue, files };
+/**
+ * What this app ships in its bundle: the pre-extracted articles from
+ * `npm run offline-articles`.
+ *
+ * No feed snapshots and no podcast snapshots — this host bundles neither, and the
+ * port lets it say so by answering null. The NativeScript app does bundle them
+ * (JSON files in its app folder), which is exactly the asymmetry the port exists
+ * to absorb. Bundling them here means adding a generator, not changing the core.
+ */
+const content: ContentBundle = {
+  feed: () => null,
+  article: (url) => (OFFLINE_ARTICLES[url] as Article | undefined) ?? null,
+  image: (url) => OFFLINE_ARTICLES[url]?.heroImageUrl ?? null,
+  podcastSeries: () => null,
+};
+
+/**
+ * Storage and bundled content. The audio backend is the fourth port and is added
+ * at the boot site (`app/_layout.tsx`) rather than here, so that reasoning about
+ * where state is stored does not drag in an audio SDK — and so these three ports
+ * stay testable without one.
+ */
+export const expoPlatform: CorePlatform = { keyValue, blobs, content };
 
 /** Test helper — drops the in-memory mirror without touching AsyncStorage. */
 export function resetPlatformCache(): void {

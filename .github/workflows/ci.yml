@@ -1,16 +1,22 @@
 # Quality gate for every PR and every push to main.
 #
-# Three jobs, cheapest first:
-#   check          — typecheck every package, oxlint, oxfmt --check, headless tests
-#                    (~1 min incl. install; no Android SDK, no emulator)
-#   expo-web       — static web export of apps/mobile-rn, plus assertions that it
-#                    is not silently broken (see the job for why that is needed)
-#   android-debug  — unsigned debug APK, so native/build breakage surfaces early
+# Four jobs, cheapest first:
+#   check                 — typecheck every package, oxlint, oxfmt --check, headless
+#                           tests (~1 min incl. install; no Android SDK, no emulator)
+#   expo-web              — static web export of apps/mobile-rn, plus assertions that
+#                           it is not silently broken (see the job for why)
+#   android-expo          — Android APK of the Expo app
+#   android-nativescript  — Android APK of the NativeScript app
 #
-# The repo is an npm workspace: `npm ci` runs at the root. apps/mobile is the
-# NativeScript app (being replaced), apps/mobile-rn the Expo one that supersedes
-# it — see adr/0001-monorepo-and-platform-free-core.md and
-# adr/0004-react-native-pivot.md.
+# The repo is an npm workspace: `npm ci` runs at the root. Behaviour lives in
+# packages/app-core and is shared by both apps, so `check` covers it once for both;
+# apps/mobile-rn is the Expo app going forward, apps/mobile the NativeScript one it
+# replaces — see ARCHITECTURE.md and adr/0006-one-core-two-hosts.md.
+#
+# Both apps are gated equally while both are maintained. The Expo job builds the
+# RELEASE variant on purpose: `assembleDebug` skips the JS bundle task, and Metro
+# resolution is exactly what breaks in this workspace (see the disableHierarchicalLookup
+# entry in TROUBLESHOOTING.md). A debug APK would compile happily past that.
 name: CI
 
 on:
@@ -93,8 +99,103 @@ jobs:
           if-no-files-found: error
           retention-days: 14
 
-  android-debug:
-    name: Android debug build
+  android-expo:
+    name: Android build (Expo)
+    runs-on: ubuntu-latest
+    needs: check
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+
+      - name: Set up JDK 17
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: 17
+
+      - name: Prepare Android SDK
+        run: |
+          SDKMANAGER="${ANDROID_HOME}/cmdline-tools/latest/bin/sdkmanager"
+          yes | "$SDKMANAGER" --licenses >/dev/null 2>&1 || true
+          "$SDKMANAGER" "platform-tools" "platforms;android-36" "build-tools;35.0.0" >/dev/null || true
+
+      # Workspace root — installs every package and links @correctiv/app-core.
+      - name: Install dependencies
+        run: npm ci
+
+      # android/ is gitignored: it is generated from app.json. --no-install because
+      # npm ci already ran at the ROOT; letting prebuild install inside the app would
+      # give it a private node_modules and break the workspace's hoisting.
+      - name: Prebuild the native project
+        working-directory: apps/mobile-rn
+        run: npx expo prebuild --platform android --no-install
+
+      # Autolinking gives a package's native module, but only its CONFIG PLUGIN edits
+      # the native project — and a plugin has to be listed in app.json. expo-audio was
+      # once missing from that list, so the manifest had no media service and
+      # background playback could not work, with every check green. Read what prebuild
+      # actually wrote rather than trusting that it ran.
+      - name: Assert the generated manifest carries what the plugins promise
+        working-directory: apps/mobile-rn
+        run: |
+          set -euo pipefail
+          MANIFEST=android/app/src/main/AndroidManifest.xml
+          for needle in \
+            'android.permission.FOREGROUND_SERVICE_MEDIA_PLAYBACK' \
+            'expo.modules.audio.service.AudioControlsService' \
+            'android:foregroundServiceType="mediaPlayback"'; do
+            grep -q "$needle" "$MANIFEST" || {
+              echo "::error::$needle missing from the generated manifest"
+              cat "$MANIFEST"
+              exit 1
+            }
+          done
+          echo "manifest OK — media playback service and permission present"
+
+      # Both apps must run on the same range of Android versions, so the floor has to
+      # be the same number and not a coincidence of two frameworks' defaults. Expo's
+      # comes from the SDK (via rootProject.ext), NativeScript's from a committed
+      # file — ask Gradle for the resolved value rather than guessing at either.
+      #
+      # Only minSdk is compared. targetSdk deliberately differs: NativeScript is
+      # pinned at 34 because 35+ forces edge-to-edge, which NS core 9.0.0 mishandles
+      # (see App_Resources/Android/app.gradle), and dragging Expo down to 34 would
+      # put it below Google Play's floor.
+      - name: Assert both apps share a minSdk
+        run: |
+          set -euo pipefail
+          EXPO=$(cd apps/mobile-rn/android && ./gradlew -q :app:properties \
+            | sed -nE 's/^minSdkVersion: ([0-9]+)$/\1/p' | head -1)
+          NS=$(sed -nE 's/^[[:space:]]*minSdkVersion ([0-9]+).*/\1/p' \
+            apps/mobile/App_Resources/Android/app.gradle | head -1)
+          echo "Expo minSdk=$EXPO   NativeScript minSdk=$NS"
+          test -n "$EXPO" && test -n "$NS" || { echo "::error::could not read a minSdk"; exit 1; }
+          [ "$EXPO" = "$NS" ] || {
+            echo "::error::minSdk drifted apart — Expo $EXPO, NativeScript $NS. Both apps are shipped, so they have to support the same devices."
+            exit 1
+          }
+
+      # arm64-v8a for a real demo device, x86_64 so the APK also installs on an
+      # emulator. Skipping armeabi-v7a and x86 roughly halves the native build.
+      - name: Build Android (release)
+        working-directory: apps/mobile-rn/android
+        run: ./gradlew assembleRelease -PreactNativeArchitectures=arm64-v8a,x86_64
+
+      - name: Upload APK
+        uses: actions/upload-artifact@v4
+        with:
+          name: correctiv-app-expo-apk
+          path: apps/mobile-rn/android/app/build/outputs/apk/release/*.apk
+          if-no-files-found: error
+          retention-days: 14
+
+  android-nativescript:
+    name: Android build (NativeScript)
     runs-on: ubuntu-latest
     needs: check
     # Skip the NativeScript doctor preflight: a build-only runner has no
@@ -129,7 +230,7 @@ jobs:
         run: |
           SDKMANAGER="${ANDROID_HOME}/cmdline-tools/latest/bin/sdkmanager"
           yes | "$SDKMANAGER" --licenses >/dev/null 2>&1 || true
-          "$SDKMANAGER" "platform-tools" "platforms;android-35" "build-tools;35.0.0" >/dev/null || true
+          "$SDKMANAGER" "platform-tools" "platforms;android-36" "build-tools;35.0.0" >/dev/null || true
 
       # Workspace root — installs every package, links @correctiv/app-core.
       - name: Install dependencies
@@ -157,7 +258,7 @@ jobs:
       - name: Upload debug APK
         uses: actions/upload-artifact@v4
         with:
-          name: correctiv-app-debug-apk
+          name: correctiv-app-nativescript-apk
           path: apps/mobile/platforms/android/app/build/outputs/apk/**/*.apk
           if-no-files-found: warn
           retention-days: 14

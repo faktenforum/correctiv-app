@@ -151,7 +151,7 @@ describe('savedArticles store', () => {
   const article: SavedArticle = {
     url: 'https://correctiv.org/a/',
     title: 'A',
-    topline: null,
+    kicker: null,
     rating: null,
     savedAt: '2026-08-05T00:00:00.000Z',
   };
