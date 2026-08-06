@@ -86,7 +86,7 @@ __tests__/               jest-expo against real captured feeds and pages
 | --- | --- |
 | `npm run tokens` | `tailwind.tokens.generated.js`, `src/lib/theme/tokens.generated.ts`, `readerCss.generated.ts` |
 | `npm run fonts` | `src/lib/theme/readerFonts.generated.ts` — base64-subsetted reader fonts (needs `pyftsubset`) |
-| `npm run offline-articles` | `src/lib/articles/offlineArticles.generated.ts` — ~15 pre-extracted articles |
+| `npm run offline-articles` | `src/lib/articles/offlineBundle.generated.ts` — a snapshot of every content feed plus ~15 pre-extracted articles. On web these are the *only* articles there are: correctiv.org sends no CORS header |
 
 ## Checks
 

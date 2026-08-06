@@ -38,7 +38,7 @@
     "build:android": "cross-env NS_VITE_DIST_DIR=platforms/android/app/src/main/assets/app ns build android --release --key-store-path signing/correctiv-test.keystore --key-store-password correctiv-test --key-store-alias correctiv-test --key-store-alias-password correctiv-test",
     "build:android:debug": "cross-env NS_VITE_DIST_DIR=platforms/android/app/src/main/assets/app ns build android",
     "tokens": "node scripts/sync-tokens.mjs",
-    "offline-articles": "tsx scripts/fetch-offline-articles.ts",
+    "offline-articles": "tsx scripts/fetch-offline-articles.mts",
     "offline-podcasts": "tsx scripts/fetch-offline-podcasts.ts"
   }
 }

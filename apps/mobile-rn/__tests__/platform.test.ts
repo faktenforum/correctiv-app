@@ -1,5 +1,8 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
+import { CONTENT_FEEDS, FEEDS } from '@correctiv/app-core/data/feeds.config';
+import type { FeedKey } from '@correctiv/app-core/types/models';
+
 import {
   expoPlatform,
   hydratePlatform,
@@ -148,20 +151,37 @@ describe('blobs port', () => {
 
 /**
  * The bundle is this host's offline promise: the reader has to open without a
- * network, which is the whole reason `npm run offline-articles` exists.
+ * network, which is the whole reason `npm run offline-articles` exists. On the web
+ * target it is more than a promise — correctiv.org sends no CORS header, so the
+ * snapshots are the only articles a browser will ever see.
  */
 describe('content bundle', () => {
   it('serves a bundled article by its url, and null for anything else', () => {
     const [url] = Object.keys(
       // eslint-disable-next-line @typescript-eslint/no-require-imports
-      require('../src/lib/articles/offlineArticles.generated').OFFLINE_ARTICLES,
+      require('../src/lib/articles/offlineBundle.generated').OFFLINE_ARTICLES,
     );
     expect(expoPlatform.content.article(url)?.bodyHtml.length).toBeGreaterThan(200);
     expect(expoPlatform.content.article('https://correctiv.org/nope/')).toBeNull();
   });
 
-  it('says plainly that this host bundles no feed or podcast snapshots', () => {
-    expect(expoPlatform.content.feed('recherchen')).toBeNull();
+  it('serves a bundled snapshot for every content feed', () => {
+    for (const key of CONTENT_FEEDS) {
+      expect(expoPlatform.content.feed(key)?.length ?? 0).toBeGreaterThan(0);
+    }
+  });
+
+  it('answers null for a feed it holds no snapshot of', () => {
+    // A feed the catalogue marks `empty` is never snapshotted, so it is the honest
+    // case for "the host has nothing" — the port's null, not an empty array.
+    const notSnapshotted = (Object.keys(FEEDS) as FeedKey[]).find(
+      (key) => !CONTENT_FEEDS.includes(key),
+    );
+    expect(notSnapshotted).toBeDefined();
+    expect(expoPlatform.content.feed(notSnapshotted!)).toBeNull();
+  });
+
+  it('says plainly that this host bundles no podcast snapshots', () => {
     expect(expoPlatform.content.podcastSeries('klima')).toBeNull();
   });
 });

@@ -18,14 +18,22 @@ import type { FeedItem, FeedKey } from '@correctiv/app-core/types/models';
  * (`stores/feeds.ts`), so Home and a project page reading the same feed share one
  * load, one cache entry and one status.
  *
- * The shape below is unchanged on purpose: every call site already destructures
- * `{ data, loading, error }`.
+ * The shape below only ever grows: every call site already destructures
+ * `{ data, loading, error }`, so `offline` was added beside them rather than
+ * folded into either.
  */
 
 export interface AsyncState<T> {
   data: T | null;
   loading: boolean;
   error: Error | null;
+  /**
+   * The list came out of the app bundle rather than off the network — a snapshot,
+   * not today's news. Not an error, and not the same as `error`: there is something
+   * to read. A screen that shows the data owes the reader this much, which on the
+   * web target is every screen, every time (no `Access-Control-Allow-Origin`).
+   */
+  offline: boolean;
   reload: () => void;
 }
 
@@ -35,6 +43,7 @@ function toAsyncState<T>(items: T | null, status: FeedStatus, reload: () => void
     data: items,
     loading: status === 'loading' || status === 'idle',
     error: status === 'error' ? new Error('Feed konnte nicht geladen werden') : null,
+    offline: status === 'offline',
     reload,
   };
 }

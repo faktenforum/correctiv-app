@@ -11,7 +11,7 @@ import { HomeHeader } from '@/components/home/HomeHeader';
 import { ImpactFooter } from '@/components/home/ImpactFooter';
 import { MediathekReihe } from '@/components/home/MediathekReihe';
 import { SpotlightBriefing } from '@/components/home/SpotlightBriefing';
-import { Hairline, Screen, SectionHeader } from '@/components/ui';
+import { Hairline, Screen, SectionHeader, Typo } from '@/components/ui';
 import { callouts } from '@correctiv/app-core/data/callouts';
 import { useFeed } from '@/lib/feeds/useFeed';
 import { openArticle } from '@/lib/openArticle';
@@ -37,6 +37,12 @@ export default function HomeScreen() {
   return (
     <Screen>
       <HomeHeader />
+
+      {(recherchen.offline || faktenchecks.offline) && (
+        <Typo variant="text-s" color="grey-600" className="mt-2xs">
+          Ohne Verbindung — Sie sehen gespeicherte Artikel.
+        </Typo>
+      )}
 
       {recherchen.loading && !recherchen.data && (
         <View className="py-2xl">

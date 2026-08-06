@@ -229,7 +229,8 @@ unmatched-route page — which looks exactly like a broken route in the app.
   visible depends on that, but it is a different artifact.
 - `83-video` shows a black frame. The embed's error message is gone, but this
   emulator image renders no YouTube video — see the second round above.
-- On the web export, Home has no articles at all: correctiv.org sends no
-  `Access-Control-Allow-Origin`, so every feed request fails in a browser. That is
-  the open CORS decision, not a layout fault, and it is why the layout is judged on
-  the emulator shots.
+- On the web export, Home's articles come out of the bundled snapshot, not the
+  network: correctiv.org sends no `Access-Control-Allow-Origin`, so every feed
+  request fails in a browser and the store's cascade lands on the bundle. The layout
+  is still judged on the emulator shots, because the web build shows a snapshot as
+  old as the last `npm run offline-articles`.

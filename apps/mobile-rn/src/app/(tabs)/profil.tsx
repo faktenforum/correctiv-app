@@ -6,7 +6,7 @@ import { NavCard } from '@/components/profile/NavCard';
 import { SettingRow } from '@/components/profile/SettingRow';
 import { Button, Card, Hairline, Overline, Screen, Typo } from '@/components/ui';
 import { quarterlyReport } from '@correctiv/app-core/data/quartalsbericht';
-import { OFFLINE_ARTICLES } from '@/lib/articles/offlineArticles.generated';
+import { OFFLINE_ARTICLES } from '@/lib/articles/offlineBundle.generated';
 import { openArticle } from '@/lib/openArticle';
 import { coreActions, useMembership, useSavedArticles, useSettings } from '@/lib/store/core';
 
