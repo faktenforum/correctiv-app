@@ -116,6 +116,23 @@ export interface NowPlaying {
  *
  * `load` takes the track's url verbatim — an https stream, or a bundled path
  * like `assets/audio/sample-episode.mp3` that only the host can resolve.
+ *
+ * ## A command must never call the status listener synchronously
+ *
+ * `onStatus` reports what the player is DOING; the commands below are what the
+ * core TELLS it to do, and the core sets its own state around them. A backend
+ * that emits from inside `pause()` re-enters the store's handler mid-decision —
+ * and the store may answer by calling `pause()` again.
+ *
+ * That is not hypothetical. The NativeScript backend did exactly this, and the
+ * app died with `RangeError: Maximum call stack size exceeded` at the moment the
+ * 60-second club preview ran out: the gate called `pause()`, `pause()` emitted,
+ * the gate saw an unchanged position and called `pause()` again. Nothing caught
+ * it — expo-audio does not re-enter, so the Expo tests stayed green, and the
+ * crash only appeared on a device one minute into an episode.
+ *
+ * Emit from the player's own callbacks and from a polling timer. Never from a
+ * command.
  */
 export interface AudioBackend {
   load(url: string, nowPlaying: NowPlaying): Promise<void>;

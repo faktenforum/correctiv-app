@@ -104,8 +104,11 @@ function clearWatchdog(): void {
 export const audioStore = createStore<AudioState>((set, get) => {
   function fail(message: string): void {
     clearWatchdog();
-    platform().audio?.pause();
+    // State first, command second: a backend that emits from `pause()` re-enters
+    // this handler, and it has to find the new state when it does. See the note on
+    // `AudioBackend` in ports/index.ts.
     set({ status: 'error', errorMessage: message });
+    platform().audio?.pause();
   }
 
   function onStatus(status: PlaybackStatus): void {
@@ -122,14 +125,22 @@ export const audioStore = createStore<AudioState>((set, get) => {
 
     // The preview gate applies BEFORE the normal mapping, or the episode keeps
     // playing underneath the invitation.
-    if (state.track.kind === 'preview' && status.positionSec >= PREVIEW_LIMIT_SEC) {
-      platform().audio?.pause();
+    //
+    // `previewEnded` is already true on a re-entrant tick, so the guard above sends
+    // the second call straight back out — which is what stops the recursion this
+    // pairing used to produce. Setting state before pausing is the other half.
+    if (
+      state.track.kind === 'preview' &&
+      !state.previewEnded &&
+      status.positionSec >= PREVIEW_LIMIT_SEC
+    ) {
       set({
         status: 'paused',
         positionSec: PREVIEW_LIMIT_SEC,
         durationSec: status.durationSec,
         previewEnded: true,
       });
+      platform().audio?.pause();
       return;
     }
 
@@ -214,8 +225,8 @@ export const audioStore = createStore<AudioState>((set, get) => {
       if (!state.track || !audio) return;
 
       if (state.status === 'playing') {
-        audio.pause();
         set({ status: 'paused' });
+        audio.pause();
         return;
       }
       // Past the 60-second mark a preview does not resume — it re-offers the club.

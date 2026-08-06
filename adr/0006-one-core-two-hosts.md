@@ -84,6 +84,33 @@ A second test asserts that nothing outside `extract/dom.ts` imports the parser, 
 the NativeScript bundle cannot acquire it by accident. Verified: the parser appears
 0 times in the built NativeScript bundle.
 
+## What sharing a state machine costs, once
+
+Moving the state machine into the core means the two hosts now drive the *same*
+code — and that surfaced a bug neither app had on its own.
+
+The store's preview gate calls `AudioBackend.pause()`. The NativeScript backend
+emitted a status tick from inside `pause()`, so the store re-entered its own handler
+mid-decision, found an unchanged position and a `previewEnded` flag it had not set
+yet, and called `pause()` again. On a device: `RangeError: Maximum call stack size
+exceeded`, one minute into a club preview. Everything was green — expo-audio does not
+re-enter, so the Expo tests could not see it, and the crash needs sixty seconds of
+playback to appear.
+
+Two things came out of it, and they are the general lesson rather than the specific
+fix:
+
+1. **The port needed a contract, not just a shape.** `AudioBackend` now states that a
+   command must never call the status listener synchronously, and says why. An
+   interface that only lists methods lets each host invent its own re-entrancy rules.
+2. **A fake that is too polite tests nothing.** `test/audio-store.test.ts` drives the
+   store through a backend that deliberately reports back from inside `pause()` — the
+   awkward shape, not the convenient one. It reproduces the device crash against the
+   old code.
+
+The store also sets its state *before* issuing a command now, so a re-entrant backend
+finds the new state rather than the old one.
+
 ## Consequences
 
 - **The parity cost is now the view layer only.** That is real and unchanged: a new

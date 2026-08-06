@@ -20,6 +20,14 @@ import type { AudioBackend, NowPlaying, PlaybackStatus } from '@correctiv/app-co
  *  - MediaPlayer sometimes resets the position to 0 on completion without ever
  *    calling its completion callback, so a position that regresses after real
  *    playback IS the end of the track.
+ *
+ * Ticks come from the polling timer and from TNSPlayer's own callbacks — NEVER
+ * from a command. Emitting inside `pause()` made the store re-enter its own status
+ * handler mid-decision, and the app died with `RangeError: Maximum call stack size
+ * exceeded` exactly one minute into a club preview: the gate called `pause()`,
+ * `pause()` emitted, the gate saw the same position and called `pause()` again.
+ * The Expo tests could not see it, because expo-audio does not re-enter. Found by
+ * playing a bonus episode on the emulator and waiting sixty seconds.
  */
 
 const POLL_MS = 1000;
@@ -141,14 +149,14 @@ export const nativeScriptAudio: AudioBackend = {
     else await p.playFromFile(options);
 
     playing = true;
-    emit({});
     startTimer();
   },
 
+  // The three commands below deliberately emit nothing: the store sets its own
+  // state around a command, and the timer reports what the player does next.
   play() {
     instance().resume();
     playing = true;
-    emit({});
     startTimer();
   },
 
@@ -156,13 +164,11 @@ export const nativeScriptAudio: AudioBackend = {
     void instance().pause();
     playing = false;
     stopTimer();
-    emit({ playing: false });
   },
 
   async seekTo(seconds) {
     await instance().seekTo(seconds);
     maxPosition = Math.max(maxPosition, seconds);
-    emit({ positionSec: seconds });
   },
 
   setRate(rate) {

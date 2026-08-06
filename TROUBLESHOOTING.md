@@ -90,6 +90,20 @@ what the last comparison found.
   routine (see the TLS chain entry below). → Wrap remote previews in
   `components/ui/Thumbnail`, which degrades to an empty frame.
 
+## Shared code, two hosts
+
+- **A port needs a re-entrancy rule, or each host invents one.** The core's audio
+  state machine calls `AudioBackend.pause()` when the 60-second club preview runs
+  out. The NativeScript backend emitted a status tick from inside `pause()`, so the
+  store re-entered its own handler, saw an unchanged position and a flag it had not
+  set yet, and called `pause()` again — `RangeError: Maximum call stack size
+  exceeded`, on a device, one minute into an episode. expo-audio does not re-enter,
+  so every test stayed green. → A command must never call the status listener
+  synchronously (stated on `AudioBackend` in `ports/index.ts`), the store sets state
+  before issuing a command, and `test/audio-store.test.ts` drives it through a
+  deliberately re-entrant fake. Found by playing a bonus episode on the emulator and
+  waiting sixty seconds — no faster route exists.
+
 ## The web target
 
 - **Serving a static export without clean URLs** makes Expo Router render its
