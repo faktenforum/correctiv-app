@@ -122,7 +122,7 @@ jobs:
         run: |
           SDKMANAGER="${ANDROID_HOME}/cmdline-tools/latest/bin/sdkmanager"
           yes | "$SDKMANAGER" --licenses >/dev/null 2>&1 || true
-          "$SDKMANAGER" "platform-tools" "platforms;android-35" "build-tools;35.0.0" >/dev/null || true
+          "$SDKMANAGER" "platform-tools" "platforms;android-36" "build-tools;35.0.0" >/dev/null || true
 
       # Workspace root — installs every package and links @correctiv/app-core.
       - name: Install dependencies
@@ -156,6 +156,29 @@ jobs:
             }
           done
           echo "manifest OK — media playback service and permission present"
+
+      # Both apps must run on the same range of Android versions, so the floor has to
+      # be the same number and not a coincidence of two frameworks' defaults. Expo's
+      # comes from the SDK (via rootProject.ext), NativeScript's from a committed
+      # file — ask Gradle for the resolved value rather than guessing at either.
+      #
+      # Only minSdk is compared. targetSdk deliberately differs: NativeScript is
+      # pinned at 34 because 35+ forces edge-to-edge, which NS core 9.0.0 mishandles
+      # (see App_Resources/Android/app.gradle), and dragging Expo down to 34 would
+      # put it below Google Play's floor.
+      - name: Assert both apps share a minSdk
+        run: |
+          set -euo pipefail
+          EXPO=$(cd apps/mobile-rn/android && ./gradlew -q :app:properties \
+            | sed -nE 's/^minSdkVersion: ([0-9]+)$/\1/p' | head -1)
+          NS=$(sed -nE 's/^[[:space:]]*minSdkVersion ([0-9]+).*/\1/p' \
+            apps/mobile/App_Resources/Android/app.gradle | head -1)
+          echo "Expo minSdk=$EXPO   NativeScript minSdk=$NS"
+          test -n "$EXPO" && test -n "$NS" || { echo "::error::could not read a minSdk"; exit 1; }
+          [ "$EXPO" = "$NS" ] || {
+            echo "::error::minSdk drifted apart — Expo $EXPO, NativeScript $NS. Both apps are shipped, so they have to support the same devices."
+            exit 1
+          }
 
       # arm64-v8a for a real demo device, x86_64 so the APK also installs on an
       # emulator. Skipping armeabi-v7a and x86 roughly halves the native build.
@@ -207,7 +230,7 @@ jobs:
         run: |
           SDKMANAGER="${ANDROID_HOME}/cmdline-tools/latest/bin/sdkmanager"
           yes | "$SDKMANAGER" --licenses >/dev/null 2>&1 || true
-          "$SDKMANAGER" "platform-tools" "platforms;android-35" "build-tools;35.0.0" >/dev/null || true
+          "$SDKMANAGER" "platform-tools" "platforms;android-36" "build-tools;35.0.0" >/dev/null || true
 
       # Workspace root — installs every package, links @correctiv/app-core.
       - name: Install dependencies

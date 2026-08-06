@@ -4,11 +4,17 @@ dependencies {
 }
 
 android {
-  compileSdkVersion 35
+  // Compiled against the same platform as apps/mobile-rn, so neither toolchain sees
+  // APIs the other does not. compileSdk decides only what is available at compile
+  // time — it changes no runtime behaviour, unlike targetSdk below.
+  compileSdkVersion 36
   buildToolsVersion "35"
   // ndkVersion ""
 
   defaultConfig {
+    // Kept equal to apps/mobile-rn's, asserted in CI: both apps ship, so both have
+    // to support the same devices. 24 is also the floor React Native 0.85 and
+    // NativeScript 9 impose, so it cannot go lower anyway.
     minSdkVersion 24
     // Target 34 (not 35): on Android 15+ a targetSdk of 35 forces transparent
     // system bars (edge-to-edge), which NativeScript core 9.0.0 does not handle
