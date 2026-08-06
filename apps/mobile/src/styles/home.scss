@@ -322,8 +322,10 @@
   color: t.$color-grey-100;
 }
 .onboarding__bullet {
-  /* Yellow bullet dots on the red mission screen (design draft) */
-  color: t.$color-alternative;
+  /* White, like the text beside them. The draft had these yellow, but yellow is
+     the club's colour and on the brand red it reads as a colour accident rather
+     than as a list marker. Same decision in apps/mobile-rn/src/app/onboarding.tsx. */
+  color: t.$color-grey-100;
   font-size: 10;
   margin-right: t.$spacing-s;
   vertical-align: center;

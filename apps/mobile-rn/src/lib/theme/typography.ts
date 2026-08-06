@@ -1,7 +1,8 @@
 /**
- * Komposit-Typografie als RN-TextStyles — 1:1-Übersetzung der `ty-*`-Utilities
- * aus wp-design-tokens/css/typography.css. lineHeight = fontSize × leading (RN
- * braucht px, nicht den unitless CSS-Faktor). Werte stammen aus der Token-Brücke.
+ * Composite typography as RN TextStyles — a 1:1 translation of the `ty-*`
+ * utilities in wp-design-tokens/css/typography.css. lineHeight = fontSize ×
+ * leading, because RN wants px rather than CSS's unitless factor. Every value
+ * comes from the token bridge.
  */
 import type { TextStyle } from 'react-native';
 
@@ -29,7 +30,7 @@ type Spec = {
   leadingToken: keyof typeof leading;
 };
 
-// Spiegelt typography.css (mobile Werte).
+// Mirrors typography.css (its mobile values).
 const SPECS: Record<TypoVariant, Spec> = {
   'text-article': {
     family: 'serif',
@@ -125,11 +126,16 @@ export const typography: Record<TypoVariant, TextStyle> = Object.fromEntries(
 ) as Record<TypoVariant, TextStyle>;
 
 /**
- * Which typeface a variant uses, so a caller can change the WEIGHT without
- * losing the family. typography.css treats the two as separate axes
- * (`ty-text-m font-sans-semibold`), and the design uses that combination for
- * list titles — 15 px sans semibold, which no single variant provides.
+ * A variant's typeface and its weight, exposed separately so a caller can
+ * override one without losing the other. typography.css treats them as separate
+ * axes (`ty-text-m font-sans-semibold`), and the design uses that combination in
+ * two places no single variant provides: 15 px sans semibold for list titles, and
+ * the mission headline in Merriweather at `headline-xxl` metrics.
  */
 export const typoFamily: Record<TypoVariant, FontFamily> = Object.fromEntries(
   (Object.keys(SPECS) as TypoVariant[]).map((v) => [v, SPECS[v].family]),
 ) as Record<TypoVariant, FontFamily>;
+
+export const typoWeight: Record<TypoVariant, FontWeightName> = Object.fromEntries(
+  (Object.keys(SPECS) as TypoVariant[]).map((v) => [v, SPECS[v].weight]),
+) as Record<TypoVariant, FontWeightName>;

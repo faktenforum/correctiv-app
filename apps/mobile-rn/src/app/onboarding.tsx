@@ -9,7 +9,7 @@ import { interests } from '@correctiv/app-core/data/interests';
 import { coreActions, useSelectedInterests, useSettings } from '@/lib/store/core';
 import { colors } from '@/lib/theme';
 
-/** Die drei Sätze auf dem roten Missionsbildschirm. */
+/** The three sentences on the red mission screen. */
 const MISSION = [
   'Gemeinnützig — uns gehört niemand',
   'Spendenfinanziert — von Tausenden getragen',
@@ -17,15 +17,15 @@ const MISSION = [
 ];
 
 /**
- * Onboarding: Mission → Interessen → Mitmachen/Push → Club.
+ * Onboarding: mission → interests → participate/push → club.
  *
- * Der letzte Schritt hat **zwei gleichwertige Wege** („Unterstützer:in werden" und
- * „Erstmal umsehen"), und ab Schritt 2 steht oben rechts „Überspringen". Das ist
- * Absicht: kein Dark Pattern, und `completeOnboarding()` läuft in jedem Fall — wer
- * überspringt, wird nicht beim nächsten Start erneut gefragt.
+ * The last step offers **two equal ways out** ("Unterstützer:in werden" and
+ * "Erstmal umsehen"), and from step 2 on there is "Überspringen" in the top right.
+ * That is deliberate — no dark pattern — and `completeOnboarding()` runs either
+ * way, so skipping does not mean being asked again on the next launch.
  *
- * Der Missionsbildschirm ist markenrot und damit unabhängig vom Farbschema; die
- * folgenden Schritte laufen auf der normalen Fläche.
+ * The mission screen is brand red and therefore independent of the colour scheme;
+ * the steps after it run on the normal surface.
  */
 export default function OnboardingScreen() {
   const [step, setStep] = useState(0);
@@ -83,22 +83,30 @@ export default function OnboardingScreen() {
 
       <ScrollView
         className="flex-1"
-        contentContainerClassName="px-m pt-m pb-l"
+        // The mission screen has nothing to scroll, so its block is anchored to the
+        // bottom of the viewport — that is where the draft and the NativeScript build
+        // put it, and top-aligning it left a screen-height of empty red below.
+        contentContainerClassName={mission ? 'px-m pb-l grow justify-end' : 'px-m pt-m pb-l'}
         showsVerticalScrollIndicator={false}
       >
         {mission && (
-          <View className="pt-l">
+          <View>
             <Typo variant="headline-m" color="grey-100" style={{ letterSpacing: 2 }}>
               CORRECTIV
             </Typo>
-            <Typo variant="headline-xxl" color="grey-100" className="mt-s">
+            {/* Merriweather, like the reader's h1: this is an editorial promise, not
+                a UI label. Sans here was an Expo-only divergence. */}
+            <Typo variant="headline-xxl" family="serif" color="grey-100" className="mt-s">
               Recherchen für die Gesellschaft
             </Typo>
             <View className="mt-2xl">
               {MISSION.map((line) => (
                 <View key={line} className="mt-s flex-row items-start">
+                  {/* White, like the text beside it. The draft had these yellow,
+                      but yellow is the club's colour and on the brand red it reads
+                      as a colour accident rather than as a list marker. */}
                   <View
-                    className="rounded-full bg-alternative"
+                    className="rounded-full bg-grey-100"
                     style={{ width: 8, height: 8, marginTop: 7 }}
                   />
                   <Typo variant="text-l" color="grey-100" className="ml-s flex-1">
@@ -163,7 +171,7 @@ export default function OnboardingScreen() {
         {step < 3 ? (
           <Button
             title={step === 0 ? 'Los geht’s' : 'Weiter'}
-            variant={mission ? 'club' : 'primary'}
+            variant={mission ? 'onEmphasis' : 'primary'}
             fullWidth
             onPress={() => setStep(step + 1)}
           />
