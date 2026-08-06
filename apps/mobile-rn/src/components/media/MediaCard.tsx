@@ -20,7 +20,7 @@ export function MediaCard({ video, onPress }: { video: Video; onPress: (video: V
       accessibilityRole="link"
       accessibilityLabel={video.title}
       className="active:opacity-80"
-      style={{ width: sizes.railCard }}
+      style={{ width: sizes.railCardMedia }}
     >
       <Thumbnail
         uri={video.thumbnailUrl}
