@@ -16,10 +16,23 @@ scroll 3; shot 23-reader-mid
 # The player is only worth a screenshot with something playing. The club's bonus
 # episode is bundled audio, so it plays without a network — unlike the radio, whose
 # host this emulator image does not trust (the YR-chain row in the README).
-open_route backstage 5
-tap "Wie wir an die Pensionskassen-Daten kamen" && sleep 4
+#
+# It sits on MEDIATHEK, under "Aus dem Backstage" — not on the backstage route,
+# which lists the diary. Aimed at the backstage route this step reported MISS and
+# the tour walked on, so 82-player was a blank screen that nobody looked at. The
+# label is the play control's, hence the trailing "abspielen".
+open_route mediathek 5
+scroll 2
+tap "Bonusfolge: Wie wir an die Pensionskassen-Daten kamen abspielen" && sleep 4
 open_route player 4;        shot 82-player
-open_route video 6;         shot 83-video
+
+# The video screen takes its video from the core store, not from a path parameter,
+# so a bare `correctiv://video` has nothing to show: that step documented the
+# "Kein Video ausgewählt." empty state for a week. Tap one instead.
+open_route mediathek 4
+scroll 1
+tap "Demokratie oder Doomsday" && sleep 8
+shot 83-video
 open_route backstage 4;     shot 90-backstage
 open_route beitreten 4;     shot 70-join-1
 open_route einstellungen 4; shot 91-einstellungen
@@ -28,4 +41,5 @@ open_route faktenforum 5;   shot 93-faktenforum
 open_route atlas 5;         shot 94-atlas
 open_route suche 3;         shot 95-suche
 open_route bericht 3;       shot 96-bericht
+open_route spotlight 3;     shot 97-spotlight
 echo done
