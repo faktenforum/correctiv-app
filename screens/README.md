@@ -133,7 +133,7 @@ Rebuilt first this time, which is where the rule at the top of this file comes f
 | Seen | Cause | Which version was right |
 | --- | --- | --- |
 | The replaced set stopped the bonus episode at 60 seconds, offered the club in a sheet, and labelled the row "60 Sek. anspielen" | those APKs predated `9842b27`, which dropped the preview gate — club audio has no length limit any more | HEAD, where both apps read "Für alle hörbar" |
-| The reader's byline reads "04. August 2026" where every other date in the app reads "4. August" | `reader-html.ts` prefers `article.publishedText` — the date as the page printed it — over `formatDateDe`, and correctiv.org prints the leading zero. The field's own doc comment gives "4. August 2026" as its example | undecided, see below |
+| The reader's byline reads "04. August 2026" where every other date in the app reads "4. August" | `reader-html.ts` prefers `article.publishedText` — the date as the page printed it — over `formatDateDe`, and correctiv.org prints the leading zero. The field's own doc comment gave "4. August 2026" as its example | the app's own format — changed after this set was shot, see below |
 | The draft's onboarding bullets have yellow markers; both apps draw them white | never built | draft |
 | NativeScript puts the onboarding block at the top where the draft and Expo sit it at the bottom | — | draft & Expo |
 | Home's hero is a grey placeholder in both apps | today's lead article has no cover at all — no `og:image` on the page, no image in the feed item. Both hosts degrade quietly, which is what the first round asked for | both, and not a defect |
@@ -144,11 +144,13 @@ gone from both hosts — the NativeScript build reads "Für alle hörbar" withou
 of NativeScript changing. That is [ADR 0006](../adr/0006-one-core-two-hosts.md)
 working, and a screenshot is the only place it shows.
 
-The date row is a decision rather than a defect. Preferring the publisher's own
-wording is defensible, and `publishedText` exists because `publishedAt` is empty when
-a page carries no parsable date. Making the app's dates uniform is one line —
-`formatDateDe(article.publishedAt) || article.publishedText` — and it keeps that
-fallback, because the formatter returns an empty string for a date it cannot parse.
+The date row was the round's one open decision, and it is settled: uniform wins over
+the publisher's wording. The reader now formats `publishedAt` itself —
+`formatDateDe(article.publishedAt) || article.publishedText` — which keeps
+`publishedText` for the pages that carry no parsable date, since the formatter returns
+an empty string for one it cannot parse. **The reader shots in this set still read
+"04. August 2026"**: they predate the change, which is the rule at the top of this file
+applying to itself.
 
 ## Regenerating
 

@@ -58,9 +58,13 @@ export function buildReaderHtml(article: Article, options: ReaderHtmlOptions = {
       `<span class="rating__label">${escapeHtml(ratingLabel(article.rating))}</span></div>`
     : '';
 
+  // The app's own date format wins over the publisher's wording: correctiv.org prints
+  // "04. August 2026" where every list in the app reads "4. August 2026", and the
+  // reader is the one screen a date row appears in twice. `publishedText` stays as the
+  // fallback for a page with no parsable date — `formatDateDe` returns '' for one.
   const metaLine = [
     article.authors.length > 0 ? `von ${article.authors.join(', ')}` : '',
-    article.publishedText || formatDateDe(article.publishedAt),
+    formatDateDe(article.publishedAt) || article.publishedText,
     `${article.readingMinutes} Min. Lesezeit`,
   ]
     .filter(Boolean)

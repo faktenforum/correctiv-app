@@ -181,9 +181,23 @@ describe('reader html', () => {
     expect(html).toContain('<p>Text</p>');
   });
 
-  it('builds the meta line from authors, the printed date and the reading time', () => {
-    expect(buildReaderHtml(article)).toContain(
+  /**
+   * The date goes through the app's own formatter rather than being echoed from the
+   * page, so the reader reads "12. Juni" like every list does — correctiv.org itself
+   * prints a leading zero.
+   */
+  it('builds the meta line from authors, the app-formatted date and the reading time', () => {
+    expect(buildReaderHtml({ ...article, publishedText: '12.06.2026' })).toContain(
       'von A. Autorin, B. Autor · 12. Juni 2026 · 5 Min. Lesezeit',
+    );
+  });
+
+  it('falls back to the printed date only when no date was parsable, and drops it if neither is', () => {
+    expect(
+      buildReaderHtml({ ...article, publishedAt: '', publishedText: 'im Juni 2026' }),
+    ).toContain('von A. Autorin, B. Autor · im Juni 2026 · 5 Min. Lesezeit');
+    expect(buildReaderHtml({ ...article, publishedAt: '', publishedText: undefined })).toContain(
+      'von A. Autorin, B. Autor · 5 Min. Lesezeit',
     );
   });
 

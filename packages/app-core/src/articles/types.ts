@@ -43,7 +43,11 @@ export interface Article {
   authors: string[];
   /** ISO-8601. Empty when the page carried no parsable date. */
   publishedAt: string;
-  /** The date as the page printed it ("4. August 2026") — no locale needed to show it. */
+  /**
+   * The date as the page printed it ("04. August 2026") — the fallback for a page
+   * that carried no parsable date. Where `publishedAt` has one, screens format it
+   * themselves with `formatDateDe`, so every date in the app reads the same.
+   */
   publishedText?: string;
   readingMinutes: number;
   heroImageUrl?: string;
