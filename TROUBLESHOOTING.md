@@ -123,14 +123,19 @@ equivalents for focus, liveness and errors.
   *unmatched route* page — looks like an app bug, is a server bug. → Map `/artikel` →
   `artikel.html`. A plain `python3 -m http.server` will not do.
 - **`correctiv.org` sends no `Access-Control-Allow-Origin`,** so a browser blocks
-  every RSS request: the web demo renders the shell, the sample data and PeerTube
-  content, but **no live articles**. Native is unaffected — there is no CORS there.
-  Measured 2026-08-05 across every source: only `tube.funfacts.de` sends `*` (so
-  FunFacts videos and their HLS streams do work); `correctiv.org`,
-  `salon5.correctiv.net` and `youtube.com/feeds` send none. → Needs either a response
-  header from CORRECTIV ops or a bundled snapshot as the web fallback, which is what
-  the core's `ContentBundle` port is for. See
-  [ADR 0006](adr/0006-one-core-two-hosts.md).
+  every RSS request and **no feed is ever live on web**. Native is unaffected — there
+  is no CORS there. Measured 2026-08-05 across every source: only `tube.funfacts.de`
+  sends `*` (so FunFacts videos and their HLS streams do work); `correctiv.org`,
+  `salon5.correctiv.net` and `youtube.com/feeds` send none. → The Expo host now
+  bundles a snapshot of every content feed (`npm run offline-articles`), so the
+  store's cascade lands on it and the web demo has articles without waiting on a
+  response header from CORRECTIV ops. It says so on screen: "Ohne Verbindung — Sie
+  sehen gespeicherte Artikel."
+  - So the web demo's articles are **as old as the last generator run**, and no
+    amount of reloading changes that. Re-run it before showing the browser build.
+  - Article images survive because an `<img>` is not subject to CORS and the
+    bundled articles carry their real cover URLs. Feed items the generator did not
+    extract have no image, because finding one needs a request the browser blocks.
 
 ## Android builds and the emulator
 

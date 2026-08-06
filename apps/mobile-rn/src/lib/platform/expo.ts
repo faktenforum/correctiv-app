@@ -3,7 +3,7 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import type { BlobStore, ContentBundle, CorePlatform, KeyValueStore } from '@correctiv/app-core';
 import type { Article } from '@correctiv/app-core/articles/types';
 
-import { OFFLINE_ARTICLES } from '@/lib/articles/offlineArticles.generated';
+import { OFFLINE_ARTICLES, OFFLINE_FEEDS } from '@/lib/articles/offlineBundle.generated';
 
 /**
  * The Expo host's half of `@correctiv/app-core`'s platform ports — the only place
@@ -107,16 +107,21 @@ const blobs: BlobStore = {
 };
 
 /**
- * What this app ships in its bundle: the pre-extracted articles from
- * `npm run offline-articles`.
+ * What this app ships in its bundle: the feed snapshots and pre-extracted articles
+ * from `npm run offline-articles`.
  *
- * No feed snapshots and no podcast snapshots — this host bundles neither, and the
- * port lets it say so by answering null. The NativeScript app does bundle them
- * (JSON files in its app folder), which is exactly the asymmetry the port exists
- * to absorb. Bundling them here means adding a generator, not changing the core.
+ * On native the snapshots are what the first round of this port was for — the demo
+ * must not depend on Wi-Fi. On **web** they are not a fallback at all but the only
+ * way an article ever appears: correctiv.org sends no `Access-Control-Allow-Origin`,
+ * so a browser blocks every feed request, the store's cascade lands here, and Home
+ * shows the snapshot instead of an error. That is why this host bundles them now
+ * where it used to answer null — the fix was a generator output, not a core change.
+ *
+ * Still no podcast snapshots. The NativeScript app bundles those (JSON in its app
+ * folder) and this one does not, which is exactly the asymmetry the port absorbs.
  */
 const content: ContentBundle = {
-  feed: () => null,
+  feed: (key) => OFFLINE_FEEDS[key] ?? null,
   article: (url) => (OFFLINE_ARTICLES[url] as Article | undefined) ?? null,
   image: (url) => OFFLINE_ARTICLES[url]?.heroImageUrl ?? null,
   podcastSeries: () => null,
