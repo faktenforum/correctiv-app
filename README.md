@@ -86,6 +86,21 @@ npm run offline-podcasts    # Salon5 podcast snapshots
 > node screens/tools/serve-clean.mjs apps/mobile-rn/dist 8099
 > ```
 
+**Judging a layout at phone or tablet size** — `/preview.html` puts the app in an
+iframe sized to a device, with presets, rotation, free resizing and a route field.
+It ships in the export from `apps/mobile-rn/public/`, so the same page answers under
+`npm run web`, under the server above, and on Pages:
+
+```
+http://localhost:8081/preview.html          # dev server, Fast Refresh in the frame
+http://localhost:8099/preview.html          # a static export
+```
+
+Device and route travel in the URL — `preview.html#/artikel?d=ipad-pro-11` — so a
+layout finding can be handed over as a link. The frame is the app untouched: inside
+it, `useWindowDimensions` and the reader's `48rem` breakpoint see the simulated size.
+Dark mode, safe-area insets and touch are *not* simulated; those stay DevTools' job.
+
 ## Where to go next
 
 | | |

@@ -37,6 +37,7 @@ route, a bundle config or a platform split: `npm run build:web`, then
 `node screens/tools/serve-clean.mjs apps/mobile-rn/dist 8099` and open it — a plain
 static server maps no clean URLs and makes a working app look broken. After layout:
 screenshot it and look
-(`screens/tools/tour-android.sh`, compared against `screens/`). Core changes reach
+(`screens/tools/tour-android.sh`, compared against `screens/`), or open `/preview.html`,
+which frames the web target at a phone or tablet size. Core changes reach
 both apps — the Expo one you can see in a browser, the NativeScript one needs the
 emulator or an explicit note that it was not checked.
