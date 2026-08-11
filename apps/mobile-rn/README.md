@@ -39,12 +39,33 @@ npm run build:web      # static export to dist/
 
 Expo Go does **not** work (native modules). Always a dev build or a release APK.
 
-Serve the static export **with clean URLs** (`/artikel`, not `/artikel.html`), or
-Expo Router matches nothing and shows its "unmatched route" page — which looks like
-an app bug and is the server. See [TROUBLESHOOTING.md](../../TROUBLESHOOTING.md).
-
 iOS builds via **EAS in the cloud, no Mac**. `ios/` does not exist yet and is
 produced by `expo prebuild`.
+
+### The static export
+
+`dist/` is what gets published to <https://faktenforum.github.io/correctiv-app/> on
+every push to `main` (`.github/workflows/pages.yml`). Serve it with the repo's own
+server, never a plain one:
+
+```bash
+node ../../screens/tools/serve-clean.mjs dist 8099
+```
+
+It maps clean URLs (`/artikel`, not `/artikel.html`) and serves `404.html` on a
+miss, both of which GitHub Pages does. Without that, Expo Router matches nothing and
+shows its "unmatched route" page — which looks like an app bug and is the server.
+
+To reproduce the published site exactly, add the base path. `app.config.js` turns
+`EXPO_BASE_URL` into `experiments.baseUrl`; without it every asset URL is absolute
+from the domain root, which is correct locally and blank on a project Pages site:
+
+```bash
+EXPO_BASE_URL=/correctiv-app npm run build:web
+node ../../screens/tools/serve-clean.mjs dist 8099 --base=/correctiv-app
+```
+
+See [TROUBLESHOOTING.md](../../TROUBLESHOOTING.md#the-web-target).
 
 ### Release APK (demo device)
 
@@ -60,11 +81,13 @@ for a demo. Generate a real keystore before any distribution.
 ## Layout
 
 ```
-src/app/                 expo-router routes: (tabs)/ + artikel, suche, projekt/[id],
-                         serie/[id], video, player, aufruf/[slug], formular,
-                         faktenforum, behauptung/[id], atlas, einstellungen,
-                         gespeichert, bericht, onboarding, beitreten, backstage,
-                         tagebuch/[id]
+src/app/                 expo-router routes: (tabs)/ + artikel, suche, spotlight,
+                         projekt/[id], serie/[id], video, player, aufruf/[slug],
+                         formular, faktenforum, behauptung/[id], atlas,
+                         einstellungen, gespeichert, bericht, onboarding, beitreten,
+                         backstage, tagebuch/[id], +not-found
+app.config.js            app.json plus the one value that cannot be static: the
+                         Pages base path, from EXPO_BASE_URL
 src/components/ui/       the design system (Typo, Button, Card, Badge, Chip, Screen…)
 src/components/          feed | home | discover | media | player | participate |
                          profile — one folder per area

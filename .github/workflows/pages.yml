@@ -1,0 +1,110 @@
+# Publishes the Expo web export to GitHub Pages — https://faktenforum.github.io/correctiv-app/
+#
+# A web version of the app for previewing it without an install — same code and same
+# screens as the native builds. Nothing is committed: the export is built here and
+# uploaded straight to Pages. See adr/0004-react-native-pivot.md.
+#
+# ONE-TIME SETUP, and this workflow cannot do it for you: the site's source has to be
+# switched from `main:/docs` to GitHub Actions. Settings → Pages → Build and
+# deployment → Source: GitHub Actions, or:
+#
+#     gh api -X POST repos/faktenforum/correctiv-app/pages -f build_type=workflow
+#
+# `actions/configure-pages` below only creates a site when none exists — it reads an
+# existing one and leaves its build type alone — so until the switch is made,
+# `deploy-pages` fails with "Not configured to use GitHub Actions".
+#
+# The demo runs on bundled content, not the live feeds: correctiv.org sends no CORS
+# header, so every feed request fails in a browser and the store's cascade lands on
+# the snapshot from `npm run offline-articles`. Re-run that generator and merge it
+# before you want the published demo to show recent articles — TROUBLESHOOTING.md,
+# "The web target".
+name: Pages
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+# Never cancel a deploy in progress — a half-published site is worse than a stale
+# one. Queue instead, which is the opposite of what ci.yml wants.
+concurrency:
+  group: pages
+  cancel-in-progress: false
+
+jobs:
+  deploy:
+    name: Build and deploy
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      # Yields base_path — `/correctiv-app` for a project site. Reading it here beats
+      # hard-coding the repo name, which would be wrong the moment the site moves to
+      # a custom domain (base_path is then empty and the export needs no prefix).
+      - name: Configure Pages
+        id: pages
+        uses: actions/configure-pages@v5
+
+      # apps/mobile-rn/app.config.js turns EXPO_BASE_URL into experiments.baseUrl.
+      # Without it every asset URL is absolute from the domain root and resolves to
+      # faktenforum.github.io/_expo/…, which is a blank page served by a green build.
+      - name: Export web bundle
+        working-directory: apps/mobile-rn
+        env:
+          EXPO_BASE_URL: ${{ steps.pages.outputs.base_path }}
+        run: npm run build:web
+
+      # Three ways this deploy can be broken while the export succeeds, so all three
+      # are read off the built files rather than assumed:
+      #   1. a component with no web implementation (react-native-webview renders a
+      #      sentence instead of the reader, and exports happily)
+      #   2. the base path not applied — the failure mode this workflow exists for
+      #   3. a missing route, or a missing 404.html, which is what makes deep links
+      #      resolve on a host that cannot rewrite
+      - name: Assert the deployable is not silently broken
+        working-directory: apps/mobile-rn
+        env:
+          BASE_PATH: ${{ steps.pages.outputs.base_path }}
+        run: |
+          set -euo pipefail
+          if grep -rq "does not support this platform" dist/; then
+            echo "::error::A component without web support reached the web bundle."
+            grep -rl "does not support this platform" dist/ | head
+            exit 1
+          fi
+          grep -q "\"$BASE_PATH/_expo/static/js/web/" dist/index.html || {
+            echo "::error::dist/index.html does not reference $BASE_PATH/_expo/ — the base path was not applied, and the published site would be blank."
+            grep -o 'src="[^"]*"' dist/index.html | head
+            exit 1
+          }
+          for route in index 404 artikel entdecken mediathek mitmachen profil; do
+            test -f "dist/$route.html" || { echo "::error::missing dist/$route.html"; exit 1; }
+          done
+          echo "deployable OK — $(find dist -name '*.html' | wc -l) routes under $BASE_PATH"
+
+      - name: Upload Pages artifact
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: apps/mobile-rn/dist
+
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4

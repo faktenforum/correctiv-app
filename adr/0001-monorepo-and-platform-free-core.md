@@ -1,58 +1,58 @@
-# ADR 0001 — npm-Workspace mit plattformfreiem Core
+# ADR 0001 — An npm workspace with a platform-free core
 
-**Status:** angenommen · **Datum:** 2026-08-01 · **Betrifft:** Repo-Struktur, Dev-Loop, Fork-Strategie
+**Status:** accepted · **Date:** 2026-08-01 · **Affects:** repo structure, dev loop, fork strategy
 
-## Kontext
+## Context
 
-Der Prototyp war ein einzelnes Paket: NativeScript-App im Repo-Root, alles in `src/`.
-Drei Anforderungen sprengen das:
+The prototype was a single package: the NativeScript app at the repo root, everything
+in `src/`. Three requirements break that:
 
-1. **Dev-Loop ohne Emulator.** Gemessen auf der Entwicklungsmaschine: kompletter Redeploy
-   41,5 s, Emulator-Kaltstart 21 s, HMR im Repo defekt. Der größte verfügbare Hebel ist,
-   die plattformfreie Hälfte des Codes headless testbar zu machen — Millisekunden statt
-   Sekunden, ohne Gerät.
-2. **Web-Referenz-Target.** NativeScript hat keinen Web-Renderer (siehe `APP-STRATEGIE.md`
-   §2). Ein Web-Build ist deshalb nur über einen geteilten Kern plus separat
-   implementierte Web-UI erreichbar — der Kern muss dafür existieren.
-3. **Forks als Workspace-Pakete.** `nativescript-vue` hat einen Maintainer und seit dem
-   17.10.2025 keinen Commit. Das Paket ist mit 1.538 Zeilen ausgeliefertem JS klein genug,
-   um es notfalls selbst zu pflegen. Diese Option soll vorbereitet sein, bevor sie
-   gebraucht wird.
+1. **A dev loop without an emulator.** Measured on the development machine: a full
+   redeploy 41.5 s, an emulator cold start 21 s, HMR broken in this repo. The largest
+   lever available is making the platform-free half of the code testable headlessly —
+   milliseconds instead of seconds, without a device.
+2. **A web reference target.** NativeScript has no web renderer (see `APP-STRATEGIE.md`
+   §2). A web build is therefore only reachable through a shared core plus a separately
+   implemented web UI — and the core has to exist for that.
+3. **Forks as workspace packages.** `nativescript-vue` has one maintainer and no commit
+   since 2025-10-17. At 1,538 lines of shipped JS the package is small enough to
+   maintain ourselves if it comes to that. That option should be prepared before it is
+   needed.
 
-## Entscheidung
+## Decision
 
-npm-Workspaces, zwei Pakete:
+npm workspaces, two packages:
 
 ```
 correctiv-app/
-├── package.json              # Workspace-Root, delegierende Skripte, kein Code
-├── tsconfig.base.json        # geteilte Compiler-Optionen
-├── apps/mobile/              # @correctiv/mobile — die NativeScript-App
-│   └── src/platform/         # die EINZIGE Stelle mit NativeScript-SDK-Zugriff des Cores
-└── packages/app-core/        # @correctiv/app-core — plattformfrei, headless testbar
-    ├── src/ports/            # was der Core vom Host braucht
-    └── test/                 # Vitest + echte correctiv.org-Fixtures
+├── package.json              # workspace root, delegating scripts, no code
+├── tsconfig.base.json        # shared compiler options
+├── apps/mobile/              # @correctiv/mobile — the NativeScript app
+│   └── src/platform/         # the ONLY place with NativeScript SDK access for the core
+└── packages/app-core/        # @correctiv/app-core — platform-free, testable headlessly
+    ├── src/ports/            # what the core needs from its host
+    └── test/                 # Vitest plus real correctiv.org fixtures
 ```
 
-**Ports statt Imports.** Der Core importiert kein Plattform-SDK. Was er vom Host braucht,
-steht als Interface in `packages/app-core/src/ports/index.ts` (`KeyValueStore`,
-`FileStore`) und wird beim Start über `configurePlatform()` übergeben — in
-`apps/mobile/src/app.ts`. Ohne Registrierung fällt der Core auf eine In-Memory-Variante
-zurück, damit Tests und Tooling keine Einrichtung brauchen.
+**Ports, not imports.** The core imports no platform SDK. What it needs from the host is
+declared as an interface in `packages/app-core/src/ports/index.ts` (`KeyValueStore`,
+`FileStore`) and handed over at startup through `configurePlatform()` — in
+`apps/mobile/src/app.ts`. Without a registration the core falls back to an in-memory
+variant, so tests and tooling need no setup.
 
-**Die Grenze ist getestet, nicht nur dokumentiert.** `packages/app-core/test/boundary.test.ts`
-scannt jede Core-Quelldatei auf verbotene Imports (`@nativescript/*`, `@nstudio/*`,
-`nativescript-vue`, `react-native`, `expo`, `node:*`) und läuft in `npm run check` mit.
-Die Korrektur bei einem Fehlschlag ist **nie**, die Allow-List zu erweitern, sondern den
-Code in einen Host zu verschieben und den Bedarf als Port zu deklarieren.
+**The boundary is tested, not merely documented.**
+`packages/app-core/test/boundary.test.ts` scans every core source file for forbidden
+imports (`@nativescript/*`, `@nstudio/*`, `nativescript-vue`, `react-native`, `expo`,
+`node:*`) and runs as part of `npm run check`. The fix when it fails is **never** to
+widen the allow-list, but to move the code into a host and declare the need as a port.
 
-**Zyklen aufgelöst statt verschoben.** `stores/audio` und `stores/video` koordinierten
-gegenseitigen Ausschluss über `await import()` aufeinander — ein zur Laufzeit gebrochener
-Modulzyklus. Ersetzt durch `media/exclusive-playback.ts`: jedes Medium registriert einen
-Stop-Callback, ein startendes Medium stoppt die anderen. Kein Store importiert einen
-anderen; ein drittes Medium (Game, Livestream) kommt ohne Änderung an den bestehenden dazu.
+**Cycles resolved, not relocated.** `stores/audio` and `stores/video` coordinated mutual
+exclusion by `await import()`ing each other — a module cycle broken at runtime. Replaced
+by `media/exclusive-playback.ts`: every medium registers a stop callback, and a medium
+that starts stops the others. No store imports another; a third medium (a game, a
+livestream) joins without touching the existing ones.
 
-## ⚠️ Das Verzeichnis heißt `packages/app-core`, nicht `packages/core` — mit Absicht
+## ⚠️ The directory is called `packages/app-core`, not `packages/core` — deliberately
 
 `@nativescript/vite` 2.0.3, `configuration/base.js:79`:
 
@@ -65,59 +65,59 @@ if (existsSync(workspaceCorePkg)) {
 }
 ```
 
-Das Plugin nimmt an, `<app>/../../packages/core` sei der **NativeScript-Core-Quellcheckout** —
-so ist das NativeScript-Repo selbst aufgebaut. In jedem Workspace mit `apps/*` und einem
-Verzeichnis `packages/core` kapert es damit `@nativescript/core`: `NS_CORE_ROOT` speist drei
-Alias-Einträge, und der Build stirbt mit
+The plugin assumes `<app>/../../packages/core` is the **NativeScript core source
+checkout** — that is how the NativeScript repo itself is laid out. In any workspace with
+`apps/*` and a directory named `packages/core` it therefore hijacks
+`@nativescript/core`: `NS_CORE_ROOT` feeds three alias entries, and the build dies with
 `Could not load .../packages/core/globals (imported by virtual:entry-with-polyfills)`.
 
-Verzeichnis- und Paketname stimmen deshalb überein (`packages/app-core` ↔
-`@correctiv/app-core`), damit niemand das Verzeichnis „der Konsistenz halber" zurück
-benennt und die Falle stillschweigend wieder scharf macht.
+Directory and package name are kept in sync (`packages/app-core` ↔
+`@correctiv/app-core`) so that nobody renames the directory back "for consistency" and
+silently re-arms the trap.
 
-**Offen:** upstream melden. Wie der Minify-Crash (`vite.config.ts`) ist das bislang nicht
-gemeldet.
+**Open:** report it upstream. Like the minify crash (`vite.config.ts`), this has not
+been reported so far.
 
-## Forks als Workspace-Pakete pflegen
+## Maintaining forks as workspace packages
 
-Der Workspace ist so aufgesetzt, dass ein Fork ein Paket wie jedes andere wird. Vorgehen am
-Beispiel `nativescript-vue` (1.538 LOC ausgeliefertes JS, MIT):
+The workspace is set up so a fork becomes a package like any other. The procedure, using
+`nativescript-vue` as the example (1,538 LOC of shipped JS, MIT):
 
-1. Quellen nach `packages/nativescript-vue/` legen (Upstream-Repo klonen, `.git` entfernen,
-   Upstream-Commit-SHA in der README des Pakets festhalten).
-2. `"name"` im Paket unverändert lassen (`nativescript-vue`) — npm-Workspaces hängen den
-   lokalen Ordner dann automatisch vor die Registry-Version, ohne dass ein einziger Import
-   im App-Code geändert werden muss.
-3. In `apps/mobile/package.json` die Abhängigkeit auf `"*"` setzen.
-4. `npm install`, dann `npm run check` und einen echten Android-Build fahren.
-5. Änderungen gegenüber Upstream in `packages/nativescript-vue/PATCHES.md` dokumentieren —
-   sonst ist der nächste Upstream-Merge nicht mehr rekonstruierbar.
+1. Put the sources in `packages/nativescript-vue/` (clone the upstream repo, remove
+   `.git`, record the upstream commit SHA in the package's README).
+2. Leave `"name"` in the package unchanged (`nativescript-vue`) — npm workspaces then
+   put the local folder ahead of the registry version automatically, without a single
+   import in the app code changing.
+3. Set the dependency to `"*"` in `apps/mobile/package.json`.
+4. `npm install`, then `npm run check` and a real Android build.
+5. Document the changes against upstream in `packages/nativescript-vue/PATCHES.md` —
+   otherwise the next upstream merge cannot be reconstructed.
 
-Ein Verzeichnisname, der mit `core` endet, ist dabei zu vermeiden (siehe oben).
+Avoid a directory name ending in `core` while doing so (see above).
 
-## Konsequenzen
+## Consequences
 
-**Gewonnen**
+**Gained**
 
-- `npm run check` = beide Typechecks + 82 Tests in **~0,4 s**, ohne Gerät. Der Loop, der
-  vorher 41,5 s brauchte, deckt damit die Datenschicht, die Parser und die Ports ab.
-- 34 Quelldateien sind ab sofort nachweislich plattformfrei und stehen einem Web-Target
-  oder einem Stack-Wechsel unverändert zur Verfügung.
-- Die Feed- und Artikel-Parser sind gegen echte correctiv.org-Captures gepinnt. Sie sind
-  regex-basiert und brechen bei einer WordPress-Theme-Änderung still — das ist jetzt die
-  Frühwarnung.
+- `npm run check` = both typechecks plus 82 tests in **~0.4 s**, without a device. The
+  loop that used to take 41.5 s now covers the data layer, the parsers and the ports.
+- 34 source files are demonstrably platform-free from now on and are available
+  unchanged to a web target or a change of stack.
+- The feed and article parsers are pinned against real correctiv.org captures. They are
+  regex-based and break silently on a WordPress theme change — this is the early
+  warning for that.
 
-**Bezahlt**
+**Paid**
 
-- Zwei `package.json`, zwei tsconfigs, ein Alias in `vite.config.ts`.
-- Der Core wird als TypeScript-Quelle konsumiert (kein Build-Schritt). Deshalb ist die
-  Auflösung über einen Vite-Alias fest verdrahtet statt über die Workspace-Symlinks — die
-  Subpath-Exports sind endungslos, was Node-Resolution nicht auflösen würde.
-- CI-Pfade (`NS_VITE_DIST_DIR`) und die Node-Skripte zeigen jetzt auf `apps/mobile/`.
+- Two `package.json`, two tsconfigs, one alias in `vite.config.ts`.
+- The core is consumed as TypeScript source (no build step). Resolution is therefore
+  hard-wired through a Vite alias rather than through the workspace symlinks — the
+  subpath exports carry no file extension, which Node resolution would not resolve.
+- CI paths (`NS_VITE_DIST_DIR`) and the Node scripts now point at `apps/mobile/`.
 
-**Unverändert**
+**Unchanged**
 
-- Ein vorbestehender `vue-tsc`-Fehler in `app.ts` (`AndroidActivityBackPressedEventData`)
-  tritt nur im ns-vite-Lauf auf, der `--moduleSuffixes` für die Android-Typauflösung setzt.
-  Gegen `main` verifiziert: identisch vorhanden, nicht durch diesen Umbau verursacht. Der
-  Build läuft in beiden Fällen durch (10,8 s).
+- A pre-existing `vue-tsc` error in `app.ts` (`AndroidActivityBackPressedEventData`)
+  only appears in the ns-vite run, which sets `--moduleSuffixes` for Android type
+  resolution. Verified against `main`: present identically, not caused by this
+  restructuring. The build passes either way (10.8 s).

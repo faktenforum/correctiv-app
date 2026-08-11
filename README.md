@@ -5,11 +5,19 @@ investigations, fact checks, Salon5 radio, CrowdNewsroom callouts, the Faktenfor
 and the membership club in one place — built on *closeness, not a paywall*.
 Journalism stays free for everyone; membership adds proximity.
 
+### ▶ [Preview it in a browser — faktenforum.github.io/correctiv-app](https://faktenforum.github.io/correctiv-app/)
+
+A web version of the app, published on every push to `main`: the same code and the
+same screens as the Android and iOS builds, so no install and no emulator are needed
+to click through it. It runs on content bundled into the app, because correctiv.org
+sends no CORS header — see [the web target](TROUBLESHOOTING.md#the-web-target).
+
 <p align="center">
   <img src="media/demo.gif" alt="Walkthrough of the CORRECTIV app prototype on Android: live home feed, article reader, media library and the persistent Salon5 live-radio mini player" width="270">
 </p>
 
-<p align="center"><sub>The running Android app. A click-through <a href="https://faktenforum.github.io/correctiv-app/">web version of the design draft</a> needs no build.</sub></p>
+<p align="center"><sub>The same journey on Android. Every screen in every version:
+<a href="screens/">screens/</a></sub></p>
 
 > **Status —** functional prototype covering the full demo journey: onboarding →
 > home → reader → media → participate → club join → backstage → profile. Live
@@ -38,7 +46,7 @@ See [ADR 0006](adr/0006-one-core-two-hosts.md).
 
 ```bash
 npm install         # the whole workspace
-npm run check       # typecheck + lint + format + 344 headless tests, ~10 s, no device
+npm run check       # typecheck + lint + format + 357 headless tests, ~10 s, no device
 ```
 
 **The app going forward** — the web target needs no emulator and no Android SDK:
@@ -62,28 +70,32 @@ Requirements: Node ≥ 20.19. For Android additionally JDK 17 and an Android SDK
 needed**; `apps/mobile` would need macOS + Xcode and has never been built.
 
 Before a demo, refresh the bundled offline content — the demo must never depend on
-Wi-Fi:
+Wi-Fi, and the published web build shows nothing else:
 
 ```bash
 npm run offline-articles    # both apps: ~15 real articles, pre-extracted
 npm run offline-podcasts    # Salon5 podcast snapshots
 ```
 
-> Serving the static export yourself? Use **clean URLs** (`/artikel`, not
-> `/artikel.html`). A plain `python3 -m http.server` makes Expo Router match nothing
-> and render its *unmatched route* page, which looks like an app failure but is a
-> server artefact. More traps like this: [TROUBLESHOOTING.md](TROUBLESHOOTING.md).
+> **Serving the static export yourself?** Use the repo's own server — it maps clean
+> URLs (`/artikel` → `artikel.html`) and falls back to `404.html`, both of which
+> GitHub Pages does and `python3 -m http.server` does not. Without that, Expo Router
+> renders its *unmatched route* page and a working app looks broken:
+>
+> ```bash
+> node screens/tools/serve-clean.mjs apps/mobile-rn/dist 8099
+> ```
 
 ## Where to go next
 
 | | |
 | --- | --- |
-| How it fits together, and where a given thing lives | [ARCHITECTURE.md](ARCHITECTURE.md) |
-| The traps this toolchain sets, one row per incident | [TROUBLESHOOTING.md](TROUBLESHOOTING.md) |
-| The six decisions that shaped this repo | [`adr/`](adr/README.md) |
+| **How it fits together**, and where a given thing lives | [ARCHITECTURE.md](ARCHITECTURE.md) |
+| **The traps this toolchain sets** — one row per real incident, and why a green check is not evidence | [TROUBLESHOOTING.md](TROUBLESHOOTING.md) |
+| **Why** it is built this way — the six decisions | [`adr/`](adr/README.md) |
 | Every screen in all three versions, side by side | [`screens/`](screens/) |
 | Design tokens, vendored from CORRECTIV's `wp-design-tokens` | [`tokens/`](tokens/README.md) |
-| Release process and CI | [RELEASE.md](RELEASE.md) |
+| Releases, signing, and the three CI workflows | [RELEASE.md](RELEASE.md) |
 | Rules for AI agents working in this repo | [AGENTS.md](AGENTS.md) |
 
 ## Licensing & attribution

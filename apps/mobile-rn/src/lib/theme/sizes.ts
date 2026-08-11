@@ -1,5 +1,6 @@
 /**
- * Element sizes in dp, taken from the design draft in `docs/*.dc.html`.
+ * Element sizes in dp, taken from the design draft — the `.dc.html` mockup in the
+ * `design-entwurf` sibling repo, shot screen by screen into `screens/draft/`.
  *
  * Why not Tailwind utilities: `tailwind.config.js` replaces Tailwind's spacing
  * scale with the design system's own, and that one steps 2px per unit and stops

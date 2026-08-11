@@ -8,14 +8,22 @@
  * its unmatched-route page — which looks exactly like a broken route in the app.
  * Two rounds of verification were spent on that.
  *
- * Usage: node screens/tools/serve-clean.mjs [dir] [port]
+ * Usage: node screens/tools/serve-clean.mjs [dir] [port] [--base=/correctiv-app]
+ *
+ * `--base` reproduces the other half of GitHub Pages: a project site is served from
+ * a subdirectory, not a domain root, so an export built with EXPO_BASE_URL can only
+ * be judged from underneath the same prefix. Without it a baseUrl build looks broken
+ * locally and a root build looks fine — the exact reverse of what Pages does.
  */
 import { createReadStream, existsSync, statSync } from 'node:fs';
 import { createServer } from 'node:http';
 import { extname, join, normalize } from 'node:path';
 
-const dir = process.argv[2] ?? 'dist';
-const port = Number(process.argv[3] ?? 8099);
+const positional = process.argv.slice(2).filter((a) => !a.startsWith('--'));
+const dir = positional[0] ?? 'dist';
+const port = Number(positional[1] ?? 8099);
+const baseArg = process.argv.find((a) => a.startsWith('--base='))?.slice(7) ?? '';
+const base = baseArg ? `/${baseArg.replace(/^\/+|\/+$/g, '')}` : '';
 
 const TYPES = {
   '.html': 'text/html; charset=utf-8',
@@ -51,11 +59,26 @@ function resolveFile(pathname) {
   return undefined;
 }
 
+/** The request path with the Pages prefix removed, or undefined if it misses the prefix. */
+function stripBase(url) {
+  if (!base) return url;
+  if (url === base) return '/';
+  return url.startsWith(`${base}/`) ? url.slice(base.length) : undefined;
+}
+
 createServer((req, res) => {
-  const file = resolveFile(req.url ?? '/');
+  const pathname = stripBase(req.url ?? '/');
+  const file = pathname === undefined ? undefined : resolveFile(pathname);
   if (!file) {
-    // Deliberately not the SPA fallback: a 404 has to be visible as a 404 here,
-    // otherwise a missing route looks like a rendered one.
+    // What GitHub Pages does with an unmatched path: serve 404.html — a copy of the
+    // app shell, so the router resolves the URL client-side — and keep the 404
+    // status, so a missing route is still visibly missing to anything that looks.
+    const fallback = join(dir, '404.html');
+    if (pathname !== undefined && existsSync(fallback)) {
+      res.writeHead(404, { 'content-type': TYPES['.html'], 'cache-control': 'no-store' });
+      createReadStream(fallback).pipe(res);
+      return;
+    }
     res.writeHead(404, { 'content-type': 'text/plain; charset=utf-8' });
     res.end(`404 ${req.url}\n`);
     return;
@@ -65,4 +88,4 @@ createServer((req, res) => {
     'cache-control': 'no-store',
   });
   createReadStream(file).pipe(res);
-}).listen(port, () => console.log(`serving ${dir} on http://localhost:${port}`));
+}).listen(port, () => console.log(`serving ${dir} on http://localhost:${port}${base}/`));

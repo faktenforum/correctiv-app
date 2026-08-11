@@ -11,7 +11,7 @@ typecheck and a green test run, and each one was found by looking at a picture.
 
 | Set | What it is | Worth as a reference |
 | --- | --- | --- |
-| [`draft/`](draft/) | The design draft in [`docs/`](../docs/) rendered in Chrome at 402×874 | **The** visual target. Generated from the `design-entwurf` sibling repo, not app code |
+| [`draft/`](draft/) | The design draft rendered in Chrome at 402×874 | **The** visual target. It lives in the `design-entwurf` sibling repo, not here — this set is the only copy of it in this repo |
 | [`nativescript/`](nativescript/) | `apps/mobile`, superseded by [ADR 0004](../adr/0004-react-native-pivot.md) | Still the closest match to the draft in places. Read it for layout decisions, do not add features to it |
 | [`expo/`](expo/) | `apps/mobile-rn`, the live app | The thing under test |
 
@@ -178,9 +178,11 @@ adb uninstall org.correctiv.app.prototype
 adb install /tmp/ns/correctiv-app-nativescript-*.apk
 OUT=out/nativescript ACTIVITY=com.tns.NativeScriptActivity bash screens/tools/tour-android.sh
 
-# Design draft — only when the design itself changed
-python3 -m http.server 8098 --directory docs &
-node screens/tools/tour-draft.mjs http://localhost:8098/index.html out/draft \
+# Design draft — only when the design itself changed. It is no longer copied into
+# this repo (GitHub Pages serves the Expo web export now), so serve the sibling
+# checkout directly. Its entry point is "Correctiv App.dc.html", not index.html.
+python3 -m http.server 8098 --directory ../design-entwurf/project &
+node screens/tools/tour-draft.mjs "http://localhost:8098/Correctiv App.dc.html" out/draft \
   --tour=screens/tools/tour-draft.json
 ```
 
@@ -210,9 +212,21 @@ npm run build:web -w apps/mobile-rn
 node screens/tools/serve-clean.mjs apps/mobile-rn/dist 8099
 ```
 
-`serve-clean.mjs` maps `/artikel` to `artikel.html` the way GitHub Pages does. A
-plain `python3 -m http.server` does not, and then Expo Router renders its
-unmatched-route page — which looks exactly like a broken route in the app.
+`serve-clean.mjs` maps `/artikel` to `artikel.html` and falls back to `404.html` the
+way GitHub Pages does. A plain `python3 -m http.server` does neither, and then Expo
+Router renders its unmatched-route page — which looks exactly like a broken route in
+the app.
+
+To reproduce what is actually published, build with the Pages base path and serve
+underneath it. This is the only way to catch an asset URL that resolves from the
+domain root — on `localhost:8099/` such a build looks fine and on the real site it
+is a blank page:
+
+```bash
+EXPO_BASE_URL=/correctiv-app npm run build:web -w apps/mobile-rn
+node screens/tools/serve-clean.mjs apps/mobile-rn/dist 8099 --base=/correctiv-app
+# then open http://localhost:8099/correctiv-app/
+```
 
 ## Caveats
 
