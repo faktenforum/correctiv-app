@@ -4,6 +4,11 @@
 # screens as the native builds. Nothing is committed: the export is built here and
 # uploaded straight to Pages. See adr/0004-react-native-pivot.md.
 #
+# The address to hand out is `/preview.html`, which frames the app at a phone or
+# tablet size; the site root serves it stretched across the browser window, which is
+# the wrong shape for an app that has no desktop layout. RELEASE.md, "The web
+# preview".
+#
 # ONE-TIME SETUP, and this workflow cannot do it for you: the site's source has to be
 # switched from `main:/docs` to GitHub Actions. Settings → Pages → Build and
 # deployment → Source: GitHub Actions, or:
@@ -41,9 +46,14 @@ jobs:
   deploy:
     name: Build and deploy
     runs-on: ubuntu-latest
+    # The environment URL is the link a human clicks from the repository sidebar, so
+    # it points at the device frame and not at the site root: the app is built for a
+    # phone and has no desktop layout, which makes a full browser window the wrong
+    # shape to judge it in. What is deployed is still the whole site. `page_url` ends
+    # in a slash, hence the bare filename.
     environment:
       name: github-pages
-      url: ${{ steps.deployment.outputs.page_url }}
+      url: ${{ steps.deployment.outputs.page_url }}preview.html
     steps:
       - uses: actions/checkout@v4
 
@@ -72,13 +82,15 @@ jobs:
           EXPO_BASE_URL: ${{ steps.pages.outputs.base_path }}
         run: npm run build:web
 
-      # Three ways this deploy can be broken while the export succeeds, so all three
+      # Four ways this deploy can be broken while the export succeeds, so all four
       # are read off the built files rather than assumed:
       #   1. a component with no web implementation (react-native-webview renders a
       #      sentence instead of the reader, and exports happily)
       #   2. the base path not applied — the failure mode this workflow exists for
       #   3. a missing route, or a missing 404.html, which is what makes deep links
       #      resolve on a host that cannot rewrite
+      #   4. public/ not reaching the export, which would 404 the address the README,
+      #      RELEASE.md and this workflow's environment link all point people at
       - name: Assert the deployable is not silently broken
         working-directory: apps/mobile-rn
         env:
@@ -98,6 +110,10 @@ jobs:
           for route in index 404 artikel entdecken mediathek mitmachen profil; do
             test -f "dist/$route.html" || { echo "::error::missing dist/$route.html"; exit 1; }
           done
+          test -f dist/preview.html || {
+            echo "::error::dist/preview.html is missing — apps/mobile-rn/public/ did not reach the export, and the address handed out for the demo would 404."
+            exit 1
+          }
           echo "deployable OK — $(find dist -name '*.html' | wc -l) routes under $BASE_PATH"
 
       - name: Upload Pages artifact

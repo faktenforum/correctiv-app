@@ -10,11 +10,16 @@ Three GitHub Actions workflows live in `.github/workflows/`:
 
 ## The web preview
 
-A web version of the app at <https://faktenforum.github.io/correctiv-app/>, for
-clicking through without an install. Every push to `main` republishes it; there is
-nothing to tag and nothing to commit. Two things are worth knowing before pointing
+A web version of the app at <https://faktenforum.github.io/correctiv-app/preview.html>,
+for clicking through without an install. Every push to `main` republishes it; there is
+nothing to tag and nothing to commit. Three things are worth knowing before pointing
 anyone at the URL:
 
+- **Hand out the `/preview.html` address, not the bare one.** The app is built for a
+  phone and has no desktop layout, so the site's root shows it stretched across the
+  whole browser window; `/preview.html` frames it at a phone or tablet size instead.
+  The root stays reachable — nothing hides it — so the framed link is the one to
+  send.
 - **Its articles are as old as the last `npm run offline-articles`.** The browser
   cannot reach any CORRECTIV feed — no CORS header — so the app falls back to the
   snapshot bundled into the build, and says so on screen. Re-run the generator and
