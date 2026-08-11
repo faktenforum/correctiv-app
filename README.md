@@ -5,14 +5,12 @@ investigations, fact checks, Salon5 radio, CrowdNewsroom callouts, the Faktenfor
 and the membership club in one place — built on *closeness, not a paywall*.
 Journalism stays free for everyone; membership adds proximity.
 
-### ▶ [Open it in a browser — faktenforum.github.io/correctiv-app/preview.html](https://faktenforum.github.io/correctiv-app/preview.html)
-
-A web version of the app, published on every push to `main`: the same code and the
-same screens as the Android and iOS builds, so no install and no emulator are needed
-to click through it. The link opens it inside a device frame, switchable between
-phone and tablet sizes — the app is built for a phone and has no desktop layout, so
-a full browser window is the wrong shape to judge it in. It runs on content bundled
-into the app, because correctiv.org sends no CORS header — see
+[**Open the app in a browser**](https://faktenforum.github.io/correctiv-app/preview.html) — no
+install, no emulator, the same code and the same screens as the Android and iOS
+builds, republished on every push to `main`. It opens inside a device frame,
+switchable between phone and tablet sizes: the app is built for a phone and has no
+desktop layout, so a full browser window is the wrong shape to judge it in. It runs
+on content bundled into the build, because correctiv.org sends no CORS header — see
 [the web target](TROUBLESHOOTING.md#the-web-target).
 
 <p align="center">
@@ -89,9 +87,9 @@ npm run offline-podcasts    # Salon5 podcast snapshots
 > node screens/tools/serve-clean.mjs apps/mobile-rn/dist 8099
 > ```
 
-**The device frame from the top of this page** works locally too — presets, rotation,
-free resizing and a route field. It ships in the export from `apps/mobile-rn/public/`,
-so the same page answers under `npm run web`, under the server above, and on Pages:
+**The device frame linked at the top** works locally too — presets, rotation, free
+resizing and a route field. It ships in the export from `apps/mobile-rn/public/`, so
+the same page answers under `npm run web`, under the server above, and on Pages:
 
 ```
 http://localhost:8081/preview.html          # dev server, Fast Refresh in the frame
