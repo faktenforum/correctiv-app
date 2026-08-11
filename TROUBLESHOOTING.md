@@ -17,6 +17,15 @@ npm run build:web
 node screens/tools/serve-clean.mjs apps/mobile-rn/dist 8099   # NOT python3 -m http.server
 ```
 
+And a screenshot is only evidence about **the part of the screen it shows.** The
+reader's floating back and bookmark controls were `opacity: 0.92` with no border:
+invisible against the article's white background, so once the hero image had scrolled
+past, the chevron sat inside a word. Every committed shot of that screen is of its
+first viewport, where the controls are over the hero and look right. → Scroll before
+you judge, and on a route whose content is an `<iframe>` (the reader on web) scroll
+**the frame** — scrolling the page moves nothing and every shot comes out identical,
+which reads as "checked" and is not.
+
 Extracting text is the weak version of this. `uiautomator dump` and
 `document.body.innerText` prove the right words are on screen and nothing about how
 it looks — nine further defects hid behind exactly that, among them a video card
@@ -138,6 +147,15 @@ equivalents for focus, liveness and errors.
   ```
   `pages.yml` greps the built `index.html` for the prefix, because this failure has
   no other symptom before it is public.
+- **`react-native-web`'s `Switch` reads a different prop for the ON thumb.** Its
+  `thumbColor` covers the OFF state only; ON comes from `activeThumbColor`, whose
+  default is Material teal `#009688` (`exports/Switch/index.js`). So every enabled
+  toggle showed a green thumb — a colour the palette does not contain — while the
+  emulator, where `thumbColor` covers both states, looked correct. → Pass
+  `activeThumbColor` as well; `components/profile/SettingRow.tsx` spreads it from a
+  `Platform.OS === 'web'` variable, since the prop is not in RN's `SwitchProps`. The
+  general shape of this: a prop RN honours and RNW quietly reads differently is
+  invisible to typecheck, tests and every native screenshot.
 - **`correctiv.org` sends no `Access-Control-Allow-Origin`,** so a browser blocks
   every RSS request and **no feed is ever live on web**. Native is unaffected — there
   is no CORS there. Measured 2026-08-05 across every source: only `tube.funfacts.de`

@@ -59,6 +59,10 @@ const playEpisodeMock = playEpisode as jest.Mock;
 
 const BONUS = bonusMedia[0];
 
+/** How many times the screen marks something as club content. */
+const clubMarks = (tree: Parameters<typeof renderedText>[0]): number =>
+  renderedText(tree).match(/\bClub\b/g)?.length ?? 0;
+
 const initialMembership = coreStores.membership.getState();
 const initialPodcasts = coreStores.podcasts.getState();
 const initialMedia = coreStores.media.getState();
@@ -163,12 +167,19 @@ describe('the club bonus', () => {
     expect(playEpisodeMock.mock.calls[0][0]).toMatchObject({ episodeId: BONUS.id });
   });
 
-  it('keeps the club badge either way', () => {
+  it('marks the club exactly once, member or not', () => {
     // The badge is the invitation's label, not a lock — it stays for members too.
-    expect(renderedText(render(<MediathekScreen />))).toContain('CLUB');
+    //
+    // Counted, not merely present: the section used to carry a coral "Club" overline
+    // above rows that already had the yellow badge, so the mark appeared twice and in
+    // the colour that means journalism rather than club. And this assertion used to
+    // read 'CLUB', which only ever matched that overline — `Badge` uppercases through
+    // a style, so the tree carries "Club". It would have stayed green with the badge
+    // itself deleted.
+    expect(clubMarks(render(<MediathekScreen />))).toBe(1);
     act(() => {
       coreStores.membership.getState().join(10, 'monatlich', 'Test');
     });
-    expect(renderedText(render(<MediathekScreen />))).toContain('CLUB');
+    expect(clubMarks(render(<MediathekScreen />))).toBe(1);
   });
 });

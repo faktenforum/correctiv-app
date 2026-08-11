@@ -108,7 +108,8 @@ export default function ArtikelScreen() {
         </View>
       )}
 
-      {/* Transparenter Overlay-Header */}
+      {/* Overlay header: it floats over the hero image rather than pushing it down,
+          and the article scrolls underneath it. */}
       <SafeAreaView edges={['top']} className="absolute left-0 right-0 top-0">
         <View className="flex-row items-center justify-between px-s py-2xs">
           <HeaderButton icon="chevron-back" onPress={goBack} />
@@ -132,6 +133,17 @@ export default function ArtikelScreen() {
   );
 }
 
+/**
+ * Opaque with a hairline, not translucent.
+ *
+ * This was `opacity: 0.92` and no border, which is invisible against the article's
+ * white background — the surface vanished and the icon stayed, so once the hero had
+ * scrolled past, the chevron sat inside a word ("CSD-Anschlag" read as a chevron
+ * plus "D-Anschlag"). Only visible below the fold, which is why every emulator
+ * screenshot of the reader missed it. Opaque, the control covers what passes under
+ * it instead of mixing with it, and the border keeps it readable as a control on a
+ * white page too.
+ */
 function HeaderButton({
   icon,
   onPress,
@@ -143,8 +155,8 @@ function HeaderButton({
     <Pressable
       onPress={onPress}
       hitSlop={8}
-      className="items-center justify-center rounded-full bg-grey-100 active:opacity-70"
-      style={{ width: sizes.iconButton, height: sizes.iconButton, opacity: 0.92 }}
+      className="items-center justify-center rounded-full border border-grey-300 bg-grey-100 active:opacity-70"
+      style={{ width: sizes.iconButton, height: sizes.iconButton }}
     >
       <Ionicons name={icon} size={22} color={colors['grey-700']} />
     </Pressable>

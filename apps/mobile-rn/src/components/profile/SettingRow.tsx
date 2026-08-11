@@ -1,14 +1,27 @@
-import { Switch, View } from 'react-native';
+import { Platform, Switch, View } from 'react-native';
 
 import { Typo } from '@/components/ui';
 import { colors } from '@/lib/theme';
 
 /**
- * Eine Einstellungszeile: Beschriftung, Erklärung, Schalter.
+ * react-native-web applies `thumbColor` to the OFF state only; the ON thumb comes
+ * from its own `activeThumbColor`, which defaults to Material teal `#009688`
+ * (exports/Switch/index.js). So every enabled switch showed a green thumb in the
+ * browser — a colour the palette does not contain — while the emulator, where
+ * `thumbColor` covers both states, looked correct. Web-only, hence invisible to
+ * every screenshot of this screen taken so far.
  *
- * `Switch` aus react-native und nicht der aus `@expo/ui`: der wäre nativ
- * (SwiftUI/Compose) und fiele auf Web weg — dieselbe Abwägung wie beim
- * Fortschrittsbalken des Players.
+ * The prop is not in RN's `SwitchProps`; spreading it from a variable keeps that
+ * off the native branch instead of casting the type away.
+ */
+const WEB_THUMB = Platform.OS === 'web' ? { activeThumbColor: colors['grey-100'] } : {};
+
+/**
+ * A settings row: label, explanation, switch.
+ *
+ * `Switch` from react-native rather than the one from `@expo/ui`: that one is native
+ * (SwiftUI/Compose) and would disappear on web — the same trade-off as the player's
+ * progress bar.
  */
 export function SettingRow({
   label,
@@ -39,6 +52,7 @@ export function SettingRow({
         accessibilityLabel={label}
         trackColor={{ false: colors['grey-300'], true: colors.emphasis }}
         thumbColor={colors['grey-100']}
+        {...WEB_THUMB}
       />
     </View>
   );

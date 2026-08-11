@@ -152,6 +152,29 @@ an empty string for one it cannot parse. **The reader shots in this set still re
 "04. August 2026"**: they predate the change, which is the rule at the top of this file
 applying to itself.
 
+## Fourth round, 2026-08-11 — the web build, walked in a browser
+
+Not a new screenshot set: the published web version was clicked through route by
+route at 412×915, which reaches two things the emulator sets structurally cannot.
+
+| Seen | Cause | Where it was invisible |
+| --- | --- | --- |
+| The reader's back chevron sat inside a word | the floating controls were `opacity: 0.92` with no border, so the surface vanished against the article's white background and only the glyph stayed | below the fold — every committed reader shot is of the first viewport, where the controls are over the hero image |
+| Every enabled switch had a green thumb | `react-native-web`'s `Switch` takes the ON thumb from `activeThumbColor`, not `thumbColor`; its default is Material teal | web only — on Android `thumbColor` covers both states |
+| "Aus dem Backstage" said CLUB twice, once in coral | a section `Overline` above rows that already carry the yellow `Badge`; coral is the journalism CTA, yellow is the club | nowhere — it was equally wrong on the emulator, and the test that was supposed to pin the badge matched the overline instead |
+| The byline separator was off-centre | a flex `gap` before the middot, a space character after it — 6px against 4px | nowhere; too small to see without measuring, and it was measured after being noticed in a screenshot |
+| A podcast series page showed two seeded episodes with nothing saying so | the Mediathek prints "Ohne Verbindung — Sie sehen Beispielfolgen." and the series page did not, although it reads the same status | native, where Castopod is reachable and the fallback never appears |
+
+Two things were checked and are **not** defects: Home's grey hero (of the 15
+pre-extracted articles 14 carry a cover, and the one without is the article the feed
+puts first — correctiv.org publishes no `og:image` for it), and the reader not
+scrolling (the article is an `<iframe>`; scrolling the page moves nothing, and the
+frame scrolls fine).
+
+Every deep-linked route was also checked for a working way out, since none of them
+has history: `/player`, `/beitreten`, `/projekt/klima`, `/backstage` and
+`/einstellungen` all land on Home. That is `lib/navigation/goBack.ts` doing its job.
+
 ## Regenerating
 
 The emulator needs a window — headless dies on SELinux denying `execheap` to
