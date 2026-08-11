@@ -5,7 +5,7 @@ import { EpisodeRow } from '@/components/media/EpisodeRow';
 import { LiveBanner } from '@/components/media/LiveBanner';
 import { MediaCard } from '@/components/media/MediaCard';
 import { SeriesTile } from '@/components/media/SeriesTile';
-import { Overline, Rail, Screen, SectionHeader, Typo } from '@/components/ui';
+import { Rail, Screen, SectionHeader, Typo } from '@/components/ui';
 import { bonusMedia, type BonusMedia } from '@correctiv/app-core/data/backstage';
 import type { PodcastSeries } from '@correctiv/app-core/data/podcasts';
 import type { YoutubeKey } from '@correctiv/app-core/stores/media';
@@ -51,7 +51,9 @@ export default function MediathekScreen() {
 
       <View className="mt-l">
         <SectionHeader title="Aus dem Backstage" />
-        <Overline label="Club" color="emphasis" className="mt-2xs" />
+        {/* No club label here: every row already carries the yellow Club badge, and a
+            coral one above them said the same word twice in the wrong colour — coral
+            is the journalism CTA, yellow is the club (see ui/Button.tsx). */}
         <View className="mt-2xs">
           {bonusMedia.map((bonus) => (
             <BonusRow key={bonus.id} bonus={bonus} />

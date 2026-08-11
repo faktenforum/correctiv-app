@@ -14,8 +14,17 @@ So after touching a route, a bundle-level config or anything platform-split:
 
 ```bash
 npm run build:web
-# then serve apps/mobile-rn/dist/ WITH clean-URL mapping (/artikel → artikel.html)
+node screens/tools/serve-clean.mjs apps/mobile-rn/dist 8099   # NOT python3 -m http.server
 ```
+
+And a screenshot is only evidence about **the part of the screen it shows.** The
+reader's floating back and bookmark controls were `opacity: 0.92` with no border:
+invisible against the article's white background, so once the hero image had scrolled
+past, the chevron sat inside a word. Every committed shot of that screen is of its
+first viewport, where the controls are over the hero and look right. → Scroll before
+you judge, and on a route whose content is an `<iframe>` (the reader on web) scroll
+**the frame** — scrolling the page moves nothing and every shot comes out identical,
+which reads as "checked" and is not.
 
 Extracting text is the weak version of this. `uiautomator dump` and
 `document.body.innerText` prove the right words are on screen and nothing about how
@@ -121,7 +130,32 @@ equivalents for focus, liveness and errors.
 
 - **Serving a static export without clean URLs** makes Expo Router render its
   *unmatched route* page — looks like an app bug, is a server bug. → Map `/artikel` →
-  `artikel.html`. A plain `python3 -m http.server` will not do.
+  `artikel.html`. A plain `python3 -m http.server` will not do;
+  `screens/tools/serve-clean.mjs` does, and also serves `404.html` on a miss the way
+  GitHub Pages does.
+- **A default export writes URLs absolute from the domain root** (`/_expo/…`,
+  `/assets/…`), and a GitHub Pages *project* site is served from
+  `faktenforum.github.io/correctiv-app/`. Every asset then resolves one directory
+  too high and 404s: a blank page from a build that exported cleanly, passed every
+  assertion in `ci.yml` and looks perfect on `localhost:8099/`. → `experiments.baseUrl`,
+  set from `EXPO_BASE_URL` in `apps/mobile-rn/app.config.js` so only the Pages build
+  carries the prefix. Verify it the only way that means anything — build with the
+  variable and serve underneath the prefix:
+  ```bash
+  EXPO_BASE_URL=/correctiv-app npm run build:web
+  node screens/tools/serve-clean.mjs apps/mobile-rn/dist 8099 --base=/correctiv-app
+  ```
+  `pages.yml` greps the built `index.html` for the prefix, because this failure has
+  no other symptom before it is public.
+- **`react-native-web`'s `Switch` reads a different prop for the ON thumb.** Its
+  `thumbColor` covers the OFF state only; ON comes from `activeThumbColor`, whose
+  default is Material teal `#009688` (`exports/Switch/index.js`). So every enabled
+  toggle showed a green thumb — a colour the palette does not contain — while the
+  emulator, where `thumbColor` covers both states, looked correct. → Pass
+  `activeThumbColor` as well; `components/profile/SettingRow.tsx` spreads it from a
+  `Platform.OS === 'web'` variable, since the prop is not in RN's `SwitchProps`. The
+  general shape of this: a prop RN honours and RNW quietly reads differently is
+  invisible to typecheck, tests and every native screenshot.
 - **`correctiv.org` sends no `Access-Control-Allow-Origin`,** so a browser blocks
   every RSS request and **no feed is ever live on web**. Native is unaffected — there
   is no CORS there. Measured 2026-08-05 across every source: only `tube.funfacts.de`
@@ -165,7 +199,8 @@ equivalents for focus, liveness and errors.
   typecheck and 120 tests stayed green. → Named tokens for spacing (`p-s`, `gap-m`),
   pixel sizes from `src/lib/theme/sizes.ts`, and
   `__tests__/no-numeric-utilities.test.ts` fails on any numeric size or spacing class.
-  Found by putting emulator screenshots next to the draft — see [`screens/`](screens/).
+  Found by putting emulator screenshots next to the intended layout — see
+  [`screens/`](screens/).
 - **A token bridge that searches *upwards* for its source can find a foreign
   checkout** — here one at `17b87c8` while the repo's own copy was `501ee10`, so a
   developer and CI generated from different sources and called it agreement. →

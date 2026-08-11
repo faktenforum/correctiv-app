@@ -12,8 +12,11 @@ the way it is; [`../ARCHITECTURE.md`](../ARCHITECTURE.md) describes *what* it is
 | [0005](0005-react-native-over-nativescript.md) | Expo is the stack; what NativeScript was better at, and when to revisit | accepted, amended by 0006 |
 | [0006](0006-one-core-two-hosts.md) | The core holds the behaviour; both apps stay for now | accepted |
 
-Two notes for readers of the older ones:
+Three notes for readers of the older ones:
 
+- ADRs 0001–0004 were written in German and translated on 2026-08-11, so the repo
+  reads in one language ([AGENTS.md](../AGENTS.md#language)). Only the wording
+  changed; the German originals are in the git history.
 - ADRs 0001–0004 cite a strategy paper (`APP-STRATEGIE.md`, revision 2, July 2026)
   that recommended staying on NativeScript. ADR 0004 reversed that recommendation and
   the paper was removed from the working tree on 2026-08-06; it is in the git history

@@ -1,11 +1,41 @@
 # Release & CI
 
-Two GitHub Actions workflows live in `.github/workflows/`:
+Three GitHub Actions workflows live in `.github/workflows/`:
 
 | Workflow | File | Trigger | What it does |
 | --- | --- | --- | --- |
-| **CI** | `ci.yml` | PR to `main`, push to `main` | Checks, web export, and an Android APK for **each** app as a compile check. No secrets needed. |
+| **CI** | `ci.yml` | every PR, push to `main` | Checks, web export, and an Android APK for **each** app as a compile check. No secrets needed. |
+| **Pages** | `pages.yml` | push to `main` (or manual) | Rebuilds the Expo web export under the Pages base path and publishes it to <https://faktenforum.github.io/correctiv-app/>. No secrets needed. |
 | **Release Android** | `release-android.yml` | push of a `v*` tag (or manual) | Builds **one APK per app**, signs both with the same key — your upload key when the secrets are set (plus a Play-ready AAB for the NativeScript app), otherwise the bundled **test key**. Attaches everything to the GitHub Release. |
+
+## The web preview
+
+A web version of the app at <https://faktenforum.github.io/correctiv-app/>, for
+clicking through without an install. Every push to `main` republishes it; there is
+nothing to tag and nothing to commit. Two things are worth knowing before pointing
+anyone at the URL:
+
+- **Its articles are as old as the last `npm run offline-articles`.** The browser
+  cannot reach any CORRECTIV feed — no CORS header — so the app falls back to the
+  snapshot bundled into the build, and says so on screen. Re-run the generator and
+  merge it before a demo.
+- **The site is a project site**, served from `/correctiv-app/`, so the export needs
+  `EXPO_BASE_URL` to prefix its asset URLs. `pages.yml` takes that value from
+  `actions/configure-pages` and asserts it reached the built HTML — the failure is
+  otherwise invisible until the site is live and blank.
+
+Pages was previously served straight off `main:/docs`. Pointing it at this workflow
+instead is a **repository setting**, made once and not by the workflow itself —
+`actions/configure-pages` reads an existing site but never changes its build type:
+
+```bash
+gh api -X POST repos/faktenforum/correctiv-app/pages -f build_type=workflow
+# or: Settings → Pages → Build and deployment → Source: GitHub Actions
+```
+
+Until that is done, the deploy step fails with *"Not configured to use GitHub
+Actions"* — the build and every assertion above it still run, so the failure is
+loud and specific rather than a silently stale site.
 
 ## Cutting a release
 

@@ -1,112 +1,112 @@
-# ADR 0002 — Vite 8 / Rolldown: gemessen, noch nicht übernommen
+# ADR 0002 — Vite 8 / Rolldown: measured, not adopted yet
 
-**Status:** abgelehnt für jetzt, erneut prüfen · **Datum:** 2026-08-01 · **Betrifft:** Bundler, Build-Zeit, zwei offene Upstream-Blocker
+**Status:** rejected for now, revisit · **Date:** 2026-08-01 · **Affects:** bundler, build time, two open upstream blockers
 
-## Kontext
+## Context
 
-Zwei der vier in `APP-STRATEGIE.md` §3 dokumentierten Blocker hängen am Bundler:
-Release-Builds funktionieren nur mit **abgeschalteter Minification** (ein minifiziertes
-Bundle stürzt beim Start ab), und **HMR ist defekt** — beides mit derselben Signatur
+Two of the four blockers documented in `APP-STRATEGIE.md` §3 hang on the bundler:
+release builds only work with **minification switched off** (a minified bundle crashes
+at startup), and **HMR is broken** — both with the same signature,
 `Module evaluation promise rejected: bundle.mjs`.
 
-Vite 8 ersetzt esbuild + Rollup durch **Rolldown**, also genau die Pipeline, in der
-dieser Fehler sitzt. Das war es wert, gemessen statt vermutet zu werden.
+Vite 8 replaces esbuild + Rollup with **Rolldown**, which is exactly the pipeline this
+fault sits in. That was worth measuring rather than assuming.
 
-Vorlage war das Schwesterprojekt **[gjsify](https://github.com/gjsify/gjsify)** (MIT), das
-in `@gjsify/nativescript-vite` denselben Weg bereits gegangen ist: dort läuft ein
-NativeScript-Integrationstest auf `@nativescript/vite@2.0.3` **zusammen mit `vite@^8`**.
+The template was the sibling project **[gjsify](https://github.com/gjsify/gjsify)**
+(MIT), which has already gone this way in `@gjsify/nativescript-vite`: a NativeScript
+integration test runs there on `@nativescript/vite@2.0.3` **together with `vite@^8`**.
 
-## Was geprüft wurde
+## What was tried
 
-Zwei Wege, beide auf diesem Projekt, beide bis zum echten `ns build android`:
+Two routes, both on this project, both as far as a real `ns build android`:
 
-1. **`@nativescript/vite@8.0.0-beta.0`** (`vite: ^8.0.0`, die native Rolldown-Linie).
-   Scheitert sofort: `Could not resolve entry module "index.html"`, 0 Module
-   transformiert — **auch mit der unveränderten Plugin-Config** und über den echten
-   CLI-Pfad. Also nicht unsere Konfiguration, sondern die Beta.
-2. **`@nativescript/vite@2.0.3` + `vite@8.2.0`** per npm-`overrides`, mit den drei
-   Eingriffen aus gjsify:
-   - Funktions-`resolve.alias`-Einträge entfernen (Rolldown lehnt sie ab),
-   - `@rollup/plugin-commonjs` entfernen (crasht Rolldown mit
+1. **`@nativescript/vite@8.0.0-beta.0`** (`vite: ^8.0.0`, the native Rolldown line).
+   Fails immediately: `Could not resolve entry module "index.html"`, 0 modules
+   transformed — **with the plugin config untouched as well**, and through the real CLI
+   path. So it is the beta, not our configuration.
+2. **`@nativescript/vite@2.0.3` + `vite@8.2.0`** via npm `overrides`, with the three
+   interventions from gjsify:
+   - remove the function-valued `resolve.alias` entries (Rolldown rejects them),
+   - remove `@rollup/plugin-commonjs` (crashes Rolldown with
      `Cannot read properties of undefined (reading 'currentLoadingModule')`),
-   - den bundler-seitigen `ns-vue-tsc-check` entfernen (ein Bundler soll bündeln;
-     der maßgebliche Gate ist `npm run check`).
+   - remove the bundler-side `ns-vue-tsc-check` (a bundler should bundle; the
+     authoritative gate is `npm run check`).
 
-   Zusätzlich nötig, weil Vite 8 die esbuild-Optionen des Plugins **ignoriert** und es
-   sich mit `build.target: 'esnext'` auf `esbuild.target: 'es2020'` verlässt:
-   `build.target: 'es2020'` und `oxc.keepNames: true` explizit setzen.
+   Additionally necessary, because Vite 8 **ignores** the plugin's esbuild options and
+   with `build.target: 'esnext'` relies on `esbuild.target: 'es2020'`: set
+   `build.target: 'es2020'` and `oxc.keepNames: true` explicitly.
 
-## Ergebnis: es funktioniert — und löst tatsächlich einen Blocker
+## Result: it works — and does resolve a blocker
 
 | | Vite 7 / Rollup | Vite 8 / Rolldown |
 |---|---|---|
-| `vite build` | 10,3 s | **1,5 s** |
-| `bundle.mjs` | 415,0 kB | 352,5 kB |
-| `vendor.mjs` | 2.670,7 kB | 2.350,2 kB |
-| `ns build android` (clean) | 28,6 s | 26,1 s |
-| **Minification** | Start-Crash | **funktioniert** |
+| `vite build` | 10.3 s | **1.5 s** |
+| `bundle.mjs` | 415.0 kB | 352.5 kB |
+| `vendor.mjs` | 2,670.7 kB | 2,350.2 kB |
+| `ns build android` (clean) | 28.6 s | 26.1 s |
+| **Minification** | startup crash | **works** |
 
-Der minifizierte Build wurde auf dem Emulator (API 36) installiert und gestartet:
-Prozess lebt, `topResumedActivity` ist die NativeScriptActivity, **keine**
-`NativeScriptException`, **keine** `Module evaluation promise rejected`. Minifiziert
-schrumpft das Bundle auf 181,8 kB und der Vendor-Chunk auf 1.229,9 kB — grob die Hälfte.
+The minified build was installed on the emulator (API 36) and launched: the process
+lives, `topResumedActivity` is the NativeScriptActivity, **no** `NativeScriptException`,
+**no** `Module evaluation promise rejected`. Minified, the bundle shrinks to 181.8 kB
+and the vendor chunk to 1,229.9 kB — roughly half.
 
-**Der seit langem dokumentierte Minify-Crash ist unter Rolldown weg.**
+**The long-documented minify crash is gone under Rolldown.**
 
-## Warum es trotzdem nicht übernommen wird
+## Why it is still not adopted
 
-Der Build ist grün, die App startet — **und der gesamte Netzwerk-Layer ist tot.** Im
-logcat, bei jedem Feed:
+The build is green, the app starts — **and the entire network layer is dead.** In
+logcat, on every feed:
 
 ```
 E JS : CONSOLE ERROR: Feed fetch 'recherchen' failed: XMLHttpRequest is not defined
 ```
 
-Die NativeScript-Polyfills landen nicht im Bundle. Gezählt im emittierten Vendor-Chunk:
+The NativeScript polyfills never reach the bundle. Counted in the emitted vendor chunk:
 
 | | Vite 7 | Vite 8 |
 |---|---|---|
 | `installPolyfills` | 12× | **0×** |
 | `XMLHttpRequest` | 25× | 2× |
 
-Gegen eine **Baseline auf demselben Emulator** geprüft: mit Vite 7 null solche Fehler,
-App läuft normal. Es ist also eine Regression der Vite-8-Konfiguration, kein Bestandsbug.
+Checked against a **baseline on the same emulator**: with Vite 7, no such errors and the
+app runs normally. So it is a regression of the Vite 8 configuration, not a pre-existing
+bug.
 
-Zwei Hypothesen wurden getestet und **beide widerlegt**:
+Two hypotheses were tested and **both refuted**:
 
-- *Rolldown shakt den Nebeneffekt-Import weg* → `treeshake: { moduleSideEffects: true }`
-  in `build.rollupOptions` ändert nichts (`installPolyfills` bleibt 0).
-- *Der verworfene Funktions-Alias `@nativescript/core/(.+)/index` bricht die Auflösung
-  von `@nativescript/core/globals/index`* → in die von Rolldown akzeptierte String-Form
-  mit `$1`-Rückverweis umgeschrieben, gegen den echten `@nativescript/core`-Pfad; ändert
-  ebenfalls nichts.
+- *Rolldown tree-shakes the side-effect import away* → `treeshake: { moduleSideEffects: true }`
+  in `build.rollupOptions` changes nothing (`installPolyfills` stays at 0).
+- *The discarded function alias `@nativescript/core/(.+)/index` breaks resolution of
+  `@nativescript/core/globals/index`* → rewritten into the string form Rolldown accepts,
+  with a `$1` back-reference, against the real `@nativescript/core` path; changes
+  nothing either.
 
-Die Ursache liegt also woanders — vermutlich in der Art, wie Rolldown das
-`virtual:entry-with-polyfills`-Modul des Plugins behandelt. Weiterzusuchen war an dieser
-Stelle nicht gerechtfertigt: der Nutzen ist real, aber der Umbau darf den Datenlayer
-nicht kosten.
+The cause therefore lies elsewhere — probably in how Rolldown treats the plugin's
+`virtual:entry-with-polyfills` module. Digging further was not justified at this point:
+the benefit is real, but the change must not cost the data layer.
 
-## Entscheidung
+## Decision
 
-**Bei `@nativescript/vite@2.0.3` / Vite 7 bleiben.** Minification bleibt aus.
+**Stay on `@nativescript/vite@2.0.3` / Vite 7.** Minification stays off.
 
-## Erneut prüfen, wenn
+## Revisit when
 
-- `@nativescript/vite@8.x` die Beta verlässt — dann entfallen die Eingriffe (1) und (2)
-  ohnehin, und der Polyfill-Pfad ist upstream neu geschrieben;
-- oder wenn gjsify das Polyfill-Problem löst (dort läuft ein NativeScript-Smoke-Test
-  gegen Vite 8, der genau diese Frage berührt).
+- `@nativescript/vite@8.x` leaves beta — interventions (1) and (2) fall away anyway
+  then, and the polyfill path is rewritten upstream;
+- or when gjsify solves the polyfill problem (a NativeScript smoke test runs there
+  against Vite 8, which touches exactly this question).
 
-Der Gewinn wäre erheblich: **7× schnellere Builds, ~15 % kleinere Bundles und die
-Erledigung von zwei der vier Blocker in einem Zug.** Die Konfiguration ist in der
-Historie dieses Branches erhalten und in diesem Dokument vollständig beschrieben.
+The gain would be considerable: **7× faster builds, ~15 % smaller bundles, and two of
+the four blockers cleared in one go.** The configuration is preserved in this branch's
+history and described completely in this document.
 
-## Nebenbefund
+## Incidental finding
 
-Der bundler-seitige `ns-vue-tsc-check` ist die Quelle der langjährigen, scheinbar
-unerklärlichen `AndroidActivityBackPressedEventData`-Meldung in `app.ts`: Er startet ein
-**eigenes** TypeScript-Programm mit `--moduleSuffixes` für die Android-Typauflösung,
-dessen Ergebnis von der tsconfig der App abweicht. Entfernt man den Plugin-Eintrag,
-verschwindet die Meldung — ohne dass ein echter Typfehler verdeckt würde, denn
-`npm run check` (tsc + vue-tsc) läuft weiterhin und ist grün. Das ist unabhängig von
-Vite 8 anwendbar, falls die Meldung stört.
+The bundler-side `ns-vue-tsc-check` is the source of the long-standing, seemingly
+inexplicable `AndroidActivityBackPressedEventData` message in `app.ts`: it starts its
+**own** TypeScript program with `--moduleSuffixes` for Android type resolution, whose
+result differs from the app's tsconfig. Remove the plugin entry and the message
+disappears — without hiding a real type error, because `npm run check` (tsc + vue-tsc)
+still runs and is green. That is applicable independently of Vite 8, should the message
+become a nuisance.

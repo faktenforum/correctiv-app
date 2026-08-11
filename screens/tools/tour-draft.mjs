@@ -1,12 +1,16 @@
 /**
- * Screenshots the design draft (docs/*.dc.html) screen by screen.
+ * Screenshots the design draft screen by screen.
  *
  * The draft is one interactive app shell inside an iOS frame, so the only way to
  * reach a screen is to click through it — same as a user. Every step gets a PNG
  * clipped to the device frame, which makes it directly comparable to an
  * `adb screencap` of the built app.
  *
- * Usage: node dc-tour.mjs <url> <outDir> [--tour=path/to/tour.json]
+ * The draft is NOT in this repo. It used to be copied into `docs/` to be published
+ * on GitHub Pages, and Pages now serves the Expo web export instead; point this at
+ * the `design-entwurf` sibling repo — `screens/README.md` has the command.
+ *
+ * Usage: node tour-draft.mjs <url> <outDir> [--tour=path/to/tour.json]
  */
 import { spawn } from 'node:child_process';
 import { mkdirSync, mkdtempSync, readFileSync, writeFileSync } from 'node:fs';

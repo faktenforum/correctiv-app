@@ -107,11 +107,11 @@ in a `<style>`). `apps/mobile/src/assets/reader/reader.css` and the core's
 
 ```
 apps/mobile-rn/            @correctiv/mobile-rn — Expo (iOS, Android, web)
-  src/app/                 expo-router routes: (tabs)/ + artikel, suche,
+  src/app/                 expo-router routes: (tabs)/ + artikel, suche, spotlight,
                            projekt/[id], serie/[id], video, player, aufruf/[slug],
                            formular, faktenforum, behauptung/[id], atlas,
                            einstellungen, gespeichert, bericht, onboarding,
-                           beitreten, backstage, tagebuch/[id]
+                           beitreten, backstage, tagebuch/[id], +not-found
   src/components/ui/       design system (Typo, Button, Card, Badge, Chip, Screen…)
   src/components/reader|media/   the TWO platform splits: ReaderView, VideoFrame
                            (each .tsx | .web.tsx | a shared props type)
@@ -170,6 +170,23 @@ The two token generators both read `tokens/theme.css` through
 
 Never import `theme.css` directly into the NativeScript app: its CSS subset supports
 neither `rem`, `:root` nor unitless line heights.
+
+## The web target
+
+`apps/mobile-rn` exports to static HTML, and that export is the published demo at
+<https://faktenforum.github.io/correctiv-app/> — the same routes, screens and core
+as the native builds, with two host-level differences:
+
+- **The two platform splits.** `ReaderView` and `VideoFrame` each have a `.web.tsx`
+  sibling: an `<iframe>` where native uses a WebView. `__tests__/web-target.test.ts`
+  fails if a component without a web implementation reaches the bundle.
+- **No feed is ever live.** A browser blocks every CORRECTIV RSS request (no CORS
+  header), so the store's cascade lands on the bundled snapshot. The demo is
+  therefore only as current as the last `npm run offline-articles`.
+
+`.github/workflows/pages.yml` rebuilds and publishes it on every push to `main`.
+It is worth using while developing: back-without-history and directly opened routes
+can only be tested where URLs exist at all.
 
 ## Checks
 

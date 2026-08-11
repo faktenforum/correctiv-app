@@ -58,6 +58,16 @@ export default function SerieScreen() {
             {series.description}
           </Typo>
 
+          {/* The same note the Mediathek shows over its rail. Without it this page is
+              where the offline fallback stops being honest: two seeded episodes read
+              as the whole show. Castopod sends no CORS header, so on the web target
+              this is the normal case, not an edge one. */}
+          {status === 'offline' && (
+            <Typo variant="text-s" color="grey-600" className="mt-s">
+              Ohne Verbindung — Sie sehen Beispielfolgen.
+            </Typo>
+          )}
+
           <View className="mt-m">
             {series.episodes.map((episode) => (
               <SeriesEpisodeRow key={episode.id} series={series} episode={episode} />

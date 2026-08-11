@@ -1,437 +1,431 @@
-# ADR 0004 — Wechsel auf React Native / Expo, mit Web-Target
+# ADR 0004 — Move to React Native / Expo, with a web target
 
-**Status:** entschieden, in Umsetzung · **Datum:** 2026-08-05 · **Betrifft:** Stack, Repo-Layout, Web-Demo
+**Status:** decided, being implemented · **Date:** 2026-08-05 · **Affects:** stack, repo layout, web demo
 
-## Kontext
+## Context
 
-[ADR 0003](0003-audio-capability-spike.md) hatte das letzte offene Gate für NativeScript
-bestanden, und `APP-STRATEGIE.md` Rev. 2 empfahl zu bleiben. Diese Entscheidung wird
-hiermit **umgekehrt** — nicht weil die Empfehlung falsch war, sondern weil zwei
-Anforderungen dazukamen, die sie nicht abgedeckt hat:
+[ADR 0003](0003-audio-capability-spike.md) had passed the last open gate for
+NativeScript, and `APP-STRATEGIE.md` rev. 2 recommended staying. That decision is hereby
+**reversed** — not because the recommendation was wrong, but because two requirements
+arrived that it did not cover:
 
-1. **Ein Web-Target für Demozwecke.** NativeScript hat keins und wird keins bekommen:
-   `ns platform add linux` antwortet „Valid platforms are iOS, Android or visionOS", ein
-   Web-Renderer ist offiziell abgelehnt (Discussion #10622), `@nativescript/linux` gibt es
-   auf npm nicht. Das ist keine Aufwandsfrage, sondern eine Fähigkeitslücke.
-2. **Die im Repo vorhandenen App-Versionen sollen zusammengeführt werden.**
+1. **A web target for demo purposes.** NativeScript has none and will not get one:
+   `ns platform add linux` answers "Valid platforms are iOS, Android or visionOS", a web
+   renderer has been officially rejected (Discussion #10622), and `@nativescript/linux`
+   does not exist on npm. That is not a question of effort but a capability gap.
+2. **The app versions present in the repo are to be merged.**
 
-## Was die Bestandsaufnahme ergab
+## What the inventory found
 
-Es gab nicht zwei, sondern vier Artefakte — eines außerhalb dieses Repos:
+There were not two artefacts but four — one of them outside this repo:
 
-| Artefakt | Ort | Umfang |
+| Artefact | Location | Size |
 |---|---|---|
-| NativeScript-App | `apps/mobile` | 43 SFCs / 4.346 LOC `.vue` + 1.378 LOC `.ts` |
-| Geteilter Core | `packages/app-core` | 2.168 LOC `.ts` + 329 LOC `.mjs`, 82 Tests |
-| „Web-Version" | `docs/` | 1.993 LOC HTML — **generiert**, kein Code |
-| Expo-Prototyp | Sibling-Repo, kein Remote | 23 tsx / 828 LOC + 28 ts / 1.437 LOC |
+| NativeScript app | `apps/mobile` | 43 SFCs / 4,346 LOC `.vue` + 1,378 LOC `.ts` |
+| Shared core | `packages/app-core` | 2,168 LOC `.ts` + 329 LOC `.mjs`, 82 tests |
+| "Web version" | `docs/` | 1,993 LOC HTML — **generated**, not code |
+| Expo prototype | sibling repo, no remote | 23 tsx / 828 LOC + 28 ts / 1,437 LOC |
 
-**Die „Web-Version" ist kein Port-Kandidat.** `docs/` wird von `scripts/deploy-demo.sh`
-aus dem Sibling-Repo `design-entwurf/project` kopiert: `.dc.html`-Komponenten, die
-`support.js` zur Laufzeit über `<dc-import>` auflöst. Es ist der **Designentwurf**.
-Zusammenführen heißt hier: der Entwurf bleibt Design-Quelle, der Pages-Slot bekommt den
-echten Expo-Web-Build.
+**The "web version" is not a port candidate.** `docs/` is copied in by
+`scripts/deploy-demo.sh` from the sibling repo `design-entwurf/project`: `.dc.html`
+components that `support.js` resolves at runtime via `<dc-import>`. It is the **design
+draft**. Merging here means: the draft stays the design source, and the Pages slot gets
+the real Expo web build.
 
-## Entscheidung
+## Decision
 
-Auf `apps/mobile-rn` (Expo SDK 56, RN 0.85.3, React 19.2.3) umstellen, den Expo-Prototyp
-**ausbauen statt neu anfangen**, und `apps/mobile` nach Feature-Parität löschen.
+Move to `apps/mobile-rn` (Expo SDK 56, RN 0.85.3, React 19.2.3), **build the Expo
+prototype out rather than starting over**, and delete `apps/mobile` once it reaches
+feature parity.
 
-### Warum ausbauen und nicht neu
+### Why build out and not start over
 
-- **Betriebswissen ist einkodiert.** `lib/feeds/sources.ts` dokumentiert die
-  „Statische-Seite-Falle" (Artikel-Feeds nur unter `/category/<slug>/feed/`) und
-  „Icecast antwortet auf HEAD 400". Ein Neuanfang erarbeitet dieselben Fallen erneut.
-- **Begründete Architekturentscheidungen**, im Code kommentiert: `cachedFetch` erklärt,
-  warum kein TanStack Query („die Offline-Reihenfolge soll explizit und deterministisch
-  sein, damit die Demo nie vom WLAN abhängt").
-- **Aktueller Stand:** New Architecture, `experiments.reactCompiler: true`, und
-  `useAsyncData` ist bewusst React-Compiler-konform geschrieben.
-- **Die Audio-Frage ist dort schon gelöst.** `react-native-track-player` ist unter RN 0.85
-  New Arch kaputt, daher `expo-audio` — dokumentiert im README des Prototyps.
+- **Operational knowledge is encoded in it.** `lib/feeds/sources.ts` documents the
+  "static page trap" (article feeds only under `/category/<slug>/feed/`) and "Icecast
+  answers HEAD with 400". A fresh start works out the same traps again.
+- **Reasoned architecture decisions**, commented in the code: `cachedFetch` explains why
+  no TanStack Query ("the offline order should be explicit and deterministic, so the
+  demo never depends on Wi-Fi").
+- **It is current:** New Architecture, `experiments.reactCompiler: true`, and
+  `useAsyncData` is deliberately written to be React-Compiler-compliant.
+- **The audio question is already solved there.** `react-native-track-player` is broken
+  under RN 0.85 New Arch, hence `expo-audio` — documented in the prototype's README.
 
-### Was den Ausschlag gab: Audio und iOS
+### What decided it: audio and iOS
 
-`expo-audio` liefert als **Erstanbieter-API** genau das, wofür ADR 0003 auf Android an der
-Plattform-API vorbei am Plugin arbeiten musste:
+`expo-audio` provides as a **first-party API** exactly what ADR 0003 had to reach past
+the plugin to the platform API for, on Android:
 
-| Anforderung | NativeScript | Expo |
+| Requirement | NativeScript | Expo |
 |---|---|---|
-| `Authorization`-Header am Stream | Plugin kennt keine Header → Plattform-API direkt | `headers` auf der `AudioSource` |
-| Hintergrund-Wiedergabe | manuell, Foreground-Service offen | `shouldPlayInBackground`, Config-Plugin |
-| Lock-Screen | MediaSession von Hand | `setActiveForLockScreen()` |
-| Offline | DownloadManager von Hand | `downloadFirst` |
-| iOS | ungeprüft, brauchte einen Mac | dokumentiert für beide Plattformen |
-| Web | nicht möglich | unterstützt |
+| `Authorization` header on the stream | plugin knows no headers → platform API directly | `headers` on the `AudioSource` |
+| background playback | manual, foreground service open | `shouldPlayInBackground`, config plugin |
+| lock screen | MediaSession by hand | `setActiveForLockScreen()` |
+| offline | DownloadManager by hand | `downloadFirst` |
+| iOS | unverified, needed a Mac | documented for both platforms |
+| web | not possible | supported |
 
-Dazu: **EAS Build baut iOS in der Cloud.** Der als offen vermerkte iOS-Audio-Spike
-entfällt damit als Blocker, und die stehende Einschränkung „kein Mac" ist keine mehr.
+On top of that: **EAS Build builds iOS in the cloud.** The iOS audio spike noted as open
+therefore stops being a blocker, and the standing "no Mac" constraint is no longer one.
 
-## Das Web-Target: was wirklich fehlte
+## The web target: what was actually missing
 
-`react-native-web` war bereits Dependency, `app.json` deklarierte bereits
-`"web": { "output": "static" }`. Es fehlten ein Skript und **eine** Plattformweiche.
+`react-native-web` was already a dependency, `app.json` already declared
+`"web": { "output": "static" }`. What was missing was one script and **one** platform
+split.
 
-**Die eine echte Lücke — und die Falle daran:** `react-native-webview` hat keine
-Web-Implementierung. Auf Web rendert es den roten Satz „React Native WebView does not
-support this platform." — und `expo export --platform web` **läuft trotzdem durch**. Das
-exportierte `/artikel.html` enthielt diesen Satz. Ein CI-Job, der nur den Export prüft,
-hätte grün gemeldet, während der Reader kaputt war.
+**The one real gap — and the trap in it:** `react-native-webview` has no web
+implementation. On web it renders the red sentence "React Native WebView does not
+support this platform." — and `expo export --platform web` **still succeeds**. The
+exported `/artikel.html` contained that sentence. A CI job that only checks the export
+would have reported green while the reader was broken.
 
-Deshalb ist der Reader ein Plattform-Paar hinter einem gemeinsamen Props-Typ
-(`ReaderView.tsx` / `ReaderView.web.tsx` / `types.ts`), und deshalb ist die Regel ein
-**Test** (`__tests__/web-target.test.ts`), kein Kommentar.
+That is why the reader is a platform pair behind a shared props type
+(`ReaderView.tsx` / `ReaderView.web.tsx` / `types.ts`), and why the rule is a **test**
+(`__tests__/web-target.test.ts`), not a comment.
 
-Der iframe ist hier die ehrliche Entsprechung, weil `buildReaderHtml()` das Dokument lokal
-baut — es wird nichts Fremdes geframed. Er ist mit `sandbox="allow-same-origin"` und sonst
-nichts versehen: `extract.ts` entfernt ohnehin `script`/`style`/`iframe`/`form`, der Reader
-braucht also kein JS, und `allow-scripts` weglassen kostet nichts. `allow-same-origin` ist
-nötig, damit Klicks im iframe durch dasselbe `onNavigate` laufen wie im nativen WebView.
-Beide zusammen dürfen nie gesetzt werden — dann kann der Frame seine Sandbox selbst
-entfernen.
+The iframe is the honest equivalent here, because `buildReaderHtml()` builds the
+document locally — nothing foreign is framed. It carries `sandbox="allow-same-origin"`
+and nothing else: `extract.ts` strips `script`/`style`/`iframe`/`form` anyway, so the
+reader needs no JS, and leaving out `allow-scripts` costs nothing. `allow-same-origin` is
+needed so clicks inside the iframe run through the same `onNavigate` as in the native
+WebView. The two must never be set together — the frame could then remove its own
+sandbox.
 
-## Verifiziert
+## Verified
 
-Nicht nur gebaut, sondern im Browser ausgeführt (Headless Chrome gegen den statischen
-Export, mit **Clean URLs**):
+Not merely built, but run in a browser (headless Chrome against the static export, with
+**clean URLs**):
 
-- **Home:** vollständiger Inhalt — Spotlight-Briefing, Backstage-Teaser, Mediathek,
-  Salon5-Radio-Kachel, alle fünf Tabs, Fonts geladen
-- **`/artikel`:** iframe mit dem Artikel — korrektes `h1`, 19 Absätze, 4 eingebettete
-  Fonts, 502 KB selbstenthaltendes Dokument, kein WebView-Stub
-- **`contentDocument` unter der Sandbox erreichbar**, 15 Anchors gefunden — die
-  Klick-Interception greift also wirklich
+- **Home:** complete content — Spotlight briefing, backstage teaser, media library,
+  Salon5 radio tile, all five tabs, fonts loaded
+- **`/artikel`:** iframe with the article — correct `h1`, 19 paragraphs, 4 embedded
+  fonts, 502 KB self-contained document, no WebView stub
+- **`contentDocument` reachable under the sandbox**, 15 anchors found — so the click
+  interception really does take effect
 
-Falle für den nächsten Test: **mit Clean URLs servieren.** `python3 -m http.server` liefert
-`/index.html` als wörtlichen Pfad, Expo Router matcht dann nichts und rendert seine
-„unmatched route"-Seite — das sieht wie ein App-Fehler aus, ist aber ein Server-Artefakt.
+A trap for the next test: **serve with clean URLs.** `python3 -m http.server` serves
+`/index.html` as a literal path, Expo Router then matches nothing and renders its
+"unmatched route" page — which looks like an app fault but is a server artefact.
 
-## Preis
+## Price
 
-- **Vue entfällt als Hausstandard für die App.** CORRECTIV ist ein Vue-Haus (5 Frontends +
-  `@beabee/vue`); genau das war am 01.08.2026 das Argument für NativeScript. Der Pivot
-  nimmt der App diese Nähe zu beabee und faktenforum. Bewusst in Kauf genommen.
-- **Die UI muss nachgezogen werden.** NativeScript liegt mit 4.346 zu 828 LOC vorn;
-  `entdecken`, `mediathek`, `mitmachen` und `profil` sind im Expo-Stand Stubs.
-- **Lizenz:** entschieden am 05.08.2026 — **AGPL-3.0-or-later für alles**, `apps/mobile-rn`
-  eingeschlossen. Der Prototyp trug das MIT-`LICENSE` der `create-expo-app`-Vorlage; es
-  liegt jetzt als `apps/mobile-rn/NOTICE.md` und nennt MIT in der Rolle, die es wirklich
-  hat: Attribution für den Scaffold. Weder gelöscht (MIT verlangt den Hinweis) noch als
-  `LICENSE` belassen (das liest sich als „dieser Teilbaum ist MIT").
-- **Zwei Apps im CI**, bis der Swap erfolgt.
+- **Vue stops being the house standard for the app.** CORRECTIV is a Vue house
+  (5 frontends + `@beabee/vue`); that was exactly the argument for NativeScript on
+  2026-08-01. The pivot costs the app that proximity to beabee and faktenforum.
+  Accepted deliberately.
+- **The UI has to catch up.** NativeScript leads 4,346 to 828 LOC; `entdecken`,
+  `mediathek`, `mitmachen` and `profil` are stubs in the Expo state.
+- **Licence:** decided 2026-08-05 — **AGPL-3.0-or-later for everything**,
+  `apps/mobile-rn` included. The prototype carried the MIT `LICENSE` of the
+  `create-expo-app` template; it now sits at `apps/mobile-rn/NOTICE.md` and names MIT in
+  the role it really has: attribution for the scaffold. Neither deleted (MIT requires
+  the notice) nor left as `LICENSE` (that reads as "this subtree is MIT").
+- **Two apps in CI**, until the swap happens.
 
-## Erledigt nach dieser Entscheidung (2026-08-05)
+## Done after this decision (2026-08-05)
 
-**Der Core ist frameworkfrei.** Die 8 Stores laufen auf `zustand/vanilla`;
-`boundary.test.ts` verbietet jetzt zusätzlich `vue`, `pinia`, `react` und `react-dom`.
-Beide Hosts binden selbst: `apps/mobile/src/stores/core-bindings.ts` (Vue-`reactive`-Spiegel,
-reproduziert die alte Pinia-Oberfläche, weshalb keine einzige Aufrufstelle umziehen musste)
-und `apps/mobile-rn/src/lib/store/core.ts` (zustand `useStore`).
+**The core is framework-free.** The 8 stores run on `zustand/vanilla`;
+`boundary.test.ts` now additionally forbids `vue`, `pinia`, `react` and `react-dom`.
+Both hosts bind it themselves: `apps/mobile/src/stores/core-bindings.ts` (a Vue
+`reactive` mirror that reproduces the old Pinia surface, which is why not a single call
+site had to move) and `apps/mobile-rn/src/lib/store/core.ts` (zustand's `useStore`).
 
-Eine Falle dabei, weil sie sich nicht meldet: **abgeleitete Werte sind exportierte
-Selektoren, die State als Argument nehmen — keine Methoden am Store.** Eine Methode
-schließt über das `get()` des Vanilla-Stores; ein Vue-`computed`, das sie aufruft, liest
-damit State, den Vue nie gesehen hat. Die Abhängigkeit wird nicht registriert, das Template
-hört still auf zu aktualisieren — kein Fehler, keine Warnung, Typecheck und Android-Build
-bleiben grün. Genau so hatte ich es zuerst geschrieben;
-`apps/mobile/test/core-bindings.test.ts` hat es gefunden und schlägt nachweislich fehl,
-wenn man es wieder so baut.
+One trap along the way, because it does not announce itself: **derived values are
+exported selectors taking state as an argument — not methods on the store.** A method
+closes over the vanilla store's `get()`; a Vue `computed` calling it therefore reads
+state Vue has never seen. The dependency is not registered, the template silently stops
+updating — no error, no warning, typecheck and Android build stay green. That is exactly
+how I wrote it first; `apps/mobile/test/core-bindings.test.ts` found it and demonstrably
+fails if it is built that way again.
 
-**Der Port war synchron, AsyncStorage ist es nicht.** `KeyValueStore.getString` ist
-synchron — geerbt von NativeScripts `ApplicationSettings`.
-`apps/mobile-rn/src/lib/platform/expo.ts` löst das mit einem In-Memory-Spiegel:
-`hydratePlatform()` lädt einmal vor dem ersten Render, Lesen kommt aus dem Speicher,
-Schreiben fließt im Hintergrund ab. Gefährlich ist **Lesen vor der Hydration** — die App
-startet dann mit leerem State und überschreibt beim ersten Schreiben den echten, was sich
-als „Einstellungen setzen sich zufällig zurück" zeigt. Deshalb hängt der Render an der
-Hydration und `persist()` wird erst danach registriert. Ein Codepfad deckt alle drei
-Targets, weil AsyncStorage einen Web-Build auf localStorage-Basis mitbringt.
+**The port was synchronous, AsyncStorage is not.** `KeyValueStore.getString` is
+synchronous — inherited from NativeScript's `ApplicationSettings`.
+`apps/mobile-rn/src/lib/platform/expo.ts` solves that with an in-memory mirror:
+`hydratePlatform()` loads once before the first render, reads come from memory, writes
+drain in the background. The dangerous case is **reading before hydration** — the app
+then starts with empty state and overwrites the real state on the first write, which
+shows up as "settings randomly reset". Hence the render waits on hydration and
+`persist()` is only registered afterwards. One code path covers all three targets,
+because AsyncStorage ships a localStorage-based web build.
 
-`apps/mobile-rn/src/lib/store/saved.ts` ist entfallen — der Reader nutzt den
-`savedArticles`-Store des Core. Damit fährt derselbe Store einen Vue- und einen
-React-Screen.
+`apps/mobile-rn/src/lib/store/saved.ts` is gone — the reader uses the core's
+`savedArticles` store. One store therefore drives a Vue and a React screen.
 
-**Die Design-Tokens sind ins Repo übernommen** (`tokens/`, vendored aus
-wp-design-tokens bei `501ee10` / `v0.1.1`). Vorher war es ein Sibling-Checkout, den beide
-Brücken nach oben suchten — und eine Aufwärtssuche kann das eigene Repo nicht von einem
-fremden Checkout unterscheiden: auf dieser Maschine fand sie `17b87c8`, während das Repo
-`501ee10` meint. Entwickler und CI hätten aus verschiedenen Quellen generiert und das
-Übereinstimmung genannt.
+**The design tokens have been taken into the repo** (`tokens/`, vendored from
+wp-design-tokens at `501ee10` / `v0.1.1`). Before that it was a sibling checkout that
+both bridges searched upwards for — and an upward search cannot tell the repo's own copy
+from a foreign checkout: on this machine it found `17b87c8` while the repo means
+`501ee10`. Developer and CI would have generated from different sources and called that
+agreement.
 
-Vendoring statt Submodul oder npm-Dependency, begründet in `tokens/README.md`: die
-npm-Variante ist nicht verfügbar (das Paket verlangt `tailwindcss >=4.1`, NativeWind v4
-verlangt v3 — bliebe nur `--force` oder repo-weites `legacy-peer-deps`), und ein Submodul
-ist für 11 KB CSS zu viel Apparat. Die Auflösung liegt jetzt zentral in
-`scripts/tokens-source.mjs` und trifft **genau einen** Pfad; gefunden wird die Repo-Wurzel
-über einen Marker (Name + `workspaces` in der Root-`package.json`), nicht über `../`-Ebenen
-— Ebenen zählen war es, was beim Umzug nach `apps/*` brach.
+Vendoring rather than a submodule or an npm dependency, argued in `tokens/README.md`:
+the npm variant is not available (the package requires `tailwindcss >=4.1`, NativeWind v4
+requires v3 — which would leave only `--force` or repo-wide `legacy-peer-deps`), and a
+submodule is too much apparatus for 11 KB of CSS. Resolution now lives centrally in
+`scripts/tokens-source.mjs` and hits **exactly one** path; the repo root is found via a
+marker (name + `workspaces` in the root `package.json`), not by counting `../` levels —
+counting levels is what broke when the apps moved into `apps/*`.
 
-Der eigentliche Gewinn: **der Drift-Test läuft jetzt bedingungslos.** Vorher hat er sich
-im CI selbst übersprungen, weil dort die Quelle fehlte — also genau dort, wo Drift auffallen
-muss. Verifiziert, indem `#ff5064` in `tokens/theme.css` verschoben und nicht regeneriert
-wurde: der Test schlägt fehl.
+The real gain: **the drift test now runs unconditionally.** Before, it skipped itself in
+CI because the source was missing there — that is, precisely where drift has to show up.
+Verified by moving `#ff5064` in `tokens/theme.css` and not regenerating: the test fails.
 
-**Der Feed-Daten-Layer ist vereinheitlicht.** Ein `FeedItem`, ein Parser-Satz, ein
-Feed-Katalog — alles im Core. Gelöscht: `models.ts`, `feeds/{sources,rss,xml,youtubeAtom}.ts`,
-`format.ts`, `sample-data/`, die zwei byte-identischen Feed-Fixtures und `fast-xml-parser`.
+**The feed data layer is unified.** One `FeedItem`, one set of parsers, one feed
+catalogue — all in the core. Deleted: `models.ts`,
+`feeds/{sources,rss,xml,youtubeAtom}.ts`, `format.ts`, `sample-data/`, the two
+byte-identical feed fixtures and `fast-xml-parser`.
 
-Dabei fielen drei Dinge auf, die Messung statt Annahme brauchten:
+Three things came up in the process that needed measurement rather than assumption:
 
-1. **`authors: string[]` war spekulativ.** Der Prototyp modellierte Ko-Bylines als
-   wiederholte `<dc:creator>`-Elemente. Über 200 Live-Items (Haupt-Feed + Faktencheck)
-   trägt **jedes** genau eines, und keines ist ein zusammengesetzter Wert. Der Core
-   behält `author?: string`; ein Test hält den Befund fest, damit das Array nicht auf
-   Vermutung zurückkommt.
-2. **Sieben von vierzehn Modelltypen des Prototyps waren toter Code** (`Callout`, `Claim`,
-   `PodcastSeries`, `MembershipState` …) — Modelle für Screens, die nie gebaut wurden.
-   Der Core hat sie alle, mit echten Beispieldaten. Phase 4c–4e baut darauf, nicht auf
-   leeren Hüllen.
-3. **Der Browser-User-Agent ist rein defensiv.** Der Kommentar im Prototyp behauptete
-   Bot-Filter bei WordPress/CDN. Gegen Feed und Artikel-HTML mit beiden UAs gemessen:
-   byte-identische Antworten, HTTP 200. Kein latenter Bug im Core-UA.
+1. **`authors: string[]` was speculative.** The prototype modelled co-bylines as repeated
+   `<dc:creator>` elements. Across 200+ live items (main feed + fact check), **every**
+   one carries exactly one, and none is a composite value. The core keeps
+   `author?: string`; a test records the finding so the array does not come back on a
+   hunch.
+2. **Seven of the prototype's fourteen model types were dead code** (`Callout`, `Claim`,
+   `PodcastSeries`, `MembershipState` …) — models for screens that were never built. The
+   core has all of them, with real sample data. Phase 4c–4e builds on that, not on empty
+   shells.
+3. **The browser user agent is purely defensive.** The prototype's comment claimed bot
+   filtering at WordPress/CDN. Measured against the feed and article HTML with both UAs:
+   byte-identical responses, HTTP 200. No latent bug in the core's UA.
 
-**FunFacts läuft jetzt über PeerTube** (`mediaStore` statt eigenem YouTube-Client) — und
-das behebt mehr als den Legacy-Pfad: `tube.funfacts.de` sendet
-`access-control-allow-origin: *`, der YouTube-Atom-Feed nicht. Im Browser verifiziert, mit
-echtem Videotitel.
+**FunFacts now runs over PeerTube** (`mediaStore` instead of a bespoke YouTube client) —
+and that fixes more than the legacy path: `tube.funfacts.de` sends
+`access-control-allow-origin: *`, the YouTube Atom feed does not. Verified in the
+browser, with a real video title.
 
-**Zwei Defekte nebenbei gefunden und behoben:** `services/http.ts` hat seinen
-Timeout-`setTimeout` nie gelöscht — nach jedem erfolgreichen Request lief er noch bis zu
-8 s weiter (Promise.race verwirft die späte Rejection, es sah also nach nichts aus; sichtbar
-wurde es, weil Jest nicht mehr beendete). Und `core-store-binding.test.tsx` hat seine
-gerenderten Bäume nie abgebaut: ein montierter Probe bleibt am Store abonniert, reagiert
-auf den Reset im `beforeEach` und verschiebt den Zustand für den nächsten Test.
+**Two defects found and fixed along the way:** `services/http.ts` never cleared its
+timeout `setTimeout` — after every successful request it kept running for up to 8 s
+(Promise.race discards the late rejection, so it looked like nothing; it became visible
+because Jest stopped exiting). And `core-store-binding.test.tsx` never tore down its
+rendered trees: a mounted probe stays subscribed to the store, reacts to the reset in
+`beforeEach` and shifts the state for the next test.
 
-**Entdecken steht** (Phase 4b): Verzeichnis mit 7 Gruppen, Themenschiene, Suche mit
-lokalem Rückfall, eine Vorlage für alle Projekt- und Themenseiten. Drei
-Entscheidungen darin sind erklärungsbedürftig.
+**Entdecken is done** (phase 4b): a directory of 7 groups, a topic rail, search with a
+local fallback, one template for all project and topic pages. Three decisions in it need
+explaining.
 
-*Der Designentwurf gewinnt gegen den NativeScript-Stand, wo sie sich widersprechen.*
-Der NS-Stand baute das Verzeichnis aus grauen `hub-card`s mit Icon;
-`docs/DiscoverScreen.dc.html` zeigt Hairline-getrennte Zeilen mit kleinem
-Gruppenlabel. Bei 17 Einträgen in 7 Gruppen liest die Liste sich schlicht besser —
-und der Entwurf ist laut Plan die Optik-Referenz, der NS-Bestand die
-Funktions-Spezifikation. Dasselbe bei der projekteigenen Aktion: eine
-Outline-Schaltfläche statt einer zweiten Karte.
+*The design draft wins against the NativeScript state where the two contradict.* The NS
+state built the directory from grey `hub-card`s with an icon; `DiscoverScreen.dc.html`
+shows hairline-separated rows with a small group label. At 17 entries across 7 groups the
+list simply reads better — and by plan the draft is the visual reference while the NS
+state is the functional specification. The same for the project's own action: an outline
+button instead of a second card.
 
-*Zwei Namensräume treffen auf eine Route.* `/projekt/<id>` bedient Projekte aus
-`projectGroups` **und** Themen aus `interests`; `klima`, `lokal` und `schweiz` gibt
-es in beiden. `resolveProject` im Core entscheidet: Projekt gewinnt, weil seine
-Seite die redaktionelle Beschreibung und die eigene Aktion hat. Der NS-Stand baute
-für jeden Chip eine synthetische Themenseite und überschrieb damit echte
-Beschreibungen mit „Alle Beiträge zum Thema Klima." — das ist bewusst geändert.
+*Two namespaces meet one route.* `/projekt/<id>` serves projects from `projectGroups`
+**and** topics from `interests`; `klima`, `lokal` and `schweiz` exist in both.
+`resolveProject` in the core decides: the project wins, because its page has the
+editorial description and its own action. The NS state built a synthetic topic page for
+every chip and thereby overwrote real descriptions with "Alle Beiträge zum Thema
+Klima." — deliberately changed.
 
-*Ein nativer Header-Suchbalken wäre der falsche Weg.* `Stack.SearchBar` /
-`headerSearchBarOptions` ist die Expo-Empfehlung, aber diese App setzt durchgehend
-`headerShown: false` und baut ihre Kopfzeilen selbst, damit iOS, Android und Web
-dieselbe Marke zeigen. Ein nativer Balken sieht auf jeder Plattform anders aus und
-auf Web gar nicht. Deshalb `ScreenHeader` + `TextInput`. Der `autoFocus` dort ist
-eine bewusste Ausnahme von `jsx-a11y/no-autofocus`, mit Begründung in
-`.oxlintrc.json`: der Bildschirm existiert für nichts anderes und wird nur durch
-einen ausdrücklichen Tipp auf den Sucheinstieg erreicht.
+*A native header search bar would be the wrong route.* `Stack.SearchBar` /
+`headerSearchBarOptions` is Expo's recommendation, but this app sets `headerShown: false`
+throughout and builds its own header rows, so that iOS, Android and web show the same
+brand. A native bar looks different on every platform and does not appear at all on web.
+Hence `ScreenHeader` + `TextInput`. The `autoFocus` there is a deliberate exception to
+`jsx-a11y/no-autofocus`, argued in `.oxlintrc.json`: the screen exists for nothing else
+and is only reached by an explicit tap on the search entry.
 
-**Ein Defekt, den erst der Browser zeigte:** eine dynamische Route exportiert als
-*eine* Datei `projekt/[id].html`. Auf einem statischen Host ohne Rewrites — also
-genau GitHub Pages — antwortet damit jede echte URL darunter mit 404;
-`/projekt/klima` tat es, während Build, Typecheck und alle Tests grün blieben.
-`generateStaticParams()` in der Route löst es: der Export erzeugt jetzt eine Datei
-pro Kennung (21 Stück, verifiziert). Nativ war nie betroffen, dort gibt es keine
-URLs. Zweiter Fund derselben Art: `tsconfig.test.json` listete `nativewind-env.d.ts`
-nicht, weshalb der erste Test, der eine echte Komponente rendert, an jedem
-`className` im Baum scheiterte — latent, solange Tests nur `<Text>` rendern.
+**A defect only the browser revealed:** a dynamic route exports as *one* file
+`projekt/[id].html`. On a static host without rewrites — which is exactly GitHub Pages —
+every real URL beneath it answers 404; `/projekt/klima` did, while build, typecheck and
+all tests stayed green. `generateStaticParams()` in the route solves it: the export now
+produces one file per id (21 of them, verified). Native was never affected — there are no
+URLs there. A second finding of the same kind: `tsconfig.test.json` did not list
+`nativewind-env.d.ts`, which made the first test rendering a real component fail on every
+`className` in the tree — latent for as long as tests only render `<Text>`.
 
-**Die Mediathek steht** (Phase 4c): Live-Radio, sieben Castopod-Serien, zwei
-Video-Kanäle, Club-Bonusspur, Mini- und Vollplayer, Serien- und Videoseite.
+**The media library is done** (phase 4c): live radio, seven Castopod series, two video
+channels, the club bonus track, mini and full player, series and video pages.
 
-*Der Player ist ein Modul, kein Hook.* `useAudioPlayer` bindet die Instanz an eine
-Komponente und gibt sie beim Unmount frei — genau das darf nicht passieren, wenn
-Wiedergabe Tabwechsel, geschobene Routen und den Hintergrund überleben soll. Also
-`createAudioPlayer` auf Modulebene, ein zustand-Store daneben, und React abonniert
-nur. Zwei NativeScript-Notbehelfe entfallen dabei: die Positions-Rückschritt-
-Erkennung (Androids MediaPlayer sprang bei Ende auf 0, ohne den Complete-Callback
-zu feuern) und der 1-Sekunden-Poll-Timer. expo-audio meldet `didJustFinish`,
-`isLoaded`, `isBuffering` und `error` selbst. Geblieben ist der Wachhund: die
-Lektion war, dass Netzfehler manchmal *gar nicht* ankommen, und ein ewiger Spinner
-ist die schlechteste Auskunft.
+*The player is a module, not a hook.* `useAudioPlayer` binds the instance to a component
+and releases it on unmount — exactly what must not happen if playback is to survive tab
+switches, pushed routes and the background. So `createAudioPlayer` at module level, a
+zustand store beside it, and React only subscribes. Two NativeScript workarounds fall
+away with it: the position-regression detection (Android's MediaPlayer jumped to 0 at the
+end without firing the complete callback) and the 1-second polling timer. expo-audio
+reports `didJustFinish`, `isLoaded`, `isBuffering` and `error` itself. What stayed is the
+watchdog: the lesson was that network faults sometimes do not arrive *at all*, and an
+eternal spinner is the worst possible answer.
 
-*Ein Loch im Vorschau-Tor geschlossen.* Der NativeScript-Stand pausierte Club-Audio
-bei 60 Sekunden, aber sein Limit feuerte genau einmal (`!this.previewEnded`) —
-ein zweiter Druck auf Play spielte die Folge zu Ende und gab damit Club-Inhalt
-frei. Hier verweigert `togglePlay` das Fortsetzen jenseits der Grenze und zeigt die
-Einladung erneut; ein Test hält es fest.
+*A hole in the preview gate closed.* The NativeScript state paused club audio at 60
+seconds, but its limit fired exactly once (`!this.previewEnded`) — a second press of play
+played the episode to the end and thereby released club content. Here `togglePlay`
+refuses to resume beyond the limit and shows the invitation again; a test records it.
 
-*Video: eine Route, zwei Quellen, kein Umhängen.* PeerTube spielt nativ über
-expo-video (nur die HLS-Master-Playlist mischt Video- und Audio-Spur, die
-Renditionen sind getrennt), YouTube bleibt bei der nocookie-Einbettung. Bewusst
-**ohne** die Kollaps-Leiste des NativeScript-Stands: dort lag die Videofläche über
-den Tab-Frames und schrumpfte beim Verlassen. React Native kann eine Videofläche
-nicht umhängen, ohne sie neu zu erzeugen — die nativ passende Antwort ist
-Picture-in-Picture, die expo-video mitbringt. Nebenbei ist
-`react-native-youtube-iframe` entfallen: die Einbettung, die der NativeScript-Stand
-schon benutzte, braucht kein eigenes Player-Paket (und das Paket setzte selbst
-wieder auf WebView auf). Dafür ist `VideoFrame` das zweite Plattform-Paar neben dem
-Reader, erzwungen durch denselben Guard.
+*Video: one route, two sources, no re-parenting.* PeerTube plays natively through
+expo-video (only the HLS master playlist mixes the video and audio track, the renditions
+are separate), YouTube stays on the nocookie embed. Deliberately **without** the
+collapsing bar of the NativeScript state: there the video surface sat above the tab
+frames and shrank on leaving. React Native cannot re-parent a video surface without
+recreating it — the natively appropriate answer is picture-in-picture, which expo-video
+brings. Incidentally `react-native-youtube-iframe` is gone: the embed the NativeScript
+state already used needs no dedicated player package (and the package itself was built on
+a WebView again). In exchange `VideoFrame` is the second platform pair next to the
+reader, enforced by the same guard.
 
-*Der Core hat einen Podcast-Store bekommen* (vorher NativeScript-lokal), mit einer
-Schicht weniger: die gebündelten Pro-Show-Snapshots lasen NativeScripts `File`, was
-im Core nicht vorkommen darf. Stale-Cache und typisierter Seed decken dasselbe ab.
-Und `videoStore.play` fragt die PeerTube-API jetzt nur noch für PeerTube-Videos —
-für ein YouTube-Item war das ein garantierter 404, der als „Video defekt" ankam.
+*The core has gained a podcast store* (previously NativeScript-local), with one layer
+fewer: the bundled per-show snapshots read NativeScript's `File`, which must not appear
+in the core. A stale cache and a typed seed cover the same ground. And `videoStore.play`
+now only queries the PeerTube API for PeerTube videos — for a YouTube item that was a
+guaranteed 404 that arrived as "video broken".
 
-**Der teuerste Fund dieser Phase kam wieder erst aus dem Browser.** Um die
-Mini-Leiste über die Tab-Bar zu setzen, lag es nahe, die `tabBar`-Prop mit dem
-`BottomTabBar` aus `expo-router/tabs` zu bauen. Dieser Import zieht eine **zweite
-React-Instanz** ins Bundle; die App stirbt beim Start mit dem minifizierten
-React-Fehler #321 („invalid hook call"). Build grün, Typecheck grün, 78 Tests grün,
-Seite weiß. Gefunden, indem der statische Export in Chrome geladen wurde — und
-eingekreist, indem `Runtime.exceptionThrown` mitgeschnitten wurde: unbehandelte
-Ausnahmen tauchen in `console.*` nicht auf, ohne das sieht ein Absturz wie eine
-leere Seite aus. Lösung: ein absolut positioniertes Overlay im Tab-Layout, kein
-react-navigation-Import.
+**The most expensive finding of this phase again came only from the browser.** To place
+the mini bar above the tab bar, the obvious route was building the `tabBar` prop with
+`BottomTabBar` from `expo-router/tabs`. That import pulls a **second React instance**
+into the bundle; the app dies at startup with the minified React error #321 ("invalid
+hook call"). Build green, typecheck green, 78 tests green, page white. Found by loading
+the static export in Chrome — and pinned down by recording `Runtime.exceptionThrown`:
+uncaught exceptions do not appear in `console.*`, and without that a crash looks like an
+empty page. Solution: an absolutely positioned overlay in the tab layout, no
+react-navigation import.
 
-Zwei kleinere Funde derselben Sorte: `tsconfig.test.json` listete auch `assets.d.ts`
-nicht (nach `nativewind-env.d.ts` der zweite Fall — beide bissen erst, als ein Test
-den betreffenden Code erreichte), und die Pfad-Aliase wollen in tsc und jest die
-**umgekehrte** Reihenfolge: jest-expo leitet einen moduleNameMapper aus
-`tsconfig.json` ab, wo der erste Treffer ohne Rückfall gewinnt, während tsc den
-generischen `@/*` zuerst braucht, damit `declare module '*.mp3'` überhaupt greift.
-Die Differenz trägt jetzt eine Zeile in `jest.config.js`.
+Two smaller findings of the same sort: `tsconfig.test.json` did not list `assets.d.ts`
+either (the second case after `nativewind-env.d.ts` — both only bit once a test reached
+the code in question), and the path aliases want the **opposite** order in tsc and jest:
+jest-expo derives a moduleNameMapper from `tsconfig.json`, where the first match wins
+with no fallback, while tsc needs the generic `@/*` first for `declare module '*.mp3'` to
+take effect at all. The difference now carries one line in `jest.config.js`.
 
-**Mitmachen steht** (Phase 4d): drei CrowdNewsroom-Aufrufe, das mehrstufige
-Formular aus dem Schema des jeweiligen Aufrufs, Faktenforum mit Prüfstatus und
-Quellenbewertung, Abriss-Atlas, Tippkanal.
+**Mitmachen is done** (phase 4d): three CrowdNewsroom callouts, the multi-step form built
+from each callout's schema, Faktenforum with review status and source rating, the
+Abriss-Atlas, the tip channel.
 
-*Der Zähler ist das Produkt.* „Ihr Beitrag zählt" ist die Zusage, also erhöht eine
-Einreichung die sichtbare Zahl sofort und dauerhaft — auf der Übersicht, auf der
-Aufrufseite und auf der Dankeseite dieselbe Rechnung
-(`responseCount + extraCount(slug)`). Ein Test hält es fest, weil eine Einreichung,
-die die Zahl nicht bewegt, still das Versprechen bricht.
+*The counter is the product.* "Ihr Beitrag zählt" is the promise, so a submission raises
+the visible number immediately and permanently — the same arithmetic on the overview, on
+the callout page and on the thank-you page (`responseCount + extraCount(slug)`). A test
+records it, because a submission that does not move the number silently breaks the
+promise.
 
-*Vertrauen steht vor dem Formular.* „Wer fragt?" und „Was passiert mit Ihren
-Daten?" stehen auf der Aufrufseite über dem Knopf, nicht im Kleingedruckten — so
-schon im NativeScript-Stand, und die Reihenfolge ist Absicht.
+*Trust comes before the form.* "Wer fragt?" and "Was passiert mit Ihren Daten?" sit above
+the button on the callout page, not in the small print — as in the NativeScript state
+already, and the order is deliberate.
 
-*Eine Falle beim Bauen vermieden:* im Formular hieß der Kopfzeilen-Knopf zunächst
-auch „Zurück" — derselbe Text wie der Schritt-zurück-Knopf darunter, mit völlig
-anderer Wirkung (Formular verlassen vs. eine Folie zurück). Jetzt „Abbrechen".
+*A trap avoided while building:* in the form, the header button was initially also called
+"Zurück" — the same text as the step-back button below it, with a completely different
+effect (leave the form vs. one slide back). Now "Abbrechen".
 
-*Der Dateianhang bleibt eine Attrappe.* Ein echter Bildwähler wäre ein weiteres
-natives Modul für einen Fluss, der ohne Backend nirgends ankommt — die
-Beschriftung sagt „simuliert", statt es zu verschweigen.
+*The file attachment stays a dummy.* A real image picker would be another native module
+for a flow that arrives nowhere without a backend — the label says "simuliert" rather
+than keeping quiet about it.
 
-Nebenbei aufgefallen: **typisierte Routen entstehen bei `expo start`, nicht bei
-`expo export`** — und `.expo/` ist gitignoriert. Eine neue Route lässt `tsc` also
-lokal scheitern, bis Metro einmal gelaufen ist, während CI ohne `.expo/types` jeden
-href durchwinkt. Ein grüner CI-Typecheck ist damit **kein** Beweis über hrefs.
+Noticed along the way: **typed routes are generated by `expo start`, not by
+`expo export`** — and `.expo/` is gitignored. A new route therefore fails `tsc` locally
+until Metro has run once, while CI without `.expo/types` waves every href through. A
+green CI typecheck is therefore **no** evidence about hrefs.
 
-**Profil steht** (Phase 4e, erster Teil): Profil für Gast und Mitglied,
-Einstellungen, gespeicherte Artikel, Quartalsbericht. Offen bleiben Beitritts-Flow,
-Onboarding und Backstage.
+**Profil is done** (phase 4e, first part): profile for guest and member, settings, saved
+articles, the quarterly report. The join flow, onboarding and backstage remain open.
 
-Dabei hat der Core **drei Aktionen bekommen, die es nur scheinbar schon gab**:
-`membership.setPaused`, `settings.setNewsletter/setTextScale/setPushOptIn/resetForDemo`
-und `interests.clear`. Der Vue-Host kam ohne sie aus, weil sein reaktiver Spiegel
-direkte Zuweisungen erlaubte (`membership.paused = !membership.paused`). Ein Store,
-der seine Übergänge besitzt, braucht die Aktion — und beide Hosts lesen die Regel
-dann aus derselben Stelle. Beim Pausieren ist diese Regel inhaltlich wichtig: es ist
-**keine** Kündigung, `isMember` bleibt wahr und Backstage offen (Konzept). Ein Test
-hält das fest.
+In the process the core **gained three actions that only appeared to exist already**:
+`membership.setPaused`,
+`settings.setNewsletter/setTextScale/setPushOptIn/resetForDemo` and `interests.clear`.
+The Vue host managed without them, because its reactive mirror allowed direct assignment
+(`membership.paused = !membership.paused`). A store that owns its transitions needs the
+action — and both hosts then read the rule from the same place. For pausing, that rule
+matters substantively: it is **not** a cancellation, `isMember` stays true and backstage
+stays open (per the concept). A test records it.
 
-Der „Mein Impact"-Block zeigt drei echte Recherchen. Der NativeScript-Stand filterte
-dafür den gebündelten Artikelindex auf `feed === 'recherchen'`; das Expo-Bundle ist
-nach URL geschlüsselt und trägt kein Feed-Feld, also entscheidet die URL —
-Faktenchecks sind keine Impact-Recherchen.
+The "Mein Impact" block shows three real investigations. The NativeScript state filtered
+the bundled article index on `feed === 'recherchen'` for that; the Expo bundle is keyed by
+URL and carries no feed field, so the URL decides — fact checks are not impact
+investigations.
 
-**Phase 4 ist fertig** (4e, zweiter Teil): Onboarding, Beitritts-Fluss, Backstage,
-Recherchetagebuch. Alle fünf Tabs und alle Nebenbildschirme stehen.
+**Phase 4 is finished** (4e, second part): onboarding, join flow, backstage, research
+diary. All five tabs and all secondary screens are in place.
 
-*Der Statuswechsel funktioniert.* `join()` im Beitritts-Fluss setzt `isMember`, und
-jeder Club-Berührungspunkt reagiert im selben Tick — im Browser durchgeklickt:
-Onboarding → App → Profil → Beitritt → Beitrag → Daten.
+*The status change works.* `join()` in the join flow sets `isMember`, and every club
+touchpoint reacts in the same tick — clicked through in the browser: onboarding → app →
+profile → join → contribution → data.
 
-*Kein Dark Pattern, und das ist getestet.* Bis zum Abschluss steht neben jedem
-„Weiter" ein gleichwertiges „Erstmal umsehen", ab Schritt 2 des Onboardings ein
-„Überspringen" — und Überspringen **zählt als abgeschlossen**, fragt also nicht beim
-nächsten Start erneut. Backstage ist für Gäste vollständig sichtbar; die Knöpfe
-laden ein, statt zu sperren („der Club ist Nähe, keine Paywall").
+*No dark pattern, and that is tested.* Until the final step, every "Weiter" has an
+equivalent "Erstmal umsehen" beside it, and from step 2 of the onboarding a
+"Überspringen" — and skipping **counts as completed**, so it does not ask again on the
+next start. Backstage is fully visible to guests; the buttons invite rather than lock
+("the club is proximity, not a paywall").
 
-*Beitrag als Presets statt Slider.* React Native hat keinen Slider mehr, und für
-Geld ist Antippen genauer als Ziehen — dieselbe Abweichung vom Designentwurf wie
-beim Fortschrittsbalken des Players, aus demselben Grund.
+*Contribution as presets instead of a slider.* React Native no longer has a slider, and
+for money tapping is more precise than dragging — the same deviation from the design
+draft as the player's progress bar, for the same reason.
 
-*Der Erststart-Sprung greift nur auf „/".* Erst war er unbedingt — und hätte damit
-auf dem Web-Target jeden geteilten Link überschrieben: wer `/backstage` aufruft,
-soll Backstage sehen. Im Browser gefunden, als der Deep-Link ins Onboarding
-umsprang. Nativ existiert der Fall nicht, dort startet die App immer auf `/`.
+*The first-start jump only applies at "/".* At first it was unconditional — and would
+therefore have overwritten every shared link on the web target: someone opening
+`/backstage` should see backstage. Found in the browser, when the deep link jumped into
+the onboarding. The case does not exist natively, where the app always starts at `/`.
 
-**Der erste Android-Build dieser App überhaupt** (05.08.2026, lokal): `BUILD
-SUCCESSFUL`, 518 Gradle-Tasks. Damit ist belegt, dass `expo-audio`, `expo-video`,
-`react-native-webview` und `@expo/ui` unter RN 0.85 mit New Architecture zusammen
-durchkompilieren. Nebenbei aufgefallen: **der CI-Job „Android debug build" baut
-`apps/mobile`**, die NativeScript-App. Für die Expo-App lief in CI nur der
-Web-Export — der Swap in Phase 5 würde den Job also auf etwas umstellen, das dort
-noch nie gebaut wurde.
+**The first Android build of this app at all** (2026-08-05, locally): `BUILD SUCCESSFUL`,
+518 Gradle tasks. That demonstrates that `expo-audio`, `expo-video`,
+`react-native-webview` and `@expo/ui` compile together under RN 0.85 with the New
+Architecture. Noticed along the way: **the CI job "Android debug build" builds
+`apps/mobile`**, the NativeScript app. For the Expo app, only the web export ran in CI —
+so the swap in phase 5 would have pointed the job at something that had never been built
+there.
 
-Und der Build hat einen Defekt sichtbar gemacht, den kein Test finden konnte:
-**Autolinking bindet das native Modul ein, aber nur das Config-Plugin bearbeitet
-die nativen Projekte.** `expo-audio` stand nicht in `app.json` → kein
-`FOREGROUND_SERVICE_MEDIA_PLAYBACK`, kein Media-Service, kein
-`UIBackgroundModes: [audio]`. Hintergrund-Wiedergabe und Lockscreen-Steuerung
-hätten also nicht funktioniert, während Build, Typecheck und 273 Tests grün waren.
-Behoben und am Generat verifiziert; `recordAudioAndroid: false`, weil die App nicht
-aufnimmt und die Standardeinstellung sonst `RECORD_AUDIO` verlangt.
+And the build made a defect visible that no test could find: **autolinking wires in the
+native module, but only the config plugin edits the native projects.** `expo-audio` was
+not listed in `app.json` → no `FOREGROUND_SERVICE_MEDIA_PLAYBACK`, no media service, no
+`UIBackgroundModes: [audio]`. Background playback and lock-screen control could therefore
+not have worked, while build, typecheck and 273 tests were green. Fixed and verified
+against the generated output; `recordAudioAndroid: false`, because the app does not
+record and the default would otherwise demand `RECORD_AUDIO`.
 
-## Offen
+## Open
 
-- **Das Web-Target sieht keine Live-Artikel.** `correctiv.org` sendet keinen
-  `Access-Control-Allow-Origin`-Header, der Browser blockt damit jeden RSS-Request
-  (am 05.08.2026 gemessen; native Targets sind nicht betroffen). Das Web-Demo zeigt Shell,
-  Beispieldaten und PeerTube-Inhalte — aber keinen Hero, keine „Neueste Recherchen", keine
-  Faktenchecks. Drei Wege: (a) CORRECTIV-Ops setzen den Header (ein CDN-/WordPress-Header,
-  RSS ist öffentliche Daten — billigster und korrektester Weg), (b) ein gebündelter
-  Feed-Snapshot als Web-Fallback (die NS-App generiert schon
-  `assets/data/feeds/<key>.json`), (c) ein Proxy. Entscheidung steht aus.
-  Seit Phase 4b behauptet das Web-Demo dabei wenigstens nichts Falsches: die Suche
-  fällt auf den lokalen Korpus zurück, und die Projektseite schreibt „Beiträge
-  konnten nicht geladen werden" statt endlos zu drehen (im Browser verifiziert).
-  Phase 4c hat den Befund vervollständigt: von allen Quellen sendet **nur**
-  `tube.funfacts.de` den Header (`*`, auch auf den HLS-Playlists — die FunFacts-
-  Videos laufen im Browser also wirklich), während `correctiv.org`,
-  `salon5.correctiv.net` (Castopod) und `youtube.com/feeds` keinen senden. Auf Web
-  zeigt die Mediathek darum echte FunFacts-Videos, aber Podcast-Beispieldaten mit
-  dem Hinweis „Ohne Verbindung — Sie sehen Beispielfolgen."
-- **Vor dem Swap (Phase 5) herausholen, sonst löscht ihn der `git rm`:**
-  `scripts/spike-audio-server.mjs` (verlangt `Authorization: Bearer
-  spike-token`, sonst 401 — der beweisende Test für den authentifizierten
-  Castopod-Podcast, den die Expo-App genauso braucht) und
-  `apps/mobile/src/assets/data/feeds/*.json` samt
-  `fetch-offline-{articles,podcasts}.mjs` — das ist Option (b) der CORS-Frage
-  oben. Die NativeScript-Fallen aus der README gehören in diese ADR, wo sie
-  Geschichte sind statt Gebrauchsanweisung. Empfehlung: NS-Stand als
-  **annotierter Tag** `nativescript-final` (ein Branch lädt zu Commits ein, ein
-  Tag sagt Schnappschuss; auschecken geht gleich). Und: beide Apps tragen dieselbe
-  Package-ID `org.correctiv.app.prototype` — auf einem Gerät geht nur eine, was
-  einen Parallelbetrieb zum Vergleichen faktisch ausschließt.
-- **Audio ist auf keinem Gerät geprüft.** Die Regeln des Players (Vorschau-Grenze,
-  Exklusivität, Wachhund, Lockscreen-Aufruf) sind mit 16 Tests festgehalten, und im
-  Browser bringt ein echter Klick auf „Radio abspielen" die Mini-Leiste hoch — dass
-  aber wirklich Ton aus dem Icecast-Stream kommt, dass Hintergrund-Wiedergabe und
-  Lockscreen-Steuerung funktionieren, kann nur ein Android- oder iOS-Build zeigen.
-  `scripts/spike-audio-server.mjs` bleibt für den authentifizierten
-  Podcast der beweisende Test (401 ohne Bearer-Token).
-- **Der Artikel-/Reader-Typ ist noch doppelt.** `Article` (App) gegen `ArticleDetail` (Core)
-  sind anders geschnitten, nicht bloß anders benannt: `kicker`/`topline`,
-  `title`/`headline`, `badge`/`ratingText`, plus `dateText`/`excerpt` nur im Core und
-  `relatedLinks` nur in der App. Vereinheitlichen heißt `extract.ts` und den
-  Reader-HTML-Builder umschreiben — am **einzigen fertigen Screen**. Bewusst zurückgestellt:
-  `src/lib/articles/types.ts` sagt, warum.
-- **Der Blob-Cache bleibt beim Host.** Die Cache-Policies in den Core zu ziehen scheitert
-  vorerst am Port: `FileStore` ist synchron, und der Expo-Adapter hydriert dafür beim Start
-  *alles* eager in einen Memory-Spiegel. Für kleine Settings richtig, für ~1 MB Feed-JSON
-  vor dem ersten Render falsch. Der Port müsste async werden (er wird an genau einer Stelle
-  benutzt, `cache.service.ts`) — eigener Schritt, kein Beiwerk dieser Umstellung.
+> The items below are the state as of 2026-08-05.
+> [ADR 0006](0006-one-core-two-hosts.md) supersedes this section — read its "What is
+> still open" for the current list. The GitHub Pages item is the one that has since been
+> resolved; it is marked below.
 
-- GitHub Pages steht noch auf `legacy` (`main:/docs`) und serviert den Designentwurf.
-  Umstellen auf `build_type: workflow`, damit der Web-Build deployt wird ohne
-  Build-Output zu committen.
-
+- **The web target sees no live articles.** `correctiv.org` sends no
+  `Access-Control-Allow-Origin` header, so the browser blocks every RSS request
+  (measured 2026-08-05; native targets are unaffected). The web demo shows the shell,
+  sample data and PeerTube content — but no hero, no "Neueste Recherchen", no fact
+  checks. Three routes: (a) CORRECTIV ops set the header (a CDN/WordPress header, and
+  RSS is public data — the cheapest and most correct route), (b) a bundled feed snapshot
+  as a web fallback (the NS app already generates `assets/data/feeds/<key>.json`),
+  (c) a proxy. The decision is pending.
+  Since phase 4b the web demo at least claims nothing false: search falls back to the
+  local corpus, and the project page writes "Beiträge konnten nicht geladen werden"
+  instead of spinning forever (verified in the browser). Phase 4c completed the finding:
+  of all sources **only** `tube.funfacts.de` sends the header (`*`, on the HLS playlists
+  too — so the FunFacts videos really do play in a browser), while `correctiv.org`,
+  `salon5.correctiv.net` (Castopod) and `youtube.com/feeds` send none. On web the media
+  library therefore shows real FunFacts videos but sample podcast data, with the note
+  "Ohne Verbindung — Sie sehen Beispielfolgen."
+- **Take out before the swap (phase 5), or `git rm` deletes it:**
+  `scripts/spike-audio-server.mjs` (requires `Authorization: Bearer spike-token`, 401
+  otherwise — the proving test for the authenticated Castopod podcast that the Expo app
+  needs just as much) and `apps/mobile/src/assets/data/feeds/*.json` together with
+  `fetch-offline-{articles,podcasts}.mjs` — that is option (b) of the CORS question
+  above. The NativeScript traps from the README belong in this ADR, where they are
+  history rather than instructions. Recommendation: the NS state as an **annotated tag**
+  `nativescript-final` (a branch invites commits, a tag says snapshot; checking out works
+  the same). And: both apps carry the same package id `org.correctiv.app.prototype` — only
+  one fits on a device, which effectively rules out running them side by side to compare.
+- **Audio is not verified on any device.** The player's rules (preview limit,
+  exclusivity, watchdog, lock-screen call) are recorded in 16 tests, and in the browser a
+  real click on "Radio abspielen" brings up the mini bar — but that sound actually comes
+  out of the Icecast stream, and that background playback and lock-screen control work,
+  can only be shown by an Android or iOS build. `scripts/spike-audio-server.mjs` remains
+  the proving test for the authenticated podcast (401 without a bearer token).
+- **The article/reader type is still duplicated.** `Article` (app) versus `ArticleDetail`
+  (core) are cut differently, not merely named differently: `kicker`/`topline`,
+  `title`/`headline`, `badge`/`ratingText`, plus `dateText`/`excerpt` in the core only
+  and `relatedLinks` in the app only. Unifying them means rewriting `extract.ts` and the
+  reader HTML builder — at the **only finished screen**. Deliberately deferred:
+  `src/lib/articles/types.ts` says why.
+- **The blob cache stays with the host.** Pulling the cache policies into the core fails
+  for now on the port: `FileStore` is synchronous, and the Expo adapter therefore
+  hydrates *everything* eagerly into a memory mirror at startup. Right for small
+  settings, wrong for ~1 MB of feed JSON before the first render. The port would have to
+  become async (it is used in exactly one place, `cache.service.ts`) — a step of its own,
+  not a side effect of this move.
+- ~~GitHub Pages is still on `legacy` (`main:/docs`) and serves the design draft. Switch
+  to `build_type: workflow`, so the web build deploys without committing build output.~~
+  **Done.** `.github/workflows/pages.yml` builds the export under the Pages base path
+  and publishes it as the app's web preview; `docs/` and `scripts/deploy-demo.sh` are
+  deleted. Switching `build_type` itself is a repository setting and stays manual —
+  see [RELEASE.md](../RELEASE.md#the-web-preview).

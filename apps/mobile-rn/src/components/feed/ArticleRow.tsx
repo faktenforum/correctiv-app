@@ -17,7 +17,12 @@ export function ArticleRow({
       <Typo variant="headline-s" numberOfLines={3}>
         {item.title}
       </Typo>
-      <View className="mt-3xs flex-row flex-wrap items-center gap-2xs">
+      {/* Two colours, so this cannot be one string like the other meta lines
+          (`[a, b].join(' · ')`). The separator therefore has to carry its own
+          spacing: a flex `gap` sits only BEFORE it, which left 6px on one side of the
+          middot and the 4px of a space character on the other — visibly off-centre.
+          Row gap only, and a space either side inside the text. */}
+      <View className="mt-3xs flex-row flex-wrap items-center gap-y-2xs">
         {item.author && (
           <Typo variant="text-s" color="grey-600">
             {item.author}
@@ -25,7 +30,8 @@ export function ArticleRow({
         )}
         {item.publishedAt && (
           <Typo variant="text-s" color="grey-500">
-            · {formatDateDe(item.publishedAt)}
+            {item.author ? ' · ' : ''}
+            {formatDateDe(item.publishedAt)}
           </Typo>
         )}
       </View>

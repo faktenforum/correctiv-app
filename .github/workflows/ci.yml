@@ -4,7 +4,9 @@
 #   check                 — typecheck every package, oxlint, oxfmt --check, headless
 #                           tests (~1 min incl. install; no Android SDK, no emulator)
 #   expo-web              — static web export of apps/mobile-rn, plus assertions that
-#                           it is not silently broken (see the job for why)
+#                           it is not silently broken (see the job for why). Built for
+#                           a domain root; pages.yml rebuilds the same export under
+#                           the Pages base path and publishes it.
 #   android-expo          — Android APK of the Expo app
 #   android-nativescript  — Android APK of the NativeScript app
 #
@@ -86,7 +88,7 @@ jobs:
             grep -rl "does not support this platform" dist/ | head
             exit 1
           fi
-          for route in index artikel entdecken mediathek mitmachen profil; do
+          for route in index 404 artikel entdecken mediathek mitmachen profil; do
             test -f "dist/$route.html" || { echo "::error::missing dist/$route.html"; exit 1; }
           done
           echo "web export OK — $(find dist -name '*.html' | wc -l) routes, no unsupported-platform stubs"

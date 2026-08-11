@@ -39,7 +39,6 @@
     "UIApplication": "readonly"
   },
   "ignorePatterns": [
-    "docs/**",
     "media/**",
     "apps/mobile/platforms/**",
     "apps/mobile/src/assets/**",
