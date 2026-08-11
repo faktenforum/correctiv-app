@@ -173,9 +173,10 @@ neither `rem`, `:root` nor unitless line heights.
 
 ## The web target
 
-`apps/mobile-rn` exports to static HTML, and that export is the published demo at
-<https://faktenforum.github.io/correctiv-app/> — the same routes, screens and core
-as the native builds, with two host-level differences:
+`apps/mobile-rn` exports to static HTML, and that export is the published demo, best
+opened through the device frame at
+<https://faktenforum.github.io/correctiv-app/preview.html> — the same routes, screens
+and core as the native builds, with two host-level differences:
 
 - **The two platform splits.** `ReaderView` and `VideoFrame` each have a `.web.tsx`
   sibling: an `<iframe>` where native uses a WebView. `__tests__/web-target.test.ts`

@@ -1,0 +1,592 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="robots" content="noindex" />
+    <title>CORRECTIV app — device preview</title>
+
+    <!--
+      A debugging shell around the web export: the app in an iframe sized to a
+      device, so the tablet and phone layouts can be judged from a desktop browser.
+
+      WHY AN IFRAME, AND NOT A WEB-ONLY WRAPPER INSIDE THE APP
+      Inside the iframe the app's own `window` *is* the device. useWindowDimensions,
+      media queries — including the reader's 48rem breakpoint in
+      src/lib/theme/readerCss.generated.ts — and scroll behaviour all report the
+      simulated size. A wrapper in _layout.tsx would draw a phone frame while the app
+      still measured the desktop window: a preview that lies. It also keeps every
+      line of this out of the app bundle and the native builds.
+
+      WHY IT LIVES IN public/
+      @expo/cli serves this folder from the dev server (ServeStaticMiddleware) and
+      copies it into dist/ on export (exportApp). One file therefore answers at
+      localhost:8081/preview.html, at serve-clean.mjs's port, and on Pages under
+      /correctiv-app/preview.html — always same-origin with the app, which is what
+      lets the toolbar read the current route out of the frame.
+
+      WHAT IT DOES NOT DO
+      prefers-color-scheme cannot be forced per iframe, safe-area insets are 0 in a
+      browser regardless of the drawn bezel, and there is no touch emulation here.
+      Those remain DevTools' job.
+    -->
+
+    <style>
+      :root {
+        --bar: #1b1b1b;
+        --bar-fg: #f2f2f2;
+        --bar-dim: #9a9a9a;
+        --line: #3a3a3a;
+        --stage: #d8d8d8;
+        --accent: #ff5064;
+        --bar-h: 44px;
+      }
+
+      * {
+        box-sizing: border-box;
+      }
+
+      html,
+      body {
+        height: 100%;
+        margin: 0;
+      }
+
+      body {
+        display: flex;
+        flex-direction: column;
+        background: var(--stage);
+        color: #222;
+        font:
+          13px/1.4 system-ui,
+          -apple-system,
+          'Segoe UI',
+          sans-serif;
+      }
+
+      /* Toolbar */
+
+      .bar {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 6px 14px;
+        align-items: center;
+        min-height: var(--bar-h);
+        padding: 6px 12px;
+        background: var(--bar);
+        color: var(--bar-fg);
+      }
+
+      .bar b {
+        font-weight: 600;
+        letter-spacing: 0.2px;
+      }
+
+      .bar b::after {
+        content: 'debug';
+        margin-left: 8px;
+        padding: 1px 5px;
+        border: 1px solid var(--accent);
+        border-radius: 3px;
+        color: var(--accent);
+        font-size: 10px;
+        font-weight: 400;
+        letter-spacing: 0.4px;
+        text-transform: uppercase;
+      }
+
+      .group {
+        display: flex;
+        gap: 6px;
+        align-items: center;
+      }
+
+      .group.grow {
+        flex: 1 1 260px;
+      }
+
+      label {
+        color: var(--bar-dim);
+      }
+
+      select,
+      input,
+      button {
+        height: 26px;
+        padding: 0 6px;
+        border: 1px solid var(--line);
+        border-radius: 4px;
+        background: #2a2a2a;
+        color: var(--bar-fg);
+        font: inherit;
+      }
+
+      input[type='number'] {
+        width: 58px;
+      }
+
+      #route {
+        width: 100%;
+        min-width: 0;
+        font-family: ui-monospace, 'SF Mono', Menlo, monospace;
+      }
+
+      button {
+        cursor: pointer;
+        padding: 0 9px;
+      }
+
+      button:hover,
+      select:hover {
+        border-color: #5c5c5c;
+      }
+
+      button[aria-pressed='true'] {
+        border-color: var(--accent);
+        color: var(--accent);
+      }
+
+      /* Stage and device */
+
+      #stage {
+        flex: 1;
+        overflow: auto;
+        padding: 20px 20px 40px;
+      }
+
+      #fitbox {
+        position: relative;
+        margin: 0 auto;
+      }
+
+      #device {
+        transform-origin: top left;
+        border: 1px solid #9a9a9a;
+        border-radius: 14px;
+        overflow: hidden;
+        background: #fff;
+        box-shadow: 0 6px 24px rgb(0 0 0 / 18%);
+      }
+
+      #app {
+        display: block;
+        width: 100%;
+        height: 100%;
+        border: 0;
+      }
+
+      /* Drag handles sit on the unscaled box, so they stay grabbable at any zoom. */
+
+      .handle {
+        position: absolute;
+        background: transparent;
+      }
+
+      .handle::after {
+        content: '';
+        position: absolute;
+        inset: 0;
+        margin: auto;
+        border-radius: 2px;
+        background: #8f8f8f;
+      }
+
+      .handle:hover::after {
+        background: var(--accent);
+      }
+
+      #h-right {
+        top: 0;
+        right: -12px;
+        width: 12px;
+        height: 100%;
+        cursor: ew-resize;
+      }
+
+      #h-right::after {
+        width: 3px;
+        height: 42px;
+      }
+
+      #h-bottom {
+        bottom: -12px;
+        left: 0;
+        width: 100%;
+        height: 12px;
+        cursor: ns-resize;
+      }
+
+      #h-bottom::after {
+        width: 42px;
+        height: 3px;
+      }
+
+      #h-corner {
+        right: -12px;
+        bottom: -12px;
+        width: 12px;
+        height: 12px;
+        cursor: nwse-resize;
+      }
+
+      #h-corner::after {
+        width: 7px;
+        height: 7px;
+      }
+
+      #readout {
+        margin: 14px auto 0;
+        color: #5a5a5a;
+        font-family: ui-monospace, 'SF Mono', Menlo, monospace;
+        text-align: center;
+      }
+
+      body.dragging {
+        user-select: none;
+      }
+
+      body.dragging #app {
+        pointer-events: none;
+      }
+    </style>
+  </head>
+
+  <body>
+    <header class="bar">
+      <b>CORRECTIV</b>
+
+      <div class="group">
+        <label for="device-select">Device</label>
+        <select id="device-select"></select>
+        <button id="rotate" title="Swap width and height">⟳</button>
+      </div>
+
+      <div class="group">
+        <input id="w" type="number" min="240" max="2400" step="1" aria-label="Width" />
+        <span style="color: var(--bar-dim)">×</span>
+        <input id="h" type="number" min="320" max="2400" step="1" aria-label="Height" />
+      </div>
+
+      <div class="group">
+        <label for="zoom">Zoom</label>
+        <select id="zoom">
+          <option value="fit">Fit</option>
+          <option value="1">100%</option>
+          <option value="0.75">75%</option>
+          <option value="0.5">50%</option>
+        </select>
+      </div>
+
+      <div class="group grow">
+        <label for="route">Route</label>
+        <input id="route" list="routes" spellcheck="false" />
+        <datalist id="routes"></datalist>
+      </div>
+
+      <div class="group">
+        <button id="reload" title="Reload the frame">Reload</button>
+        <button id="raw" title="Open this route without the shell">Raw ↗</button>
+      </div>
+    </header>
+
+    <main id="stage">
+      <div id="fitbox">
+        <div id="device">
+          <iframe
+            id="app"
+            title="App preview"
+            allow="autoplay; fullscreen; encrypted-media"
+          ></iframe>
+        </div>
+        <div class="handle" id="h-right"></div>
+        <div class="handle" id="h-bottom"></div>
+        <div class="handle" id="h-corner"></div>
+      </div>
+      <div id="readout"></div>
+    </main>
+
+    <script>
+      // The app is served from this page's own directory: "" locally, "/correctiv-app"
+      // on Pages, where app.config.js has given the export a matching baseUrl. Deriving
+      // it beats hard-coding either one, which would be wrong in the other place.
+      const BASE = location.pathname.replace(/\/[^/]*$/, '');
+
+      // Portrait CSS pixels. 768 is not a device — it is the reader's 48rem breakpoint,
+      // worth being able to sit exactly on.
+      const DEVICES = [
+        { id: 'iphone-se', label: 'iPhone SE', w: 375, h: 667 },
+        { id: 'iphone-15-pro', label: 'iPhone 15 Pro', w: 393, h: 852 },
+        { id: 'pixel-8', label: 'Pixel 8', w: 412, h: 915 },
+        { id: 'breakpoint', label: 'Tablet breakpoint (48rem)', w: 768, h: 1024 },
+        { id: 'ipad-mini', label: 'iPad mini', w: 744, h: 1133 },
+        { id: 'ipad-pro-11', label: 'iPad Pro 11"', w: 834, h: 1194 },
+        { id: 'custom', label: 'Custom', w: 0, h: 0 },
+      ];
+
+      // A hand-picked walk through src/app, one entry per route shape. Not generated,
+      // so a new screen will not appear here on its own — the field takes any path, and
+      // whatever the frame navigates to is read back live.
+      const ROUTES = [
+        '/',
+        '/entdecken',
+        '/mediathek',
+        '/mitmachen',
+        '/profil',
+        '/artikel',
+        '/spotlight',
+        '/suche',
+        '/gespeichert',
+        '/backstage',
+        '/atlas',
+        '/bericht',
+        '/beitreten',
+        '/einstellungen',
+        '/faktenforum',
+        '/formular',
+        '/onboarding',
+        '/player',
+        '/video',
+        '/aufruf/wem-gehoert-die-stadt',
+        '/behauptung/claim-001',
+        '/projekt/klima',
+        '/serie/klima',
+        '/tagebuch/diary-bern-2',
+      ];
+
+      const el = (id) => document.getElementById(id);
+      const frame = el('app');
+      const fitbox = el('fitbox');
+      const device = el('device');
+
+      const state = { device: 'iphone-15-pro', landscape: false, zoom: 'fit', w: 393, h: 852 };
+
+      /* ---------- state → screen ---------- */
+
+      function preset(id) {
+        return DEVICES.find((d) => d.id === id) ?? DEVICES[1];
+      }
+
+      /** The frame's size in CSS pixels, orientation applied. */
+      function size() {
+        const { w, h } = state.device === 'custom' ? state : preset(state.device);
+        return state.landscape ? { w: h, h: w } : { w, h };
+      }
+
+      function scaleFor(w, h) {
+        if (state.zoom !== 'fit') return Number(state.zoom);
+        const stage = el('stage');
+        const availW = stage.clientWidth - 40 - 24; // padding plus room for the handles
+        const availH = stage.clientHeight - 40 - 46; // padding plus the readout line
+        return Math.min(1, availW / w, availH / h);
+      }
+
+      function render() {
+        const { w, h } = size();
+        const scale = scaleFor(w, h);
+
+        device.style.width = `${w}px`;
+        device.style.height = `${h}px`;
+        device.style.transform = `scale(${scale})`;
+        fitbox.style.width = `${w * scale}px`;
+        fitbox.style.height = `${h * scale}px`;
+
+        el('w').value = w;
+        el('h').value = h;
+        el('device-select').value = state.device;
+        el('zoom').value = state.zoom;
+        el('rotate').setAttribute('aria-pressed', String(state.landscape));
+        el('readout').textContent = `${w} × ${h} px · ${Math.round(scale * 100)}%`;
+      }
+
+      /* ---------- the frame ---------- */
+
+      /** The route the frame is showing, with the Pages prefix removed. */
+      function frameRoute() {
+        try {
+          const path = frame.contentWindow.location.pathname;
+          const stripped = BASE && path.startsWith(BASE) ? path.slice(BASE.length) : path;
+          return (stripped || '/').replace(/\.html$/, '').replace(/\/index$/, '/');
+        } catch {
+          return undefined; // only reachable if the frame ever left this origin
+        }
+      }
+
+      function navigate(route) {
+        const target = BASE + (route.startsWith('/') ? route : `/${route}`);
+        try {
+          // replace(), so stepping through the app does not bury the shell in history.
+          frame.contentWindow.location.replace(target);
+        } catch {
+          frame.src = target;
+        }
+      }
+
+      // Nothing is injected into the frame, deliberately: measured at 393px, the app
+      // reports innerWidth 393 and clientWidth 393, so no desktop scrollbar is eating
+      // layout width and there is nothing to compensate for. What runs in there is the
+      // app as exported.
+
+      /* ---------- the address bar ---------- */
+
+      // #/artikel?d=ipad-mini&o=l&z=fit — route and device in one link, so a finding can
+      // be handed over as a URL rather than as a set of instructions.
+      function writeHash() {
+        const p = new URLSearchParams();
+        p.set('d', state.device);
+        if (state.landscape) p.set('o', 'l');
+        if (state.zoom !== 'fit') p.set('z', state.zoom);
+        if (state.device === 'custom') {
+          p.set('w', String(state.w));
+          p.set('h', String(state.h));
+        }
+        const route = el('route').value || '/';
+        history.replaceState(null, '', `#${route}?${p}`);
+      }
+
+      function readHash() {
+        const raw = location.hash.slice(1);
+        if (!raw) return '/';
+        const cut = raw.indexOf('?');
+        const route = cut === -1 ? raw : raw.slice(0, cut);
+        const p = new URLSearchParams(cut === -1 ? '' : raw.slice(cut + 1));
+
+        if (p.has('d') && DEVICES.some((d) => d.id === p.get('d'))) state.device = p.get('d');
+        state.landscape = p.get('o') === 'l';
+        if (p.has('z')) state.zoom = p.get('z');
+        if (state.device === 'custom') {
+          state.w = Number(p.get('w')) || state.w;
+          state.h = Number(p.get('h')) || state.h;
+        }
+        return route || '/';
+      }
+
+      /* ---------- wiring ---------- */
+
+      const select = el('device-select');
+      for (const d of DEVICES) {
+        const o = document.createElement('option');
+        o.value = d.id;
+        o.textContent = d.id === 'custom' ? d.label : `${d.label} — ${d.w}×${d.h}`;
+        select.append(o);
+      }
+      el('routes').append(
+        ...ROUTES.map((r) => Object.assign(document.createElement('option'), { value: r })),
+      );
+
+      select.addEventListener('change', () => {
+        if (select.value === 'custom') Object.assign(state, size()); // keep what is on screen
+        state.device = select.value;
+        state.landscape = false;
+        render();
+        writeHash();
+      });
+
+      el('rotate').addEventListener('click', () => {
+        state.landscape = !state.landscape;
+        render();
+        writeHash();
+      });
+
+      el('zoom').addEventListener('change', () => {
+        state.zoom = el('zoom').value;
+        render();
+        writeHash();
+      });
+
+      for (const axis of ['w', 'h']) {
+        el(axis).addEventListener('change', () => {
+          const { w, h } = size();
+          state.w = w;
+          state.h = h;
+          state[axis] = Math.max(240, Number(el(axis).value) || state[axis]);
+          state.device = 'custom';
+          state.landscape = false;
+          render();
+          writeHash();
+        });
+      }
+
+      el('route').addEventListener('change', () => {
+        navigate(el('route').value);
+        writeHash();
+      });
+
+      el('reload').addEventListener('click', () => {
+        frame.contentWindow.location.reload();
+      });
+
+      el('raw').addEventListener('click', () => {
+        window.open(BASE + (el('route').value || '/'), '_blank', 'noopener');
+      });
+
+      window.addEventListener('resize', render);
+
+      window.addEventListener('hashchange', () => {
+        const route = readHash();
+        if (route !== frameRoute()) navigate(route);
+        render();
+      });
+
+      // expo-router navigates with pushState, which fires no event an outer frame can
+      // hear, so the route is polled instead. Cheap, and it also catches taps inside
+      // the app — the field always shows where the frame actually is.
+      setInterval(() => {
+        const route = frameRoute();
+        if (route !== undefined && route !== el('route').value) {
+          el('route').value = route;
+          writeHash();
+        }
+      }, 300);
+
+      /* ---------- resizing by dragging ---------- */
+
+      function drag(handle, axes) {
+        handle.addEventListener('pointerdown', (ev) => {
+          ev.preventDefault();
+          handle.setPointerCapture(ev.pointerId);
+          document.body.classList.add('dragging');
+
+          const start = size();
+          const scale = scaleFor(start.w, start.h);
+          const from = { x: ev.clientX, y: ev.clientY };
+
+          // Drag deltas are screen pixels; the frame is CSS pixels behind a scale().
+          const move = (e) => {
+            const next = { ...start };
+            if (axes.includes('x'))
+              next.w = Math.max(240, Math.round(start.w + (e.clientX - from.x) / scale));
+            if (axes.includes('y'))
+              next.h = Math.max(320, Math.round(start.h + (e.clientY - from.y) / scale));
+            state.device = 'custom';
+            state.landscape = false;
+            state.w = next.w;
+            state.h = next.h;
+            render();
+          };
+
+          const up = () => {
+            handle.removeEventListener('pointermove', move);
+            handle.removeEventListener('pointerup', up);
+            document.body.classList.remove('dragging');
+            writeHash();
+          };
+
+          handle.addEventListener('pointermove', move);
+          handle.addEventListener('pointerup', up);
+        });
+      }
+
+      drag(el('h-right'), 'x');
+      drag(el('h-bottom'), 'y');
+      drag(el('h-corner'), 'xy');
+
+      /* ---------- start ---------- */
+
+      const initial = readHash();
+      el('route').value = initial;
+      navigate(initial);
+      render();
+      writeHash();
+    </script>
+  </body>
+</html>
