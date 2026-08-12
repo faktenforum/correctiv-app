@@ -233,6 +233,19 @@ equivalents for focus, liveness and errors.
   the dark value of its majority role, and the minority uses move to `always-light` /
   `always-dark`. `apps/mobile-rn/palette.js` records which is which;
   `__tests__/tokens.test.ts` fails if the role colours ever start switching.
+- **Passing `'system'` on to NativeWind splits the app in half.** With
+  `darkMode: 'class'`, `setColorScheme('system')` leaves the JavaScript side
+  following the device while the CSS waits for a `dark` class nothing adds. So
+  `useColors()` returns the dark palette and `bg-grey-100` keeps its light value:
+  near-white text on a white page, on the *default* setting. Typecheck, lint, 145
+  tests, the Android build and the web export were all green, and a browser walk
+  missed it too — the walk flipped the setting to `'dark'` explicitly and emulated
+  `prefers-color-scheme: light`, exercising both paths that work and neither that
+  breaks. → `lib/theme/appearance.ts` resolves `'system'` against react-native's
+  `useColorScheme()` before handing it over; `__tests__/appearance.test.ts` fails if
+  `'system'` ever reaches NativeWind again. **Check a colour change in all three
+  settings, and check `'system'` against both device schemes** — that is four
+  combinations, and only the fourth was broken.
 - **The design tokens' dark block is a placeholder.** `tokens/theme.css` carries a
   `@media (prefers-color-scheme: dark)` section marked `@TODO Set this to the actual
   values`, holding the *light* values. Generating from it produces a dark mode that
