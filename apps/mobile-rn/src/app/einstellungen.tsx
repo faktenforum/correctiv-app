@@ -6,7 +6,7 @@ import { Button, Card, Hairline, Overline, ScreenHeader, Typo } from '@/componen
 import { openExternal } from '@/lib/openExternal';
 import { coreActions, useSettings } from '@/lib/store/core';
 
-/** Wirkt auf die Artikel-Typografie im Reader. */
+/** Affects the article typography in the reader. */
 const TEXT_SCALES = [
   { label: 'A', value: 0.9 },
   { label: 'A+', value: 1 },

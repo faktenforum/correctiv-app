@@ -3,7 +3,7 @@ import { Pressable, View } from 'react-native';
 
 import { Typo } from '@/components/ui';
 import type { SearchSample } from '@correctiv/app-core/data/search-samples';
-import { colors } from '@/lib/theme';
+import { useColors } from '@/lib/theme';
 
 type IoniconName = keyof typeof Ionicons.glyphMap;
 
@@ -15,16 +15,15 @@ const ICON: Record<SearchSample['kind'], IoniconName> = {
   projekt: 'compass-outline',
 };
 
-/** Die Tabs, in die ein Treffer springen kann. */
+/** The tabs a hit can jump to. */
 type TabPath = '/(tabs)/mediathek' | '/(tabs)/mitmachen' | '/(tabs)/profil';
 
 /**
- * Wohin ein Nicht-Artikel-Treffer führt — oder `null`, wenn er in dieser App
- * keinen Ort hat.
+ * Where a non-article hit leads — or `null` when it has no place in this app.
  *
- * Bücher (`verlag`) haben keinen Bildschirm; im NativeScript-Stand waren sie
- * trotzdem tippbar und taten dann nichts. Hier bleiben sie bewusst inert:
- * lieber sichtbar unantastbar als scheinbar kaputt.
+ * Books (`verlag`) have no screen. In the NativeScript build they were tappable
+ * anyway and then did nothing; here they stay deliberately inert. Visibly
+ * untouchable beats apparently broken.
  */
 export function sampleTarget(kind: SearchSample['kind']): TabPath | null {
   switch (kind) {
@@ -40,10 +39,11 @@ export function sampleTarget(kind: SearchSample['kind']): TabPath | null {
 }
 
 /**
- * Suchtreffer aus den Projekten (Podcasts, Aufrufe, Backstage, Verlag) — der
- * Bestand, der nicht in den RSS-Feeds steht. Icon plus zwei Zeilen.
+ * A search hit from the projects (podcasts, callouts, backstage, publishing) — the
+ * material that is not in the RSS feeds. An icon plus two lines.
  */
 export function SampleHitRow({ hit, onPress }: { hit: SearchSample; onPress?: () => void }) {
+  const colors = useColors();
   const row = (
     <View className="flex-row items-center border-b border-grey-300 py-s">
       <Ionicons name={ICON[hit.kind]} size={20} color={colors['grey-600']} />

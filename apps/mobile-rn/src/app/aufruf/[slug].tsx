@@ -6,21 +6,22 @@ import { Button, Card, Hairline, Overline, ScreenHeader, Typo } from '@/componen
 import { callouts } from '@correctiv/app-core/data/callouts';
 import { formatNumberDe } from '@correctiv/app-core/lib/format';
 import { useExtraCount, useHasSubmitted } from '@/lib/store/core';
-import { colors } from '@/lib/theme';
+import { useColors } from '@/lib/theme';
 
-/** Die Aufrufe stehen fest, also kann der statische Export eine Datei je Slug erzeugen. */
+/** The callouts are fixed, so the static export can emit one file per slug. */
 export function generateStaticParams(): { slug: string }[] {
   return callouts.map((callout) => ({ slug: callout.slug }));
 }
 
 /**
- * Aufruf-Detailseite: worum es geht, wer fragt, was mit den Daten passiert — und
- * erst dann der Knopf ins Formular.
+ * Callout detail: what it is about, who is asking, what happens to the data — and
+ * only then the button into the form.
  *
- * „Wer fragt?" und „Was passiert mit Ihren Daten?" stehen bewusst VOR dem Knopf und
- * in Klartext. Vertrauen ist bei einem Aufruf Teil des Produkts, nicht Kleingedrucktes.
+ * "Wer fragt?" and "Was passiert mit Ihren Daten?" sit BEFORE the button on purpose,
+ * and in plain words. For a callout, trust is part of the product, not fine print.
  */
 export default function AufrufScreen() {
+  const colors = useColors();
   const { slug } = useLocalSearchParams<{ slug: string }>();
   const callout = callouts.find((c) => c.slug === slug) ?? null;
   const extra = useExtraCount(slug ?? '');

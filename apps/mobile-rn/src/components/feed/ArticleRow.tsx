@@ -4,7 +4,7 @@ import { Typo } from '@/components/ui';
 import { formatDateDe } from '@correctiv/app-core/lib/format';
 import type { FeedItem } from '@correctiv/app-core/types/models';
 
-/** Kompakte Listenzeile für „Neueste Recherchen" — Titel (Serif) + Meta, ohne Bild. */
+/** Compact list row for "Neueste Recherchen" — serif title plus meta, no image. */
 export function ArticleRow({
   item,
   onPress,

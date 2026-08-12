@@ -7,9 +7,9 @@ import { claims, type Claim } from '@correctiv/app-core/data/claims';
 import { formatDateShortDe } from '@correctiv/app-core/lib/format';
 
 /**
- * Faktenforum — was die Community gerade prüft. Die Daten liegen im Core in der
- * GraphQL-Antwortform des echten Faktenforum-Backends, damit später nur der
- * Datenlayer getauscht werden muss.
+ * The Faktenforum — what the community is checking right now. The data sits in the
+ * core in the GraphQL response shape of the real Faktenforum backend, so that a
+ * later phase only has to swap the data layer.
  */
 export default function FaktenforumScreen() {
   return (

@@ -1,10 +1,10 @@
 #!/usr/bin/env node
 /**
- * Erzeugt src/lib/theme/readerFonts.generated.ts: die WebView des Artikel-Readers
- * ist ein eigener Browser-Kontext und kann die RN-geladenen Fonts nicht nutzen.
- * Die vollen TTFs (~1,1 MB) sind zum Einbetten zu groß, daher subsetten wir sie
- * mit pyftsubset auf Latein + Deutsch und betten sie als base64-WOFF per @font-face
- * ein — so ist der Reader markentreu UND offline-fähig.
+ * Produces src/lib/theme/readerFonts.generated.ts. The article reader's WebView is
+ * a browser context of its own and cannot use the fonts React Native loaded. The
+ * full TTFs (~1.1 MB) are too large to embed, so pyftsubset cuts them down to Latin
+ * plus German and they go in as base64 WOFF via @font-face — which keeps the reader
+ * on-brand AND usable offline.
  *
  * Voraussetzung: pyftsubset (fonttools) im PATH. Aufruf: npm run fonts
  */

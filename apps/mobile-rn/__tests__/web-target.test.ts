@@ -29,6 +29,9 @@ const PLATFORM_PAIRED = [
   'components/reader/ReaderView.tsx',
   // Fremd-Einbettung (YouTube). Same deal: .web.tsx renders a real <iframe>.
   'components/media/VideoFrame.tsx',
+  // Not a native SDK this time but half a megabyte of base64: the bundled covers
+  // are for an offline phone, and .web.ts keeps them out of the page.
+  'lib/articles/covers.ts',
 ];
 
 function sourceFiles(dir: string): string[] {
@@ -58,9 +61,22 @@ describe('web target', () => {
 
   it('gives every platform-paired file a .web counterpart', () => {
     for (const rel of PLATFORM_PAIRED) {
-      const web = resolve(SRC, rel.replace(/\.tsx$/, '.web.tsx'));
+      const web = resolve(SRC, rel.replace(/\.(tsx?)$/, '.web.$1'));
       expect(statSync(web).isFile()).toBe(true);
     }
+  });
+
+  it('reaches the bundled covers only through the platform-paired module', () => {
+    // Importing the generated module directly would put every data URI back into
+    // the web export, and nothing about the page would look wrong — it would just
+    // be half a megabyte heavier. Exactly the failure this file exists to catch.
+    const offenders = files.filter((file) => {
+      const rel = relative(SRC, file).replaceAll('\\', '/');
+      if (rel === 'lib/articles/covers.ts') return false;
+      return /from\s+'[^']*offlineCovers\.generated'/.test(readFileSync(file, 'utf8'));
+    });
+
+    expect(offenders.map((f) => relative(SRC, f))).toEqual([]);
   });
 
   it('routes both reader implementations through one shared props type', () => {

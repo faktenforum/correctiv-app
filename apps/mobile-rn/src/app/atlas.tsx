@@ -5,14 +5,15 @@ import { Button, Hairline, ScreenHeader, Typo } from '@/components/ui';
 import { atlasStats, demolitionEntries } from '@correctiv/app-core/data/abriss-atlas';
 import { formatNumberDe } from '@correctiv/app-core/lib/format';
 import { openExternal } from '@/lib/openExternal';
-import { colors } from '@/lib/theme';
+import { useColors } from '@/lib/theme';
 
 /**
- * Abriss-Atlas — im Konzept ausdrücklich nur angedeutet: kein API, keine Karte,
- * ein statischer Ausschnitt plus die letzten Meldungen. Melden passiert auf
- * abriss-atlas.de, und das sagt der Knopf auch.
+ * The demolition atlas — deliberately no more than a gesture in the concept: no
+ * API, no map, a static crop plus the latest reports. Reporting happens on
+ * abriss-atlas.de, and the button says so.
  */
 export default function AtlasScreen() {
+  const colors = useColors();
   return (
     <View className="flex-1 bg-grey-100">
       <ScreenHeader />

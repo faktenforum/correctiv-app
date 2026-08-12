@@ -13,7 +13,7 @@ import { describe, expect, it } from 'vitest';
  * that runs on every PR.
  *
  * If this test fails, the fix is never to widen the allow-list: move the code
- * that needs the SDK into a host (apps/mobile/src/platform/…) and declare what
+ * that needs the SDK into a host (apps/mobile-rn/src/lib/platform/…) and declare what
  * the core needs as a port in src/ports/index.ts.
  */
 const SRC = fileURLToPath(new URL('../src', import.meta.url));

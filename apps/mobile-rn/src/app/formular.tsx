@@ -8,19 +8,19 @@ import { Button, Hairline, ScreenHeader, Typo } from '@/components/ui';
 import { callouts, type CalloutComponent, type Callout } from '@correctiv/app-core/data/callouts';
 import { formatNumberDe } from '@correctiv/app-core/lib/format';
 import { coreActions, useExtraCount } from '@/lib/store/core';
-import { colors, sizes } from '@/lib/theme';
+import { sizes, useColors } from '@/lib/theme';
 
 /**
- * Der Mitmach-Fluss: mehrstufiges Formular nach dem Schema des Aufrufs, danach die
- * Dankeseite.
+ * The participation flow: a multi-step form following the callout's schema, then
+ * the thank-you page.
  *
- * Kein Pfad-Parameter (`/aufruf/[slug]/formular`), sondern `?slug=` — die Route
- * exportiert damit als eine Datei und braucht keine verschachtelten
- * `generateStaticParams`. Dieselbe Entscheidung wie bei /artikel und /video.
+ * `?slug=` rather than a path parameter (`/aufruf/[slug]/formular`): the route then
+ * exports as a single file and needs no nested `generateStaticParams`. The same
+ * decision as for /artikel and /video.
  *
- * Die Dankeseite ist ein Zustand DIESER Route, keine eigene: sie zeigt denselben,
- * gerade erhöhten Zähler, und der Nutzer soll nicht per Zurück ins ausgefüllte
- * Formular zurückfallen können.
+ * The thank-you page is a state of THIS route, not one of its own: it shows the
+ * same counter it just raised, and going back must not drop the reader into the
+ * filled-in form again.
  */
 export default function FormularScreen() {
   const { slug } = useLocalSearchParams<{ slug?: string }>();
@@ -156,8 +156,9 @@ export default function FormularScreen() {
   );
 }
 
-/** Dankeseite mit dem Zähler, der die eigene Einreichung schon enthält. */
+/** The thank-you page, with the counter that already includes this submission. */
 function ThankYou({ callout }: { callout: Callout }) {
+  const colors = useColors();
   const extra = useExtraCount(callout.slug);
 
   return (
@@ -183,9 +184,9 @@ function ThankYou({ callout }: { callout: Callout }) {
 }
 
 /**
- * Aufrufseite UND Formular in einem Schritt schließen — sonst landet man auf der
- * Detailseite und muss noch einmal zurück. `replace` ist der Rückfall für den Fall,
- * dass niemand hierher navigiert ist (kalter Deep-Link direkt aufs Formular).
+ * Closes the callout page AND the form in one step — otherwise you land on the
+ * detail page and have to go back a second time. `replace` is the fallback for when
+ * nobody navigated here (a cold deep link straight into the form).
  */
 function backToOverview(): void {
   if (router.canGoBack()) {

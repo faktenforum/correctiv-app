@@ -3,8 +3,8 @@ import { Pressable, View } from 'react-native';
 import { Badge, Typo } from '@/components/ui';
 
 /**
- * Early-Access-Karte (SAMPLE). Für Nicht-Mitglieder Countdown + Einladung, für
- * Mitglieder „Jetzt lesen" — der app-weite Status-Flip nach Beitritt (M5).
+ * Early-access card (SAMPLE data). A countdown and an invitation for guests, "Jetzt
+ * lesen" for members — the app-wide status flip after joining (M5).
  */
 export function EarlyAccessCard({
   isMember = false,

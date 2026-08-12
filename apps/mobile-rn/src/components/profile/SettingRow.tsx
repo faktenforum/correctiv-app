@@ -1,7 +1,7 @@
 import { Platform, Switch, View } from 'react-native';
 
 import { Typo } from '@/components/ui';
-import { colors } from '@/lib/theme';
+import { colors, useColors } from '@/lib/theme';
 
 /**
  * react-native-web applies `thumbColor` to the OFF state only; the ON thumb comes
@@ -14,7 +14,7 @@ import { colors } from '@/lib/theme';
  * The prop is not in RN's `SwitchProps`; spreading it from a variable keeps that
  * off the native branch instead of casting the type away.
  */
-const WEB_THUMB = Platform.OS === 'web' ? { activeThumbColor: colors['grey-100'] } : {};
+const WEB_THUMB = Platform.OS === 'web' ? { activeThumbColor: colors['always-light'] } : {};
 
 /**
  * A settings row: label, explanation, switch.
@@ -36,6 +36,7 @@ export function SettingRow({
   onValueChange: (value: boolean) => void;
   className?: string;
 }) {
+  const palette = useColors();
   return (
     <View className={['flex-row items-center py-2xs', className ?? ''].join(' ')}>
       <View className="flex-1 pr-s">
@@ -50,8 +51,10 @@ export function SettingRow({
         value={value}
         onValueChange={onValueChange}
         accessibilityLabel={label}
-        trackColor={{ false: colors['grey-300'], true: colors.emphasis }}
-        thumbColor={colors['grey-100']}
+        // The track is a page surface and follows the scheme; the thumb stays white —
+        // in both states it sits on a coloured or light track.
+        trackColor={{ false: palette['grey-300'], true: palette.emphasis }}
+        thumbColor={colors['always-light']}
         {...WEB_THUMB}
       />
     </View>

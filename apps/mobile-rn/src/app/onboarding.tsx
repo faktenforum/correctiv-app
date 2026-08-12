@@ -7,7 +7,7 @@ import { SettingRow } from '@/components/profile/SettingRow';
 import { Button, Card, Chip, Typo } from '@/components/ui';
 import { interests } from '@correctiv/app-core/data/interests';
 import { coreActions, useSelectedInterests, useSettings } from '@/lib/store/core';
-import { colors } from '@/lib/theme';
+import { useColors } from '@/lib/theme';
 
 /** The three sentences on the red mission screen. */
 const MISSION = [
@@ -28,6 +28,7 @@ const MISSION = [
  * the steps after it run on the normal surface.
  */
 export default function OnboardingScreen() {
+  const colors = useColors();
   const [step, setStep] = useState(0);
   const settings = useSettings();
   const selected = useSelectedInterests();
@@ -57,7 +58,7 @@ export default function OnboardingScreen() {
                 height: 7,
                 backgroundColor: mission
                   ? i === step
-                    ? colors['grey-100']
+                    ? colors['always-light']
                     : 'rgba(255,255,255,0.45)'
                   : i === step
                     ? colors.emphasis
@@ -91,12 +92,12 @@ export default function OnboardingScreen() {
       >
         {mission && (
           <View>
-            <Typo variant="headline-m" color="grey-100" style={{ letterSpacing: 2 }}>
+            <Typo variant="headline-m" color="always-light" style={{ letterSpacing: 2 }}>
               CORRECTIV
             </Typo>
             {/* Merriweather, like the reader's h1: this is an editorial promise, not
                 a UI label. Sans here was an Expo-only divergence. */}
-            <Typo variant="headline-xxl" family="serif" color="grey-100" className="mt-s">
+            <Typo variant="headline-xxl" family="serif" color="always-light" className="mt-s">
               Recherchen für die Gesellschaft
             </Typo>
             <View className="mt-2xl">
@@ -106,10 +107,10 @@ export default function OnboardingScreen() {
                       but yellow is the club's colour and on the brand red it reads
                       as a colour accident rather than as a list marker. */}
                   <View
-                    className="rounded-full bg-grey-100"
+                    className="rounded-full bg-always-light"
                     style={{ width: 8, height: 8, marginTop: 7 }}
                   />
-                  <Typo variant="text-l" color="grey-100" className="ml-s flex-1">
+                  <Typo variant="text-l" color="always-light" className="ml-s flex-1">
                     {line}
                   </Typo>
                 </View>

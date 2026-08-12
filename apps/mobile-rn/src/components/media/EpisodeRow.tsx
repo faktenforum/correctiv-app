@@ -3,13 +3,14 @@ import { ActivityIndicator, Pressable, View } from 'react-native';
 
 import { Badge, Typo } from '@/components/ui';
 import { useEpisodeStatus } from '@/lib/audio/useAudio';
-import { colors, sizes } from '@/lib/theme';
+import { sizes, useColors } from '@/lib/theme';
 
 /**
- * Eine Folge in einer Liste: Play/Pause links, Titel und Meta, Club-Marke rechts.
+ * One episode in a list: play/pause on the left, title and meta, club mark on the
+ * right.
  *
- * Der Zustand kommt über `useEpisodeStatus(id)` — ein primitiver Wert, damit nicht
- * jede Zeile der Liste zweimal pro Sekunde neu rendert, wenn die Position tickt.
+ * The state arrives through `useEpisodeStatus(id)` — a primitive value, so that a
+ * ticking position does not re-render every row in the list twice a second.
  */
 export function EpisodeRow({
   episodeId,
@@ -27,6 +28,7 @@ export function EpisodeRow({
   metaSuffix?: string;
   onPress: () => void;
 }) {
+  const colors = useColors();
   const status = useEpisodeStatus(episodeId);
   const playing = status === 'playing';
   const loading = status === 'loading';

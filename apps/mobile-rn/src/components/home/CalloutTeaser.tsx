@@ -14,6 +14,10 @@ import { colors } from '@/lib/theme';
  * block that asks the reader for something, and both the draft and the
  * NativeScript build set it apart that way. Home was missing it entirely, which
  * left the Mitmachen tab as the only door into the callouts.
+ *
+ * Dark in both schemes, so everything on it is `always-light`, dimmed where the
+ * light scheme used a grey. In dark mode the card no longer stands out from the
+ * page by brightness — the coral button carries that job, which is what it is for.
  */
 export function CalloutTeaser({
   callout,
@@ -29,18 +33,20 @@ export function CalloutTeaser({
       onPress={() => onPress(callout)}
       accessibilityRole="link"
       accessibilityLabel={callout.title}
-      className="rounded-md bg-grey-700 p-m active:opacity-90"
+      className="rounded-md bg-always-dark p-m active:opacity-90"
     >
-      <Overline label={`Mitmachen · ${style.kicker}`} color="grey-400" />
-      <Typo variant="headline-s" color="grey-100" className="mt-2xs">
+      <Overline label={`Mitmachen · ${style.kicker}`} color="always-light" className="opacity-70" />
+      <Typo variant="headline-s" color="always-light" className="mt-2xs">
         {callout.title}
       </Typo>
-      <Typo variant="text-m" color="grey-400" className="mt-2xs" numberOfLines={3}>
+      <Typo variant="text-m" color="always-light" className="mt-2xs opacity-70" numberOfLines={3}>
         {callout.excerpt}
       </Typo>
-      <View className="mt-s flex-row items-center">
-        <Ionicons name="people-outline" size={16} color={colors['grey-400']} />
-        <Typo variant="text-s" color="grey-400" className="ml-2xs">
+      {/* Die Abblendung liegt auf der Zeile, damit Symbol und Zahl gleich weit
+          zurücktreten — ein Ionicon nimmt keine Deckkraft entgegen. */}
+      <View className="mt-s flex-row items-center opacity-70">
+        <Ionicons name="people-outline" size={16} color={colors['always-light']} />
+        <Typo variant="text-s" color="always-light" className="ml-2xs">
           {formatNumberDe(callout.responseCount)} {style.unit} bisher
         </Typo>
       </View>

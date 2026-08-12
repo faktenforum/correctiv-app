@@ -4,6 +4,7 @@ import { router, Stack, usePathname } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
 import { useFonts } from 'expo-font';
 import * as SplashScreen from 'expo-splash-screen';
+import { useColorScheme } from 'nativewind';
 import { useEffect, useState } from 'react';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
 
@@ -17,8 +18,8 @@ import { PERSISTED_KEYS } from '@correctiv/app-core/stores/settings';
 import { expoAudio } from '@/lib/audio/backend';
 import { stop as stopAudio } from '@/lib/audio/player';
 import { expoPlatform, hydratePlatform } from '@/lib/platform/expo';
-import { coreStores } from '@/lib/store/core';
-import { fontAssets } from '@/lib/theme';
+import { coreStores, useTheme } from '@/lib/store/core';
+import { fontAssets, useColors, useIsDark } from '@/lib/theme';
 
 // Hand the core its platform capabilities before anything reads a store. Storage
 // and bundled content come from the adapter; the audio backend is composed in
@@ -78,9 +79,34 @@ export const unstable_settings = { anchor: '(tabs)' };
 
 let gated = false;
 
+/**
+ * Hands the app's appearance setting to NativeWind, which owns the `dark` class the
+ * whole colour system hangs off (`tailwind.config.js` → `darkMode: 'class'`).
+ *
+ * The setting is the authority, not the device: 'system' delegates back to the OS,
+ * 'light' and 'dark' override it. That distinction is the entire reason this is not
+ * `darkMode: 'media'` — a user who picks light on a dark phone means it.
+ *
+ * The NativeScript build needed a hundred lines here (`composables/useTheme.ts`):
+ * it had to disable core's own appearance handling, re-apply a CSS class to every
+ * modal root by hand, and force CollectionView to re-render. React Native re-renders
+ * on state change on its own, so this is the whole of it.
+ */
+function useAppearance(): void {
+  const theme = useTheme();
+  const { setColorScheme } = useColorScheme();
+
+  useEffect(() => {
+    setColorScheme(theme);
+  }, [theme, setColorScheme]);
+}
+
 export default function RootLayout() {
   const [fontsLoaded] = useFonts(fontAssets);
   const [storeReady, setStoreReady] = useState(false);
+  useAppearance();
+  const palette = useColors();
+  const isDark = useIsDark();
 
   useEffect(() => {
     let active = true;
@@ -130,8 +156,17 @@ export default function RootLayout() {
 
   return (
     <GestureHandlerRootView style={{ flex: 1 }}>
-      <StatusBar style="dark" />
-      <Stack screenOptions={{ headerShown: false }}>
+      {/* Explicit rather than "auto": auto follows the device, and the app's
+          appearance setting may deliberately disagree with it. */}
+      <StatusBar style={isDark ? 'light' : 'dark'} />
+      <Stack
+        screenOptions={{
+          headerShown: false,
+          // The stack's own surface, visible for the length of a push animation.
+          // Left at its default white it flashed on every navigation in dark mode.
+          contentStyle: { backgroundColor: palette['grey-100'] },
+        }}
+      >
         <Stack.Screen name="(tabs)" />
         {/* Der Vollplayer ist eine Ansicht auf den laufenden Singleton, kein
             eigener Zustand — als Modal, weil er nichts ersetzt. */}

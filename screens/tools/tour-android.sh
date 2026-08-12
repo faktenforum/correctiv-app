@@ -1,12 +1,11 @@
 #!/usr/bin/env bash
 # Walks a build on a running Android emulator and screenshots every step.
 #
-# One script for both apps, because the tours have to be comparable: the Expo and
-# the NativeScript build differ only in the activity that starts them and in where
-# the PNGs go. Both share the package id, so only one can be installed at a time.
+# The step names are the contract: they match screens/draft/ and screens/nativescript/
+# so the three sets can be read side by side. ACTIVITY and OUT are parameters because
+# this script was written to walk two different builds the same way.
 #
-#   OUT=out/expo         bash tour-android.sh
-#   OUT=out/nativescript ACTIVITY=com.tns.NativeScriptActivity bash tour-android.sh
+#   OUT=out/expo bash tour-android.sh
 set -uo pipefail
 source "$(dirname "$0")/lib.sh"
 

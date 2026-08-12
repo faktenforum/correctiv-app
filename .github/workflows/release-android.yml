@@ -1,25 +1,19 @@
-# Builds a signed Android APK for BOTH apps and attaches them to a GitHub Release.
+# Builds a signed Android APK and attaches it to a GitHub Release.
 #
 # Trigger: push a version tag, e.g.
 #     git tag v1.2.3 && git push origin v1.2.3
 # The release (with auto-generated notes) is created automatically and the
-# artifacts are attached as downloadable assets.
+# artifact is attached as a downloadable asset.
 #
-# Manual runs (workflow_dispatch) build the artifacts and upload them to the run
-# only — no release is created. That is how to test this pipeline.
-#
-# Two APKs, because both apps are maintained while one replaces the other
-# (adr/0006-one-core-two-hosts.md). They share the package id
-# org.correctiv.app.prototype, so only ONE can be installed on a device at a time —
-# the asset names say which is which.
+# Manual runs (workflow_dispatch) build the artifact and upload it to the run only —
+# no release is created. That is how to test this pipeline.
 #
 # Signing:
-#   - If the ANDROID_KEYSTORE_* secrets are set (see RELEASE.md), both APKs are
-#     signed with the real upload key, and the NativeScript app additionally
-#     produces a Play-ready AAB.
-#   - If they are NOT set, both fall back to the committed throwaway TEST keystore
-#     (apps/mobile/signing/correctiv-test.keystore) — installable test builds only.
-#     Never use the test key for the Play Store.
+#   - If the ANDROID_KEYSTORE_* secrets are set (see RELEASE.md), the APK is signed
+#     with the real upload key.
+#   - If they are NOT set, it falls back to the committed throwaway TEST keystore
+#     (apps/mobile-rn/signing/correctiv-test.keystore) — an installable test build
+#     only. Never use the test key for the Play Store.
 # Optional secrets:
 #   ANDROID_KEYSTORE_BASE64   base64 of the upload keystore (.jks)
 #   ANDROID_KEYSTORE_PASSWORD keystore password
@@ -40,21 +34,11 @@ concurrency:
   cancel-in-progress: false
 
 jobs:
-  nativescript:
-    name: NativeScript APK
+  expo:
+    name: Android APK
     runs-on: ubuntu-latest
     outputs:
-      real: ${{ steps.ks.outputs.real }}
-    # Skip the NativeScript doctor preflight (no emulator on a build runner);
-    # the actual compilation toolchain is validated by the build itself.
-    env:
-      NS_SKIP_ENV_CHECK: "true"
-      # @nativescript/vite 2.0.3 only deploys the Vite bundle into the native
-      # project in watch mode (ns debug, via an IPC channel). A one-shot
-      # `ns build` has no IPC, so the bundle never reaches assets/app and the
-      # Static Binding Generator fails. Point Vite's output dir straight at the
-      # platform assets dir so the bundle lands where the build expects it.
-      NS_VITE_DIST_DIR: ${{ github.workspace }}/apps/mobile/platforms/android/app/src/main/assets/app
+      real: ${{ steps.sign.outputs.real }}
     steps:
       - uses: actions/checkout@v4
 
@@ -79,128 +63,9 @@ jobs:
       - name: Install dependencies
         run: npm ci
 
-      - name: Install NativeScript CLI
-        run: npm install -g nativescript
-
-      # Pick the signing key: real upload keystore from secrets (Play-ready) or
-      # the committed throwaway TEST keystore (installable test APK only).
-      - name: Prepare keystore
-        id: ks
-        env:
-          ANDROID_KEYSTORE_BASE64: ${{ secrets.ANDROID_KEYSTORE_BASE64 }}
-        run: |
-          if [ -n "$ANDROID_KEYSTORE_BASE64" ]; then
-            echo "Signing with the real upload keystore (from secrets)."
-            echo "$ANDROID_KEYSTORE_BASE64" | base64 -d > "${RUNNER_TEMP}/release.keystore"
-            echo "path=${RUNNER_TEMP}/release.keystore" >> "$GITHUB_OUTPUT"
-            echo "real=true" >> "$GITHUB_OUTPUT"
-          else
-            echo "::warning::No ANDROID_KEYSTORE_* secrets set — signing with the committed TEST keystore. The result is NOT for the Play Store."
-            echo "path=${GITHUB_WORKSPACE}/apps/mobile/signing/correctiv-test.keystore" >> "$GITHUB_OUTPUT"
-            echo "real=false" >> "$GITHUB_OUTPUT"
-          fi
-
-      # On a tag, drive the app version from the tag (vX.Y.Z -> X.Y.Z) and use
-      # the run number as a monotonic versionCode (Play Store requires it to
-      # increase on every upload). Skipped on manual runs.
-      - name: Set version from tag
-        if: startsWith(github.ref, 'refs/tags/')
-        run: |
-          VERSION_NAME="${GITHUB_REF_NAME#v}"
-          VERSION_CODE="${GITHUB_RUN_NUMBER}"
-          echo "versionName=$VERSION_NAME versionCode=$VERSION_CODE"
-          sed -i -E "s/versionName \"[^\"]*\"/versionName \"${VERSION_NAME}\"/" apps/mobile/App_Resources/Android/app.gradle
-          sed -i -E "s/versionCode [0-9]+/versionCode ${VERSION_CODE}/" apps/mobile/App_Resources/Android/app.gradle
-
-      # Passwords/alias fall back to the TEST keystore's known values when the
-      # secrets are absent (GitHub returns '' for an unset secret).
-      - name: Build signed APK
-        working-directory: apps/mobile
-        env:
-          KS_PATH: ${{ steps.ks.outputs.path }}
-          KS_PASSWORD: ${{ secrets.ANDROID_KEYSTORE_PASSWORD || 'correctiv-test' }}
-          KS_ALIAS: ${{ secrets.ANDROID_KEY_ALIAS || 'correctiv-test' }}
-          KS_KEY_PASSWORD: ${{ secrets.ANDROID_KEY_PASSWORD || 'correctiv-test' }}
-        run: |
-          ns build android --release \
-            --key-store-path "$KS_PATH" \
-            --key-store-password "$KS_PASSWORD" \
-            --key-store-alias "$KS_ALIAS" \
-            --key-store-alias-password "$KS_KEY_PASSWORD"
-
-      # The AAB is only useful for the Play Store, so build it for real releases
-      # only (skipped on the TEST-keystore fallback).
-      - name: Build signed AAB (Play Store)
-        if: steps.ks.outputs.real == 'true'
-        working-directory: apps/mobile
-        env:
-          KS_PATH: ${{ steps.ks.outputs.path }}
-          KS_PASSWORD: ${{ secrets.ANDROID_KEYSTORE_PASSWORD }}
-          KS_ALIAS: ${{ secrets.ANDROID_KEY_ALIAS }}
-          KS_KEY_PASSWORD: ${{ secrets.ANDROID_KEY_PASSWORD }}
-        run: |
-          ns build android --release --aab \
-            --key-store-path "$KS_PATH" \
-            --key-store-password "$KS_PASSWORD" \
-            --key-store-alias "$KS_ALIAS" \
-            --key-store-alias-password "$KS_KEY_PASSWORD"
-
-      - name: SBG diagnostics on failure
-        if: failure()
-        working-directory: apps/mobile
-        run: |
-          echo "=== which node / version ==="; which node; node --version
-          echo "=== runSbg.log ==="
-          cat platforms/android/build-tools/runSbg.log 2>/dev/null || echo "(no runSbg.log found)"
-          echo "=== js_parser verbose (enableErrorLogging) ==="
-          node platforms/android/build-tools/jsparser/js_parser.js enableErrorLogging 2>&1 | tail -60 || true
-
-      - name: Collect artifacts
-        run: |
-          mkdir -p dist
-          NAME="correctiv-app-nativescript-${GITHUB_REF_NAME}"
-          cp apps/mobile/platforms/android/app/build/outputs/apk/release/*.apk "dist/${NAME}.apk"
-          # AAB only exists for real releases; ignore if absent (TEST fallback).
-          cp apps/mobile/platforms/android/app/build/outputs/bundle/release/*.aab "dist/${NAME}.aab" 2>/dev/null || true
-          ls -lh dist
-
-      - name: Upload
-        uses: actions/upload-artifact@v4
-        with:
-          name: release-nativescript
-          path: dist/*
-          if-no-files-found: error
-          retention-days: 30
-
-  expo:
-    name: Expo APK
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
-
-      - name: Set up Node.js
-        uses: actions/setup-node@v4
-        with:
-          node-version: 24
-          cache: npm
-
-      - name: Set up JDK 17
-        uses: actions/setup-java@v4
-        with:
-          distribution: temurin
-          java-version: 17
-
-      - name: Prepare Android SDK
-        run: |
-          SDKMANAGER="${ANDROID_HOME}/cmdline-tools/latest/bin/sdkmanager"
-          yes | "$SDKMANAGER" --licenses >/dev/null 2>&1 || true
-          "$SDKMANAGER" "platform-tools" "platforms;android-36" "build-tools;35.0.0" >/dev/null || true
-
-      - name: Install dependencies
-        run: npm ci
-
-      # Drive version and versionCode from the tag, before prebuild writes them
-      # into build.gradle. Same monotonic versionCode rule as the other job.
+      # Drive version and versionCode from the tag, before prebuild writes them into
+      # build.gradle. The run number is the versionCode because Play requires it to
+      # increase on every upload, and it is the only number that always does.
       - name: Set version from tag
         if: startsWith(github.ref, 'refs/tags/')
         run: |
@@ -224,11 +89,12 @@ jobs:
         working-directory: apps/mobile-rn/android
         run: ./gradlew assembleRelease
 
-      # Gradle signs the release variant with the template's debug key. Re-sign it
-      # with the same key the NativeScript job used, so a release cannot ship two
-      # APKs under two different identities. apksigner replaces the signature; the
-      # APK is already zipaligned by Gradle.
+      # Gradle signs the release variant with the template's debug key, which is
+      # generated per machine — two builds of the same commit would carry two
+      # identities and testers could not update in place. apksigner replaces the
+      # signature with a stable one; the APK is already zipaligned by Gradle.
       - name: Sign with the release key
+        id: sign
         env:
           KS_PASSWORD: ${{ secrets.ANDROID_KEYSTORE_PASSWORD || 'correctiv-test' }}
           KS_ALIAS: ${{ secrets.ANDROID_KEY_ALIAS || 'correctiv-test' }}
@@ -239,9 +105,11 @@ jobs:
           if [ -n "$ANDROID_KEYSTORE_BASE64" ]; then
             echo "$ANDROID_KEYSTORE_BASE64" | base64 -d > "${RUNNER_TEMP}/release.keystore"
             KS_PATH="${RUNNER_TEMP}/release.keystore"
+            echo "real=true" >> "$GITHUB_OUTPUT"
           else
-            echo "::warning::No ANDROID_KEYSTORE_* secrets set — signing with the committed TEST keystore."
-            KS_PATH="${GITHUB_WORKSPACE}/apps/mobile/signing/correctiv-test.keystore"
+            echo "::warning::No ANDROID_KEYSTORE_* secrets set — signing with the committed TEST keystore. The result is NOT for the Play Store."
+            KS_PATH="${GITHUB_WORKSPACE}/apps/mobile-rn/signing/correctiv-test.keystore"
+            echo "real=false" >> "$GITHUB_OUTPUT"
           fi
           APKSIGNER="${ANDROID_HOME}/build-tools/35.0.0/apksigner"
           mkdir -p dist
@@ -265,12 +133,12 @@ jobs:
   release:
     name: Attach to the GitHub Release
     runs-on: ubuntu-latest
-    needs: [nativescript, expo]
-    # Only tags create a release; a manual run stops after the two builds, with the
-    # APKs on the run itself.
+    needs: [expo]
+    # Only tags create a release; a manual run stops after the build, with the APK on
+    # the run itself.
     if: startsWith(github.ref, 'refs/tags/')
     steps:
-      - name: Download both builds
+      - name: Download the build
         uses: actions/download-artifact@v4
         with:
           path: dist
@@ -292,6 +160,4 @@ jobs:
           generate_release_notes: true
           append_body: true
           body: |
-            **Two APKs**, one per app — they share the package id, so only one can be installed at a time:
-            `…-expo-…apk` is the app going forward, `…-nativescript-…apk` the one it replaces.
-            ${{ needs.nativescript.outputs.real == 'true' && '' || '> ⚠️ **Test build** — signed with the in-repo test key, **not** for the Play Store. For sideloading/testing only.' }}
+            ${{ needs.expo.outputs.real == 'true' && '' || '> ⚠️ **Test build** — signed with the in-repo test key, **not** for the Play Store. For sideloading/testing only.' }}

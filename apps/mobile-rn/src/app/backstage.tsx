@@ -16,14 +16,15 @@ import { formatDateShortDe } from '@correctiv/app-core/lib/format';
 import { openArticle } from '@/lib/openArticle';
 import { openExternal } from '@/lib/openExternal';
 import { useIsMember } from '@/lib/store/core';
-import { colors } from '@/lib/theme';
+import { useColors } from '@/lib/theme';
 
 /**
- * Backstage — Frühzugang, Recherchetagebuch, Club-Brief, Fragerunde, Events, Verlag.
+ * Backstage — early access, the research diary, the club letter, the Q&A, events,
+ * the publishing house.
  *
- * Für Gäste **offen angeteasert**: alles ist sichtbar, aber die handelnden Knöpfe
- * laden zum Beitritt ein, statt zu sperren. Das ist die Konzeptregel „der Club ist
- * Nähe, keine Paywall" — deshalb steht hier kein Schloss, sondern ein Angebot.
+ * For guests it is **teased openly**: everything is visible, but the acting buttons
+ * invite you to join rather than lock you out. That is the concept's rule that the
+ * club is closeness, not a paywall — so there is no padlock here, only an offer.
  */
 export default function BackstageScreen() {
   const isMember = useIsMember();
@@ -143,6 +144,7 @@ export default function BackstageScreen() {
 }
 
 function DiaryRow({ entry }: { entry: DiaryEntry }) {
+  const colors = useColors();
   return (
     <Pressable
       accessibilityRole="link"

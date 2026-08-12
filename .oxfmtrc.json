@@ -12,12 +12,9 @@
   "vueIndentScriptAndStyle": false,
   "ignorePatterns": [
     "media/**",
-    "apps/mobile/App_Resources/**",
     ".github/**",
     "**/*.md",
     "**/*.scss",
-    "apps/mobile/src/assets/**",
-    "apps/mobile/src/fonts/**",
     "packages/app-core/test/__fixtures__/**",
     "apps/mobile-rn/__fixtures__/**",
     "apps/mobile-rn/assets/**",

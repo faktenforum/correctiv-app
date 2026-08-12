@@ -11,7 +11,8 @@
  * cycle is gone, and a host can add a third medium (a game, a live stream)
  * without touching the existing ones.
  *
- * Registration happens in the host entry point — see apps/mobile/src/app.ts.
+ * Registration happens in the host entry point — see
+ * apps/mobile-rn/src/app/_layout.tsx.
  */
 
 type Stopper = () => void;

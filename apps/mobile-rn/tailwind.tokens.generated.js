@@ -6,16 +6,48 @@ module.exports = {
   colors: {
   "transparent": "transparent",
   "current": "currentColor",
-  "emphasis": "#ff5064",
-  "alternative": "#fde162",
-  "grey-100": "#ffffff",
-  "grey-200": "#f8f8f8",
-  "grey-250": "#f0f0f0",
-  "grey-300": "#e6e6e6",
-  "grey-400": "#cecece",
-  "grey-500": "#b3b3b3",
-  "grey-600": "#707070",
-  "grey-700": "#333333"
+  "emphasis": "rgb(var(--color-emphasis) / <alpha-value>)",
+  "alternative": "rgb(var(--color-alternative) / <alpha-value>)",
+  "grey-100": "rgb(var(--color-grey-100) / <alpha-value>)",
+  "grey-200": "rgb(var(--color-grey-200) / <alpha-value>)",
+  "grey-250": "rgb(var(--color-grey-250) / <alpha-value>)",
+  "grey-300": "rgb(var(--color-grey-300) / <alpha-value>)",
+  "grey-400": "rgb(var(--color-grey-400) / <alpha-value>)",
+  "grey-500": "rgb(var(--color-grey-500) / <alpha-value>)",
+  "grey-600": "rgb(var(--color-grey-600) / <alpha-value>)",
+  "grey-700": "rgb(var(--color-grey-700) / <alpha-value>)",
+  "always-light": "rgb(var(--color-always-light) / <alpha-value>)",
+  "always-dark": "rgb(var(--color-always-dark) / <alpha-value>)"
+},
+  colorVars: {
+  ":root": {
+    "--color-emphasis": "255 80 100",
+    "--color-alternative": "253 225 98",
+    "--color-grey-100": "255 255 255",
+    "--color-grey-200": "248 248 248",
+    "--color-grey-250": "240 240 240",
+    "--color-grey-300": "230 230 230",
+    "--color-grey-400": "206 206 206",
+    "--color-grey-500": "179 179 179",
+    "--color-grey-600": "112 112 112",
+    "--color-grey-700": "51 51 51",
+    "--color-always-light": "255 255 255",
+    "--color-always-dark": "51 51 51"
+  },
+  ".dark:root": {
+    "--color-emphasis": "255 97 115",
+    "--color-alternative": "253 225 98",
+    "--color-grey-100": "26 26 26",
+    "--color-grey-200": "36 36 36",
+    "--color-grey-250": "46 46 46",
+    "--color-grey-300": "58 58 58",
+    "--color-grey-400": "74 74 74",
+    "--color-grey-500": "124 124 124",
+    "--color-grey-600": "168 168 168",
+    "--color-grey-700": "242 242 242",
+    "--color-always-light": "255 255 255",
+    "--color-always-dark": "51 51 51"
+  }
 },
   spacing: {
   "0": "0px",

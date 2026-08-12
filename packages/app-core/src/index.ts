@@ -1,11 +1,11 @@
 /**
  * `@correctiv/app-core` — the platform-free half of the app.
  *
- * Two hosts share it: `apps/mobile` (NativeScript/Vue) and `apps/mobile-rn`
- * (Expo/React Native, including the web target). It contains the model, the
- * parsers, the services, the caches and all of the state — and imports neither a
- * UI framework nor a platform SDK, which is what a test in `test/boundary.test.ts`
- * enforces on every PR.
+ * `apps/mobile-rn` (Expo/React Native, including the web target) is its host. It
+ * contains the model, the parsers, the services, the caches and all of the state —
+ * and imports neither a UI framework nor a platform SDK, which is what a test in
+ * `test/boundary.test.ts` enforces on every PR. That rule is why replacing the view
+ * layer once cost no behaviour.
  *
  * The root entry exposes only the platform ports, because that is the one thing
  * every host must touch at startup:

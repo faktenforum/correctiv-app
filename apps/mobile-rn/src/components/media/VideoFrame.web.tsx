@@ -1,12 +1,12 @@
 import type { VideoFrameProps } from './videoFrameTypes';
 
 /**
- * Web-Fassung: dieselbe Einbettung als echtes `<iframe>`. react-native-webview
- * hat keine Web-Implementierung und würde hier „React Native WebView does not
- * support this platform." rendern — bei grünem Build.
+ * The web branch: the same embed as a real `<iframe>`. react-native-webview has no
+ * web implementation and would render "React Native WebView does not support this
+ * platform." here — on a green build.
  *
- * `react-native-web` gibt unbekannte Elemente nicht durch, deshalb steht hier
- * bewusst DOM-JSX. Diese Datei wird von Metro nur auf Web aufgelöst.
+ * `react-native-web` does not pass unknown elements through, so this file uses DOM
+ * JSX on purpose. Metro resolves it on web only.
  */
 export function VideoFrame({ uri, className }: VideoFrameProps) {
   return (
@@ -16,10 +16,10 @@ export function VideoFrame({ uri, className }: VideoFrameProps) {
       title="Video"
       allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; fullscreen"
       allowFullScreen
-      // Der Player braucht Skripte, seinen eigenen Origin (Cross-Origin, also
-      // bleibt es youtube-nocookie.com — nicht unserer) und Presentation für den
-      // Vollbildmodus. Ohne Sandbox dürfte die Einbettung auch die oberste Seite
-      // navigieren; das ist der Teil, der hier wegfällt.
+      // The player needs scripts, its own origin (cross-origin, so that stays
+      // youtube-nocookie.com — not ours) and presentation for full screen. Without
+      // a sandbox the embed could also navigate the top-level page; that is the
+      // capability being withheld here.
       sandbox="allow-scripts allow-same-origin allow-presentation allow-popups"
       style={{ width: '100%', height: '100%', border: 0 }}
     />

@@ -4,6 +4,8 @@ import type { BlobStore, ContentBundle, CorePlatform, KeyValueStore } from '@cor
 import type { Article } from '@correctiv/app-core/articles/types';
 
 import { OFFLINE_ARTICLES, OFFLINE_FEEDS } from '@/lib/articles/offlineBundle.generated';
+import { OFFLINE_COVERS } from '@/lib/articles/covers';
+import { OFFLINE_PODCASTS } from '@/lib/podcasts/offlineBundle.generated';
 
 /**
  * The Expo host's half of `@correctiv/app-core`'s platform ports — the only place
@@ -107,24 +109,28 @@ const blobs: BlobStore = {
 };
 
 /**
- * What this app ships in its bundle: the feed snapshots and pre-extracted articles
- * from `npm run offline-articles`.
+ * What this app ships in its bundle: the feed snapshots, pre-extracted articles and
+ * inlined covers from `npm run offline-articles`, plus the podcast snapshots from
+ * `npm run offline-podcasts`.
  *
- * On native the snapshots are what the first round of this port was for — the demo
- * must not depend on Wi-Fi. On **web** they are not a fallback at all but the only
- * way an article ever appears: correctiv.org sends no `Access-Control-Allow-Origin`,
- * so a browser blocks every feed request, the store's cascade lands here, and Home
- * shows the snapshot instead of an error. That is why this host bundles them now
- * where it used to answer null — the fix was a generator output, not a core change.
+ * On native these are what the first round of this port was for — the demo must not
+ * depend on Wi-Fi. On **web** they are not a fallback at all but the only way
+ * content ever appears: neither correctiv.org nor the Castopod instance sends an
+ * `Access-Control-Allow-Origin` header, so a browser blocks every one of those
+ * requests, each store's cascade lands here, and the app shows the snapshot instead
+ * of an error.
  *
- * Still no podcast snapshots. The NativeScript app bundles those (JSON in its app
- * folder) and this one does not, which is exactly the asymmetry the port absorbs.
+ * `image` answers with an inlined data URI rather than the remote URL it used to
+ * echo back. Echoing it was a no-op: `adoptBundledImages` in the core swaps a feed
+ * item's image for the bundled one precisely because the remote URL cannot load
+ * when there is no network, and handing back the same URL left the offline lists
+ * grey. It is the one entry that stays empty on web — `covers.web.ts` says why.
  */
 const content: ContentBundle = {
   feed: (key) => OFFLINE_FEEDS[key] ?? null,
   article: (url) => (OFFLINE_ARTICLES[url] as Article | undefined) ?? null,
-  image: (url) => OFFLINE_ARTICLES[url]?.heroImageUrl ?? null,
-  podcastSeries: () => null,
+  image: (url) => OFFLINE_COVERS[url] ?? null,
+  podcastSeries: (id) => OFFLINE_PODCASTS[id] ?? null,
 };
 
 /**

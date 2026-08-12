@@ -4,14 +4,14 @@ import { View, type ColorValue } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { MiniPlayer } from '@/components/player/MiniPlayer';
-import { colors } from '@/lib/theme';
+import { useColors } from '@/lib/theme';
 
 type IoniconName = keyof typeof Ionicons.glyphMap;
 
 /**
- * Explizite Höhe, weil die Mini-Player-Leiste genau darüber sitzen muss und dafür
- * einen Wert braucht, den beide Seiten kennen. Ohne Angabe rechnet
- * react-navigation die Safe-Area selbst dazu — hier machen wir beides von Hand.
+ * An explicit height, because the mini player has to sit exactly on top of the tab
+ * bar and needs a value both sides agree on. Left unset, react-navigation adds the
+ * safe area itself — here both are done by hand.
  */
 const TAB_BAR_HEIGHT = 56;
 
@@ -30,6 +30,7 @@ function tabIcon(active: IoniconName, inactive: IoniconName) {
 }
 
 export default function TabsLayout() {
+  const colors = useColors();
   const insets = useSafeAreaInsets();
   const barHeight = TAB_BAR_HEIGHT + insets.bottom;
 
@@ -85,8 +86,8 @@ export default function TabsLayout() {
       </Tabs>
 
       {/*
-        Die Mini-Player-Leiste liegt ÜBER der Tab-Bar — dieselbe Anordnung wie die
-        AppShell-Zeilen im NativeScript-Stand und im Designentwurf.
+        The mini player sits ON TOP of the tab bar — the arrangement the design
+        draft uses.
 
         Als Overlay und NICHT über die `tabBar`-Prop mit `BottomTabBar`: dieser
         Import aus `expo-router/tabs` zieht eine zweite React-Instanz ins Bundle,

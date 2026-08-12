@@ -30,27 +30,28 @@ on content bundled into the build, because correctiv.org sends no CORS header �
 
 ## What is in here
 
-One core, two app hosts.
+One core, one app.
 
 | | Stack | Targets | Role |
 | --- | --- | --- | --- |
 | [`packages/app-core`](packages/app-core) | TypeScript, no UI framework | all | The behaviour: model, parsers, services, caches, **all** state |
-| [`apps/mobile-rn`](apps/mobile-rn) | Expo SDK 56 · React Native 0.85 · expo-router · NativeWind | iOS, Android, **web** | The app going forward |
-| [`apps/mobile`](apps/mobile) | NativeScript 9 · Vue 3 · Vite | iOS, Android | Being replaced — still the more complete UI, and the reference to port from |
+| [`apps/mobile-rn`](apps/mobile-rn) | Expo SDK 56 · React Native 0.85 · expo-router · NativeWind | iOS, Android, **web** | The app |
 
-The core is the point: it imports no UI framework and no platform SDK, so the same
-feed cascade, reader, audio state machine and membership logic drive both apps.
-A host supplies four small ports and its own screens.
+The core is the point even with a single app: it imports no UI framework and no
+platform SDK, so the feed cascade, the reader, the audio state machine and the
+membership logic sit where a change of view layer cannot reach them. That is not
+theory here — this repo replaced its entire view layer once, and none of that
+behaviour moved. A host supplies four small ports and its own screens.
 See [ADR 0006](adr/0006-one-core-two-hosts.md).
 
 ## Getting started
 
 ```bash
 npm install         # the whole workspace
-npm run check       # typecheck + lint + format + 357 headless tests, ~10 s, no device
+npm run check       # typecheck + lint + format + headless tests, ~10 s, no device
 ```
 
-**The app going forward** — the web target needs no emulator and no Android SDK:
+The web target needs no emulator and no Android SDK:
 
 ```bash
 npm run web          # browser, Fast Refresh
@@ -59,24 +60,20 @@ npm start            # then: Metro (dev client, NOT Expo Go)
 npm run build:web    # static export to apps/mobile-rn/dist/
 ```
 
-**The NativeScript app** — needs the Android SDK and the NativeScript CLI
-(`npm i -g nativescript`):
-
-```bash
-npm run ns:android   # build, deploy and run on the emulator/device
-```
-
 Requirements: Node ≥ 20.19. For Android additionally JDK 17 and an Android SDK with
-`ANDROID_HOME` set. For iOS, `apps/mobile-rn` builds via **EAS in the cloud, no Mac
-needed**; `apps/mobile` would need macOS + Xcode and has never been built.
+`ANDROID_HOME` set. iOS builds via **EAS in the cloud, no Mac needed**, and has not
+been built yet.
 
 Before a demo, refresh the bundled offline content — the demo must never depend on
 Wi-Fi, and the published web build shows nothing else:
 
 ```bash
-npm run offline-articles    # both apps: ~15 real articles, pre-extracted
-npm run offline-podcasts    # Salon5 podcast snapshots
+npm run offline-articles    # ~15 real articles, pre-extracted, with covers
+npm run offline-podcasts    # the seven curated Salon5 shows
 ```
+
+`offline-articles` wants ImageMagick for the covers; without it it says so and the
+lists fall back to remote URLs, which is only visible with no network.
 
 > **Serving the static export yourself?** Use the repo's own server — it maps clean
 > URLs (`/artikel` → `artikel.html`) and falls back to `404.html`, both of which
@@ -107,8 +104,8 @@ Dark mode, safe-area insets and touch are *not* simulated; those stay DevTools' 
 | --- | --- |
 | **How it fits together**, and where a given thing lives | [ARCHITECTURE.md](ARCHITECTURE.md) |
 | **The traps this toolchain sets** — one row per real incident, and why a green check is not evidence | [TROUBLESHOOTING.md](TROUBLESHOOTING.md) |
-| **Why** it is built this way — the six decisions | [`adr/`](adr/README.md) |
-| Every screen in all three versions, side by side | [`screens/`](screens/) |
+| **Why** it is built this way — the seven decisions | [`adr/`](adr/README.md) |
+| Every screen, and what looking at them found | [`screens/`](screens/) |
 | Design tokens, vendored from CORRECTIV's `wp-design-tokens` | [`tokens/`](tokens/README.md) |
 | Releases, signing, and the three CI workflows | [RELEASE.md](RELEASE.md) |
 | Rules for AI agents working in this repo | [AGENTS.md](AGENTS.md) |
@@ -124,8 +121,9 @@ Dark mode, safe-area insets and touch are *not* simulated; those stay DevTools' 
 - **Design tokens** in [`tokens/`](tokens/README.md) are vendored from
   [correctiv/wp-design-tokens](https://github.com/correctiv/wp-design-tokens)
   (GPL-2.0-or-later), compatible with AGPL-3.0-or-later.
-- **Fonts:** Merriweather and Source Sans 3 (SIL OFL 1.1), Lucide (ISC), Ionicons
-  (MIT) — see [`apps/mobile/src/fonts/LICENSES.md`](apps/mobile/src/fonts/LICENSES.md).
+- **Fonts:** Merriweather and Source Sans 3 (SIL OFL 1.1) and Ionicons (MIT) are
+  pulled from npm and redistributed in the build — see
+  [`apps/mobile-rn/NOTICE.md`](apps/mobile-rn/NOTICE.md).
 - **Sample content and images** are CORRECTIV material, included for prototyping.
 - This is a prototype, not a released product, and is not affiliated with any
   app-store listing.

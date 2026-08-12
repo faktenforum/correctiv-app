@@ -137,7 +137,7 @@ describe('starting playback', () => {
   });
 
   it('resolves the bundled sample episode instead of treating it as a URL', async () => {
-    // The core's sample data carries a NativeScript-relative path.
+    // The core's sample data carries an app-relative path, not a URL.
     await playEpisode({ ...EPISODE, url: 'assets/audio/sample-episode.mp3' });
 
     const source = mockPlayer.replace.mock.calls.at(-1)?.[0];

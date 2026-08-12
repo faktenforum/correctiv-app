@@ -12,9 +12,10 @@ import type { Article, ArticleExtractor } from './types';
  * only accepted URLs with a date in the path — which silently excluded every
  * Spotlight piece, the articles Home links to most.
  *
- * What stays in each script is the writing: NativeScript needs JSON files and
- * downloaded cover images in its app folder, Expo needs one generated TypeScript
- * module. That part is genuinely different. This is everything before it.
+ * What stays in the script is the writing — a host wants its bundle in whatever
+ * form it can read at runtime, and that has been JSON files in an app folder as well
+ * as generated TypeScript modules. That part is genuinely host-specific. This is
+ * everything before it.
  *
  * Not used at runtime — the scripts run it under `tsx`.
  */

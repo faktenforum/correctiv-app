@@ -4,9 +4,9 @@ import { Badge, ScreenHeader, Typo } from '@/components/ui';
 import { quarterlyReport } from '@correctiv/app-core/data/quartalsbericht';
 
 /**
- * Quartalsbericht — Transparenz als Clubinhalt, aber ohne Schranke: wer die Seite
- * öffnet, sieht sie. Die Zahlen sind Beispieldaten aus echtem
- * CORRECTIV-Transparenzmaterial (siehe data/quartalsbericht.ts).
+ * The quarterly report — transparency as club content, but without a barrier:
+ * whoever opens the page sees it. The figures are sample data drawn from real
+ * CORRECTIV transparency material (see data/quartalsbericht.ts).
  */
 export default function BerichtScreen() {
   return (

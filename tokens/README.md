@@ -32,8 +32,8 @@ That trade is recorded below.
 
 | File | Consumed by |
 |---|---|
-| `theme.css` | `apps/mobile-rn/scripts/generate-tokens.mjs` and `apps/mobile/scripts/sync-tokens.mjs`, both via `scripts/tokens-source.mjs` |
-| `typography.css` | **nothing, programmatically.** Hand-transcribed into `apps/mobile-rn/src/lib/theme/typography.ts` and `apps/mobile/src/styles/typography.scss` |
+| `theme.css` | `apps/mobile-rn/scripts/generate-tokens.mjs`, via `scripts/tokens-source.mjs` |
+| `typography.css` | **nothing, programmatically.** Hand-transcribed into `apps/mobile-rn/src/lib/theme/typography.ts` |
 
 `utility.css` exists upstream and is deliberately not vendored: nothing in this
 repo reads or mirrors it.
@@ -44,9 +44,15 @@ embedded verbatim into the reader WebView via `readerCss.generated.ts`.
 
 ### Known gap
 
-`typography.css` is mirrored by hand in two places, so drift there is invisible
-to the checks. It is vendored anyway to make the reference reviewable in-repo and
-to leave the door open for a generated typography scale later.
+`typography.css` is mirrored by hand, so drift there is invisible to the checks. It
+is vendored anyway to make the reference reviewable in-repo and to leave the door
+open for a generated typography scale later.
+
+The dark-mode block in `theme.css` is a **placeholder**: it is marked
+`@TODO Set this to the actual values` and carries the light values. The app's dark
+palette is therefore hand-written in `apps/mobile-rn/palette.js`, which says so and
+explains how each value was assigned. When upstream fills that block in, the
+generator can read it and that file becomes a deletion.
 
 ## Updating
 
@@ -55,8 +61,7 @@ to leave the door open for a generated typography scale later.
 git ls-remote https://github.com/correctiv/wp-design-tokens.git HEAD
 
 # 2. Copy the files in (from any checkout of the token repo), then:
-npm run tokens                     # regenerates apps/mobile   (SCSS)
-npm run tokens -w @correctiv/mobile-rn   # regenerates apps/mobile-rn (3 artefacts)
+npm run tokens                     # regenerates the three artefacts
 
 # 3. Update the commit in the table above, and commit source + generated
 #    files together.

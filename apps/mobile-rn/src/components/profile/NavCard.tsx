@@ -2,7 +2,7 @@ import { Ionicons } from '@expo/vector-icons';
 import { Pressable, View } from 'react-native';
 
 import { Badge, Typo } from '@/components/ui';
-import { colors } from '@/lib/theme';
+import { useColors } from '@/lib/theme';
 
 type IoniconName = keyof typeof Ionicons.glyphMap;
 
@@ -28,6 +28,7 @@ export function NavCard({
   club?: boolean;
   onPress: () => void;
 }) {
+  const colors = useColors();
   return (
     <Pressable
       onPress={onPress}

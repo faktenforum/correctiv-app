@@ -31,7 +31,7 @@ Extracting text is the weak version of this. `uiautomator dump` and
 it looks — nine further defects hid behind exactly that, among them a video card
 grown into a full-screen black rectangle. So after touching layout, **take a
 screenshot and look at it**. `screens/tools/tour-android.sh` walks a build on the
-emulator; [`screens/README.md`](screens/) holds the three versions side by side and
+emulator; [`screens/README.md`](screens/) holds them next to the design draft and
 what the last comparison found.
 
 And it is worse than weak for anything that *changes*: **`uiautomator dump` returns a
@@ -110,12 +110,12 @@ equivalents for focus, liveness and errors.
   routine (see the TLS chain entry below). → Wrap remote previews in
   `components/ui/Thumbnail`, which degrades to an empty frame.
 
-## Shared code, two hosts
+## The core's ports
 
-- **A port needs a re-entrancy rule, or each host invents one.** The core's audio
-  state machine calls `AudioBackend.pause()` when it stops a track. The NativeScript
-  backend emitted a status tick from inside `pause()`, so the store re-entered its own
-  handler, decided the same thing again and called `pause()` again — `RangeError:
+- **A port needs a re-entrancy rule, or the next implementation invents one.** The
+  core's audio state machine calls `AudioBackend.pause()` when it stops a track. A
+  backend that emitted a status tick from inside `pause()` made the store re-enter its
+  own handler, decide the same thing again and call `pause()` again — `RangeError:
   Maximum call stack size exceeded`, on a device, a minute into an episode.
   expo-audio does not re-enter, so every test stayed green. Found by playing a bonus
   episode on the emulator and waiting. → Three things, and the order matters: a
@@ -125,6 +125,18 @@ equivalents for focus, liveness and errors.
   handler, so the error path cannot recurse either. `test/audio-store.test.ts` drives
   the store through a deliberately re-entrant fake — a polite test double would have
   missed this too, and the second recursion was only found because that fake exists.
+
+- **The bundle resolved a package only because npm happened to hoist it.** Metro
+  runs with `disableHierarchicalLookup`, so it consults exactly the paths in
+  `nodeModulesPaths` and never walks up from a module's own directory. That worked
+  for `packages/app-core`'s four parser packages while npm hoisted them to the root
+  — and stopped the day the workspace list changed and npm put them back under
+  `packages/app-core/node_modules`. The web export then failed on `dom-serializer`,
+  a package nobody had touched, in a commit that touched no dependency. → The core's
+  `node_modules` is named in `nodeModulesPaths`, and `resolveRequest` retries from
+  the requesting file's directory **after** normal resolution fails — which also
+  covers a package npm deliberately nested because of a version conflict
+  (`react-dom` → `scheduler`). Hoisting is a layout, not a contract.
 
 ## The web target
 
@@ -185,8 +197,6 @@ equivalents for focus, liveness and errors.
   **with a window**: real Mesa renders, SwiftShader is never loaded, boots in ten
   seconds. Headless would need `setsebool -P selinuxuser_execheap 1`, i.e. relaxing
   a hardening default.
-- **`adb shell pm clear` deletes the synced JS bundle** (NativeScript). → Uninstall
-  and deploy fresh afterwards.
 
 ## Design tokens and styling
 
@@ -207,9 +217,28 @@ equivalents for focus, liveness and errors.
   Tokens are vendored into [`tokens/`](tokens/README.md) and resolved to exactly one
   path by `scripts/tokens-source.mjs`; the drift check is unconditional.
 - **Counting `../` levels to reach a shared file breaks on the next move.** A
-  hard-coded depth silently broke both token bridges when the apps moved into
-  `apps/*`. → Resolve via a marker (root `package.json` name + `workspaces`), not by
-  depth.
+  hard-coded depth silently broke the token bridge when the app moved into `apps/*`.
+  → Resolve via a marker (root `package.json` name + `workspaces`), not by depth.
+- **A colour read in TypeScript does not follow the appearance setting.** Classes go
+  through CSS variables that `.dark:root` redefines, so `bg-grey-100` switches on its
+  own; `colors['grey-700']` handed to an `<Ionicons color>` is a string that was
+  resolved once, at import. Nothing warns, and the icon is simply invisible in the
+  other scheme. → `useColors()` from `lib/theme` for anything read in TS. Importing
+  `colors` is still correct for `always-light` / `always-dark`, which are the same in
+  both schemes by construction.
+- **The grey scale is not semantic, so a dark palette cannot be an inversion.**
+  `grey-100` is the page surface *and* white text on the brand red; `grey-700` is
+  body text *and* the video stage. Assign dark values by shade and half of those uses
+  break — a white video stage, invisible text on the coral button. → Each grey takes
+  the dark value of its majority role, and the minority uses move to `always-light` /
+  `always-dark`. `apps/mobile-rn/palette.js` records which is which;
+  `__tests__/tokens.test.ts` fails if the role colours ever start switching.
+- **The design tokens' dark block is a placeholder.** `tokens/theme.css` carries a
+  `@media (prefers-color-scheme: dark)` section marked `@TODO Set this to the actual
+  values`, holding the *light* values. Generating from it produces a dark mode that
+  compiles, ships and changes nothing on screen. → The palette is hand-written in
+  `apps/mobile-rn/palette.js` until upstream fills that block in; a test asserts the
+  two schemes actually differ.
 
 ## Data sources
 
@@ -226,45 +255,3 @@ equivalents for focus, liveness and errors.
   (Sectigo) works. Measured on an Android 16 emulator image, 2026-08-05. → Not an app
   defect. Let's Encrypt can serve the alternate chain terminating at ISRG Root X1.
 
-## NativeScript
-
-Still live rules for `apps/mobile`:
-
-- **Stay on Vite 7.** Vite 8 / Rolldown builds this project but silently drops the
-  NativeScript polyfills (`installPolyfills` 12× → 0×, `XMLHttpRequest` 25× → 2×).
-  Every network call then fails on device with `XMLHttpRequest is not defined` while
-  the build stays green. → [ADR 0002](adr/0002-vite-8-rolldown-evaluation.md) has the
-  full measurement and how to reproduce it.
-- **Never name a workspace package directory `core`.** `@nativescript/vite` hijacks
-  `@nativescript/core` if a `packages/core` exists two levels above the app. Ours is
-  `packages/app-core` — [ADR 0001](adr/0001-monorepo-and-platform-free-core.md).
-- **`@nativescript/vite` only auto-applies a file named `app.css`.** → Import
-  `app.scss?inline` and call `Application.addCss()` (see `src/app.ts`).
-- **SFC `<style>` blocks are extracted but never applied at runtime.** → No `<style>`
-  in `.vue` files; everything lives in `src/styles/`.
-- **Android `line-height` means extra spacing, iOS means total height.** → Use the
-  `ty-*` classes; values are generated per platform.
-- **`@tap.stop` compiles to `withModifiers`,** which nativescript-vue 3 does not
-  export. → No event modifiers.
-- **`registerElement` with a runtime `require()` crashes under ESM** ("viewClass is
-  not a constructor"). → Static imports only.
-- **`AbortController` is not a global in the NativeScript runtime.** → The core's
-  `services/http.ts` feature-detects it and falls back to `Promise.race`.
-- **XML parsing libraries break the Vite CommonJS resolver.** → Regex-based feed
-  parsing in `packages/app-core/src/lib/rss-parse.ts`, and the string extraction
-  backend in `articles/extract/string.ts`. A test asserts the DOM backend's parser
-  never reaches this bundle.
-- **Nesting a CollectionView inside CollectionView cells crashes.** → Horizontal
-  rails use `ScrollView`.
-- **The native image fetcher silently fails when its external cache dir is
-  missing.** → Load remote images through `RemoteImage` / `ImageSource.fromUrl`;
-  `src/app.ts` creates the directory at launch.
-- **`GridLayout` without an explicit `rows="auto"` stretches like `*`** inside modal
-  stacks. → Set `rows="auto"` on in-stack grids.
-- **A failed build still "successfully syncs" the previous bundle.** → Check
-  `bundle.mjs` mtime, or use `apps/mobile/scripts/deploy-emulator.sh`, which kills
-  zombie watchers and verifies freshness.
-- **A minified release bundle crashes on launch** ("Module evaluation promise
-  rejected: bundle.mjs") while the unminified one runs. `keepNames` alone did not
-  help, so it is not only name mangling. → `build.minify: false` in
-  `apps/mobile/vite.config.ts`. Negligible inside a ~100 MB APK.

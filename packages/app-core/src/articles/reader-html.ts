@@ -4,23 +4,22 @@ import { ratingLabel, ratingTone } from './rating';
 import type { Article } from './types';
 
 /**
- * The reader document — one builder for both apps.
+ * The reader document — one builder, whatever the host.
  *
- * There were two: a `template.html` with `{{placeholders}}` read off the
- * NativeScript app folder, and a template literal in the Expo app. Same article,
- * same German copy, two sets of class names, two rating vocabularies and two
- * chances to get the support footer wrong.
+ * There were two, once: a `template.html` with `{{placeholders}}` and a template
+ * literal in the app. Same article, same German copy, two sets of class names, two
+ * rating vocabularies and two chances to get the support footer wrong.
  *
- * What is shared is the part a reader would notice: the structure, the class
- * names, the wording and which verdict gets which tone. What stays with the host
- * is the CSS — and that is a real split, not a leftover. The two hosts deliver
- * fonts by completely different means (bundled `.ttf` files behind a `file://`
- * base url versus base64 embedded in a `<style>`), and each already has a
- * stylesheet built for its own delivery.
+ * What is shared is the part a reader would notice: the structure, the class names,
+ * the wording and which verdict gets which tone. What stays with the host is the
+ * CSS — and that is a real split, not a leftover: how fonts reach a WebView is a
+ * platform question (base64 in a `<style>` here, a bundled `.ttf` behind a `file://`
+ * base url elsewhere), and the answer belongs next to the platform.
  *
- * The class vocabulary below is the contract. `READER_LAYOUT_CSS` implements it
- * for a host that has no stylesheet of its own; `apps/mobile/src/assets/reader/
- * reader.css` implements the same names against bundled font files.
+ * The class vocabulary below is the contract, and `READER_LAYOUT_CSS` implements it
+ * for a host that has no stylesheet of its own. Every colour in it comes from a
+ * `--var-color-*` variable, which is what lets a host switch the whole document to
+ * dark by redefining them.
  */
 
 export interface ReaderHtmlOptions {

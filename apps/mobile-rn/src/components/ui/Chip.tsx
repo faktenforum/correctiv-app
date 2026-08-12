@@ -1,6 +1,6 @@
 import { Pressable, Text } from 'react-native';
 
-import { typography, colors } from '@/lib/theme';
+import { typography, useColors } from '@/lib/theme';
 
 export type ChipProps = {
   label: string;
@@ -11,6 +11,7 @@ export type ChipProps = {
 
 /** Auswahl-Chip (Onboarding-Interessen, Entdecken-Themen). Aktiv = rote Fläche. */
 export function Chip({ label, selected = false, onPress, className }: ChipProps) {
+  const colors = useColors();
   return (
     <Pressable
       accessibilityRole="button"
@@ -29,7 +30,8 @@ export function Chip({ label, selected = false, onPress, className }: ChipProps)
         style={[
           typography['text-s'],
           {
-            color: selected ? colors['grey-100'] : colors['grey-700'],
+            // Selected, the label sits on the brand surface; otherwise on the page.
+            color: selected ? colors['always-light'] : colors['grey-700'],
             fontFamily: 'SourceSans3_600SemiBold',
           },
         ]}

@@ -4,9 +4,9 @@ Three GitHub Actions workflows live in `.github/workflows/`:
 
 | Workflow | File | Trigger | What it does |
 | --- | --- | --- | --- |
-| **CI** | `ci.yml` | every PR, push to `main` | Checks, web export, and an Android APK for **each** app as a compile check. No secrets needed. |
+| **CI** | `ci.yml` | every PR, push to `main` | Checks, web export, and an Android release APK as a compile check. No secrets needed. |
 | **Pages** | `pages.yml` | push to `main` (or manual) | Rebuilds the Expo web export under the Pages base path and publishes it to <https://faktenforum.github.io/correctiv-app/>. No secrets needed. |
-| **Release Android** | `release-android.yml` | push of a `v*` tag (or manual) | Builds **one APK per app**, signs both with the same key — your upload key when the secrets are set (plus a Play-ready AAB for the NativeScript app), otherwise the bundled **test key**. Attaches everything to the GitHub Release. |
+| **Release Android** | `release-android.yml` | push of a `v*` tag (or manual) | Builds the APK and signs it — with your upload key when the secrets are set, otherwise with the bundled **test key**. Attaches it to the GitHub Release. |
 
 ## The web preview
 
@@ -49,25 +49,19 @@ git tag v1.2.3
 git push origin v1.2.3
 ```
 
-This creates a GitHub Release for the tag with auto-generated notes and attaches:
-
-- `correctiv-app-expo-v1.2.3.apk` — the app going forward
-- `correctiv-app-nativescript-v1.2.3.apk` — the app it replaces
-- `correctiv-app-nativescript-v1.2.3.aab` — for the Google Play Console (real key only)
-
-**Both apps ship** while both are maintained ([ADR 0006](adr/0006-one-core-two-hosts.md)),
-and they declare the same package id `org.correctiv.app.prototype` — so only one can
-be installed on a device at a time. The asset names are the only thing telling them
-apart; installing the second one replaces the first.
+This creates a GitHub Release for the tag with auto-generated notes and attaches
+`correctiv-app-expo-v1.2.3.apk`.
 
 The tag also drives the app version: `vX.Y.Z` becomes `versionName X.Y.Z`, and the
 workflow run number becomes the `versionCode` (Play requires it to increase on every
-upload). `App_Resources/Android/app.gradle` and `apps/mobile-rn/app.json` are patched
-only inside CI — neither change is committed.
+upload). `apps/mobile-rn/app.json` is patched only inside CI — the change is not
+committed.
 
-Both APKs are signed with the **same** key. Gradle signs the Expo release variant
-with the Expo template's debug key, so the workflow re-signs it with `apksigner`
-afterwards — otherwise one release would carry two APKs under two identities.
+The APK is re-signed after Gradle builds it. Gradle signs the release variant with
+the Expo template's debug key, which is **generated per machine**: two builds of the
+same commit would carry two identities, and a tester could not install one over the
+other. `apksigner` replaces that signature with a stable one — the test key, or your
+upload key when the secrets are set.
 
 ## Signing modes
 
@@ -119,8 +113,13 @@ rm keystore.b64
 ## Testing the pipeline without a release
 
 Run the **Release Android** workflow manually (Actions tab → Run workflow, or
-`gh workflow run release-android.yml`). It builds both APKs and uploads them to the run
-as artifacts, without creating a release. No secrets required — it uses the test key.
+`gh workflow run release-android.yml`). It builds the APK and uploads it to the run
+as an artifact, without creating a release. No secrets required — it uses the test key.
+
+> The two records below are from **before 2026-08-12**, when the repo still shipped a
+> second app (NativeScript) alongside this one and every release carried two APKs.
+> They are kept because what they prove — the version steps, the re-signing, the
+> attach job — is unchanged. Read "both APKs" as "the APK".
 
 Done once on 2026-08-06 from `9842b27`
 ([run 31105467974](https://github.com/faktenforum/correctiv-app/actions/runs/31105467974)),
@@ -156,9 +155,9 @@ rides along in the run artifact. It cannot reach a GitHub Release — that step 
 [`v0.0.3`](https://github.com/faktenforum/correctiv-app/releases/tag/v0.0.3), tagged on
 2026-08-12 from `0d97483`
 ([run 31569569194](https://github.com/faktenforum/correctiv-app/actions/runs/31569569194))
-to hand out the NativeScript app's last build as things stand. All three jobs green, both
-APKs attached, no AAB — the test-key fallback, since no secrets are set. It closes the two
-gaps a manual run leaves open:
+to hand out a build as things stood. All jobs green, both APKs attached, no AAB — the
+test-key fallback, since no secrets are set. It closes the two gaps a manual run leaves
+open:
 
 - **The tag drove the version in both apps.** Read off the downloaded assets, not the run
   log: `aapt2 dump badging` reports `versionName='0.0.3' versionCode='7'` for each, under

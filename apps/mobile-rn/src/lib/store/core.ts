@@ -3,7 +3,7 @@
  *
  * `@correctiv/app-core` ships zustand/vanilla stores plus pure selector functions
  * (ADR 0004); each host adds its own reactivity. This is the React half — the Vue
- * half lives in apps/mobile/src/stores/core-bindings.ts.
+ * half is one file per host, and this is this host's.
  *
  * On this side there is barely anything to add, which is the point: zustand's
  * `useStore` subscribes a component to a vanilla store directly, and the

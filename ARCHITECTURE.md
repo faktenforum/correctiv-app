@@ -1,6 +1,6 @@
 # Architecture
 
-One core holds the behaviour. Two app hosts hold their screens and one adapter each.
+One core holds the behaviour. The app holds its screens and one adapter.
 
 ```
                     ┌──────────────────────────────────────┐
@@ -11,20 +11,24 @@ One core holds the behaviour. Two app hosts hold their screens and one adapter e
                     │                                      │
                     │  imports NO UI framework,            │
                     │  NO platform SDK                     │
-                    └───────┬──────────────────────┬───────┘
-                       ports│                 ports│
-              ┌─────────────┴────────┐   ┌─────────┴──────────────┐
-              │  apps/mobile-rn      │   │  apps/mobile           │
-              │  Expo / React Native │   │  NativeScript / Vue    │
-              │  iOS · Android · web │   │  iOS · Android         │
-              └──────────────────────┘   └────────────────────────┘
+                    └──────────────────┬───────────────────┘
+                                  ports│
+                       ┌───────────────┴───────────────┐
+                       │       apps/mobile-rn          │
+                       │    Expo / React Native        │
+                       │    iOS · Android · web        │
+                       └───────────────────────────────┘
 ```
 
-Why: a view layer is the part any framework change rewrites anyway. The domain is
-not, so it lives where both apps — and a future third one — can reach it.
-[ADR 0006](adr/0006-one-core-two-hosts.md) has the before/after, and
-`packages/app-core/test/boundary.test.ts` fails the build if a platform import ever
-appears in the core.
+Why keep the split with only one host? Because a view layer is the part any
+framework change rewrites anyway, and the domain is not. This repo has already
+replaced its whole view layer once: the second host was NativeScript/Vue, and when
+it was removed the feed cascade, the reader, the audio state machine and the
+membership logic did not move. That is the split paying for itself, and it is the
+same reason a third host — a web build, a tablet layout, whatever comes — costs one
+file and not a rewrite. [ADR 0006](adr/0006-one-core-two-hosts.md) records how the
+behaviour got here; `packages/app-core/test/boundary.test.ts` fails the build if a
+platform import ever appears in the core.
 
 ## The four ports
 
@@ -32,20 +36,21 @@ Everything the core cannot do on its own is declared in
 `packages/app-core/src/ports/index.ts` and supplied at startup with
 `configurePlatform(...)`. That file is the whole cost of adding a host.
 
-| Port | What the host answers | NativeScript | Expo |
-| --- | --- | --- | --- |
-| `KeyValueStore` | small settings, **synchronously** | `ApplicationSettings` | AsyncStorage behind a mirror hydrated before the first render |
-| `BlobStore` | the HTTP cache, asynchronously | `File` under `documents/cache/<ns>/` | AsyncStorage |
-| `ContentBundle` | what shipped inside the app | JSON in the app folder | a generated TS module |
-| `AudioBackend` | playback, as status ticks | `TNSPlayer` + a 1 s polling timer | expo-audio's status events |
+| Port | What the host answers | How this host answers it |
+| --- | --- | --- |
+| `KeyValueStore` | small settings, **synchronously** | AsyncStorage behind a mirror hydrated before the first render |
+| `BlobStore` | the HTTP cache, asynchronously | AsyncStorage |
+| `ContentBundle` | what shipped inside the app | generated TS modules |
+| `AudioBackend` | playback, as status ticks | expo-audio's status events |
 
 `KeyValueStore` is synchronous because `persist()` reads it while a store is being
 constructed, before anything can await. `BlobStore` is not, because it holds a
-megabyte of cached feeds — the Expo adapter's file header explains what the
-synchronous version used to cost.
+megabyte of cached feeds — the adapter's file header explains what the synchronous
+version used to cost.
 
-Adapters: `apps/mobile/src/platform/nativescript.ts`,
-`apps/mobile-rn/src/lib/platform/expo.ts`.
+Adapter: `apps/mobile-rn/src/lib/platform/expo.ts`. It is small on purpose. When the
+NativeScript host existed it was the only file that knew about `ApplicationSettings`
+and `File`, and deleting that host meant deleting one file plus its screens.
 
 ## What lives in the core
 
@@ -70,11 +75,14 @@ Three conventions to know before editing:
 
 1. **Stores are framework-neutral.** `stores/create-store.ts` is a ~40-line
    observable store shaped like zustand's — its file header explains why it is not
-   zustand. Each host binds it: `apps/mobile/src/stores/core-bindings.ts` (a Vue
-   `reactive` mirror), `apps/mobile-rn/src/lib/store/core.ts` (zustand's `useStore`).
-2. **Derived values are exported selectors taking state, never store methods.** A
-   method reads past Vue's dependency tracking, and the template then silently stops
-   updating — invisible until a demo.
+   zustand. The host binds it in `apps/mobile-rn/src/lib/store/core.ts` (zustand's
+   `useStore`); a second host bound the same stores to Vue's `reactive` in about
+   forty lines, which is the measure of what "framework-neutral" bought.
+2. **Derived values are exported selectors taking state, never store methods.** In
+   React a method is merely awkward; the rule comes from the Vue binding, where a
+   method read past the dependency tracking and the template silently stopped
+   updating — invisible until a demo. It stays because it is also the shape a second
+   host needs.
 3. **Subpath imports, no barrel.** `@correctiv/app-core/stores/membership`, not a
    root re-export. The root entry exposes only the ports, because that is the one
    thing every host must touch.
@@ -98,12 +106,13 @@ a tap on a card
 ```
 
 `buildReaderHtml` owns the document — structure, class names, German copy, the
-verdict plaque. Each host supplies only the CSS, because the two deliver fonts by
-completely different means (bundled `.ttf` behind a `file://` base URL versus base64
-in a `<style>`). `apps/mobile/src/assets/reader/reader.css` and the core's
-`READER_LAYOUT_CSS` implement the same class vocabulary.
+verdict plaque. The host supplies only the CSS, which here means the token variables
+and the fonts base64-embedded in a `<style>`: the WebView is a browser context of its
+own and cannot use the fonts React Native loaded. Dark mode costs one appended
+variable block, because `READER_LAYOUT_CSS` takes every colour from
+`--var-color-*` — see `apps/mobile-rn/src/lib/articles/reader.ts`.
 
-## What lives in each app
+## What lives in the app
 
 ```
 apps/mobile-rn/            @correctiv/mobile-rn — Expo (iOS, Android, web)
@@ -113,41 +122,25 @@ apps/mobile-rn/            @correctiv/mobile-rn — Expo (iOS, Android, web)
                            einstellungen, gespeichert, bericht, onboarding,
                            beitreten, backstage, tagebuch/[id], +not-found
   src/components/ui/       design system (Typo, Button, Card, Badge, Chip, Screen…)
-  src/components/reader|media/   the TWO platform splits: ReaderView, VideoFrame
+  src/components/reader|media/   platform splits: ReaderView, VideoFrame
                            (each .tsx | .web.tsx | a shared props type)
   src/lib/platform/        the ports
   src/lib/audio/           backend (expo-audio) + thin action and hook wrappers
   src/lib/feeds/           React hooks over the core's feed store, search corpus
-  src/lib/articles/        reader CSS wiring, the bundled articles, url rules
-  src/lib/theme/           token-bridge output, typography, fonts, pixel sizes
+  src/lib/articles/        reader CSS wiring, the bundled articles and covers
+  src/lib/podcasts/        the bundled show snapshots
+  src/lib/theme/           token-bridge output, the palette hook, typography, fonts
+  palette.js               the dark values and the two fixed role colours
+  signing/                 the committed throwaway test key (see its README)
   __tests__/               jest-expo, incl. the web-target and numeric-class guards
-
-apps/mobile/               @correctiv/mobile — NativeScript
-  src/AppShell.vue         a GridLayout with five parallel <Frame>s (one per tab,
-                           lazily mounted, never destroyed → per-tab nav stacks),
-                           a persistent MiniPlayer row and a custom TabBar
-  src/platform/            the ports
-  src/services/            audio backend, reader CSS wiring, images, peertube-offline
-  src/stores/              core-bindings.ts — the Vue binding, and nothing else
-  src/views/               home, discover, media, participate, reader, backstage,
-                           profile, modals
-  src/components/          cards, shell, sheets, ui (incl. RemoteImage)
-  src/styles/              tokens.generated.scss + typography/components/cards (global)
-  src/assets/              reader stylesheet, the offline data bundle, images, audio
-  App_Resources/           Android manifest/icons, iOS Info.plist
 ```
 
-Two NativeScript specifics worth knowing: there is **no router** (`useNavigation()`
-wraps `$navigateTo` and always passes an explicit frame id, because
-`Frame.topmost()` is ambiguous with five frames), and **no `<style>` in `.vue`
-files** (SFC styles are extracted and never applied — everything lives in
-`src/styles/`).
-
-**Why the directory is `packages/app-core` and not `packages/core`:**
-`@nativescript/vite` treats `<app>/../../packages/core` as a NativeScript core
-source checkout and hijacks `@nativescript/core` with it, breaking the build.
-Directory and package name are kept in sync so a "consistency" rename cannot
-re-arm the trap. [ADR 0001](adr/0001-monorepo-and-platform-free-core.md).
+**Why the directory is `packages/app-core` and not `packages/core`:** the original
+reason was a build trap — `@nativescript/vite` treated `<app>/../../packages/core` as
+a NativeScript core source checkout and hijacked `@nativescript/core` with it. That
+host is gone and the trap with it, but the name stays: it is in every import path in
+the repo, and a rename would be churn for nothing.
+[ADR 0001](adr/0001-monorepo-and-platform-free-core.md).
 
 ## Generated artefacts
 
@@ -157,19 +150,46 @@ PR, not a silent drift.
 
 | Command | Produces |
 | --- | --- |
-| `npm run tokens` | NativeWind theme map + typed TS constants + reader CSS (Expo); SCSS with rem→dip and per-platform line heights (NativeScript) |
-| `npm run offline-articles` | a generated TS module (Expo); JSON files, feed snapshots and downloaded covers (NativeScript) |
-| `npm run offline-podcasts` | per-show Salon5 snapshots (NativeScript) |
-| `npm run fonts -w @correctiv/mobile-rn` | base64-subsetted reader fonts (needs `pyftsubset`) |
+| `npm run tokens` | NativeWind theme map (incl. both colour schemes) + typed TS constants + reader CSS |
+| `npm run offline-articles` | feed snapshots, pre-extracted articles, inlined covers |
+| `npm run offline-podcasts` | per-show Salon5 snapshots |
+| `npm run fonts` | base64-subsetted reader fonts (needs `pyftsubset`) |
 
-Both offline generators share their collecting half
-(`@correctiv/app-core/articles/offline-bundle`) and differ only in what they write.
-The two token generators both read `tokens/theme.css` through
-`scripts/tokens-source.mjs`, which resolves it via a marker rather than by counting
-`../` — a hard-coded depth broke both bridges when the apps moved into `apps/*`.
+`npm run offline-articles` additionally needs ImageMagick for the covers; without it
+it says so and writes none, and the app falls back to remote URLs. The collecting
+half of that generator lives in `@correctiv/app-core/articles/offline-bundle` rather
+than in the script, which is what let a second host bundle the same content in a
+completely different file format.
 
-Never import `theme.css` directly into the NativeScript app: its CSS subset supports
-neither `rem`, `:root` nor unitless line heights.
+The token generator reads `tokens/theme.css` through `scripts/tokens-source.mjs`,
+which resolves it via a marker rather than by counting `../` — a hard-coded depth
+broke the bridge when the app moved into `apps/*`.
+
+## Colour, and the two schemes
+
+Colours reach components as CSS variables, not as hex values: `theme.colors` in
+`tailwind.config.js` is `rgb(var(--color-x) / <alpha-value>)`, and the generator
+emits the values twice — under `:root` and under `.dark:root`. NativeWind recognises
+that pair when `darkMode: 'class'` is set, so `bg-grey-100` and `border-grey-300`
+follow the appearance setting **without a single `dark:` variant in the app**.
+
+Two things do not follow it, on purpose:
+
+- **The role colours.** `always-light` and `always-dark` are identical in both
+  schemes, for everything that sits on a surface which does not switch either — text
+  on the brand red, the label on club yellow, the scrim over a photograph, the video
+  stage. The grey scale cannot answer for those, because it is not semantic:
+  `grey-100` is both a page surface and white text on a button.
+- **Colours read in TypeScript.** An `<Ionicons color>` or a `Switch`'s `trackColor`
+  takes a plain string, and a string cannot change with the scheme. Those call
+  `useColors()` from `lib/theme`; importing `colors` directly still works and is
+  still right for a role colour.
+
+The dark values live in `apps/mobile-rn/palette.js`, hand-written, because
+`tokens/theme.css` ships a dark block that is a placeholder holding the light values.
+That file explains how each grey was assigned by role. `__tests__/tokens.test.ts`
+fails if the role colours ever start following the scheme, or if the dark palette
+silently becomes the light one again.
 
 ## The web target
 
@@ -191,14 +211,12 @@ can only be tested where URLs exist at all.
 
 ## Checks
 
-`npm run check` at the root is the fast inner loop: typecheck (three packages) →
-oxlint → oxfmt → tests, in about ten seconds without a device. It covers the
-parsers, the German formatters, every cascade, the platform adapters and the two
-architectural guards.
+`npm run check` at the root is the fast inner loop: typecheck → oxlint → oxfmt →
+tests, in about ten seconds without a device. It covers the parsers, the German
+formatters, every cascade, the platform adapter and the architectural guards.
 
 Linter and formatter are [oxlint](https://oxc.rs) and oxfmt rather than
-ESLint/Prettier: same ecosystem as Vite, no plugin or parser config to maintain, and
-they understand Vue SFCs. SCSS, Markdown, `.github/` and `App_Resources/` are
+ESLint/Prettier: no plugin or parser config to maintain. Markdown and `.github/` are
 deliberately excluded from formatting — see `.oxfmtrc.json`.
 
 **A green check is not evidence.** Read the first section of

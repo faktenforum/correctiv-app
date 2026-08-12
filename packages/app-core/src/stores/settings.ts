@@ -63,10 +63,9 @@ export const settingsStore = createStore<SettingsState>((set) => ({
   setPushOptIn: (pushOptIn) => set({ pushOptIn }),
 
   /**
-   * The demo reset has to leave the app as if it were freshly installed, so it
-   * also clears what the NativeScript settings page cleared by hand: onboarding,
-   * push, and the interests. Membership and interests live in their own stores —
-   * the caller resets those; this one owns only its own keys.
+   * The demo reset has to leave the app as if it were freshly installed: onboarding,
+   * push, text size and the appearance setting. Membership and interests live in
+   * their own stores — the caller resets those; this one owns only its own keys.
    */
   resetForDemo: () =>
     set({ onboardingDone: false, pushOptIn: false, textScale: 1, theme: 'system' }),
