@@ -4,7 +4,7 @@ import type { ReactNode } from 'react';
 import { useState } from 'react';
 import { View } from 'react-native';
 
-import { colors } from '@/lib/theme';
+import { useColors } from '@/lib/theme';
 
 export type ThumbnailProps = {
   uri?: string | null;
@@ -34,6 +34,7 @@ export function Thumbnail({
   icon = 'image-outline',
   className,
 }: ThumbnailProps) {
+  const colors = useColors();
   const [failed, setFailed] = useState(false);
 
   return (

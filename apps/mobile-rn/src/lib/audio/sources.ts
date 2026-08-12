@@ -3,9 +3,9 @@ import type { AudioSource } from 'expo-audio';
 import sampleEpisode from '@/assets/audio/sample-episode.mp3';
 
 /**
- * The core's sample data points at `assets/audio/sample-episode.mp3` — a
- * NativeScript app path that was resolved at runtime with `knownFolders`. Metro has
- * no app folders, only asset ids, so the path is mapped to the bundled asset here.
+ * The core's sample data points at `assets/audio/sample-episode.mp3`, a path a host
+ * is expected to resolve for itself. Metro has no app folders, only asset ids, so
+ * the path is mapped to the bundled asset here.
  *
  * Why bundle local audio at all: the Backstage bonus and the podcast seed have to
  * play without a network — otherwise the demo's only club touchpoint with sound is a

@@ -10,7 +10,7 @@ export type SectionHeaderProps = {
   className?: string;
 };
 
-/** Abschnittsüberschrift mit optionalem Aktions-Link (z. B. „Alles aus dem Backstage →"). */
+/** Section heading with an optional action link (e.g. "Alles aus dem Backstage →"). */
 export function SectionHeader({ title, actionLabel, onAction, className }: SectionHeaderProps) {
   return (
     <View className={['flex-row items-end justify-between', className ?? ''].join(' ')}>

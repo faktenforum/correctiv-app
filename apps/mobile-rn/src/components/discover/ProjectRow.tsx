@@ -4,14 +4,14 @@ import { Pressable, View } from 'react-native';
 import { Typo } from '@/components/ui';
 import type { Project } from '@correctiv/app-core/data/projects';
 import { projectTarget } from '@/lib/discover/target';
-import { colors } from '@/lib/theme';
+import { useColors } from '@/lib/theme';
 
 /**
- * Eine Zeile im Verzeichnis: Name, zweizeiliger Teaser, Pfeil rechts.
+ * One row in the directory: name, a two-line teaser, a chevron on the right.
  *
- * Hairline-getrennte Zeilen statt der Karten des NativeScript-Stands — so steht
- * es im Designentwurf (DiscoverScreen.dc.html), und bei 17 Einträgen in 7
- * Gruppen liest eine Liste sich schlicht besser als 17 graue Kästen.
+ * Hairline-separated rows rather than cards, as in the design draft
+ * (DiscoverScreen.dc.html): with 17 entries across 7 groups a list simply reads
+ * better than 17 grey boxes.
  */
 export function ProjectRow({
   project,
@@ -20,8 +20,9 @@ export function ProjectRow({
   project: Project;
   onPress: (project: Project) => void;
 }) {
-  // Dasselbe Ziel, das der Bildschirm öffnet — hier nur, um vorher zu sagen, ob
-  // es die App verlässt.
+  const colors = useColors();
+  // The same target the screen opens — read here only to say, in advance, whether
+  // it leaves the app.
   const external = projectTarget(project).kind === 'external';
   return (
     <Pressable

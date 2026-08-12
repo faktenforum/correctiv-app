@@ -8,15 +8,16 @@ import { formatTimeHm } from '@correctiv/app-core/lib/format';
 import { seekTo, setSpeed, togglePlay } from '@/lib/audio/player';
 import { useAudio } from '@/lib/audio/useAudio';
 import { goBack } from '@/lib/navigation/goBack';
-import { colors, sizes } from '@/lib/theme';
+import { sizes, useColors } from '@/lib/theme';
 
 const SPEEDS = [1, 1.2, 1.5];
 
 /**
- * Vollplayer (Modal). Zeigt denselben Singleton wie die Mini-Leiste — es gibt keinen
- * zweiten Zustand und keine zweite Instanz, das Modal ist nur eine größere Ansicht.
+ * The full player, as a modal. It shows the same singleton as the mini bar — there
+ * is no second state and no second instance; the modal is only a larger view of it.
  */
 export default function PlayerScreen() {
+  const colors = useColors();
   const { track, status, positionSec, durationSec, speed, errorMessage } = useAudio();
   const live = track?.kind === 'radio';
 
@@ -112,12 +113,12 @@ export default function PlayerScreen() {
                 style={{ width: sizes.playButtonLarge, height: sizes.playButtonLarge }}
               >
                 {status === 'loading' ? (
-                  <ActivityIndicator color={colors['grey-100']} />
+                  <ActivityIndicator color={colors['always-light']} />
                 ) : (
                   <Ionicons
                     name={status === 'playing' ? 'pause' : 'play'}
                     size={28}
-                    color={colors['grey-100']}
+                    color={colors['always-light']}
                   />
                 )}
               </Pressable>

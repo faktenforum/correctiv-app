@@ -43,3 +43,21 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 ```
+
+## Fonts
+
+No font file is checked in here — the families are pulled from npm at build time —
+but the build **redistributes** them, so their licences apply to what ships. The
+reader's copies are additionally subsetted and base64-embedded into
+`src/lib/theme/readerFonts.generated.ts` by `npm run fonts`; a subset is a
+modification the OFL permits and covers.
+
+| Font | Where it comes from | Licence |
+| --- | --- | --- |
+| Merriweather | `@expo-google-fonts/merriweather` | SIL Open Font License 1.1 |
+| Source Sans 3 | `@expo-google-fonts/source-sans-3` | SIL Open Font License 1.1 |
+| Ionicons | `@expo/vector-icons` | MIT |
+
+The OFL permits redistribution, embedding and subsetting; it forbids selling the
+fonts on their own and requires that a modified copy not carry a reserved name.
+Full texts ship inside each package.

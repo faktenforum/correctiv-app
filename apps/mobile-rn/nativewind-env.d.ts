@@ -1,4 +1,4 @@
 /// <reference types="nativewind/types" />
 
-// Erlaubt den Side-Effect-Import von global.css (NativeWind verarbeitet es via Metro).
+// Allows the side-effect import of global.css (NativeWind processes it via Metro).
 declare module '*.css';

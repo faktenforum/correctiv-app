@@ -1,6 +1,6 @@
 import { Pressable, Text, type PressableProps } from 'react-native';
 
-import { typography, colors } from '@/lib/theme';
+import { typography, useColors, type ColorToken } from '@/lib/theme';
 
 type Variant = 'primary' | 'secondary' | 'outline' | 'club' | 'onEmphasis';
 
@@ -22,14 +22,16 @@ const SURFACE: Record<Variant, string> = {
   secondary: 'bg-grey-200',
   outline: 'bg-grey-100 border border-grey-300',
   club: 'bg-alternative',
-  onEmphasis: 'bg-grey-100',
+  // White, not the page surface: this button sits on the red mission screen,
+  // which is red in both schemes.
+  onEmphasis: 'bg-always-light',
 };
-const LABEL_COLOR: Record<Variant, string> = {
-  primary: colors['grey-100'],
-  secondary: colors['grey-700'],
-  outline: colors['grey-700'],
-  club: colors['grey-700'],
-  onEmphasis: colors['grey-700'],
+const LABEL_COLOR: Record<Variant, ColorToken> = {
+  primary: 'always-light',
+  secondary: 'grey-700',
+  outline: 'grey-700',
+  club: 'always-dark',
+  onEmphasis: 'always-dark',
 };
 
 export function Button({
@@ -40,6 +42,7 @@ export function Button({
   disabled,
   ...rest
 }: ButtonProps) {
+  const colors = useColors();
   return (
     <Pressable
       accessibilityRole="button"
@@ -57,7 +60,7 @@ export function Button({
       ].join(' ')}
       {...rest}
     >
-      <Text style={[typography.button, { color: LABEL_COLOR[variant] }]}>{title}</Text>
+      <Text style={[typography.button, { color: colors[LABEL_COLOR[variant]] }]}>{title}</Text>
     </Pressable>
   );
 }

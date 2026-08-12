@@ -3,7 +3,7 @@ import { Pressable, View } from 'react-native';
 
 import { Badge, Thumbnail, Typo } from '@/components/ui';
 import { useVideoChannel } from '@/lib/store/core';
-import { colors, sizes } from '@/lib/theme';
+import { sizes, useColors } from '@/lib/theme';
 
 /**
  * Home media row: video of the day (FunFacts) next to the live radio tile, half
@@ -18,6 +18,7 @@ import { colors, sizes } from '@/lib/theme';
  * path the core's MEDIA_SOURCE map exists to correct.
  */
 export function MediathekReihe({ onOpenMediathek }: { onOpenMediathek: () => void }) {
+  const colors = useColors();
   const { videos } = useVideoChannel('funfacts');
   const video = videos[0];
 
@@ -34,10 +35,11 @@ export function MediathekReihe({ onOpenMediathek }: { onOpenMediathek: () => voi
           aspectRatio={16 / 9}
           overlay={
             <View
-              className="items-center justify-center rounded-full bg-grey-700/70"
+              // On the preview image — hence fixed, not a page surface.
+              className="items-center justify-center rounded-full bg-always-dark/70"
               style={{ width: sizes.playOverlay, height: sizes.playOverlay }}
             >
-              <Ionicons name="play" size={22} color={colors['grey-100']} />
+              <Ionicons name="play" size={22} color={colors['always-light']} />
             </View>
           }
         />

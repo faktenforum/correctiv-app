@@ -2,13 +2,13 @@ import { useState } from 'react';
 import { Pressable, View, type LayoutChangeEvent } from 'react-native';
 
 /**
- * Fortschritt mit Tippen zum Springen.
+ * Playback progress, with tap-to-seek.
  *
- * Bewusst kein Slider: React Native hat keinen mehr, `@react-native-community/slider`
- * wäre eine neue Abhängigkeit ohne Web-Implementierung, und der Slider aus `@expo/ui`
- * ist nativ (SwiftUI/Compose) und fällt auf Web weg. Tippen an eine Position trägt
- * auf allen drei Targets und ist für einen Demo-Player genug — Ziehen fehlt, das ist
- * der bewusste Preis.
+ * Deliberately not a slider: React Native no longer ships one,
+ * `@react-native-community/slider` would be a new dependency with no web build, and
+ * the slider from `@expo/ui` is native (SwiftUI/Compose) and disappears on web.
+ * Tapping a position works on all three targets and is enough for a demo player —
+ * dragging is missing, and that is the price paid knowingly.
  */
 export function ProgressBar({
   positionSec,

@@ -3,17 +3,16 @@ import { Pressable, TextInput, View } from 'react-native';
 
 import { Typo } from '@/components/ui';
 import type { CalloutComponent } from '@correctiv/app-core/data/callouts';
-import { colors, typography } from '@/lib/theme';
+import { typography, useColors } from '@/lib/theme';
 
 /**
- * Ein Feld des Callout-Formulars. Das Schema kommt aus dem Core in der
- * Beabee-/Formio-Form (`slides[].components[]`), damit Phase 3 nur den Datenlayer
- * tauschen muss — diese Komponente ist die Übersetzung eines `component` in
- * Bedienelemente.
+ * One field of a callout form. The schema arrives from the core in Beabee/Formio
+ * shape (`slides[].components[]`), so that a later phase only has to swap the data
+ * layer — this component is the translation of one `component` into controls.
  *
- * `file` ist bewusst eine Attrappe: der Prototyp lädt nichts hoch, tut aber auch
- * nicht so. Ein echter Bildwähler (expo-image-picker) wäre ein weiteres natives
- * Modul für einen Fluss, der ohne Backend nirgends ankommt.
+ * `file` is a deliberate dummy: the prototype uploads nothing, and does not pretend
+ * to. A real picker (expo-image-picker) would be another native module for a flow
+ * that goes nowhere without a backend.
  */
 export function FormField({
   component,
@@ -32,6 +31,7 @@ export function FormField({
   onText: (value: string) => void;
   onToggleFile: () => void;
 }) {
+  const colors = useColors();
   return (
     <View className="mt-m">
       <Typo variant="headline-xs">{component.label}</Typo>

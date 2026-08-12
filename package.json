@@ -1,6 +1,6 @@
 {
   "name": "correctiv-app",
-  "description": "CORRECTIV community app \u2014 npm workspace: the platform-free core plus two app hosts (Expo/React Native and NativeScript).",
+  "description": "CORRECTIV community app \u2014 npm workspace: the platform-free core plus the Expo/React Native app (iOS, Android, web).",
   "version": "1.0.0",
   "private": true,
   "license": "AGPL-3.0-or-later",
@@ -42,13 +42,9 @@
     "android": "npm run android -w @correctiv/mobile-rn",
     "ios": "npm run ios -w @correctiv/mobile-rn",
     "build:web": "npm run build:web -w @correctiv/mobile-rn",
-    "ns:android": "npm run android -w @correctiv/mobile",
-    "ns:ios": "npm run ios -w @correctiv/mobile",
-    "ns:dev:android": "npm run dev:android -w @correctiv/mobile",
-    "ns:dev:ios": "npm run dev:ios -w @correctiv/mobile",
-    "ns:build:android": "npm run build:android -w @correctiv/mobile",
-    "tokens": "npm run tokens -w @correctiv/mobile-rn && npm run tokens -w @correctiv/mobile",
-    "offline-articles": "npm run offline-articles -w @correctiv/mobile-rn && npm run offline-articles -w @correctiv/mobile",
-    "offline-podcasts": "npm run offline-podcasts -w @correctiv/mobile"
+    "tokens": "npm run tokens -w @correctiv/mobile-rn",
+    "fonts": "npm run fonts -w @correctiv/mobile-rn",
+    "offline-articles": "npm run offline-articles -w @correctiv/mobile-rn",
+    "offline-podcasts": "npm run offline-podcasts -w @correctiv/mobile-rn"
   }
 }

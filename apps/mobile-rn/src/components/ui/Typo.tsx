@@ -5,17 +5,24 @@ import {
   typoFamily,
   typoWeight,
   fontFamilyFor,
+  useColors,
   type FontFamily,
   type FontWeightName,
   type TypoVariant,
-  colors,
   type ColorToken,
 } from '@/lib/theme';
 
 export type TypoProps = TextProps & {
   /** Composite variant from typography.css: typeface, size, tracking, line height. */
   variant?: TypoVariant;
-  /** Colour token; defaults to grey-700, the brand's body-text colour. */
+  /**
+   * Colour token; defaults to grey-700, the brand's body-text colour — which is
+   * near-white in dark mode, because grey-700 is the *strong text* role.
+   *
+   * On a fixed-colour surface (the brand red, club yellow, a photo,
+   * `bg-surface-inverse`) that flip is wrong, and the role tokens are the answer:
+   * `on-emphasis` and `on-alternative` mean the same thing in both schemes.
+   */
   color?: ColorToken;
   /**
    * Overrides the weight only; the family and the metrics stay. typography.css
@@ -48,6 +55,7 @@ export function Typo({
   className,
   ...rest
 }: TypoProps) {
+  const colors = useColors();
   // Either axis alone falls back to the variant's own value for the other one.
   const override =
     weight || family

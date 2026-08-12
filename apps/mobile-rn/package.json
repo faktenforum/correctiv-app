@@ -1,6 +1,6 @@
 {
   "name": "@correctiv/mobile-rn",
-  "description": "CORRECTIV app on Expo/React Native \u2014 iOS, Android and a web target for demos. Will replace @correctiv/mobile (NativeScript).",
+  "description": "CORRECTIV app on Expo/React Native \u2014 iOS, Android and a web target for demos.",
   "main": "./index.js",
   "version": "1.0.0",
   "license": "AGPL-3.0-or-later",
@@ -57,6 +57,7 @@
     "tokens": "node scripts/generate-tokens.mjs",
     "fonts": "node scripts/embed-fonts.mjs",
     "offline-articles": "tsx scripts/fetch-offline-articles.mts",
+    "offline-podcasts": "tsx scripts/fetch-offline-podcasts.mts",
     "typecheck": "tsc --noEmit && tsc -p tsconfig.test.json --noEmit",
     "test": "jest"
   },

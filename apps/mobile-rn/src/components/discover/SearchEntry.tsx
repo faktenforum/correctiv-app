@@ -2,14 +2,15 @@ import { Ionicons } from '@expo/vector-icons';
 import { Pressable } from 'react-native';
 
 import { Typo } from '@/components/ui';
-import { colors } from '@/lib/theme';
+import { useColors } from '@/lib/theme';
 
 /**
- * Der Sucheinstieg auf Entdecken — eine Attrappe, die auf /suche schiebt, kein
- * Eingabefeld. Genau so im Designentwurf: die Tastatur soll erst auf dem
- * Suchbildschirm aufgehen, damit das Verzeichnis beim Betreten sichtbar bleibt.
+ * The search entry point on Entdecken — a dummy that pushes /suche, not an input.
+ * Exactly as in the design draft: the keyboard should only come up on the search
+ * screen, so that the directory stays visible when the tab is opened.
  */
 export function SearchEntry({ onPress }: { onPress: () => void }) {
+  const colors = useColors();
   return (
     <Pressable
       onPress={onPress}

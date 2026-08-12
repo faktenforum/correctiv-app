@@ -3,6 +3,13 @@
 Status: accepted, 2026-08-06. Amends [ADR 0005](0005-react-native-over-nativescript.md):
 the stack decision stands, the removal schedule does not.
 
+> **Superseded in part by [ADR 0007](0007-removing-the-nativescript-host.md)
+> (2026-08-12):** the second host is gone; the core, its four ports and the two
+> extraction backends are not. Everything below about *what the core holds and why*
+> still applies — that argument is the reason the removal cost one adapter and a
+> screen folder. Everything about *two apps* is now history, and this file has not
+> been rewritten to hide that.
+
 ## Context
 
 ADR 0005 chose Expo / React Native and scheduled `apps/mobile` (NativeScript) for

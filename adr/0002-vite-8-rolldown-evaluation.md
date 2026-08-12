@@ -2,6 +2,11 @@
 
 **Status:** rejected for now, revisit · **Date:** 2026-08-01 · **Affects:** bundler, build time, two open upstream blockers
 
+> **Moot since [ADR 0007](0007-removing-the-nativescript-host.md) (2026-08-12):** the
+> app this measured no longer exists in the repo, and the surviving app bundles with
+> Metro. Kept because the measurement — how a bundler can drop polyfills and stay
+> green — is the finding, not the version number.
+
 ## Context
 
 Two of the four blockers documented in `APP-STRATEGIE.md` §3 hang on the bundler:

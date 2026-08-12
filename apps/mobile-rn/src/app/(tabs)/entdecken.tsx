@@ -10,11 +10,11 @@ import { projectTarget } from '@/lib/discover/target';
 import { openExternal } from '@/lib/openExternal';
 
 /**
- * Entdecken — das geordnete Verzeichnis des Ökosystems: Sucheinstieg,
- * Themenschiene, 7 Projektgruppen aus dem Konzept.
+ * Entdecken — the ordered directory of the ecosystem: the search entry point, the
+ * topic rail, and the 7 project groups from the concept.
  *
- * Der Katalog kommt vollständig aus `@correctiv/app-core/data/projects`; dieser
- * Bildschirm entscheidet nur, was ein Tippen bedeutet.
+ * The catalogue comes wholly from `@correctiv/app-core/data/projects`; this screen
+ * only decides what a tap means.
  */
 export default function EntdeckenScreen() {
   return (
@@ -47,7 +47,7 @@ function openProject(id: string) {
   router.push({ pathname: '/projekt/[id]', params: { id } });
 }
 
-/** Ausführen, was `projectTarget` entschieden hat — die Entscheidung selbst ist dort. */
+/** Carries out what `projectTarget` decided — the decision itself lives there. */
 function openProjectCard(project: Project) {
   const target = projectTarget(project);
   switch (target.kind) {

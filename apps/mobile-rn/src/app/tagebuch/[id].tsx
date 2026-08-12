@@ -5,7 +5,7 @@ import { Overline, ScreenHeader, Typo } from '@/components/ui';
 import { diaries } from '@correctiv/app-core/data/backstage';
 import { formatDateShortDe } from '@correctiv/app-core/lib/format';
 
-/** Die Tagebucheinträge stehen fest — eine Datei je Eintrag im statischen Export. */
+/** The diary entries are fixed — one file per entry in the static export. */
 export function generateStaticParams(): { id: string }[] {
   return diaries.map((entry) => ({ id: entry.id }));
 }

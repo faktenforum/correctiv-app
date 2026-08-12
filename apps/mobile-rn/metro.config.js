@@ -19,6 +19,18 @@ config.watchFolders = [workspaceRoot];
 config.resolver.nodeModulesPaths = [
   path.resolve(projectRoot, 'node_modules'),
   path.resolve(workspaceRoot, 'node_modules'),
+  // The core's own node_modules — its four parser packages (htmlparser2,
+  // css-select, domutils, dom-serializer), which the app pulls in through
+  // articles/extract/dom.ts.
+  //
+  // This was missing for a long time and the bundle built anyway, because npm
+  // happened to hoist those four to the root. Hoisting is not a contract: it
+  // depends on what else is installed, and when the workspace list changed npm
+  // put them back under packages/app-core and the web export stopped resolving
+  // `dom-serializer` — a package nothing had touched. With
+  // disableHierarchicalLookup below, Metro cannot walk up from the core's source
+  // to find them either, so the path has to be named.
+  path.resolve(workspaceRoot, 'packages/app-core/node_modules'),
 ];
 // Resolve each dependency once. Without this a package hoisted to the root and
 // also present locally can be loaded twice, which breaks React and any module
@@ -56,7 +68,34 @@ config.resolver.resolveRequest = (context, moduleName, platform) => {
       }),
     };
   }
-  return (upstreamResolveRequest ?? context.resolveRequest)(context, moduleName, platform);
+  try {
+    return (upstreamResolveRequest ?? context.resolveRequest)(context, moduleName, platform);
+  } catch (error) {
+    /**
+     * Last resort for the OTHER half of the price above: a package that npm did
+     * NOT hoist, because a version conflict made it keep a nested copy.
+     * `react-dom@19` requires `scheduler@^0.27` and react-native requires a
+     * different one, so npm puts one inside `node_modules/react-dom/node_modules/`
+     * — and with hierarchical lookup off, Metro cannot walk up from react-dom's
+     * own source to reach it. The web export failed on `scheduler`, a package
+     * nobody in this repo depends on directly.
+     *
+     * Retrying from the requesting file's directory is what Node would do, and it
+     * finds exactly the copy npm chose for that package. It runs only after normal
+     * resolution has already failed, so nothing that resolves today starts
+     * resolving twice — the guarantee the line above buys is intact.
+     *
+     * Both this and the nodeModulesPaths entry for packages/app-core exist because
+     * the build used to depend on npm's hoisting, which is not a contract: it
+     * changes when the set of installed packages changes, and it did.
+     */
+    const from = context.originModulePath;
+    if (!from || moduleName.startsWith('.')) throw error;
+    return {
+      type: 'sourceFile',
+      filePath: require.resolve(moduleName, { paths: [path.dirname(from)] }),
+    };
+  }
 };
 
 module.exports = withNativeWind(config, { input: './src/global.css' });

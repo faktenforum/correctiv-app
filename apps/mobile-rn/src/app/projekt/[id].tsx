@@ -10,20 +10,20 @@ import type { FeedKey } from '@correctiv/app-core/types/models';
 import { useFeed } from '@/lib/feeds/useFeed';
 import { openArticle } from '@/lib/openArticle';
 import { openExternal } from '@/lib/openExternal';
-import { colors } from '@/lib/theme';
+import { useColors } from '@/lib/theme';
 
-/** Die projekteigene Aktion — Beschriftung und Ziel an einer Stelle. */
+/** The project's own action — label and target in one place. */
 const ACTIONS: Record<NonNullable<Project['action']>, { label: string; run: () => void }> = {
   'whatsapp-tip': {
     label: 'Tipp per WhatsApp schicken',
-    // Die echte Tipp-Nummer der Faktencheck-Redaktion.
+    // The fact-check desk's real tip number.
     run: () => openExternal('https://wa.me/4915142647500'),
   },
   radio: {
     label: 'Salon5 Radio hören',
-    // Der Live-Stream gehört zum Player, und der wird in Phase 4c EIN
-    // App-Singleton (expo-audio). Ein zweiter Player hier wäre ein zweiter
-    // Zustand für dieselbe Wiedergabe — deshalb nur der Sprung in die Mediathek.
+    // The live stream belongs to the player, and that is ONE app-wide singleton
+    // (expo-audio). A second player here would be a second state for the same
+    // playback — hence only the jump into the Mediathek.
     run: () => router.push('/(tabs)/mediathek'),
   },
   'local-network': {
@@ -33,15 +33,15 @@ const ACTIONS: Record<NonNullable<Project['action']>, { label: string; run: () =
 };
 
 /**
- * Jede Kennung, die diese Route bedienen kann — für den statischen Web-Export.
+ * Every id this route can serve — for the static web export.
  *
- * Ohne das entsteht nur `projekt/[id].html`, und ein statischer Host (GitHub
- * Pages, kein Rewrite) antwortet auf /projekt/klima mit 404. Verifiziert: vor
- * dieser Funktion war genau das der Fall. Nativ ist davon nichts betroffen — dort
- * gibt es keine URLs, nur den Router.
+ * Without it only `projekt/[id].html` is emitted, and a static host (GitHub Pages,
+ * no rewrites) answers /projekt/klima with a 404. Verified: before this function
+ * that was exactly the case. Native is unaffected — there are no URLs there, only
+ * the router.
  *
- * Der Namensraum ist derselbe, den `resolveProject` auflöst: Projekte plus
- * Themen mit Feed. Set, weil `klima`, `lokal` und `schweiz` in beiden stehen.
+ * The namespace is the one `resolveProject` resolves: projects plus topics that
+ * have a feed. A Set, because `klima`, `lokal` and `schweiz` appear in both.
  */
 export function generateStaticParams(): { id: string }[] {
   const ids = new Set([
@@ -52,15 +52,15 @@ export function generateStaticParams(): { id: string }[] {
 }
 
 /**
- * Eine Vorlage für alle Projekt- und Themenseiten: Kopf, projekteigene Aktion,
- * Live-Feed.
+ * One template for every project and topic page: head, the project's own action,
+ * live feed.
  *
- * `id` kommt aus dem Verzeichnis oder aus der Themenschiene — `resolveProject`
- * im Core kennt beide Namensräume (und dokumentiert, warum das Projekt gewinnt).
+ * `id` arrives from the directory or from the topic rail — `resolveProject` in the
+ * core knows both namespaces (and documents why the project wins).
  *
- * Der Designentwurf trennt im Kopf ein kurzes Badge von einem langen Titel; die
- * Daten haben nur einen `name`, beides zu zeigen würde denselben String
- * doppeln. Deshalb hier Titel + Beschreibung.
+ * The design draft separates a short badge from a long title in the head; the data
+ * carries only a `name`, and showing both would print the same string twice. Hence
+ * title plus description here.
  */
 export default function ProjektScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
@@ -113,10 +113,11 @@ export default function ProjektScreen() {
 }
 
 /**
- * Eigene Komponente, weil `useFeed` ein Hook ist: auf einer Seite ohne Feed darf
- * er nicht bedingt aufgerufen werden.
+ * Its own component, because `useFeed` is a hook: on a page without a feed it must
+ * not be called conditionally.
  */
 function ProjectFeed({ feed }: { feed: FeedKey }) {
+  const colors = useColors();
   const { data, loading, error } = useFeed(feed);
   const items = data?.slice(0, 12) ?? [];
 

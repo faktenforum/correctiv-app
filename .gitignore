@@ -1,7 +1,5 @@
-# NativeScript
-hooks/
+# Dependencies
 node_modules/
-platforms/
 
 # Logs
 logs

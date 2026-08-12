@@ -3,7 +3,7 @@ module.exports = function (api) {
   return {
     presets: [
       // jsxImportSource: 'nativewind' aktiviert className auf RN-Komponenten.
-      // babel-preset-expo ergänzt automatisch das Worklets-/Reanimated-Plugin.
+      // babel-preset-expo adds the worklets/Reanimated plugin automatically.
       ['babel-preset-expo', { jsxImportSource: 'nativewind' }],
       'nativewind/babel',
     ],

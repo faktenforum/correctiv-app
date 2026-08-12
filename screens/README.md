@@ -1,7 +1,7 @@
-# Screens — the three versions, shot the same way
+# Screens — three versions, shot the same way
 
-A visual record of every screen in all three versions of this app, captured with the
-same step names so they can be read side by side.
+A visual record of every screen in three versions of this app, captured with the same
+step names so they can be read side by side.
 
 It exists because of the rule in [`AGENTS.md`](../AGENTS.md): a green check is not
 evidence. The weaker version of that rule — extracting text with `uiautomator dump`
@@ -12,18 +12,23 @@ typecheck and a green test run, and each one was found by looking at a picture.
 | Set | What it is | Worth as a reference |
 | --- | --- | --- |
 | [`draft/`](draft/) | The design draft rendered in Chrome at 402×874 | **The** visual target. It lives in the `design-entwurf` sibling repo, not here — this set is the only copy of it in this repo |
-| [`nativescript/`](nativescript/) | `apps/mobile`, superseded by [ADR 0004](../adr/0004-react-native-pivot.md) | Still the closest match to the draft in places. Read it for layout decisions, do not add features to it |
+| [`nativescript/`](nativescript/) | The NativeScript/Vue app, removed from the repo on 2026-08-12 | **This set is now the only trace of it.** Read it for layout decisions it got right; there is no longer any code behind it |
 | [`expo/`](expo/) | `apps/mobile-rn`, the live app | The thing under test |
 
 Emulator `Medium_Phone` (Android 7.0 API 36, 1080×2400); the draft is pinned to
 light mode so it matches.
 
 The draft is fixed — it only moves when the design does (last shot 2026-08-05 at
-`26ef0c9`). **Both app sets are re-shot together**, because since
-[ADR 0006](../adr/0006-one-core-two-hosts.md)
-they share a core and a core change lands in both — the NativeScript set stopped
-being a frozen reference the moment its behaviour started coming from the same place
-as the Expo app's. Both are from 2026-08-06 at `9842b27`.
+`26ef0c9`). The NativeScript set is fixed too now, at 2026-08-06 / `9842b27`, which
+is the last build that existed: only `expo/` is re-shot from here on. While both apps
+were in the repo the two sets were always re-shot *together*, because they shared a
+core and a core change landed in both — see the third round below, where that is
+exactly what a screenshot proved.
+
+**The `expo/` set predates dark mode and the reader's share button** (both landed
+2026-08-12, [ADR 0007](../adr/0007-removing-the-nativescript-host.md)), so it shows
+neither. It was verified in a browser instead — the rule below is why that gap is
+written down rather than left to be discovered.
 
 **A screenshot is only evidence of the build it came from.** The set this commit
 replaces was shot between 13:40 and 14:21 from APKs built at 14:46, and `9842b27`
@@ -180,43 +185,31 @@ has history: `/player`, `/beitreten`, `/projekt/klima`, `/backstage` and
 The emulator needs a window — headless dies on SELinux denying `execheap` to
 SwiftShader's shader JIT.
 
-Both apps share the package id, so only one is installed at a time and each install
-needs the other uninstalled first — they are signed with different keys, and `adb
-install -r` answers a mismatch with `INSTALL_FAILED_UPDATE_INCOMPATIBLE`.
 
 ```bash
-# Expo build
+# The app
 cd apps/mobile-rn/android && ./gradlew assembleRelease && cd -
-adb uninstall org.correctiv.app.prototype
-adb install apps/mobile-rn/android/app/build/outputs/apk/release/app-release.apk
+adb install -r apps/mobile-rn/android/app/build/outputs/apk/release/app-release.apk
 OUT=out/expo bash screens/tools/tour-android.sh          # the five tabs
 OUT=out/expo bash screens/tools/tour-android-routes.sh   # the pushed routes, by deep link
 
-# NativeScript build — let CI do it. `ns build` needs the two workarounds in
-# .github/workflows/release-android.yml (a skipped doctor preflight and a
-# redirected Vite output dir) before it produces an APK at all.
-gh workflow run release-android.yml --ref main        # or reuse the last run
-gh run download <run-id> -n release-nativescript -D /tmp/ns
-adb uninstall org.correctiv.app.prototype
-adb install /tmp/ns/correctiv-app-nativescript-*.apk
-OUT=out/nativescript ACTIVITY=com.tns.NativeScriptActivity bash screens/tools/tour-android.sh
-
-# Design draft — only when the design itself changed. It is no longer copied into
-# this repo (GitHub Pages serves the Expo web export now), so serve the sibling
-# checkout directly. Its entry point is "Correctiv App.dc.html", not index.html.
+# Design draft — only when the design itself changed. It is not copied into this repo
+# (GitHub Pages serves the web export instead), so serve the sibling checkout
+# directly. Its entry point is "Correctiv App.dc.html", not index.html.
 python3 -m http.server 8098 --directory ../design-entwurf/project &
 node screens/tools/tour-draft.mjs "http://localhost:8098/Correctiv App.dc.html" out/draft \
   --tour=screens/tools/tour-draft.json
 ```
 
+The montages in the table above are rebuilt from all three sets; `nativescript/` is
+a fixed input now, not something to re-shoot.
+
 Then convert for the repo — full-resolution PNGs are ~1.1 MB each, WebP at 540px
 is ~50 KB and still legible — and rebuild the montages from the three sets:
 
 ```bash
-for set in expo nativescript; do
-  for p in "out/$set"/*.png; do
-    magick "$p" -resize 540x -strip -quality 82 "screens/$set/$(basename "$p" .png).webp"
-  done
+for p in out/expo/*.png; do
+  magick "$p" -resize 540x -strip -quality 82 "screens/expo/$(basename "$p" .png).webp"
 done
 
 for n in 01-onboarding-welcome 02-onboarding-interests 03-onboarding-push \
@@ -263,7 +256,7 @@ node screens/tools/serve-clean.mjs apps/mobile-rn/dist 8099 --base=/correctiv-ap
 - The draft's content is fixed sample data with a fixed date; both builds pull live
   feeds, so the articles differ between the sets by design — and Home's hero can be
   an article with no cover image, as it is in this round.
-- The NativeScript set is shot from the release APK the CI workflow builds, signed
+- The NativeScript set was shot from the release APK its CI workflow built, signed
   with the in-repo test key, where earlier rounds used a local debug build. Nothing
   visible depends on that, but it is a different artifact.
 - `83-video` shows a black frame. The embed's error message is gone, but this

@@ -13,12 +13,12 @@ import { openExternal } from '@/lib/openExternal';
 const WHATSAPP_TIP = 'https://wa.me/4915142647500';
 
 /**
- * Mitmachen — die vier Wege hinein: CrowdNewsroom-Aufrufe, Faktenforum,
- * Abriss-Atlas, Tipp per WhatsApp.
+ * Mitmachen — the four ways in: CrowdNewsroom callouts, the Faktenforum, the
+ * demolition atlas, and a tip by WhatsApp.
  *
- * Aufbau nach Designentwurf: pro Bereich ein Gruppenlabel und eine Karte mit
- * genau einem Knopf. Der NativeScript-Stand benutzte hier Icon-Zeilen; die Karte
- * trägt die Erklärung besser, und bei vier Bereichen lohnt der Platz.
+ * Laid out after the design draft: one group label and one card with exactly one
+ * button per area. The NativeScript build used icon rows here; the card carries the
+ * explanation better, and with four areas the space is worth it.
  */
 export default function MitmachenScreen() {
   return (

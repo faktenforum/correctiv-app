@@ -10,6 +10,9 @@ import { colors, sizes } from '@/lib/theme';
  * Video tile in a media rail: 16:9 preview with a play mark, title and date
  * below. The duration only ever comes from PeerTube — the YouTube Atom feed does
  * not carry it, so it is optional rather than a bogus "0 Min.".
+ *
+ * Everything inside the preview is `always-*`: it sits on a photograph, which no
+ * appearance setting lightens.
  */
 export function MediaCard({ video, onPress }: { video: Video; onPress: (video: Video) => void }) {
   const duration = video.durationSec ? formatTimeHm(video.durationSec) : null;
@@ -30,14 +33,14 @@ export function MediaCard({ video, onPress }: { video: Video; onPress: (video: V
         overlay={
           <>
             <View
-              className="items-center justify-center rounded-full bg-grey-700/70"
+              className="items-center justify-center rounded-full bg-always-dark/70"
               style={{ width: sizes.playOverlay, height: sizes.playOverlay }}
             >
-              <Ionicons name="play" size={22} color={colors['grey-100']} />
+              <Ionicons name="play" size={22} color={colors['always-light']} />
             </View>
             {duration && (
-              <View className="absolute bottom-2xs right-2xs rounded-s bg-grey-700/80 px-3xs">
-                <Typo variant="text-s" color="grey-100" style={{ fontSize: 11 }}>
+              <View className="absolute bottom-2xs right-2xs rounded-s bg-always-dark/80 px-3xs">
+                <Typo variant="text-s" color="always-light" style={{ fontSize: 11 }}>
                   {duration}
                 </Typo>
               </View>

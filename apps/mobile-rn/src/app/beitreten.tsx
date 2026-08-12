@@ -8,9 +8,9 @@ import { Button, Card, Hairline, Typo } from '@/components/ui';
 import type { MembershipInterval } from '@correctiv/app-core/stores/membership';
 import { goBack } from '@/lib/navigation/goBack';
 import { coreActions } from '@/lib/store/core';
-import { colors, sizes, typography } from '@/lib/theme';
+import { sizes, typography, useColors } from '@/lib/theme';
 
-/** Echte Zahlen aus dem Konzept — der erste Schritt argumentiert, er drängt nicht. */
+/** Real figures from the concept — the first step argues, it does not push. */
 const FACTS = [
   { value: '247', label: 'Recherchen im letzten Jahr — alle frei zugänglich' },
   { value: '31.000+', label: 'Menschen tragen CORRECTIV bereits' },
@@ -18,29 +18,30 @@ const FACTS = [
 ];
 
 /**
- * Beitragsstufen als Presets statt Slider: React Native hat keinen Slider mehr,
- * und für Geld ist Antippen ohnehin genauer als Ziehen. Der Designentwurf zeigt
- * einen Slider — das ist die bewusste Abweichung, dieselbe wie beim Player.
+ * Contribution levels as presets rather than a slider: React Native no longer ships
+ * one, and for money a tap is more precise than a drag anyway. The design draft
+ * shows a slider — this is the deliberate divergence, the same one as in the player.
  */
 const AMOUNTS = [5, 10, 15, 20, 30, 50];
 
-/** Schwellen als Einladung, nicht als Stufenmodell: Zeilen leuchten auf. */
+/** Thresholds as an invitation, not a tier model: the rows light up. */
 const PERKS = [
   { min: 15, text: 'Ab 15 €: das CORRECTIV-Bookzine viermal im Jahr per Post' },
   { min: 30, text: 'Ab 30 €: signierte Neuerscheinung des CORRECTIV Verlags' },
 ];
 
 /**
- * Der Beitritts-Fluss: warum → Beitrag → Daten → willkommen.
+ * The join flow: why → contribution → details → welcome.
  *
- * Schritt 4 ist der Statuswechsel, um den die Demo gebaut ist: `join()` setzt
- * `isMember`, und jeder Club-Berührungspunkt in der App reagiert im selben Tick.
- * Zahlung und Konto sind simuliert, und der Bildschirm sagt das auch.
+ * Step 4 is the status change the whole demo is built around: `join()` sets
+ * `isMember`, and every club touchpoint in the app reacts in the same tick. Payment
+ * and account are simulated, and the screen says so.
  *
- * Kein Dark Pattern: bis zum Abschluss steht neben jedem „Weiter" ein gleichwertiges
- * „Erstmal umsehen".
+ * No dark pattern: until the last step, every "Weiter" has an equally weighted
+ * "Erstmal umsehen" beside it.
  */
 export default function BeitretenScreen() {
+  const colors = useColors();
   const [step, setStep] = useState(0);
   const [amount, setAmount] = useState(10);
   const [interval, setInterval] = useState<MembershipInterval>('monatlich');

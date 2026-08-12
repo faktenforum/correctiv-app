@@ -40,8 +40,6 @@
   },
   "ignorePatterns": [
     "media/**",
-    "apps/mobile/platforms/**",
-    "apps/mobile/src/assets/**",
     "packages/app-core/test/__fixtures__/**",
     "apps/mobile-rn/__fixtures__/**"
   ],
@@ -50,7 +48,8 @@
 
     "no-underscore-dangle": "off",
 
-    // Suggests the ES2023 toSorted(), which the ES2020 NativeScript runtime lacks.
+    // Suggests the ES2023 toSorted(). The core is meant to run on any runtime,
+    // including ones without it, so the in-place sort stays.
     "unicorn/no-array-sort": "off",
 
     "oxc/no-map-spread": "warn",
@@ -74,9 +73,9 @@
       }
     },
     {
-      // Both apps' generator scripts fetch upstream resources one at a time on
-      // purpose — sequential requests are gentler on correctiv.org than a burst.
-      "files": ["apps/mobile/scripts/**", "apps/mobile-rn/scripts/**"],
+      // The generator scripts fetch upstream resources one at a time on purpose —
+      // sequential requests are gentler on correctiv.org than a burst.
+      "files": ["apps/mobile-rn/scripts/**"],
       "rules": {
         "no-await-in-loop": "off"
       }
@@ -88,12 +87,6 @@
       "files": ["apps/mobile-rn/index.js", "apps/mobile-rn/src/app/_layout.tsx"],
       "rules": {
         "import/no-unassigned-import": "off"
-      }
-    },
-    {
-      "files": ["apps/mobile/src/views/reader/ArticleReaderPage.vue"],
-      "rules": {
-        "import/no-self-import": "off"
       }
     },
     {

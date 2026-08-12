@@ -6,11 +6,11 @@ import { formatDateShortDe } from '@correctiv/app-core/lib/format';
 import type { SavedArticle } from '@correctiv/app-core/stores/savedArticles';
 import { openArticle } from '@/lib/openArticle';
 import { coreActions, useSavedArticles } from '@/lib/store/core';
-import { colors, sizes } from '@/lib/theme';
+import { sizes, useColors } from '@/lib/theme';
 
 /**
- * Gespeicherte Artikel. Dieselbe Liste, die das Lesezeichen im Reader füllt —
- * `savedArticles` im Core, persistiert, also übersteht sie den Neustart.
+ * Saved articles — the same list the bookmark in the reader fills. `savedArticles`
+ * in the core, persisted, so it survives a restart.
  */
 export default function GespeichertScreen() {
   const items = useSavedArticles();
@@ -43,6 +43,7 @@ export default function GespeichertScreen() {
 }
 
 function SavedRow({ article }: { article: SavedArticle }) {
+  const colors = useColors();
   return (
     <View className="flex-row items-start border-b border-grey-300 py-s">
       <Pressable

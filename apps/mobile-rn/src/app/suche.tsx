@@ -10,26 +10,27 @@ import { searchArticles } from '@correctiv/app-core/services/search.service';
 import type { FeedItem } from '@correctiv/app-core/types/models';
 import { searchFeedCorpus } from '@/lib/feeds/corpus';
 import { openArticle } from '@/lib/openArticle';
-import { colors, typography } from '@/lib/theme';
+import { typography, useColors } from '@/lib/theme';
 import { useDebounced } from '@/lib/useDebounced';
 
-/** Unter zwei Zeichen sucht niemand sinnvoll — und der Server auch nicht. */
+/** Below two characters nobody is searching meaningfully — nor is the server. */
 const MIN_QUERY = 2;
 const DEBOUNCE_MS = 300;
 
 /**
- * Volltextsuche über correctiv.org, mit lokalem Rückfall.
+ * Full-text search over correctiv.org, with a local fallback.
  *
- * Reihenfolge: WordPress-REST (`searchArticles`, im Core) → bei Fehler ODER
- * leerem Ergebnis die schon geladenen Feeds (`searchFeedCorpus`). Der Rückfall
- * ist kein Notnagel, sondern die Zusage aus dem Cache-Konzept: die Demo darf nie
- * am WLAN hängen. Auf dem Web-Target ist er sogar der Normalfall, weil
- * correctiv.org keinen CORS-Header sendet (ADR 0004).
+ * The order: WordPress REST (`searchArticles`, in the core) → on an error OR an
+ * empty result, the feeds already loaded (`searchFeedCorpus`). The fallback is not
+ * a stopgap but the promise the cache design makes: the demo must never hang on
+ * Wi-Fi. On the web target it is in fact the normal case, because correctiv.org
+ * sends no CORS header (ADR 0004).
  *
- * Die Projekttreffer (Podcasts, Aufrufe, Backstage, Verlag) stehen nicht in den
- * Feeds und werden lokal gefiltert — ohne Debounce, weil das nichts kostet.
+ * The project hits (podcasts, callouts, backstage, publishing) are not in the feeds
+ * and are filtered locally — without a debounce, because that costs nothing.
  */
 export default function SucheScreen() {
+  const colors = useColors();
   const [query, setQuery] = useState('');
   const trimmed = query.trim();
   const debounced = useDebounced(trimmed, DEBOUNCE_MS);
@@ -45,8 +46,8 @@ export default function SucheScreen() {
     }
     let active = true;
 
-    // setState steht im inneren async-Lauf, nicht im Effekt-Rumpf — dasselbe
-    // Muster wie useAsyncData in lib/feeds/useFeed.ts (React-Compiler-fest).
+    // setState sits in the inner async run, not in the effect body — the same
+    // pattern as useAsyncData in lib/feeds/useFeed.ts (safe for the React compiler).
     const run = async () => {
       setSearching(true);
       try {
@@ -57,7 +58,7 @@ export default function SucheScreen() {
           return;
         }
       } catch {
-        // offline, API-Fehler oder auf Web der CORS-Block — beides derselbe Weg.
+        // Offline, an API error, or the CORS block on web — all the same path.
       }
       const local = await searchFeedCorpus(debounced);
       if (active) setArticles(local);
@@ -105,8 +106,8 @@ export default function SucheScreen() {
         className="flex-1"
         contentContainerClassName="px-m pt-s pb-2xl"
         showsVerticalScrollIndicator={false}
-        // Ohne „handled" verschluckt der erste Tipp auf ein Ergebnis nur die
-        // Tastatur, statt den Artikel zu öffnen.
+        // Without "handled", the first tap on a result only swallows the keyboard
+        // instead of opening the article.
         keyboardShouldPersistTaps="handled"
         keyboardDismissMode="on-drag"
       >

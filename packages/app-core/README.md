@@ -2,15 +2,13 @@
 
 The behaviour of the CORRECTIV app, with no UI framework and no platform SDK in it.
 
-Both apps in this repo import it: `apps/mobile-rn` (Expo / React Native) and
-`apps/mobile` (NativeScript / Vue). Anything that is not a screen and not an SDK call
-belongs here — the model, the parsers, the services, the caches and **all** of the
-state.
+`apps/mobile-rn` (Expo / React Native) imports it. Anything that is not a screen and
+not an SDK call belongs here — the model, the parsers, the services, the caches and
+**all** of the state.
 
 ## The rule
 
-No `react`, `react-native`, `expo`, `vue`, `pinia`, `zustand`, `@nativescript/*` or
-`node:*` import, ever. `test/boundary.test.ts` checks every source file on every PR
+No `react`, `react-native`, `expo`, `zustand` or `node:*` import, ever. `test/boundary.test.ts` checks every source file on every PR
 and names the offender.
 
 If something needs a platform, it becomes a **port**: an interface in
@@ -47,14 +45,17 @@ src/media/       exclusive-playback — only one medium plays at a time
 ## Two things that will surprise you
 
 **`stores/create-store.ts` is not zustand,** although its API is shaped like it.
-zustand's package exports resolve to a CommonJS build under `@nativescript/vite`,
-which broke the Android bundle while typecheck and the Expo build both passed. The
-file header has the full story. Hosts may still use zustand's `useStore` for their
-own binding — it only needs `subscribe`, `getState` and `getInitialState`.
+Depending on zustand here would put a UI-framework package in the one place that must
+not have one; the store is forty lines, and the host is free to bind it *with*
+zustand's `useStore`, which is exactly what `apps/mobile-rn` does — that only needs
+`subscribe`, `getState` and `getInitialState`. The file header has the full story,
+including the bundler failure that first forced the question.
 
-**Derived state is an exported selector taking state, never a store method.** A
-method reads past Vue's dependency tracking, and the template then silently stops
-updating — a class of bug that is invisible until a demo.
+**Derived state is an exported selector taking state, never a store method.** In
+React a method is merely awkward; the rule was learned on a host whose reactivity
+tracked property reads, where a method silently stopped the template updating — a
+class of bug invisible until a demo. It stays because it is also the shape the next
+binding will want.
 
 ```ts
 export function isSaved(state: Pick<SavedArticlesState, 'items'>, url: string): boolean

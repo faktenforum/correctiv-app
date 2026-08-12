@@ -72,8 +72,8 @@ export type ExtractedArticle = Omit<Article, 'url' | 'offline'>;
  * interchangeable:
  *
  * - `extract/string.ts` — regular expressions over the raw markup. No
- *   dependencies, so it runs in the NativeScript runtime (whose bundler trips
- *   over CommonJS-only parser packages) and in a plain Node script.
+ *   dependencies, so it runs anywhere: a plain Node script, a bundler that trips
+ *   over CommonJS-only parser packages, a runtime with no DOM. It is the default.
  * - `extract/dom.ts` — htmlparser2 + css-select. Sanitises the body with a tag
  *   allowlist rather than a denylist, which is measurably better markup for the
  *   reader, at the cost of four dependencies.

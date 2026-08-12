@@ -1,7 +1,7 @@
 import { View, type ViewProps } from 'react-native';
 
 export type CardProps = ViewProps & {
-  /** 'surface' = graue Fläche (grey-200), 'outline' = weiß mit Hairline. Keine Schatten. */
+  /** 'surface' = tinted fill (grey-200), 'outline' = page surface with a hairline. No shadows. */
   tone?: 'surface' | 'outline';
   className?: string;
 };

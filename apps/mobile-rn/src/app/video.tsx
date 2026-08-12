@@ -10,24 +10,24 @@ import { openExternal } from '@/lib/openExternal';
 import { colors } from '@/lib/theme';
 
 /**
- * Ein Bildschirm für beide Videoquellen.
+ * One screen for both video sources.
  *
- * PeerTube spielt nativ über expo-video (HLS, adaptiv — die Renditionen sind
- * getrennt in Video-only und Audio-only, nur die Master-Playlist mischt beides).
- * YouTube bleibt bei der nocookie-Einbettung, weil es dort keinen direkten Stream
- * gibt. Der Core spiegelt diese Zweiteilung schon in `MEDIA_SOURCE`.
+ * PeerTube plays natively through expo-video (HLS, adaptive — the renditions are
+ * split into video-only and audio-only, and only the master playlist mixes the
+ * two). YouTube stays on the nocookie embed, because there is no direct stream
+ * there. The core already mirrors that split in `MEDIA_SOURCE`.
  *
- * Kein Pfad-Parameter, sondern der `videoStore` des Core: die Metadaten (Titel,
- * Beschreibung, Aufrufe, HLS-URL) sind zu viel für eine URL, und der Store ist
- * ohnehin die Stelle, die die HLS-Auflösung besitzt. Als Route ohne Parameter
- * exportiert sie außerdem als eine Datei — ein `video/[id]` bräuchte
- * `generateStaticParams`, und PeerTube-UUIDs kennt niemand im Voraus.
+ * No path parameter, but the core's `videoStore`: the metadata (title, description,
+ * views, HLS url) is too much for a URL, and the store is where the HLS resolution
+ * lives anyway. Without a parameter the route also exports as a single file — a
+ * `video/[id]` would need `generateStaticParams`, and nobody knows a PeerTube UUID
+ * in advance.
  *
- * Bewusste Abweichung vom NativeScript-Stand: dort lag die Videofläche ÜBER den
- * Tab-Frames und schrumpfte beim Verlassen zur Leiste. React Native kann eine
- * Videofläche nicht umhängen, ohne sie neu zu erzeugen (die Wiedergabe würde
- * abbrechen) — die nativ passende Antwort ist Picture-in-Picture, die expo-video
- * mitbringt.
+ * A deliberate divergence from the NativeScript build: there the video surface sat
+ * ABOVE the tab frames and shrank into a bar when you navigated away. React Native
+ * cannot re-parent a video surface without recreating it, which would stop
+ * playback — the natively appropriate answer is picture-in-picture, which
+ * expo-video brings along.
  */
 export default function VideoScreen() {
   const { current, hlsUrl, status } = useVideo();
@@ -43,7 +43,9 @@ export default function VideoScreen() {
         </View>
       ) : (
         <ScrollView className="flex-1" showsVerticalScrollIndicator={false}>
-          <View className="bg-grey-700" style={{ aspectRatio: 16 / 9 }}>
+          {/* Die Bühne bleibt in beiden Schemata dunkel — ein Video steht nicht
+              auf einer hellen Fläche, auch nicht bei heller App. */}
+          <View className="bg-always-dark" style={{ aspectRatio: 16 / 9 }}>
             {current.source === 'peertube' ? (
               <PeertubeStage
                 hlsUrl={hlsUrl}
@@ -63,7 +65,7 @@ export default function VideoScreen() {
   );
 }
 
-/** Nativer HLS-Player. Eigene Komponente, weil `useVideoPlayer` ein Hook ist. */
+/** The native HLS player. Its own component, because `useVideoPlayer` is a hook. */
 function PeertubeStage({
   hlsUrl,
   loading,
@@ -81,9 +83,9 @@ function PeertubeStage({
     return (
       <View className="flex-1 items-center justify-center">
         {loading ? (
-          <ActivityIndicator color={colors['grey-100']} />
+          <ActivityIndicator color={colors['always-light']} />
         ) : (
-          <Typo variant="text-s" color="grey-100">
+          <Typo variant="text-s" color="always-light">
             {failed ? 'Video nicht verfügbar' : 'Lädt …'}
           </Typo>
         )}
@@ -97,14 +99,14 @@ function PeertubeStage({
       style={{ flex: 1 }}
       contentFit="contain"
       nativeControls
-      // Statt der Leiste des NativeScript-Stands: das System übernimmt das Fenster.
+      // Instead of the NativeScript build's bar: the system takes over the window.
       allowsPictureInPicture
       startsPictureInPictureAutomatically
     />
   );
 }
 
-/** Kicker, Titel, Quelle, Beschreibung, Link — für beide Quellen gleich. */
+/** Kicker, title, source, description, link — the same for both sources. */
 function VideoMeta({ video }: { video: Video }) {
   const days = daysSince(video.publishedAt);
   const when = days <= 0 ? 'Heute' : days === 1 ? 'Gestern' : formatDateDe(video.publishedAt);
@@ -147,7 +149,7 @@ function VideoMeta({ video }: { video: Video }) {
   );
 }
 
-/** Ganze Tage seit Veröffentlichung — steuert Kicker und relatives Datum. */
+/** Whole days since publication — drives the kicker and the relative date. */
 function daysSince(iso?: string): number {
   if (!iso) return Number.POSITIVE_INFINITY;
   const then = new Date(iso).getTime();

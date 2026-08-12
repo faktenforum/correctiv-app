@@ -3,7 +3,7 @@ import { Pressable, View } from 'react-native';
 
 import { Badge, Typo } from '@/components/ui';
 import { bonusMedia, diaries } from '@correctiv/app-core/data/backstage';
-import { colors } from '@/lib/theme';
+import { useColors } from '@/lib/theme';
 
 /**
  * Backstage on Home: the latest research diary, with the bonus episode named
@@ -21,6 +21,7 @@ export function BackstageTeaser({
   onOpenDiary: (id: string) => void;
   onOpenBackstage: () => void;
 }) {
+  const colors = useColors();
   const diary = diaries[0];
   const bonus = bonusMedia[0];
 

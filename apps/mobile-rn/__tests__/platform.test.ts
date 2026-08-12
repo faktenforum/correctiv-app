@@ -1,8 +1,9 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
-import { CONTENT_FEEDS, FEEDS } from '@correctiv/app-core/data/feeds.config';
+import { CONTENT_FEEDS, FEEDS, PODCAST_CHANNELS } from '@correctiv/app-core/data/feeds.config';
 import type { FeedKey } from '@correctiv/app-core/types/models';
 
+import { OFFLINE_COVERS } from '../src/lib/articles/covers';
 import {
   expoPlatform,
   hydratePlatform,
@@ -181,7 +182,27 @@ describe('content bundle', () => {
     expect(expoPlatform.content.feed(notSnapshotted!)).toBeNull();
   });
 
-  it('says plainly that this host bundles no podcast snapshots', () => {
-    expect(expoPlatform.content.podcastSeries('klima')).toBeNull();
+  it('serves a bundled snapshot for every curated podcast show', () => {
+    // The Mediathek's cascade falls through to the four-show sample seed in the
+    // core when a show is missing here, and nothing on screen says which one you
+    // are looking at beyond a single line. A gap in this bundle is therefore a
+    // demo that quietly shows made-up episodes.
+    for (const handle of PODCAST_CHANNELS) {
+      expect(expoPlatform.content.podcastSeries(handle)?.episodes.length ?? 0).toBeGreaterThan(0);
+    }
+    expect(expoPlatform.content.podcastSeries('gibt-es-nicht')).toBeNull();
+  });
+
+  it('serves bundled covers as data URIs, not as the remote URL', () => {
+    // Echoing the remote URL back is what this port used to do, and it made
+    // `adoptBundledImages` in the core a no-op: offline, the URL it replaced was
+    // just as unreachable as the one it replaced it with.
+    const covers = Object.values(OFFLINE_COVERS);
+    expect(covers.length).toBeGreaterThan(0);
+    for (const cover of covers) expect(cover.startsWith('data:image/')).toBe(true);
+
+    const [withCover] = Object.keys(OFFLINE_COVERS);
+    expect(expoPlatform.content.image(withCover)).toBe(OFFLINE_COVERS[withCover]);
+    expect(expoPlatform.content.image('https://correctiv.org/nope/')).toBeNull();
   });
 });

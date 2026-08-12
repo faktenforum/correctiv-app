@@ -6,9 +6,13 @@ import { formatDateShortDe } from '@correctiv/app-core/lib/format';
 import { colors } from '@/lib/theme';
 
 /**
- * Der Kopf des Profils — gelbe Clubkarte für Mitglieder, Gastkarte für alle
- * anderen. Beide Zustände sind Einladung, keine Schranke: der Gasttext sagt
- * ausdrücklich, dass alles Wichtige frei bleibt.
+ * The head of the profile — a yellow club card for members, a guest card for
+ * everyone else. Both states are an invitation, not a barrier: the guest copy says
+ * outright that everything that matters stays free.
+ *
+ * The club card stays yellow in both schemes, because the yellow carries meaning.
+ * Everything on it therefore takes the fixed dark role colour rather than the page's
+ * text colour, which turns near-white in dark mode and would vanish on the yellow.
  */
 export function ClubCard({
   isMember,
@@ -37,14 +41,16 @@ export function ClubCard({
   return (
     <View className="mt-s rounded-md bg-alternative p-m">
       <View className="flex-row items-center justify-between">
-        <Overline label="CORRECTIV Club" color="grey-700" />
-        <Ionicons name="heart" size={20} color={colors['grey-700']} />
+        <Overline label="CORRECTIV Club" color="always-dark" />
+        <Ionicons name="heart" size={20} color={colors['always-dark']} />
       </View>
-      <Typo variant="headline-l" className="mt-m">
+      <Typo variant="headline-l" color="always-dark" className="mt-m">
         {name || 'Clubmitglied'}
       </Typo>
       {memberSince && (
-        <Typo variant="text-s" color="grey-600">
+        // Not grey-600: on the yellow the secondary line is dimmed rather than
+        // recoloured, or every fixed surface would need a grey scale of its own.
+        <Typo variant="text-s" color="always-dark" className="opacity-70">
           Mitglied seit {formatDateShortDe(memberSince)}
         </Typo>
       )}

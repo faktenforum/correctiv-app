@@ -1,14 +1,10 @@
 # @correctiv/mobile-rn — the Expo app
 
-The CORRECTIV app on Expo / React Native: **iOS, Android and a web target**. This is
-the app going forward ([ADR 0004](../../adr/0004-react-native-pivot.md),
+The CORRECTIV app on Expo / React Native: **iOS, Android and a web target**
+([ADR 0004](../../adr/0004-react-native-pivot.md),
 [ADR 0005](../../adr/0005-react-native-over-nativescript.md)). Its behaviour comes
 from [`@correctiv/app-core`](../../packages/app-core); what lives here is the view
-layer plus one adapter.
-
-The NativeScript app in [`../mobile`](../mobile) stays for now and is still the more
-complete UI — the reference to port from, not a competitor
-([ADR 0006](../../adr/0006-one-core-two-hosts.md)).
+layer plus one adapter ([ADR 0006](../../adr/0006-one-core-two-hosts.md)).
 
 ## Stack
 
@@ -75,8 +71,10 @@ cd android && ./gradlew assembleRelease                          # all ABIs
 adb install -r app/build/outputs/apk/release/app-release.apk
 ```
 
-Self-contained (JS bundled, no Metro) and signed with the debug keystore — enough
-for a demo. Generate a real keystore before any distribution.
+Self-contained (JS bundled, no Metro). Gradle signs it with a per-machine debug key,
+which is fine locally; the release workflow re-signs with a stable key so testers can
+update in place — see [`signing/README.md`](signing/README.md) and
+[RELEASE.md](../../RELEASE.md).
 
 ## Layout
 
@@ -96,12 +94,33 @@ src/lib/platform/expo.ts the core's ports: storage and the bundled content
 src/lib/audio/           backend.ts (expo-audio → the core's port), plus thin action
                          and hook wrappers over the core's audio store
 src/lib/feeds/           React hooks over the core's feed store, and the search corpus
-src/lib/articles/        reader CSS wiring, the bundled articles, in-app URL rules
+src/lib/articles/        reader CSS wiring, the bundled articles and covers,
+                         in-app URL rules
+src/lib/podcasts/        the bundled show snapshots
 src/lib/store/core.ts    React bindings for the core's stores
-src/lib/theme/           token-bridge output, typography, fonts, pixel sizes
-scripts/                 generators (tokens, fonts, offline articles)
+src/lib/theme/           token-bridge output, useColors(), typography, fonts, sizes
+palette.js               the dark values and the two fixed role colours, hand-written
+signing/                 the committed throwaway test key (see its README)
+scripts/                 generators (tokens, fonts, offline articles and podcasts)
 __tests__/               jest-expo against real captured feeds and pages
 ```
+
+## Colour and dark mode
+
+`bg-grey-100` and friends resolve through CSS variables that `.dark:root` redefines,
+so surfaces and borders follow the app's appearance setting with **no `dark:` variant
+anywhere in this app**. Two exceptions, both deliberate:
+
+- `always-light` and `always-dark` never switch — they are for anything sitting on a
+  surface that does not switch either: the brand red, club yellow, a photograph, the
+  video stage.
+- A colour read in TypeScript (an icon, a `Switch`, a computed style) is a plain
+  string and cannot follow the scheme. Use `useColors()` from `lib/theme`.
+
+The setting itself is the authority, not the device: 'system' delegates to the OS,
+'light' and 'dark' override it (`app/_layout.tsx` → `useAppearance`). The dark values
+are hand-written in `palette.js`, because the design tokens' dark block is still a
+placeholder.
 
 ## Generated, never hand-edited
 
@@ -109,7 +128,8 @@ __tests__/               jest-expo against real captured feeds and pages
 | --- | --- |
 | `npm run tokens` | `tailwind.tokens.generated.js`, `src/lib/theme/tokens.generated.ts`, `readerCss.generated.ts` |
 | `npm run fonts` | `src/lib/theme/readerFonts.generated.ts` — base64-subsetted reader fonts (needs `pyftsubset`) |
-| `npm run offline-articles` | `src/lib/articles/offlineBundle.generated.ts` — a snapshot of every content feed plus ~15 pre-extracted articles. On web these are the *only* articles there are: correctiv.org sends no CORS header |
+| `npm run offline-articles` | `src/lib/articles/offlineBundle.generated.ts` — a snapshot of every content feed plus ~15 pre-extracted articles, and `offlineCovers.generated.ts`, their covers inlined as data URIs (needs ImageMagick). On web the snapshots are the *only* articles there are: correctiv.org sends no CORS header |
+| `npm run offline-podcasts` | `src/lib/podcasts/offlineBundle.generated.ts` — the seven curated Salon5 shows. Without it the Mediathek falls back to the core's four-show sample seed, which is what a browser always gets otherwise: Castopod sends no CORS header either |
 
 ## Checks
 
@@ -138,3 +158,6 @@ Verified in the browser: home with full content and all five tabs, the reader wi
 real article in an iframe, discover with all 17 entries, every project page under its
 own URL, media with real FunFacts videos, and the participate flow into step 1 of the
 form. Playback itself is verified on a device, not in the browser.
+
+Sharing an article uses the system share sheet natively and the Web Share API in a
+browser, falling back to the clipboard where that is missing.

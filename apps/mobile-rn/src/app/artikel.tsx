@@ -11,8 +11,9 @@ import { loadArticle } from '@correctiv/app-core/articles/load';
 import type { Article } from '@correctiv/app-core/articles/types';
 import { readerHtml } from '@/lib/articles/reader';
 import { goBack } from '@/lib/navigation/goBack';
+import { shareArticle } from '@/lib/shareArticle';
 import { coreActions, useIsMember, useIsSaved, useTextScale } from '@/lib/store/core';
-import { colors, sizes } from '@/lib/theme';
+import { sizes, useColors, useIsDark } from '@/lib/theme';
 
 /**
  * Article reader: full-page webview over cleaned-up article HTML (token CSS and
@@ -22,6 +23,7 @@ import { colors, sizes } from '@/lib/theme';
  * `correctiv://join` opens the join flow, anything else goes to the system browser.
  */
 export default function ArtikelScreen() {
+  const colors = useColors();
   const { url, title, badge } = useLocalSearchParams<{
     url?: string;
     title?: string;
@@ -38,6 +40,7 @@ export default function ArtikelScreen() {
   // the reader's support footer, and the text-size setting its root font size.
   const isMember = useIsMember();
   const textScale = useTextScale();
+  const isDark = useIsDark();
 
   useEffect(() => {
     if (!url) return;
@@ -80,7 +83,10 @@ export default function ArtikelScreen() {
   return (
     <View className="flex-1 bg-grey-100">
       {article ? (
-        <ReaderView html={readerHtml(article, { isMember, textScale })} onNavigate={onNavigate} />
+        <ReaderView
+          html={readerHtml(article, { isMember, textScale, isDark })}
+          onNavigate={onNavigate}
+        />
       ) : (
         <View className="flex-1 items-center justify-center px-m">
           {error ? (
@@ -112,20 +118,30 @@ export default function ArtikelScreen() {
           and the article scrolls underneath it. */}
       <SafeAreaView edges={['top']} className="absolute left-0 right-0 top-0">
         <View className="flex-row items-center justify-between px-s py-2xs">
-          <HeaderButton icon="chevron-back" onPress={goBack} />
+          <HeaderButton icon="chevron-back" label="Zurück" onPress={goBack} />
           {url && (
-            <HeaderButton
-              icon={saved ? 'bookmark' : 'bookmark-outline'}
-              onPress={() =>
-                coreActions.savedArticles().toggle({
-                  url,
-                  title: title ?? article?.title ?? '',
-                  kicker: article?.kicker ?? null,
-                  rating: article?.rating ?? null,
-                  savedAt: new Date().toISOString(),
-                })
-              }
-            />
+            <View className="flex-row gap-2xs">
+              {/* Sharing a piece of journalism is the point of publishing it — the
+                  one action here that works on the article rather than on the app. */}
+              <HeaderButton
+                icon="share-outline"
+                label="Artikel teilen"
+                onPress={() => shareArticle(url, title ?? article?.title)}
+              />
+              <HeaderButton
+                icon={saved ? 'bookmark' : 'bookmark-outline'}
+                label={saved ? 'Gespeichert — entfernen' : 'Artikel speichern'}
+                onPress={() =>
+                  coreActions.savedArticles().toggle({
+                    url,
+                    title: title ?? article?.title ?? '',
+                    kicker: article?.kicker ?? null,
+                    rating: article?.rating ?? null,
+                    savedAt: new Date().toISOString(),
+                  })
+                }
+              />
+            </View>
           )}
         </View>
       </SafeAreaView>
@@ -146,15 +162,21 @@ export default function ArtikelScreen() {
  */
 function HeaderButton({
   icon,
+  label,
   onPress,
 }: {
   icon: keyof typeof Ionicons.glyphMap;
+  /** Spoken name — the button has no text, so without it a screen reader says nothing. */
+  label: string;
   onPress: () => void;
 }) {
+  const colors = useColors();
   return (
     <Pressable
       onPress={onPress}
       hitSlop={8}
+      accessibilityRole="button"
+      accessibilityLabel={label}
       className="items-center justify-center rounded-full border border-grey-300 bg-grey-100 active:opacity-70"
       style={{ width: sizes.iconButton, height: sizes.iconButton }}
     >

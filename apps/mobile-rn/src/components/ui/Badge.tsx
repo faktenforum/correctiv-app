@@ -1,6 +1,6 @@
 import { View, Text } from 'react-native';
 
-import { typography, colors } from '@/lib/theme';
+import { typography, useColors, type ColorToken } from '@/lib/theme';
 
 type Tone = 'emphasis' | 'club' | 'neutral' | 'live';
 
@@ -17,15 +17,18 @@ const SURFACE: Record<Tone, string> = {
   neutral: 'bg-grey-250',
   live: 'bg-transparent',
 };
-const TEXT_COLOR: Record<Tone, string> = {
-  emphasis: colors['grey-100'],
-  club: colors['grey-700'],
-  neutral: colors['grey-600'],
-  live: colors.emphasis,
+// The two coloured surfaces carry role colours, which are the same in both
+// schemes; the two neutral tones sit on the page surface and change with it.
+const TEXT_COLOR: Record<Tone, ColorToken> = {
+  emphasis: 'always-light',
+  club: 'always-dark',
+  neutral: 'grey-600',
+  live: 'emphasis',
 };
 
-/** Kleines Label (Projekt/Faktencheck/Backstage). Radius s, keine Schatten. */
+/** A small label (project / fact check / backstage). Radius s, no shadows. */
 export function Badge({ label, tone = 'emphasis', className }: BadgeProps) {
+  const colors = useColors();
   return (
     <View
       className={[
@@ -40,7 +43,12 @@ export function Badge({ label, tone = 'emphasis', className }: BadgeProps) {
       <Text
         style={[
           typography['text-s'],
-          { color: TEXT_COLOR[tone], fontSize: 11, letterSpacing: 0.4, textTransform: 'uppercase' },
+          {
+            color: colors[TEXT_COLOR[tone]],
+            fontSize: 11,
+            letterSpacing: 0.4,
+            textTransform: 'uppercase',
+          },
         ]}
       >
         {label}

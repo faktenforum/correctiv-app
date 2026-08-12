@@ -9,19 +9,20 @@ import { formatDateShortDe } from '@correctiv/app-core/lib/format';
 import { playEpisode, togglePlay } from '@/lib/audio/player';
 import { useEpisodeStatus } from '@/lib/audio/useAudio';
 import { useIsMember, usePodcastSeries } from '@/lib/store/core';
-import { colors } from '@/lib/theme';
+import { useColors } from '@/lib/theme';
 
 /**
- * Die sieben kuratierten Shows sind bekannt, also kann der statische Web-Export
- * eine Datei pro Serie erzeugen. Ohne das antwortet /serie/pausenbrot auf einem
- * Host ohne Rewrites mit 404 — derselbe Fall wie bei /projekt/<id>.
+ * The seven curated shows are known, so the static web export can emit one file per
+ * series. Without it /serie/pausenbrot answers 404 on a host without rewrites — the
+ * same case as /projekt/<id>.
  */
 export function generateStaticParams(): { id: string }[] {
   return PODCAST_CHANNELS.map((handle) => ({ id: handle }));
 }
 
-/** Eine Podcast-Serie mit ihren Folgen. */
+/** One podcast series with its episodes. */
 export default function SerieScreen() {
+  const colors = useColors();
   const { id } = useLocalSearchParams<{ id: string }>();
   const { series, status } = usePodcastSeries(id ?? '');
 

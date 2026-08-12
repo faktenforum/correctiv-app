@@ -1,13 +1,12 @@
 /**
  * The one text fetch in this codebase.
  *
- * Both apps had their own — the NativeScript side with a `Promise.race` timeout
- * and a plain user agent, the Expo side with an `AbortController` and a
- * browser-like one — and the difference was not a decision, it was two people
- * solving the same problem in two runtimes. What each needed is now a capability
- * check rather than a host: `AbortController` when the runtime has one (Expo,
- * browsers), `Promise.race` when it does not (the NativeScript runtime has no
- * such global).
+ * There used to be one per app, differing in timeout mechanism and user agent —
+ * and the difference was not a decision, it was two people solving the same problem
+ * in two runtimes. It is a capability check now, not a host check: `AbortController`
+ * where the runtime has one, `Promise.race` where it does not. Keeping the fallback
+ * costs four lines and is what lets the core run anywhere, which is the point of the
+ * core.
  */
 
 const DEFAULT_TIMEOUT_MS = 8000;

@@ -15,7 +15,7 @@ import { Hairline, Screen, SectionHeader, Typo } from '@/components/ui';
 import { callouts } from '@correctiv/app-core/data/callouts';
 import { useFeed } from '@/lib/feeds/useFeed';
 import { openArticle } from '@/lib/openArticle';
-import { colors } from '@/lib/theme';
+import { useColors } from '@/lib/theme';
 
 /**
  * Home — a curated cross-section of the ecosystem, in the draft's order: lead
@@ -27,6 +27,7 @@ import { colors } from '@/lib/theme';
  * one exists to show a flow the feeds cannot supply.
  */
 export default function HomeScreen() {
+  const colors = useColors();
   const recherchen = useFeed('recherchen');
   const faktenchecks = useFeed('faktencheck');
 

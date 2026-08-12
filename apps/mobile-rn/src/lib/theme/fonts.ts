@@ -1,7 +1,7 @@
 /**
- * Schrift-Familien. Pro Schnitt eine eigene geladene Familie (umgeht den
- * Android-Bug, dass fontWeight auf Custom-Fonts ignoriert wird). Geladen werden
- * Merriweather (Artikel/Headlines) und Source Sans 3 (UI) aus @expo-google-fonts.
+ * Font families. One loaded family per cut, which works around Android ignoring
+ * fontWeight on custom fonts. Merriweather (articles and headlines) and Source
+ * Sans 3 (UI) come from @expo-google-fonts.
  */
 import { Merriweather_400Regular, Merriweather_700Bold } from '@expo-google-fonts/merriweather';
 import {
@@ -31,7 +31,7 @@ const FAMILY_MAP: Record<FontFamily, Partial<Record<FontWeightName, string>>> = 
   },
 };
 
-/** Liefert den geladenen Familiennamen für Familie + Gewicht. */
+/** The loaded family name for a family and weight. */
 export function fontFamilyFor(family: FontFamily, weight: FontWeightName = 'normal'): string {
   const byWeight = FAMILY_MAP[family];
   return byWeight[weight] ?? byWeight.normal!;

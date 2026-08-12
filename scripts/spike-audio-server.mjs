@@ -22,8 +22,7 @@ import { fileURLToPath } from 'node:url';
 const PORT = Number(process.argv[2] ?? 8099);
 const TOKEN = 'spike-token';
 /**
- * The sample episode, taken from the Expo app — deliberately not from apps/mobile,
- * which phase 5 deletes. This server outlives the NativeScript app because the
+ * The sample episode, taken from the app. This server outlives the spike because the
  * authenticated-podcast question outlives it too: the Expo build has to prove the
  * same thing, and expo-audio is the reason it can (headers on AudioSource).
  */

@@ -6,7 +6,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { Hairline } from './Hairline';
 import { Typo } from './Typo';
 import { goBack } from '@/lib/navigation/goBack';
-import { colors } from '@/lib/theme';
+import { useColors } from '@/lib/theme';
 
 export type ScreenHeaderProps = {
   /**
@@ -37,6 +37,7 @@ export type ScreenHeaderProps = {
  * and on web it does not appear at all.
  */
 export function ScreenHeader({ onBack, backLabel = 'Zurück', children }: ScreenHeaderProps) {
+  const colors = useColors();
   return (
     <SafeAreaView edges={['top']} className="bg-grey-100">
       <View className="flex-row items-center px-s py-2xs">

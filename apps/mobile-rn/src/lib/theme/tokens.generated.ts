@@ -2,6 +2,9 @@
 // Quelle: tokens/theme.css · Regenerieren: npm run tokens
 
 /* eslint-disable */
+// Two complete palettes. Classes (bg-, border-) switch by themselves through the
+// CSS variables; these constants do NOT — read them directly and the colour stays
+// on its light value in dark mode. Use useColors() from lib/theme instead.
 export const colors = {
   "emphasis": "#ff5064",
   "alternative": "#fde162",
@@ -12,8 +15,24 @@ export const colors = {
   "grey-400": "#cecece",
   "grey-500": "#b3b3b3",
   "grey-600": "#707070",
-  "grey-700": "#333333"
+  "grey-700": "#333333",
+  "always-light": "#ffffff",
+  "always-dark": "#333333"
 } as const;
+export const colorsDark: Record<ColorToken, string> = {
+  "emphasis": "#ff6173",
+  "alternative": "#fde162",
+  "grey-100": "#1a1a1a",
+  "grey-200": "#242424",
+  "grey-250": "#2e2e2e",
+  "grey-300": "#3a3a3a",
+  "grey-400": "#4a4a4a",
+  "grey-500": "#7c7c7c",
+  "grey-600": "#a8a8a8",
+  "grey-700": "#f2f2f2",
+  "always-light": "#ffffff",
+  "always-dark": "#333333"
+};
 export const spacingPx = {
   "4xs": 2,
   "3xs": 4,

@@ -6,17 +6,18 @@ import { Hairline, Typo } from '@/components/ui';
 import { formatTimeHm } from '@correctiv/app-core/lib/format';
 import { stop, togglePlay } from '@/lib/audio/player';
 import { useAudio } from '@/lib/audio/useAudio';
-import { colors, sizes } from '@/lib/theme';
+import { sizes, useColors } from '@/lib/theme';
 
 /**
- * Die Leiste über der Tab-Bar, solange Audio läuft. Sitzt im Tab-Layout (als Teil
- * des `tabBar`-Aufbaus), genau wie im Designentwurf: eine Zeile über den Tabs, kein
- * Overlay über dem Inhalt.
+ * The bar above the tab bar, for as long as audio is playing. It lives inside the
+ * tab layout (as part of the `tabBar` composition), exactly as in the design draft:
+ * a row above the tabs, not an overlay over the content.
  *
- * Abonniert den vollen Zustand, weil sie die Position zeigt — das sind zwei Renders
- * pro Sekunde, aber nur für diese eine Zeile.
+ * Subscribes to the whole audio state because it shows the position — two renders a
+ * second, but only for this one row.
  */
 export function MiniPlayer() {
+  const colors = useColors();
   const { track, status, positionSec, durationSec, errorMessage } = useAudio();
   if (!track) return null;
 
@@ -42,10 +43,11 @@ export function MiniPlayer() {
           className="items-center justify-center rounded-full bg-emphasis active:opacity-80"
           style={{ width: sizes.iconButton, height: sizes.iconButton }}
         >
+          {/* Auf der Markenfläche des Knopfs — fest weiß, nicht Seitenfläche. */}
           {status === 'loading' ? (
-            <ActivityIndicator color={colors['grey-100']} />
+            <ActivityIndicator color={colors['always-light']} />
           ) : (
-            <Ionicons name={playing ? 'pause' : 'play'} size={18} color={colors['grey-100']} />
+            <Ionicons name={playing ? 'pause' : 'play'} size={18} color={colors['always-light']} />
           )}
         </Pressable>
 

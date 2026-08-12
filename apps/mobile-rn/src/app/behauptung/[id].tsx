@@ -8,12 +8,12 @@ import { openExternal } from '@/lib/openExternal';
 
 const FORUM_URL = 'https://faktenforum.org';
 
-/** Die Behauptungen stehen fest, also eine Datei je Kennung im statischen Export. */
+/** The claims are fixed, so one file per id in the static export. */
 export function generateStaticParams(): { id: string }[] {
   return claims.map((claim) => ({ id: claim.id }));
 }
 
-/** Wie weit ist die Prüfung? Eingereicht → In Prüfung → Geprüft. */
+/** How far along the check is: submitted → being checked → checked. */
 const STAGES = ['Eingereicht', 'In Prüfung', 'Geprüft'] as const;
 
 function stageOf(claim: Claim): number {
@@ -101,7 +101,7 @@ export default function BehauptungScreen() {
   );
 }
 
-/** Drei Punkte mit Linien dazwischen, gefüllt bis zur erreichten Stufe. */
+/** Three dots joined by lines, filled up to the stage reached. */
 function ReviewProgress({ stage }: { stage: number }) {
   return (
     <View className="mt-m flex-row items-start">

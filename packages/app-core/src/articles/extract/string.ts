@@ -7,9 +7,9 @@ import type { ArticleExtractor, ExtractedArticle } from '../types';
  * Article extraction with regular expressions — the backend for runtimes that
  * cannot carry an HTML parser.
  *
- * That is the NativeScript app (its bundler resolves parser packages to their
- * CommonJS builds and then fails to bundle them) and, historically, the offline
- * script. It walks the correctiv.org WordPress theme's `detail__*` BEM classes.
+ * This is the core's **default**, because the core may not depend on a parser: a
+ * host that has one registers `extract/dom.ts` instead, which is what the app does.
+ * It walks the correctiv.org WordPress theme's `detail__*` BEM classes.
  *
  * The body is cleaned with a **denylist**: known-bad elements are cut out and
  * everything else survives, wrappers and classes included. `extract/dom.ts` uses
