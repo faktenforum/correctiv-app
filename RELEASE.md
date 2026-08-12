@@ -144,12 +144,39 @@ separately by running them verbatim against the real files with `GITHUB_REF_NAME
 and `GITHUB_RUN_NUMBER=47`: `app.gradle` went to `versionCode 47` / `versionName "1.2.3"`
 (both `sed` patterns match — a `sed` that matches nothing changes nothing and says so
 nowhere), and `app.json` to `version 1.2.3` with `android.versionCode 47`, keeping
-`package`, the adaptive icon and the permissions. Attaching to a release stays unproven
-until the first real tag.
+`package`, the adaptive icon and the permissions. Attaching to a release stayed unproven
+until the first real tag — the section below.
 
 One cosmetic thing: `apksigner` writes a v4 `.apk.idsig` next to the Expo APK, so it
 rides along in the run artifact. It cannot reach a GitHub Release — that step globs
 `*.apk` and `*.aab`.
+
+## What the first real tag proved
+
+[`v0.0.3`](https://github.com/faktenforum/correctiv-app/releases/tag/v0.0.3), tagged on
+2026-08-12 from `0d97483`
+([run 31569569194](https://github.com/faktenforum/correctiv-app/actions/runs/31569569194))
+to hand out the NativeScript app's last build as things stand. All three jobs green, both
+APKs attached, no AAB — the test-key fallback, since no secrets are set. It closes the two
+gaps a manual run leaves open:
+
+- **The tag drove the version in both apps.** Read off the downloaded assets, not the run
+  log: `aapt2 dump badging` reports `versionName='0.0.3' versionCode='7'` for each, under
+  the shared `org.correctiv.app.prototype`. The `versionCode` is the run number, so both
+  apps carry the same one.
+- **Attaching works**, and the assets are named per app — the release page is where the
+  APKs land, not just the run.
+- Both still carry **one identity**, SHA-256 `f3ee1b52…`, the same certificate as the dry
+  run — so re-signing the Expo APK holds across a tagged build too. NativeScript verifies
+  under scheme v2, Expo under v2 and v3.
+- **The released NativeScript APK runs**, which is the claim a release page cannot make:
+  `adb install -r` over an older build succeeded on an API 36 emulator (`versionCode 7`
+  afterwards), the app started and Home rendered with a live feed and the date header the
+  core now formats. The Expo APK was not installed — same package id, one at a time.
+
+Two things the workflow does not do: the release body's note about which build this is was
+added afterwards with `gh release edit`, and nothing about a release is committed — the
+version patches live only inside the run.
 
 ## iOS (not yet wired up)
 
