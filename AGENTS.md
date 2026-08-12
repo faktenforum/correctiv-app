@@ -45,5 +45,6 @@ static server maps no clean URLs and makes a working app look broken. After layo
 screenshot it and look
 (`screens/tools/tour-android.sh`, compared against `screens/`), or open `/preview.html`,
 which frames the web target at a phone or tablet size. Anything touching colour has
-to be seen in **both** appearance settings — half the palette is invisible in the
-other one.
+to be seen in **both** appearance settings *and* with the setting on „System" against
+a dark device — that last combination is the app's default and is the one that has
+already shipped broken.

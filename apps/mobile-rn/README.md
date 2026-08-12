@@ -118,7 +118,9 @@ anywhere in this app**. Two exceptions, both deliberate:
   string and cannot follow the scheme. Use `useColors()` from `lib/theme`.
 
 The setting itself is the authority, not the device: 'system' delegates to the OS,
-'light' and 'dark' override it (`app/_layout.tsx` → `useAppearance`). The dark values
+'light' and 'dark' override it (`lib/theme/appearance.ts`). That file resolves
+'system' to a concrete scheme rather than passing it on — the one rule the colour
+system cannot survive without, and there is a test for it. The dark values
 are hand-written in `palette.js`, because the design tokens' dark block is still a
 placeholder.
 
