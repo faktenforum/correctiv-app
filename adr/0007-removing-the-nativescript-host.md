@@ -69,7 +69,7 @@ page surface *and* white text on the brand red; `grey-700` is body text *and* th
 video stage. A dark palette assigned by shade breaks half of those uses. So each grey
 takes the dark value of its majority role, and the minority uses move to two fixed
 role colours, `always-light` and `always-dark`, which mean the same thing in both
-schemes. `apps/mobile-rn/palette.js` states that reasoning where the next person will
+schemes. `packages/design-tokens/palette.js` states that reasoning where the next person will
 need it.
 
 Two things were checked and deliberately **not** carried over:

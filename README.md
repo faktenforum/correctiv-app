@@ -30,11 +30,12 @@ on content bundled into the build, because correctiv.org sends no CORS header �
 
 ## What is in here
 
-One core, one app.
+One core, one app, and the tokens they are both drawn with.
 
 | | Stack | Targets | Role |
 | --- | --- | --- | --- |
 | [`packages/app-core`](packages/app-core) | TypeScript, no UI framework | all | The behaviour: model, parsers, services, caches, **all** state |
+| [`packages/design-tokens`](packages/design-tokens) | TypeScript, no dependencies | all | The colours, spacing and type scale, generated from the vendored design tokens |
 | [`apps/mobile-rn`](apps/mobile-rn) | Expo SDK 56 · React Native 0.85 · expo-router · NativeWind | iOS, Android, **web** | The app |
 
 The core is the point even with a single app: it imports no UI framework and no

@@ -31,6 +31,12 @@ config.resolver.nodeModulesPaths = [
   // disableHierarchicalLookup below, Metro cannot walk up from the core's source
   // to find them either, so the path has to be named.
   path.resolve(workspaceRoot, 'packages/app-core/node_modules'),
+  // @correctiv/design-tokens gets no entry here, and that is not an oversight: it
+  // declares no dependencies at all, so it has no node_modules of its own for
+  // Metro to miss. The package itself is found as the workspace symlink in the
+  // root node_modules above. Add a line here the day it grows a dependency —
+  // going by the paragraph above, the day it does, the bundle will build anyway
+  // until npm stops hoisting.
 ];
 // Resolve each dependency once. Without this a package hoisted to the root and
 // also present locally can be loaded twice, which breaks React and any module

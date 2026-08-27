@@ -13,7 +13,7 @@
       WHY AN IFRAME, AND NOT A WEB-ONLY WRAPPER INSIDE THE APP
       Inside the iframe the app's own `window` *is* the device. useWindowDimensions,
       media queries — including the reader's 48rem breakpoint in
-      src/lib/theme/readerCss.generated.ts — and scroll behaviour all report the
+      packages/design-tokens/src/reader.generated.ts — and scroll behaviour all report the
       simulated size. A wrapper in _layout.tsx would draw a phone frame while the app
       still measured the desktop window: a preview that lies. It also keeps every
       line of this out of the app bundle and the native builds.

@@ -98,10 +98,10 @@ src/lib/articles/        reader CSS wiring, the bundled articles and covers,
                          in-app URL rules
 src/lib/podcasts/        the bundled show snapshots
 src/lib/store/core.ts    React bindings for the core's stores
-src/lib/theme/           token-bridge output, useColors(), typography, fonts, sizes
-palette.js               the dark values and the two fixed role colours, hand-written
+src/lib/theme/           the shared tokens re-exported, useColors(), typography,
+                         fonts, sizes
 signing/                 the committed throwaway test key (see its README)
-scripts/                 generators (tokens, fonts, offline articles and podcasts)
+scripts/                 generators (fonts, offline articles and podcasts)
 __tests__/               jest-expo against real captured feeds and pages
 ```
 
@@ -121,14 +121,14 @@ The setting itself is the authority, not the device: 'system' delegates to the O
 'light' and 'dark' override it (`lib/theme/appearance.ts`). That file resolves
 'system' to a concrete scheme rather than passing it on — the one rule the colour
 system cannot survive without, and there is a test for it. The dark values
-are hand-written in `palette.js`, because the design tokens' dark block is still a
-placeholder.
+are hand-written in `packages/design-tokens/palette.js`, because the design tokens'
+dark block is still a placeholder.
 
 ## Generated, never hand-edited
 
 | Command | Produces |
 | --- | --- |
-| `npm run tokens` | `tailwind.tokens.generated.js`, `src/lib/theme/tokens.generated.ts`, `readerCss.generated.ts` |
+| `npm run tokens` (repo root) | `tailwind.tokens.generated.js` here, plus the two shared artefacts in [`@correctiv/design-tokens`](../../packages/design-tokens/README.md) — one generator writes all three |
 | `npm run fonts` | `src/lib/theme/readerFonts.generated.ts` — base64-subsetted reader fonts (needs `pyftsubset`) |
 | `npm run offline-articles` | `src/lib/articles/offlineBundle.generated.ts` — a snapshot of every content feed plus ~15 pre-extracted articles, and `offlineCovers.generated.ts`, their covers inlined as data URIs (needs ImageMagick). On web the snapshots are the *only* articles there are: correctiv.org sends no CORS header |
 | `npm run offline-podcasts` | `src/lib/podcasts/offlineBundle.generated.ts` — the seven curated Salon5 shows. Without it the Mediathek falls back to the core's four-show sample seed, which is what a browser always gets otherwise: Castopod sends no CORS header either |

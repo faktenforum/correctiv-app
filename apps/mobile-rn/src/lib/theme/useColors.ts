@@ -1,6 +1,6 @@
 import { useColorScheme } from 'nativewind';
 
-import { colors, colorsDark, type ColorToken } from './tokens.generated';
+import { colors, colorsDark, type ColorToken } from '@correctiv/design-tokens/tokens.generated';
 
 export type Palette = Record<ColorToken, string>;
 

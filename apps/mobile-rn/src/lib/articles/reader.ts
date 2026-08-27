@@ -4,8 +4,8 @@ import {
   type ReaderHtmlOptions,
 } from '@correctiv/app-core/articles/reader-html';
 import type { Article } from '@correctiv/app-core/articles/types';
+import { READER_DARK_CSS, THEME_CSS } from '@correctiv/design-tokens/reader.generated';
 
-import { READER_DARK_CSS, THEME_CSS } from '@/lib/theme/readerCss.generated';
 import { READER_FONTS_CSS } from '@/lib/theme/readerFonts.generated';
 
 /**

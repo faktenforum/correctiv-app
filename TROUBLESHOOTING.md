@@ -231,7 +231,7 @@ equivalents for focus, liveness and errors.
   body text *and* the video stage. Assign dark values by shade and half of those uses
   break — a white video stage, invisible text on the coral button. → Each grey takes
   the dark value of its majority role, and the minority uses move to `always-light` /
-  `always-dark`. `apps/mobile-rn/palette.js` records which is which;
+  `always-dark`. `packages/design-tokens/palette.js` records which is which;
   `__tests__/tokens.test.ts` fails if the role colours ever start switching.
 - **Passing `'system'` on to NativeWind splits the app in half.** With
   `darkMode: 'class'`, `setColorScheme('system')` leaves the JavaScript side
@@ -250,7 +250,7 @@ equivalents for focus, liveness and errors.
   `@media (prefers-color-scheme: dark)` section marked `@TODO Set this to the actual
   values`, holding the *light* values. Generating from it produces a dark mode that
   compiles, ships and changes nothing on screen. → The palette is hand-written in
-  `apps/mobile-rn/palette.js` until upstream fills that block in; a test asserts the
+  `packages/design-tokens/palette.js` until upstream fills that block in; a test asserts the
   two schemes actually differ.
 
 ## Data sources
