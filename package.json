@@ -1,6 +1,6 @@
 {
   "name": "correctiv-app",
-  "description": "CORRECTIV community app \u2014 npm workspace: the platform-free core plus the Expo/React Native app (iOS, Android, web).",
+  "description": "CORRECTIV community app — npm workspace: the platform-free core plus the Expo/React Native app (iOS, Android, web).",
   "version": "1.0.0",
   "private": true,
   "license": "AGPL-3.0-or-later",
@@ -25,7 +25,7 @@
     "react": "19.2.3",
     "react-dom": "19.2.3",
     "tsx": "^4.22.4",
-    "typescript": "~5.8.0",
+    "typescript": "~6.0.3",
     "vitest": "^3.2.4"
   },
   "scripts": {
