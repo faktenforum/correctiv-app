@@ -1,5 +1,76 @@
 const preset = require('jest-expo/jest-preset');
 
+/**
+ * Packages jest must transform rather than take as-is, one alternative per line so
+ * that adding one is a one-line diff with a reason next to it.
+ *
+ * Everything here ships ESM that Node's CommonJS require cannot read. Leaving a
+ * package off does not degrade gracefully: the suite fails to RUN, with a
+ * SyntaxError on the dependency's `export {` that names the importing file rather
+ * than the package — so the message points at app code and the real culprit is a
+ * dependency nobody touched.
+ *
+ * These are alternatives inside a negative lookahead, and the group is anchored on
+ * `node_modules/` with NO leading slash. That matters: the parser block below is
+ * installed under `packages/app-core/node_modules/`, not at the root, and a leading
+ * slash would still match it — but see the hoisting entry in TROUBLESHOOTING.md for
+ * why the location is not a contract and this pattern must not depend on it.
+ */
+const TRANSFORMED_PACKAGES = [
+  // --- Expo and React Native ------------------------------------------------
+  // jest-expo's own list, carried verbatim, because `transformIgnorePatterns` is
+  // REPLACED rather than merged: spreading `...preset` first does not preserve it.
+  // Several of these (`sentry-expo`, `native-base`, `@unimodules/*`,
+  // `unimodules`, `react-navigation`, `react-native-svg`) are not dependencies of
+  // this app at all and are inert — they stay because this list is a copy of the
+  // preset's, and pruning it would be a change in behaviour on the day one of them
+  // arrives as a transitive dependency.
+  '(jest-)?react-native',
+  '@react-native(-community)?',
+  'expo(nent)?',
+  '@expo(nent)?/.*',
+  '@expo-google-fonts/.*',
+  'react-navigation',
+  '@react-navigation/.*',
+  '@unimodules/.*',
+  'unimodules',
+  'sentry-expo',
+  'native-base',
+  'react-native-svg',
+
+  // --- Styling --------------------------------------------------------------
+  // The styling engine, since ADR 0008. Every component file reaches it through
+  // the className prop, so this one takes the whole suite down when it is missing.
+  'uniwind',
+
+  // --- State ----------------------------------------------------------------
+  // The core's store is one Redux Toolkit instance; the four below are what it
+  // pulls in. immer is the one that actually breaks — it is where the SyntaxError
+  // described above comes from.
+  '@reduxjs/toolkit',
+  'immer',
+  'redux',
+  'react-redux',
+  'reselect',
+
+  // --- The HTML parser stack ------------------------------------------------
+  // htmlparser2 is the article extractor's DOM backend
+  // (packages/app-core/src/articles/extract/dom.ts) and the RSS parser's reader.
+  // The core declares htmlparser2, css-select, domutils and dom-serializer; the
+  // rest arrive underneath them and need transforming just the same, which is why
+  // a transitive dependency has to be named here explicitly.
+  'htmlparser2',
+  'css-select',
+  'css-what',
+  'domutils',
+  'dom-serializer',
+  'domhandler',
+  'domelementtype',
+  'entities',
+  'boolbase',
+  'nth-check',
+];
+
 /** @type {import('jest').Config} */
 module.exports = {
   ...preset,
@@ -33,15 +104,6 @@ module.exports = {
     '^@/assets/(.*)$': '<rootDir>/assets/$1',
     ...preset.moduleNameMapper,
   },
-  /**
-   * Packages jest must transform rather than take as-is.
-   *
-   * Everything here ships ESM that Node's CommonJS require cannot read. The
-   * Redux group (@reduxjs/toolkit, immer, redux, react-redux, reselect) is on the
-   * list for exactly that reason: without it the suite dies on immer's
-   * `export {` with a SyntaxError that names the importing file, not the package.
-   */
-  transformIgnorePatterns: [
-    'node_modules/(?!((jest-)?react-native|@react-native(-community)?|expo(nent)?|@expo(nent)?/.*|@expo-google-fonts/.*|react-navigation|@react-navigation/.*|@unimodules/.*|unimodules|sentry-expo|native-base|react-native-svg|uniwind|@reduxjs/toolkit|immer|redux|react-redux|reselect|htmlparser2|css-select|css-what|domutils|dom-serializer|domhandler|domelementtype|entities|boolbase|nth-check))',
-  ],
+  // Transform everything under node_modules EXCEPT the packages listed above.
+  transformIgnorePatterns: [`node_modules/(?!(${TRANSFORMED_PACKAGES.join('|')}))`],
 };

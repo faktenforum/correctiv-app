@@ -1,69 +1,69 @@
-# Screens — three versions, shot the same way
+# Screens — the visual record
 
-A visual record of every screen in three versions of this app, captured with the same
-step names so they can be read side by side.
+Every screen of this app, in three versions, captured under the same step names so
+they can be read side by side.
 
 It exists because of the rule in [`AGENTS.md`](../AGENTS.md): a green check is not
 evidence. The weaker version of that rule — extracting text with `uiautomator dump`
 and `document.body.innerText` — proves the right *words* are on screen and nothing
-about how it looks. Every finding in the table below survived a green build, a green
-typecheck and a green test run, and each one was found by looking at a picture.
+about how it looks. **Every finding in [History](#history--what-the-rounds-found)
+survived a green build, a green typecheck and a green test run, and every one of them
+was found by looking at a picture.**
+
+Three things to find here:
+
+1. [The sets](#the-sets) — what was shot, and how to shoot it again
+2. [What makes a screenshot evidence](#what-makes-a-screenshot-evidence) — the rules,
+   each one paid for
+3. [History](#history--what-the-rounds-found) — five rounds of findings, kept
+
+## The sets
 
 | Set | What it is | Worth as a reference |
 | --- | --- | --- |
 | [`draft/`](draft/) | The design draft rendered in Chrome at 402×874 | **The** visual target. It lives in the `design-entwurf` sibling repo, not here — this set is the only copy of it in this repo |
-| [`nativescript/`](nativescript/) | The NativeScript/Vue app, removed from the repo on 2026-08-12 | **This set is now the only trace of it.** Read it for layout decisions it got right; there is no longer any code behind it |
+| [`nativescript/`](nativescript/) | The NativeScript/Vue app, removed from the repo on 2026-08-12 ([ADR 0007](../adr/0007-removing-the-nativescript-host.md)) | **This set is now the only trace of it.** Read it for layout decisions it got right; there is no longer any code behind it |
 | [`expo/`](expo/) | `apps/mobile-rn`, the live app | The thing under test |
+| [`compare/`](compare/) | The three sets appended into one strip per step | What a comparison round actually reads |
 
 Emulator, 1080×2400; the draft is pinned to light mode so the sets match.
 
-The AVD changed with the 2026-08-27 round, and the reason is worth keeping: the
-earlier sets were shot on `Medium_Phone`, which is **API 24 — Android 7.0**. Dark
-mode does not exist below API 29, so that device cannot show the app's default
-appearance at all, and an appearance check run there reports light no matter what is
-set. `expo/` is shot on `Medium_Phone_API_36` from now on. (The line this replaces
-said "Android 7.0 API 36", which is two different Androids at once.)
+Two of the three sets are **fixed inputs** and only `expo/` is re-shot:
 
-The draft is fixed — it only moves when the design does (last shot 2026-08-05 at
-`26ef0c9`). The NativeScript set is fixed too now, at 2026-08-06 / `9842b27`, which
-is the last build that existed: only `expo/` is re-shot from here on. While both apps
-were in the repo the two sets were always re-shot *together*, because they shared a
-core and a core change landed in both — see the third round below, where that is
-exactly what a screenshot proved.
+- the draft moves only when the design does — last shot 2026-08-05 at `26ef0c9`;
+- the NativeScript set is frozen at 2026-08-06 / `9842b27`, the last build that
+  existed. While both apps were in the repo the two sets were always re-shot
+  *together*, because they shared a core and a core change landed in both — see
+  [the third round](#third-round-2026-08-06--both-apps-re-shot-at-9842b27), where
+  that is exactly what a screenshot proved.
 
-**The `expo/` set is light mode throughout, on purpose** — it is a layout record,
-and the draft it is read against has no dark version. Appearance is checked
-separately, on all four combinations of setting and device scheme, because three of
-them are invisible here. See the appearance entry in
+**The `expo/` set is light mode throughout, on purpose** — it is a layout record, and
+the draft it is read against has no dark version. Appearance is checked separately,
+on all four combinations of setting and device scheme, because three of them are
+invisible here. See the appearance entry in
 [`TROUBLESHOOTING.md`](../TROUBLESHOOTING.md).
 
-The reader's share button, which the previous set predated, is in this one
-(`22-reader`).
+**The AVD matters, and the reason is worth keeping.** The earlier sets were shot on
+`Medium_Phone`, which is **API 24 — Android 7.0**. Dark mode does not exist below API
+29, so that device cannot show the app's default appearance at all, and an appearance
+check run there reports light no matter what is set. `expo/` is shot on
+`Medium_Phone_API_36` from now on. (The line this replaces said "Android 7.0 API 36",
+which is two different Androids at once.)
 
-**A screenshot is only evidence of the build it came from.** The set this commit
-replaces was shot between 13:40 and 14:21 from APKs built at 14:46, and `9842b27`
-landed at 15:12 — so every picture in it showed an app one commit out of date, and
-one of them showed a feature that commit had deleted (see the third round below).
-Shoot after building, from the build you mean to document, and write down the commit.
-
-The `expo/` set here was shot on 2026-08-27 from `0919402`, over Metro from a clean
+The current `expo/` set was shot on 2026-08-27 from `0919402`, over Metro from a clean
 worktree at that commit — after the Redux and Uniwind migrations
 ([#45](https://github.com/faktenforum/correctiv-app/pull/45),
-[#48](https://github.com/faktenforum/correctiv-app/pull/48)) and the fix that
-followed them. It is a re-shoot rather than a comparison round: both migrations were
-meant to leave the layout alone, and these pictures are the evidence for that claim
-rather than a hunt for new findings. The one visual defect that round produced —
-`rounded-s` colliding with a Tailwind v4 utility, so every badge had two different
-corner radii — was caught by review before this set was taken, which is why it is not
-visible in it. At 405px wide per column it would not have been visible here anyway:
-the difference is two pixels on two corners.
+[#48](https://github.com/faktenforum/correctiv-app/pull/48)) and the fix that followed
+them. It is a re-shoot rather than a comparison round: both migrations were meant to
+leave the layout alone, and these pictures are the evidence for that claim rather than
+a hunt for new findings. The one visual defect that round produced — `rounded-s`
+colliding with a Tailwind v4 utility, so every badge had two different corner radii —
+was caught by review before this set was taken, which is why it is not visible in it.
+At 405px wide per column it would not have been visible here anyway: the difference is
+two pixels on two corners. The reader's share button, which the previous set predated,
+is in this one (`22-reader`).
 
-The first attempt at this set had to be thrown away. Metro was still building its
-cold bundle when the tour started, the app reloaded midway, and the last four steps
-were shot against the onboarding screen the reload landed on — the tour reported
-`MISS` twice and walked on regardless. Wait for Metro before shooting.
-
-## Three-way comparison
+### The three-way montages
 
 Order in each image: **draft · NativeScript · Expo**.
 
@@ -86,21 +86,152 @@ Order in each image: **draft · NativeScript · Expo**.
 | [Profil](compare/60-profil.webp) | ![Profil](compare/60-profil.webp) |
 | [Profil, scrolled](compare/61-profil-mid.webp) | ![Profil mid](compare/61-profil-mid.webp) |
 
-Sixteen strips, from ten: the previous round built them by hand and stopped at the
+Sixteen strips, from ten: the first round built them by hand and stopped at the
 screens it was arguing about. `screens/tools/compare.sh` builds every step all three
 sets have, which is where the extra six come from.
 
 The reader has no montage: the draft has no reader screen to compare against — its
-detail view is an overlay the Expo app does not build — and the NativeScript tour
-has no reader step, because it reaches its screens by tapping rather than by deep
-link. Read [`expo/22-reader.webp`](expo/22-reader.webp) on its own.
+detail view is an overlay the Expo app does not build — and the NativeScript tour has
+no reader step, because it reaches its screens by tapping rather than by deep link.
+Read [`expo/22-reader.webp`](expo/22-reader.webp) on its own.
 
 At mid-scroll the Mediathek columns are not showing the same section: the draft
-organises the Mediathek per channel, so scrolling twice lands it inside FunFacts
-while both apps are still on the shared rails. It is in the table because the club's
-bonus row only becomes visible there.
+organises the Mediathek per channel, so scrolling twice lands it inside FunFacts while
+both apps are still on the shared rails. It is in the table because the club's bonus
+row only becomes visible there.
 
-## What the comparison found
+**Two differences from the draft are deliberate and stay:** Expo shows video channels
+as horizontal rails where the draft uses a vertical list (the rail is what
+NativeScript settled on too), and app settings live on their own route instead of
+inline in the profile, because they need to be deep-linkable.
+
+### Shooting a set
+
+The emulator needs a window — headless dies on SELinux denying `execheap` to
+SwiftShader's shader JIT.
+
+```bash
+# The app
+cd apps/mobile-rn/android && ./gradlew assembleRelease && cd -
+adb install -r apps/mobile-rn/android/app/build/outputs/apk/release/app-release.apk
+OUT=out/expo bash screens/tools/tour-android.sh          # the five tabs
+OUT=out/expo bash screens/tools/tour-android-routes.sh   # the pushed routes, by deep link
+
+# Design draft — only when the design itself changed. It is not copied into this repo
+# (GitHub Pages serves the web export instead), so serve the sibling checkout
+# directly. Its entry point is "Correctiv App.dc.html", not index.html.
+python3 -m http.server 8098 --directory ../design-entwurf/project &
+node screens/tools/tour-draft.mjs "http://localhost:8098/Correctiv App.dc.html" out/draft \
+  --tour=screens/tools/tour-draft.json
+```
+
+Then convert for the repo — full-resolution PNGs are ~1.1 MB each, WebP at 540px is
+~50 KB and still legible — and rebuild the montages from the three sets:
+
+```bash
+for p in out/expo/*.png; do
+  magick "$p" -resize 540x -strip -quality 82 "screens/expo/$(basename "$p" .png).webp"
+done
+
+for n in 01-onboarding-welcome 02-onboarding-interests 03-onboarding-push \
+         04-onboarding-club 10-home-top 30-entdecken 40-mediathek \
+         41-mediathek-mid 50-mitmachen 60-profil; do
+  magick "screens/draft/$n.webp" "screens/nativescript/$n.webp" "screens/expo/$n.webp" \
+    -resize 405x -background white +append -strip -quality 82 "screens/compare/$n.webp"
+done
+```
+
+`nativescript/` is a fixed input now, not something to re-shoot.
+
+The web export is worth a look in the same pass, because it is the only place where
+back-without-history and a directly opened route can be tested at all:
+
+```bash
+npm run build:web -w apps/mobile-rn
+node screens/tools/serve-clean.mjs apps/mobile-rn/dist 8099
+```
+
+`serve-clean.mjs` maps `/artikel` to `artikel.html` and falls back to `404.html` the
+way GitHub Pages does. A plain `python3 -m http.server` does neither, and then Expo
+Router renders its unmatched-route page — which looks exactly like a broken route in
+the app.
+
+To reproduce what is actually published, build with the Pages base path and serve
+underneath it. This is the only way to catch an asset URL that resolves from the
+domain root — on `localhost:8099/` such a build looks fine and on the real site it is
+a blank page:
+
+```bash
+EXPO_BASE_URL=/correctiv-app npm run build:web -w apps/mobile-rn
+node screens/tools/serve-clean.mjs apps/mobile-rn/dist 8099 --base=/correctiv-app
+# then open http://localhost:8099/correctiv-app/
+```
+
+## What makes a screenshot evidence
+
+Each of these cost a wrong conclusion or a worthless committed picture.
+
+- **A screenshot is only evidence about the build it came from.** The set replaced in
+  the third round was shot between 13:40 and 14:21 from APKs built at 14:46, and
+  `9842b27` landed at 15:12 — so every picture in it showed an app one commit out of
+  date, and one of them showed a feature that commit had deleted. → Shoot **after**
+  building, from the build you mean to document, and write down the commit.
+- **A screenshot is only evidence about the part of the screen it shows.** The
+  reader's floating controls were invisible against a white article background, and
+  every committed reader shot is of the first viewport, where they sit over the hero
+  image and look right. → Scroll before you judge; and on a route whose content is an
+  `<iframe>` (the reader on web) scroll **the frame**, or every shot comes out
+  identical, which reads as "checked" and is not.
+- **Wait for Metro.** The first attempt at the current set had to be thrown away:
+  Metro was still building its cold bundle when the tour started, the app reloaded
+  midway, and the last four steps were shot against the onboarding screen the reload
+  landed on — the tour reported `MISS` twice and walked on regardless.
+- **A `MISS` is not a picture.** The tours report a missed step and walk on regardless.
+  Two committed screenshots documented nothing for exactly that reason (see the
+  [second round](#second-round-2026-08-06)) and nobody looked at them. → Read the
+  tour's log, then look at what it produced.
+- **Extracted text is the weak version of all of this,** and stale besides: a React
+  Native text node that ticks keeps reporting its old value to `uiautomator dump`.
+  See the first section of [`TROUBLESHOOTING.md`](../TROUBLESHOOTING.md).
+- **This set cannot check appearance.** It is light mode only. Colour needs all four
+  combinations of the three settings against a dark device, and the default —
+  „System" on a dark device — is the one that has already shipped broken.
+
+### Caveats — what these shots do not show
+
+- The draft is one interactive shell inside an iOS frame, so its tour has to click
+  through the app the way a user would; the Expo routes are reached by deep link
+  (`correctiv://<route>`) instead, which cannot drift when a layout changes.
+- Podcast series show sample data in the Expo shots: Castopod, Icecast and
+  `tube.funfacts.de` serve a Let's Encrypt chain that this emulator image does not
+  trust. That is an ops finding, not an app defect — see
+  [`TROUBLESHOOTING.md`](../TROUBLESHOOTING.md#data-sources).
+- The draft's content is fixed sample data with a fixed date; both builds pull live
+  feeds, so the articles differ between the sets by design — and Home's hero can be
+  an article with no cover image, as it is in this round.
+- The NativeScript set was shot from the release APK its CI workflow built, signed
+  with the in-repo test key, where earlier rounds used a local debug build. Nothing
+  visible depends on that, but it is a different artifact.
+- `83-video` shows a black frame. The embed's error message is gone, but this emulator
+  image renders no YouTube video — see the [second round](#second-round-2026-08-06).
+- On the web export, Home's articles come out of the bundled snapshot, not the
+  network: correctiv.org sends no `Access-Control-Allow-Origin`, so every feed request
+  fails in a browser and the store's cascade lands on the bundle. The layout is still
+  judged on the emulator shots, because the web build shows a snapshot as old as the
+  last `npm run offline-articles`.
+
+## History — what the rounds found
+
+**This is history, and it is kept because the findings are still true.** The first
+three rounds compare two live apps: the NativeScript/Vue host was removed on
+2026-08-12 ([ADR 0007](../adr/0007-removing-the-nativescript-host.md)), so wherever
+they say "both apps" or credit NativeScript with a layout, they describe code that no
+longer exists in this repo. What each round *found* stands, and so does the
+attribution — which version was right is the reason the finding was actionable at all.
+
+Every table below has the same three columns, and the third one is the point.
+
+### First round — the three-way comparison
 
 | Seen in a screenshot | Cause | Which version was right |
 | --- | --- | --- |
@@ -123,17 +254,12 @@ silently), [#31](https://github.com/faktenforum/correctiv-app/pull/31) and
 [#32](https://github.com/faktenforum/correctiv-app/pull/32).
 
 One finding came from the capture itself rather than from a comparison: the tour's
-article deep link used a URL I had reconstructed from a headline, and it 404s. The
+article deep link used a URL reconstructed from a headline, and it 404s. The
 screenshot then documented the reader's error state — which turned out to be a dead
 end with no retry and no way to open the page in a browser. Both are fixed; the tours
 now use a URL read off the live feed.
 
-Two differences are deliberate and stay: Expo shows video channels as horizontal
-rails where the draft uses a vertical list (the rail is what NativeScript settled
-on too), and app settings live on their own route instead of inline in the profile,
-because they need to be deep-linkable.
-
-## Second round, 2026-08-06
+### Second round, 2026-08-06
 
 Same method, on the set above. Four came from reading the draft's markup next to the
 screenshots, three from walking the app.
@@ -163,14 +289,15 @@ committed screenshot that documented nothing:
 Fixing `83-video` surfaced the round's one real defect: the YouTube embed answered
 **Error 153, "Video player configuration error"**. The embed was the WebView's
 top-level document, which sends no referrer, and YouTube requires one — the same URL
-fails identically in the emulator's own Chrome. It now loads inside an `<iframe>` on
-a page with a `baseUrl`, which is what the web target always did. The error text is
+fails identically in the emulator's own Chrome. It now loads inside an `<iframe>` on a
+page with a `baseUrl`, which is what the web target always did. The error text is
 gone; the frame stays black on this emulator, so **that playback works is not
 verified** and belongs on the device test.
 
-## Third round, 2026-08-06 — both apps re-shot at `9842b27`
+### Third round, 2026-08-06 — both apps re-shot at `9842b27`
 
-Rebuilt first this time, which is where the rule at the top of this file comes from.
+Rebuilt first this time, which is where the first rule under
+[What makes a screenshot evidence](#what-makes-a-screenshot-evidence) comes from.
 
 | Seen | Cause | Which version was right |
 | --- | --- | --- |
@@ -191,10 +318,10 @@ the publisher's wording. The reader now formats `publishedAt` itself —
 `formatDateDe(article.publishedAt) || article.publishedText` — which keeps
 `publishedText` for the pages that carry no parsable date, since the formatter returns
 an empty string for one it cannot parse. **The reader shots in this set still read
-"04. August 2026"**: they predate the change, which is the rule at the top of this file
+"04. August 2026"**: they predate the change, which is the first evidence rule
 applying to itself.
 
-## Fourth round, 2026-08-11 — the web build, walked in a browser
+### Fourth round, 2026-08-11 — the web build, walked in a browser
 
 Not a new screenshot set: the published web version was clicked through route by
 route at 412×915, which reaches two things the emulator sets structurally cannot.
@@ -213,93 +340,13 @@ puts first — correctiv.org publishes no `og:image` for it), and the reader not
 scrolling (the article is an `<iframe>`; scrolling the page moves nothing, and the
 frame scrolls fine).
 
-Every deep-linked route was also checked for a working way out, since none of them
-has history: `/player`, `/beitreten`, `/projekt/klima`, `/backstage` and
-`/einstellungen` all land on Home. That is `lib/navigation/goBack.ts` doing its job.
+Every deep-linked route was also checked for a working way out, since none of them has
+history: `/player`, `/beitreten`, `/projekt/klima`, `/backstage` and `/einstellungen`
+all land on Home. That is `lib/navigation/goBack.ts` doing its job.
 
-## Regenerating
+### Fifth round, 2026-08-27 — a re-shoot, not a comparison
 
-The emulator needs a window — headless dies on SELinux denying `execheap` to
-SwiftShader's shader JIT.
-
-
-```bash
-# The app
-cd apps/mobile-rn/android && ./gradlew assembleRelease && cd -
-adb install -r apps/mobile-rn/android/app/build/outputs/apk/release/app-release.apk
-OUT=out/expo bash screens/tools/tour-android.sh          # the five tabs
-OUT=out/expo bash screens/tools/tour-android-routes.sh   # the pushed routes, by deep link
-
-# Design draft — only when the design itself changed. It is not copied into this repo
-# (GitHub Pages serves the web export instead), so serve the sibling checkout
-# directly. Its entry point is "Correctiv App.dc.html", not index.html.
-python3 -m http.server 8098 --directory ../design-entwurf/project &
-node screens/tools/tour-draft.mjs "http://localhost:8098/Correctiv App.dc.html" out/draft \
-  --tour=screens/tools/tour-draft.json
-```
-
-The montages in the table above are rebuilt from all three sets; `nativescript/` is
-a fixed input now, not something to re-shoot.
-
-Then convert for the repo — full-resolution PNGs are ~1.1 MB each, WebP at 540px
-is ~50 KB and still legible — and rebuild the montages from the three sets:
-
-```bash
-for p in out/expo/*.png; do
-  magick "$p" -resize 540x -strip -quality 82 "screens/expo/$(basename "$p" .png).webp"
-done
-
-for n in 01-onboarding-welcome 02-onboarding-interests 03-onboarding-push \
-         04-onboarding-club 10-home-top 30-entdecken 40-mediathek \
-         41-mediathek-mid 50-mitmachen 60-profil; do
-  magick "screens/draft/$n.webp" "screens/nativescript/$n.webp" "screens/expo/$n.webp" \
-    -resize 405x -background white +append -strip -quality 82 "screens/compare/$n.webp"
-done
-```
-
-The web export is worth a look in the same pass, because it is the only place where
-back-without-history and a directly opened route can be tested at all:
-
-```bash
-npm run build:web -w apps/mobile-rn
-node screens/tools/serve-clean.mjs apps/mobile-rn/dist 8099
-```
-
-`serve-clean.mjs` maps `/artikel` to `artikel.html` and falls back to `404.html` the
-way GitHub Pages does. A plain `python3 -m http.server` does neither, and then Expo
-Router renders its unmatched-route page — which looks exactly like a broken route in
-the app.
-
-To reproduce what is actually published, build with the Pages base path and serve
-underneath it. This is the only way to catch an asset URL that resolves from the
-domain root — on `localhost:8099/` such a build looks fine and on the real site it
-is a blank page:
-
-```bash
-EXPO_BASE_URL=/correctiv-app npm run build:web -w apps/mobile-rn
-node screens/tools/serve-clean.mjs apps/mobile-rn/dist 8099 --base=/correctiv-app
-# then open http://localhost:8099/correctiv-app/
-```
-
-## Caveats
-
-- The draft is one interactive shell inside an iOS frame, so its tour has to click
-  through the app the way a user would; the Expo routes are reached by deep link
-  (`correctiv://<route>`) instead, which cannot drift when a layout changes.
-- Podcast series show sample data in the Expo shots: Castopod, Icecast and
-  `tube.funfacts.de` serve a Let's Encrypt chain that this emulator image does not
-  trust. That is an ops finding, not an app defect — see
-  [`TROUBLESHOOTING.md`](../TROUBLESHOOTING.md#data-sources).
-- The draft's content is fixed sample data with a fixed date; both builds pull live
-  feeds, so the articles differ between the sets by design — and Home's hero can be
-  an article with no cover image, as it is in this round.
-- The NativeScript set was shot from the release APK its CI workflow built, signed
-  with the in-repo test key, where earlier rounds used a local debug build. Nothing
-  visible depends on that, but it is a different artifact.
-- `83-video` shows a black frame. The embed's error message is gone, but this
-  emulator image renders no YouTube video — see the second round above.
-- On the web export, Home's articles come out of the bundled snapshot, not the
-  network: correctiv.org sends no `Access-Control-Allow-Origin`, so every feed
-  request fails in a browser and the store's cascade lands on the bundle. The layout
-  is still judged on the emulator shots, because the web build shows a snapshot as
-  old as the last `npm run offline-articles`.
+No findings table: this round exists to show that the Redux and Uniwind migrations
+left the layout alone. What it produced is the current `expo/` set, described under
+[The sets](#the-sets), together with the two process findings now filed as rules — wait
+for Metro, and a `MISS` is not a picture.
