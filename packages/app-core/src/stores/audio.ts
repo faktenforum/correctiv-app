@@ -1,4 +1,10 @@
-import { createSlice, type PayloadAction } from '@reduxjs/toolkit';
+import {
+  createAction,
+  createListenerMiddleware,
+  createSlice,
+  isAnyOf,
+  type PayloadAction,
+} from '@reduxjs/toolkit';
 
 import { RADIO_STREAM_URL } from '../data/feeds.config';
 import { stopOtherMedia } from '../media/exclusive-playback';
@@ -11,6 +17,12 @@ import type { AppDispatch, AppThunk, RootState } from './store';
  *
  * Everything platform-specific sits behind `AudioBackend` (`ports/index.ts`),
  * which each host implements over its own SDK.
+ *
+ * The slice below is the state; the listener middleware after it is the
+ * imperative half — the backend's status listener, the loading watchdog and the
+ * one command that has to follow a state change. A listener effect runs AFTER
+ * the reducer, which is what turns "state first, command second" from a rule
+ * somebody has to remember into a property of where the code sits.
  *
  * There is no length limit on club content: bonus episodes play in full for
  * everyone. Both apps used to stop a non-member at 60 seconds and offer the club —
@@ -104,9 +116,47 @@ export const audioReducer = slice.reducer;
 export const { started, failed, tick, finished, paused, positionSet, speedSet, stopped } =
   slice.actions;
 
-// --- the imperative half: watchdog and backend listener ----------------------
+// --- the imperative half: one listener middleware -----------------------------
 
+/**
+ * The backend's raw tick, as an action.
+ *
+ * No reducer handles it: it reports what the player is DOING, and the listener
+ * below decides what that means for the state. Routing it through `dispatch`
+ * buys two things. The handler gets `getState` and `dispatch` from the listener
+ * API instead of having them passed in by whoever happens to hold them. And
+ * `loaded` — the one fact the watchdog is waiting for — lands on the action
+ * stream, where the watchdog can see it without either of them reaching into the
+ * other.
+ */
+const statusReported = createAction<PlaybackStatus>('audio/statusReported');
+
+const audioListener = createListenerMiddleware();
+
+/** Pre-typed, so an effect's `getState()` is `RootState` and not `unknown`. */
+const startListening = audioListener.startListening.withTypes<RootState, AppDispatch>();
+
+/**
+ * Installed by `createAppStore()`, which is the only place a middleware can go.
+ *
+ * This is the whole imperative surface of the audio store. The store file needs
+ * nothing from audio but this value — no types, no ports.
+ */
+export const audioMiddleware = audioListener.middleware;
+
+/**
+ * The pending watchdog timer, and the one piece of module state left here.
+ *
+ * It cannot move into the effect that arms it, because `resetAudioController()`
+ * has to cancel it from module scope: a live 12-second timer keeps a jest worker
+ * alive past the run, which is what the `afterEach` in
+ * `apps/mobile-rn/__tests__/audio-player.test.ts` is there for. A plain
+ * `setTimeout` rather than `listenerApi.delay()` for the same reason, plus one
+ * more — this fires synchronously, so a test that advances fake timers sees the
+ * error state on the next line rather than one microtask later.
+ */
 let watchdog: ReturnType<typeof setTimeout> | null = null;
+
 /** The backend the status listener is attached to, so it is attached exactly once. */
 let listening: AudioBackend | null = null;
 
@@ -117,80 +167,134 @@ function clearWatchdog(): void {
   }
 }
 
-function fail(dispatch: AppDispatch, message: string): void {
-  clearWatchdog();
-  // State first, command second: a backend that emits from `pause()` re-enters
-  // the status handler, and it has to find the new state when it does. See the
-  // note on `AudioBackend` in ports/index.ts.
-  dispatch(failed(message));
-  platform().audio?.pause();
-}
+/**
+ * The loading watchdog, armed and stood down in one entry so the two halves
+ * cannot drift apart. See `LOADING_TIMEOUT_MS` for why it exists at all.
+ *
+ * It stands down the moment the source reports itself LOADED — not when the
+ * player reports playing, because a loaded source that is merely buffering has
+ * already answered the question the timer is asking. A failure or a stop stands
+ * it down too: nothing is waiting on the stream any more.
+ *
+ * Armed by the start itself, which is a small widening: it used to be armed after
+ * `load()` resolved, so a `load()` that never settled left no watchdog at all.
+ * The promise is now the one the user can see — the player is never in `loading`
+ * for longer than this.
+ */
+startListening({
+  matcher: isAnyOf(started, failed, stopped, statusReported),
+  effect: (action, { dispatch, getState }) => {
+    // A tick from a source that is still opening says nothing yet — keep waiting.
+    if (statusReported.match(action) && !action.payload.loaded) return;
 
-function onStatus(dispatch: AppDispatch, getState: () => RootState, status: PlaybackStatus): void {
-  const state = getState().audio;
-  if (!state.track) return; // stopped — ignore trailing updates
+    clearWatchdog();
+    if (!started.match(action)) return;
 
-  /**
-   * An error stays until the next start clears it, and this guard comes FIRST.
-   *
-   * Two reasons, both learned the hard way. A tick that merely looks unloaded
-   * would otherwise map back to "loading" — the endless spinner the watchdog
-   * exists to prevent. And `fail()` above calls `AudioBackend.pause()`: a backend
-   * that reports back from inside that call arrives here with the same error still
-   * attached, so anything after the `status.error` branch is too late to stop the
-   * recursion. That was a real crash on a device, and keeping this line first is
-   * what makes it structurally impossible rather than merely unlikely.
-   */
-  if (state.status === 'error') return;
-
-  if (status.error) {
-    console.warn('[audio] playback error:', status.error);
-    fail(dispatch, `Wiedergabe unterbrochen. ${NETWORK_HINT}`);
-    return;
-  }
-
-  if (status.loaded) clearWatchdog();
-
-  if (status.finished) {
-    dispatch(finished());
-    return;
-  }
-
-  dispatch(
-    tick({
-      status: status.playing
-        ? 'playing'
-        : !status.loaded || status.buffering
-          ? 'loading'
-          : 'paused',
-      positionSec: status.positionSec,
-      durationSec: status.live ? 0 : status.durationSec,
-    }),
-  );
-}
+    watchdog = setTimeout(() => {
+      watchdog = null;
+      // Something may have answered after this timer was armed and before it ran.
+      if (getState().audio.status !== 'loading') return;
+      dispatch(failed(`Keine Verbindung zum Stream. ${NETWORK_HINT}`));
+    }, LOADING_TIMEOUT_MS);
+  },
+});
 
 /**
- * The host may register its platform after this module is imported, so the
- * listener is attached on first use rather than at construction.
+ * State first, command second — and now by construction rather than by care.
+ *
+ * The reducer has already run when this effect fires, so the store says `error`
+ * before `pause()` goes out. That is what makes the error path safe against a
+ * backend that emits a status tick from inside `pause()`: the tick comes back in
+ * through `statusReported`, finds the error state, and the sticky-error guard
+ * below turns it around. While these were two adjacent lines in one function,
+ * their order was the only thing between this and `RangeError: Maximum call
+ * stack size exceeded` on a device — see the note on `AudioBackend` in
+ * `ports/index.ts`.
  */
-function backend(dispatch: AppDispatch, getState: () => RootState): AudioBackend | null {
-  const audio = platform().audio ?? null;
-  if (audio && audio !== listening) {
-    audio.onStatus((status) => onStatus(dispatch, getState, status));
+startListening({
+  actionCreator: failed,
+  effect: () => {
+    platform().audio?.pause();
+  },
+});
+
+/**
+ * The backend's status listener, attached on the first start and exactly once.
+ *
+ * Lazily, because the host may register its platform after this module is
+ * imported. Exactly once, because `AudioBackend.onStatus` takes the ONE listener
+ * the core installs — attaching again would leave it to the adapter whether the
+ * second registration replaces the first or doubles every tick. A backend that
+ * is not there yet leaves the memo empty, so a host that registers later still
+ * gets attached on its next start.
+ *
+ * `dispatch` is the store's own, so the closure stays valid for the store's life.
+ */
+startListening({
+  actionCreator: started,
+  effect: (_action, { dispatch }) => {
+    const audio = platform().audio;
+    if (!audio || audio === listening) return;
     listening = audio;
-  }
-  return audio;
-}
+    audio.onStatus((status) => dispatch(statusReported(status)));
+  },
+});
+
+/** What a tick means: the one place the player's status becomes state. */
+startListening({
+  actionCreator: statusReported,
+  effect: ({ payload: status }, { dispatch, getState }) => {
+    const state = getState().audio;
+    if (!state.track) return; // stopped — ignore trailing updates
+
+    /**
+     * An error stays until the next start clears it, and this guard comes FIRST.
+     *
+     * Two reasons, both learned the hard way. A tick that merely looks unloaded
+     * would otherwise map back to "loading" — the endless spinner the watchdog
+     * exists to prevent. And the listener above answers `failed` with
+     * `AudioBackend.pause()`: a backend that reports back from inside that call
+     * arrives here with the same error still attached, so anything after the
+     * `status.error` branch is too late to stop the recursion. That was a real
+     * crash on a device, and keeping this line first is what makes it
+     * structurally impossible rather than merely unlikely.
+     */
+    if (state.status === 'error') return;
+
+    if (status.error) {
+      console.warn('[audio] playback error:', status.error);
+      dispatch(failed(`Wiedergabe unterbrochen. ${NETWORK_HINT}`));
+      return;
+    }
+
+    if (status.finished) {
+      dispatch(finished());
+      return;
+    }
+
+    dispatch(
+      tick({
+        status: status.playing
+          ? 'playing'
+          : !status.loaded || status.buffering
+            ? 'loading'
+            : 'paused',
+        positionSec: status.positionSec,
+        durationSec: status.live ? 0 : status.durationSec,
+      }),
+    );
+  },
+});
 
 const start =
   (track: AudioTrack): AppThunk<Promise<void>> =>
-  async (dispatch, getState) => {
+  async (dispatch) => {
     // Coordinate: only one medium plays at a time.
     stopOtherMedia('audio');
-    clearWatchdog();
+    // Attaches the status listener and arms the watchdog — see the entries above.
     dispatch(started(track));
 
-    const audio = backend(dispatch, getState);
+    const audio = platform().audio;
     if (!audio) {
       dispatch(failed('Auf dieser Plattform ist keine Wiedergabe möglich.'));
       return;
@@ -205,15 +309,8 @@ const start =
       audio.play();
     } catch (err) {
       console.warn('[audio] start failed:', err);
-      fail(dispatch, `Wiedergabe nicht möglich. ${NETWORK_HINT}`);
-      return;
+      dispatch(failed(`Wiedergabe nicht möglich. ${NETWORK_HINT}`));
     }
-
-    watchdog = setTimeout(() => {
-      if (getState().audio.status === 'loading') {
-        fail(dispatch, `Keine Verbindung zum Stream. ${NETWORK_HINT}`);
-      }
-    }, LOADING_TIMEOUT_MS);
   };
 
 export const playRadio = (): AppThunk<Promise<void>> =>
@@ -229,10 +326,11 @@ export const playEpisode = (track: Omit<AudioTrack, 'kind'>): AppThunk<Promise<v
 
 export const togglePlay = (): AppThunk => (dispatch, getState) => {
   const state = getState().audio;
-  const audio = backend(dispatch, getState);
+  const audio = platform().audio;
   if (!state.track || !audio) return;
 
   if (state.status === 'playing') {
+    // State first, command second, for the reason the `failed` listener records.
     dispatch(paused());
     audio.pause();
     return;
@@ -244,7 +342,7 @@ export const seekTo =
   (seconds: number): AppThunk<Promise<void>> =>
   async (dispatch, getState) => {
     const state = getState().audio;
-    const audio = backend(dispatch, getState);
+    const audio = platform().audio;
     if (!audio || !state.track || isLive(state)) return;
     await audio.seekTo(Math.max(0, seconds));
     dispatch(positionSet(seconds));
@@ -252,15 +350,14 @@ export const seekTo =
 
 export const setSpeed =
   (rate: number): AppThunk =>
-  (dispatch, getState) => {
-    backend(dispatch, getState)?.setRate(rate);
+  (dispatch) => {
+    platform().audio?.setRate(rate);
     dispatch(speedSet(rate));
   };
 
-export const stop = (): AppThunk => (dispatch, getState) => {
-  clearWatchdog();
-  backend(dispatch, getState)?.release();
-  dispatch(stopped());
+export const stop = (): AppThunk => (dispatch) => {
+  platform().audio?.release();
+  dispatch(stopped()); // stands the watchdog down — see the entry above
 };
 
 export const audioActions = {
@@ -274,7 +371,16 @@ export const audioActions = {
 };
 
 /**
- * Test helper — drops the watchdog and the listener registration.
+ * Test helper — cancels the watchdog and drops the listener registration.
+ *
+ * Both halves are still load-bearing, and both are about a test suite this
+ * module cannot see:
+ *
+ * - a pending 12-second timer keeps a jest worker alive past the run, which is
+ *   what `apps/mobile-rn/__tests__/audio-player.test.ts` says in its `afterEach`;
+ * - that suite resets its expo backend between cases, which drops the listener
+ *   the core installed while keeping the backend's identity — so without
+ *   clearing the memo above, no tick would ever arrive again.
  *
  * The state itself is reset by dispatching `stopped()`, which a test does against
  * whichever store it built.

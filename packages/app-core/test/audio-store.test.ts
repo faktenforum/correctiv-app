@@ -33,6 +33,11 @@ interface Fake extends AudioBackend {
   calls: string[];
   /** Emit from inside pause(), the way the NativeScript backend used to. */
   reentrant: boolean;
+  /**
+   * How often the core registered a status listener. Counted separately from
+   * `calls`, which is the command log and is asserted on exactly.
+   */
+  attachments: number;
 }
 
 function createFakeBackend(): Fake {
@@ -51,6 +56,7 @@ function createFakeBackend(): Fake {
   const fake: Fake = {
     calls: [],
     reentrant: false,
+    attachments: 0,
     tick(partial) {
       last = { ...last, ...partial };
       listener?.(last);
@@ -78,6 +84,7 @@ function createFakeBackend(): Fake {
       fake.calls.push('release');
     },
     onStatus(next) {
+      fake.attachments += 1;
       listener = next;
     },
   };
@@ -122,6 +129,19 @@ describe('starting playback', () => {
     await store.dispatch(playEpisode(EPISODE));
     backend.tick({ playing: false, buffering: true, loaded: true });
     expect(store.getState().audio.status).toBe('loading');
+  });
+
+  /**
+   * `AudioBackend.onStatus` takes the ONE listener the core installs, and the
+   * core has to attach it on first use because the host may register its platform
+   * after this module was imported. Attaching again per start would leave it to
+   * the adapter whether the second registration replaces the first or doubles
+   * every tick — which is a decision no adapter has been asked to make.
+   */
+  it('attaches the backend status listener exactly once, however often it starts', async () => {
+    await store.dispatch(playRadio());
+    await store.dispatch(playEpisode(EPISODE));
+    expect(backend.attachments).toBe(1);
   });
 
   it('says so when the host has no audio backend at all (the web target)', async () => {
@@ -206,6 +226,29 @@ describe('failures', () => {
       backend.tick({ playing: true, loaded: true, live: true });
       vi.advanceTimersByTime(12000);
       expect(store.getState().audio.status).toBe('playing');
+    } finally {
+      vi.useRealTimers();
+    }
+  });
+
+  /**
+   * The same behaviour where it is not visible in the state: the watchdog asks
+   * whether the SOURCE is there, not whether it is already producing sound. A
+   * loaded stream that is still buffering reads as 'loading' — and must not be
+   * declared unreachable twelve seconds later, which is what a watchdog watching
+   * the status alone would do.
+   */
+  it('stands down once the source has loaded, even while it is still buffering', async () => {
+    vi.useFakeTimers();
+    try {
+      await store.dispatch(playRadio());
+      backend.tick({ loaded: true, buffering: true, playing: false });
+      expect(store.getState().audio.status).toBe('loading');
+
+      vi.advanceTimersByTime(12000);
+
+      expect(store.getState().audio.status).toBe('loading');
+      expect(store.getState().audio.errorMessage).toBeNull();
     } finally {
       vi.useRealTimers();
     }

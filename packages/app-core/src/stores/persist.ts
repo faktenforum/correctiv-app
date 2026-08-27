@@ -46,15 +46,25 @@ export function persisted<S extends object>(
 
 const DEBOUNCE_MS = 250;
 
-function pick(source: Record<string, unknown>, keys: string[]): Record<string, unknown> {
+/** Any one slice of the tree, as `state[slice.id]` hands it over. */
+type SliceState = RootState[keyof RootState];
+
+function pick(source: SliceState, keys: string[]): Record<string, unknown> {
+  // Spread rather than cast: a slice state is an interface, so TypeScript grants
+  // it no string index signature and a plain `string` cannot index it. `keys` is
+  // a string list by the time it arrives here — the declaration is where
+  // `persisted<S>()` checks it against the slice's real fields. One shallow copy
+  // of a settings-sized object, at most once per 250 ms, is what it costs to
+  // leave the widening here instead of on `getState()`.
+  const fields: Record<string, unknown> = { ...source };
   const slice: Record<string, unknown> = {};
-  for (const key of keys) slice[key] = source[key];
+  for (const key of keys) slice[key] = fields[key];
   return slice;
 }
 
 export function persist(store: AppStore, slices: PersistedSlice[]): void {
   const kv = platform().keyValue;
-  const state = () => store.getState() as unknown as Record<string, Record<string, unknown>>;
+  const state = () => store.getState();
 
   for (const slice of slices) {
     const storageKey = `store.${slice.id}`;
@@ -93,11 +103,12 @@ export function persist(store: AppStore, slices: PersistedSlice[]): void {
    *   instead means the write lands 250 ms later no matter what else the app is
    *   doing.
    */
-  let written = Object.fromEntries(slices.map((slice) => [slice.id, state()[slice.id]]));
+  const written = new Map<keyof RootState, SliceState>();
+  for (const slice of slices) written.set(slice.id, state()[slice.id]);
   let timer: ReturnType<typeof setTimeout> | null = null;
 
-  const dirty = (current: Record<string, Record<string, unknown>>) =>
-    slices.some((slice) => current[slice.id] !== written[slice.id]);
+  const dirty = (current: RootState) =>
+    slices.some((slice) => current[slice.id] !== written.get(slice.id));
 
   store.subscribe(() => {
     if (timer || !dirty(state())) return;
@@ -105,10 +116,11 @@ export function persist(store: AppStore, slices: PersistedSlice[]): void {
       timer = null;
       const current = state();
       for (const slice of slices) {
-        if (current[slice.id] === written[slice.id]) continue;
-        kv.setString(`store.${slice.id}`, JSON.stringify(pick(current[slice.id], slice.keys)));
+        const value = current[slice.id];
+        if (value === written.get(slice.id)) continue;
+        kv.setString(`store.${slice.id}`, JSON.stringify(pick(value, slice.keys)));
+        written.set(slice.id, value);
       }
-      written = Object.fromEntries(slices.map((slice) => [slice.id, current[slice.id]]));
     }, DEBOUNCE_MS);
   });
 }
