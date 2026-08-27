@@ -5,8 +5,8 @@
  *
  * The bridge itself lives in @correctiv/design-tokens, so that the CMS can consume
  * the same values; the check stays here, because this app is the consumer that
- * would show the damage, and because this is the suite CI already runs. All three
- * four artefacts belong to the package now — nothing is written into this app since
+ * would show the damage, and because this is the suite CI already runs. All four
+ * artefacts belong to the package now — nothing is written into this app since
  * the move to Uniwind, because a Tailwind v4 theme is CSS and CSS is portable.
  */
 import { execFileSync } from 'node:child_process';
@@ -55,6 +55,29 @@ describe('token bridge', () => {
     expect(read(TOKENS_PKG, 'theme.standalone.css')).toBe(before.standalone);
     expect(read(TOKENS_PKG, 'src/tokens.generated.ts')).toBe(before.ts);
     expect(read(TOKENS_PKG, 'src/reader.generated.ts')).toBe(before.reader);
+  });
+
+  it("clears Tailwind's default radius, so a token cannot collide with a side utility", () => {
+    /**
+     * Without this line Tailwind v4 also emits a BARE form of each logical side
+     * utility — `rounded-s` for the start side — and this scale has a token called
+     * `s`. Both rules were emitted and both applied: every Badge, the search field
+     * and the duration chip on a video thumbnail had 4px leading corners and 2px
+     * trailing ones. Nothing errored, and no assertion about `--radius-s` can catch
+     * it, because that token still holds the right value and still emits a correct
+     * rule of its own. This is the line that resolves it; the collision comes back
+     * silently if it goes.
+     */
+    expect(read(TOKENS_PKG, 'theme.css')).toContain('--radius: initial;');
+  });
+
+  it('keeps the standalone theme importable by a plain Tailwind build', () => {
+    // `@import` is only valid before other statements, so a conforming
+    // preprocessor drops a late one — postcss-import does, and the consumer then
+    // gets the variant definitions and none of the tokens, behind a warning.
+    const standalone = read(TOKENS_PKG, 'theme.standalone.css');
+    const firstRule = standalone.replace(/\/\*[\s\S]*?\*\//g, '').trim();
+    expect(firstRule.startsWith("@import './theme.css';")).toBe(true);
   });
 
   it('maps the brand core colours correctly', () => {

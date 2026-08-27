@@ -88,9 +88,15 @@ system has a radius token called `s`. Both rules were emitted and both applied: 
 Badge, the search field and the duration chip on a video thumbnail got 4 px leading
 corners and 2 px trailing ones. Nothing errored, and a token test cannot see it
 because `--radius-s` still holds the right value and still emits a correct rule.
-`--radius: initial` in the theme removes Tailwind's bare side utilities and resolves
-it; a check in the generator now refuses any radius token named after one of the
-other sides, where that escape hatch would not help.
+`--radius: initial` clears the DEFAULT key that generates the bare form of every
+side utility, which resolves it for all ten names at once — including ones the design
+system has not added yet. A test asserts that line is still emitted, because the
+collision returns silently without it and no assertion about `--radius-s` can see it.
+
+The first attempt at that guard refused any radius token named after a side, on the
+theory that `--radius: initial` would not save them. It would; the guard would have
+thrown on a plausible future `--var-radius-l` and pushed the next person to either
+rename a design token or delete the line that does the actual work.
 
 **Third-party components need wrapping.** Only `react-native` imports are rewritten,
 so `react-native-safe-area-context`'s `SafeAreaView` and `react-native-webview`'s

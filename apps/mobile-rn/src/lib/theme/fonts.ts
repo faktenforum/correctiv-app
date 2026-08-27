@@ -37,7 +37,7 @@ export function fontFamilyFor(family: FontFamily, weight: FontWeightName = 'norm
   return byWeight[weight] ?? byWeight.normal!;
 }
 
-/**
+/*
  * There is deliberately no `font-serif` / `font-sans` utility.
  *
  * Typography never goes through a class in this app: `<Typo>` builds a React Native

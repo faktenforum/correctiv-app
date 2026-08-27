@@ -35,6 +35,12 @@ carries an HTML parser for its DOM extraction backend.
 @import '@correctiv/design-tokens/theme.standalone.css';
 ```
 
+The class half of the switch reads `:where(.dark, .dark *)`, which compiles against
+`:scope` — the **root element**. A `dark` class on `<body>` does nothing; it has to
+be on `<html>`. Worth knowing before reaching for `body_class()`, because the
+`prefers-color-scheme` half keeps working either way, so a toggle would fail while
+the automatic path looked fine.
+
 Two files because `@variant light { … }` is an error unless something has defined
 that variant. Uniwind defines it, so the app must not define it a second time and
 shadow Uniwind's own; a plain Tailwind v4 build defines nothing, so the standalone
