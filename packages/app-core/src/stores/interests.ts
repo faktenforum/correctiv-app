@@ -36,10 +36,11 @@ const slice = createSlice({
   name: 'interests',
   initialState,
   reducers: {
+    /** Filtering, not splicing one hit — see the note in stores/savedArticles.ts. */
     toggle(state, action: PayloadAction<string>) {
-      const index = state.selected.indexOf(action.payload);
-      if (index === -1) state.selected.push(action.payload);
-      else state.selected.splice(index, 1);
+      state.selected = state.selected.includes(action.payload)
+        ? state.selected.filter((id) => id !== action.payload)
+        : [...state.selected, action.payload];
     },
 
     /** Demo reset (Settings → Demo). */

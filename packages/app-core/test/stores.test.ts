@@ -7,17 +7,25 @@ import {
   clear,
   extraFeeds,
   selectedInterests,
+  interestsActions,
   toggle as toggleInterest,
   type InterestsState,
 } from '../src/stores/interests';
-import { join, reset, setPaused } from '../src/stores/membership';
-import { extraCount, hasSubmitted, submit } from '../src/stores/participation';
+import { join, membershipActions, reset, setPaused } from '../src/stores/membership';
+import {
+  extraCount,
+  hasSubmitted,
+  participationActions,
+  submit,
+} from '../src/stores/participation';
 import { persist, persisted } from '../src/stores/persist';
 import {
   isSaved,
   remove,
+  savedArticlesActions,
   toggle as toggleSaved,
   type SavedArticle,
+  type SavedArticlesState,
 } from '../src/stores/savedArticles';
 import {
   PERSISTED_KEYS,
@@ -27,8 +35,8 @@ import {
   settingsActions,
   type SettingsState,
 } from '../src/stores/settings';
-import { createAppStore, type AppStore } from '../src/stores/store';
-import { close, isActive, opened, play } from '../src/stores/video';
+import { createAppStore, resetStore, type AppStore } from '../src/stores/store';
+import { close, isActive, opened, play, statusChanged } from '../src/stores/video';
 
 /**
  * The state moved from ten observable stores to ten slices of one Redux store.
@@ -251,6 +259,12 @@ describe('video slice', () => {
 
   it('close clears the whole session', () => {
     store.dispatch(opened({ id: 'v1', hlsMasterUrl: 'x' } as never));
+    // Seeded explicitly: `opened` does not touch status, so without this the
+    // assertion below would be idle→idle and could not catch a `close` that
+    // forgets to reset it — leaving the next video showing this one's error.
+    store.dispatch(statusChanged('error'));
+    expect(store.getState().video.status).toBe('error');
+
     store.dispatch(close());
     expect(store.getState().video).toMatchObject({
       current: null,
@@ -347,5 +361,116 @@ describe('persist', () => {
     persist(store, [settings()]);
     store.dispatch(setTheme('light'));
     expect(store.getState().settings.theme).toBe('light');
+  });
+});
+
+describe('resetStore', () => {
+  /**
+   * Six test files lean on this in `beforeEach` for isolation, and nothing else
+   * proves it works. If the root reducer's `undefined` special case is ever lost
+   * — a refactor to `configureStore({ reducer: combined })` is the obvious way —
+   * `app/reset` becomes an unknown action, every slice keeps its state, and those
+   * six files silently stop being isolated. Nothing would go red at that moment;
+   * an unrelated test would start failing by ordering, months later.
+   */
+  it('returns every touched slice to its initial value', () => {
+    store.dispatch(setTheme('dark'));
+    store.dispatch(join(99, 'jährlich', 'X'));
+    store.dispatch(toggleInterest('klima'));
+    store.dispatch(submit('pflege', { a: 1 }));
+
+    store.dispatch(resetStore());
+
+    expect(store.getState().settings.theme).toBe('system');
+    expect(store.getState().membership.isMember).toBe(false);
+    expect(store.getState().interests.selected).toEqual([]);
+    expect(store.getState().participation.submissions).toEqual([]);
+  });
+});
+
+describe('hydrate', () => {
+  /**
+   * On the old store hydration was ONE shared code path, so a single settings
+   * test covered every store. It is five hand-written reducers now, so each one
+   * needs its own proof that a partial payload merges rather than replaces.
+   */
+  it('merges a partial payload into each persisted slice', () => {
+    store.dispatch(membershipActions.hydrate({ isMember: true, name: 'Testperson' }));
+    expect(store.getState().membership).toMatchObject({
+      isMember: true,
+      name: 'Testperson',
+      amountEur: 10, // untouched by the payload, still the initial value
+    });
+
+    store.dispatch(
+      savedArticlesActions.hydrate({
+        items: [
+          { url: 'https://correctiv.org/a/', title: 'A', kicker: null, rating: null, savedAt: 'x' },
+        ],
+      }),
+    );
+    expect(store.getState().savedArticles.items).toHaveLength(1);
+
+    store.dispatch(interestsActions.hydrate({ selected: ['klima'] }));
+    expect(store.getState().interests.selected).toEqual(['klima']);
+
+    store.dispatch(
+      participationActions.hydrate({
+        submissions: [{ calloutSlug: 'pflege', answers: {}, submittedAt: 'x' }],
+      }),
+    );
+    expect(store.getState().participation.submissions).toHaveLength(1);
+  });
+});
+
+describe('persist across several slices', () => {
+  const both = () => [
+    persisted<SettingsState>('settings', PERSISTED_KEYS, settingsActions.hydrate),
+    persisted<SavedArticlesState>('savedArticles', ['items'], savedArticlesActions.hydrate),
+  ];
+
+  const ARTICLE: SavedArticle = {
+    url: 'https://correctiv.org/a/',
+    title: 'A',
+    kicker: null,
+    rating: null,
+    savedAt: '2026-08-05T00:00:00.000Z',
+  };
+
+  it('writes each slice under its own key, and only the one that changed', async () => {
+    vi.useFakeTimers();
+    const platform = createMemoryPlatform();
+    configurePlatform(platform);
+    persist(store, both());
+
+    store.dispatch(toggleSaved(ARTICLE));
+    await vi.advanceTimersByTimeAsync(300);
+
+    // Its own key — and settings was never touched, which is the per-slice
+    // reference check. A single-slice test cannot tell that apart from a global
+    // "did anything change" check.
+    const saved = JSON.parse(platform.keyValue.getString('store.savedArticles') ?? '{}');
+    expect(saved.items).toHaveLength(1);
+    expect(platform.keyValue.getString('store.settings')).toBeNull();
+    vi.useRealTimers();
+  });
+
+  it('writes a pending change even while unrelated dispatches keep arriving', async () => {
+    vi.useFakeTimers();
+    const platform = createMemoryPlatform();
+    configurePlatform(platform);
+    persist(store, both());
+
+    store.dispatch(setTheme('dark'));
+    // A burst of traffic in state nobody persists — an audio position tick, or a
+    // pull-to-refresh patching six feeds. A debounce resets on each of these and
+    // would hold the theme out of storage for as long as they keep coming.
+    for (let i = 0; i < 10; i++) {
+      store.dispatch(setActiveTab(i % 2 === 0 ? 'media' : 'profile'));
+      await vi.advanceTimersByTimeAsync(100);
+    }
+
+    expect(JSON.parse(platform.keyValue.getString('store.settings') ?? '{}').theme).toBe('dark');
+    vi.useRealTimers();
   });
 });

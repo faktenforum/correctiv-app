@@ -1,7 +1,7 @@
 import type { UnknownAction } from '@reduxjs/toolkit';
 
 import { platform } from '../ports';
-import type { AppStore } from './store';
+import type { AppStore, RootState } from './store';
 
 /**
  * Minimal persistence: hydrates slices through the KeyValueStore port at startup
@@ -18,7 +18,15 @@ import type { AppStore } from './store';
  * others down with it.
  */
 export interface PersistedSlice {
-  id: string;
+  /**
+   * The slice's key in the root reducer AND its storage key.
+   *
+   * Typed against `RootState` rather than left as a string: the writer looks the
+   * slice up by this name, so a typo would hydrate correctly and then never write
+   * again — `undefined === undefined` reads as "unchanged" forever. No throw, no
+   * log, just settings that quietly stop surviving a restart.
+   */
+  id: keyof RootState & string;
   keys: string[];
   hydrate: (partial: Record<string, unknown>) => UnknownAction;
 }
@@ -29,7 +37,7 @@ export interface PersistedSlice {
  * a typo there would otherwise persist nothing and say nothing.
  */
 export function persisted<S extends object>(
-  id: string,
+  id: keyof RootState & string,
   keys: Array<keyof S & string>,
   hydrate: (partial: Partial<S>) => UnknownAction,
 ): PersistedSlice {
@@ -68,20 +76,33 @@ export function persist(store: AppStore, slices: PersistedSlice[]): void {
   }
 
   /**
-   * One subscription for all of them, and a reference check per slice before
-   * writing.
+   * One subscription for all of them, with two guards before any timer is armed.
    *
-   * Redux hands every subscriber every action, so without the check a position
-   * tick from the audio player — twice a second — would re-serialise the saved
-   * articles and the membership. Immer gives a slice a new identity only when it
-   * actually changed, so the comparison is exact and costs one pointer per slice.
+   * Redux hands every subscriber every action, so both guards earn their keep:
+   *
+   * - **Nothing persisted changed → do nothing.** Immer gives a slice a new
+   *   identity only when it actually changed, so the comparison is exact and
+   *   costs one pointer per slice. Without it, an audio position tick — twice a
+   *   second — would re-serialise the saved articles and the membership.
+   *
+   * - **An armed timer is never postponed.** This is a trailing-edge throttle,
+   *   not a debounce, and the difference is the whole point: a debounce resets on
+   *   every dispatch, so a burst of unrelated traffic (a pull-to-refresh patches
+   *   six feeds, then media, then podcasts) would hold a bookmark the user just
+   *   tapped out of storage until the burst ended. Arming on the FIRST change
+   *   instead means the write lands 250 ms later no matter what else the app is
+   *   doing.
    */
   let written = Object.fromEntries(slices.map((slice) => [slice.id, state()[slice.id]]));
   let timer: ReturnType<typeof setTimeout> | null = null;
 
+  const dirty = (current: Record<string, Record<string, unknown>>) =>
+    slices.some((slice) => current[slice.id] !== written[slice.id]);
+
   store.subscribe(() => {
-    if (timer) clearTimeout(timer);
+    if (timer || !dirty(state())) return;
     timer = setTimeout(() => {
+      timer = null;
       const current = state();
       for (const slice of slices) {
         if (current[slice.id] === written[slice.id]) continue;

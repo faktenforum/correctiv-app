@@ -26,10 +26,17 @@ const slice = createSlice({
   name: 'savedArticles',
   initialState,
   reducers: {
+    /**
+     * Filtering rather than splicing the first hit, so that toggle and `remove`
+     * agree: both drop EVERY entry with that url. A duplicate cannot get in
+     * through this action, but a persisted payload from an older version could,
+     * and then a splice would leave the article saved and its star lit.
+     */
     toggle(state, action: PayloadAction<SavedArticle>) {
-      const index = state.items.findIndex((a) => a.url === action.payload.url);
-      if (index === -1) state.items.unshift(action.payload);
-      else state.items.splice(index, 1);
+      const saved = state.items.some((a) => a.url === action.payload.url);
+      state.items = saved
+        ? state.items.filter((a) => a.url !== action.payload.url)
+        : [action.payload, ...state.items];
     },
 
     remove(state, action: PayloadAction<string>) {
