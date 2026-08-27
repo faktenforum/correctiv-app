@@ -33,7 +33,15 @@ module.exports = {
     '^@/assets/(.*)$': '<rootDir>/assets/$1',
     ...preset.moduleNameMapper,
   },
+  /**
+   * Packages jest must transform rather than take as-is.
+   *
+   * Everything here ships ESM that Node's CommonJS require cannot read. The
+   * Redux group (@reduxjs/toolkit, immer, redux, react-redux, reselect) is on the
+   * list for exactly that reason: without it the suite dies on immer's
+   * `export {` with a SyntaxError that names the importing file, not the package.
+   */
   transformIgnorePatterns: [
-    'node_modules/(?!((jest-)?react-native|@react-native(-community)?|expo(nent)?|@expo(nent)?/.*|@expo-google-fonts/.*|react-navigation|@react-navigation/.*|@unimodules/.*|unimodules|sentry-expo|native-base|react-native-svg|nativewind|react-native-css-interop|htmlparser2|css-select|css-what|domutils|dom-serializer|domhandler|domelementtype|entities|boolbase|nth-check))',
+    'node_modules/(?!((jest-)?react-native|@react-native(-community)?|expo(nent)?|@expo(nent)?/.*|@expo-google-fonts/.*|react-navigation|@react-navigation/.*|@unimodules/.*|unimodules|sentry-expo|native-base|react-native-svg|nativewind|react-native-css-interop|@reduxjs/toolkit|immer|redux|react-redux|reselect|htmlparser2|css-select|css-what|domutils|dom-serializer|domhandler|domelementtype|entities|boolbase|nth-check))',
   ],
 };

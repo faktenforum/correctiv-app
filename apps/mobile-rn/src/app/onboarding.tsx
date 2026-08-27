@@ -35,7 +35,7 @@ export default function OnboardingScreen() {
   const selectedIds = new Set(selected.map((interest) => interest.id));
 
   const finish = (withJoin: boolean) => {
-    coreActions.settings().completeOnboarding();
+    coreActions.settings.completeOnboarding();
     router.replace('/(tabs)');
     if (withJoin) router.push('/beitreten');
   };
@@ -131,7 +131,7 @@ export default function OnboardingScreen() {
                   key={interest.id}
                   label={interest.label}
                   selected={selectedIds.has(interest.id)}
-                  onPress={() => coreActions.interests().toggle(interest.id)}
+                  onPress={() => coreActions.interests.toggle(interest.id)}
                 />
               ))}
             </View>
@@ -150,7 +150,7 @@ export default function OnboardingScreen() {
                 label="Benachrichtigungen"
                 description="Bei neuen Recherchen und Mitmach-Aufrufen (simuliert)"
                 value={settings.pushOptIn}
-                onValueChange={(value) => coreActions.settings().setPushOptIn(value)}
+                onValueChange={(value) => coreActions.settings.setPushOptIn(value)}
               />
             </Card>
           </>

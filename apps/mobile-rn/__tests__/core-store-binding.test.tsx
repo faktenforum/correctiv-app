@@ -1,11 +1,17 @@
 import { act, create, type ReactTestRenderer } from 'react-test-renderer';
 import { Text } from 'react-native';
+import { Provider } from 'react-redux';
 
 import { resetPlatform } from '@correctiv/app-core';
 import { clearMemoryCache } from '@correctiv/app-core/services/cache.service';
+import { patch as mediaPatch } from '@correctiv/app-core/stores/media';
+import { join, setPaused } from '@correctiv/app-core/stores/membership';
+import { toggle as toggleInterest } from '@correctiv/app-core/stores/interests';
+import { toggle as toggleSaved } from '@correctiv/app-core/stores/savedArticles';
+import { resetStore } from '@correctiv/app-core/stores/store';
 
 import {
-  coreStores,
+  coreStore,
   useExtraFeeds,
   useIsMember,
   useIsSaved,
@@ -14,34 +20,25 @@ import {
 } from '@/lib/store/core';
 
 /**
- * Proves the React side actually binds to the core's own store implementation.
+ * Proves the React side actually binds to the core's Redux store.
  *
  * Two things could break here and both are invisible to typecheck:
  *
- *  1. The core no longer uses zustand — it has its own createStore (ADR 0004).
- *     zustand's `useStore` only needs subscribe/getState/getInitialState, so the
- *     interop should hold, but "should" is not evidence.
- *  2. zustand v5 hands the selector straight to React's useSyncExternalStore with
- *     NO equality function. A selector that builds a new array each call therefore
- *     makes React throw "The result of getSnapshot should be cached to avoid an
- *     infinite loop" — which is why the interest hooks derive under useMemo.
+ *  1. The Provider and the bound actions have to reach the SAME store instance.
+ *     The core exports a singleton and the binding dispatches straight into it,
+ *     so a second copy — a duplicated module under Metro, say — would show up as
+ *     a component that never updates.
+ *  2. `useSelector` compares results by REFERENCE. A selector that builds a fresh
+ *     array on every call therefore re-renders its component on every dispatch in
+ *     the app, including the audio position tick twice a second. That is why the
+ *     interest hooks subscribe to the raw array and derive under useMemo.
  */
 
-const initial = {
-  membership: coreStores.membership.getState(),
-  interests: coreStores.interests.getState(),
-  saved: coreStores.savedArticles.getState(),
-  media: coreStores.media.getState(),
-};
-
 beforeEach(() => {
-  // Inside act(): a store reset notifies subscribers, and a mounted probe from a
+  // Inside act(): a reset notifies subscribers, and a mounted probe from a
   // previous test would otherwise re-render outside React's batching and warn.
   act(() => {
-    coreStores.membership.setState(initial.membership, true);
-    coreStores.interests.setState(initial.interests, true);
-    coreStores.savedArticles.setState(initial.saved, true);
-    coreStores.media.setState(initial.media, true);
+    coreStore.dispatch(resetStore());
   });
 });
 
@@ -49,10 +46,10 @@ beforeEach(() => {
  * Every tree this creates is unmounted after the test.
  *
  * Leaking them is not cosmetic: a probe left mounted stays SUBSCRIBED, so the
- * store reset in beforeEach re-renders it, its effect fires, and the next test
- * starts against a store some earlier component already moved. That is exactly
- * how "kicks off the load on first use" saw zero requests — the previous test's
- * probe had already done the loading.
+ * reset in beforeEach re-renders it, its effect fires, and the next test starts
+ * against a store some earlier component already moved. That is exactly how
+ * "kicks off the load on first use" saw zero requests — the previous test's probe
+ * had already done the loading.
  */
 const mounted: ReactTestRenderer[] = [];
 
@@ -63,7 +60,7 @@ afterEach(() => {
   mounted.length = 0;
 });
 
-/** Renders a hook and reports how many times it rendered. */
+/** Renders a hook under the Provider and reports how many times it rendered. */
 function renderHook<T>(hook: () => T): {
   tree: ReactTestRenderer;
   value: () => T;
@@ -80,37 +77,41 @@ function renderHook<T>(hook: () => T): {
 
   let tree!: ReactTestRenderer;
   act(() => {
-    tree = create(<Probe />);
+    tree = create(
+      <Provider store={coreStore}>
+        <Probe />
+      </Provider>,
+    );
   });
   mounted.push(tree);
   return { tree, value: () => latest, renders: () => renders };
 }
 
-describe('zustand useStore over the core store', () => {
+describe('useSelector over the core store', () => {
   it('reads the current value', () => {
     const { value } = renderHook(() => useIsMember());
     expect(value()).toBe(false);
   });
 
-  it('re-renders when the core store changes', () => {
+  it('re-renders when the store changes', () => {
     const { value } = renderHook(() => useIsMember());
 
     act(() => {
-      coreStores.membership.getState().join(10, 'monatlich', 'Test');
+      coreStore.dispatch(join(10, 'monatlich', 'Test'));
     });
 
     expect(value()).toBe(true);
   });
 
-  it('does not re-render for an unrelated field in the same store', () => {
+  it('does not re-render for an unrelated field in the same slice', () => {
     const { renders } = renderHook(() => useIsMember());
     const before = renders();
 
     act(() => {
-      coreStores.membership.setState({ amountEur: 99 });
+      coreStore.dispatch(setPaused(true));
     });
 
-    // The selector narrows to isMember, so an amount change must not cost a render.
+    // The selector narrows to isMember, so a pause must not cost a render.
     expect(renders()).toBe(before);
   });
 
@@ -120,9 +121,9 @@ describe('zustand useStore over the core store', () => {
     expect(value()).toBe(false);
 
     act(() => {
-      coreStores.savedArticles
-        .getState()
-        .toggle({ url, title: 'X', kicker: null, rating: null, savedAt: 'now' });
+      coreStore.dispatch(
+        toggleSaved({ url, title: 'X', kicker: null, rating: null, savedAt: 'now' }),
+      );
     });
 
     expect(value()).toBe(true);
@@ -131,8 +132,6 @@ describe('zustand useStore over the core store', () => {
 
 describe('selectors that build new arrays', () => {
   it('useSelectedInterests renders without an infinite loop', () => {
-    // Without the useMemo in core.ts this throws:
-    // "The result of getSnapshot should be cached to avoid an infinite loop".
     const { value, renders } = renderHook(() => useSelectedInterests());
     expect(value()).toEqual([]);
     expect(renders()).toBeLessThan(5);
@@ -142,14 +141,14 @@ describe('selectors that build new arrays', () => {
     const { value } = renderHook(() => useSelectedInterests());
 
     act(() => {
-      coreStores.interests.getState().toggle('klima');
+      coreStore.dispatch(toggleInterest('klima'));
     });
     const afterToggle = value();
     expect(afterToggle.map((i) => i.id)).toEqual(['klima']);
 
     act(() => {
-      // A change in a different store must not produce a new array here.
-      coreStores.membership.setState({ amountEur: 42 });
+      // A change in a different slice must not produce a new array here.
+      coreStore.dispatch(setPaused(true));
     });
     expect(value()).toBe(afterToggle);
   });
@@ -179,7 +178,7 @@ describe('useVideoChannel', () => {
     }) as unknown as typeof global.fetch;
     // The core's blob cache outlives a single test, on BOTH its layers: the
     // session map here and the FileStore behind the default memory platform.
-    // An empty feed from an earlier test caches as `[]`, and the store's
+    // An empty feed from an earlier test caches as `[]`, and the thunk's
     // `if (cached)` counts that as a hit — so without clearing both, the next
     // test sees a cache hit instead of a fetch and passes or fails by order.
     clearMemoryCache();
@@ -190,15 +189,15 @@ describe('useVideoChannel', () => {
     global.fetch = realFetch;
   });
 
-  /** Lets the store's async fetch settle inside React's batching. */
+  /** Lets the thunk settle inside React's batching. */
   const flush = () => act(async () => undefined);
 
   /**
    * This hook selects `byKey[key]`, an object. That only works because the media
-   * store patches immutably — `byKey` gets a new object but the OTHER channels'
-   * slices keep their identity. If a refactor ever rebuilds all three slices per
-   * update, this hook starts returning a fresh object on every render and React
-   * throws the getSnapshot loop error. Hence a render count, not just a value.
+   * slice patches one channel at a time — Immer gives `byKey` a new identity but
+   * leaves the OTHER channels' slices alone. If a refactor ever rebuilt all three
+   * per update, this hook would return a fresh object on every dispatch and
+   * re-render on FunFacts' loading. Hence a render count, not just a value.
    */
   it('subscribes to one channel without an infinite loop', async () => {
     const { value, renders } = renderHook(() => useVideoChannel('gespraech'));
@@ -211,7 +210,7 @@ describe('useVideoChannel', () => {
     renderHook(() => useVideoChannel('gespraech'));
     await flush();
 
-    // One request for the channel it was asked for — the store's own guard plus
+    // One request for the channel it was asked for — the thunk's own guard plus
     // the hook's idle check must not add a second.
     expect(fetchCalls).toHaveLength(1);
     expect(fetchCalls[0]).toContain('youtube.com/feeds/videos.xml');
@@ -221,12 +220,9 @@ describe('useVideoChannel', () => {
     const { value } = renderHook(() => useVideoChannel('gespraech'));
 
     act(() => {
-      coreStores.media.setState((state) => ({
-        byKey: {
-          ...state.byKey,
-          gespraech: { videos: [{ id: 'v1' } as never], status: 'ready' as const },
-        },
-      }));
+      coreStore.dispatch(
+        mediaPatch('gespraech', { videos: [{ id: 'v1' } as never], status: 'ready' }),
+      );
     });
 
     expect(value().status).toBe('ready');
@@ -239,12 +235,9 @@ describe('useVideoChannel', () => {
     const before = renders();
 
     act(() => {
-      coreStores.media.setState((state) => ({
-        byKey: {
-          ...state.byKey,
-          funfacts: { videos: [{ id: 'v2' } as never], status: 'ready' as const },
-        },
-      }));
+      coreStore.dispatch(
+        mediaPatch('funfacts', { videos: [{ id: 'v2' } as never], status: 'ready' }),
+      );
     });
 
     // The whole point of selecting one slice: FunFacts loading must not re-render

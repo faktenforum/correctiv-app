@@ -6,7 +6,16 @@ vi.mock('../src/services/rss.service', () => ({ fetchFeed: vi.fn() }));
 import { configurePlatform, createEmptyContentBundle, createMemoryPlatform } from '../src/ports';
 import { clearMemoryCache, setCached } from '../src/services/cache.service';
 import { fetchFeed } from '../src/services/rss.service';
-import { feedsStore, mergedFeedItems, mergedFeedStatus, type FeedSlice } from '../src/stores/feeds';
+import {
+  enrichImage,
+  fetchFeedKey,
+  fetchMany,
+  mergedFeedItems,
+  mergedFeedStatus,
+  patch,
+  type FeedSlice,
+} from '../src/stores/feeds';
+import { createAppStore, type AppStore } from '../src/stores/store';
 import type { FeedItem, FeedKey } from '../src/types/models';
 
 /**
@@ -19,7 +28,7 @@ import type { FeedItem, FeedKey } from '../src/types/models';
  * assertions now cover both of them.
  */
 const fetchMock = vi.mocked(fetchFeed);
-const initial = feedsStore.getState();
+let store: AppStore;
 
 function item(id: string, publishedAt = '2026-06-12T10:00:00.000Z'): FeedItem {
   return {
@@ -34,16 +43,24 @@ function item(id: string, publishedAt = '2026-06-12T10:00:00.000Z'): FeedItem {
   };
 }
 
+/** A detached state object, for the pure selectors that must not read a store. */
 function slices(partial: Partial<Record<FeedKey, Partial<FeedSlice>>>) {
-  const byKey = { ...feedsStore.getState().byKey };
-  for (const [key, patch] of Object.entries(partial)) {
-    byKey[key as FeedKey] = { ...byKey[key as FeedKey], ...patch };
+  const byKey = { ...createAppStore().getState().feeds.byKey };
+  for (const [key, slice] of Object.entries(partial)) {
+    byKey[key as FeedKey] = { ...byKey[key as FeedKey], ...slice };
   }
   return { byKey };
 }
 
+/** Puts the same shape into the real store, one patch per feed. */
+function seed(partial: Partial<Record<FeedKey, Partial<FeedSlice>>>) {
+  for (const [key, slice] of Object.entries(partial)) {
+    store.dispatch(patch(key as FeedKey, slice));
+  }
+}
+
 beforeEach(() => {
-  feedsStore.setState(initial, true);
+  store = createAppStore();
   fetchMock.mockReset();
   clearMemoryCache();
   configurePlatform(createMemoryPlatform());
@@ -53,9 +70,9 @@ describe('loading one feed', () => {
   it('shows what the network returns and caches it', async () => {
     fetchMock.mockResolvedValue([item('a'), item('b')]);
 
-    await feedsStore.getState().fetch('recherchen');
+    await store.dispatch(fetchFeedKey('recherchen'));
 
-    const slice = feedsStore.getState().byKey.recherchen;
+    const slice = store.getState().feeds.byKey.recherchen;
     expect(slice.items.map((i) => i.id)).toEqual(['a', 'b']);
     expect(slice.status).toBe('ready');
     expect(slice.lastFetched).toBeGreaterThan(0);
@@ -63,20 +80,20 @@ describe('loading one feed', () => {
 
   it('does not hit the network while the cache is fresh', async () => {
     fetchMock.mockResolvedValue([item('a')]);
-    await feedsStore.getState().fetch('recherchen');
+    await store.dispatch(fetchFeedKey('recherchen'));
     fetchMock.mockClear();
 
-    await feedsStore.getState().fetch('recherchen');
+    await store.dispatch(fetchFeedKey('recherchen'));
 
     expect(fetchMock).not.toHaveBeenCalled();
   });
 
   it('force refetches even with a fresh cache', async () => {
     fetchMock.mockResolvedValue([item('a')]);
-    await feedsStore.getState().fetch('recherchen');
+    await store.dispatch(fetchFeedKey('recherchen'));
     fetchMock.mockClear();
 
-    await feedsStore.getState().fetch('recherchen', { force: true });
+    await store.dispatch(fetchFeedKey('recherchen', { force: true }));
 
     expect(fetchMock).toHaveBeenCalledTimes(1);
   });
@@ -93,30 +110,28 @@ describe('loading one feed', () => {
 
     let release: (items: FeedItem[]) => void = () => {};
     fetchMock.mockReturnValue(new Promise((resolve) => (release = resolve)));
-    const pending = feedsStore.getState().fetch('recherchen');
+    const pending = store.dispatch(fetchFeedKey('recherchen'));
     // A macrotask, so every pending microtask of the stale read has settled —
     // counting `await Promise.resolve()`s would break on the next refactor.
     await new Promise((resolve) => setTimeout(resolve, 0));
 
-    expect(feedsStore.getState().byKey.recherchen.items.map((i) => i.id)).toEqual(['old']);
-    expect(feedsStore.getState().byKey.recherchen.status).toBe('ready');
+    expect(store.getState().feeds.byKey.recherchen.items.map((i) => i.id)).toEqual(['old']);
+    expect(store.getState().feeds.byKey.recherchen.status).toBe('ready');
 
     release([item('fresh')]);
     await pending;
-    expect(feedsStore.getState().byKey.recherchen.items.map((i) => i.id)).toEqual(['fresh']);
+    expect(store.getState().feeds.byKey.recherchen.items.map((i) => i.id)).toEqual(['fresh']);
     clock.mockRestore();
   });
 
   it('keeps images an earlier enrichment resolved across a refresh', async () => {
     fetchMock.mockResolvedValue([item('a')]);
-    await feedsStore.getState().fetch('recherchen');
-    feedsStore.setState(
-      slices({ recherchen: { items: [{ ...item('a'), imageUrl: 'https://x/cover.jpg' }] } }),
-    );
+    await store.dispatch(fetchFeedKey('recherchen'));
+    seed({ recherchen: { items: [{ ...item('a'), imageUrl: 'https://x/cover.jpg' }] } });
 
-    await feedsStore.getState().fetch('recherchen', { force: true });
+    await store.dispatch(fetchFeedKey('recherchen', { force: true }));
 
-    expect(feedsStore.getState().byKey.recherchen.items[0].imageUrl).toBe('https://x/cover.jpg');
+    expect(store.getState().feeds.byKey.recherchen.items[0].imageUrl).toBe('https://x/cover.jpg');
   });
 });
 
@@ -129,9 +144,9 @@ describe('when the network is gone', () => {
     });
     const error = vi.spyOn(console, 'error').mockImplementation(() => {});
 
-    await feedsStore.getState().fetch('recherchen');
+    await store.dispatch(fetchFeedKey('recherchen'));
 
-    const slice = feedsStore.getState().byKey.recherchen;
+    const slice = store.getState().feeds.byKey.recherchen;
     expect(slice.items.map((i) => i.id)).toEqual(['bundled']);
     // Not 'error': the list on screen is real content, just not today's.
     expect(slice.status).toBe('offline');
@@ -145,7 +160,7 @@ describe('when the network is gone', () => {
    */
   it('borrows bundled cover images for items it is already showing', async () => {
     fetchMock.mockResolvedValueOnce([item('a')]);
-    await feedsStore.getState().fetch('recherchen');
+    await store.dispatch(fetchFeedKey('recherchen'));
 
     configurePlatform({
       ...createMemoryPlatform(),
@@ -154,9 +169,9 @@ describe('when the network is gone', () => {
     fetchMock.mockRejectedValue(new Error('Network request failed'));
     const error = vi.spyOn(console, 'error').mockImplementation(() => {});
 
-    await feedsStore.getState().fetch('recherchen', { force: true });
+    await store.dispatch(fetchFeedKey('recherchen', { force: true }));
 
-    expect(feedsStore.getState().byKey.recherchen.items[0].imageUrl).toBe('~/assets/images/a.jpg');
+    expect(store.getState().feeds.byKey.recherchen.items[0].imageUrl).toBe('~/assets/images/a.jpg');
     error.mockRestore();
   });
 
@@ -164,9 +179,9 @@ describe('when the network is gone', () => {
     fetchMock.mockRejectedValue(new Error('Network request failed'));
     const error = vi.spyOn(console, 'error').mockImplementation(() => {});
 
-    await feedsStore.getState().fetch('recherchen');
+    await store.dispatch(fetchFeedKey('recherchen'));
 
-    expect(feedsStore.getState().byKey.recherchen.status).toBe('error');
+    expect(store.getState().feeds.byKey.recherchen.status).toBe('error');
     error.mockRestore();
   });
 
@@ -176,11 +191,11 @@ describe('when the network is gone', () => {
     );
     const error = vi.spyOn(console, 'error').mockImplementation(() => {});
 
-    await feedsStore.getState().fetchMany(['recherchen', 'klima', 'faktencheck']);
+    await store.dispatch(fetchMany(['recherchen', 'klima', 'faktencheck']));
 
-    expect(feedsStore.getState().byKey.recherchen.status).toBe('ready');
-    expect(feedsStore.getState().byKey.faktencheck.status).toBe('ready');
-    expect(feedsStore.getState().byKey.klima.status).toBe('error');
+    expect(store.getState().feeds.byKey.recherchen.status).toBe('ready');
+    expect(store.getState().feeds.byKey.faktencheck.status).toBe('ready');
+    expect(store.getState().feeds.byKey.klima.status).toBe('error');
     error.mockRestore();
   });
 });
@@ -209,7 +224,7 @@ describe('merged reads', () => {
 
 describe('image enrichment', () => {
   it('patches one item in place and leaves the rest alone', async () => {
-    feedsStore.setState(slices({ recherchen: { items: [item('a'), item('b')], status: 'ready' } }));
+    seed({ recherchen: { items: [item('a'), item('b')], status: 'ready' } });
     configurePlatform({
       ...createMemoryPlatform(),
       content: {
@@ -229,20 +244,18 @@ describe('image enrichment', () => {
       },
     });
 
-    await feedsStore.getState().enrichImage('recherchen', 'a');
+    await store.dispatch(enrichImage('recherchen', 'a'));
 
-    const items = feedsStore.getState().byKey.recherchen.items;
+    const items = store.getState().feeds.byKey.recherchen.items;
     expect(items[0].imageUrl).toBe('https://x/a.jpg');
     expect(items[1].imageUrl).toBeNull();
   });
 
   it('does nothing for an item that already has an image', async () => {
-    feedsStore.setState(
-      slices({ recherchen: { items: [{ ...item('a'), imageUrl: 'https://x/keep.jpg' }] } }),
-    );
+    seed({ recherchen: { items: [{ ...item('a'), imageUrl: 'https://x/keep.jpg' }] } });
 
-    await feedsStore.getState().enrichImage('recherchen', 'a');
+    await store.dispatch(enrichImage('recherchen', 'a'));
 
-    expect(feedsStore.getState().byKey.recherchen.items[0].imageUrl).toBe('https://x/keep.jpg');
+    expect(store.getState().feeds.byKey.recherchen.items[0].imageUrl).toBe('https://x/keep.jpg');
   });
 });

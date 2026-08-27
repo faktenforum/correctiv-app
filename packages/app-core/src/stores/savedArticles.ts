@@ -1,5 +1,6 @@
+import { createSlice, type PayloadAction } from '@reduxjs/toolkit';
+
 import type { FactcheckRating } from '../articles/types';
-import { createStore } from './create-store';
 
 export interface SavedArticle {
   url: string;
@@ -12,23 +13,36 @@ export interface SavedArticle {
 
 export interface SavedArticlesState {
   items: SavedArticle[];
-  toggle: (article: SavedArticle) => void;
-  remove: (url: string) => void;
 }
 
-/** Pure selector — see the note in stores/interests.ts for why not a method. */
-export function isSaved(state: Pick<SavedArticlesState, 'items'>, url: string): boolean {
+const initialState: SavedArticlesState = { items: [] };
+
+/** Pure selector — see the note in stores/interests.ts for why not part of the slice. */
+export function isSaved(state: SavedArticlesState, url: string): boolean {
   return state.items.some((a) => a.url === url);
 }
 
-export const savedArticlesStore = createStore<SavedArticlesState>((set) => ({
-  items: [],
+const slice = createSlice({
+  name: 'savedArticles',
+  initialState,
+  reducers: {
+    toggle(state, action: PayloadAction<SavedArticle>) {
+      const index = state.items.findIndex((a) => a.url === action.payload.url);
+      if (index === -1) state.items.unshift(action.payload);
+      else state.items.splice(index, 1);
+    },
 
-  toggle: (article) =>
-    set((state) =>
-      state.items.some((a) => a.url === article.url)
-        ? { items: state.items.filter((a) => a.url !== article.url) }
-        : { items: [article, ...state.items] },
-    ),
-  remove: (url) => set((state) => ({ items: state.items.filter((a) => a.url !== url) })),
-}));
+    remove(state, action: PayloadAction<string>) {
+      state.items = state.items.filter((a) => a.url !== action.payload);
+    },
+
+    /** Applied by persist() at startup — see stores/persist.ts. */
+    hydrate(state, action: PayloadAction<Partial<SavedArticlesState>>) {
+      Object.assign(state, action.payload);
+    },
+  },
+});
+
+export const savedArticlesReducer = slice.reducer;
+export const savedArticlesActions = slice.actions;
+export const { toggle, remove } = slice.actions;

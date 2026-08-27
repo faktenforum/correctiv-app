@@ -1,16 +1,16 @@
 import { useEffect, useMemo } from 'react';
-import { useStore } from 'zustand';
 
 import {
-  feedsStore,
   mergedFeedItems,
   mergedFeedStatus,
   type FeedStatus,
 } from '@correctiv/app-core/stores/feeds';
 import type { FeedItem, FeedKey } from '@correctiv/app-core/types/models';
 
+import { coreActions, useAppSelector } from '@/lib/store/core';
+
 /**
- * React bindings for the core's feed store.
+ * React bindings for the core's feed slice.
  *
  * This used to be a `useAsyncData` hook over a `client.ts` of its own — one
  * request per mounting component, no shared state, and a second offline cascade
@@ -37,7 +37,7 @@ export interface AsyncState<T> {
   reload: () => void;
 }
 
-/** `error` is derived rather than stored: the store's failure state IS `'error'`. */
+/** `error` is derived rather than stored: the slice's failure state IS `'error'`. */
 function toAsyncState<T>(items: T | null, status: FeedStatus, reload: () => void): AsyncState<T> {
   return {
     data: items,
@@ -51,22 +51,22 @@ function toAsyncState<T>(items: T | null, status: FeedStatus, reload: () => void
 /**
  * One RSS feed, loaded on first use.
  *
- * `byKey[feed]` is a stable reference between updates (the store patches
- * immutably), so it is safe to select directly — unlike a selector that builds a
- * fresh object, which zustand v5 would hand to `useSyncExternalStore` and React
- * would reject with "the result of getSnapshot should be cached".
+ * `byKey[feed]` is a stable reference between updates (Immer patches the feed in
+ * place and leaves its siblings alone), so it is safe to select directly — unlike
+ * a selector that builds a fresh object, which `useSelector` compares by
+ * reference and would therefore re-render on every unrelated dispatch.
  */
 export function useFeed(feed: FeedKey): AsyncState<FeedItem[]> {
-  const slice = useStore(feedsStore, (s) => s.byKey[feed]);
+  const slice = useAppSelector((s) => s.feeds.byKey[feed]);
 
   useEffect(() => {
-    if (slice.status === 'idle') void feedsStore.getState().fetch(feed);
+    if (slice.status === 'idle') void coreActions.feeds.fetch(feed);
   }, [feed, slice.status]);
 
   return toAsyncState(
     slice.items.length > 0 ? slice.items : null,
     slice.status,
-    () => void feedsStore.getState().fetch(feed, { force: true }),
+    () => void coreActions.feeds.fetch(feed, { force: true }),
   );
 }
 
@@ -77,10 +77,10 @@ export function useFeed(feed: FeedKey): AsyncState<FeedItem[]> {
  * on every render would re-run the effect on every render.
  */
 export function useMergedFeeds(feeds: FeedKey[]): AsyncState<FeedItem[]> {
-  const byKey = useStore(feedsStore, (s) => s.byKey);
+  const byKey = useAppSelector((s) => s.feeds.byKey);
 
   useEffect(() => {
-    void feedsStore.getState().fetchMany(feeds.filter((key) => byKey[key].status === 'idle'));
+    void coreActions.feeds.fetchMany(feeds.filter((key) => byKey[key].status === 'idle'));
     // `byKey` is intentionally not a dependency: this only has to fire for feeds
     // that have never been asked for, and re-running it on every store update
     // would restart the fetch each time one of them lands.
@@ -93,6 +93,6 @@ export function useMergedFeeds(feeds: FeedKey[]): AsyncState<FeedItem[]> {
   return toAsyncState(
     items.length > 0 ? items : null,
     status,
-    () => void Promise.all(feeds.map((key) => feedsStore.getState().fetch(key, { force: true }))),
+    () => void Promise.all(feeds.map((key) => coreActions.feeds.fetch(key, { force: true }))),
   );
 }

@@ -1,13 +1,15 @@
-import { createStore } from './create-store';
-import type { Video } from '../types/models';
-import { fetchVideoDetail } from '../services/peertube.service';
+import { createSlice, type PayloadAction } from '@reduxjs/toolkit';
+
 import { stopOtherMedia } from '../media/exclusive-playback';
+import { fetchVideoDetail } from '../services/peertube.service';
+import type { Video } from '../types/models';
+import type { AppThunk } from './store';
 
 export type VideoStatus = 'idle' | 'loading' | 'ready' | 'error';
 
 /**
  * The persistent video session (PeerTube native player). Mirrors the audio
- * store's role: one active item that survives tab navigation. The player UI
+ * slice's role: one active item that survives tab navigation. The player UI
  * lives above the tab frames, so the native video surface is never re-parented —
  * it only resizes between the collapsed bar and the expanded player.
  *
@@ -18,31 +20,61 @@ export interface VideoState {
   hlsUrl: string;
   status: VideoStatus;
   expanded: boolean;
-
-  play: (video: Video) => Promise<void>;
-  expand: () => void;
-  collapse: () => void;
-  close: () => void;
 }
 
-/** Pure selector — see the note in stores/interests.ts for why not a method. */
-export function isActive(state: Pick<VideoState, 'current'>): boolean {
-  return state.current !== null;
-}
-
-export const videoStore = createStore<VideoState>((set, get) => ({
+const initialState: VideoState = {
   current: null,
   hlsUrl: '',
   status: 'idle',
   expanded: false,
+};
 
-  play: async (video) => {
+/** Pure selector — see the note in stores/interests.ts for why not part of the slice. */
+export function isActive(state: VideoState): boolean {
+  return state.current !== null;
+}
+
+const slice = createSlice({
+  name: 'video',
+  initialState,
+  reducers: {
+    opened(state, action: PayloadAction<Video>) {
+      state.current = action.payload;
+      state.expanded = true;
+      state.hlsUrl = action.payload.hlsMasterUrl ?? '';
+    },
+    statusChanged(state, action: PayloadAction<VideoStatus>) {
+      state.status = action.payload;
+    },
+    resolved(state, action: PayloadAction<string>) {
+      state.hlsUrl = action.payload;
+      state.status = action.payload ? 'ready' : 'error';
+    },
+    expand(state) {
+      state.expanded = true;
+    },
+    collapse(state) {
+      state.expanded = false;
+    },
+    close() {
+      return initialState;
+    },
+  },
+});
+
+export const videoReducer = slice.reducer;
+export const { expand, collapse, close, opened, statusChanged, resolved } = slice.actions;
+
+/** Opens a video, resolving its HLS master where the source has one. */
+export const play =
+  (video: Video): AppThunk<Promise<void>> =>
+  async (dispatch, getState) => {
     // Coordinate: only one medium plays at a time.
     stopOtherMedia('video');
 
-    set({ current: video, expanded: true, hlsUrl: video.hlsMasterUrl ?? '' });
-    if (get().hlsUrl) {
-      set({ status: 'ready' });
+    dispatch(opened(video));
+    if (getState().video.hlsUrl) {
+      dispatch(statusChanged('ready'));
       return;
     }
     /**
@@ -52,23 +84,19 @@ export const videoStore = createStore<VideoState>((set, get) => ({
      * like the video was broken.
      */
     if (video.source !== 'peertube') {
-      set({ status: 'ready' });
+      dispatch(statusChanged('ready'));
       return;
     }
     // The list payload has no stream URL — resolve the HLS master on open.
-    set({ status: 'loading' });
+    dispatch(statusChanged('loading'));
     try {
       const detail = await fetchVideoDetail(video.id);
-      if (get().current?.id !== video.id) return; // superseded while loading
-      const hlsUrl = detail.hlsMasterUrl ?? '';
-      set({ hlsUrl, status: hlsUrl ? 'ready' : 'error' });
+      if (getState().video.current?.id !== video.id) return; // superseded while loading
+      dispatch(resolved(detail.hlsMasterUrl ?? ''));
     } catch (err) {
-      set({ status: 'error' });
+      dispatch(statusChanged('error'));
       console.error('PeerTube detail failed:', err instanceof Error ? err.message : err);
     }
-  },
+  };
 
-  expand: () => set({ expanded: true }),
-  collapse: () => set({ expanded: false }),
-  close: () => set({ current: null, hlsUrl: '', status: 'idle', expanded: false }),
-}));
+export const videoActions = { ...slice.actions, play };

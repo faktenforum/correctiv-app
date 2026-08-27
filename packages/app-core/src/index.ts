@@ -18,7 +18,7 @@
  *
  *   import { loadArticle } from '@correctiv/app-core/articles/load';
  *   import { formatRelative } from '@correctiv/app-core/lib/format';
- *   import { membershipStore } from '@correctiv/app-core/stores/membership';
+ *   import { join } from '@correctiv/app-core/stores/membership';
  *   import type { Article } from '@correctiv/app-core/articles/types';
  */
 export type {

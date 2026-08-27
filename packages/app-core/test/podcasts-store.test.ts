@@ -8,7 +8,8 @@ import { podcastSeries as sampleSeries, type PodcastSeries } from '../src/data/p
 import { resetPlatform } from '../src/ports';
 import { clearMemoryCache, setCached } from '../src/services/cache.service';
 import { fetchPodcastSeries } from '../src/services/podcast.service';
-import { findSeries, podcastsStore } from '../src/stores/podcasts';
+import { fetchAll, findSeries } from '../src/stores/podcasts';
+import { createAppStore, type AppStore } from '../src/stores/store';
 
 /**
  * The podcast library's whole job is to never be empty: fresh cache → live shows
@@ -17,7 +18,7 @@ import { findSeries, podcastsStore } from '../src/stores/podcasts';
  * precisely when nobody is looking at a test run.
  */
 const fetchMock = vi.mocked(fetchPodcastSeries);
-const initial = podcastsStore.getState();
+let store: AppStore;
 
 function series(id: string, episodes = 1): PodcastSeries {
   return {
@@ -37,7 +38,7 @@ function series(id: string, episodes = 1): PodcastSeries {
 }
 
 beforeEach(() => {
-  podcastsStore.setState(initial, true);
+  store = createAppStore();
   fetchMock.mockReset();
   clearMemoryCache();
   // A fresh in-memory BlobStore, so no blob cache survives into the next test.
@@ -48,11 +49,11 @@ describe('podcasts store', () => {
   it('reports ready when every curated show comes back', async () => {
     fetchMock.mockImplementation((handle: string) => Promise.resolve(series(handle)));
 
-    await podcastsStore.getState().fetchAll();
+    await store.dispatch(fetchAll());
 
     expect(fetchMock).toHaveBeenCalledTimes(PODCAST_CHANNELS.length);
-    expect(podcastsStore.getState().series).toHaveLength(PODCAST_CHANNELS.length);
-    expect(podcastsStore.getState().status).toBe('ready');
+    expect(store.getState().podcasts.series).toHaveLength(PODCAST_CHANNELS.length);
+    expect(store.getState().podcasts.status).toBe('ready');
   });
 
   it('reports partial when a single show fails, and keeps the rest', async () => {
@@ -62,9 +63,9 @@ describe('podcasts store', () => {
         : Promise.resolve(series(handle)),
     );
 
-    await podcastsStore.getState().fetchAll();
+    await store.dispatch(fetchAll());
 
-    const state = podcastsStore.getState();
+    const state = store.getState().podcasts;
     expect(state.series).toHaveLength(PODCAST_CHANNELS.length - 1);
     expect(state.status).toBe('partial');
     // One broken show must not take the library down with it.
@@ -79,19 +80,19 @@ describe('podcasts store', () => {
       Promise.resolve(series(handle, handle === PODCAST_CHANNELS[0] ? 0 : 2)),
     );
 
-    await podcastsStore.getState().fetchAll();
+    await store.dispatch(fetchAll());
 
-    expect(podcastsStore.getState().series.map((s) => s.id)).not.toContain(PODCAST_CHANNELS[0]);
-    expect(podcastsStore.getState().status).toBe('partial');
+    expect(store.getState().podcasts.series.map((s) => s.id)).not.toContain(PODCAST_CHANNELS[0]);
+    expect(store.getState().podcasts.status).toBe('partial');
   });
 
   it('serves the typed seed when nothing is reachable', async () => {
     fetchMock.mockRejectedValue(new Error('Network request failed'));
 
-    await podcastsStore.getState().fetchAll();
+    await store.dispatch(fetchAll());
 
-    expect(podcastsStore.getState().series).toEqual(sampleSeries);
-    expect(podcastsStore.getState().status).toBe('offline');
+    expect(store.getState().podcasts.series).toEqual(sampleSeries);
+    expect(store.getState().podcasts.status).toBe('offline');
     // The seed must stay playable, or the offline demo has a dead play button.
     expect(sampleSeries.every((s) => s.episodes.every((e) => e.audio.length > 0))).toBe(true);
   });
@@ -105,31 +106,31 @@ describe('podcasts store', () => {
     const clock = vi.spyOn(Date, 'now').mockReturnValue(later);
     fetchMock.mockRejectedValue(new Error('Network request failed'));
 
-    await podcastsStore.getState().fetchAll();
+    await store.dispatch(fetchAll());
 
     expect(fetchMock).toHaveBeenCalled(); // i.e. the fresh-cache path was NOT taken
-    expect(podcastsStore.getState().series.map((s) => s.id)).toEqual(['pausenbrot']);
-    expect(podcastsStore.getState().status).toBe('partial');
+    expect(store.getState().podcasts.series.map((s) => s.id)).toEqual(['pausenbrot']);
+    expect(store.getState().podcasts.status).toBe('partial');
     clock.mockRestore();
   });
 
   it('does not hit the network while the cache is fresh', async () => {
     fetchMock.mockImplementation((handle: string) => Promise.resolve(series(handle)));
-    await podcastsStore.getState().fetchAll();
+    await store.dispatch(fetchAll());
     fetchMock.mockClear();
 
-    await podcastsStore.getState().fetchAll();
+    await store.dispatch(fetchAll());
 
     expect(fetchMock).not.toHaveBeenCalled();
-    expect(podcastsStore.getState().status).toBe('ready');
+    expect(store.getState().podcasts.status).toBe('ready');
   });
 
   it('force refetches even with a fresh cache', async () => {
     fetchMock.mockImplementation((handle: string) => Promise.resolve(series(handle)));
-    await podcastsStore.getState().fetchAll();
+    await store.dispatch(fetchAll());
     fetchMock.mockClear();
 
-    await podcastsStore.getState().fetchAll({ force: true });
+    await store.dispatch(fetchAll({ force: true }));
 
     expect(fetchMock).toHaveBeenCalledTimes(PODCAST_CHANNELS.length);
   });

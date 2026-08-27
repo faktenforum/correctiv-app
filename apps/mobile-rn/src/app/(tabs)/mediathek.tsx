@@ -125,6 +125,6 @@ function openSeries(series: PodcastSeries) {
 
 function openVideo(video: Video) {
   // The core store owns the HLS resolution; the route reads it.
-  void coreActions.video().play(video);
+  void coreActions.video.play(video);
   router.push('/video');
 }

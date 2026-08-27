@@ -1,121 +1,138 @@
 /**
- * React bindings for the framework-neutral core stores.
+ * React bindings for the core's Redux store.
  *
- * `@correctiv/app-core` ships zustand/vanilla stores plus pure selector functions
- * (ADR 0004); each host adds its own reactivity. This is the React half — the Vue
- * half is one file per host, and this is this host's.
+ * `@correctiv/app-core` owns the store and the slices (ADR 0004); each host adds
+ * its own reactivity. This is the React half — `react-redux`'s `useSelector` over
+ * the core's `store`, plus the pure selector functions the slices export, which
+ * are ordinary functions of state and compose with it as-is.
  *
- * On this side there is barely anything to add, which is the point: zustand's
- * `useStore` subscribes a component to a vanilla store directly, and the
- * selectors are ordinary functions of state, so they compose with it as-is.
- *
- * Always select the narrowest slice you need. `useStore(store)` without a
- * selector re-renders on every change to any field in that store.
+ * Always select the narrowest slice you need. `useSelector((s) => s.settings)`
+ * re-renders on every change to any field in that slice.
  */
+import { bindActionCreators } from '@reduxjs/toolkit';
 import { useEffect, useMemo } from 'react';
-import { useStore } from 'zustand';
+import { useDispatch, useSelector, useStore, type TypedUseSelectorHook } from 'react-redux';
 
 import {
-  interestsStore,
+  playEpisode,
+  playRadio,
+  seekTo,
+  setSpeed,
+  stop,
+  togglePlay,
+} from '@correctiv/app-core/stores/audio';
+import { enrichImage, fetchFeedKey, fetchMany } from '@correctiv/app-core/stores/feeds';
+import {
   boostedModules as selectBoostedModules,
   extraFeeds as selectExtraFeeds,
+  interestsActions,
   selectedInterests as selectSelectedInterests,
 } from '@correctiv/app-core/stores/interests';
-import { membershipStore } from '@correctiv/app-core/stores/membership';
-import { findSeries, podcastsStore } from '@correctiv/app-core/stores/podcasts';
+import { fetchChannel, type YoutubeKey } from '@correctiv/app-core/stores/media';
+import { membershipActions } from '@correctiv/app-core/stores/membership';
 import {
-  participationStore,
   extraCount as selectExtraCount,
   hasSubmitted as selectHasSubmitted,
+  participationActions,
 } from '@correctiv/app-core/stores/participation';
+import { fetchAll, findSeries } from '@correctiv/app-core/stores/podcasts';
 import {
-  savedArticlesStore,
   isSaved as selectIsSaved,
+  savedArticlesActions,
 } from '@correctiv/app-core/stores/savedArticles';
-import { settingsStore } from '@correctiv/app-core/stores/settings';
-import { videoStore, isActive as selectIsActive } from '@correctiv/app-core/stores/video';
-import { mediaStore, type YoutubeKey } from '@correctiv/app-core/stores/media';
-import { audioStore } from '@correctiv/app-core/stores/audio';
-import { feedsStore } from '@correctiv/app-core/stores/feeds';
+import { settingsActions } from '@correctiv/app-core/stores/settings';
+import {
+  store,
+  type AppDispatch,
+  type AppThunk,
+  type RootState,
+} from '@correctiv/app-core/stores/store';
+import { videoActions } from '@correctiv/app-core/stores/video';
 
-// --- whole-store hooks (use a selector below where you can) -------------------
+export { store as coreStore };
 
-export const useSettings = () => useStore(settingsStore);
-export const useMembership = () => useStore(membershipStore);
-export const useMedia = () => useStore(mediaStore);
-export const useVideo = () => useStore(videoStore);
+/** Typed `useSelector`, so a selector's state argument is never `any`. */
+export const useAppSelector: TypedUseSelectorHook<RootState> = useSelector;
+export const useAppDispatch = () => useDispatch<AppDispatch>();
+export const useAppStore = () => useStore<RootState>();
+
+// --- whole-slice hooks (use a narrower selector below where you can) ----------
+
+export const useSettings = () => useAppSelector((s) => s.settings);
+export const useMembership = () => useAppSelector((s) => s.membership);
+export const useMedia = () => useAppSelector((s) => s.media);
+export const useVideo = () => useAppSelector((s) => s.video);
 
 // --- narrow selectors --------------------------------------------------------
 
 /** The demo's central lever — read it per render, never snapshot it. */
-export const useIsMember = () => useStore(membershipStore, (s) => s.isMember);
-export const useActiveTab = () => useStore(settingsStore, (s) => s.activeTab);
-export const useTextScale = () => useStore(settingsStore, (s) => s.textScale);
-export const useTheme = () => useStore(settingsStore, (s) => s.theme);
+export const useIsMember = () => useAppSelector((s) => s.membership.isMember);
+export const useActiveTab = () => useAppSelector((s) => s.settings.activeTab);
+export const useTextScale = () => useAppSelector((s) => s.settings.textScale);
+export const useTheme = () => useAppSelector((s) => s.settings.theme);
 
-export const useVideoIsActive = () => useStore(videoStore, selectIsActive);
+export const useVideoIsActive = () => useAppSelector((s) => s.video.current !== null);
 
-export const useSavedArticles = () => useStore(savedArticlesStore, (s) => s.items);
+export const useSavedArticles = () => useAppSelector((s) => s.savedArticles.items);
 export const useIsSaved = (url: string) =>
-  useStore(savedArticlesStore, (s) => selectIsSaved(s, url));
+  useAppSelector((s) => selectIsSaved(s.savedArticles, url));
 
 /**
- * These three selectors build a NEW array on every call (`filter`/`map`), and
- * zustand v5's `useStore` passes the selector straight to React's
- * `useSyncExternalStore` — no equality function. A snapshot with a fresh identity
- * each render makes React throw "The result of getSnapshot should be cached to
- * avoid an infinite loop".
+ * These three selectors build a NEW array on every call (`filter`/`map`).
+ * `useSelector` compares results by reference, so a selector with a fresh
+ * identity per call re-renders the component on EVERY dispatch — including the
+ * audio position tick, twice a second, for a component that shows interests.
  *
  * So subscribe to the raw `selected` array — a stable reference between changes,
- * because the store updates immutably — and derive under `useMemo`.
+ * because the slice updates immutably — and derive under `useMemo`.
  */
 export const useSelectedInterests = () => {
-  const selected = useStore(interestsStore, (s) => s.selected);
+  const selected = useAppSelector((s) => s.interests.selected);
   return useMemo(() => selectSelectedInterests({ selected }), [selected]);
 };
 
 export const useBoostedModules = () => {
-  const selected = useStore(interestsStore, (s) => s.selected);
+  const selected = useAppSelector((s) => s.interests.selected);
   return useMemo(() => selectBoostedModules({ selected }), [selected]);
 };
 
 export const useExtraFeeds = () => {
-  const selected = useStore(interestsStore, (s) => s.selected);
+  const selected = useAppSelector((s) => s.interests.selected);
   return useMemo(() => selectExtraFeeds({ selected }), [selected]);
 };
 
 /**
  * One media channel's videos, loaded on first use.
  *
- * The core store owns what this app previously got wrong on its own: FunFacts
+ * The core slice owns what this app previously got wrong on its own: FunFacts
  * moved to CORRECTIV's PeerTube instance, and fetching it from the YouTube Atom
- * feed is the legacy path. `mediaStore` routes per MEDIA_SOURCE and brings the
+ * feed is the legacy path. `stores/media` routes per MEDIA_SOURCE and brings the
  * cache plus stale fallback with it, so this hook only subscribes and kicks off
  * the load.
  *
- * `byKey[key]` is a stable reference between updates (the store patches
- * immutably), so it is safe to select directly — see the note above about
- * selectors that build fresh objects.
+ * `byKey[key]` is a stable reference between updates (Immer patches the channel
+ * in place and leaves its siblings alone), so it is safe to select directly —
+ * see the note above about selectors that build fresh objects.
  */
 export const useVideoChannel = (key: YoutubeKey) => {
-  const slice = useStore(mediaStore, (s) => s.byKey[key]);
+  const slice = useAppSelector((s) => s.media.byKey[key]);
   useEffect(() => {
-    if (slice.status === 'idle') void mediaStore.getState().fetch(key);
+    if (slice.status === 'idle') void store.dispatch(fetchChannel(key));
   }, [key, slice.status]);
   return slice;
 };
 
 /**
  * The whole podcast library, loaded on first use — same shape as
- * `useVideoChannel`. Two narrow subscriptions rather than one whole-store read:
+ * `useVideoChannel`. Two narrow subscriptions rather than one whole-slice read:
  * `series` is a stable reference between updates and `status` is a string, so
- * neither can produce the fresh-snapshot loop described above.
+ * neither can cost a render it does not owe.
  */
 export const usePodcastLibrary = () => {
-  const series = useStore(podcastsStore, (s) => s.series);
-  const status = useStore(podcastsStore, (s) => s.status);
+  const series = useAppSelector((s) => s.podcasts.series);
+  const status = useAppSelector((s) => s.podcasts.status);
   useEffect(() => {
-    if (status === 'idle') void podcastsStore.getState().fetchAll();
+    if (status === 'idle') void store.dispatch(fetchAll());
   }, [status]);
   return { series, status };
 };
@@ -123,44 +140,63 @@ export const usePodcastLibrary = () => {
 /** One series by id, with the same lazy load. */
 export const usePodcastSeries = (id: string) => {
   const { series, status } = usePodcastLibrary();
-  return { series: useMemo(() => findSeries({ series }, id), [series, id]), status };
+  return {
+    series: useMemo(() => findSeries({ series, status }, id), [series, status, id]),
+    status,
+  };
 };
 
 export const useHasSubmitted = (slug: string) =>
-  useStore(participationStore, (s) => selectHasSubmitted(s, slug));
+  useAppSelector((s) => selectHasSubmitted(s.participation, slug));
 export const useExtraCount = (slug: string) =>
-  useStore(participationStore, (s) => selectExtraCount(s, slug));
+  useAppSelector((s) => selectExtraCount(s.participation, slug));
 
 // --- actions -----------------------------------------------------------------
 
 /**
- * Actions live in the store state and their identities are stable, so reading
- * them outside React (no hook, no re-render) is both safe and cheaper than
- * selecting them.
+ * Actions, bound to the core store once at module load.
+ *
+ * Dispatching outside React costs no render and needs no hook, which is what
+ * keeps the call sites plain: `coreActions.settings.setTheme('dark')` in an
+ * onPress, rather than a `useDispatch` in every screen that has a button.
+ *
+ * The thunk groups are spelled out rather than run through
+ * `bindActionCreators`, because that helper types a bound thunk as returning the
+ * thunk itself instead of what dispatching it returns — which would make every
+ * `await` here a lie.
  */
-export const coreActions = {
-  settings: () => settingsStore.getState(),
-  audio: () => audioStore.getState(),
-  feeds: () => feedsStore.getState(),
-  podcasts: () => podcastsStore.getState(),
-  membership: () => membershipStore.getState(),
-  interests: () => interestsStore.getState(),
-  savedArticles: () => savedArticlesStore.getState(),
-  participation: () => participationStore.getState(),
-  media: () => mediaStore.getState(),
-  video: () => videoStore.getState(),
-};
+const bind =
+  <A extends unknown[], R>(creator: (...args: A) => AppThunk<R>) =>
+  (...args: A): R =>
+    store.dispatch(creator(...args));
 
-/** Raw stores, for persist() and anything needing subscribe/getState. */
-export const coreStores = {
-  settings: settingsStore,
-  audio: audioStore,
-  feeds: feedsStore,
-  podcasts: podcastsStore,
-  membership: membershipStore,
-  interests: interestsStore,
-  savedArticles: savedArticlesStore,
-  participation: participationStore,
-  media: mediaStore,
-  video: videoStore,
+export const coreActions = {
+  settings: bindActionCreators(settingsActions, store.dispatch),
+  membership: bindActionCreators(membershipActions, store.dispatch),
+  savedArticles: bindActionCreators(savedArticlesActions, store.dispatch),
+  interests: bindActionCreators(interestsActions, store.dispatch),
+  participation: bindActionCreators(participationActions, store.dispatch),
+
+  audio: {
+    playRadio: bind(playRadio),
+    playEpisode: bind(playEpisode),
+    togglePlay: bind(togglePlay),
+    seekTo: bind(seekTo),
+    setSpeed: bind(setSpeed),
+    stop: bind(stop),
+  },
+  feeds: {
+    fetch: bind(fetchFeedKey),
+    fetchMany: bind(fetchMany),
+    enrichImage: bind(enrichImage),
+  },
+  podcasts: { fetchAll: bind(fetchAll) },
+  media: { fetch: bind(fetchChannel) },
+  video: {
+    ...bindActionCreators(
+      { expand: videoActions.expand, collapse: videoActions.collapse, close: videoActions.close },
+      store.dispatch,
+    ),
+    play: bind(videoActions.play),
+  },
 };

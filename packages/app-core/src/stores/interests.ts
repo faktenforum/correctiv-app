@@ -1,47 +1,59 @@
-import { createStore } from './create-store';
+import { createSlice, type PayloadAction } from '@reduxjs/toolkit';
+
 import { interests, type Interest } from '../data/interests';
 
 /**
  * State and actions only. Derived values are exported as PURE FUNCTIONS OF STATE
- * below rather than methods on the store, and that is load-bearing rather than
- * stylistic: a method would close over the vanilla store's own `get()`, so a Vue
- * `computed` calling it would read state the reactivity system never saw and the
- * template would silently stop updating. Taking state as an argument lets each
- * binding apply the selector to its own tracked view.
+ * below rather than bundled into the slice, and that is load-bearing rather than
+ * stylistic: taking state as an argument lets each binding apply the selector to
+ * its own tracked view — `useSelector` here, a `computed` in a Vue host — instead
+ * of reading through a store instance the reactivity system never saw.
  */
 export interface InterestsState {
   selected: string[];
-  toggle: (id: string) => void;
-  /** Demo reset (Settings → Demo). The Vue host assigned `selected = []` directly. */
-  clear: () => void;
 }
 
+const initialState: InterestsState = { selected: [] };
+
 /** The full interest objects for the selected ids. */
-export function selectedInterests(state: Pick<InterestsState, 'selected'>): Interest[] {
+export function selectedInterests(state: InterestsState): Interest[] {
   return interests.filter((i) => state.selected.includes(i.id));
 }
 
 /** Modules that move up due to interests (home personalisation). */
-export function boostedModules(state: Pick<InterestsState, 'selected'>): string[] {
+export function boostedModules(state: InterestsState): string[] {
   return selectedInterests(state)
     .map((i) => i.boostModule)
     .filter((m): m is NonNullable<Interest['boostModule']> => !!m);
 }
 
 /** Feeds from which Home shows additional sections. */
-export function extraFeeds(state: Pick<InterestsState, 'selected'>): Interest[] {
+export function extraFeeds(state: InterestsState): Interest[] {
   return selectedInterests(state).filter((i) => i.feed && i.feed !== 'salon5');
 }
 
-export const interestsStore = createStore<InterestsState>((set) => ({
-  selected: [],
+const slice = createSlice({
+  name: 'interests',
+  initialState,
+  reducers: {
+    toggle(state, action: PayloadAction<string>) {
+      const index = state.selected.indexOf(action.payload);
+      if (index === -1) state.selected.push(action.payload);
+      else state.selected.splice(index, 1);
+    },
 
-  toggle: (id) =>
-    set((state) => ({
-      selected: state.selected.includes(id)
-        ? state.selected.filter((s) => s !== id)
-        : [...state.selected, id],
-    })),
+    /** Demo reset (Settings → Demo). */
+    clear(state) {
+      state.selected = [];
+    },
 
-  clear: () => set({ selected: [] }),
-}));
+    /** Applied by persist() at startup — see stores/persist.ts. */
+    hydrate(state, action: PayloadAction<Partial<InterestsState>>) {
+      Object.assign(state, action.payload);
+    },
+  },
+});
+
+export const interestsReducer = slice.reducer;
+export const interestsActions = slice.actions;
+export const { toggle, clear } = slice.actions;

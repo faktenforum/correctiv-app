@@ -1,28 +1,25 @@
+import { createSlice, type PayloadAction } from '@reduxjs/toolkit';
+
 import { RADIO_STREAM_URL } from '../data/feeds.config';
 import { stopOtherMedia } from '../media/exclusive-playback';
 import { platform, type AudioBackend, type PlaybackStatus } from '../ports';
 import type { AudioTrack } from '../types/models';
-import { createStore } from './create-store';
+import type { AppDispatch, AppThunk, RootState } from './store';
 
 /**
- * The player's state machine — one of them, for both apps.
+ * The player's state machine.
  *
- * This was the largest duplication in the repo: 280 lines of Pinia store plus
- * service in the NativeScript app, 270 lines of zustand store in the Expo app,
- * both implementing the same state, the same watchdog and the same club preview —
- * and neither knowing about the bugs the other had found. Everything
- * platform-specific now sits behind `AudioBackend` (`ports/index.ts`), which each
- * host implements over its own SDK.
+ * Everything platform-specific sits behind `AudioBackend` (`ports/index.ts`),
+ * which each host implements over its own SDK.
  *
  * There is no length limit on club content: bonus episodes play in full for
  * everyone. Both apps used to stop a non-member at 60 seconds and offer the club —
  * dropped on 2026-08-06, which also puts audio in line with "closeness, not a
  * paywall". The `CLUB` badge stays as a label; it no longer withholds anything.
  *
- * One fix the Expo version had and the NativeScript one did not, now shared: an
- * error state is sticky until the next start. Without that, the following status
- * tick — no error, not loaded yet — maps straight back to "loading", which is
- * exactly the endless spinner the watchdog exists to prevent.
+ * An error state is sticky until the next start. Without that, the following
+ * status tick — no error, not loaded yet — maps straight back to "loading", which
+ * is exactly the endless spinner the watchdog exists to prevent.
  */
 
 export type PlayerStatus = 'idle' | 'loading' | 'playing' | 'paused' | 'error';
@@ -46,26 +43,16 @@ export interface AudioState {
   /** Playback rate; in state because the full player shows it. */
   speed: number;
   errorMessage: string | null;
-
-  playRadio: () => Promise<void>;
-  playEpisode: (track: Omit<AudioTrack, 'kind'>) => Promise<void>;
-  togglePlay: () => void;
-  seekTo: (seconds: number) => Promise<void>;
-  setSpeed: (rate: number) => void;
-  stop: () => void;
 }
 
-const IDLE = {
+const IDLE: AudioState = {
   track: null,
   status: 'idle',
   positionSec: 0,
   durationSec: 0,
   speed: 1,
   errorMessage: null,
-} satisfies Omit<
-  AudioState,
-  'playRadio' | 'playEpisode' | 'togglePlay' | 'seekTo' | 'setSpeed' | 'stop'
->;
+};
 
 /** Pure selectors — live playback has neither a length nor a position. */
 export function isLive(state: Pick<AudioState, 'track'>): boolean {
@@ -74,6 +61,50 @@ export function isLive(state: Pick<AudioState, 'track'>): boolean {
 export function isActive(state: Pick<AudioState, 'track'>): boolean {
   return state.track !== null;
 }
+
+const slice = createSlice({
+  name: 'audio',
+  initialState: IDLE,
+  reducers: {
+    started(state, action: PayloadAction<AudioTrack>) {
+      Object.assign(state, IDLE, { track: action.payload, status: 'loading' });
+    },
+    failed(state, action: PayloadAction<string>) {
+      state.status = 'error';
+      state.errorMessage = action.payload;
+    },
+    tick(
+      state,
+      action: PayloadAction<{ status: PlayerStatus; positionSec: number; durationSec: number }>,
+    ) {
+      state.status = action.payload.status;
+      state.positionSec = action.payload.positionSec;
+      state.durationSec = action.payload.durationSec;
+    },
+    finished(state) {
+      state.status = 'paused';
+      state.positionSec = 0;
+    },
+    paused(state) {
+      state.status = 'paused';
+    },
+    positionSet(state, action: PayloadAction<number>) {
+      state.positionSec = action.payload;
+    },
+    speedSet(state, action: PayloadAction<number>) {
+      state.speed = action.payload;
+    },
+    stopped() {
+      return IDLE;
+    },
+  },
+});
+
+export const audioReducer = slice.reducer;
+export const { started, failed, tick, finished, paused, positionSet, speedSet, stopped } =
+  slice.actions;
+
+// --- the imperative half: watchdog and backend listener ----------------------
 
 let watchdog: ReturnType<typeof setTimeout> | null = null;
 /** The backend the status listener is attached to, so it is attached exactly once. */
@@ -86,47 +117,47 @@ function clearWatchdog(): void {
   }
 }
 
-export const audioStore = createStore<AudioState>((set, get) => {
-  function fail(message: string): void {
-    clearWatchdog();
-    // State first, command second: a backend that emits from `pause()` re-enters
-    // this handler, and it has to find the new state when it does. See the note on
-    // `AudioBackend` in ports/index.ts.
-    set({ status: 'error', errorMessage: message });
-    platform().audio?.pause();
+function fail(dispatch: AppDispatch, message: string): void {
+  clearWatchdog();
+  // State first, command second: a backend that emits from `pause()` re-enters
+  // the status handler, and it has to find the new state when it does. See the
+  // note on `AudioBackend` in ports/index.ts.
+  dispatch(failed(message));
+  platform().audio?.pause();
+}
+
+function onStatus(dispatch: AppDispatch, getState: () => RootState, status: PlaybackStatus): void {
+  const state = getState().audio;
+  if (!state.track) return; // stopped — ignore trailing updates
+
+  /**
+   * An error stays until the next start clears it, and this guard comes FIRST.
+   *
+   * Two reasons, both learned the hard way. A tick that merely looks unloaded
+   * would otherwise map back to "loading" — the endless spinner the watchdog
+   * exists to prevent. And `fail()` above calls `AudioBackend.pause()`: a backend
+   * that reports back from inside that call arrives here with the same error still
+   * attached, so anything after the `status.error` branch is too late to stop the
+   * recursion. That was a real crash on a device, and keeping this line first is
+   * what makes it structurally impossible rather than merely unlikely.
+   */
+  if (state.status === 'error') return;
+
+  if (status.error) {
+    console.warn('[audio] playback error:', status.error);
+    fail(dispatch, `Wiedergabe unterbrochen. ${NETWORK_HINT}`);
+    return;
   }
 
-  function onStatus(status: PlaybackStatus): void {
-    const state = get();
-    if (!state.track) return; // stopped — ignore trailing updates
+  if (status.loaded) clearWatchdog();
 
-    /**
-     * An error stays until the next start clears it, and this guard comes FIRST.
-     *
-     * Two reasons, both learned the hard way. A tick that merely looks unloaded
-     * would otherwise map back to "loading" — the endless spinner the watchdog
-     * exists to prevent. And `fail()` below calls `AudioBackend.pause()`: a backend
-     * that reports back from inside that call arrives here with the same error still
-     * attached, so anything after the `status.error` branch is too late to stop the
-     * recursion. That was a real crash on a device, and moving this line up is what
-     * makes it structurally impossible rather than merely unlikely.
-     */
-    if (state.status === 'error') return;
+  if (status.finished) {
+    dispatch(finished());
+    return;
+  }
 
-    if (status.error) {
-      console.warn('[audio] playback error:', status.error);
-      fail(`Wiedergabe unterbrochen. ${NETWORK_HINT}`);
-      return;
-    }
-
-    if (status.loaded) clearWatchdog();
-
-    if (status.finished) {
-      set({ status: 'paused', positionSec: 0 });
-      return;
-    }
-
-    set({
+  dispatch(
+    tick({
       status: status.playing
         ? 'playing'
         : !status.loaded || status.buffering
@@ -134,31 +165,34 @@ export const audioStore = createStore<AudioState>((set, get) => {
           : 'paused',
       positionSec: status.positionSec,
       durationSec: status.live ? 0 : status.durationSec,
-    });
-  }
+    }),
+  );
+}
 
-  /**
-   * The host may register its platform after this module is imported, so the
-   * listener is attached on first use rather than at construction.
-   */
-  function backend(): AudioBackend | null {
-    const audio = platform().audio ?? null;
-    if (audio && audio !== listening) {
-      audio.onStatus(onStatus);
-      listening = audio;
-    }
-    return audio;
+/**
+ * The host may register its platform after this module is imported, so the
+ * listener is attached on first use rather than at construction.
+ */
+function backend(dispatch: AppDispatch, getState: () => RootState): AudioBackend | null {
+  const audio = platform().audio ?? null;
+  if (audio && audio !== listening) {
+    audio.onStatus((status) => onStatus(dispatch, getState, status));
+    listening = audio;
   }
+  return audio;
+}
 
-  async function start(track: AudioTrack): Promise<void> {
+const start =
+  (track: AudioTrack): AppThunk<Promise<void>> =>
+  async (dispatch, getState) => {
     // Coordinate: only one medium plays at a time.
     stopOtherMedia('audio');
     clearWatchdog();
-    set({ ...IDLE, track, status: 'loading' });
+    dispatch(started(track));
 
-    const audio = backend();
+    const audio = backend(dispatch, getState);
     if (!audio) {
-      set({ status: 'error', errorMessage: 'Auf dieser Plattform ist keine Wiedergabe möglich.' });
+      dispatch(failed('Auf dieser Plattform ist keine Wiedergabe möglich.'));
       return;
     }
 
@@ -171,65 +205,81 @@ export const audioStore = createStore<AudioState>((set, get) => {
       audio.play();
     } catch (err) {
       console.warn('[audio] start failed:', err);
-      fail(`Wiedergabe nicht möglich. ${NETWORK_HINT}`);
+      fail(dispatch, `Wiedergabe nicht möglich. ${NETWORK_HINT}`);
       return;
     }
 
     watchdog = setTimeout(() => {
-      if (get().status === 'loading') fail(`Keine Verbindung zum Stream. ${NETWORK_HINT}`);
-    }, LOADING_TIMEOUT_MS);
-  }
-
-  return {
-    ...IDLE,
-
-    playRadio: () =>
-      start({
-        kind: 'radio',
-        title: 'Salon5 Radio',
-        subtitle: '● LIVE — 24/7 aus Bottrop',
-        url: RADIO_STREAM_URL,
-      }),
-
-    playEpisode: (track) => start({ ...track, kind: 'episode' }),
-
-    togglePlay: () => {
-      const state = get();
-      const audio = backend();
-      if (!state.track || !audio) return;
-
-      if (state.status === 'playing') {
-        set({ status: 'paused' });
-        audio.pause();
-        return;
+      if (getState().audio.status === 'loading') {
+        fail(dispatch, `Keine Verbindung zum Stream. ${NETWORK_HINT}`);
       }
-      audio.play();
-    },
-
-    seekTo: async (seconds) => {
-      const state = get();
-      const audio = backend();
-      if (!audio || !state.track || isLive(state)) return;
-      await audio.seekTo(Math.max(0, seconds));
-      set({ positionSec: seconds });
-    },
-
-    setSpeed: (rate) => {
-      backend()?.setRate(rate);
-      set({ speed: rate });
-    },
-
-    stop: () => {
-      clearWatchdog();
-      backend()?.release();
-      set({ ...IDLE });
-    },
+    }, LOADING_TIMEOUT_MS);
   };
-});
 
-/** Test helper — drops the watchdog, the listener registration and the state. */
-export function resetAudioStore(): void {
+export const playRadio = (): AppThunk<Promise<void>> =>
+  start({
+    kind: 'radio',
+    title: 'Salon5 Radio',
+    subtitle: '● LIVE — 24/7 aus Bottrop',
+    url: RADIO_STREAM_URL,
+  });
+
+export const playEpisode = (track: Omit<AudioTrack, 'kind'>): AppThunk<Promise<void>> =>
+  start({ ...track, kind: 'episode' });
+
+export const togglePlay = (): AppThunk => (dispatch, getState) => {
+  const state = getState().audio;
+  const audio = backend(dispatch, getState);
+  if (!state.track || !audio) return;
+
+  if (state.status === 'playing') {
+    dispatch(paused());
+    audio.pause();
+    return;
+  }
+  audio.play();
+};
+
+export const seekTo =
+  (seconds: number): AppThunk<Promise<void>> =>
+  async (dispatch, getState) => {
+    const state = getState().audio;
+    const audio = backend(dispatch, getState);
+    if (!audio || !state.track || isLive(state)) return;
+    await audio.seekTo(Math.max(0, seconds));
+    dispatch(positionSet(seconds));
+  };
+
+export const setSpeed =
+  (rate: number): AppThunk =>
+  (dispatch, getState) => {
+    backend(dispatch, getState)?.setRate(rate);
+    dispatch(speedSet(rate));
+  };
+
+export const stop = (): AppThunk => (dispatch, getState) => {
+  clearWatchdog();
+  backend(dispatch, getState)?.release();
+  dispatch(stopped());
+};
+
+export const audioActions = {
+  ...slice.actions,
+  playRadio,
+  playEpisode,
+  togglePlay,
+  seekTo,
+  setSpeed,
+  stop,
+};
+
+/**
+ * Test helper — drops the watchdog and the listener registration.
+ *
+ * The state itself is reset by dispatching `stopped()`, which a test does against
+ * whichever store it built.
+ */
+export function resetAudioController(): void {
   clearWatchdog();
   listening = null;
-  audioStore.setState({ ...IDLE });
 }

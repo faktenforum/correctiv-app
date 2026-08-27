@@ -52,7 +52,7 @@ export default function BeitretenScreen() {
   const per = interval === 'monatlich' ? 'im Monat' : 'im Jahr';
 
   const join = () => {
-    coreActions.membership().join(amount, interval, name.trim());
+    coreActions.membership.join(amount, interval, name.trim());
     setStep(3);
   };
 

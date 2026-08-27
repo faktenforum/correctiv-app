@@ -1,4 +1,4 @@
-import { createStore } from './create-store';
+import { createSlice, type PayloadAction } from '@reduxjs/toolkit';
 
 /**
  * Locally persisted participation state: callout submissions (incrementing the
@@ -12,29 +12,41 @@ export interface CalloutSubmission {
 
 export interface ParticipationState {
   submissions: CalloutSubmission[];
-  submit: (calloutSlug: string, answers: Record<string, unknown>) => void;
 }
 
-type Submissions = Pick<ParticipationState, 'submissions'>;
+const initialState: ParticipationState = { submissions: [] };
 
-/** Pure selectors — see the note in stores/interests.ts for why not methods. */
-export function hasSubmitted(state: Submissions, slug: string): boolean {
+/** Pure selectors — see the note in stores/interests.ts for why not part of the slice. */
+export function hasSubmitted(state: ParticipationState, slug: string): boolean {
   return state.submissions.some((s) => s.calloutSlug === slug);
 }
 
 /** Locally added responses on top of the sample base count. */
-export function extraCount(state: Submissions, slug: string): number {
+export function extraCount(state: ParticipationState, slug: string): number {
   return state.submissions.filter((s) => s.calloutSlug === slug).length;
 }
 
-export const participationStore = createStore<ParticipationState>((set) => ({
-  submissions: [],
+const slice = createSlice({
+  name: 'participation',
+  initialState,
+  reducers: {
+    /** `submittedAt` is stamped in `prepare` — the reducer stays pure. */
+    submit: {
+      reducer(state, action: PayloadAction<CalloutSubmission>) {
+        state.submissions.push(action.payload);
+      },
+      prepare: (calloutSlug: string, answers: Record<string, unknown>) => ({
+        payload: { calloutSlug, answers, submittedAt: new Date().toISOString() },
+      }),
+    },
 
-  submit: (calloutSlug, answers) =>
-    set((state) => ({
-      submissions: [
-        ...state.submissions,
-        { calloutSlug, answers, submittedAt: new Date().toISOString() },
-      ],
-    })),
-}));
+    /** Applied by persist() at startup — see stores/persist.ts. */
+    hydrate(state, action: PayloadAction<Partial<ParticipationState>>) {
+      Object.assign(state, action.payload);
+    },
+  },
+});
+
+export const participationReducer = slice.reducer;
+export const participationActions = slice.actions;
+export const { submit } = slice.actions;
