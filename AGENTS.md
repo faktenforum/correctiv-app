@@ -4,7 +4,7 @@ Only what you cannot read off the code. Follow the links; do not restate them he
 
 - [ARCHITECTURE.md](ARCHITECTURE.md) — core, ports, colour, where things live
 - [TROUBLESHOOTING.md](TROUBLESHOOTING.md) — the traps, and **why a green check is not evidence**
-- [adr/](adr/README.md) — the eight decisions
+- [adr/](adr/README.md) — the decisions, and which of their claims have expired
 
 ## Where code goes
 
@@ -22,6 +22,23 @@ anything that lands there is public.
 Colours come from classes (`bg-grey-100`), which follow the appearance setting on
 their own. Reading a colour in TypeScript needs `useColors()`, or it is pinned to
 light; `always-light` / `always-dark` are the exceptions and mean it.
+
+## Decisions
+
+`adr/` records **why**, not what. Add one when a choice would otherwise have to be
+argued from scratch later: a dependency swapped, a boundary moved, a capability
+measured and rejected. Not for ordinary work, and not for anything the code already
+says.
+
+**Keep them current, and only where it matters.** An ADR is a record, so it is never
+rewritten to look right in hindsight — the reasoning is the part worth having, even
+when the conclusion has moved on. When a later decision voids a claim in an earlier
+one: strike that claim through where it stands, add one clause saying what voided it,
+and link the ADR that did. Leave the argument around it intact. The newer ADR carries
+a section naming every statement it retires, so the two halves cannot drift apart.
+
+Do not strike through a claim that is merely old. Only one that is now **false** —
+someone reading it would act on it and be wrong.
 
 ## Language
 
