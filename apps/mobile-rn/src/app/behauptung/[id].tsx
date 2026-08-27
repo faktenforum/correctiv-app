@@ -20,7 +20,7 @@ function stageOf(claim: Claim): number {
   return claim.status === 'checked' ? 2 : claim.status === 'checking' ? 1 : 0;
 }
 
-/** Verlässlichkeit als Punkt — voll, halb, leer. */
+/** Reliability as a dot — full, half, empty. */
 function credibilityDot(level: ClaimSource['credibility']): string {
   return level === 'hoch' ? '●' : level === 'mittel' ? '◐' : '○';
 }

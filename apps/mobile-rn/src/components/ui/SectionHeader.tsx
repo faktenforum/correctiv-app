@@ -4,7 +4,7 @@ import { Typo } from './Typo';
 
 export type SectionHeaderProps = {
   title: string;
-  /** Optionaler „mehr"-Link rechts. */
+  /** Optional "more" link on the right. */
   actionLabel?: string;
   onAction?: () => void;
   className?: string;

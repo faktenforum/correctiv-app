@@ -6,12 +6,12 @@ export type ScreenProps = {
   children: ReactNode;
   /** Scrollender Inhalt (Default) oder fester Bildschirm. */
   scroll?: boolean;
-  /** Horizontalen Standard-Innenabstand (px-m) weglassen (für randlose Listen/Hero). */
+  /** Drop the default horizontal padding (px-m) — for edge-to-edge lists and heroes. */
   noPadding?: boolean;
   className?: string;
 };
 
-/** Bildschirm-Grundgerüst: weißer Grund, Safe-Area oben, optional scrollend. */
+/** The screen scaffold: page surface, top safe area, optionally scrolling. */
 export function Screen({ children, scroll = true, noPadding = false, className }: ScreenProps) {
   const pad = noPadding ? '' : 'px-m';
   if (scroll) {

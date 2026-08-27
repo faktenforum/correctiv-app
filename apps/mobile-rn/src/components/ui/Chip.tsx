@@ -9,7 +9,7 @@ export type ChipProps = {
   className?: string;
 };
 
-/** Auswahl-Chip (Onboarding-Interessen, Entdecken-Themen). Aktiv = rote Fläche. */
+/** Selection chip (onboarding interests, discover topics). Active = red fill. */
 export function Chip({ label, selected = false, onPress, className }: ChipProps) {
   const colors = useColors();
   return (

@@ -2,7 +2,7 @@ import { Pressable, View } from 'react-native';
 
 import { Typo } from '@/components/ui';
 
-/** Leiser Schluss-Moment auf Home: Dank + ruhiger CTA, nie sperrend. */
+/** Home's quiet closing moment: thanks plus a calm CTA, never a barrier. */
 export function ImpactFooter({ onJoin }: { onJoin?: () => void }) {
   return (
     <View className="mt-m items-center rounded-md bg-grey-200 p-l">
