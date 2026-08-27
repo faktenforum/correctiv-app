@@ -6,7 +6,7 @@ import {
   type UnknownAction,
 } from '@reduxjs/toolkit';
 
-import { audioReducer } from './audio';
+import { audioMiddleware, audioReducer } from './audio';
 import { feedsReducer } from './feeds';
 import { interestsReducer } from './interests';
 import { mediaReducer } from './media';
@@ -61,13 +61,22 @@ const rootReducer: typeof combined = (state, action) =>
  * reach the same instance the screens are subscribed to. `createAppStore()` is
  * exported beside it so a test can build a fresh, isolated tree.
  *
+ * ## Why an audio middleware is installed here
+ *
+ * `configureStore` is the only place a middleware can go, so the audio store's
+ * imperative half — the backend's status listener, the loading watchdog, and the
+ * `pause()` that has to follow the error state — is registered from here. It is
+ * the audio module's own listener middleware and this file needs nothing else
+ * from audio to install it: no audio types, no ports, no knowledge of what it
+ * listens for. `stores/audio.ts` explains what each of its entries is for.
+ *
  * ## What the dev-mode checks are tuned for
  *
  * Both of RTK's development checks walk the whole state tree on every dispatch,
- * and this app dispatches an audio position tick twice a second against a tree
- * holding six feeds, seven podcast series and three video channels. Left at their
- * defaults that is several full traversals a second on the JS thread whenever
- * anything is playing.
+ * and the audio backend ticks twice a second — two dispatches each, the raw
+ * status and the position it reduces to — against a tree holding six feeds,
+ * seven podcast series and three video channels. Left at their defaults that is
+ * several full traversals a second on the JS thread whenever anything is playing.
  *
  * `immutableCheck` is **off**, because Immer already covers what it would catch.
  * The worry was a reducer mutating one of the bundled offline snapshots that the
@@ -90,7 +99,7 @@ export function createAppStore() {
       getDefaultMiddleware({
         immutableCheck: false,
         serializableCheck: { ignoredPaths: ['feeds', 'media', 'podcasts'] },
-      }),
+      }).prepend(audioMiddleware),
   });
 }
 
