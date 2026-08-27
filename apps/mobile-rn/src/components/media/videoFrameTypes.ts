@@ -4,7 +4,7 @@
  * apart silently (the same reason as in components/reader/types.ts).
  */
 export type VideoFrameProps = {
-  /** Einbettungs-URL, z. B. https://www.youtube-nocookie.com/embed/<id>. */
+  /** Embed URL, e.g. https://www.youtube-nocookie.com/embed/<id>. */
   uri: string;
   className?: string;
 };

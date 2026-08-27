@@ -4,7 +4,7 @@ Only what you cannot read off the code. Follow the links; do not restate them he
 
 - [ARCHITECTURE.md](ARCHITECTURE.md) — core, ports, colour, where things live
 - [TROUBLESHOOTING.md](TROUBLESHOOTING.md) — the traps, and **why a green check is not evidence**
-- [adr/](adr/README.md) — the seven decisions
+- [adr/](adr/README.md) — the eight decisions
 
 ## Where code goes
 

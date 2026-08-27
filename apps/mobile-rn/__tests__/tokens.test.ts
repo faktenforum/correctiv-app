@@ -5,9 +5,9 @@
  *
  * The bridge itself lives in @correctiv/design-tokens, so that the CMS can consume
  * the same values; the check stays here, because this app is the consumer that
- * would show the damage, and because this is the suite CI already runs. It spans
- * both: two of the three artefacts belong to the package, and
- * tailwind.tokens.generated.js is written into this app.
+ * would show the damage, and because this is the suite CI already runs. All four
+ * artefacts belong to the package now — nothing is written into this app since
+ * the move to Uniwind, because a Tailwind v4 theme is CSS and CSS is portable.
  */
 import { execFileSync } from 'node:child_process';
 import { readFileSync } from 'node:fs';
@@ -19,7 +19,7 @@ import { themeCssPath } from '../../../scripts/tokens-source.mjs';
 
 /** This app. */
 const APP = resolve(__dirname, '..');
-/** The package that owns the generator and the two shared artefacts. */
+/** The package that owns the generator and every artefact it writes. */
 const TOKENS_PKG = resolve(APP, '../../packages/design-tokens');
 
 function read(root: string, rel: string): string {
@@ -42,16 +42,42 @@ describe('token bridge', () => {
 
   it('keeps the generated files current (no drift against theme.css)', () => {
     const before = {
-      tw: read(APP, 'tailwind.tokens.generated.js'),
+      // The Tailwind v4 theme this app imports…
+      theme: read(TOKENS_PKG, 'theme.css'),
+      // …and the variant-carrying twin a consumer outside this repo imports, so
+      // drift here is drift in what the CMS would get.
+      standalone: read(TOKENS_PKG, 'theme.standalone.css'),
       ts: read(TOKENS_PKG, 'src/tokens.generated.ts'),
-      css: read(TOKENS_PKG, 'src/reader.generated.ts'),
+      reader: read(TOKENS_PKG, 'src/reader.generated.ts'),
     };
-    // One run writes all three, this app's Tailwind map included — see the header
-    // of generate.mjs for why that one artefact does not stay in the package.
     execFileSync('node', ['scripts/generate.mjs'], { cwd: TOKENS_PKG, stdio: 'pipe' });
-    expect(read(APP, 'tailwind.tokens.generated.js')).toBe(before.tw);
+    expect(read(TOKENS_PKG, 'theme.css')).toBe(before.theme);
+    expect(read(TOKENS_PKG, 'theme.standalone.css')).toBe(before.standalone);
     expect(read(TOKENS_PKG, 'src/tokens.generated.ts')).toBe(before.ts);
-    expect(read(TOKENS_PKG, 'src/reader.generated.ts')).toBe(before.css);
+    expect(read(TOKENS_PKG, 'src/reader.generated.ts')).toBe(before.reader);
+  });
+
+  it("clears Tailwind's default radius, so a token cannot collide with a side utility", () => {
+    /**
+     * Without this line Tailwind v4 also emits a BARE form of each logical side
+     * utility — `rounded-s` for the start side — and this scale has a token called
+     * `s`. Both rules were emitted and both applied: every Badge, the search field
+     * and the duration chip on a video thumbnail had 4px leading corners and 2px
+     * trailing ones. Nothing errored, and no assertion about `--radius-s` can catch
+     * it, because that token still holds the right value and still emits a correct
+     * rule of its own. This is the line that resolves it; the collision comes back
+     * silently if it goes.
+     */
+    expect(read(TOKENS_PKG, 'theme.css')).toContain('--radius: initial;');
+  });
+
+  it('keeps the standalone theme importable by a plain Tailwind build', () => {
+    // `@import` is only valid before other statements, so a conforming
+    // preprocessor drops a late one — postcss-import does, and the consumer then
+    // gets the variant definitions and none of the tokens, behind a warning.
+    const standalone = read(TOKENS_PKG, 'theme.standalone.css');
+    const firstRule = standalone.replace(/\/\*[\s\S]*?\*\//g, '').trim();
+    expect(firstRule.startsWith("@import './theme.css';")).toBe(true);
   });
 
   it('maps the brand core colours correctly', () => {

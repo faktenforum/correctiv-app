@@ -64,7 +64,7 @@ packages/app-core/src/
   services/         http · cache (two policies) · rss · search · podcast · peertube
   stores/           feeds · audio · podcasts · media · video · membership ·
                     interests · savedArticles · participation · settings ·
-                    create-store · persist
+                    store (Redux Toolkit) · persist
   data/             feeds.config · callouts · claims · projects · spotlight · …
   lib/              html (entities, tags, meta) · rss-parse · format (German dates)
   media/            exclusive-playback — only one medium plays at a time
@@ -73,11 +73,13 @@ packages/app-core/src/
 
 Three conventions to know before editing:
 
-1. **Stores are framework-neutral.** `stores/create-store.ts` is a ~40-line
-   observable store shaped like zustand's — its file header explains why it is not
-   zustand. The host binds it in `apps/mobile-rn/src/lib/store/core.ts` (zustand's
-   `useStore`); a second host bound the same stores to Vue's `reactive` in about
-   forty lines, which is the measure of what "framework-neutral" bought.
+1. **State is framework-neutral.** `stores/` is one Redux Toolkit store with ten
+   slices; `stores/store.ts` explains why the core owns the instance rather than the
+   host. The host adds only the reactivity binding —
+   `apps/mobile-rn/src/lib/store/core.ts`, react-redux. A second host once bound the
+   state this replaced to Vue's `reactive` in about forty lines, which is the measure
+   of what "framework-neutral" bought and the reason the property is still worth
+   keeping.
 2. **Derived values are exported selectors taking state, never store methods.** In
    React a method is merely awkward; the rule comes from the Vue binding, where a
    method read past the dependency tracking and the template silently stopped
@@ -150,7 +152,7 @@ PR, not a silent drift.
 
 | Command | Produces |
 | --- | --- |
-| `npm run tokens` | NativeWind theme map (incl. both colour schemes) + typed TS constants + reader CSS |
+| `npm run tokens` | Tailwind v4 `theme.css` (both colour schemes) + typed TS constants + reader CSS |
 | `npm run offline-articles` | feed snapshots, pre-extracted articles, inlined covers |
 | `npm run offline-podcasts` | per-show Salon5 snapshots |
 | `npm run fonts` | base64-subsetted reader fonts (needs `pyftsubset`) |
@@ -162,19 +164,22 @@ than in the script, which is what let a second host bundle the same content in a
 completely different file format.
 
 The token generator lives in `packages/design-tokens`, so that a second consumer —
-the CORRECTIV WordPress CMS — can import the same values; the app keeps only what is
-meaningless outside it, the loaded font family names and the Tailwind v3 theme map
-NativeWind needs. It reads `tokens/theme.css` through `scripts/tokens-source.mjs`,
+the CORRECTIV WordPress CMS — can import the same values. Its `theme.css` is plain
+Tailwind v4 and needs nothing from this repo to be useful; the app keeps only what is
+meaningless outside it, the loaded font family names. It reads `tokens/theme.css`
+through `scripts/tokens-source.mjs`,
 which resolves it via a marker rather than by counting `../` — a hard-coded depth
 broke the bridge when the app moved into `apps/*`.
 
 ## Colour, and the two schemes
 
-Colours reach components as CSS variables, not as hex values: `theme.colors` in
-`tailwind.config.js` is `rgb(var(--color-x) / <alpha-value>)`, and the generator
-emits the values twice — under `:root` and under `.dark:root`. NativeWind recognises
-that pair when `darkMode: 'class'` is set, so `bg-grey-100` and `border-grey-300`
-follow the appearance setting **without a single `dark:` variant in the app**.
+Colours reach components as CSS variables, not as hex values. The generator emits
+each palette into an `@variant light` / `@variant dark` block in
+`packages/design-tokens/theme.css`; Uniwind scans those, registers the names as
+Tailwind theme keys, and generates the values under **both** a `.light`/`.dark` class
+on the element or an ancestor and a `prefers-color-scheme` fallback. So `bg-grey-100` and
+`border-grey-300` follow the appearance setting **without a single `dark:` variant in
+the app**, and neither half can be left waiting on the other.
 
 Two things do not follow it, on purpose:
 

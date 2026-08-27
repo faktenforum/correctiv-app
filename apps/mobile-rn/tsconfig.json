@@ -18,6 +18,6 @@
       "@correctiv/design-tokens/*": ["../../packages/design-tokens/src/*"]
     }
   },
-  "include": ["**/*.ts", "**/*.tsx", ".expo/types/**/*.ts", "expo-env.d.ts", "nativewind-env.d.ts"],
+  "include": ["**/*.ts", "**/*.tsx", ".expo/types/**/*.ts", "expo-env.d.ts", "uniwind-types.d.ts"],
   "exclude": ["node_modules", "android", "ios", "__tests__", "scripts"]
 }

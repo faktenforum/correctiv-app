@@ -200,11 +200,12 @@ equivalents for focus, liveness and errors.
 
 ## Design tokens and styling
 
-- **NativeWind: `tailwind.config.js` replaces Tailwind's spacing scale with the
-  design system's,** which steps 2 px per unit and stops at 48. Every numeric utility
-  then means something else than it says — `w-10` is 20 px, `w-32` is 64 px — and
-  anything above 48 does not exist, so NativeWind drops it in silence and the element
-  sizes to its content. `w-64` on a rail card turned into a full-screen black
+- **The spacing scale is the design system's, not Tailwind's,** and it steps 2 px
+  per unit (`--spacing: 0.125rem` in `packages/design-tokens/theme.css`, against
+  Uniwind's rem base of 16). Every numeric
+  utility therefore means something else than it says — `w-10` is 20 px, `w-32` is
+  64 px. Under NativeWind the scale also stopped at 48 and anything above it was
+  dropped in silence, so the element sized to its content. `w-64` on a rail card turned into a full-screen black
   rectangle, because `aspectRatio` scaled the height off the title's width. Build,
   typecheck and 120 tests stayed green. → Named tokens for spacing (`p-s`, `gap-m`),
   pixel sizes from `src/lib/theme/sizes.ts`, and
@@ -220,8 +221,8 @@ equivalents for focus, liveness and errors.
   hard-coded depth silently broke the token bridge when the app moved into `apps/*`.
   → Resolve via a marker (root `package.json` name + `workspaces`), not by depth.
 - **A colour read in TypeScript does not follow the appearance setting.** Classes go
-  through CSS variables that `.dark:root` redefines, so `bg-grey-100` switches on its
-  own; `colors['grey-700']` handed to an `<Ionicons color>` is a string that was
+  through CSS variables that the active theme redefines, so `bg-grey-100` switches on
+  its own; `colors['grey-700']` handed to an `<Ionicons color>` is a string that was
   resolved once, at import. Nothing warns, and the icon is simply invisible in the
   other scheme. → `useColors()` from `lib/theme` for anything read in TS. Importing
   `colors` is still correct for `always-light` / `always-dark`, which are the same in
@@ -233,19 +234,21 @@ equivalents for focus, liveness and errors.
   the dark value of its majority role, and the minority uses move to `always-light` /
   `always-dark`. `packages/design-tokens/palette.js` records which is which;
   `__tests__/tokens.test.ts` fails if the role colours ever start switching.
-- **Passing `'system'` on to NativeWind splits the app in half.** With
-  `darkMode: 'class'`, `setColorScheme('system')` leaves the JavaScript side
-  following the device while the CSS waits for a `dark` class nothing adds. So
-  `useColors()` returns the dark palette and `bg-grey-100` keeps its light value:
-  near-white text on a white page, on the *default* setting. Typecheck, lint, 145
-  tests, the Android build and the web export were all green, and a browser walk
-  missed it too — the walk flipped the setting to `'dark'` explicitly and emulated
-  `prefers-color-scheme: light`, exercising both paths that work and neither that
-  breaks. → `lib/theme/appearance.ts` resolves `'system'` against react-native's
-  `useColorScheme()` before handing it over; `__tests__/appearance.test.ts` fails if
-  `'system'` ever reaches NativeWind again. **Check a colour change in all three
-  settings, and check `'system'` against both device schemes** — that is four
-  combinations, and only the fourth was broken.
+- **The appearance setting and the styles can disagree about which scheme is
+  active, and nothing warns.** Under NativeWind this was a shipped bug: with
+  `darkMode: 'class'`, `setColorScheme('system')` left the JavaScript side following
+  the device while the CSS waited for a `dark` class nothing added, so `useColors()`
+  returned the dark palette while `bg-grey-100` kept its light value — near-white text
+  on a white page, on the *default* setting. Typecheck, lint, 145 tests, the Android
+  build and the web export were all green, and a browser walk missed it too: it
+  flipped the setting to `'dark'` explicitly and emulated `prefers-color-scheme:
+  light`, exercising both paths that work and neither that breaks. → Uniwind closes
+  that gap by construction — `setTheme` takes `'system'` and resolves it itself,
+  and it emits both the class and the `prefers-color-scheme` path — so
+  `lib/theme/appearance.ts` now passes the setting through VERBATIM and resolving it
+  by hand would be the new bug. **Check a colour change in all three settings, and
+  check `'system'` against both device schemes** — that is four combinations, and only
+  the fourth was broken.
 - **The design tokens' dark block is a placeholder.** `tokens/theme.css` carries a
   `@media (prefers-color-scheme: dark)` section marked `@TODO Set this to the actual
   values`, holding the *light* values. Generating from it produces a dark mode that

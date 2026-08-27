@@ -1,7 +1,7 @@
 const path = require('node:path');
 
 const { getDefaultConfig } = require('expo/metro-config');
-const { withNativeWind } = require('nativewind/metro');
+const { withUniwindConfig } = require('uniwind/metro');
 
 // This app lives in an npm workspace (apps/mobile-rn). Metro defaults to a
 // single-project layout, so two things have to be spelled out or module
@@ -104,4 +104,12 @@ config.resolver.resolveRequest = (context, moduleName, platform) => {
   }
 };
 
-module.exports = withNativeWind(config, { input: './src/global.css' });
+/**
+ * Uniwind goes on LAST, and that is a requirement rather than a preference: it
+ * has to be the outermost wrapper. It replaces `transformerPath` and wraps
+ * `resolveRequest`, taking whatever is already there as its base — which is what
+ * keeps the two resolver workarounds above intact — and it rewrites every
+ * `react-native` import to `uniwind/components` so that `className` reaches the
+ * core components.
+ */
+module.exports = withUniwindConfig(config, { cssEntryFile: './src/global.css' });

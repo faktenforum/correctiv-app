@@ -1,10 +1,9 @@
 import { router } from 'expo-router';
 import { useState } from 'react';
 import { Pressable, ScrollView, View } from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { SettingRow } from '@/components/profile/SettingRow';
-import { Button, Card, Chip, Typo } from '@/components/ui';
+import { Button, Card, Chip, SafeAreaView, Typo } from '@/components/ui';
 import { interests } from '@correctiv/app-core/data/interests';
 import { coreActions, useSelectedInterests, useSettings } from '@/lib/store/core';
 import { useColors } from '@/lib/theme';

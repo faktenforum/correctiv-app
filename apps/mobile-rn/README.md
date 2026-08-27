@@ -9,9 +9,9 @@ layer plus one adapter ([ADR 0006](../../adr/0006-one-core-two-hosts.md)).
 ## Stack
 
 - **Expo SDK 56** (React Native 0.85, New Architecture), TypeScript,
-  **expo-router** (tabs + stack), **NativeWind 4**
-- **zustand** binds the core's stores; **AsyncStorage** backs the core's two storage
-  ports (and works unchanged on web, where it is localStorage)
+  **expo-router** (tabs + stack), **Uniwind** (Tailwind v4 for React Native)
+- **react-redux** binds the core's Redux store; **AsyncStorage** backs the core's two
+  storage ports (and works unchanged on web, where it is localStorage)
 - **expo-audio** behind the core's `AudioBackend` port. Not
   react-native-track-player: it needs a Kotlin patch to compile under RN 0.85 and
   then crashes at runtime under the New Architecture, and RN 0.85 offers no
@@ -107,7 +107,8 @@ __tests__/               jest-expo against real captured feeds and pages
 
 ## Colour and dark mode
 
-`bg-grey-100` and friends resolve through CSS variables that `.dark:root` redefines,
+`bg-grey-100` and friends resolve through CSS variables that the active theme
+redefines — under a `.dark` class and under `prefers-color-scheme`, both generated —
 so surfaces and borders follow the app's appearance setting with **no `dark:` variant
 anywhere in this app**. Two exceptions, both deliberate:
 
@@ -118,9 +119,11 @@ anywhere in this app**. Two exceptions, both deliberate:
   string and cannot follow the scheme. Use `useColors()` from `lib/theme`.
 
 The setting itself is the authority, not the device: 'system' delegates to the OS,
-'light' and 'dark' override it (`lib/theme/appearance.ts`). That file resolves
-'system' to a concrete scheme rather than passing it on — the one rule the colour
-system cannot survive without, and there is a test for it. The dark values
+'light' and 'dark' override it (`lib/theme/appearance.ts`). That file passes the
+setting to Uniwind verbatim, 'system' included — resolving it here would pin the app
+to whatever the device said at mount. Under NativeWind the rule was the exact
+opposite, and getting it wrong shipped; `__tests__/appearance.test.tsx` carries the
+story. The dark values
 are hand-written in `packages/design-tokens/palette.js`, because the design tokens'
 dark block is still a placeholder.
 
@@ -128,7 +131,7 @@ dark block is still a placeholder.
 
 | Command | Produces |
 | --- | --- |
-| `npm run tokens` (repo root) | `tailwind.tokens.generated.js` here, plus the two shared artefacts in [`@correctiv/design-tokens`](../../packages/design-tokens/README.md) — one generator writes all three |
+| `npm run tokens` (repo root) | nothing here — all four artefacts belong to [`@correctiv/design-tokens`](../../packages/design-tokens/README.md) |
 | `npm run fonts` | `src/lib/theme/readerFonts.generated.ts` — base64-subsetted reader fonts (needs `pyftsubset`) |
 | `npm run offline-articles` | `src/lib/articles/offlineBundle.generated.ts` — a snapshot of every content feed plus ~15 pre-extracted articles, and `offlineCovers.generated.ts`, their covers inlined as data URIs (needs ImageMagick). On web the snapshots are the *only* articles there are: correctiv.org sends no CORS header |
 | `npm run offline-podcasts` | `src/lib/podcasts/offlineBundle.generated.ts` — the seven curated Salon5 shows. Without it the Mediathek falls back to the core's four-show sample seed, which is what a browser always gets otherwise: Castopod sends no CORS header either |
@@ -143,8 +146,8 @@ npm run typecheck  # tsc (app) + tsc (tests)
 Lint and format run from the **repo root** with oxlint/oxfmt (`npm run check` covers
 every workspace). Two guards worth knowing about:
 `__tests__/web-target.test.ts` (nothing web-incompatible outside a `.web.tsx` split)
-and `__tests__/no-numeric-utilities.test.ts` (no numeric NativeWind size or spacing
-class — the scale is the design system's, so `w-32` does not mean 32 px; see
+and `__tests__/no-numeric-utilities.test.ts` (no numeric size or spacing class — the
+scale is the design system's and steps 2 px, so `w-32` does not mean 32 px; see
 TROUBLESHOOTING.md).
 
 ## Status

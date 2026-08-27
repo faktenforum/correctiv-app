@@ -3,8 +3,8 @@ const preset = require('jest-expo/jest-preset');
 /** @type {import('jest').Config} */
 module.exports = {
   ...preset,
-  // Pure logic tests (token bridge, feed parser, extraction) need no RN setup,
-  // laufen aber problemlos unter jest-expo. Node-Skripte unter scripts/ werden mitgetestet.
+  // Pure logic tests (token bridge, feed parser, extraction) need no RN setup but
+  // run happily under jest-expo. Node scripts under scripts/ are covered too.
   testMatch: ['**/__tests__/**/*.test.{ts,tsx,js,mjs}'],
   transform: {
     ...preset.transform,
@@ -42,6 +42,6 @@ module.exports = {
    * `export {` with a SyntaxError that names the importing file, not the package.
    */
   transformIgnorePatterns: [
-    'node_modules/(?!((jest-)?react-native|@react-native(-community)?|expo(nent)?|@expo(nent)?/.*|@expo-google-fonts/.*|react-navigation|@react-navigation/.*|@unimodules/.*|unimodules|sentry-expo|native-base|react-native-svg|nativewind|react-native-css-interop|@reduxjs/toolkit|immer|redux|react-redux|reselect|htmlparser2|css-select|css-what|domutils|dom-serializer|domhandler|domelementtype|entities|boolbase|nth-check))',
+    'node_modules/(?!((jest-)?react-native|@react-native(-community)?|expo(nent)?|@expo(nent)?/.*|@expo-google-fonts/.*|react-navigation|@react-navigation/.*|@unimodules/.*|unimodules|sentry-expo|native-base|react-native-svg|uniwind|@reduxjs/toolkit|immer|redux|react-redux|reselect|htmlparser2|css-select|css-what|domutils|dom-serializer|domhandler|domelementtype|entities|boolbase|nth-check))',
   ],
 };

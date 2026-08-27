@@ -1,6 +1,6 @@
 # Architecture decisions
 
-Seven decisions shaped this repo. Read them when you want to know *why* something is
+Eight decisions shaped this repo. Read them when you want to know *why* something is
 the way it is; [`../ARCHITECTURE.md`](../ARCHITECTURE.md) describes *what* it is.
 
 | | Decision | Status |
@@ -12,6 +12,7 @@ the way it is; [`../ARCHITECTURE.md`](../ARCHITECTURE.md) describes *what* it is
 | [0005](0005-react-native-over-nativescript.md) | Expo is the stack; what NativeScript was better at, and when to revisit | accepted, amended by 0006, carried out by 0007 |
 | [0006](0006-one-core-two-hosts.md) | The core holds the behaviour; both apps stay for now | accepted; its second host is gone (0007), its core split is not |
 | [0007](0007-removing-the-nativescript-host.md) | Removing the NativeScript host — the audit first, then the deletion | accepted |
+| [0008](0008-uniwind-over-nativewind.md) | Uniwind over NativeWind, and Tailwind v4 | accepted |
 
 Four notes for readers of the older ones:
 
@@ -30,6 +31,11 @@ Four notes for readers of the older ones:
 - ADRs 0002 and 0006 describe a NativeScript app that is no longer in the tree. They
   are records, not descriptions: neither has been rewritten, and 0007 says which of
   their statements have expired.
+- The same applies to 0004 and 0007 wherever they name **zustand**, **NativeWind**,
+  `nativewind-env.d.ts`, `.dark:root` or `stores/create-store`. The state moved to
+  Redux Toolkit and the styling engine to Uniwind
+  ([0008](0008-uniwind-over-nativewind.md)); those passages are what was true when
+  they were written.
 
 ADR 0004 is long because it doubles as the changelog of the pivot. Its "Offen"
 section is superseded by ADR 0006's "What is still open", of which

@@ -1,12 +1,14 @@
 {
   "name": "@correctiv/design-tokens",
-  "description": "CORRECTIV design tokens, resolved: the vendored wp-design-tokens values plus the hand-written dark palette, generated into typed constants and reader CSS. Framework-free — no UI library and no platform SDK.",
+  "description": "CORRECTIV design tokens, resolved: the vendored wp-design-tokens values plus the hand-written dark palette, generated into typed constants and reader CSS. Framework-free \u2014 no UI library and no platform SDK.",
   "version": "1.0.0",
   "private": true,
   "license": "AGPL-3.0-or-later",
   "type": "module",
   "exports": {
     ".": "./src/index.ts",
+    "./theme.css": "./theme.css",
+    "./theme.standalone.css": "./theme.standalone.css",
     "./*": "./src/*.ts"
   },
   "scripts": {

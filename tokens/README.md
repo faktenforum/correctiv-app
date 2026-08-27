@@ -11,11 +11,12 @@ The binding source of truth for colours, spacing and type, copied from
 
 ## Why vendored, and not a submodule or an npm dependency
 
-- **npm dependency is not available.** The package declares
-  `peerDependencies: { tailwindcss: ">=4.1" }`, but NativeWind v4 requires
-  Tailwind v3 (`tailwindcss@3.4.19` is what the tree resolves). Installing it
-  anyway needs `--force` or a repo-wide `legacy-peer-deps`, i.e. either a
-  recorded conflict or peer checking switched off for all ~940 packages.
+- **~~npm dependency is not available.~~ That reason expired on 2026-08-27.** The
+  package declares `peerDependencies: { tailwindcss: ">=4.1" }`, which NativeWind 4
+  could not satisfy because it is a Tailwind v3 engine — so installing it needed
+  `--force` or a repo-wide `legacy-peer-deps`. The app is on Tailwind v4 since
+  [ADR 0008](../adr/0008-uniwind-over-nativewind.md), so the conflict is gone.
+  Vendoring stays for the two reasons below, which never depended on it.
 - **A submodule is more apparatus than 11 KB of CSS deserves.** It would put a
   `--recurse-submodules` requirement on every clone and a `submodules: true` on
   every CI checkout, to deliver two files that change a few times a year.

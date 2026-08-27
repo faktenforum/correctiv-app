@@ -8,7 +8,7 @@ not an SDK call belongs here — the model, the parsers, the services, the cache
 
 ## The rule
 
-No `react`, `react-native`, `expo`, `zustand` or `node:*` import, ever. `test/boundary.test.ts` checks every source file on every PR
+No `react`, `react-native`, `expo`, `vue`, `zustand` or `node:*` import, ever. `test/boundary.test.ts` checks every source file on every PR
 and names the offender.
 
 If something needs a platform, it becomes a **port**: an interface in
@@ -36,7 +36,7 @@ src/articles/    the Article model, the fact-check vocabulary, page meta,
 src/services/    http · cache (network-first / cache-first) · rss · search ·
                  podcast · peertube
 src/stores/      feeds · audio · podcasts · media · video · membership · interests ·
-                 savedArticles · participation · settings · create-store · persist
+                 savedArticles · participation · settings · store · persist
 src/data/        feeds.config and the typed sample data
 src/lib/         html · rss-parse · format
 src/media/       exclusive-playback — only one medium plays at a time
@@ -44,12 +44,15 @@ src/media/       exclusive-playback — only one medium plays at a time
 
 ## Two things that will surprise you
 
-**`stores/create-store.ts` is not zustand,** although its API is shaped like it.
-Depending on zustand here would put a UI-framework package in the one place that must
-not have one; the store is forty lines, and the host is free to bind it *with*
-zustand's `useStore`, which is exactly what `apps/mobile-rn` does — that only needs
-`subscribe`, `getState` and `getInitialState`. The file header has the full story,
-including the bundler failure that first forced the question.
+**The store is the core's, not the host's.** `stores/` is one Redux Toolkit store
+with ten slices, constructed here rather than by the host — because modules that are
+not components need to read the same instance the screens are subscribed to
+(`media/exclusive-playback.ts`, the audio watchdog). The host still supplies the
+binding (react-redux). `zustand` stays on the boundary test's forbidden list not
+because it is a UI framework — it is not — but because a core with two state
+containers is a core with two sources of truth; the entry says so. `createAppStore()` is exported beside the singleton so a test can build
+an isolated tree. `stores/store.ts` has the full story, including why the async
+actions are plain thunks.
 
 **Derived state is an exported selector taking state, never a store method.** In
 React a method is merely awkward; the rule was learned on a host whose reactivity

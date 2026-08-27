@@ -19,10 +19,10 @@
  *   names, meaningless to a CMS, which resolves the same two typefaces through the
  *   CSS stacks in theme.css. They stay in `apps/mobile-rn/src/lib/theme/fonts.ts`,
  *   next to the weighted cuts and the `useFonts()` call that loads them.
- * - **The Tailwind theme map.** `apps/mobile-rn/tailwind.tokens.generated.js` is
- *   emitted by this package's generator but written into the app, because Tailwind
- *   v3 is what NativeWind 4 is — an engine the app runs on, not a property of the
- *   tokens. A consumer on Tailwind v4 consumes theme.css directly.
+ * - **The Tailwind theme itself.** It is not TypeScript at all: `theme.css` in this
+ *   package's root is plain Tailwind v4, which is what makes it shareable. It is not
+ *   re-exported here because CSS is imported by a bundler, not by a module —
+ *   `@import '@correctiv/design-tokens/theme.css'`.
  * - **Anything that reads the appearance setting.** `colors` and `colorsDark` are
  *   two flat palettes; deciding which one is in force is the host's job (in the app,
  *   `useColors()`).

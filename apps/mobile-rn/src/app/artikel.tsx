@@ -2,10 +2,9 @@ import { Ionicons } from '@expo/vector-icons';
 import { router, useLocalSearchParams } from 'expo-router';
 import { useEffect, useState } from 'react';
 import { ActivityIndicator, Linking, Pressable, View } from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { ReaderView } from '@/components/reader/ReaderView';
-import { Button, Typo } from '@/components/ui';
+import { Button, SafeAreaView, Typo } from '@/components/ui';
 import { isInternalArticleUrl } from '@/lib/articles/articleUrl';
 import { loadArticle } from '@correctiv/app-core/articles/load';
 import type { Article } from '@correctiv/app-core/articles/types';

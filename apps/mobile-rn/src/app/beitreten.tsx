@@ -2,9 +2,8 @@ import { Ionicons } from '@expo/vector-icons';
 import { router } from 'expo-router';
 import { useState } from 'react';
 import { Pressable, ScrollView, TextInput, View } from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
 
-import { Button, Card, Hairline, Typo } from '@/components/ui';
+import { Button, Card, Hairline, SafeAreaView, Typo } from '@/components/ui';
 import type { MembershipInterval } from '@correctiv/app-core/stores/membership';
 import { goBack } from '@/lib/navigation/goBack';
 import { coreActions } from '@/lib/store/core';
