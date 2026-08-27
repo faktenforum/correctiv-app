@@ -4,7 +4,7 @@ import { Pressable, ScrollView, View } from 'react-native';
 import { SettingRow } from '@/components/profile/SettingRow';
 import { Button, Card, Hairline, Overline, ScreenHeader, Typo } from '@/components/ui';
 import { openExternal } from '@/lib/openExternal';
-import { coreActions, useSettings } from '@/lib/store/core';
+import { useCoreActions, useSettings } from '@/lib/store/core';
 
 /** Affects the article typography in the reader. */
 const TEXT_SCALES = [
@@ -20,6 +20,7 @@ const LINKS = [
 ];
 
 export default function EinstellungenScreen() {
+  const actions = useCoreActions();
   const settings = useSettings();
   const [resetDone, setResetDone] = useState(false);
 
@@ -42,7 +43,7 @@ export default function EinstellungenScreen() {
               label="Push-Mitteilungen"
               description="Neue Recherchen und Mitmach-Aufrufe (simuliert)"
               value={settings.pushOptIn}
-              onValueChange={(value) => coreActions.settings.setPushOptIn(value)}
+              onValueChange={(value) => actions.settings.setPushOptIn(value)}
             />
           </Card>
         </View>
@@ -53,7 +54,7 @@ export default function EinstellungenScreen() {
             <SettingRow
               label="An Systemeinstellung orientieren"
               value={followSystem}
-              onValueChange={(value) => coreActions.settings.setTheme(value ? 'system' : 'light')}
+              onValueChange={(value) => actions.settings.setTheme(value ? 'system' : 'light')}
             />
             {!followSystem && (
               <>
@@ -61,7 +62,7 @@ export default function EinstellungenScreen() {
                 <SettingRow
                   label="Dunkelmodus"
                   value={settings.theme === 'dark'}
-                  onValueChange={(value) => coreActions.settings.setTheme(value ? 'dark' : 'light')}
+                  onValueChange={(value) => actions.settings.setTheme(value ? 'dark' : 'light')}
                 />
               </>
             )}
@@ -80,7 +81,7 @@ export default function EinstellungenScreen() {
                     accessibilityRole="radio"
                     accessibilityState={{ checked: active }}
                     accessibilityLabel={`Textgröße ${scale.label}`}
-                    onPress={() => coreActions.settings.setTextScale(scale.value)}
+                    onPress={() => actions.settings.setTextScale(scale.value)}
                     className={[
                       'flex-1 items-center rounded-md border py-s active:opacity-80',
                       active ? 'border-emphasis bg-grey-200' : 'border-grey-300',
@@ -132,9 +133,9 @@ export default function EinstellungenScreen() {
               fullWidth
               onPress={() => {
                 // Three stores, because each owns its own keys — see resetForDemo.
-                coreActions.settings.resetForDemo();
-                coreActions.membership.reset();
-                coreActions.interests.clear();
+                actions.settings.resetForDemo();
+                actions.membership.reset();
+                actions.interests.clear();
                 setResetDone(true);
               }}
             />

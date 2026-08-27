@@ -35,7 +35,7 @@ export function ProgressBar({
         const x = event.nativeEvent.locationX;
         onSeek((Math.min(width, Math.max(0, x)) / width) * durationSec);
       }}
-      // Große Trefferfläche um einen dünnen Balken.
+      // A large hit area around a thin bar.
       hitSlop={12}
       className="justify-center py-2xs"
     >

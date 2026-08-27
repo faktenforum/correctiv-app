@@ -10,7 +10,7 @@ export function generateStaticParams(): { id: string }[] {
   return diaries.map((entry) => ({ id: entry.id }));
 }
 
-/** Ein Recherchetagebuch-Eintrag: Serie, Titel, Datum, Fließtext. */
+/** One research-diary entry: series, title, date, body copy. */
 export default function TagebuchScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
   const entry = diaries.find((d) => d.id === id) ?? null;

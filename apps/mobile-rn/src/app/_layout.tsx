@@ -4,7 +4,7 @@ import { router, Stack, usePathname } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
 import { useFonts } from 'expo-font';
 import * as SplashScreen from 'expo-splash-screen';
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import { Provider } from 'react-redux';
 
@@ -33,7 +33,7 @@ import { close as closeVideo } from '@correctiv/app-core/stores/video';
 import { expoAudio } from '@/lib/audio/backend';
 import { stop as stopAudio } from '@/lib/audio/player';
 import { expoPlatform, hydratePlatform } from '@/lib/platform/expo';
-import { coreStore } from '@/lib/store/core';
+import { coreStore, useAppStore } from '@/lib/store/core';
 import { fontAssets, useAppearance, useColors, useIsDark } from '@/lib/theme';
 
 // Hand the core its platform capabilities before anything reads a store. Storage
@@ -91,8 +91,6 @@ function registerPersistence(): void {
  */
 export const unstable_settings = { anchor: '(tabs)' };
 
-let gated = false;
-
 export default function RootLayout() {
   return (
     <Provider store={coreStore}>
@@ -148,16 +146,27 @@ function AppShell() {
    * Backstage, not the onboarding first. Natively the case does not arise, because
    * the app always starts at `/`.
    *
-   * `replace`, not `push`: the onboarding is not a place one returns to. The module
-   * flag keeps a later render from repeating the same jump.
+   * `replace`, not `push`: the onboarding is not a place one returns to. The ref
+   * keeps a later render from repeating the same jump — a ref rather than the
+   * module flag this used to be, because module state survives Fast Refresh
+   * unpredictably and made the redirect impossible to test: the first mount in a
+   * suite consumed the flag for every mount after it, so a green test proved only
+   * that it had run second.
+   *
+   * The state is read through the Provider's store rather than the imported
+   * singleton — the same seam `useCoreActions` closes — and with `getState()`
+   * rather than a selector, because this must not subscribe: it is a decision taken
+   * once, not a value the shell renders.
    */
   const pathname = usePathname();
+  const store = useAppStore();
+  const gated = useRef(false);
   useEffect(() => {
-    if (!storeReady || gated) return;
-    gated = true;
+    if (!storeReady || gated.current) return;
+    gated.current = true;
     if (pathname !== '/') return;
-    if (!coreStore.getState().settings.onboardingDone) router.replace('/onboarding');
-  }, [storeReady, pathname]);
+    if (!store.getState().settings.onboardingDone) router.replace('/onboarding');
+  }, [pathname, store, storeReady]);
 
   if (!fontsLoaded || !storeReady) return null;
 

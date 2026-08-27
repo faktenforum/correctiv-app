@@ -11,7 +11,7 @@ import type { Article } from '@correctiv/app-core/articles/types';
 import { readerHtml } from '@/lib/articles/reader';
 import { goBack } from '@/lib/navigation/goBack';
 import { shareArticle } from '@/lib/shareArticle';
-import { coreActions, useIsMember, useIsSaved, useTextScale } from '@/lib/store/core';
+import { useCoreActions, useIsMember, useIsSaved, useTextScale } from '@/lib/store/core';
 import { sizes, useColors, useIsDark } from '@/lib/theme';
 
 /**
@@ -23,6 +23,7 @@ import { sizes, useColors, useIsDark } from '@/lib/theme';
  */
 export default function ArtikelScreen() {
   const colors = useColors();
+  const actions = useCoreActions();
   const { url, title, badge } = useLocalSearchParams<{
     url?: string;
     title?: string;
@@ -131,7 +132,7 @@ export default function ArtikelScreen() {
                 icon={saved ? 'bookmark' : 'bookmark-outline'}
                 label={saved ? 'Gespeichert — entfernen' : 'Artikel speichern'}
                 onPress={() =>
-                  coreActions.savedArticles.toggle({
+                  actions.savedArticles.toggle({
                     url,
                     title: title ?? article?.title ?? '',
                     kicker: article?.kicker ?? null,

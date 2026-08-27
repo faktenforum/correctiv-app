@@ -12,7 +12,7 @@ import type { YoutubeKey } from '@correctiv/app-core/stores/media';
 import type { Video } from '@correctiv/app-core/types/models';
 import { playEpisode, togglePlay } from '@/lib/audio/player';
 import { useEpisodeStatus } from '@/lib/audio/useAudio';
-import { coreActions, useIsMember, usePodcastLibrary, useVideoChannel } from '@/lib/store/core';
+import { useCoreActions, useIsMember, usePodcastLibrary, useVideoChannel } from '@/lib/store/core';
 
 /**
  * Mediathek — everything audible and watchable: live radio, the Salon5 podcasts
@@ -66,6 +66,13 @@ export default function MediathekScreen() {
 
 function VideoRail({ title, channel }: { title: string; channel: YoutubeKey }) {
   const { videos, status } = useVideoChannel(channel);
+  const actions = useCoreActions();
+
+  const openVideo = (video: Video) => {
+    // The core store owns the HLS resolution; the route reads it.
+    void actions.video.play(video);
+    router.push('/video');
+  };
 
   return (
     <View className="mt-l">
@@ -121,10 +128,4 @@ function BonusRow({ bonus }: { bonus: BonusMedia }) {
 
 function openSeries(series: PodcastSeries) {
   router.push({ pathname: '/serie/[id]', params: { id: series.id } });
-}
-
-function openVideo(video: Video) {
-  // The core store owns the HLS resolution; the route reads it.
-  void coreActions.video.play(video);
-  router.push('/video');
 }

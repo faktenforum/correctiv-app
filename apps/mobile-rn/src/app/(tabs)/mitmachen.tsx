@@ -9,7 +9,7 @@ import { claims } from '@correctiv/app-core/data/claims';
 import { formatNumberDe } from '@correctiv/app-core/lib/format';
 import { openExternal } from '@/lib/openExternal';
 
-/** Öffentliche Tipp-Nummer der Faktencheck-Redaktion. */
+/** The fact-check desk's public tip line. */
 const WHATSAPP_TIP = 'https://wa.me/4915142647500';
 
 /**

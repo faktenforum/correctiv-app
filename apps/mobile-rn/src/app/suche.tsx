@@ -69,7 +69,7 @@ export default function SucheScreen() {
     });
 
     return () => {
-      // Ein überholter Lauf schreibt nichts mehr: die letzte Eingabe gewinnt.
+      // A superseded run writes nothing: the latest input wins.
       active = false;
     };
   }, [debounced]);

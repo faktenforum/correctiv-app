@@ -48,7 +48,7 @@ export default function TabsLayout() {
           animation: 'shift',
           tabBarActiveTintColor: colors.emphasis,
           tabBarInactiveTintColor: colors['grey-500'],
-          // Weiß, Hairline oben, keine Schatten (Designvorgabe).
+          // Page surface, hairline on top, no shadow — as the design draft has it.
           tabBarStyle: {
             backgroundColor: colors['grey-100'],
             borderTopColor: colors['grey-300'],

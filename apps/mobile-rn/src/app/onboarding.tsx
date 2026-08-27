@@ -5,7 +5,7 @@ import { Pressable, ScrollView, View } from 'react-native';
 import { SettingRow } from '@/components/profile/SettingRow';
 import { Button, Card, Chip, SafeAreaView, Typo } from '@/components/ui';
 import { interests } from '@correctiv/app-core/data/interests';
-import { coreActions, useSelectedInterests, useSettings } from '@/lib/store/core';
+import { useCoreActions, useSelectedInterests, useSettings } from '@/lib/store/core';
 import { useColors } from '@/lib/theme';
 
 /** The three sentences on the red mission screen. */
@@ -27,6 +27,7 @@ const MISSION = [
  * the steps after it run on the normal surface.
  */
 export default function OnboardingScreen() {
+  const actions = useCoreActions();
   const colors = useColors();
   const [step, setStep] = useState(0);
   const settings = useSettings();
@@ -34,7 +35,7 @@ export default function OnboardingScreen() {
   const selectedIds = new Set(selected.map((interest) => interest.id));
 
   const finish = (withJoin: boolean) => {
-    coreActions.settings.completeOnboarding();
+    actions.settings.completeOnboarding();
     router.replace('/(tabs)');
     if (withJoin) router.push('/beitreten');
   };
@@ -130,7 +131,7 @@ export default function OnboardingScreen() {
                   key={interest.id}
                   label={interest.label}
                   selected={selectedIds.has(interest.id)}
-                  onPress={() => coreActions.interests.toggle(interest.id)}
+                  onPress={() => actions.interests.toggle(interest.id)}
                 />
               ))}
             </View>
@@ -149,7 +150,7 @@ export default function OnboardingScreen() {
                 label="Benachrichtigungen"
                 description="Bei neuen Recherchen und Mitmach-Aufrufen (simuliert)"
                 value={settings.pushOptIn}
-                onValueChange={(value) => coreActions.settings.setPushOptIn(value)}
+                onValueChange={(value) => actions.settings.setPushOptIn(value)}
               />
             </Card>
           </>
