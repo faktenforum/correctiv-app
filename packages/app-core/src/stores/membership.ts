@@ -1,4 +1,4 @@
-import { createStore } from './create-store';
+import { createSlice, type PayloadAction } from '@reduxjs/toolkit';
 
 export type MembershipInterval = 'monatlich' | 'jährlich';
 
@@ -15,40 +15,72 @@ export interface MembershipState {
   amountEur: number;
   interval: MembershipInterval;
   paused: boolean;
-
-  join: (amountEur: number, interval: MembershipInterval, name?: string) => void;
-  /**
-   * Pausing is simulated, and it deliberately does NOT revoke membership:
-   * Backstage stays open, per the concept. The Vue host used to assign
-   * `membership.paused` directly through its reactive mirror — a store that owns
-   * its transitions needs the action, and both hosts read the same rule from it.
-   */
-  setPaused: (paused: boolean) => void;
-  /** Dev helper for demo resets (settings) */
-  reset: () => void;
 }
 
-const INITIAL = {
+const initialState: MembershipState = {
   isMember: false,
   name: '',
-  memberSince: null as string | null,
+  memberSince: null,
   amountEur: 10,
-  interval: 'monatlich' as MembershipInterval,
+  interval: 'monatlich',
   paused: false,
 };
 
-export const membershipStore = createStore<MembershipState>((set, get) => ({
-  ...INITIAL,
+const slice = createSlice({
+  name: 'membership',
+  initialState,
+  reducers: {
+    /**
+     * `joinedAt` is stamped in `prepare`, not in the reducer.
+     *
+     * The reducer has to keep an existing `memberSince` — rejoining does not reset
+     * the date — so the decision needs state, but the clock reading does not belong
+     * in a reducer at all. Splitting it this way is what keeps the reducer pure and
+     * therefore replayable.
+     */
+    join: {
+      reducer(
+        state,
+        action: PayloadAction<{
+          amountEur: number;
+          interval: MembershipInterval;
+          name?: string;
+          joinedAt: string;
+        }>,
+      ) {
+        const { amountEur, interval, name, joinedAt } = action.payload;
+        state.isMember = true;
+        if (name) state.name = name;
+        state.memberSince = state.memberSince ?? joinedAt;
+        state.amountEur = amountEur;
+        state.interval = interval;
+        state.paused = false;
+      },
+      prepare: (amountEur: number, interval: MembershipInterval, name?: string) => ({
+        payload: { amountEur, interval, name, joinedAt: new Date().toISOString() },
+      }),
+    },
 
-  join: (amountEur, interval, name) =>
-    set({
-      isMember: true,
-      ...(name ? { name } : {}),
-      memberSince: get().memberSince ?? new Date().toISOString(),
-      amountEur,
-      interval,
-      paused: false,
-    }),
-  setPaused: (paused) => set({ paused }),
-  reset: () => set({ ...INITIAL }),
-}));
+    /**
+     * Pausing is simulated, and it deliberately does NOT revoke membership:
+     * Backstage stays open, per the concept.
+     */
+    setPaused(state, action: PayloadAction<boolean>) {
+      state.paused = action.payload;
+    },
+
+    /** Dev helper for demo resets (settings) */
+    reset() {
+      return initialState;
+    },
+
+    /** Applied by persist() at startup — see stores/persist.ts. */
+    hydrate(state, action: PayloadAction<Partial<MembershipState>>) {
+      Object.assign(state, action.payload);
+    },
+  },
+});
+
+export const membershipReducer = slice.reducer;
+export const membershipActions = slice.actions;
+export const { join, setPaused, reset } = slice.actions;

@@ -89,7 +89,7 @@ export default function ProfilScreen() {
                 <Button
                   title={membership.paused ? 'Fortsetzen' : 'Pausieren'}
                   variant="secondary"
-                  onPress={() => coreActions.membership().setPaused(!membership.paused)}
+                  onPress={() => coreActions.membership.setPaused(!membership.paused)}
                   className="flex-1"
                 />
               </View>
@@ -171,9 +171,7 @@ export default function ProfilScreen() {
                 label={newsletter.label}
                 description={newsletter.description}
                 value={settings.newsletter[newsletter.key]}
-                onValueChange={(value) =>
-                  coreActions.settings().setNewsletter(newsletter.key, value)
-                }
+                onValueChange={(value) => coreActions.settings.setNewsletter(newsletter.key, value)}
               />
             </View>
           ))}

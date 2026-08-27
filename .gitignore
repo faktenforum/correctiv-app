@@ -29,3 +29,6 @@ typings/
 # Screenshot tours write their PNGs here before they are converted into screens/
 # (see screens/README.md). The WebP versions are committed, the PNGs are not.
 out/
+
+# Agent worktrees (Claude Code) — checkouts, not content.
+.claude/worktrees/

@@ -29,16 +29,11 @@ import { findAllPressable, press, render, renderedText } from './support/renderi
 import EinstellungenScreen from '@/app/einstellungen';
 import GespeichertScreen from '@/app/gespeichert';
 import ProfilScreen from '@/app/(tabs)/profil';
-import { coreStores } from '@/lib/store/core';
+import { resetStore } from '@correctiv/app-core/stores/store';
+
+import { coreActions, coreStore } from '@/lib/store/core';
 
 const push = router.push as jest.Mock;
-
-const initial = {
-  membership: coreStores.membership.getState(),
-  settings: coreStores.settings.getState(),
-  saved: coreStores.savedArticles.getState(),
-  interests: coreStores.interests.getState(),
-};
 
 const ARTICLE = {
   url: 'https://correctiv.org/x/2026/06/12/eine-recherche/',
@@ -51,16 +46,13 @@ const ARTICLE = {
 beforeEach(() => {
   jest.clearAllMocks();
   act(() => {
-    coreStores.membership.setState(initial.membership, true);
-    coreStores.settings.setState(initial.settings, true);
-    coreStores.savedArticles.setState(initial.saved, true);
-    coreStores.interests.setState(initial.interests, true);
+    coreStore.dispatch(resetStore());
   });
 });
 
 function join(): void {
   act(() => {
-    coreStores.membership.getState().join(25, 'jährlich', 'Testperson');
+    coreActions.membership.join(25, 'jährlich', 'Testperson');
   });
 }
 
@@ -109,7 +101,7 @@ describe('Profil as a member', () => {
 
     press(tree, 'Pausieren');
 
-    const state = coreStores.membership.getState();
+    const state = coreStore.getState().membership;
     expect(state.paused).toBe(true);
     expect(state.isMember).toBe(true); // Backstage stays open
     const text = renderedText(tree);
@@ -144,33 +136,33 @@ describe('newsletters and saved articles', () => {
     });
 
     // Persisted (PERSISTED_KEYS covers `newsletter`), so it survives a restart.
-    expect(coreStores.settings.getState().newsletter.spotlight).toBe(true);
+    expect(coreStore.getState().settings.newsletter.spotlight).toBe(true);
   });
 
   it('counts saved articles in singular and plural', () => {
     expect(renderedText(render(<ProfilScreen />))).toContain('Noch nichts gespeichert');
 
     act(() => {
-      coreStores.savedArticles.getState().toggle(ARTICLE);
+      coreActions.savedArticles.toggle(ARTICLE);
     });
     expect(renderedText(render(<ProfilScreen />))).toContain('1 Artikel');
 
     act(() => {
-      coreStores.savedArticles.getState().toggle({ ...ARTICLE, url: `${ARTICLE.url}2` });
+      coreActions.savedArticles.toggle({ ...ARTICLE, url: `${ARTICLE.url}2` });
     });
     expect(renderedText(render(<ProfilScreen />))).toContain('2 Artikel');
   });
 
   it('removes an article from the saved list', () => {
     act(() => {
-      coreStores.savedArticles.getState().toggle(ARTICLE);
+      coreActions.savedArticles.toggle(ARTICLE);
     });
     const tree = render(<GespeichertScreen />);
     expect(renderedText(tree)).toContain(ARTICLE.title);
 
     press(tree, `${ARTICLE.title} entfernen`);
 
-    expect(coreStores.savedArticles.getState().items).toEqual([]);
+    expect(coreStore.getState().savedArticles.items).toEqual([]);
   });
 });
 
@@ -187,31 +179,31 @@ describe('settings', () => {
     };
 
     toggle('An Systemeinstellung orientieren', false);
-    expect(coreStores.settings.getState().theme).toBe('light');
+    expect(coreStore.getState().settings.theme).toBe('light');
     // The dark switch only exists once the system option is off.
     toggle('Dunkelmodus', true);
-    expect(coreStores.settings.getState().theme).toBe('dark');
+    expect(coreStore.getState().settings.theme).toBe('dark');
   });
 
   it('sets the reader text scale', () => {
     press(render(<EinstellungenScreen />), 'Textgröße A++');
-    expect(coreStores.settings.getState().textScale).toBe(1.15);
+    expect(coreStore.getState().settings.textScale).toBe(1.15);
   });
 
   it('resets the demo state across all three stores', () => {
     join();
     act(() => {
-      coreStores.interests.getState().toggle('klima');
-      coreStores.settings.getState().completeOnboarding();
-      coreStores.settings.getState().setPushOptIn(true);
+      coreActions.interests.toggle('klima');
+      coreActions.settings.completeOnboarding();
+      coreActions.settings.setPushOptIn(true);
     });
 
     const tree = render(<EinstellungenScreen />);
     press(tree, 'Demo-Zustand zurücksetzen');
 
-    expect(coreStores.membership.getState().isMember).toBe(false);
-    expect(coreStores.interests.getState().selected).toEqual([]);
-    expect(coreStores.settings.getState()).toMatchObject({
+    expect(coreStore.getState().membership.isMember).toBe(false);
+    expect(coreStore.getState().interests.selected).toEqual([]);
+    expect(coreStore.getState().settings).toMatchObject({
       onboardingDone: false,
       pushOptIn: false,
       textScale: 1,

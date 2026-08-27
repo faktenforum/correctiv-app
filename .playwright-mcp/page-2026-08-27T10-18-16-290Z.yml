@@ -1,0 +1,15 @@
+- generic [ref=f1e9]:
+    - button "Überspringen" [ref=f1e34] [cursor=pointer]
+    - generic [ref=f1e17]:
+        - generic [ref=f1e36]: Was interessiert Sie?
+        - generic [ref=f1e37]: Ihre Auswahl ordnet die Startseite — alles bleibt trotzdem zugänglich.
+        - generic [ref=f1e38]:
+            - button "AfD & Rechtsextremismus" [ref=f1e39] [cursor=pointer]
+            - button "Klima" [active] [ref=f1e41] [cursor=pointer]
+            - button "Gesundheit" [ref=f1e43] [cursor=pointer]
+            - button "Russland & Ukraine" [ref=f1e45] [cursor=pointer]
+            - button "Faktenchecks" [ref=f1e47] [cursor=pointer]
+            - button "Lokal" [ref=f1e49] [cursor=pointer]
+            - button "Schweiz" [ref=f1e51] [cursor=pointer]
+            - button "Jugend & Salon5" [ref=f1e53] [cursor=pointer]
+    - button "Weiter" [ref=f1e55] [cursor=pointer]

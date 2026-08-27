@@ -6,18 +6,34 @@ import { useFonts } from 'expo-font';
 import * as SplashScreen from 'expo-splash-screen';
 import { useEffect, useState } from 'react';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
+import { Provider } from 'react-redux';
 
 import { configurePlatform } from '@correctiv/app-core';
 import { extractArticleFromDom } from '@correctiv/app-core/articles/extract/dom';
 import { configureArticleExtractor } from '@correctiv/app-core/articles/load';
 import { registerExclusiveMedium } from '@correctiv/app-core/media/exclusive-playback';
-import { persist } from '@correctiv/app-core/stores/persist';
-import { PERSISTED_KEYS } from '@correctiv/app-core/stores/settings';
+import { persist, persisted } from '@correctiv/app-core/stores/persist';
+import {
+  PERSISTED_KEYS,
+  settingsActions,
+  type SettingsState,
+} from '@correctiv/app-core/stores/settings';
+import { membershipActions, type MembershipState } from '@correctiv/app-core/stores/membership';
+import {
+  savedArticlesActions,
+  type SavedArticlesState,
+} from '@correctiv/app-core/stores/savedArticles';
+import { interestsActions, type InterestsState } from '@correctiv/app-core/stores/interests';
+import {
+  participationActions,
+  type ParticipationState,
+} from '@correctiv/app-core/stores/participation';
+import { close as closeVideo } from '@correctiv/app-core/stores/video';
 
 import { expoAudio } from '@/lib/audio/backend';
 import { stop as stopAudio } from '@/lib/audio/player';
 import { expoPlatform, hydratePlatform } from '@/lib/platform/expo';
-import { coreStores } from '@/lib/store/core';
+import { coreStore } from '@/lib/store/core';
 import { fontAssets, useAppearance, useColors, useIsDark } from '@/lib/theme';
 
 // Hand the core its platform capabilities before anything reads a store. Storage
@@ -40,7 +56,7 @@ configureArticleExtractor(extractArticleFromDom);
  * media/exclusive-playback.ts explains why that import cycle had to go).
  */
 registerExclusiveMedium('audio', stopAudio);
-registerExclusiveMedium('video', () => coreStores.video.getState().close());
+registerExclusiveMedium('video', () => coreStore.dispatch(closeVideo()));
 
 // The splash screen stays up until Merriweather and Source Sans 3 are loaded, so
 // the first render does not flash an unstyled font.
@@ -53,18 +69,17 @@ SplashScreen.preventAutoHideAsync();
  * loss bug that looks like "settings randomly reset". See lib/platform/expo.ts.
  */
 function registerPersistence(): void {
-  persist('settings', coreStores.settings, PERSISTED_KEYS);
-  persist('savedArticles', coreStores.savedArticles, ['items']);
-  persist('membership', coreStores.membership, [
-    'isMember',
-    'name',
-    'memberSince',
-    'amountEur',
-    'interval',
-    'paused',
+  persist(coreStore, [
+    persisted<SettingsState>('settings', PERSISTED_KEYS, settingsActions.hydrate),
+    persisted<SavedArticlesState>('savedArticles', ['items'], savedArticlesActions.hydrate),
+    persisted<MembershipState>(
+      'membership',
+      ['isMember', 'name', 'memberSince', 'amountEur', 'interval', 'paused'],
+      membershipActions.hydrate,
+    ),
+    persisted<InterestsState>('interests', ['selected'], interestsActions.hydrate),
+    persisted<ParticipationState>('participation', ['submissions'], participationActions.hydrate),
   ]);
-  persist('interests', coreStores.interests, ['selected']);
-  persist('participation', coreStores.participation, ['submissions']);
 }
 
 /**
@@ -79,6 +94,21 @@ export const unstable_settings = { anchor: '(tabs)' };
 let gated = false;
 
 export default function RootLayout() {
+  return (
+    <Provider store={coreStore}>
+      <AppShell />
+    </Provider>
+  );
+}
+
+/**
+ * Everything that reads state lives below the Provider.
+ *
+ * `useAppearance()` selects the appearance setting, so it cannot run in the
+ * component that renders the Provider — a `useSelector` above its own store finds
+ * no context and throws at startup. Splitting the shell out is the whole fix.
+ */
+function AppShell() {
   const [fontsLoaded] = useFonts(fontAssets);
   const [storeReady, setStoreReady] = useState(false);
   useAppearance();
@@ -126,7 +156,7 @@ export default function RootLayout() {
     if (!storeReady || gated) return;
     gated = true;
     if (pathname !== '/') return;
-    if (!coreStores.settings.getState().onboardingDone) router.replace('/onboarding');
+    if (!coreStore.getState().settings.onboardingDone) router.replace('/onboarding');
   }, [storeReady, pathname]);
 
   if (!fontsLoaded || !storeReady) return null;
@@ -145,10 +175,10 @@ export default function RootLayout() {
         }}
       >
         <Stack.Screen name="(tabs)" />
-        {/* Der Vollplayer ist eine Ansicht auf den laufenden Singleton, kein
-            eigener Zustand — als Modal, weil er nichts ersetzt. */}
+        {/* The full player is a view onto the running singleton, not state of its
+            own — a modal, because it replaces nothing. */}
         <Stack.Screen name="player" options={{ presentation: 'modal' }} />
-        {/* Beide sind Abläufe über der App, keine Orte in ihr. */}
+        {/* Both are flows over the app, not places in it. */}
         <Stack.Screen name="onboarding" options={{ presentation: 'modal' }} />
         <Stack.Screen name="beitreten" options={{ presentation: 'modal' }} />
       </Stack>

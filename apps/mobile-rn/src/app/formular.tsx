@@ -84,7 +84,7 @@ export default function FormularScreen() {
       setStep(step + 1);
       return;
     }
-    coreActions.participation().submit(callout.slug, { ...choices, ...texts });
+    coreActions.participation.submit(callout.slug, { ...choices, ...texts });
     setSubmitted(true);
   };
 

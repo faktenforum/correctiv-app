@@ -64,7 +64,7 @@ function SavedRow({ article }: { article: SavedArticle }) {
         accessibilityRole="button"
         accessibilityLabel={`${article.title} entfernen`}
         hitSlop={8}
-        onPress={() => coreActions.savedArticles().remove(article.url)}
+        onPress={() => coreActions.savedArticles.remove(article.url)}
         className="items-center justify-center active:opacity-70"
         style={{ width: sizes.iconButtonSmall, height: sizes.iconButtonSmall }}
       >

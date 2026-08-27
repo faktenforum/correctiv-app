@@ -2,104 +2,115 @@ import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 import { interests } from '../src/data/interests';
 import { configurePlatform, createMemoryPlatform, resetPlatform } from '../src/ports';
-import { persist } from '../src/stores/persist';
-import { PERSISTED_KEYS, settingsStore } from '../src/stores/settings';
-import { membershipStore } from '../src/stores/membership';
 import {
   boostedModules,
+  clear,
   extraFeeds,
-  interestsStore,
   selectedInterests,
+  interestsActions,
+  toggle as toggleInterest,
+  type InterestsState,
 } from '../src/stores/interests';
-import { isSaved, savedArticlesStore, type SavedArticle } from '../src/stores/savedArticles';
-import { extraCount, hasSubmitted, participationStore } from '../src/stores/participation';
-import { isActive, videoStore } from '../src/stores/video';
+import { join, membershipActions, reset, setPaused } from '../src/stores/membership';
+import {
+  extraCount,
+  hasSubmitted,
+  participationActions,
+  submit,
+} from '../src/stores/participation';
+import { persist, persisted } from '../src/stores/persist';
+import {
+  isSaved,
+  remove,
+  savedArticlesActions,
+  toggle as toggleSaved,
+  type SavedArticle,
+  type SavedArticlesState,
+} from '../src/stores/savedArticles';
+import {
+  PERSISTED_KEYS,
+  completeOnboarding,
+  setActiveTab,
+  setTheme,
+  settingsActions,
+  type SettingsState,
+} from '../src/stores/settings';
+import { createAppStore, resetStore, type AppStore } from '../src/stores/store';
+import { close, isActive, opened, play, statusChanged } from '../src/stores/video';
 
 /**
- * The stores moved from Pinia to the core's own createStore so it can drive both a Vue
- * and a React host (ADR 0004). These tests pin the behaviour that move could
- * quietly change: immutable updates, action semantics, and the pure selectors
- * that replaced Pinia's computed getters.
+ * The state moved from ten observable stores to ten slices of one Redux store.
+ * These tests pin the behaviour that move could quietly change: immutable
+ * updates, action semantics, and the pure selectors that were never methods.
+ *
+ * Every test builds its own store rather than resetting a singleton — the
+ * isolation is free here, and a leaked slice between tests is the kind of failure
+ * that shows up as an unrelated test going red three months later.
  */
-
-const initial = {
-  settings: settingsStore.getState(),
-  membership: membershipStore.getState(),
-  interests: interestsStore.getState(),
-  saved: savedArticlesStore.getState(),
-  participation: participationStore.getState(),
-  video: videoStore.getState(),
-};
+let store: AppStore;
 
 beforeEach(() => {
-  // Vanilla stores are module singletons, so state has to be restored explicitly.
-  settingsStore.setState(initial.settings, true);
-  membershipStore.setState(initial.membership, true);
-  interestsStore.setState(initial.interests, true);
-  savedArticlesStore.setState(initial.saved, true);
-  participationStore.setState(initial.participation, true);
-  videoStore.setState(initial.video, true);
+  store = createAppStore();
   resetPlatform();
 });
 
-describe('settings store', () => {
+describe('settings slice', () => {
   it('tracks visited tabs without duplicating them', () => {
-    const { setActiveTab } = settingsStore.getState();
-    setActiveTab('media');
-    setActiveTab('profile');
-    setActiveTab('media');
+    store.dispatch(setActiveTab('media'));
+    store.dispatch(setActiveTab('profile'));
+    store.dispatch(setActiveTab('media'));
 
-    expect(settingsStore.getState().activeTab).toBe('media');
-    expect(settingsStore.getState().visitedTabs).toEqual(['home', 'media', 'profile']);
+    expect(store.getState().settings.activeTab).toBe('media');
+    expect(store.getState().settings.visitedTabs).toEqual(['home', 'media', 'profile']);
   });
 
   it('replaces the visitedTabs array instead of mutating it', () => {
-    const before = settingsStore.getState().visitedTabs;
-    settingsStore.getState().setActiveTab('discover');
+    const before = store.getState().settings.visitedTabs;
+    store.dispatch(setActiveTab('discover'));
     // A binding that diffs by reference (React) only re-renders on a new array.
-    expect(settingsStore.getState().visitedTabs).not.toBe(before);
+    // Immer gives one because the draft was written to; `before` is frozen.
+    expect(store.getState().settings.visitedTabs).not.toBe(before);
     expect(before).toEqual(['home']);
   });
 
   it('completes onboarding and sets the theme', () => {
-    settingsStore.getState().completeOnboarding();
-    settingsStore.getState().setTheme('dark');
-    expect(settingsStore.getState().onboardingDone).toBe(true);
-    expect(settingsStore.getState().theme).toBe('dark');
+    store.dispatch(completeOnboarding());
+    store.dispatch(setTheme('dark'));
+    expect(store.getState().settings.onboardingDone).toBe(true);
+    expect(store.getState().settings.theme).toBe('dark');
   });
 });
 
-describe('membership store', () => {
+describe('membership slice', () => {
   it('pausing keeps the membership', () => {
-    membershipStore.getState().join(10, 'monatlich', 'Testperson');
-    membershipStore.getState().setPaused(true);
+    store.dispatch(join(10, 'monatlich', 'Testperson'));
+    store.dispatch(setPaused(true));
 
     // Per the concept a pause is not a cancellation — Backstage stays open, so
     // isMember must survive it. Rejoining clears the pause.
-    expect(membershipStore.getState()).toMatchObject({ isMember: true, paused: true });
-    membershipStore.getState().join(20, 'monatlich');
-    expect(membershipStore.getState().paused).toBe(false);
+    expect(store.getState().membership).toMatchObject({ isMember: true, paused: true });
+    store.dispatch(join(20, 'monatlich'));
+    expect(store.getState().membership.paused).toBe(false);
   });
 
   it('joining sets the member flag and keeps the first memberSince', () => {
-    const { join } = membershipStore.getState();
-    join(25, 'jährlich', 'Testperson');
-    const first = membershipStore.getState().memberSince;
-    expect(membershipStore.getState().isMember).toBe(true);
-    expect(membershipStore.getState().amountEur).toBe(25);
+    store.dispatch(join(25, 'jährlich', 'Testperson'));
+    const first = store.getState().membership.memberSince;
+    expect(store.getState().membership.isMember).toBe(true);
+    expect(store.getState().membership.amountEur).toBe(25);
     expect(first).not.toBeNull();
 
-    join(50, 'monatlich');
-    expect(membershipStore.getState().memberSince).toBe(first);
+    store.dispatch(join(50, 'monatlich'));
+    expect(store.getState().membership.memberSince).toBe(first);
     // Joining again without a name must not blank the existing one.
-    expect(membershipStore.getState().name).toBe('Testperson');
-    expect(membershipStore.getState().amountEur).toBe(50);
+    expect(store.getState().membership.name).toBe('Testperson');
+    expect(store.getState().membership.amountEur).toBe(50);
   });
 
   it('reset returns every field to its initial value', () => {
-    membershipStore.getState().join(99, 'jährlich', 'X');
-    membershipStore.getState().reset();
-    expect(membershipStore.getState()).toMatchObject({
+    store.dispatch(join(99, 'jährlich', 'X'));
+    store.dispatch(reset());
+    expect(store.getState().membership).toMatchObject({
       isMember: false,
       name: '',
       memberSince: null,
@@ -112,33 +123,39 @@ describe('membership store', () => {
 
 describe('interests selectors', () => {
   it('toggle adds and removes, immutably', () => {
-    const before = interestsStore.getState().selected;
-    interestsStore.getState().toggle('klima');
-    expect(interestsStore.getState().selected).toEqual(['klima']);
-    expect(interestsStore.getState().selected).not.toBe(before);
+    const before = store.getState().interests.selected;
+    store.dispatch(toggleInterest('klima'));
+    expect(store.getState().interests.selected).toEqual(['klima']);
+    expect(store.getState().interests.selected).not.toBe(before);
 
-    interestsStore.getState().toggle('klima');
-    expect(interestsStore.getState().selected).toEqual([]);
+    store.dispatch(toggleInterest('klima'));
+    expect(store.getState().interests.selected).toEqual([]);
+  });
+
+  it('clear empties the selection', () => {
+    store.dispatch(toggleInterest('klima'));
+    store.dispatch(clear());
+    expect(store.getState().interests.selected).toEqual([]);
   });
 
   it('selectors are pure functions of the state passed in', () => {
-    // The whole point of the rewrite: a selector must never read the store
-    // itself, or a Vue computed calling it would escape dependency tracking.
-    const detached = { selected: ['klima'] };
+    // The whole point: a selector must never read a store itself, or a binding
+    // calling it would escape its own dependency tracking.
+    const detached: InterestsState = { selected: ['klima'] };
     expect(selectedInterests(detached).map((i) => i.id)).toEqual(['klima']);
     // The real store is untouched by the call above.
-    expect(selectedInterests(interestsStore.getState())).toEqual([]);
+    expect(selectedInterests(store.getState().interests)).toEqual([]);
   });
 
   it('boostedModules drops interests without a boostModule', () => {
-    const all = { selected: interests.map((i) => i.id) };
+    const all: InterestsState = { selected: interests.map((i) => i.id) };
     const expected = interests.filter((i) => i.boostModule).length;
     expect(boostedModules(all)).toHaveLength(expected);
     expect(boostedModules(all).every((m) => !!m)).toBe(true);
   });
 
   it('extraFeeds keeps feed-backed interests but never salon5', () => {
-    const all = { selected: interests.map((i) => i.id) };
+    const all: InterestsState = { selected: interests.map((i) => i.id) };
     expect(extraFeeds(all).some((i) => i.feed === 'salon5')).toBe(false);
     expect(extraFeeds(all).every((i) => !!i.feed)).toBe(true);
     expect(extraFeeds(all)).toHaveLength(
@@ -147,7 +164,7 @@ describe('interests selectors', () => {
   });
 });
 
-describe('savedArticles store', () => {
+describe('savedArticles slice', () => {
   const article: SavedArticle = {
     url: 'https://correctiv.org/a/',
     title: 'A',
@@ -157,38 +174,35 @@ describe('savedArticles store', () => {
   };
 
   it('toggle saves, then unsaves', () => {
-    savedArticlesStore.getState().toggle(article);
-    expect(isSaved(savedArticlesStore.getState(), article.url)).toBe(true);
-    savedArticlesStore.getState().toggle(article);
-    expect(isSaved(savedArticlesStore.getState(), article.url)).toBe(false);
+    store.dispatch(toggleSaved(article));
+    expect(isSaved(store.getState().savedArticles, article.url)).toBe(true);
+    store.dispatch(toggleSaved(article));
+    expect(isSaved(store.getState().savedArticles, article.url)).toBe(false);
   });
 
   it('newest saved article comes first', () => {
-    savedArticlesStore.getState().toggle(article);
-    savedArticlesStore
-      .getState()
-      .toggle({ ...article, url: 'https://correctiv.org/b/', title: 'B' });
-    expect(savedArticlesStore.getState().items.map((a) => a.title)).toEqual(['B', 'A']);
+    store.dispatch(toggleSaved(article));
+    store.dispatch(toggleSaved({ ...article, url: 'https://correctiv.org/b/', title: 'B' }));
+    expect(store.getState().savedArticles.items.map((a) => a.title)).toEqual(['B', 'A']);
   });
 
   it('remove deletes only the given url', () => {
-    savedArticlesStore.getState().toggle(article);
-    savedArticlesStore.getState().toggle({ ...article, url: 'https://correctiv.org/b/' });
-    savedArticlesStore.getState().remove(article.url);
-    expect(savedArticlesStore.getState().items.map((a) => a.url)).toEqual([
+    store.dispatch(toggleSaved(article));
+    store.dispatch(toggleSaved({ ...article, url: 'https://correctiv.org/b/' }));
+    store.dispatch(remove(article.url));
+    expect(store.getState().savedArticles.items.map((a) => a.url)).toEqual([
       'https://correctiv.org/b/',
     ]);
   });
 });
 
-describe('participation store', () => {
+describe('participation slice', () => {
   it('counts repeated submissions per callout', () => {
-    const { submit } = participationStore.getState();
-    submit('pflege', { a: 1 });
-    submit('pflege', { a: 2 });
-    submit('mieten', { a: 3 });
+    store.dispatch(submit('pflege', { a: 1 }));
+    store.dispatch(submit('pflege', { a: 2 }));
+    store.dispatch(submit('mieten', { a: 3 }));
 
-    const state = participationStore.getState();
+    const state = store.getState().participation;
     expect(hasSubmitted(state, 'pflege')).toBe(true);
     expect(hasSubmitted(state, 'unbekannt')).toBe(false);
     expect(extraCount(state, 'pflege')).toBe(2);
@@ -197,57 +211,62 @@ describe('participation store', () => {
   });
 });
 
-describe('video store', () => {
+describe('video slice', () => {
   it('isActive follows the current item', () => {
-    expect(isActive(videoStore.getState())).toBe(false);
-    videoStore.setState({ current: { id: 'v1' } as never });
-    expect(isActive(videoStore.getState())).toBe(true);
-    videoStore.getState().close();
-    expect(isActive(videoStore.getState())).toBe(false);
+    expect(isActive(store.getState().video)).toBe(false);
+    store.dispatch(opened({ id: 'v1' } as never));
+    expect(isActive(store.getState().video)).toBe(true);
+    store.dispatch(close());
+    expect(isActive(store.getState().video)).toBe(false);
   });
 
   it('does not ask the PeerTube API about a YouTube video', async () => {
     // It would be a guaranteed 404 — landing as status 'error', which reads as
     // "this video is broken". YouTube plays in an embed and has no stream URL.
-    await videoStore.getState().play({
-      id: 'yt-1',
-      title: 'Im Gespräch',
-      url: 'https://www.youtube.com/watch?v=yt-1',
-      thumbnailUrl: '',
-      publishedAt: '2026-06-12T10:00:00.000Z',
-      source: 'youtube',
-    } as never);
+    await store.dispatch(
+      play({
+        id: 'yt-1',
+        title: 'Im Gespräch',
+        url: 'https://www.youtube.com/watch?v=yt-1',
+        thumbnailUrl: '',
+        publishedAt: '2026-06-12T10:00:00.000Z',
+        source: 'youtube',
+      } as never),
+    );
 
-    expect(videoStore.getState()).toMatchObject({ status: 'ready', hlsUrl: '' });
+    expect(store.getState().video).toMatchObject({ status: 'ready', hlsUrl: '' });
   });
 
   it('takes the HLS url straight from a PeerTube item that already has one', async () => {
-    await videoStore.getState().play({
-      id: 'pt-1',
-      title: 'FunFacts',
-      url: 'https://tube.funfacts.de/w/pt-1',
-      thumbnailUrl: '',
-      publishedAt: '2026-08-04T10:00:00.000Z',
-      source: 'peertube',
-      hlsMasterUrl: 'https://tube.funfacts.de/media/x-master.m3u8',
-    } as never);
+    await store.dispatch(
+      play({
+        id: 'pt-1',
+        title: 'FunFacts',
+        url: 'https://tube.funfacts.de/w/pt-1',
+        thumbnailUrl: '',
+        publishedAt: '2026-08-04T10:00:00.000Z',
+        source: 'peertube',
+        hlsMasterUrl: 'https://tube.funfacts.de/media/x-master.m3u8',
+      } as never),
+    );
 
     // No detail request needed, so no network in this test either.
-    expect(videoStore.getState()).toMatchObject({
+    expect(store.getState().video).toMatchObject({
       status: 'ready',
       hlsUrl: 'https://tube.funfacts.de/media/x-master.m3u8',
     });
   });
 
   it('close clears the whole session', () => {
-    videoStore.setState({
-      current: { id: 'v1' } as never,
-      hlsUrl: 'x',
-      status: 'ready',
-      expanded: true,
-    });
-    videoStore.getState().close();
-    expect(videoStore.getState()).toMatchObject({
+    store.dispatch(opened({ id: 'v1', hlsMasterUrl: 'x' } as never));
+    // Seeded explicitly: `opened` does not touch status, so without this the
+    // assertion below would be idle→idle and could not catch a `close` that
+    // forgets to reset it — leaving the next video showing this one's error.
+    store.dispatch(statusChanged('error'));
+    expect(store.getState().video.status).toBe('error');
+
+    store.dispatch(close());
+    expect(store.getState().video).toMatchObject({
       current: null,
       hlsUrl: '',
       status: 'idle',
@@ -257,14 +276,17 @@ describe('video store', () => {
 });
 
 describe('persist', () => {
+  const settings = () =>
+    persisted<SettingsState>('settings', PERSISTED_KEYS, settingsActions.hydrate);
+
   it('writes only the declared keys, debounced', async () => {
     vi.useFakeTimers();
     const platform = createMemoryPlatform();
     configurePlatform(platform);
 
-    persist('settings', settingsStore, PERSISTED_KEYS);
-    settingsStore.getState().setTheme('light');
-    settingsStore.getState().setActiveTab('media');
+    persist(store, [settings()]);
+    store.dispatch(setTheme('light'));
+    store.dispatch(setActiveTab('media'));
 
     expect(platform.keyValue.getString('store.settings')).toBeNull(); // still debounced
     await vi.advanceTimersByTimeAsync(300);
@@ -277,6 +299,32 @@ describe('persist', () => {
     vi.useRealTimers();
   });
 
+  it('does not rewrite a slice that did not change', async () => {
+    vi.useFakeTimers();
+    const platform = createMemoryPlatform();
+    configurePlatform(platform);
+    persist(store, [settings()]);
+
+    store.dispatch(setTheme('light'));
+    await vi.advanceTimersByTimeAsync(300);
+    const first = platform.keyValue.getString('store.settings');
+
+    // A write in a different slice reaches the same subscriber. Without the
+    // per-slice reference check this would re-serialise settings — which, with an
+    // audio position tick arriving twice a second, is the whole reason for it.
+    const writes: string[] = [];
+    const spy = vi.spyOn(platform.keyValue, 'setString').mockImplementation((key) => {
+      writes.push(key);
+    });
+    store.dispatch(toggleInterest('klima'));
+    await vi.advanceTimersByTimeAsync(300);
+
+    expect(writes).toEqual([]);
+    expect(platform.keyValue.getString('store.settings')).toBe(first);
+    spy.mockRestore();
+    vi.useRealTimers();
+  });
+
   it('hydrates from storage, ignoring unknown keys', () => {
     const platform = createMemoryPlatform();
     platform.keyValue.setString(
@@ -285,14 +333,14 @@ describe('persist', () => {
     );
     configurePlatform(platform);
 
-    persist('settings', settingsStore, PERSISTED_KEYS);
+    persist(store, [settings()]);
 
-    expect(settingsStore.getState().theme).toBe('dark');
-    expect(settingsStore.getState().textScale).toBe(1.5);
+    expect(store.getState().settings.theme).toBe('dark');
+    expect(store.getState().settings.textScale).toBe(1.5);
     // Not in PERSISTED_KEYS, so a stale payload cannot override live shell state…
-    expect(settingsStore.getState().activeTab).toBe('home');
-    // …nor inject state the store never declared.
-    expect(settingsStore.getState()).not.toHaveProperty('bogus');
+    expect(store.getState().settings.activeTab).toBe('home');
+    // …nor inject state the slice never declared.
+    expect(store.getState().settings).not.toHaveProperty('bogus');
   });
 
   it('discards corrupt persistence instead of throwing', () => {
@@ -300,20 +348,129 @@ describe('persist', () => {
     platform.keyValue.setString('store.settings', '{not json');
     configurePlatform(platform);
 
-    expect(() => persist('settings', settingsStore, PERSISTED_KEYS)).not.toThrow();
+    expect(() => persist(store, [settings()])).not.toThrow();
     expect(platform.keyValue.getString('store.settings')).toBeNull();
-    expect(settingsStore.getState().theme).toBe('system');
+    expect(store.getState().settings.theme).toBe('system');
   });
 
-  it('keeps actions callable after hydration', () => {
+  it('keeps the slice usable after hydration', () => {
     const platform = createMemoryPlatform();
     platform.keyValue.setString('store.settings', JSON.stringify({ theme: 'dark' }));
     configurePlatform(platform);
 
-    persist('settings', settingsStore, PERSISTED_KEYS);
-    // setState with a partial slice must not clobber the action functions —
-    // the failure mode would be a store that hydrates and then cannot be used.
-    expect(() => settingsStore.getState().setTheme('light')).not.toThrow();
-    expect(settingsStore.getState().theme).toBe('light');
+    persist(store, [settings()]);
+    store.dispatch(setTheme('light'));
+    expect(store.getState().settings.theme).toBe('light');
+  });
+});
+
+describe('resetStore', () => {
+  /**
+   * Six test files lean on this in `beforeEach` for isolation, and nothing else
+   * proves it works. If the root reducer's `undefined` special case is ever lost
+   * — a refactor to `configureStore({ reducer: combined })` is the obvious way —
+   * `app/reset` becomes an unknown action, every slice keeps its state, and those
+   * six files silently stop being isolated. Nothing would go red at that moment;
+   * an unrelated test would start failing by ordering, months later.
+   */
+  it('returns every touched slice to its initial value', () => {
+    store.dispatch(setTheme('dark'));
+    store.dispatch(join(99, 'jährlich', 'X'));
+    store.dispatch(toggleInterest('klima'));
+    store.dispatch(submit('pflege', { a: 1 }));
+
+    store.dispatch(resetStore());
+
+    expect(store.getState().settings.theme).toBe('system');
+    expect(store.getState().membership.isMember).toBe(false);
+    expect(store.getState().interests.selected).toEqual([]);
+    expect(store.getState().participation.submissions).toEqual([]);
+  });
+});
+
+describe('hydrate', () => {
+  /**
+   * On the old store hydration was ONE shared code path, so a single settings
+   * test covered every store. It is five hand-written reducers now, so each one
+   * needs its own proof that a partial payload merges rather than replaces.
+   */
+  it('merges a partial payload into each persisted slice', () => {
+    store.dispatch(membershipActions.hydrate({ isMember: true, name: 'Testperson' }));
+    expect(store.getState().membership).toMatchObject({
+      isMember: true,
+      name: 'Testperson',
+      amountEur: 10, // untouched by the payload, still the initial value
+    });
+
+    store.dispatch(
+      savedArticlesActions.hydrate({
+        items: [
+          { url: 'https://correctiv.org/a/', title: 'A', kicker: null, rating: null, savedAt: 'x' },
+        ],
+      }),
+    );
+    expect(store.getState().savedArticles.items).toHaveLength(1);
+
+    store.dispatch(interestsActions.hydrate({ selected: ['klima'] }));
+    expect(store.getState().interests.selected).toEqual(['klima']);
+
+    store.dispatch(
+      participationActions.hydrate({
+        submissions: [{ calloutSlug: 'pflege', answers: {}, submittedAt: 'x' }],
+      }),
+    );
+    expect(store.getState().participation.submissions).toHaveLength(1);
+  });
+});
+
+describe('persist across several slices', () => {
+  const both = () => [
+    persisted<SettingsState>('settings', PERSISTED_KEYS, settingsActions.hydrate),
+    persisted<SavedArticlesState>('savedArticles', ['items'], savedArticlesActions.hydrate),
+  ];
+
+  const ARTICLE: SavedArticle = {
+    url: 'https://correctiv.org/a/',
+    title: 'A',
+    kicker: null,
+    rating: null,
+    savedAt: '2026-08-05T00:00:00.000Z',
+  };
+
+  it('writes each slice under its own key, and only the one that changed', async () => {
+    vi.useFakeTimers();
+    const platform = createMemoryPlatform();
+    configurePlatform(platform);
+    persist(store, both());
+
+    store.dispatch(toggleSaved(ARTICLE));
+    await vi.advanceTimersByTimeAsync(300);
+
+    // Its own key — and settings was never touched, which is the per-slice
+    // reference check. A single-slice test cannot tell that apart from a global
+    // "did anything change" check.
+    const saved = JSON.parse(platform.keyValue.getString('store.savedArticles') ?? '{}');
+    expect(saved.items).toHaveLength(1);
+    expect(platform.keyValue.getString('store.settings')).toBeNull();
+    vi.useRealTimers();
+  });
+
+  it('writes a pending change even while unrelated dispatches keep arriving', async () => {
+    vi.useFakeTimers();
+    const platform = createMemoryPlatform();
+    configurePlatform(platform);
+    persist(store, both());
+
+    store.dispatch(setTheme('dark'));
+    // A burst of traffic in state nobody persists — an audio position tick, or a
+    // pull-to-refresh patching six feeds. A debounce resets on each of these and
+    // would hold the theme out of storage for as long as they keep coming.
+    for (let i = 0; i < 10; i++) {
+      store.dispatch(setActiveTab(i % 2 === 0 ? 'media' : 'profile'));
+      await vi.advanceTimersByTimeAsync(100);
+    }
+
+    expect(JSON.parse(platform.keyValue.getString('store.settings') ?? '{}').theme).toBe('dark');
+    vi.useRealTimers();
   });
 });

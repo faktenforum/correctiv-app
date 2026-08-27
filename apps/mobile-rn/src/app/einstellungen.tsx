@@ -42,7 +42,7 @@ export default function EinstellungenScreen() {
               label="Push-Mitteilungen"
               description="Neue Recherchen und Mitmach-Aufrufe (simuliert)"
               value={settings.pushOptIn}
-              onValueChange={(value) => coreActions.settings().setPushOptIn(value)}
+              onValueChange={(value) => coreActions.settings.setPushOptIn(value)}
             />
           </Card>
         </View>
@@ -53,7 +53,7 @@ export default function EinstellungenScreen() {
             <SettingRow
               label="An Systemeinstellung orientieren"
               value={followSystem}
-              onValueChange={(value) => coreActions.settings().setTheme(value ? 'system' : 'light')}
+              onValueChange={(value) => coreActions.settings.setTheme(value ? 'system' : 'light')}
             />
             {!followSystem && (
               <>
@@ -61,9 +61,7 @@ export default function EinstellungenScreen() {
                 <SettingRow
                   label="Dunkelmodus"
                   value={settings.theme === 'dark'}
-                  onValueChange={(value) =>
-                    coreActions.settings().setTheme(value ? 'dark' : 'light')
-                  }
+                  onValueChange={(value) => coreActions.settings.setTheme(value ? 'dark' : 'light')}
                 />
               </>
             )}
@@ -82,7 +80,7 @@ export default function EinstellungenScreen() {
                     accessibilityRole="radio"
                     accessibilityState={{ checked: active }}
                     accessibilityLabel={`Textgröße ${scale.label}`}
-                    onPress={() => coreActions.settings().setTextScale(scale.value)}
+                    onPress={() => coreActions.settings.setTextScale(scale.value)}
                     className={[
                       'flex-1 items-center rounded-md border py-s active:opacity-80',
                       active ? 'border-emphasis bg-grey-200' : 'border-grey-300',
@@ -134,9 +132,9 @@ export default function EinstellungenScreen() {
               fullWidth
               onPress={() => {
                 // Three stores, because each owns its own keys — see resetForDemo.
-                coreActions.settings().resetForDemo();
-                coreActions.membership().reset();
-                coreActions.interests().clear();
+                coreActions.settings.resetForDemo();
+                coreActions.membership.reset();
+                coreActions.interests.clear();
                 setResetDone(true);
               }}
             />

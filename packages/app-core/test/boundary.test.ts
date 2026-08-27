@@ -26,15 +26,17 @@ const FORBIDDEN = [
   { pattern: /^react-native/, why: 'React Native' },
   { pattern: /^expo(-|$)/, why: 'Expo' },
   { pattern: /^node:/, why: 'Node built-in (the core runs on device and in a browser too)' },
-  // The core was Pinia-based until the React Native pivot; these two keep it from
+  // The core was Pinia-based until the React Native pivot; these keep it from
   // drifting back. A UI framework in here would re-tie the core to one host, which
-  // is exactly what rewriting the stores onto the core's own createStore avoided.
-  { pattern: /^vue$|^@vue\//, why: 'Vue (hosts bind the stores themselves)' },
-  { pattern: /^pinia$/, why: 'Pinia (replaced by stores/create-store — see ADR 0004)' },
-  // zustand resolves to its CommonJS build under @nativescript/vite, which broke
-  // the Android bundle. The core ships its own createStore instead; hosts may
-  // still use zustand for their bindings.
-  { pattern: /^zustand/, why: 'zustand (core has its own createStore — see ADR 0004)' },
+  // is exactly what moving the stores into the core avoided.
+  //
+  // State itself lives in Redux Toolkit (stores/store.ts), which is deliberately
+  // NOT on this list: it is a state container, not a view layer, and it holds the
+  // same property the hand-written store had — no UI framework, no platform SDK.
+  // The binding stays the host's (react-redux in apps/mobile-rn).
+  { pattern: /^vue$|^@vue\//, why: 'Vue (hosts bind the store themselves)' },
+  { pattern: /^pinia$/, why: 'Pinia (replaced by Redux Toolkit — see ADR 0004)' },
+  { pattern: /^zustand/, why: 'zustand (the core is on Redux Toolkit)' },
   { pattern: /^react$|^react-dom$/, why: 'React (hosts bind the stores themselves)' },
 ];
 

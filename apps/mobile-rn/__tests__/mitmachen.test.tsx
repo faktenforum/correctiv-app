@@ -41,7 +41,9 @@ import { isDisabled, press, render, renderedText, typeInto } from './support/ren
 import MitmachenScreen from '@/app/(tabs)/mitmachen';
 import FaktenforumScreen from '@/app/faktenforum';
 import FormularScreen from '@/app/formular';
-import { coreStores } from '@/lib/store/core';
+import { resetStore } from '@correctiv/app-core/stores/store';
+
+import { coreActions, coreStore } from '@/lib/store/core';
 
 const push = router.push as jest.Mock;
 const params = useLocalSearchParams as jest.Mock;
@@ -55,13 +57,11 @@ const CALLOUT = callouts[0];
 const UNIT = CALLOUT.kind === 'survey' ? 'Teilnahmen' : 'Beiträge';
 const CTA = CALLOUT.kind === 'survey' ? 'Teilnehmen' : 'Mitmachen';
 const SLIDES = CALLOUT.formSchema.slides;
-const initialParticipation = coreStores.participation.getState();
-
 beforeEach(() => {
   jest.clearAllMocks();
   params.mockReturnValue({});
   act(() => {
-    coreStores.participation.setState(initialParticipation, true);
+    coreStore.dispatch(resetStore());
   });
 });
 
@@ -116,7 +116,7 @@ describe('Mitmachen hub', () => {
 
   it('marks a callout the user has already contributed to', () => {
     act(() => {
-      coreStores.participation.getState().submit(CALLOUT.slug, { themen: ['demokratie'] });
+      coreActions.participation.submit(CALLOUT.slug, { themen: ['demokratie'] });
     });
     const text = renderedText(render(<MitmachenScreen />));
     expect(text).toContain('✓ Sie haben beigetragen');
@@ -176,7 +176,7 @@ describe('the callout form', () => {
       press(tree, i === SLIDES.length - 1 ? 'Absenden' : 'Weiter');
     }
 
-    const state = coreStores.participation.getState();
+    const state = coreStore.getState().participation;
     expect(state.submissions).toHaveLength(1);
     expect(state.submissions[0].calloutSlug).toBe(CALLOUT.slug);
     // Answers are kept, not just the fact of submitting.

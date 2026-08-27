@@ -33,23 +33,17 @@ import { isDisabled, press, render, renderedText, typeInto } from './support/ren
 import BackstageScreen from '@/app/backstage';
 import BeitretenScreen from '@/app/beitreten';
 import OnboardingScreen from '@/app/onboarding';
-import { coreStores } from '@/lib/store/core';
+import { resetStore } from '@correctiv/app-core/stores/store';
+
+import { coreActions, coreStore } from '@/lib/store/core';
 
 const push = router.push as jest.Mock;
 const replace = router.replace as jest.Mock;
 
-const initial = {
-  membership: coreStores.membership.getState(),
-  settings: coreStores.settings.getState(),
-  interests: coreStores.interests.getState(),
-};
-
 beforeEach(() => {
   jest.clearAllMocks();
   act(() => {
-    coreStores.membership.setState(initial.membership, true);
-    coreStores.settings.setState(initial.settings, true);
-    coreStores.interests.setState(initial.interests, true);
+    coreStore.dispatch(resetStore());
   });
 });
 
@@ -99,7 +93,7 @@ describe('the join flow', () => {
     press(tree, 'Jetzt Mitglied werden');
 
     // THE flip — every club touchpoint reads this in the same tick.
-    expect(coreStores.membership.getState()).toMatchObject({
+    expect(coreStore.getState().membership).toMatchObject({
       isMember: true,
       amountEur: 20,
       interval: 'monatlich',
@@ -128,7 +122,7 @@ describe('onboarding', () => {
     press(tree, 'Klima');
     press(tree, 'Lokal');
 
-    expect(coreStores.interests.getState().selected).toEqual(['klima', 'lokal']);
+    expect(coreStore.getState().interests.selected).toEqual(['klima', 'lokal']);
   });
 
   it('counts a skip as done, so it never asks twice', () => {
@@ -136,7 +130,7 @@ describe('onboarding', () => {
     press(tree, 'Los geht’s');
     press(tree, 'Überspringen');
 
-    expect(coreStores.settings.getState().onboardingDone).toBe(true);
+    expect(coreStore.getState().settings.onboardingDone).toBe(true);
     expect(replace).toHaveBeenCalledWith('/(tabs)');
     expect(push).not.toHaveBeenCalled();
   });
@@ -152,7 +146,7 @@ describe('onboarding', () => {
     expect(text).toContain('Erstmal umsehen');
 
     press(tree, 'Unterstützer:in werden');
-    expect(coreStores.settings.getState().onboardingDone).toBe(true);
+    expect(coreStore.getState().settings.onboardingDone).toBe(true);
     expect(push).toHaveBeenCalledWith('/beitreten');
   });
 });
@@ -174,7 +168,7 @@ describe('Backstage', () => {
 
   it('opens the article for a member', () => {
     act(() => {
-      coreStores.membership.getState().join(10, 'monatlich', 'Testperson');
+      coreActions.membership.join(10, 'monatlich', 'Testperson');
     });
     const tree = render(<BackstageScreen />);
 

@@ -1,5 +1,8 @@
 import { act, create, type ReactTestInstance, type ReactTestRenderer } from 'react-test-renderer';
 import { SafeAreaProvider, type Metrics } from 'react-native-safe-area-context';
+import { Provider } from 'react-redux';
+
+import { coreStore } from '@/lib/store/core';
 
 /**
  * Shared screen-rendering helpers.
@@ -28,7 +31,7 @@ const mounted: ReactTestRenderer[] = [];
 
 /**
  * Every tree is unmounted after its test. Leaking them is not cosmetic: a mounted
- * screen stays subscribed to the stores, so a reset in the next `beforeEach`
+ * screen stays subscribed to the store, so a reset in the next `beforeEach`
  * re-renders it and its effects run into the following test.
  */
 afterEach(() => {
@@ -41,7 +44,11 @@ afterEach(() => {
 export function render(element: React.ReactElement): ReactTestRenderer {
   let tree!: ReactTestRenderer;
   act(() => {
-    tree = create(<SafeAreaProvider initialMetrics={METRICS}>{element}</SafeAreaProvider>);
+    tree = create(
+      <Provider store={coreStore}>
+        <SafeAreaProvider initialMetrics={METRICS}>{element}</SafeAreaProvider>
+      </Provider>,
+    );
   });
   mounted.push(tree);
   return tree;

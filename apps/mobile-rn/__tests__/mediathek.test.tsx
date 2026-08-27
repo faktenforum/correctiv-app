@@ -52,7 +52,11 @@ import { press, render, renderedText } from './support/rendering';
 
 import MediathekScreen from '@/app/(tabs)/mediathek';
 import { playEpisode } from '@/lib/audio/player';
-import { coreStores } from '@/lib/store/core';
+import { loaded } from '@correctiv/app-core/stores/podcasts';
+import { patch as mediaPatch } from '@correctiv/app-core/stores/media';
+import { resetStore } from '@correctiv/app-core/stores/store';
+
+import { coreActions, coreStore } from '@/lib/store/core';
 
 const push = router.push as jest.Mock;
 const playEpisodeMock = playEpisode as jest.Mock;
@@ -62,10 +66,6 @@ const BONUS = bonusMedia[0];
 /** How many times the screen marks something as club content. */
 const clubMarks = (tree: Parameters<typeof renderedText>[0]): number =>
   renderedText(tree).match(/\bClub\b/g)?.length ?? 0;
-
-const initialMembership = coreStores.membership.getState();
-const initialPodcasts = coreStores.podcasts.getState();
-const initialMedia = coreStores.media.getState();
 
 const SERIES: PodcastSeries = {
   id: PODCAST_CHANNELS[0],
@@ -87,22 +87,14 @@ const SERIES: PodcastSeries = {
 beforeEach(() => {
   jest.clearAllMocks();
   act(() => {
-    coreStores.membership.setState(initialMembership, true);
+    coreStore.dispatch(resetStore());
     // Everything starts 'ready', or the screen's lazy loaders fire real network
     // requests on mount — slow, and a source of stray console noise from the
-    // store's error path.
-    coreStores.media.setState(
-      {
-        ...initialMedia,
-        byKey: {
-          gespraech: { videos: [], status: 'ready' },
-          funfacts: { videos: [], status: 'ready' },
-          hauptkanal: { videos: [], status: 'ready' },
-        },
-      },
-      true,
-    );
-    coreStores.podcasts.setState({ ...initialPodcasts, series: [SERIES], status: 'ready' }, true);
+    // slice's error path.
+    for (const key of ['gespraech', 'funfacts', 'hauptkanal'] as const) {
+      coreStore.dispatch(mediaPatch(key, { videos: [], status: 'ready' }));
+    }
+    coreStore.dispatch(loaded({ series: [SERIES], status: 'ready' }));
   });
 });
 
@@ -124,12 +116,7 @@ describe('Mediathek', () => {
 
   it('says so when a video channel cannot be reached', () => {
     act(() => {
-      coreStores.media.setState({
-        byKey: {
-          ...coreStores.media.getState().byKey,
-          gespraech: { videos: [], status: 'error' },
-        },
-      });
+      coreStore.dispatch(mediaPatch('gespraech', { videos: [], status: 'error' }));
     });
     expect(renderedText(render(<MediathekScreen />))).toContain('Videos derzeit nicht erreichbar');
   });
@@ -156,7 +143,7 @@ describe('the club bonus', () => {
 
   it('gives a member the same episode, without the note', () => {
     act(() => {
-      coreStores.membership.getState().join(10, 'monatlich', 'Test');
+      coreActions.membership.join(10, 'monatlich', 'Test');
     });
     const tree = render(<MediathekScreen />);
 
@@ -178,7 +165,7 @@ describe('the club bonus', () => {
     // itself deleted.
     expect(clubMarks(render(<MediathekScreen />))).toBe(1);
     act(() => {
-      coreStores.membership.getState().join(10, 'monatlich', 'Test');
+      coreActions.membership.join(10, 'monatlich', 'Test');
     });
     expect(clubMarks(render(<MediathekScreen />))).toBe(1);
   });

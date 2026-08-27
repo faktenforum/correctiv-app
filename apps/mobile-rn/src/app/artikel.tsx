@@ -132,7 +132,7 @@ export default function ArtikelScreen() {
                 icon={saved ? 'bookmark' : 'bookmark-outline'}
                 label={saved ? 'Gespeichert — entfernen' : 'Artikel speichern'}
                 onPress={() =>
-                  coreActions.savedArticles().toggle({
+                  coreActions.savedArticles.toggle({
                     url,
                     title: title ?? article?.title ?? '',
                     kicker: article?.kicker ?? null,

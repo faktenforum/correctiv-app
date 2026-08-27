@@ -1,9 +1,11 @@
+import { createSlice, type PayloadAction } from '@reduxjs/toolkit';
+
 import { PODCAST_CHANNELS } from '../data/feeds.config';
 import { podcastSeries as sampleSeries, type PodcastSeries } from '../data/podcasts';
 import { platform } from '../ports';
 import { getCached, getStale, setCached } from '../services/cache.service';
 import { fetchPodcastSeries } from '../services/podcast.service';
-import { createStore } from './create-store';
+import type { AppThunk } from './store';
 
 const CACHE_NS = 'podcasts';
 const TTL_MS = 60 * 60 * 1000;
@@ -24,13 +26,31 @@ export type PodcastsStatus = 'idle' | 'loading' | 'ready' | 'partial' | 'offline
 export interface PodcastsState {
   series: PodcastSeries[];
   status: PodcastsStatus;
-  fetchAll: (options?: { force?: boolean }) => Promise<void>;
 }
 
-/** Pure selector — see the note in stores/interests.ts for why not a method. */
-export function findSeries(state: Pick<PodcastsState, 'series'>, id: string): PodcastSeries | null {
+const initialState: PodcastsState = { series: [], status: 'idle' };
+
+/** Pure selector — see the note in stores/interests.ts for why not part of the slice. */
+export function findSeries(state: PodcastsState, id: string): PodcastSeries | null {
   return state.series.find((s) => s.id === id) ?? null;
 }
+
+const slice = createSlice({
+  name: 'podcasts',
+  initialState,
+  reducers: {
+    statusChanged(state, action: PayloadAction<PodcastsStatus>) {
+      state.status = action.payload;
+    },
+    loaded(state, action: PayloadAction<{ series: PodcastSeries[]; status: PodcastsStatus }>) {
+      state.series = action.payload.series;
+      state.status = action.payload.status;
+    },
+  },
+});
+
+export const podcastsReducer = slice.reducer;
+export const { statusChanged, loaded } = slice.actions;
 
 /**
  * The Salon5 podcast library (Castopod).
@@ -40,22 +60,18 @@ export function findSeries(state: Pick<PodcastsState, 'series'>, id: string): Po
  * seed. The list is never empty, online or off — the same promise the feed cache
  * makes.
  *
- * The per-show bundled snapshot used to be NativeScript-only, read with its
- * `File` API from a Pinia copy of this store. It reaches the core through the
- * `ContentBundle` port instead, so both hosts can offer it and neither needs a
- * second store to do it.
+ * The per-show bundled snapshot reaches the core through the `ContentBundle`
+ * port, so every host can offer it and none needs a store of its own to do it.
  */
-export const podcastsStore = createStore<PodcastsState>((set, get) => ({
-  series: [],
-  status: 'idle',
-
-  fetchAll: async (options = {}) => {
+export const fetchAll =
+  (options: { force?: boolean } = {}): AppThunk<Promise<void>> =>
+  async (dispatch, getState) => {
     const cached = options.force ? null : await getCached<PodcastSeries[]>(CACHE_NS, 'all', TTL_MS);
     if (cached?.length) {
-      set({ series: cached, status: 'ready' });
+      dispatch(loaded({ series: cached, status: 'ready' }));
       return;
     }
-    if (get().series.length === 0) set({ status: 'loading' });
+    if (getState().podcasts.series.length === 0) dispatch(statusChanged('loading'));
 
     let liveCount = 0;
     const results = await Promise.all(
@@ -75,7 +91,12 @@ export const podcastsStore = createStore<PodcastsState>((set, get) => ({
       // The status describes what is on screen, not how many requests succeeded:
       // a show whose feed parsed but carried no episodes is just as missing as one
       // that timed out, and an empty tile is worse than no tile.
-      set({ series, status: series.length === PODCAST_CHANNELS.length ? 'ready' : 'partial' });
+      dispatch(
+        loaded({
+          series,
+          status: series.length === PODCAST_CHANNELS.length ? 'ready' : 'partial',
+        }),
+      );
       // Only cache when at least one show is live: caching a bundle-only list
       // would freeze the offline state in for a whole hour after the network came back.
       if (liveCount > 0) await setCached(CACHE_NS, 'all', series);
@@ -84,9 +105,12 @@ export const podcastsStore = createStore<PodcastsState>((set, get) => ({
 
     // Nothing reachable. Stale beats nothing, and the seed beats an empty screen.
     const stale = await getStale<PodcastSeries[]>(CACHE_NS, 'all');
-    set({
-      series: stale?.length ? stale : sampleSeries,
-      status: stale?.length ? 'partial' : 'offline',
-    });
-  },
-}));
+    dispatch(
+      loaded({
+        series: stale?.length ? stale : sampleSeries,
+        status: stale?.length ? 'partial' : 'offline',
+      }),
+    );
+  };
+
+export const podcastsActions = { ...slice.actions, fetchAll };

@@ -1,9 +1,7 @@
-import { createStore } from './create-store';
+import { createSlice, type PayloadAction } from '@reduxjs/toolkit';
 
 export type TabId = 'home' | 'discover' | 'media' | 'participate' | 'profile';
 export type ThemePreference = 'system' | 'light' | 'dark';
-
-export const PERSISTED_KEYS = ['onboardingDone', 'pushOptIn', 'textScale', 'newsletter', 'theme'];
 
 export interface SettingsState {
   onboardingDone: boolean;
@@ -20,21 +18,20 @@ export interface SettingsState {
   // Ephemeral shell state (not persisted)
   activeTab: TabId;
   visitedTabs: TabId[];
-
-  setActiveTab: (tab: TabId) => void;
-  completeOnboarding: () => void;
-  setTheme: (theme: ThemePreference) => void;
-  /** One newsletter subscription. Keyed, so a host cannot invent a fourth list. */
-  setNewsletter: (key: NewsletterKey, subscribed: boolean) => void;
-  setTextScale: (scale: number) => void;
-  setPushOptIn: (optIn: boolean) => void;
-  /** Demo reset (Settings → Demo): back to a first-launch app. */
-  resetForDemo: () => void;
 }
 
 export type NewsletterKey = keyof SettingsState['newsletter'];
 
-export const settingsStore = createStore<SettingsState>((set) => ({
+/** What survives a restart. The rest of the slice is shell state. */
+export const PERSISTED_KEYS = [
+  'onboardingDone',
+  'pushOptIn',
+  'textScale',
+  'newsletter',
+  'theme',
+] satisfies Array<keyof SettingsState>;
+
+const initialState: SettingsState = {
   onboardingDone: false,
   pushOptIn: false,
   textScale: 1,
@@ -46,27 +43,68 @@ export const settingsStore = createStore<SettingsState>((set) => ({
   theme: 'system',
   activeTab: 'home',
   visitedTabs: ['home'],
+};
 
-  setActiveTab: (tab) =>
-    set((state) => ({
-      activeTab: tab,
-      visitedTabs: state.visitedTabs.includes(tab)
-        ? state.visitedTabs
-        : [...state.visitedTabs, tab],
-    })),
-  completeOnboarding: () => set({ onboardingDone: true }),
-  setTheme: (theme) => set({ theme }),
+const slice = createSlice({
+  name: 'settings',
+  initialState,
+  reducers: {
+    setActiveTab(state, action: PayloadAction<TabId>) {
+      state.activeTab = action.payload;
+      if (!state.visitedTabs.includes(action.payload)) state.visitedTabs.push(action.payload);
+    },
 
-  setNewsletter: (key, subscribed) =>
-    set((state) => ({ newsletter: { ...state.newsletter, [key]: subscribed } })),
-  setTextScale: (textScale) => set({ textScale }),
-  setPushOptIn: (pushOptIn) => set({ pushOptIn }),
+    completeOnboarding(state) {
+      state.onboardingDone = true;
+    },
 
-  /**
-   * The demo reset has to leave the app as if it were freshly installed: onboarding,
-   * push, text size and the appearance setting. Membership and interests live in
-   * their own stores — the caller resets those; this one owns only its own keys.
-   */
-  resetForDemo: () =>
-    set({ onboardingDone: false, pushOptIn: false, textScale: 1, theme: 'system' }),
-}));
+    setTheme(state, action: PayloadAction<ThemePreference>) {
+      state.theme = action.payload;
+    },
+
+    /** One newsletter subscription. Keyed, so a host cannot invent a fourth list. */
+    setNewsletter: {
+      reducer(state, action: PayloadAction<{ key: NewsletterKey; subscribed: boolean }>) {
+        state.newsletter[action.payload.key] = action.payload.subscribed;
+      },
+      prepare: (key: NewsletterKey, subscribed: boolean) => ({ payload: { key, subscribed } }),
+    },
+
+    setTextScale(state, action: PayloadAction<number>) {
+      state.textScale = action.payload;
+    },
+
+    setPushOptIn(state, action: PayloadAction<boolean>) {
+      state.pushOptIn = action.payload;
+    },
+
+    /**
+     * The demo reset has to leave the app as if it were freshly installed: onboarding,
+     * push, text size and the appearance setting. Membership and interests live in
+     * their own slices — the caller resets those; this one owns only its own keys.
+     */
+    resetForDemo(state) {
+      state.onboardingDone = false;
+      state.pushOptIn = false;
+      state.textScale = 1;
+      state.theme = 'system';
+    },
+
+    /** Applied by persist() at startup — see stores/persist.ts. */
+    hydrate(state, action: PayloadAction<Partial<SettingsState>>) {
+      Object.assign(state, action.payload);
+    },
+  },
+});
+
+export const settingsReducer = slice.reducer;
+export const settingsActions = slice.actions;
+export const {
+  setActiveTab,
+  completeOnboarding,
+  setTheme,
+  setNewsletter,
+  setTextScale,
+  setPushOptIn,
+  resetForDemo,
+} = slice.actions;

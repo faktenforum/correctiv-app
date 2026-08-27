@@ -45,9 +45,11 @@ jest.mock('expo-audio', () => ({
 }));
 
 import { configurePlatform, createMemoryPlatform } from '@correctiv/app-core';
-import { audioStore, isLive, resetAudioStore } from '@correctiv/app-core/stores/audio';
+import { isLive, resetAudioController } from '@correctiv/app-core/stores/audio';
+import { resetStore } from '@correctiv/app-core/stores/store';
 
 import { expoAudio, resetExpoAudio } from '@/lib/audio/backend';
+import { coreStore } from '@/lib/store/core';
 import { playEpisode, playRadio, setSpeed, stop } from '@/lib/audio/player';
 
 /** A status update with only the fields under test spelled out. */
@@ -86,7 +88,8 @@ beforeEach(() => {
   resetExclusiveMedia();
   emit = null;
   resetExpoAudio();
-  resetAudioStore();
+  resetAudioController();
+  coreStore.dispatch(resetStore());
   // The store asks the platform for its audio backend on first use, so the
   // registration has to be in place before any action runs.
   configurePlatform({ ...createMemoryPlatform(), audio: expoAudio });
@@ -95,7 +98,8 @@ beforeEach(() => {
 afterEach(() => {
   // Clears the loading watchdog too — a pending 12-second timer keeps the jest
   // worker alive past the run.
-  resetAudioStore();
+  resetAudioController();
+  coreStore.dispatch(resetStore());
   jest.useRealTimers();
 });
 
@@ -107,8 +111,8 @@ describe('starting playback', () => {
       uri: 'https://icecast.correctiv.net/salon5low',
     });
     expect(mockPlayer.play).toHaveBeenCalled();
-    expect(isLive(audioStore.getState())).toBe(true);
-    expect(audioStore.getState().status).toBe('loading');
+    expect(isLive(coreStore.getState().audio)).toBe(true);
+    expect(coreStore.getState().audio.status).toBe('loading');
   });
 
   it('claims the lock screen with the track metadata', async () => {
@@ -126,14 +130,14 @@ describe('starting playback', () => {
     await playRadio();
     emit?.(status({ playing: true, currentTime: 3, isLive: true, duration: 0 }));
 
-    expect(audioStore.getState()).toMatchObject({ status: 'playing', positionSec: 3 });
+    expect(coreStore.getState().audio).toMatchObject({ status: 'playing', positionSec: 3 });
   });
 
   it('reports buffering as loading, not as paused', async () => {
     await playEpisode(EPISODE);
     emit?.(status({ playing: false, isBuffering: true, isLoaded: true }));
 
-    expect(audioStore.getState().status).toBe('loading');
+    expect(coreStore.getState().audio.status).toBe('loading');
   });
 
   it('resolves the bundled sample episode instead of treating it as a URL', async () => {
@@ -142,7 +146,7 @@ describe('starting playback', () => {
 
     const source = mockPlayer.replace.mock.calls.at(-1)?.[0];
     expect(typeof source).toBe('number'); // a Metro asset id, not { uri }
-    expect(audioStore.getState().status).toBe('loading');
+    expect(coreStore.getState().audio.status).toBe('loading');
   });
 });
 
@@ -152,45 +156,45 @@ describe('failures', () => {
     emit?.(status({ error: 'Source unavailable' }));
 
     expect(mockPlayer.pause).toHaveBeenCalled();
-    expect(audioStore.getState().status).toBe('error');
-    expect(audioStore.getState().errorMessage).toMatch(/Internetverbindung/);
+    expect(coreStore.getState().audio.status).toBe('error');
+    expect(coreStore.getState().audio.errorMessage).toMatch(/Internetverbindung/);
   });
 
   it('keeps the error visible when the next status tick looks merely unloaded', async () => {
     await playRadio();
     emit?.(status({ error: 'Source error' }));
-    expect(audioStore.getState().status).toBe('error');
+    expect(coreStore.getState().audio.status).toBe('error');
 
     // What the player really sends after a failed source: no error field any more,
     // still not loaded. Seen on a device — the mini bar fell back to "Lädt …" and
     // sat there, which is the endless spinner the watchdog exists to prevent.
     emit?.(status({ error: null, isLoaded: false, playing: false }));
 
-    expect(audioStore.getState().status).toBe('error');
-    expect(audioStore.getState().errorMessage).toMatch(/Internetverbindung/);
+    expect(coreStore.getState().audio.status).toBe('error');
+    expect(coreStore.getState().audio.errorMessage).toMatch(/Internetverbindung/);
   });
 
   it('clears the error when a new track starts', async () => {
     await playRadio();
     emit?.(status({ error: 'Source error' }));
-    expect(audioStore.getState().status).toBe('error');
+    expect(coreStore.getState().audio.status).toBe('error');
 
     await playEpisode(EPISODE);
 
-    expect(audioStore.getState()).toMatchObject({ status: 'loading', errorMessage: null });
+    expect(coreStore.getState().audio).toMatchObject({ status: 'loading', errorMessage: null });
   });
 
   it('gives up on a stream that never loads', async () => {
     jest.useFakeTimers();
     await playRadio();
-    expect(audioStore.getState().status).toBe('loading');
+    expect(coreStore.getState().audio.status).toBe('loading');
 
     jest.advanceTimersByTime(12000);
 
     // expo-audio does report errors, but the lesson from the NativeScript build
     // was that network errors sometimes never arrive at all.
-    expect(audioStore.getState().status).toBe('error');
-    expect(audioStore.getState().errorMessage).toMatch(/Keine Verbindung/);
+    expect(coreStore.getState().audio.status).toBe('error');
+    expect(coreStore.getState().audio.errorMessage).toMatch(/Keine Verbindung/);
   });
 
   it('does not fire the watchdog once the source is loaded', async () => {
@@ -200,7 +204,7 @@ describe('failures', () => {
 
     jest.advanceTimersByTime(12000);
 
-    expect(audioStore.getState().status).toBe('playing');
+    expect(coreStore.getState().audio.status).toBe('playing');
   });
 });
 
@@ -212,7 +216,7 @@ describe('stopping and coordinating', () => {
     // A paused live stream keeps buffering — releasing the source is the point.
     expect(mockPlayer.replace).toHaveBeenLastCalledWith(null);
     expect(mockPlayer.clearLockScreenControls).toHaveBeenCalled();
-    expect(audioStore.getState()).toMatchObject({ track: null, status: 'idle', speed: 1 });
+    expect(coreStore.getState().audio).toMatchObject({ track: null, status: 'idle', speed: 1 });
   });
 
   it('ignores status updates that arrive after stopping', async () => {
@@ -221,7 +225,7 @@ describe('stopping and coordinating', () => {
 
     emit?.(status({ playing: true, currentTime: 42 }));
 
-    expect(audioStore.getState()).toMatchObject({ track: null, positionSec: 0 });
+    expect(coreStore.getState().audio).toMatchObject({ track: null, positionSec: 0 });
   });
 
   it('stops the video when audio starts', async () => {
@@ -247,6 +251,6 @@ describe('stopping and coordinating', () => {
     setSpeed(1.5);
 
     expect(mockPlayer.setPlaybackRate).toHaveBeenCalledWith(1.5);
-    expect(audioStore.getState().speed).toBe(1.5);
+    expect(coreStore.getState().audio.speed).toBe(1.5);
   });
 });

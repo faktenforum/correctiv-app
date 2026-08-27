@@ -1,6 +1,8 @@
 import { CONTENT_FEEDS } from '@correctiv/app-core/data/feeds.config';
-import { feedsStore, mergedFeedItems } from '@correctiv/app-core/stores/feeds';
+import { mergedFeedItems } from '@correctiv/app-core/stores/feeds';
 import type { FeedItem } from '@correctiv/app-core/types/models';
+
+import { coreActions, coreStore } from '@/lib/store/core';
 
 /**
  * The search's offline fallback: everything this device knows about correctiv.org
@@ -8,7 +10,7 @@ import type { FeedItem } from '@correctiv/app-core/types/models';
  *
  * Full-text search runs server-side (WordPress REST). When that is unreachable — or
  * simply not allowed, as in a browser: see the CORS note in ADR 0004 — the app
- * searches the feeds instead. The core's feed store falls back to its cache per
+ * searches the feeds instead. The core's feed slice falls back to its cache per
  * feed, so this holds in airplane mode too.
  *
  * Loaded lazily, and only when the fallback is actually needed: the normal case
@@ -18,8 +20,8 @@ import type { FeedItem } from '@correctiv/app-core/types/models';
 let pending: Promise<void> | null = null;
 
 async function corpus(): Promise<FeedItem[]> {
-  await (pending ??= feedsStore.getState().fetchMany([...CONTENT_FEEDS]));
-  const items = mergedFeedItems(feedsStore.getState(), [...CONTENT_FEEDS]);
+  await (pending ??= coreActions.feeds.fetchMany([...CONTENT_FEEDS]));
+  const items = mergedFeedItems(coreStore.getState().feeds, [...CONTENT_FEEDS]);
   // Do not cement an empty result: it means every feed failed with nothing cached,
   // and the next attempt may have a network again.
   if (items.length === 0) pending = null;
