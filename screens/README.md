@@ -15,8 +15,14 @@ typecheck and a green test run, and each one was found by looking at a picture.
 | [`nativescript/`](nativescript/) | The NativeScript/Vue app, removed from the repo on 2026-08-12 | **This set is now the only trace of it.** Read it for layout decisions it got right; there is no longer any code behind it |
 | [`expo/`](expo/) | `apps/mobile-rn`, the live app | The thing under test |
 
-Emulator `Medium_Phone` (Android 7.0 API 36, 1080×2400); the draft is pinned to
-light mode so it matches.
+Emulator, 1080×2400; the draft is pinned to light mode so the sets match.
+
+The AVD changed with the 2026-08-27 round, and the reason is worth keeping: the
+earlier sets were shot on `Medium_Phone`, which is **API 24 — Android 7.0**. Dark
+mode does not exist below API 29, so that device cannot show the app's default
+appearance at all, and an appearance check run there reports light no matter what is
+set. `expo/` is shot on `Medium_Phone_API_36` from now on. (The line this replaces
+said "Android 7.0 API 36", which is two different Androids at once.)
 
 The draft is fixed — it only moves when the design does (last shot 2026-08-05 at
 `26ef0c9`). The NativeScript set is fixed too now, at 2026-08-06 / `9842b27`, which
@@ -25,16 +31,37 @@ were in the repo the two sets were always re-shot *together*, because they share
 core and a core change landed in both — see the third round below, where that is
 exactly what a screenshot proved.
 
-**The `expo/` set predates dark mode and the reader's share button** (both landed
-2026-08-12, [ADR 0007](../adr/0007-removing-the-nativescript-host.md)), so it shows
-neither. It was verified in a browser instead — the rule below is why that gap is
-written down rather than left to be discovered.
+**The `expo/` set is light mode throughout, on purpose** — it is a layout record,
+and the draft it is read against has no dark version. Appearance is checked
+separately, on all four combinations of setting and device scheme, because three of
+them are invisible here. See the appearance entry in
+[`TROUBLESHOOTING.md`](../TROUBLESHOOTING.md).
+
+The reader's share button, which the previous set predated, is in this one
+(`22-reader`).
 
 **A screenshot is only evidence of the build it came from.** The set this commit
 replaces was shot between 13:40 and 14:21 from APKs built at 14:46, and `9842b27`
 landed at 15:12 — so every picture in it showed an app one commit out of date, and
 one of them showed a feature that commit had deleted (see the third round below).
 Shoot after building, from the build you mean to document, and write down the commit.
+
+The `expo/` set here was shot on 2026-08-27 from `0919402`, over Metro from a clean
+worktree at that commit — after the Redux and Uniwind migrations
+([#45](https://github.com/faktenforum/correctiv-app/pull/45),
+[#48](https://github.com/faktenforum/correctiv-app/pull/48)) and the fix that
+followed them. It is a re-shoot rather than a comparison round: both migrations were
+meant to leave the layout alone, and these pictures are the evidence for that claim
+rather than a hunt for new findings. The one visual defect that round produced —
+`rounded-s` colliding with a Tailwind v4 utility, so every badge had two different
+corner radii — was caught by review before this set was taken, which is why it is not
+visible in it. At 405px wide per column it would not have been visible here anyway:
+the difference is two pixels on two corners.
+
+The first attempt at this set had to be thrown away. Metro was still building its
+cold bundle when the tour started, the app reloaded midway, and the last four steps
+were shot against the onboarding screen the reload landed on — the tour reported
+`MISS` twice and walked on regardless. Wait for Metro before shooting.
 
 ## Three-way comparison
 
@@ -50,8 +77,18 @@ Order in each image: **draft · NativeScript · Expo**.
 | [Entdecken](compare/30-entdecken.webp) | ![Entdecken](compare/30-entdecken.webp) |
 | [Mediathek](compare/40-mediathek.webp) | ![Mediathek](compare/40-mediathek.webp) |
 | [Mediathek, scrolled](compare/41-mediathek-mid.webp) | ![Mediathek mid](compare/41-mediathek-mid.webp) |
+| [Home, scrolled](compare/11-home-mid.webp) | ![Home mid](compare/11-home-mid.webp) |
+| [Home, further](compare/12-home-bottom.webp) | ![Home bottom](compare/12-home-bottom.webp) |
+| [Home, end](compare/13-home-end.webp) | ![Home end](compare/13-home-end.webp) |
+| [Entdecken, scrolled](compare/31-entdecken-mid.webp) | ![Entdecken mid](compare/31-entdecken-mid.webp) |
 | [Mitmachen](compare/50-mitmachen.webp) | ![Mitmachen](compare/50-mitmachen.webp) |
+| [Mitmachen, scrolled](compare/51-mitmachen-mid.webp) | ![Mitmachen mid](compare/51-mitmachen-mid.webp) |
 | [Profil](compare/60-profil.webp) | ![Profil](compare/60-profil.webp) |
+| [Profil, scrolled](compare/61-profil-mid.webp) | ![Profil mid](compare/61-profil-mid.webp) |
+
+Sixteen strips, from ten: the previous round built them by hand and stopped at the
+screens it was arguing about. `screens/tools/compare.sh` builds every step all three
+sets have, which is where the extra six come from.
 
 The reader has no montage: the draft has no reader screen to compare against — its
 detail view is an overlay the Expo app does not build — and the NativeScript tour
