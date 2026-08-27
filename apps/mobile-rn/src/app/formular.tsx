@@ -7,7 +7,7 @@ import { FormField } from '@/components/participate/FormField';
 import { Button, Hairline, ScreenHeader, Typo } from '@/components/ui';
 import { callouts, type CalloutComponent, type Callout } from '@correctiv/app-core/data/callouts';
 import { formatNumberDe } from '@correctiv/app-core/lib/format';
-import { coreActions, useExtraCount } from '@/lib/store/core';
+import { useCoreActions, useExtraCount } from '@/lib/store/core';
 import { sizes, useColors } from '@/lib/theme';
 
 /**
@@ -23,6 +23,7 @@ import { sizes, useColors } from '@/lib/theme';
  * filled-in form again.
  */
 export default function FormularScreen() {
+  const actions = useCoreActions();
   const { slug } = useLocalSearchParams<{ slug?: string }>();
   const callout = useMemo(() => callouts.find((c) => c.slug === slug) ?? null, [slug]);
 
@@ -84,7 +85,7 @@ export default function FormularScreen() {
       setStep(step + 1);
       return;
     }
-    coreActions.participation.submit(callout.slug, { ...choices, ...texts });
+    actions.participation.submit(callout.slug, { ...choices, ...texts });
     setSubmitted(true);
   };
 
@@ -92,7 +93,7 @@ export default function FormularScreen() {
     <View className="flex-1 bg-grey-100">
       <ScreenHeader backLabel="Abbrechen" />
 
-      {/* Schrittanzeige: ein Balken je Folie, gefüllt bis zur aktuellen. */}
+      {/* Step indicator: one bar per slide, filled up to the current one. */}
       <View className="flex-row gap-3xs px-m pt-2xs">
         {slides.map((s, i) => (
           <View

@@ -8,30 +8,43 @@ import { patch as mediaPatch } from '@correctiv/app-core/stores/media';
 import { join, setPaused } from '@correctiv/app-core/stores/membership';
 import { toggle as toggleInterest } from '@correctiv/app-core/stores/interests';
 import { toggle as toggleSaved } from '@correctiv/app-core/stores/savedArticles';
-import { resetStore } from '@correctiv/app-core/stores/store';
+import {
+  createAppStore,
+  resetStore,
+  type AppStore,
+  type AppThunk,
+} from '@correctiv/app-core/stores/store';
 
 import {
   coreStore,
+  useCoreActions,
   useExtraFeeds,
   useIsMember,
   useIsSaved,
+  useLazyLoad,
   useSelectedInterests,
   useVideoChannel,
+  type CoreActions,
 } from '@/lib/store/core';
 
 /**
  * Proves the React side actually binds to the core's Redux store.
  *
- * Two things could break here and both are invisible to typecheck:
+ * Three things could break here and none of them is visible to typecheck:
  *
  *  1. The Provider and the bound actions have to reach the SAME store instance.
  *     The core exports a singleton and the binding dispatches straight into it,
  *     so a second copy — a duplicated module under Metro, say — would show up as
- *     a component that never updates.
+ *     a component that never updates. That the app's Provider is handed the
+ *     singleton is pinned in `root-layout.test.tsx`; what is pinned here is the
+ *     other half, that a component's own writes go to the Provider's store and
+ *     not past it.
  *  2. `useSelector` compares results by REFERENCE. A selector that builds a fresh
  *     array on every call therefore re-renders its component on every dispatch in
  *     the app, including the audio position tick twice a second. That is why the
  *     interest hooks subscribe to the raw array and derive under useMemo.
+ *  3. A lazy load has to fire for the thing that is being asked for, which is not
+ *     the same as firing when a status changes.
  */
 
 beforeEach(() => {
@@ -60,11 +73,20 @@ afterEach(() => {
   mounted.length = 0;
 });
 
-/** Renders a hook under the Provider and reports how many times it rendered. */
-function renderHook<T>(hook: () => T): {
+/**
+ * Renders a hook under the Provider and reports how many times it rendered.
+ *
+ * `store` defaults to the singleton every screen ends up on; pass an isolated one
+ * to check that a hook writes where it reads.
+ */
+function renderHook<T>(
+  hook: () => T,
+  store: AppStore = coreStore,
+): {
   tree: ReactTestRenderer;
   value: () => T;
   renders: () => number;
+  rerender: () => void;
 } {
   let latest!: T;
   let renders = 0;
@@ -75,16 +97,31 @@ function renderHook<T>(hook: () => T): {
     return <Text>{String(latest)}</Text>;
   }
 
+  /**
+   * A FRESH element per render, deliberately. React bails out of re-rendering a
+   * child whose element is referentially identical, so re-using one would make
+   * `rerender()` a no-op that looks like a passing stability assertion.
+   */
+  const element = () => (
+    <Provider store={store}>
+      <Probe />
+    </Provider>
+  );
+
   let tree!: ReactTestRenderer;
   act(() => {
-    tree = create(
-      <Provider store={coreStore}>
-        <Probe />
-      </Provider>,
-    );
+    tree = create(element());
   });
   mounted.push(tree);
-  return { tree, value: () => latest, renders: () => renders };
+  return {
+    tree,
+    value: () => latest,
+    renders: () => renders,
+    rerender: () =>
+      act(() => {
+        tree.update(element());
+      }),
+  };
 }
 
 describe('useSelector over the core store', () => {
@@ -244,5 +281,108 @@ describe('useVideoChannel', () => {
     // a component showing "CORRECTIV im Gespräch".
     expect(renders()).toBe(before);
     await flush();
+  });
+});
+
+describe('useCoreActions', () => {
+  it('writes to the store its Provider holds, not to the singleton', () => {
+    // The seam this hook exists to close. `coreActions` is bound to the imported
+    // store, so a component reaching for it while its Provider holds another one
+    // reads one tree and writes to a second — and both calls succeed, which is why
+    // nothing reports it.
+    const isolated = createAppStore();
+    const { value } = renderHook(() => useCoreActions(), isolated);
+
+    act(() => {
+      value().settings.setPushOptIn(true);
+    });
+
+    expect(isolated.getState().settings.pushOptIn).toBe(true);
+    expect(coreStore.getState().settings.pushOptIn).toBe(false);
+  });
+
+  it('keeps one identity across renders', () => {
+    // These go straight into an `onPress`, so a fresh object per render would
+    // defeat any memoisation downstream.
+    const { value, rerender } = renderHook(() => useCoreActions());
+    const first: CoreActions = value();
+
+    rerender();
+
+    expect(value()).toBe(first);
+  });
+});
+
+/**
+ * The shared half of the three lazy loads, exercised on its own — with a thunk that
+ * records instead of fetching, because what is under test is WHEN it is dispatched.
+ *
+ * Doing it through `useVideoChannel` cannot prove the interesting case: loading a
+ * channel moves its status off `'idle'`, so switching to a second channel changes
+ * the status as well as the key and an implementation watching only the status
+ * would pass. Here the status is pinned.
+ */
+describe('useLazyLoad', () => {
+  const loaded: string[] = [];
+  const load =
+    (subject: string): AppThunk<void> =>
+    () => {
+      loaded.push(subject);
+    };
+
+  beforeEach(() => {
+    loaded.length = 0;
+  });
+
+  interface Props {
+    status: 'idle' | 'ready';
+    subject: string;
+  }
+
+  function Probe({ status, subject }: Props) {
+    useLazyLoad(status, load, subject);
+    return <Text>{subject}</Text>;
+  }
+
+  const wrap = (props: Props) => (
+    <Provider store={coreStore}>
+      <Probe {...props} />
+    </Provider>
+  );
+
+  function mount(props: Props) {
+    let tree!: ReactTestRenderer;
+    act(() => {
+      tree = create(wrap(props));
+    });
+    mounted.push(tree);
+    return (next: Props) =>
+      act(() => {
+        tree.update(wrap(next));
+      });
+  }
+
+  it('loads while the slice is idle', () => {
+    mount({ status: 'idle', subject: 'a' });
+    expect(loaded).toEqual(['a']);
+  });
+
+  it('does not load when the slice already holds something', () => {
+    mount({ status: 'ready', subject: 'a' });
+    expect(loaded).toEqual([]);
+  });
+
+  it('loads again for a new subject, though the status never changed', () => {
+    // Two video channels are both 'idle' at startup. A rail switching from one to
+    // the other has to load the second one, and only the argument says so.
+    const update = mount({ status: 'idle', subject: 'a' });
+    update({ status: 'idle', subject: 'b' });
+    expect(loaded).toEqual(['a', 'b']);
+  });
+
+  it('does not load twice for the same subject', () => {
+    const update = mount({ status: 'idle', subject: 'a' });
+    update({ status: 'idle', subject: 'a' });
+    expect(loaded).toEqual(['a']);
   });
 });

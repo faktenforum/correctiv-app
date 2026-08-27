@@ -6,7 +6,7 @@ import { Pressable, ScrollView, TextInput, View } from 'react-native';
 import { Button, Card, Hairline, SafeAreaView, Typo } from '@/components/ui';
 import type { MembershipInterval } from '@correctiv/app-core/stores/membership';
 import { goBack } from '@/lib/navigation/goBack';
-import { coreActions } from '@/lib/store/core';
+import { useCoreActions } from '@/lib/store/core';
 import { sizes, typography, useColors } from '@/lib/theme';
 
 /** Real figures from the concept — the first step argues, it does not push. */
@@ -41,6 +41,7 @@ const PERKS = [
  */
 export default function BeitretenScreen() {
   const colors = useColors();
+  const actions = useCoreActions();
   const [step, setStep] = useState(0);
   const [amount, setAmount] = useState(10);
   const [interval, setInterval] = useState<MembershipInterval>('monatlich');
@@ -51,7 +52,7 @@ export default function BeitretenScreen() {
   const per = interval === 'monatlich' ? 'im Monat' : 'im Jahr';
 
   const join = () => {
-    coreActions.membership.join(amount, interval, name.trim());
+    actions.membership.join(amount, interval, name.trim());
     setStep(3);
   };
 

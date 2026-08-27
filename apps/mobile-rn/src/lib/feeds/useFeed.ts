@@ -9,7 +9,7 @@ import {
 } from '@correctiv/app-core/stores/feeds';
 import type { FeedItem, FeedKey } from '@correctiv/app-core/types/models';
 
-import { useAppDispatch, useAppSelector } from '@/lib/store/core';
+import { useAppDispatch, useAppSelector, useLazyLoad } from '@/lib/store/core';
 
 /**
  * React bindings for the core's feed slice.
@@ -57,14 +57,16 @@ function toAsyncState<T>(items: T | null, status: FeedStatus, reload: () => void
  * place and leaves its siblings alone), so it is safe to select directly — unlike
  * a selector that builds a fresh object, which `useSelector` compares by
  * reference and would therefore re-render on every unrelated dispatch.
+ *
+ * The load itself is `useLazyLoad` in `lib/store/core.ts` — the same lines
+ * `useVideoChannel` and `usePodcastLibrary` need, including the reason all three
+ * dispatch through the Provider rather than the imported store.
  */
 export function useFeed(feed: FeedKey): AsyncState<FeedItem[]> {
   const dispatch = useAppDispatch();
   const slice = useAppSelector((s) => s.feeds.byKey[feed]);
 
-  useEffect(() => {
-    if (slice.status === 'idle') void dispatch(fetchFeedKey(feed));
-  }, [dispatch, feed, slice.status]);
+  useLazyLoad(slice.status, fetchFeedKey, feed);
 
   return toAsyncState(
     slice.items.length > 0 ? slice.items : null,

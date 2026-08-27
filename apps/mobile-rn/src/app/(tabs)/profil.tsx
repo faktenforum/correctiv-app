@@ -8,7 +8,7 @@ import { Button, Card, Hairline, Overline, Screen, Typo } from '@/components/ui'
 import { quarterlyReport } from '@correctiv/app-core/data/quartalsbericht';
 import { OFFLINE_ARTICLES } from '@/lib/articles/offlineBundle.generated';
 import { openArticle } from '@/lib/openArticle';
-import { coreActions, useMembership, useSavedArticles, useSettings } from '@/lib/store/core';
+import { useCoreActions, useMembership, useSavedArticles, useSettings } from '@/lib/store/core';
 
 /**
  * The three newsletters from the concept. State lives in the core store, so a
@@ -45,6 +45,7 @@ const IMPACT_ARTICLES = Object.entries(OFFLINE_ARTICLES)
  * (ADR 0004).
  */
 export default function ProfilScreen() {
+  const actions = useCoreActions();
   const membership = useMembership();
   const settings = useSettings();
   const saved = useSavedArticles();
@@ -89,7 +90,7 @@ export default function ProfilScreen() {
                 <Button
                   title={membership.paused ? 'Fortsetzen' : 'Pausieren'}
                   variant="secondary"
-                  onPress={() => coreActions.membership.setPaused(!membership.paused)}
+                  onPress={() => actions.membership.setPaused(!membership.paused)}
                   className="flex-1"
                 />
               </View>
@@ -171,7 +172,7 @@ export default function ProfilScreen() {
                 label={newsletter.label}
                 description={newsletter.description}
                 value={settings.newsletter[newsletter.key]}
-                onValueChange={(value) => coreActions.settings.setNewsletter(newsletter.key, value)}
+                onValueChange={(value) => actions.settings.setNewsletter(newsletter.key, value)}
               />
             </View>
           ))}

@@ -21,21 +21,30 @@ import {
   stop,
   togglePlay,
 } from '@correctiv/app-core/stores/audio';
-import { enrichImage, fetchFeedKey, fetchMany } from '@correctiv/app-core/stores/feeds';
+import {
+  enrichImage,
+  fetchFeedKey,
+  fetchMany,
+  type FeedStatus,
+} from '@correctiv/app-core/stores/feeds';
 import {
   boostedModules as selectBoostedModules,
   extraFeeds as selectExtraFeeds,
   interestsActions,
   selectedInterests as selectSelectedInterests,
 } from '@correctiv/app-core/stores/interests';
-import { fetchChannel, type YoutubeKey } from '@correctiv/app-core/stores/media';
+import {
+  fetchChannel,
+  type VideoListState,
+  type YoutubeKey,
+} from '@correctiv/app-core/stores/media';
 import { membershipActions } from '@correctiv/app-core/stores/membership';
 import {
   extraCount as selectExtraCount,
   hasSubmitted as selectHasSubmitted,
   participationActions,
 } from '@correctiv/app-core/stores/participation';
-import { fetchAll, findSeries } from '@correctiv/app-core/stores/podcasts';
+import { fetchAll, findSeries, type PodcastsStatus } from '@correctiv/app-core/stores/podcasts';
 import {
   isSaved as selectIsSaved,
   savedArticlesActions,
@@ -101,6 +110,47 @@ export const useExtraFeeds = () => {
   return useMemo(() => selectExtraFeeds({ selected }), [selected]);
 };
 
+// --- lazy loads --------------------------------------------------------------
+
+/** What the lazily loaded slices' statuses have in common: all start at `'idle'`. */
+type LazyStatus = FeedStatus | PodcastsStatus | VideoListState['status'];
+
+/**
+ * Fills a slice the first time something asks for it.
+ *
+ * `useVideoChannel`, `usePodcastLibrary` and `useFeed` were three copies of the
+ * same four lines: watch a status, and while it is still `'idle'` dispatch the
+ * thunk that fills the slice. The SUBSCRIPTION stays with the caller, because
+ * only the caller knows how to select narrowly enough — see the note on the
+ * interest hooks above, and the ones about `byKey` below.
+ *
+ * Two things here are load-bearing.
+ *
+ * **It dispatches through the Provider, not through the imported store.** Those
+ * are the same object in the app, so nothing can diverge today — but
+ * `createAppStore()` exists for tests, and against an isolated store a hook that
+ * reads the Provider while loading into the singleton would sit on `'idle'`
+ * forever: it never sees its own load land, so the effect never re-runs, never
+ * retries and never errors.
+ *
+ * **The subject is a dependency too.** A status alone cannot decide when to load
+ * again: two video channels can both be `'idle'`, so a rail switching from one to
+ * the other would never load the second. Hence the subject is handed over
+ * separately instead of being closed over — `() => fetchChannel(key)` would be a
+ * fresh function on every render, and an effect can only depend on what it can
+ * compare.
+ */
+export function useLazyLoad<S>(
+  status: LazyStatus,
+  load: (subject: S) => AppThunk<unknown>,
+  subject: S,
+): void {
+  const dispatch = useAppDispatch();
+  useEffect(() => {
+    if (status === 'idle') void dispatch(load(subject));
+  }, [dispatch, load, status, subject]);
+}
+
 /**
  * One media channel's videos, loaded on first use.
  *
@@ -113,20 +163,10 @@ export const useExtraFeeds = () => {
  * `byKey[key]` is a stable reference between updates (Immer patches the channel
  * in place and leaves its siblings alone), so it is safe to select directly —
  * see the note above about selectors that build fresh objects.
- *
- * The load goes through `useAppDispatch()` rather than the imported store, so
- * that reads and writes are always the SAME store. They cannot diverge in the
- * app — the Provider is handed that very singleton — but `createAppStore()`
- * exists for tests, and against an isolated store a hook that reads from the
- * Provider while loading into the singleton would sit on `'idle'` forever: the
- * effect's own dependency never changes, so it never retries and never errors.
  */
 export const useVideoChannel = (key: YoutubeKey) => {
-  const dispatch = useAppDispatch();
   const slice = useAppSelector((s) => s.media.byKey[key]);
-  useEffect(() => {
-    if (slice.status === 'idle') void dispatch(fetchChannel(key));
-  }, [dispatch, key, slice.status]);
+  useLazyLoad(slice.status, fetchChannel, key);
   return slice;
 };
 
@@ -135,14 +175,14 @@ export const useVideoChannel = (key: YoutubeKey) => {
  * `useVideoChannel`. Two narrow subscriptions rather than one whole-slice read:
  * `series` is a stable reference between updates and `status` is a string, so
  * neither can cost a render it does not owe.
+ *
+ * There is one library and it arrives in one piece, so the load has no subject —
+ * `fetchAll` takes only its options, and defaults them.
  */
 export const usePodcastLibrary = () => {
-  const dispatch = useAppDispatch();
   const series = useAppSelector((s) => s.podcasts.series);
   const status = useAppSelector((s) => s.podcasts.status);
-  useEffect(() => {
-    if (status === 'idle') void dispatch(fetchAll());
-  }, [dispatch, status]);
+  useLazyLoad(status, fetchAll, undefined);
   return { series, status };
 };
 
@@ -163,49 +203,80 @@ export const useExtraCount = (slug: string) =>
 // --- actions -----------------------------------------------------------------
 
 /**
- * Actions, bound to the core store once at module load.
+ * Every action this app dispatches, bound to one dispatch.
  *
- * Dispatching outside React costs no render and needs no hook, which is what
- * keeps the call sites plain: `coreActions.settings.setTheme('dark')` in an
- * onPress, rather than a `useDispatch` in every screen that has a button.
- *
- * The thunk groups are spelled out rather than run through
- * `bindActionCreators`, because that helper types a bound thunk as returning the
- * thunk itself instead of what dispatching it returns — which would make every
- * `await` here a lie.
+ * The thunk groups are spelled out rather than run through `bindActionCreators`,
+ * because that helper types a bound thunk as returning the thunk itself instead
+ * of what dispatching it returns — which would make every `await` on one a lie.
  */
-const bind =
-  <A extends unknown[], R>(creator: (...args: A) => AppThunk<R>) =>
-  (...args: A): R =>
-    store.dispatch(creator(...args));
+function bindCoreActions(dispatch: AppDispatch) {
+  const bind =
+    <A extends unknown[], R>(creator: (...args: A) => AppThunk<R>) =>
+    (...args: A): R =>
+      dispatch(creator(...args));
 
-export const coreActions = {
-  settings: bindActionCreators(settingsActions, store.dispatch),
-  membership: bindActionCreators(membershipActions, store.dispatch),
-  savedArticles: bindActionCreators(savedArticlesActions, store.dispatch),
-  interests: bindActionCreators(interestsActions, store.dispatch),
-  participation: bindActionCreators(participationActions, store.dispatch),
+  return {
+    settings: bindActionCreators(settingsActions, dispatch),
+    membership: bindActionCreators(membershipActions, dispatch),
+    savedArticles: bindActionCreators(savedArticlesActions, dispatch),
+    interests: bindActionCreators(interestsActions, dispatch),
+    participation: bindActionCreators(participationActions, dispatch),
 
-  audio: {
-    playRadio: bind(playRadio),
-    playEpisode: bind(playEpisode),
-    togglePlay: bind(togglePlay),
-    seekTo: bind(seekTo),
-    setSpeed: bind(setSpeed),
-    stop: bind(stop),
-  },
-  feeds: {
-    fetch: bind(fetchFeedKey),
-    fetchMany: bind(fetchMany),
-    enrichImage: bind(enrichImage),
-  },
-  podcasts: { fetchAll: bind(fetchAll) },
-  media: { fetch: bind(fetchChannel) },
-  video: {
-    ...bindActionCreators(
-      { expand: videoActions.expand, collapse: videoActions.collapse, close: videoActions.close },
-      store.dispatch,
-    ),
-    play: bind(videoActions.play),
-  },
+    audio: {
+      playRadio: bind(playRadio),
+      playEpisode: bind(playEpisode),
+      togglePlay: bind(togglePlay),
+      seekTo: bind(seekTo),
+      setSpeed: bind(setSpeed),
+      stop: bind(stop),
+    },
+    feeds: {
+      fetch: bind(fetchFeedKey),
+      fetchMany: bind(fetchMany),
+      enrichImage: bind(enrichImage),
+    },
+    podcasts: { fetchAll: bind(fetchAll) },
+    media: { fetch: bind(fetchChannel) },
+    video: {
+      ...bindActionCreators(
+        { expand: videoActions.expand, collapse: videoActions.collapse, close: videoActions.close },
+        dispatch,
+      ),
+      play: bind(videoActions.play),
+    },
+  };
+}
+
+export type CoreActions = ReturnType<typeof bindCoreActions>;
+
+/**
+ * The actions, bound to the core's singleton store at module load.
+ *
+ * **Inside React use `useCoreActions()`; outside, use this and know that you
+ * are.** Reads go through the Provider, so a component that writes here reads
+ * one store and writes to another the moment the two are not the same object.
+ * They are the same object in the app — `app/_layout.tsx` hands the Provider this
+ * very singleton, and `__tests__/root-layout.test.tsx` pins that — but
+ * `createAppStore()` exists for tests, and against an isolated store the divergence
+ * is silent: both calls succeed and the screen simply never updates.
+ *
+ * The callers that genuinely run outside React are real and few:
+ * `lib/audio/player.ts` (whose actions the exclusive-playback callback invokes as
+ * well as screens do), `lib/feeds/corpus.ts` (a module-level promise) and the
+ * `registerExclusiveMedium` wiring in `app/_layout.tsx`. That is not a wart — it
+ * is the same reason the core owns the store instance at all, which the doc
+ * comment in `@correctiv/app-core/stores/store` sets out.
+ */
+export const coreActions = bindCoreActions(store.dispatch);
+
+/**
+ * The same actions, bound to the store the Provider actually holds.
+ *
+ * Memoised on the dispatch, which react-redux keeps stable for the life of the
+ * store — so these keep one identity across renders and can be handed straight
+ * to an `onPress` without defeating memoisation downstream.
+ */
+export const useCoreActions = (): CoreActions => {
+  const dispatch = useAppDispatch();
+  return useMemo(() => bindCoreActions(dispatch), [dispatch]);
 };
