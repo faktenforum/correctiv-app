@@ -6,11 +6,17 @@ colour palettes, the spacing and type scales in px, radii, durations, and
 
 The source of truth is `tokens/theme.css` at the repo root — vendored from
 [correctiv/wp-design-tokens](https://github.com/correctiv/wp-design-tokens), see
-[tokens/README.md](../../tokens/README.md). Nothing here is authored by hand except
-`palette.js`.
+[tokens/README.md](../../tokens/README.md).
 
-No UI framework, no platform SDK, no dependencies — the same rule
-[`@correctiv/app-core`](../app-core/README.md) lives by, for the same reason.
+Three files are written by hand — `palette.js`, `scripts/generate.mjs` and
+`src/index.ts`. Everything named `*.generated.*` comes out of the generator and is
+never edited: `npm run tokens` would overwrite the edit, and the drift check in
+`apps/mobile-rn/__tests__/tokens.test.ts` fails the build if it does not.
+
+No UI framework and no platform SDK — the same rule
+[`@correctiv/app-core`](../app-core/README.md) lives by, for the same reason. This
+package additionally has no dependencies at all, which app-core cannot claim: it
+carries an HTML parser for its DOM extraction backend.
 
 ## Who consumes it
 
@@ -25,7 +31,11 @@ import { READER_DARK_CSS, THEME_CSS } from '@correctiv/design-tokens/reader.gene
 ```
 
 Subpath imports, as above, so that reading one colour does not also pull in the
-reader's embedded copy of `theme.css`. `src/index.ts` re-exports both and explains
+reader's embedded copy of `theme.css`. The `exports` wildcard names the `.ts`
+extension — unlike `@correctiv/app-core`'s, which does not. That package is only
+ever resolved by Metro and by this repo's own `tsconfig` paths, both of which guess
+the extension; this one is meant to be read from outside the repo, where nothing
+guesses and an extensionless target is simply a file that does not exist. `src/index.ts` re-exports both and explains
 what the package deliberately leaves to its hosts — font families and the Tailwind
 v3 theme map, which are React Native facts, not token facts.
 
