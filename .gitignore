@@ -32,3 +32,6 @@ out/
 
 # Agent worktrees (Claude Code) — checkouts, not content.
 .claude/worktrees/
+
+# Browser-automation scratch output.
+.playwright-mcp/
