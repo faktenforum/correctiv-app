@@ -9,7 +9,7 @@
  * Always select the narrowest slice you need. `useSelector((s) => s.settings)`
  * re-renders on every change to any field in that slice.
  */
-import { bindActionCreators } from '@reduxjs/toolkit';
+import { bindActionCreators, type StoreEnhancer } from '@reduxjs/toolkit';
 import { useEffect, useMemo } from 'react';
 import { useDispatch, useSelector, useStore, type TypedUseSelectorHook } from 'react-redux';
 
@@ -51,14 +51,51 @@ import {
 } from '@correctiv/app-core/stores/savedArticles';
 import { settingsActions } from '@correctiv/app-core/stores/settings';
 import {
-  store,
+  createAppStore,
   type AppDispatch,
   type AppThunk,
   type RootState,
 } from '@correctiv/app-core/stores/store';
 import { videoActions } from '@correctiv/app-core/stores/video';
 
-export { store as coreStore };
+/**
+ * Redux DevTools, in development only.
+ *
+ * `redux-devtools-expo-dev-plugin` is an Expo dev plugin: the full DevTools from
+ * the Chrome extension, reachable from the Expo dev menu, with the action list,
+ * the state diff, and rewind. On a state tree that takes an audio position tick
+ * twice a second and runs four network cascades, a named action history is the
+ * difference between reading logs and seeing what happened.
+ *
+ * `require` inside the `__DEV__` branch rather than a top-level import, so a
+ * release build drops the whole thing instead of bundling a debugger. RTK's own
+ * `devTools` integration is switched off in the same breath — the plugin replaces
+ * it, and two of them fight over one connection.
+ */
+function devToolsEnhancers(): StoreEnhancer[] {
+  // `__DEV__` is true under jest too, and the plugin ships ESM the test transform
+  // does not cover — so a bare `__DEV__` check fails every suite that imports this
+  // file with "Unexpected token 'export'". Excluding the test runner is also just
+  // true: there is no dev client for it to talk to, and a debugger has no business
+  // being loaded 15 times per `npm run check`.
+  if (!__DEV__ || process.env.NODE_ENV === 'test') return [];
+  // eslint-disable-next-line @typescript-eslint/no-require-imports
+  const devToolsEnhancer = require('redux-devtools-expo-dev-plugin').default as () => StoreEnhancer;
+  return [devToolsEnhancer()];
+}
+
+/**
+ * The store, and the only one there is.
+ *
+ * Built here rather than in the core, which used to export a ready-made instance:
+ * nothing in the core needs it any more (every reference there is an `import
+ * type`), and a store created during a module's evaluation can never be handed an
+ * enhancer. See the note in `@correctiv/app-core/stores/store`.
+ */
+export const coreStore = createAppStore({
+  enhancers: devToolsEnhancers(),
+  devTools: false,
+});
 
 /** Typed `useSelector`, so a selector's state argument is never `any`. */
 export const useAppSelector: TypedUseSelectorHook<RootState> = useSelector;
@@ -267,7 +304,7 @@ export type CoreActions = ReturnType<typeof bindCoreActions>;
  * is the same reason the core owns the store instance at all, which the doc
  * comment in `@correctiv/app-core/stores/store` sets out.
  */
-export const coreActions = bindCoreActions(store.dispatch);
+export const coreActions = bindCoreActions(coreStore.dispatch);
 
 /**
  * The same actions, bound to the store the Provider actually holds.

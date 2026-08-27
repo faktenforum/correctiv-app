@@ -41,6 +41,12 @@ be on `<html>`. Worth knowing before reaching for `body_class()`, because the
 `prefers-color-scheme` half keeps working either way, so a toggle would fail while
 the automatic path looked fine.
 
+That the standalone file actually works for a consumer with no Uniwind is checked
+on every PR: `apps/mobile-rn/__tests__/design-tokens-standalone.test.ts` compiles it
+with plain Tailwind and asserts the colour utilities appear and both dark paths carry
+the dark values. It is there because this file has already been wrong twice, and
+neither time was loud — see the test's own header.
+
 Two files because `@variant light { … }` is an error unless something has defined
 that variant. Uniwind defines it, so the app must not define it a second time and
 shadow Uniwind's own; a plain Tailwind v4 build defines nothing, so the standalone

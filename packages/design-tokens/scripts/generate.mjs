@@ -48,7 +48,7 @@ import { readFileSync, writeFileSync, mkdirSync } from 'node:fs';
 import { dirname, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
-import { themeCssPath } from '../../../scripts/tokens-source.mjs';
+import { themeCssPath, typographyCssPath } from '../../../scripts/tokens-source.mjs';
 // The dark palette and the fixed role colours — the one part of the colour system
 // that is a decision rather than a design token. The reasoning is in palette.js.
 import { dark, roles } from '../palette.js';
@@ -233,6 +233,93 @@ function buildPalettes(tokenColors) {
     colors: { ...tokenColors, ...roles },
     colorsDark: { ...tokenColors, ...dark, ...roles },
   };
+}
+
+// ---------------------------------------------------------------------------
+// 4b. Parse typography.css — the composite `ty-*` utilities
+// ---------------------------------------------------------------------------
+/**
+ * Which CSS property maps to which field of a spec, and which `--var-` prefix its
+ * value is expected to carry. `font-family` is the odd one out: its value is
+ * `--var-font-serif` or `--var-font-sans`, so the token name IS the family.
+ */
+const TYPO_PROPERTIES = {
+  'font-family': { field: 'family', prefix: '--var-font-' },
+  'font-weight': { field: 'weight', prefix: '--var-font-weight-' },
+  'font-size': { field: 'size', prefix: '--var-font-size-' },
+  'letter-spacing': { field: 'tracking', prefix: '--var-letter-spacing-' },
+  'line-height': { field: 'leading', prefix: '--var-leading-' },
+};
+
+/**
+ * Properties this bridge sees and deliberately drops. React Native has no
+ * `word-spacing`, so carrying it would be a field nothing could ever apply.
+ *
+ * Anything NOT in this list and not in TYPO_PROPERTIES throws, on purpose: an
+ * upstream that starts setting `text-transform` should surface as a failed
+ * generation rather than as a difference nobody notices between the CSS and the
+ * app.
+ */
+const TYPO_IGNORED = ['word-spacing'];
+
+/** The body of `{ … }` starting at `open`, brace-matched so nested rules survive. */
+function balancedBody(css, open) {
+  let depth = 0;
+  for (let i = open; i < css.length; i++) {
+    if (css[i] === '{') depth++;
+    else if (css[i] === '}') {
+      depth--;
+      if (depth === 0) return css.slice(open + 1, i);
+    }
+  }
+  throw new Error('Unbalanced braces in typography.css');
+}
+
+function readDeclarations(body, variant, where) {
+  const spec = {};
+  for (const [, property, value] of body.matchAll(/^\s*([a-z-]+)\s*:\s*([^;]+);/gm)) {
+    if (TYPO_IGNORED.includes(property)) continue;
+    const mapping = TYPO_PROPERTIES[property];
+    if (!mapping) {
+      throw new Error(
+        `typography.css: ty-${variant} sets "${property}"${where}, which this bridge ` +
+          'neither maps to a React Native style nor lists as deliberately dropped. ' +
+          'Add it to TYPO_PROPERTIES or TYPO_IGNORED in scripts/generate.mjs.',
+      );
+    }
+    const token = /^var\((--var-[a-z0-9-]+)\)$/i.exec(value.trim())?.[1];
+    if (!token || !token.startsWith(mapping.prefix)) {
+      throw new Error(
+        `typography.css: ty-${variant}'s ${property} is "${value.trim()}", not a ` +
+          `var(${mapping.prefix}…) reference. The bridge reads token names, not values.`,
+      );
+    }
+    spec[mapping.field] = token.slice(mapping.prefix.length);
+  }
+  return spec;
+}
+
+/**
+ * Every `ty-*` utility as a spec of TOKEN NAMES, not resolved values — the host
+ * turns them into a style, because how a family name reaches a text run is a
+ * platform question (see the note on font families in src/index.ts).
+ *
+ * The three headlines that carry a `@media (min-width: 48rem)` line-height get a
+ * second field rather than losing it. The app renders the mobile value; that was a
+ * decision, and it stays one, but it is no longer made by omission.
+ */
+function parseTypography(css) {
+  const specs = {};
+  for (const match of css.matchAll(/@utility\s+ty-([a-z0-9-]+)\s*\{/g)) {
+    const variant = match[1];
+    const body = balancedBody(css, match.index + match[0].length - 1);
+    const mobile = readDeclarations(body.replace(/@media[^{]*\{[\s\S]*?\n\s*\}/g, ''), variant, '');
+    const media = /@media\s*\(min-width:\s*48rem\)\s*\{([\s\S]*?)\n\s*\}/.exec(body);
+    const tablet = media ? readDeclarations(media[1], variant, ' inside its @media block') : {};
+    specs[variant] = tablet.leading ? { ...mobile, leadingTablet: tablet.leading } : mobile;
+  }
+  if (Object.keys(specs).length === 0) throw new Error('typography.css: no ty-* utilities found');
+  return specs;
 }
 
 // ---------------------------------------------------------------------------
@@ -432,6 +519,22 @@ export type SpacingToken = keyof typeof spacingPx;
  * The base `:root` plus the media queries, but not `@theme inline`: that is
  * Tailwind's, and the WebView would ignore it.
  */
+function renderTypographyTs(specs) {
+  const header = HEADER.replace('tokens/theme.css', 'tokens/typography.css');
+  return `${header}
+/* eslint-disable */
+// The composite \`ty-*\` utilities, as TOKEN NAMES.
+// Resolve them against the scales in ./tokens.generated. A host turns a spec into
+// whatever its platform calls a text style; this file takes no view on that.
+//
+// \`leadingTablet\` is present where typography.css overrides the line height at
+// 48rem. Read it or do not — but it is here, rather than dropped in transcription.
+export const typographySpecs = ${JSON.stringify(specs, null, 2)} as const;
+
+export type TypoVariant = keyof typeof typographySpecs;
+`;
+}
+
 function renderReaderTs(themeCss, colorsDark) {
   const themeCssForReader = themeCss.split('@theme inline')[0].trim();
 
@@ -462,6 +565,7 @@ export const READER_DARK_CSS = ${JSON.stringify(readerDarkCss)};
 // ---------------------------------------------------------------------------
 function main() {
   const themeCss = readFileSync(THEME_CSS_PATH, 'utf8');
+  const typographySpecs = parseTypography(readFileSync(typographyCssPath(), 'utf8'));
   const vars = parseVars(themeCss);
   const scales = groupScales(vars);
   const { colors, colorsDark } = buildPalettes(scales.tokenColors);
@@ -475,12 +579,14 @@ function main() {
     resolve(SRC_DIR, 'tokens.generated.ts'),
     renderTokensTs(scales, colors, colorsDark),
   );
+  writeFileSync(resolve(SRC_DIR, 'typography.generated.ts'), renderTypographyTs(typographySpecs));
   writeFileSync(resolve(SRC_DIR, 'reader.generated.ts'), renderReaderTs(themeCss, colorsDark));
 
   console.log('Token bridge generated:');
   console.log('  • packages/design-tokens/theme.css');
   console.log('  • packages/design-tokens/theme.standalone.css');
   console.log('  • packages/design-tokens/src/tokens.generated.ts');
+  console.log('  • packages/design-tokens/src/typography.generated.ts');
   console.log('  • packages/design-tokens/src/reader.generated.ts');
   console.log(
     `  (${Object.keys(colors).length} colours, ${Object.keys(scales.spacingTokens).length} spacing tokens, ${Object.keys(scales.fontSizePx).length} font sizes)`,

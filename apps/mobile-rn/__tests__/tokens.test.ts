@@ -5,7 +5,7 @@
  *
  * The bridge itself lives in @correctiv/design-tokens, so that the CMS can consume
  * the same values; the check stays here, because this app is the consumer that
- * would show the damage, and because this is the suite CI already runs. All four
+ * would show the damage, and because this is the suite CI already runs. All five
  * artefacts belong to the package now — nothing is written into this app since
  * the move to Uniwind, because a Tailwind v4 theme is CSS and CSS is portable.
  *
@@ -25,15 +25,17 @@ import { readFileSync, writeFileSync } from 'node:fs';
 import { resolve } from 'node:path';
 
 import { colors, colorsDark, spacingPx } from '@correctiv/design-tokens/tokens.generated';
+import { typographySpecs } from '@correctiv/design-tokens/typography.generated';
+import { fontSizePx, leading, letterSpacingPx } from '@correctiv/design-tokens/tokens.generated';
 // Resolves the vendored tokens/ and nothing else — see scripts/tokens-source.mjs.
-import { themeCssPath } from '../../../scripts/tokens-source.mjs';
+import { themeCssPath, typographyCssPath } from '../../../scripts/tokens-source.mjs';
 
 /** This app. */
 const APP = resolve(__dirname, '..');
 /** The package that owns the generator and every artefact it writes. */
 const TOKENS_PKG = resolve(APP, '../../packages/design-tokens');
 
-/** All four, so that reading "the artefacts" cannot quietly mean three of them. */
+/** All five, so that reading "the artefacts" cannot quietly mean four of them. */
 const ARTEFACTS = [
   // The Tailwind v4 theme this app imports…
   'theme.css',
@@ -41,12 +43,15 @@ const ARTEFACTS = [
   // here is drift in what the CMS would get.
   'theme.standalone.css',
   'src/tokens.generated.ts',
+  // The composite ty-* specs. Transcribed by hand until 2026-08-27, which is why
+  // it is here: eleven variants with nothing checking them against the source.
+  'src/typography.generated.ts',
   'src/reader.generated.ts',
 ] as const;
 
 type Artefact = (typeof ARTEFACTS)[number];
 
-/** The four artefacts as they are on disk at this moment. */
+/** The five artefacts as they are on disk at this moment. */
 function readArtefacts(): Record<Artefact, string> {
   const out = {} as Record<Artefact, string>;
   for (const rel of ARTEFACTS) out[rel] = readFileSync(resolve(TOKENS_PKG, rel), 'utf8');
@@ -159,6 +164,47 @@ describe('token bridge', () => {
  * the build is green, and only on a device is there white text on a white
  * background.
  */
+describe('typography specs', () => {
+  it('carries every ty-* utility the source defines', () => {
+    // Eleven, and the count is the point: these were transcribed by hand, so a
+    // variant added upstream used to arrive only if somebody noticed it.
+    const source = readFileSync(typographyCssPath(), 'utf8');
+    const inSource = [...source.matchAll(/@utility\s+ty-([a-z0-9-]+)/g)].map((m) => m[1]).sort();
+    expect(Object.keys(typographySpecs).sort()).toEqual(inSource);
+  });
+
+  it('keeps the tablet line height instead of dropping it', () => {
+    // Three headlines override line-height at 48rem. The hand-written version took
+    // the mobile value and lost the other one silently; the app still renders the
+    // mobile value, but by choice now — this asserts the choice still has something
+    // to choose between.
+    expect(typographySpecs['headline-s']).toMatchObject({
+      leading: 'loose',
+      leadingTablet: 'normal',
+    });
+    expect(typographySpecs['headline-xl']).toMatchObject({
+      leading: 'tight',
+      leadingTablet: 'tighter',
+    });
+    // And a variant with no override must not invent one.
+    expect(typographySpecs['text-m']).not.toHaveProperty('leadingTablet');
+  });
+
+  it('names only tokens the scales actually have', () => {
+    // A spec carries token NAMES. One the scales do not know would render a NaN
+    // font size on a device rather than fail anywhere a test could see.
+    const unknown: string[] = [];
+    for (const [variant, spec] of Object.entries(typographySpecs)) {
+      if (!(spec.size in fontSizePx)) unknown.push(`${variant}.size = ${spec.size}`);
+      if (!(spec.tracking in letterSpacingPx)) {
+        unknown.push(`${variant}.tracking = ${spec.tracking}`);
+      }
+      if (!(spec.leading in leading)) unknown.push(`${variant}.leading = ${spec.leading}`);
+    }
+    expect(unknown).toEqual([]);
+  });
+});
+
 describe('two-scheme palette', () => {
   it('keeps the role colours identical in both schemes', () => {
     // Otherwise their name is a lie: they sit on surfaces that do not switch
