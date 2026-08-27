@@ -4,12 +4,17 @@ import { join } from 'node:path';
 /**
  * Numeric size and spacing utilities are banned in this app.
  *
- * `tailwind.config.js` replaces Tailwind's spacing scale with the design system's,
- * and that one steps 2px per unit and stops at 48. So every numeric utility means
- * something other than what it says: `w-10` is 20px, not 40; `w-32` is 64px, not
- * 128; `w-64` does not exist at all and NativeWind drops it silently, after which
- * the element sizes to its content — that is how one rail card grew into a
- * full-screen black rectangle while build, typecheck and tests all stayed green.
+ * The spacing scale is the design system's, not Tailwind's: `--spacing: 2px` in
+ * @correctiv/design-tokens/theme.css. So every numeric utility means something other
+ * than what it says — `w-10` is 20px, not 40; `w-32` is 64px, not 128. Under
+ * NativeWind the named scale also stopped at 48, so `w-64` did not exist and the
+ * class was dropped silently, after which the element sized to its content: that is
+ * how one rail card grew into a full-screen black rectangle while build, typecheck
+ * and tests all stayed green.
+ *
+ * Tailwind v4 generates any numeric step from `--spacing` instead of dropping the
+ * unknown ones, so the silent-disappearance half of the trap is gone — but the
+ * wrong-by-half is not, which is the half that shipped.
  *
  * Named spacing tokens (`p-s`, `gap-m`, `mt-2xs`) say what they mean, and pixel
  * sizes belong in `src/lib/theme/sizes.ts` where the number is visible. `-0` stays

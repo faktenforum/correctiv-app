@@ -2,12 +2,12 @@
  * Element sizes in dp, taken from the design draft — the `.dc.html` mockup in the
  * `design-entwurf` sibling repo, shot screen by screen into `screens/draft/`.
  *
- * Why not Tailwind utilities: `tailwind.config.js` replaces Tailwind's spacing
- * scale with the design system's own, and that one steps 2px per unit and stops
- * at 48. So `w-64` does not exist — NativeWind drops the class without a word and
- * the element sizes to its content instead — while `w-32` means 64px, not
- * Tailwind's 128. Every numeric size utility in this app was therefore either
- * half its intended size or gone.
+ * Why not Tailwind utilities: the spacing scale is the design system's own
+ * (`--spacing: 2px` in @correctiv/design-tokens/theme.css), so a numeric utility
+ * never means what it says — `w-32` is 64px, not Tailwind's 128. Under NativeWind
+ * the scale also stopped at 48, so `w-64` did not exist at all: the class was
+ * dropped without a word and the element sized to its content. Every numeric size
+ * utility in this app was therefore either half its intended size or gone.
  *
  * Spacing keeps the named tokens (`p-s`, `gap-m`, `mt-2xs`); anything that needs
  * a pixel size belongs here, where the number is visible and the draft's value is

@@ -1,3 +1,8 @@
-@tailwind base;
-@tailwind components;
-@tailwind utilities;
+@import 'tailwindcss';
+@import 'uniwind';
+
+/* The palette, the spacing scale and the type scale — generated from
+   tokens/theme.css into @correctiv/design-tokens, and imported by path rather
+   than through the package's exports map because the plain Tailwind CLI does not
+   read exports maps, and a CMS build is the reason that file is shareable. */
+@import '@correctiv/design-tokens/theme.css';

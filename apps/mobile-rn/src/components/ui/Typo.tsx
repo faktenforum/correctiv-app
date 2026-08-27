@@ -37,7 +37,7 @@ export type TypoProps = TextProps & {
    * break this file's 1:1 mirroring of typography.css.
    */
   family?: FontFamily;
-  /** NativeWind classes for layout and spacing, not for typography. */
+  /** Utility classes for layout and spacing, not for typography. */
   className?: string;
 };
 

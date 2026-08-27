@@ -5,9 +5,9 @@
  *
  * The bridge itself lives in @correctiv/design-tokens, so that the CMS can consume
  * the same values; the check stays here, because this app is the consumer that
- * would show the damage, and because this is the suite CI already runs. It spans
- * both: two of the three artefacts belong to the package, and
- * tailwind.tokens.generated.js is written into this app.
+ * would show the damage, and because this is the suite CI already runs. All three
+ * artefacts belong to the package now — nothing is written into this app since the
+ * move to Uniwind, because a Tailwind v4 theme is CSS and CSS is portable.
  */
 import { execFileSync } from 'node:child_process';
 import { readFileSync } from 'node:fs';
@@ -19,7 +19,7 @@ import { themeCssPath } from '../../../scripts/tokens-source.mjs';
 
 /** This app. */
 const APP = resolve(__dirname, '..');
-/** The package that owns the generator and the two shared artefacts. */
+/** The package that owns the generator and every artefact it writes. */
 const TOKENS_PKG = resolve(APP, '../../packages/design-tokens');
 
 function read(root: string, rel: string): string {
@@ -42,16 +42,16 @@ describe('token bridge', () => {
 
   it('keeps the generated files current (no drift against theme.css)', () => {
     const before = {
-      tw: read(APP, 'tailwind.tokens.generated.js'),
+      // The Tailwind v4 theme — the one artefact a consumer outside this repo
+      // reads, so drift here is drift in what the CMS would import.
+      theme: read(TOKENS_PKG, 'theme.css'),
       ts: read(TOKENS_PKG, 'src/tokens.generated.ts'),
-      css: read(TOKENS_PKG, 'src/reader.generated.ts'),
+      reader: read(TOKENS_PKG, 'src/reader.generated.ts'),
     };
-    // One run writes all three, this app's Tailwind map included — see the header
-    // of generate.mjs for why that one artefact does not stay in the package.
     execFileSync('node', ['scripts/generate.mjs'], { cwd: TOKENS_PKG, stdio: 'pipe' });
-    expect(read(APP, 'tailwind.tokens.generated.js')).toBe(before.tw);
+    expect(read(TOKENS_PKG, 'theme.css')).toBe(before.theme);
     expect(read(TOKENS_PKG, 'src/tokens.generated.ts')).toBe(before.ts);
-    expect(read(TOKENS_PKG, 'src/reader.generated.ts')).toBe(before.css);
+    expect(read(TOKENS_PKG, 'src/reader.generated.ts')).toBe(before.reader);
   });
 
   it('maps the brand core colours correctly', () => {

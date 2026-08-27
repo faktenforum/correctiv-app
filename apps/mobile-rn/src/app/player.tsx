@@ -1,9 +1,8 @@
 import { Ionicons } from '@expo/vector-icons';
 import { ActivityIndicator, Pressable, View } from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { ProgressBar } from '@/components/player/ProgressBar';
-import { Typo } from '@/components/ui';
+import { SafeAreaView, Typo } from '@/components/ui';
 import { formatTimeHm } from '@correctiv/app-core/lib/format';
 import { seekTo, setSpeed, togglePlay } from '@/lib/audio/player';
 import { useAudio } from '@/lib/audio/useAudio';

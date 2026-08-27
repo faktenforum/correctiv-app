@@ -21,6 +21,9 @@
     "**/*.d.mts",
     "package-lock.json",
     "**/*.generated.*",
+    // Written by `uniwind generate-artifacts`, which has its own formatting and
+    // would undo ours on the next run.
+    "apps/mobile-rn/uniwind-types.d.ts",
     // Vendored design tokens — must stay byte-identical to upstream so a plain diff
     // against a fresh checkout is meaningful, and because theme.css is embedded
     // verbatim into the reader WebView. See tokens/README.md.

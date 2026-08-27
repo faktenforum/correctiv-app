@@ -1,6 +1,5 @@
 import { useEffect } from 'react';
-import { useColorScheme as useDeviceColorScheme } from 'react-native';
-import { useColorScheme } from 'nativewind';
+import { Uniwind } from 'uniwind';
 
 import { useTheme } from '@/lib/store/core';
 
@@ -8,51 +7,35 @@ import { useTheme } from '@/lib/store/core';
 export type ThemeSetting = 'system' | 'light' | 'dark';
 
 /**
- * Turns the setting into a concrete scheme.
+ * Hands the app's appearance setting to Uniwind, which owns the colour system.
  *
- * The whole point is that `'system'` never leaves this function. Handing it on
- * looks harmless — NativeWind accepts it — but it splits the app in half: its
- * JavaScript side then follows the device, while `darkMode: 'class'` waits for a
- * `dark` class that nothing adds, so the CSS variables behind `bg-grey-100` stay on
- * their light values. The result is dark-mode *text* on light-mode *surfaces*:
- * near-white on white, unreadable, on a build where every check is green.
+ * The setting is passed on VERBATIM, `'system'` included — and that is the part
+ * worth reading, because under NativeWind doing so was a bug that shipped.
  *
- * That shipped. It survived a browser walk too, because the walk flipped the setting
- * to `'dark'` explicitly and pinned the emulated `prefers-color-scheme` to light —
- * exercising both paths that work and neither that breaks.
+ * There, `'system'` had to be resolved here first: handing it through left the
+ * app's JavaScript following the device while `darkMode: 'class'` waited for a
+ * class nothing added, so `useColors()` returned the dark palette while
+ * `bg-grey-100` stayed white — near-white text on a white page, on a build where
+ * typecheck, lint, the tests, the Android build and the web export were all green.
+ * It even survived a browser walk, which flipped the setting to `'dark'` and
+ * pinned the emulated `prefers-color-scheme` to light: both paths that work,
+ * neither that breaks.
  *
- * The parameter is deliberately wider than React Native's `ColorSchemeName`: that
- * type is `'light' | 'dark' | 'unspecified'`, but `Appearance.getColorScheme()` is
- * declared to return it *or null or undefined*, and a web build reports whatever
- * `matchMedia` has. Only `'dark'` means dark; everything else — including a platform
- * that declines to answer — falls to the app's default.
- */
-export function resolveAppearance(
-  setting: ThemeSetting,
-  device: string | null | undefined,
-): 'light' | 'dark' {
-  if (setting !== 'system') return setting;
-  return device === 'dark' ? 'dark' : 'light';
-}
-
-/**
- * Hands the resolved scheme to NativeWind, which owns the `dark` class the colour
- * system hangs off (`tailwind.config.js` → `darkMode: 'class'`).
+ * Uniwind closes that gap by construction rather than by discipline. `'system'` is
+ * one of its three registered themes: it turns adaptive themes back on and
+ * resolves `currentTheme` to the device scheme, so the value `useUniwind()`
+ * reports and the value the styles use are the same one. And its generated CSS
+ * covers BOTH paths — a `.light`/`.dark` class on the root, and a
+ * `prefers-color-scheme` fallback for when no class is set — so neither half can
+ * be left waiting on the other.
  *
- * The setting is the authority, not the device: `'system'` delegates back to the OS,
- * `'light'` and `'dark'` override it. That distinction is the reason this is not
- * `darkMode: 'media'` — a user who picks light on a dark phone means it — and the
- * reason the delegation has to be resolved here rather than passed along.
- *
- * `useColorScheme` from react-native reports the device scheme and re-renders when
- * it changes, so `'system'` tracks the OS live on all three targets.
+ * An explicit `'light'` or `'dark'` still overrides the device, which is the whole
+ * reason this is a setting: a user who picks light on a dark phone means it.
  */
 export function useAppearance(): void {
   const setting = useTheme();
-  const device = useDeviceColorScheme();
-  const { setColorScheme } = useColorScheme();
 
   useEffect(() => {
-    setColorScheme(resolveAppearance(setting, device));
-  }, [setting, device, setColorScheme]);
+    Uniwind.setTheme(setting);
+  }, [setting]);
 }

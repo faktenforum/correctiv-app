@@ -8,16 +8,16 @@
   // config's include does not cover the package root. Both bit exactly once, both
   // only when a test first reached the code that needs them, and both while the
   // app's own typecheck stayed green:
-  //   nativewind-env.d.ts — `className` on react-native components; missing it,
+  //   uniwind-types.d.ts — `className` on react-native components; missing it,
   //     the first test that renders a real component (not a bare <Text>) fails on
-  //     every className in the tree.
+  //     every className in the tree. It is generated — see `npm run uniwind-types`.
   //   assets.d.ts — `declare module '*.mp3'`; missing it, the first test that
   //     reaches the bundled sample episode fails to resolve it.
   "include": [
     "__tests__/**/*.ts",
     "__tests__/**/*.tsx",
     "scripts/**/*.mjs",
-    "nativewind-env.d.ts",
+    "uniwind-types.d.ts",
     "assets.d.ts"
   ],
   "exclude": ["node_modules", "android", "ios"]

@@ -19,8 +19,8 @@ import { coreStore } from '@/lib/store/core';
 /**
  * The screens use SafeAreaView, which needs metrics — there is no native view to
  * measure in a test. Deliberately NOT react-native-safe-area-context/jest/mock:
- * NativeWind's css-interop patches the real module's SafeAreaView, and the mock has
- * no such component for it to patch ("Cannot read properties of undefined").
+ * `components/ui/SafeAreaView` wraps the real module's export with `withUniwind`, and
+ * the mock has no such component to wrap.
  */
 export const METRICS: Metrics = {
   frame: { x: 0, y: 0, width: 402, height: 760 },

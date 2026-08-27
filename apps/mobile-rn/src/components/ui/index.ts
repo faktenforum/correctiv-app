@@ -14,6 +14,7 @@ export { Overline } from './Overline';
 export type { OverlineProps } from './Overline';
 export { Rail } from './Rail';
 export type { RailProps } from './Rail';
+export { SafeAreaView } from './SafeAreaView';
 export { Screen } from './Screen';
 export type { ScreenProps } from './Screen';
 export { ScreenHeader } from './ScreenHeader';

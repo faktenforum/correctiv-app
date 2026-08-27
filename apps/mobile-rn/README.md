@@ -9,9 +9,9 @@ layer plus one adapter ([ADR 0006](../../adr/0006-one-core-two-hosts.md)).
 ## Stack
 
 - **Expo SDK 56** (React Native 0.85, New Architecture), TypeScript,
-  **expo-router** (tabs + stack), **NativeWind 4**
-- **zustand** binds the core's stores; **AsyncStorage** backs the core's two storage
-  ports (and works unchanged on web, where it is localStorage)
+  **expo-router** (tabs + stack), **Uniwind** (Tailwind v4 for React Native)
+- **react-redux** binds the core's Redux store; **AsyncStorage** backs the core's two
+  storage ports (and works unchanged on web, where it is localStorage)
 - **expo-audio** behind the core's `AudioBackend` port. Not
   react-native-track-player: it needs a Kotlin patch to compile under RN 0.85 and
   then crashes at runtime under the New Architecture, and RN 0.85 offers no
@@ -143,8 +143,8 @@ npm run typecheck  # tsc (app) + tsc (tests)
 Lint and format run from the **repo root** with oxlint/oxfmt (`npm run check` covers
 every workspace). Two guards worth knowing about:
 `__tests__/web-target.test.ts` (nothing web-incompatible outside a `.web.tsx` split)
-and `__tests__/no-numeric-utilities.test.ts` (no numeric NativeWind size or spacing
-class — the scale is the design system's, so `w-32` does not mean 32 px; see
+and `__tests__/no-numeric-utilities.test.ts` (no numeric size or spacing class — the
+scale is the design system's and steps 2 px, so `w-32` does not mean 32 px; see
 TROUBLESHOOTING.md).
 
 ## Status

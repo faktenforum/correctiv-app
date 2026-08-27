@@ -1,29 +1,24 @@
 #!/usr/bin/env node
 /**
  * The token bridge: reads the binding design tokens from tokens/theme.css (vendored
- * from wp-design-tokens, Tailwind v4 CSS) and generates three artefacts.
+ * from wp-design-tokens) and generates the three artefacts this package publishes:
  *
- * Two are shared — they are what this package publishes:
- *
- *   1. src/tokens.generated.ts   typed constants: both colour schemes, spacing,
+ *   1. theme.css                 the Tailwind v4 theme — the file the app's
+ *                                global.css imports, and the one a CMS on
+ *                                Tailwind v4 can import unchanged
+ *   2. src/tokens.generated.ts   typed constants: both colour schemes, spacing,
  *                                the type scale, radii, durations
- *   2. src/reader.generated.ts   theme.css as a string, plus the dark override block
+ *   3. src/reader.generated.ts   theme.css as a string, plus the dark override block
  *
- * The third is written into the app instead, because it is not shared:
+ * Nothing is written into the app any more. That changed with the move to
+ * Uniwind: the previous artefact was a Tailwind v3 theme map, which is what
+ * NativeWind is — an engine the app happened to run on, not a property of the
+ * tokens. Tailwind v4 takes its theme from CSS, and CSS is portable, so the app
+ * and the CMS can read the same file.
  *
- *   3. apps/mobile-rn/tailwind.tokens.generated.js   theme map for tailwind.config.js
- *
- * Why that one leaves the package: it is a Tailwind v3 theme map, and Tailwind v3 is
- * what NativeWind 4 is — an engine the app happens to run on, not a property of the
- * tokens. A CMS on Tailwind v4 reads theme.css directly and has no use for it. It is
- * written from here rather than from a second script in the app so that theme.css is
- * parsed ONCE: two passes could disagree about the two colour schemes, and the
- * disagreement would only show up on a device. This generator is repo-bound anyway —
- * it finds theme.css through the repo root (scripts/tokens-source.mjs) — so it finds
- * the app the same way, and that is the only app path it knows.
- *
- * Values are resolved to px (rem × 16), because NativeWind inlines rem at build time
- * against a root size of 14 — px sidesteps that. The token repo stays the single
+ * The typed constants resolve to px, because a React Native style takes numbers.
+ * theme.css keeps rem — see the note on that artefact below for why the two units
+ * now agree where they used to have to differ. The token repo stays the single
  * source of truth; this script must never produce output that is then hand-edited.
  *
  * Run:  npm run tokens
@@ -32,7 +27,7 @@ import { readFileSync, writeFileSync, mkdirSync } from 'node:fs';
 import { dirname, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
-import { REPO_ROOT, themeCssPath } from '../../../scripts/tokens-source.mjs';
+import { themeCssPath } from '../../../scripts/tokens-source.mjs';
 // The dark palette and the fixed role colours — the one part of the colour system
 // that is a decision rather than a design token. The reasoning is in palette.js.
 import { dark, roles } from '../palette.js';
@@ -44,7 +39,7 @@ const PKG = resolve(__dirname, '..');
 // resolution lives in scripts/tokens-source.mjs and not here is explained there.
 const THEME_CSS_PATH = themeCssPath();
 
-const REM_BASE = 16; // wp-design-tokens assumes a 16px base
+const REM_BASE = 16; // wp-design-tokens assumes a 16px base, and so does Uniwind
 
 // ---------------------------------------------------------------------------
 // 1. Read theme.css and extract the first (base) :root block
@@ -145,11 +140,6 @@ for (const [k, v] of Object.entries(vars)) {
   if (t) fontSizePx[`${t[1]}-${t[2]}`] = toNumberPx(v);
 }
 
-const containers = {
-  container: toPx(vars['--var-container']),
-  'container-content': toPx(vars['--var-container-content']),
-};
-
 // ---------------------------------------------------------------------------
 // 2b. The second colour layer: dark mode and the fixed role colours
 // ---------------------------------------------------------------------------
@@ -178,82 +168,92 @@ const colors = { ...tokenColors, ...roles };
 const colorsDark = { ...tokenColors, ...dark, ...roles };
 
 // ---------------------------------------------------------------------------
-// 3a. apps/mobile-rn/tailwind.tokens.generated.js — the app's own artefact
+// 3a. theme.css — the Tailwind v4 theme
 // ---------------------------------------------------------------------------
-// Font families: the family names the app actually loads (@expo-google-fonts).
-// The CSS stacks ("Merriweather", sans-serif) are not usable directly in RN. One
-// family per cut works around the Android fontWeight bug; the regular families are
-// the NativeWind default for `font-serif`/`font-sans`, and weighted cuts go through
-// apps/mobile-rn/src/lib/theme/fonts.ts and the <Typo> component.
-//
-// They live in THIS section and not in src/, because a family name only means
-// something to a runtime that loaded that font: "Merriweather_400Regular" is a React
-// Native asset name and would be nonsense to a CMS. The app's typed counterpart is
-// the `fontFamily` constant in apps/mobile-rn/src/lib/theme/fonts.ts, which owns the
-// weighted cuts as well — so the two are next to each other where they are used.
-const RN_FONT_FAMILY = { serif: 'Merriweather_400Regular', sans: 'SourceSans3_400Regular' };
-
-/** "#ff5064" → "255 80 100" — the shape `rgb(var(--x) / <alpha-value>)` needs. */
-function toRgbTriple(hex) {
-  const m = /^#([0-9a-f]{6})$/i.exec(hex.trim());
-  if (!m) throw new Error(`Colour is not a 6-digit hex value: ${hex}`);
-  const n = parseInt(m[1], 16);
-  return `${(n >> 16) & 255} ${(n >> 8) & 255} ${n & 255}`;
-}
-
 /**
- * Colours go through CSS variables rather than fixed hex values, so that dark mode
- * needs NO `dark:` variant on every surface: `bg-grey-100` resolves the variable at
- * runtime and `.dark:root` redefines it. react-native-css-interop recognises exactly
- * this selector pair (`isRootDarkVariableSelector`) as long as `darkMode: 'class'`
- * is set — see tailwind.config.js.
+ * The one artefact a consumer outside this repo can use as-is: a WordPress theme
+ * on Tailwind v4 imports the same file the app does, and gets the same palette
+ * including the dark scheme — which its own copy of wp-design-tokens does not
+ * carry, because the dark block there is a placeholder holding the light values
+ * (see palette.js).
  *
- * `<alpha-value>` is preserved, or the build would lose classes like
- * `bg-always-dark/70`, the scrim under the play buttons.
+ * Values stay in `rem` here, unlike the px in the typed constants below. Uniwind
+ * resolves rem against 16 (`--uniwind-em`), which is both the CSS convention and
+ * the base wp-design-tokens assumes, so the app lands on exactly the same pixels
+ * — while a browser keeps the user's font scaling, which a px value would throw
+ * away. This is why one file can serve both consumers; under NativeWind it could
+ * not, because that inlined rem against a root size of 14.
+ *
+ * It is written to the package ROOT rather than into src/, because a path an
+ * outside consumer can `@import` has to be a real one: Uniwind resolves an
+ * `exports` map, but the plain Tailwind CLI does not.
+ *
+ * Colours go into `@variant` blocks, not into `@theme`. That is how Uniwind
+ * learns which variables are theme-dependent — it scans the entry file and its
+ * imports for them and emits `@theme { --color-x: unset; }` itself, which is what
+ * registers `bg-x` as a utility. Both blocks must declare the SAME variable set;
+ * Uniwind refuses otherwise, and the two checks above already guarantee it.
+ *
+ * The upshot is that dark mode needs no `dark:` variant on any surface:
+ * `bg-grey-100` resolves a variable, and Uniwind redefines it under both the
+ * `.dark` class AND `prefers-color-scheme: dark`.
  */
-const twColors = { transparent: 'transparent', current: 'currentColor' };
-for (const name of Object.keys(colors)) {
-  twColors[name] = `rgb(var(--color-${name}) / <alpha-value>)`;
-}
-
-const colorVars = {
-  ':root': Object.fromEntries(
-    Object.entries(colors).map(([k, v]) => [`--color-${k}`, toRgbTriple(v)]),
-  ),
-  '.dark:root': Object.fromEntries(
-    Object.entries(colorsDark).map(([k, v]) => [`--color-${k}`, toRgbTriple(v)]),
-  ),
-};
-const twFontSize = Object.fromEntries(Object.entries(fontSizePx).map(([k, v]) => [k, `${v}px`]));
-const twSpacing = { px: '1px', 0: '0px', ...spacingTokens };
-// Numeric linear scale (2px steps, like the source's own fallback scale)
-for (let i = 1; i <= 48; i++) twSpacing[i] = `${i * 2}px`;
-const twLetterSpacing = Object.fromEntries(
-  Object.entries(letterSpacingPx).map(([k, v]) => [k, `${v}px`]),
-);
-const twLineHeight = Object.fromEntries(Object.entries(leading).map(([k, v]) => [k, String(v)]));
-
+/** The header both generated TypeScript files carry. */
 const HEADER =
-  '// AUTO-GENERATED by packages/design-tokens/scripts/generate.mjs — do not edit by hand.\n// Source: tokens/theme.css · Regenerate: npm run tokens\n';
+  '// AUTO-GENERATED by packages/design-tokens/scripts/generate.mjs — do not edit by hand.\n' +
+  '// Source: tokens/theme.css · Regenerate: npm run tokens\n';
 
-const tailwindOut = `${HEADER}
-/* eslint-disable */
-module.exports = {
-  colors: ${JSON.stringify(twColors, null, 2)},
-  colorVars: ${JSON.stringify(colorVars, null, 2)},
-  spacing: ${JSON.stringify(twSpacing, null, 2)},
-  borderRadius: ${JSON.stringify({ none: '0px', ...radius, full: '9999px' }, null, 2)},
-  fontSize: ${JSON.stringify(twFontSize, null, 2)},
-  fontWeight: ${JSON.stringify(fontWeights, null, 2)},
-  letterSpacing: ${JSON.stringify(twLetterSpacing, null, 2)},
-  lineHeight: ${JSON.stringify(twLineHeight, null, 2)},
-  fontFamily: ${JSON.stringify({ serif: [RN_FONT_FAMILY.serif], sans: [RN_FONT_FAMILY.sans] }, null, 2)},
-  maxWidth: ${JSON.stringify(containers, null, 2)},
-};
-`;
-// REPO_ROOT is known to be non-null here: themeCssPath() above throws without it.
-const APP_TAILWIND_TOKENS = resolve(REPO_ROOT, 'apps/mobile-rn/tailwind.tokens.generated.js');
-writeFileSync(APP_TAILWIND_TOKENS, tailwindOut);
+/** The same, as a CSS comment. */
+const CSS_HEADER =
+  '/* AUTO-GENERATED by packages/design-tokens/scripts/generate.mjs — do not edit by hand.\n' +
+  '   Source: tokens/theme.css · Regenerate: npm run tokens */\n';
+
+/** The raw token value, in the unit theme.css wrote it in. */
+const raw = (name) => vars[name];
+
+const themeEntries = [
+  // The numeric step. The design system counts in 2px, so `p-4` is 8px and not
+  // Tailwind's 16 — which is why numeric utilities are banned outright; see
+  // apps/mobile-rn/__tests__/no-numeric-utilities.test.ts.
+  [`  --spacing: ${raw('--var-spacing')};`],
+  Object.keys(spacingTokens).map((k) => `  --spacing-${k}: ${raw(`--var-spacing-${k}`)};`),
+  Object.keys(radius).map((k) => `  --radius-${k}: ${raw(`--var-radius-${k}`)};`),
+  // `text-m`, not `text-text-m`: the token names carry their own `text-` prefix
+  // and Tailwind's font-size namespace supplies one too.
+  Object.keys(fontSizePx).map(
+    (k) => `  --text-${k.replace(/^text-/, '')}: ${raw(`--var-font-size-${k}`)};`,
+  ),
+  Object.keys(leading).map((k) => `  --leading-${k}: ${raw(`--var-leading-${k}`)};`),
+  Object.keys(letterSpacingPx).map(
+    (k) => `  --tracking-${k}: ${raw(`--var-letter-spacing-${k}`)};`,
+  ),
+  Object.keys(fontWeights).map((k) => `  --font-weight-${k}: ${raw(`--var-font-weight-${k}`)};`),
+  [
+    `  --container-content: ${raw('--var-container-content')};`,
+    `  --container-wide: ${raw('--var-container')};`,
+  ],
+];
+
+const variantBlock = (name, palette) =>
+  [
+    `@variant ${name} {`,
+    ...Object.entries(palette).map(([k, v]) => `  --color-${k}: ${v};`),
+    '}',
+  ].join('\n');
+
+const cssOut = [
+  CSS_HEADER,
+  '@theme {',
+  themeEntries.map((group) => group.join('\n')).join('\n\n'),
+  '}',
+  '',
+  variantBlock('light', colors),
+  '',
+  variantBlock('dark', colorsDark),
+  '',
+].join('\n');
+
+writeFileSync(resolve(PKG, 'theme.css'), cssOut);
 
 // ---------------------------------------------------------------------------
 // 3b. src/tokens.generated.ts — the typed constants
@@ -315,9 +315,9 @@ writeFileSync(resolve(SRC_DIR, 'reader.generated.ts'), readerOut);
 
 // ---------------------------------------------------------------------------
 console.log('Token bridge generated:');
+console.log('  • packages/design-tokens/theme.css');
 console.log('  • packages/design-tokens/src/tokens.generated.ts');
 console.log('  • packages/design-tokens/src/reader.generated.ts');
-console.log('  • apps/mobile-rn/tailwind.tokens.generated.js');
 console.log(
   `  (${Object.keys(colors).length} colours, ${Object.keys(spacingTokens).length} spacing tokens, ${Object.keys(fontSizePx).length} font sizes)`,
 );

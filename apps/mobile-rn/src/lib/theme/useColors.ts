@@ -1,4 +1,4 @@
-import { useColorScheme } from 'nativewind';
+import { useUniwind } from 'uniwind';
 
 import { colors, colorsDark, type ColorToken } from '@correctiv/design-tokens/tokens.generated';
 
@@ -8,7 +8,7 @@ export type Palette = Record<ColorToken, string>;
  * The active palette, for the colours a class cannot carry.
  *
  * Most of the app never needs this: `bg-grey-100` and `border-grey-300` resolve
- * through CSS variables, and `.dark:root` swaps those underneath — so surfaces and
+ * through CSS variables, and Uniwind swaps those underneath — so surfaces and
  * borders follow the scheme without a single `dark:` variant. What stays behind are
  * the values that leave the class system: an `<Ionicons color>`, an
  * `ActivityIndicator`, a `Switch`'s `trackColor`, a `Text` style computed in TS.
@@ -18,15 +18,15 @@ export type Palette = Record<ColorToken, string>;
  * colour that must NOT follow the scheme — `on-emphasis` on a red button stays
  * white in both — but for anything else it silently pins the light value.
  *
- * `useColorScheme()` reports undefined before the first scheme is resolved; light
- * is the app's default and the safe answer while nothing is known.
+ * `useUniwind()` reports the resolved theme, never `'system'`: that setting means
+ * "follow the device", and Uniwind has already asked the device by the time this
+ * returns. See lib/theme/appearance.ts.
  */
 export function useColors(): Palette {
-  const { colorScheme } = useColorScheme();
-  return colorScheme === 'dark' ? colorsDark : colors;
+  return useUniwind().theme === 'dark' ? colorsDark : colors;
 }
 
 /** True when the app is currently painting dark. For the few non-colour decisions. */
 export function useIsDark(): boolean {
-  return useColorScheme().colorScheme === 'dark';
+  return useUniwind().theme === 'dark';
 }
