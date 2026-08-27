@@ -32,7 +32,7 @@ import { close as closeVideo } from '@correctiv/app-core/stores/video';
 
 import { expoAudio } from '@/lib/audio/backend';
 import { stop as stopAudio } from '@/lib/audio/player';
-import { expoPlatform, hydratePlatform } from '@/lib/platform/expo';
+import { expoPlatform } from '@/lib/platform/expo';
 import { coreStore, useAppStore } from '@/lib/store/core';
 import { fontAssets, useAppearance, useColors, useIsDark } from '@/lib/theme';
 
@@ -63,13 +63,17 @@ registerExclusiveMedium('video', () => coreStore.dispatch(closeVideo()));
 SplashScreen.preventAutoHideAsync();
 
 /**
- * Registered only AFTER the platform cache is hydrated. The KeyValueStore port is
- * synchronous and reads an in-memory mirror, so wiring persist() beforehand would
- * read empty state and then overwrite the real state on the first change — a data
- * loss bug that looks like "settings randomly reset". See lib/platform/expo.ts.
+ * Hydrates the persisted slices, then keeps them written.
+ *
+ * Awaited before the first render, and that ordering is the whole of the
+ * correctness argument: a screen that reads `onboardingDone` before hydration
+ * gets `false` and sends a returning user through the onboarding again. The
+ * `storeReady` gate below is what enforces it — there used to be a second
+ * mechanism, an in-memory mirror in the platform adapter with its own hydration
+ * step, and having two made it possible to satisfy one and not the other.
  */
-function registerPersistence(): void {
-  persist(coreStore, [
+function registerPersistence(): Promise<void> {
+  return persist(coreStore, [
     persisted<SettingsState>('settings', PERSISTED_KEYS, settingsActions.hydrate),
     persisted<SavedArticlesState>('savedArticles', ['items'], savedArticlesActions.hydrate),
     persisted<MembershipState>(
@@ -116,13 +120,12 @@ function AppShell() {
   useEffect(() => {
     let active = true;
     const start = async () => {
-      await hydratePlatform();
+      await registerPersistence();
       if (!active) return;
-      registerPersistence();
       setStoreReady(true);
     };
-    // hydratePlatform swallows storage faults itself; this only stops an
-    // unexpected throw from leaving the app stuck on a blank splash screen.
+    // persist() swallows a failed read per slice; this only stops an unexpected
+    // throw from leaving the app stuck on a blank splash screen for ever.
     start().catch((err: unknown) => {
       console.warn('[app] store hydration failed, starting anyway:', err);
       if (active) setStoreReady(true);

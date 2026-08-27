@@ -4,21 +4,19 @@ import { CONTENT_FEEDS, FEEDS, PODCAST_CHANNELS } from '@correctiv/app-core/data
 import type { FeedKey } from '@correctiv/app-core/types/models';
 
 import { OFFLINE_COVERS } from '../src/lib/articles/covers';
-import {
-  expoPlatform,
-  hydratePlatform,
-  isPlatformHydrated,
-  resetPlatformCache,
-} from '../src/lib/platform/expo';
+import { expoPlatform } from '../src/lib/platform/expo';
 
 /**
- * The core's KeyValueStore port is synchronous; AsyncStorage is not. The adapter
- * bridges that with an in-memory mirror hydrated once at startup, so these tests
- * pin the two things that bridge can get wrong:
+ * Both storage ports are asynchronous by contract, so this adapter is a thin
+ * passthrough over AsyncStorage and these tests pin what a passthrough can still
+ * get wrong: the key namespace, and what a storage fault turns into.
  *
- *  - reads before hydration (would start the app with empty state and then
- *    overwrite the real state on the first write — silent data loss)
- *  - writes not reaching AsyncStorage, or reaching it under the wrong key
+ * It used to be more than that. `KeyValueStore` was synchronous, which forced an
+ * in-memory mirror hydrated once at startup — and the tests here existed mostly to
+ * pin the two ways that bridge could fail: a read before hydration (which started
+ * the app on empty state and then overwrote the real state on the first write) and
+ * a write that never reached AsyncStorage. The port went async, the mirror went
+ * with it, and so did the first of those failure modes.
  */
 
 jest.mock('@react-native-async-storage/async-storage', () => {
@@ -35,95 +33,62 @@ jest.mock('@react-native-async-storage/async-storage', () => {
 
 const backing = (AsyncStorage as unknown as { __store: Map<string, string> }).__store;
 
-/** Lets the best-effort background writes settle. */
-const flushed = () => new Promise((resolve) => setImmediate(resolve));
-
 beforeEach(() => {
   backing.clear();
-  resetPlatformCache();
   jest.clearAllMocks();
 });
 
-describe('hydration', () => {
-  it('is not hydrated until hydratePlatform resolves', async () => {
-    expect(isPlatformHydrated()).toBe(false);
-    await hydratePlatform();
-    expect(isPlatformHydrated()).toBe(true);
+describe('keyValue port', () => {
+  it('round-trips under a namespaced key', async () => {
+    await expoPlatform.keyValue.setString('store.membership', '{"isMember":true}');
+
+    // The prefix is what keeps this adapter's keys out of everybody else's.
+    expect(backing.get('kv:store.membership')).toBe('{"isMember":true}');
+    expect(await expoPlatform.keyValue.getString('store.membership')).toBe('{"isMember":true}');
   });
 
-  it('loads persisted values into synchronous reads', async () => {
-    backing.set('kv:store.settings', JSON.stringify({ theme: 'dark' }));
-    await hydratePlatform();
-    expect(expoPlatform.keyValue.getString('store.settings')).toBe('{"theme":"dark"}');
-  });
-
-  it('ignores keys this adapter does not own', async () => {
+  it('does not surface keys this adapter does not own', async () => {
     backing.set('saved-articles', 'some other library');
     backing.set('kv:mine', 'mine');
-    await hydratePlatform();
-    expect(expoPlatform.keyValue.getString('mine')).toBe('mine');
-    // Not prefixed, so it is somebody else's — must not surface as ours.
-    expect(expoPlatform.keyValue.getString('saved-articles')).toBeNull();
+
+    expect(await expoPlatform.keyValue.getString('mine')).toBe('mine');
+    // Not prefixed, so it is somebody else's — reading it as ours would hand
+    // persist() a payload it never wrote.
+    expect(await expoPlatform.keyValue.getString('saved-articles')).toBeNull();
   });
 
-  it('still starts when storage throws', async () => {
-    (AsyncStorage.getAllKeys as jest.Mock).mockRejectedValueOnce(new Error('boom'));
-    // The adapter warns on purpose; silence it here so a real warning during
-    // another test still stands out in the output.
-    const warn = jest.spyOn(console, 'warn').mockImplementation(() => {});
-
-    await expect(hydratePlatform()).resolves.toBeUndefined();
-    expect(isPlatformHydrated()).toBe(true);
-    expect(expoPlatform.keyValue.getString('anything')).toBeNull();
-    expect(warn).toHaveBeenCalled();
-    warn.mockRestore();
-  });
-});
-
-describe('keyValue port', () => {
-  it('reads back synchronously in the same tick as the write', async () => {
-    await hydratePlatform();
-    expoPlatform.keyValue.setString('k', 'v');
-    // Synchronous visibility is the whole reason for the mirror.
-    expect(expoPlatform.keyValue.getString('k')).toBe('v');
-  });
-
-  it('flushes writes to AsyncStorage under a namespaced key', async () => {
-    await hydratePlatform();
-    expoPlatform.keyValue.setString('store.membership', '{"isMember":true}');
-    await flushed();
-    expect(backing.get('kv:store.membership')).toBe('{"isMember":true}');
-  });
-
-  it('remove clears both the mirror and the backing store', async () => {
+  it('removes from storage', async () => {
     backing.set('kv:gone', 'x');
-    await hydratePlatform();
-    expoPlatform.keyValue.remove('gone');
-    expect(expoPlatform.keyValue.getString('gone')).toBeNull();
-    await flushed();
+
+    await expoPlatform.keyValue.remove('gone');
+
     expect(backing.has('kv:gone')).toBe(false);
+    expect(await expoPlatform.keyValue.getString('gone')).toBeNull();
   });
 
-  it('survives a failed write without throwing at the call site', async () => {
-    await hydratePlatform();
-    (AsyncStorage.setItem as jest.Mock).mockRejectedValueOnce(new Error('disk full'));
+  it('treats a failed read as an absent key, and says so', async () => {
+    (AsyncStorage.getItem as jest.Mock).mockRejectedValueOnce(new Error('disk gone'));
     const warn = jest.spyOn(console, 'warn').mockImplementation(() => {});
 
-    expect(() => expoPlatform.keyValue.setString('k', 'v')).not.toThrow();
-    await flushed();
-    // Best-effort, but never silent.
+    // A read that fails and a key that is absent mean the same thing to persist():
+    // start that slice from its initial state. Never silent, though — a broken
+    // backend otherwise looks exactly like state resetting on its own.
+    expect(await expoPlatform.keyValue.getString('store.settings')).toBeNull();
     expect(warn).toHaveBeenCalled();
-    // The in-memory value stands, so the session keeps working.
-    expect(expoPlatform.keyValue.getString('k')).toBe('v');
     warn.mockRestore();
+  });
+
+  it('lets a failed write reject, so the caller can retry it', async () => {
+    (AsyncStorage.setItem as jest.Mock).mockRejectedValueOnce(new Error('disk full'));
+
+    // Deliberately not swallowed here: persist() keeps its "last written" pointer
+    // unchanged when a write rejects, so the next change to that slice tries
+    // again. Swallowing it at this level would make that impossible.
+    await expect(expoPlatform.keyValue.setString('k', 'v')).rejects.toThrow('disk full');
   });
 });
 
-/**
- * The blob port is asynchronous by contract and therefore NOT mirrored in memory:
- * it holds cached feeds, and pulling a megabyte of them in before the first frame
- * is what the sync version of this port used to force.
- */
+/** The blob port: the same passthrough, for the feed and page cache. */
 describe('blobs port', () => {
   it('namespaces blobs so two feeds cannot collide', async () => {
     await expoPlatform.blobs.write('rss', 'faktencheck', 'A');
@@ -138,9 +103,8 @@ describe('blobs port', () => {
     expect(await expoPlatform.blobs.read('rss', 'nope')).toBeNull();
   });
 
-  it('needs no hydration — a cold read goes straight to storage', async () => {
+  it('reads what an earlier session cached', async () => {
     backing.set('blob:rss/klima', 'cached xml');
-    expect(isPlatformHydrated()).toBe(false);
     expect(await expoPlatform.blobs.read('rss', 'klima')).toBe('cached xml');
   });
 
