@@ -25,14 +25,22 @@ import type { PodcastSeries } from '../data/podcasts';
 /**
  * Small string key/value store — the store persistences in `stores/persist.ts`.
  *
- * Synchronous on purpose: `persist()` reads it while constructing a store, long
- * before anything can await. Hosts whose storage is async keep an in-memory
- * mirror and hydrate it before the first render (see the Expo adapter).
+ * Asynchronous, like `BlobStore`. It was synchronous, on the grounds that
+ * `persist()` read it while constructing a store, long before anything could
+ * await — and a host whose storage is async then had to keep an in-memory mirror
+ * and hydrate it before the first render. That cost a documented data-loss trap:
+ * read before hydration and the app starts on empty state, then overwrites the
+ * real state on the first write.
+ *
+ * The premise expired with the move to Redux. The store is built by
+ * `createAppStore()` at module load; `persist()` is a separate, later call that
+ * the host already awaits. So there is nothing left to be earlier than, and the
+ * mirror — along with the trap — is gone.
  */
 export interface KeyValueStore {
-  getString(key: string): string | null;
-  setString(key: string, value: string): void;
-  remove(key: string): void;
+  getString(key: string): Promise<string | null>;
+  setString(key: string, value: string): Promise<void>;
+  remove(key: string): Promise<void>;
 }
 
 /**
@@ -171,9 +179,15 @@ export function createMemoryPlatform(): CorePlatform {
   const blobs = new Map<string, string>();
   return {
     keyValue: {
-      getString: (key) => kv.get(key) ?? null,
-      setString: (key, value) => void kv.set(key, value),
-      remove: (key) => void kv.delete(key),
+      getString: (key) => Promise.resolve(kv.get(key) ?? null),
+      setString: (key, value) => {
+        kv.set(key, value);
+        return Promise.resolve();
+      },
+      remove: (key) => {
+        kv.delete(key);
+        return Promise.resolve();
+      },
     },
     blobs: {
       read: (namespace, name) => Promise.resolve(blobs.get(`${namespace}/${name}`) ?? null),

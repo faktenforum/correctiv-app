@@ -13,84 +13,45 @@ import { OFFLINE_PODCASTS } from '@/lib/podcasts/offlineBundle.generated';
  * on iOS, Android and web, because AsyncStorage ships a web build backed by
  * localStorage.
  *
- * ## Why one port is mirrored in memory and the other is not
+ * Both ports are asynchronous by contract, so both are a thin passthrough. That is
+ * new: `KeyValueStore` used to be synchronous, which forced this file to keep an
+ * in-memory mirror of those keys, hydrate it at startup and flush writes behind
+ * the caller's back — and to warn, twice, that reading before hydration starts the
+ * app on empty state and then overwrites the real state on the first write. The
+ * port went async when the premise behind its sync-ness expired (see the note on
+ * `KeyValueStore` in the core's ports), and the mirror, the hydration step and
+ * that whole failure mode went with it.
  *
- * `KeyValueStore` is SYNCHRONOUS by contract: `persist()` reads it while a store
- * is being constructed, before anything can await. So this adapter hydrates those
- * keys once at startup and answers reads from memory, flushing writes in the
- * background. The cost is bounded and explicit: state written in the same tick is
- * readable immediately, but a write is not yet durable when the call returns.
- * Losing the last few hundred milliseconds of settings on a hard kill is
- * acceptable. Reading BEFORE hydration is not — `hydratePlatform()` must be
- * awaited before the first render, or the app starts with empty state and then
- * overwrites the real state on the first write.
- *
- * `BlobStore` needs none of that, because it is asynchronous by contract. It used
- * to be sync too, which forced this adapter to pull every cached feed — a megabyte
- * of them — into memory before the first frame just to be able to answer a read.
- * Those go straight to AsyncStorage now.
+ * What remains of the old arrangement, deliberately: `persist()` still debounces,
+ * so a burst of writes still collapses into one — that throttle lives with the
+ * caller that knows what changed, not here.
  */
 
 const KV_PREFIX = 'kv:';
 const BLOB_PREFIX = 'blob:';
 
-/** The KeyValueStore's keys, mirrored so reads can stay synchronous. */
-const memory = new Map<string, string>();
-
-let hydrated = false;
-
-function flush(key: string, value: string | null): void {
-  const write = value === null ? AsyncStorage.removeItem(key) : AsyncStorage.setItem(key, value);
-  // Best-effort: a failed write must not take the app down, but it must not be
-  // silent either, or a broken storage backend looks like state that just resets.
-  write.catch((err: unknown) => {
-    console.warn(`[platform] persisting ${key} failed:`, err);
-  });
-}
-
 /**
- * Loads the synchronous half of storage into memory. Await this before rendering —
- * see the note above about why reading first is a correctness problem, not a
- * performance one.
+ * A read that fails and a key that is absent are the same thing to `persist()`:
+ * it starts that slice from its initial state. Logged, because a broken storage
+ * backend otherwise looks exactly like state that resets on its own.
  */
-export async function hydratePlatform(): Promise<void> {
-  try {
-    const keys = (await AsyncStorage.getAllKeys()).filter((k) => k.startsWith(KV_PREFIX));
-    if (keys.length > 0) {
-      for (const [key, value] of await AsyncStorage.multiGet(keys)) {
-        if (value !== null) memory.set(key, value);
-      }
-    }
-  } catch (err) {
-    // Start with empty state rather than blocking launch on a storage fault.
-    console.warn('[platform] hydration failed, continuing with empty state:', err);
-  } finally {
-    hydrated = true;
-  }
-}
-
-/** True once hydratePlatform() has settled. Exposed for tests and diagnostics. */
-export function isPlatformHydrated(): boolean {
-  return hydrated;
-}
-
 const keyValue: KeyValueStore = {
-  getString: (key) => memory.get(KV_PREFIX + key) ?? null,
-  setString: (key, value) => {
-    memory.set(KV_PREFIX + key, value);
-    flush(KV_PREFIX + key, value);
+  async getString(key) {
+    try {
+      return await AsyncStorage.getItem(KV_PREFIX + key);
+    } catch (err) {
+      console.warn(`[platform] reading ${key} failed:`, err);
+      return null;
+    }
   },
-  remove: (key) => {
-    memory.delete(KV_PREFIX + key);
-    flush(KV_PREFIX + key, null);
+  async setString(key, value) {
+    await AsyncStorage.setItem(KV_PREFIX + key, value);
+  },
+  async remove(key) {
+    await AsyncStorage.removeItem(KV_PREFIX + key);
   },
 };
 
-/**
- * The core's BlobStore is a namespaced text-blob store, not a filesystem, so
- * key/value storage satisfies it directly — and the same code works on web, where
- * there is no filesystem to speak of.
- */
 const blobs: BlobStore = {
   async read(namespace, name) {
     try {
@@ -140,9 +101,3 @@ const content: ContentBundle = {
  * stay testable without one.
  */
 export const expoPlatform: CorePlatform = { keyValue, blobs, content };
-
-/** Test helper — drops the in-memory mirror without touching AsyncStorage. */
-export function resetPlatformCache(): void {
-  memory.clear();
-  hydrated = false;
-}

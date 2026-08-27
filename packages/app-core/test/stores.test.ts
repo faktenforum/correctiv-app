@@ -284,14 +284,14 @@ describe('persist', () => {
     const platform = createMemoryPlatform();
     configurePlatform(platform);
 
-    persist(store, [settings()]);
+    await persist(store, [settings()]);
     store.dispatch(setTheme('light'));
     store.dispatch(setActiveTab('media'));
 
-    expect(platform.keyValue.getString('store.settings')).toBeNull(); // still debounced
+    expect(await platform.keyValue.getString('store.settings')).toBeNull(); // still debounced
     await vi.advanceTimersByTimeAsync(300);
 
-    const saved = JSON.parse(platform.keyValue.getString('store.settings') ?? '{}');
+    const saved = JSON.parse((await platform.keyValue.getString('store.settings')) ?? '{}');
     expect(saved.theme).toBe('light');
     // activeTab is ephemeral shell state and must not be persisted.
     expect(saved).not.toHaveProperty('activeTab');
@@ -303,11 +303,11 @@ describe('persist', () => {
     vi.useFakeTimers();
     const platform = createMemoryPlatform();
     configurePlatform(platform);
-    persist(store, [settings()]);
+    await persist(store, [settings()]);
 
     store.dispatch(setTheme('light'));
     await vi.advanceTimersByTimeAsync(300);
-    const first = platform.keyValue.getString('store.settings');
+    const first = await platform.keyValue.getString('store.settings');
 
     // A write in a different slice reaches the same subscriber. Without the
     // per-slice reference check this would re-serialise settings — which, with an
@@ -315,25 +315,26 @@ describe('persist', () => {
     const writes: string[] = [];
     const spy = vi.spyOn(platform.keyValue, 'setString').mockImplementation((key) => {
       writes.push(key);
+      return Promise.resolve();
     });
     store.dispatch(toggleInterest('klima'));
     await vi.advanceTimersByTimeAsync(300);
 
     expect(writes).toEqual([]);
-    expect(platform.keyValue.getString('store.settings')).toBe(first);
+    expect(await platform.keyValue.getString('store.settings')).toBe(first);
     spy.mockRestore();
     vi.useRealTimers();
   });
 
-  it('hydrates from storage, ignoring unknown keys', () => {
+  it('hydrates from storage, ignoring unknown keys', async () => {
     const platform = createMemoryPlatform();
-    platform.keyValue.setString(
+    await platform.keyValue.setString(
       'store.settings',
       JSON.stringify({ theme: 'dark', textScale: 1.5, activeTab: 'profile', bogus: 1 }),
     );
     configurePlatform(platform);
 
-    persist(store, [settings()]);
+    await persist(store, [settings()]);
 
     expect(store.getState().settings.theme).toBe('dark');
     expect(store.getState().settings.textScale).toBe(1.5);
@@ -343,22 +344,22 @@ describe('persist', () => {
     expect(store.getState().settings).not.toHaveProperty('bogus');
   });
 
-  it('discards corrupt persistence instead of throwing', () => {
+  it('discards corrupt persistence instead of throwing', async () => {
     const platform = createMemoryPlatform();
-    platform.keyValue.setString('store.settings', '{not json');
+    await platform.keyValue.setString('store.settings', '{not json');
     configurePlatform(platform);
 
-    expect(() => persist(store, [settings()])).not.toThrow();
-    expect(platform.keyValue.getString('store.settings')).toBeNull();
+    await expect(persist(store, [settings()])).resolves.toBeUndefined();
+    expect(await platform.keyValue.getString('store.settings')).toBeNull();
     expect(store.getState().settings.theme).toBe('system');
   });
 
-  it('keeps the slice usable after hydration', () => {
+  it('keeps the slice usable after hydration', async () => {
     const platform = createMemoryPlatform();
-    platform.keyValue.setString('store.settings', JSON.stringify({ theme: 'dark' }));
+    await platform.keyValue.setString('store.settings', JSON.stringify({ theme: 'dark' }));
     configurePlatform(platform);
 
-    persist(store, [settings()]);
+    await persist(store, [settings()]);
     store.dispatch(setTheme('light'));
     expect(store.getState().settings.theme).toBe('light');
   });
@@ -441,7 +442,7 @@ describe('persist across several slices', () => {
     vi.useFakeTimers();
     const platform = createMemoryPlatform();
     configurePlatform(platform);
-    persist(store, both());
+    await persist(store, both());
 
     store.dispatch(toggleSaved(ARTICLE));
     await vi.advanceTimersByTimeAsync(300);
@@ -449,9 +450,9 @@ describe('persist across several slices', () => {
     // Its own key — and settings was never touched, which is the per-slice
     // reference check. A single-slice test cannot tell that apart from a global
     // "did anything change" check.
-    const saved = JSON.parse(platform.keyValue.getString('store.savedArticles') ?? '{}');
+    const saved = JSON.parse((await platform.keyValue.getString('store.savedArticles')) ?? '{}');
     expect(saved.items).toHaveLength(1);
-    expect(platform.keyValue.getString('store.settings')).toBeNull();
+    expect(await platform.keyValue.getString('store.settings')).toBeNull();
     vi.useRealTimers();
   });
 
@@ -459,7 +460,7 @@ describe('persist across several slices', () => {
     vi.useFakeTimers();
     const platform = createMemoryPlatform();
     configurePlatform(platform);
-    persist(store, both());
+    await persist(store, both());
 
     store.dispatch(setTheme('dark'));
     // A burst of traffic in state nobody persists — an audio position tick, or a
@@ -470,7 +471,9 @@ describe('persist across several slices', () => {
       await vi.advanceTimersByTimeAsync(100);
     }
 
-    expect(JSON.parse(platform.keyValue.getString('store.settings') ?? '{}').theme).toBe('dark');
+    expect(JSON.parse((await platform.keyValue.getString('store.settings')) ?? '{}').theme).toBe(
+      'dark',
+    );
     vi.useRealTimers();
   });
 });

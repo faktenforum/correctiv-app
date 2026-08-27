@@ -46,34 +46,39 @@ config.resolver.disableHierarchicalLookup = true;
 /**
  * …and this is the price of that line, paid once.
  *
- * React Native declares `pretty-format@^29` and carries its own copy in
- * react-native/node_modules. With hierarchical lookup off, Metro never walks up
- * from RN's source into that copy — it only consults the two paths above, where
- * npm has hoisted `pretty-format@30` (pulled in by jest 30). Version 30 exports a
- * different shape, so RN's HMR client reads `prettyFormat.default.default` off
- * `undefined` and the DEV BUNDLE DIES AT STARTUP: `npm run web` served a blank
- * page with one uncaught TypeError.
+ * A package that npm did NOT hoist, because a version conflict made it keep a
+ * nested copy. `react-dom@19` requires `scheduler@^0.27` and react-native requires
+ * a different one, so npm puts one inside `node_modules/react-dom/node_modules/`
+ * — and with hierarchical lookup off, Metro cannot walk up from react-dom's own
+ * source to reach it. The web export failed on `scheduler`, a package nobody in
+ * this repo depends on directly.
  *
- * It stayed unnoticed because every browser check in this project ran against
- * `expo export` output, which has no HMR client.
+ * Retrying from the requesting file's directory is what Node would do, and it
+ * finds exactly the copy npm chose for that package. It runs only after normal
+ * resolution has already failed, so nothing that resolves today starts resolving
+ * twice — the guarantee the line above buys is intact.
  *
- * The fix resolves the package from React Native's own directory, so RN gets the
- * version it declares while jest keeps its v30 — a Metro-only override, not a
- * dependency change. `resolver.alias` was tried first and did NOT help: the
- * standard resolution succeeds (to v30), so the alias never gets consulted.
- * `resolveRequest` intercepts before that.
+ * ## A second workaround used to live here, and it is worth knowing why it went
+ *
+ * React Native declares `pretty-format@^29` and carries its own copy. `@types/jest@30`
+ * declares a RUNTIME dependency on `pretty-format@^30` — a types package pulling a
+ * runtime package — so npm hoisted v30 to the root while the app was on `jest@^29`.
+ * Version 30 exports a different shape, so RN's HMR client read
+ * `prettyFormat.default.default` off `undefined` and the DEV BUNDLE DIED AT STARTUP:
+ * a blank page with one uncaught TypeError. It stayed unnoticed because every
+ * browser check in this project ran against `expo export` output, which has no HMR
+ * client.
+ *
+ * The workaround was a `resolveRequest` branch pointing `pretty-format` at React
+ * Native's own directory. Aligning `@types/jest` to `^29` removes the conflict at
+ * its source, so the branch is gone. Verified by running the dev bundle on an
+ * emulator without it: the app renders and logcat reports no TypeError.
+ *
+ * If `pretty-format` ever breaks the dev bundle again, look at what pulls a second
+ * major to the root before reaching for a resolver branch.
  */
 const upstreamResolveRequest = config.resolver.resolveRequest;
 config.resolver.resolveRequest = (context, moduleName, platform) => {
-  if (moduleName === 'pretty-format') {
-    return {
-      type: 'sourceFile',
-      // Resolved from React Native's own directory, so it finds RN's nested copy.
-      filePath: require.resolve('pretty-format', {
-        paths: [path.resolve(workspaceRoot, 'node_modules/react-native')],
-      }),
-    };
-  }
   try {
     return (upstreamResolveRequest ?? context.resolveRequest)(context, moduleName, platform);
   } catch (error) {

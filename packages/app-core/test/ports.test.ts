@@ -27,7 +27,7 @@ beforeEach(() => {
 
 describe('platform ports', () => {
   it('works unconfigured, so tests and headless tooling need no setup', async () => {
-    expect(platform().keyValue.getString('nothing')).toBeNull();
+    expect(await platform().keyValue.getString('nothing')).toBeNull();
     expect(await platform().blobs.read('ns', 'nothing')).toBeNull();
     expect(platform().content.article('https://correctiv.org/x/')).toBeNull();
   });
@@ -36,19 +36,19 @@ describe('platform ports', () => {
     expect(platform().audio).toBeUndefined();
   });
 
-  it('lets a host take over storage', () => {
+  it('lets a host take over storage', async () => {
     const host = createMemoryPlatform();
     configurePlatform(host);
-    platform().keyValue.setString('k', 'v');
-    expect(host.keyValue.getString('k')).toBe('v');
+    await platform().keyValue.setString('k', 'v');
+    expect(await host.keyValue.getString('k')).toBe('v');
   });
 
-  it('round-trips and removes key/value entries', () => {
+  it('round-trips and removes key/value entries', async () => {
     const kv = platform().keyValue;
-    kv.setString('store.settings', '{"theme":"dark"}');
-    expect(kv.getString('store.settings')).toBe('{"theme":"dark"}');
-    kv.remove('store.settings');
-    expect(kv.getString('store.settings')).toBeNull();
+    await kv.setString('store.settings', '{"theme":"dark"}');
+    expect(await kv.getString('store.settings')).toBe('{"theme":"dark"}');
+    await kv.remove('store.settings');
+    expect(await kv.getString('store.settings')).toBeNull();
   });
 
   it('answers every ContentBundle question with null when the host bundles nothing', () => {

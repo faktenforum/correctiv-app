@@ -62,13 +62,23 @@ function pick(source: SliceState, keys: string[]): Record<string, unknown> {
   return slice;
 }
 
-export function persist(store: AppStore, slices: PersistedSlice[]): void {
+/**
+ * Hydrates every declared slice, then subscribes.
+ *
+ * Awaited by the host before the first render — the store must carry the persisted
+ * state before a screen can read it, or the app paints its defaults and the
+ * onboarding gate fires on state that is about to be replaced.
+ */
+export async function persist(store: AppStore, slices: PersistedSlice[]): Promise<void> {
   const kv = platform().keyValue;
   const state = () => store.getState();
 
   for (const slice of slices) {
     const storageKey = `store.${slice.id}`;
-    const raw = kv.getString(storageKey);
+    // Sequential on purpose: five small reads, and a failure should discard only
+    // its own key rather than abandon the batch.
+    // eslint-disable-next-line no-await-in-loop
+    const raw = await kv.getString(storageKey);
     if (!raw) continue;
     try {
       const saved = JSON.parse(raw) as Record<string, unknown>;
@@ -81,7 +91,8 @@ export function persist(store: AppStore, slices: PersistedSlice[]): void {
       store.dispatch(slice.hydrate(restored));
     } catch {
       // discard corrupt persistence instead of crashing at startup
-      kv.remove(storageKey);
+      // eslint-disable-next-line no-await-in-loop
+      await kv.remove(storageKey);
     }
   }
 
@@ -115,12 +126,23 @@ export function persist(store: AppStore, slices: PersistedSlice[]): void {
     timer = setTimeout(() => {
       timer = null;
       const current = state();
-      for (const slice of slices) {
-        const value = current[slice.id];
-        if (value === written.get(slice.id)) continue;
-        kv.setString(`store.${slice.id}`, JSON.stringify(pick(value, slice.keys)));
-        written.set(slice.id, value);
-      }
+      const pending = slices
+        .filter((slice) => current[slice.id] !== written.get(slice.id))
+        .map(async (slice) => {
+          const value = current[slice.id];
+          await kv.setString(`store.${slice.id}`, JSON.stringify(pick(value, slice.keys)));
+          // Only after the write resolves. A failed write leaves the old pointer,
+          // so the next change to that slice tries again instead of assuming the
+          // value is safely on disk.
+          written.set(slice.id, value);
+        });
+
+      // Not awaited: the timer fires the write, it does not wait for it. Nothing
+      // reads storage again while the app is running, and a rejected write must
+      // not become an unhandled rejection.
+      void Promise.all(pending).catch((err: unknown) => {
+        console.warn('[persist] write failed, will retry on the next change:', err);
+      });
     }, DEBOUNCE_MS);
   });
 }
