@@ -2,6 +2,8 @@
    Source: tokens/theme.css · Regenerate: npm run tokens */
 
 @theme {
+  --radius: initial;
+
   --spacing: 0.125rem;
 
   --spacing-4xs: 0.125rem;
@@ -54,6 +56,20 @@
 
   --container-content: 38.75rem;
   --container-wide: 62.5rem;
+
+  /* Light values, so a consumer that never switches themes is already right. */
+  --color-emphasis: #ff5064;
+  --color-alternative: #fde162;
+  --color-grey-100: #ffffff;
+  --color-grey-200: #f8f8f8;
+  --color-grey-250: #f0f0f0;
+  --color-grey-300: #e6e6e6;
+  --color-grey-400: #cecece;
+  --color-grey-500: #b3b3b3;
+  --color-grey-600: #707070;
+  --color-grey-700: #333333;
+  --color-always-light: #ffffff;
+  --color-always-dark: #333333;
 }
 
 @variant light {

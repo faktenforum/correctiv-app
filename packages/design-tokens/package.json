@@ -8,6 +8,7 @@
   "exports": {
     ".": "./src/index.ts",
     "./theme.css": "./theme.css",
+    "./theme.standalone.css": "./theme.standalone.css",
     "./*": "./src/*.ts"
   },
   "scripts": {

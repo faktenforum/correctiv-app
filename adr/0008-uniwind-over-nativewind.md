@@ -13,7 +13,8 @@ Three things were pushing against it.
 `peerDependencies: { tailwindcss: ">=4.1" }` — the tokens have been on v4 for as long
 as they have been in this repo, and the app has been reading them through a
 translation layer. [`tokens/README.md`](../tokens/README.md) records that mismatch as
-one of the reasons the tokens were vendored rather than installed.
+one of the reasons the tokens were vendored rather than installed — a reason this
+decision retires, and which that file now records as expired.
 
 The translation layer was `tailwind.tokens.generated.js`: a v3 theme map with colours
 shaped as `rgb(var(--color-x) / <alpha-value>)` and a plugin emitting the palette
@@ -40,9 +41,21 @@ says "not intended for production use".
 ## Consequences
 
 **The token package gains a shareable artefact and loses a private one.**
-`packages/design-tokens/theme.css` is plain Tailwind v4 — `@theme` for the scales,
-`@variant light` / `@variant dark` for the two palettes. Any v4 consumer imports it,
-including a WordPress theme build; `tailwind.config.js` and the v3 map are deleted.
+`tailwind.config.js` and the v3 map are deleted. In their place are two generated
+CSS files: `theme.css`, which the app imports, and `theme.standalone.css`, which
+adds the `light` / `dark` variant definitions for a build that has no Uniwind to
+supply them. Both carry `@theme` for the scales and the colour names, and the two
+`@variant` blocks for the palettes.
+
+The split is not decoration. `@variant light { … }` is an error unless something has
+defined that variant, and Uniwind defines it — so a single file either fails for the
+CMS or shadows Uniwind's definition in the app. The first draft of this decision
+claimed one file served both; it did not, and importing it into a plain v4 build
+failed outright with `Cannot use @variant with unknown variant: light`. Worse, once
+that was patched by hand it *succeeded* while emitting no colour utilities at all,
+because the registration that creates them is synthesised by Uniwind into its own
+`node_modules`. Both halves are now generated, and a consumer outside the repo was
+built against the real package to check.
 
 **One file now serves both consumers, where two units were needed before.** The
 generator resolved everything to px because NativeWind inlined `rem` against a root
@@ -51,8 +64,9 @@ size of 14. Uniwind resolves `rem` against 16 — the CSS convention, and the ba
 same pixels. Every named spacing and radius token was checked to resolve to the
 identical value it had under the v3 map; the numeric step is 2 px in both.
 
-**The appearance rule inverted.** `'system'` is one of Uniwind's registered themes:
-it resolves the device scheme itself and reports the resolved value, and it emits
+**The appearance rule inverted.** `setTheme` takes `'system'` — not as a registered
+theme, but as a value it handles: it resolves the device scheme itself and reports
+the resolved value, and it emits
 both a `.light`/`.dark` class and a `prefers-color-scheme` fallback, so the two halves
 cannot drift apart. `lib/theme/appearance.ts` now passes the setting through
 verbatim, and resolving it by hand would be the new bug. The test that guarded the
@@ -61,16 +75,32 @@ it demands is unchanged: **check all three settings, and check `'system'` agains
 device schemes.**
 
 **Uniwind reaches deeper into Metro than NativeWind did.** It replaces
-`transformerPath`, wraps `resolveRequest`, and rewrites every `react-native` and
-`react-native-web` import to `uniwind/components` so `className` reaches the core
+`transformerPath`, wraps `resolveRequest`, and rewrites the bare `react-native`
+specifier plus a fixed list of component modules — on web, the matching
+`react-native-web` ones — to `uniwind/components`, so `className` reaches the core
 components. It takes the existing `resolveRequest` as its base, so the two resolver
 workarounds in `metro.config.js` survive — but `withUniwindConfig` must be the
 outermost wrapper, and that is a requirement, not a preference.
 
+**A token name can collide with a Tailwind utility, and did.** Tailwind v4 has
+logical *side* radius utilities, so `rounded-s` means "start side" — and the design
+system has a radius token called `s`. Both rules were emitted and both applied: every
+Badge, the search field and the duration chip on a video thumbnail got 4 px leading
+corners and 2 px trailing ones. Nothing errored, and a token test cannot see it
+because `--radius-s` still holds the right value and still emits a correct rule.
+`--radius: initial` in the theme removes Tailwind's bare side utilities and resolves
+it; a check in the generator now refuses any radius token named after one of the
+other sides, where that escape hatch would not help.
+
 **Third-party components need wrapping.** Only `react-native` imports are rewritten,
-so `react-native-safe-area-context`'s `SafeAreaView` would drop a `className`
-silently. `components/ui/SafeAreaView.tsx` wraps it with `withUniwind`, which maps
-`className` to `style`.
+so `react-native-safe-area-context`'s `SafeAreaView` and `react-native-webview`'s
+`WebView` would drop a `className` silently — they are not `View`s underneath, so the
+prop reaches a native component that ignores it. `components/ui/SafeAreaView.tsx` and
+`components/media/VideoFrame.tsx` wrap them with `withUniwind`, which maps `className`
+to `style`. The WebView case was latent: no call site passes one today, but
+`videoFrameTypes.ts` declares it, and the web twin puts it on a real DOM `<iframe>`
+where it works — so the two branches would have disagreed in exactly the way that
+shared type exists to prevent.
 
 **There is no Babel step any more.** Uniwind is a Metro plugin; `babel.config.js` is
 back to `babel-preset-expo` alone.
@@ -80,11 +110,17 @@ back to `babel-preset-expo` alone.
 The engine decides how the app looks, so the check was pixels rather than a green
 build — sampled, not eyeballed, after reading a screenshot wrong once.
 
-Android (API 36), all four appearance combinations: `System` on a light device →
-`255,255,255`; `System` on a dark device → `26,26,26` with text at `168,168,168`;
-explicit light on a dark device → white; explicit dark on a light device →
-`26,26,26`. The full `tour-android.sh` ran with no missed step.
+Android (API 36), all four appearance combinations, sampled off the screenshots:
+`System` on a light device → `255,255,255`; `System` on a dark device → `26,26,26`
+(`grey-100`) with muted text at `168,168,168` (`grey-600`); explicit light on a dark
+device → white; explicit dark on a light device → `26,26,26`. The full
+`tour-android.sh` ran with no missed step.
 
-Web: light and dark via `prefers-color-scheme`, surfaces *and* text flipping in
-opposite directions at the same four points — `255,255,255`/`32,32,32` for the page,
-`54,54,54`/`242,242,242` for a headline.
+Web: light and dark via `prefers-color-scheme`, surface and card flipping together —
+page `255,255,255` → `32,32,32`, card `248,248,248` → `41,41,41`. The two dark
+numbers are not the token values, and that is the screenshot rather than the app: a
+`div` painted a known `#1a1a1a` in the same capture reads back `32,32,32` too, and
+`#242424` reads `41,41,41`. The app's surfaces match the reference swatch exactly.
+Worth writing down, because reading a colour off a screenshot is how this check went
+wrong once already — the picture looked light while the DOM, the computed styles and
+the pixels all said dark.

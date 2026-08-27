@@ -105,7 +105,7 @@ Dark mode, safe-area insets and touch are *not* simulated; those stay DevTools' 
 | --- | --- |
 | **How it fits together**, and where a given thing lives | [ARCHITECTURE.md](ARCHITECTURE.md) |
 | **The traps this toolchain sets** — one row per real incident, and why a green check is not evidence | [TROUBLESHOOTING.md](TROUBLESHOOTING.md) |
-| **Why** it is built this way — the seven decisions | [`adr/`](adr/README.md) |
+| **Why** it is built this way — the eight decisions | [`adr/`](adr/README.md) |
 | Every screen, and what looking at them found | [`screens/`](screens/) |
 | Design tokens, vendored from CORRECTIV's `wp-design-tokens` | [`tokens/`](tokens/README.md) |
 | Releases, signing, and the three CI workflows | [RELEASE.md](RELEASE.md) |

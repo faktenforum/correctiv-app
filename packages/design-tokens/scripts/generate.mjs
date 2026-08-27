@@ -171,33 +171,76 @@ const colorsDark = { ...tokenColors, ...dark, ...roles };
 // 3a. theme.css — the Tailwind v4 theme
 // ---------------------------------------------------------------------------
 /**
- * The one artefact a consumer outside this repo can use as-is: a WordPress theme
- * on Tailwind v4 imports the same file the app does, and gets the same palette
- * including the dark scheme — which its own copy of wp-design-tokens does not
- * carry, because the dark block there is a placeholder holding the light values
- * (see palette.js).
+ * Two files, because two consumers need different amounts of scaffolding.
+ *
+ *   theme.css             the tokens. What the app imports; Uniwind supplies the
+ *                         `light` / `dark` variant definitions it needs.
+ *   theme.standalone.css  the same, with those definitions included. What a
+ *                         consumer outside this repo imports — a WordPress theme
+ *                         on Tailwind v4, which has no Uniwind to supply them.
+ *
+ * The split exists so the app does not shadow Uniwind's own definitions with a
+ * second copy of them. Without the standalone file, `theme.css` alone fails on a
+ * plain Tailwind v4 build with `Cannot use @variant with unknown variant: light`.
  *
  * Values stay in `rem` here, unlike the px in the typed constants below. Uniwind
  * resolves rem against 16 (`--uniwind-em`), which is both the CSS convention and
  * the base wp-design-tokens assumes, so the app lands on exactly the same pixels
  * — while a browser keeps the user's font scaling, which a px value would throw
- * away. This is why one file can serve both consumers; under NativeWind it could
- * not, because that inlined rem against a root size of 14.
+ * away. This is why one set of values can serve both consumers; under NativeWind
+ * it could not, because that inlined rem against a root size of 14.
  *
- * It is written to the package ROOT rather than into src/, because a path an
- * outside consumer can `@import` has to be a real one: Uniwind resolves an
- * `exports` map, but the plain Tailwind CLI does not.
+ * They sit at the package ROOT because that is where a CSS entry conventionally
+ * lives; `src/` is for what TypeScript imports. Both are named explicitly in the
+ * `exports` map, and a bare subpath resolves for Uniwind and for the plain
+ * Tailwind CLI alike — an earlier note here claimed the CLI ignores exports maps,
+ * which is simply not true and was a bad test on my part.
  *
- * Colours go into `@variant` blocks, not into `@theme`. That is how Uniwind
- * learns which variables are theme-dependent — it scans the entry file and its
- * imports for them and emits `@theme { --color-x: unset; }` itself, which is what
- * registers `bg-x` as a utility. Both blocks must declare the SAME variable set;
- * Uniwind refuses otherwise, and the two checks above already guarantee it.
+ * ## Why the palette appears three times
+ *
+ * `@theme` registers the colour names — that is what makes `bg-grey-100` exist as
+ * a utility at all — and gives them their light values, so a consumer that never
+ * switches themes is already correct. The two `@variant` blocks then carry the
+ * per-theme values: Uniwind scans for exactly these to learn which variables are
+ * theme-dependent, and both blocks must declare the SAME set or it refuses. The
+ * two checks above already guarantee that.
  *
  * The upshot is that dark mode needs no `dark:` variant on any surface:
- * `bg-grey-100` resolves a variable, and Uniwind redefines it under both the
- * `.dark` class AND `prefers-color-scheme: dark`.
+ * `bg-grey-100` resolves a variable, redefined under both the `.dark` class and
+ * `prefers-color-scheme: dark`.
  */
+/**
+ * Radius token names that would collide with a Tailwind utility.
+ *
+ * Tailwind v4 has logical *side* utilities — `rounded-s` is the start side, `-e`
+ * the end side, `-t`/`-b`/`-l`/`-r` the edges, `-ss`/`-se`/`-es`/`-ee` the
+ * corners — and each has a bare form that uses the DEFAULT radius. A token named
+ * `s` therefore emits `.rounded-s` twice: once as this scale's value, once as
+ * Tailwind's start-side default. Both apply, so the leading corners take one
+ * value and the trailing corners the other.
+ *
+ * That shipped for the length of one review: every Badge, the search field and
+ * the duration chip on a video thumbnail had 4px leading corners and 2px trailing
+ * ones. Nothing errored, and a token test cannot see it — `--radius-s` still
+ * holds the right value and still emits a correct rule.
+ *
+ * `--radius: initial` in the theme below removes Tailwind's bare side utilities,
+ * which is what resolves the collision for the names we already use. This check
+ * is for the next one: a token called `e` or `t` would collide the same way and
+ * `--radius: initial` would not save it, because those names would still be
+ * generated from the scale itself.
+ */
+const RESERVED_RADIUS_NAMES = ['s', 'e', 't', 'b', 'l', 'r', 'ss', 'se', 'es', 'ee'];
+for (const name of Object.keys(radius)) {
+  if (name !== 's' && RESERVED_RADIUS_NAMES.includes(name)) {
+    throw new Error(
+      `Radius token "${name}" collides with Tailwind's logical side utility ` +
+        `\`rounded-${name}\`. Rename it in tokens/theme.css, or the two rules ` +
+        'will both apply and round different corners differently.',
+    );
+  }
+}
+
 /** The header both generated TypeScript files carry. */
 const HEADER =
   '// AUTO-GENERATED by packages/design-tokens/scripts/generate.mjs — do not edit by hand.\n' +
@@ -212,6 +255,10 @@ const CSS_HEADER =
 const raw = (name) => vars[name];
 
 const themeEntries = [
+  // Tailwind's DEFAULT radius, cleared: it is what makes `rounded-s` exist as a
+  // logical start-side utility alongside this scale's own `rounded-s`. See the
+  // RESERVED_RADIUS_NAMES note above.
+  ['  --radius: initial;'],
   // The numeric step. The design system counts in 2px, so `p-4` is 8px and not
   // Tailwind's 16 — which is why numeric utilities are banned outright; see
   // apps/mobile-rn/__tests__/no-numeric-utilities.test.ts.
@@ -241,10 +288,15 @@ const variantBlock = (name, palette) =>
     '}',
   ].join('\n');
 
-const cssOut = [
+const paletteLines = (palette) => Object.entries(palette).map(([k, v]) => `  --color-${k}: ${v};`);
+
+const themeCssOut = [
   CSS_HEADER,
   '@theme {',
   themeEntries.map((group) => group.join('\n')).join('\n\n'),
+  '',
+  '  /* Light values, so a consumer that never switches themes is already right. */',
+  ...paletteLines(colors),
   '}',
   '',
   variantBlock('light', colors),
@@ -253,7 +305,32 @@ const cssOut = [
   '',
 ].join('\n');
 
-writeFileSync(resolve(PKG, 'theme.css'), cssOut);
+writeFileSync(resolve(PKG, 'theme.css'), themeCssOut);
+
+/**
+ * The `light` and `dark` variants, spelled out for a build that has no Uniwind.
+ * Both halves matter: the class lets an app override the device, the media query
+ * is what applies when it does not.
+ */
+const VARIANT_DEFINITIONS = ['light', 'dark']
+  .map((theme) =>
+    [
+      `@custom-variant ${theme} {`,
+      `  &:where(.${theme}, .${theme} *) { @slot; }`,
+      '',
+      `  @media (prefers-color-scheme: ${theme}) {`,
+      '    &:not(:where(.light, .light *, .dark, .dark *)) { @slot; }',
+      '  }',
+      '}',
+    ].join('\n'),
+  )
+  .join('\n\n');
+
+const standaloneOut = [CSS_HEADER, VARIANT_DEFINITIONS, '', "@import './theme.css';", ''].join(
+  '\n',
+);
+
+writeFileSync(resolve(PKG, 'theme.standalone.css'), standaloneOut);
 
 // ---------------------------------------------------------------------------
 // 3b. src/tokens.generated.ts — the typed constants
@@ -316,6 +393,7 @@ writeFileSync(resolve(SRC_DIR, 'reader.generated.ts'), readerOut);
 // ---------------------------------------------------------------------------
 console.log('Token bridge generated:');
 console.log('  • packages/design-tokens/theme.css');
+console.log('  • packages/design-tokens/theme.standalone.css');
 console.log('  • packages/design-tokens/src/tokens.generated.ts');
 console.log('  • packages/design-tokens/src/reader.generated.ts');
 console.log(

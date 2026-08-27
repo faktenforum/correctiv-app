@@ -6,8 +6,8 @@
  * The bridge itself lives in @correctiv/design-tokens, so that the CMS can consume
  * the same values; the check stays here, because this app is the consumer that
  * would show the damage, and because this is the suite CI already runs. All three
- * artefacts belong to the package now — nothing is written into this app since the
- * move to Uniwind, because a Tailwind v4 theme is CSS and CSS is portable.
+ * four artefacts belong to the package now — nothing is written into this app since
+ * the move to Uniwind, because a Tailwind v4 theme is CSS and CSS is portable.
  */
 import { execFileSync } from 'node:child_process';
 import { readFileSync } from 'node:fs';
@@ -42,14 +42,17 @@ describe('token bridge', () => {
 
   it('keeps the generated files current (no drift against theme.css)', () => {
     const before = {
-      // The Tailwind v4 theme — the one artefact a consumer outside this repo
-      // reads, so drift here is drift in what the CMS would import.
+      // The Tailwind v4 theme this app imports…
       theme: read(TOKENS_PKG, 'theme.css'),
+      // …and the variant-carrying twin a consumer outside this repo imports, so
+      // drift here is drift in what the CMS would get.
+      standalone: read(TOKENS_PKG, 'theme.standalone.css'),
       ts: read(TOKENS_PKG, 'src/tokens.generated.ts'),
       reader: read(TOKENS_PKG, 'src/reader.generated.ts'),
     };
     execFileSync('node', ['scripts/generate.mjs'], { cwd: TOKENS_PKG, stdio: 'pipe' });
     expect(read(TOKENS_PKG, 'theme.css')).toBe(before.theme);
+    expect(read(TOKENS_PKG, 'theme.standalone.css')).toBe(before.standalone);
     expect(read(TOKENS_PKG, 'src/tokens.generated.ts')).toBe(before.ts);
     expect(read(TOKENS_PKG, 'src/reader.generated.ts')).toBe(before.reader);
   });

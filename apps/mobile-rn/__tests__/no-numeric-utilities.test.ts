@@ -4,8 +4,8 @@ import { join } from 'node:path';
 /**
  * Numeric size and spacing utilities are banned in this app.
  *
- * The spacing scale is the design system's, not Tailwind's: `--spacing: 2px` in
- * @correctiv/design-tokens/theme.css. So every numeric utility means something other
+ * The spacing scale is the design system's, not Tailwind's: `--spacing: 0.125rem`
+ * in @correctiv/design-tokens/theme.css, which is 2 px at Uniwind's rem base of 16. So every numeric utility means something other
  * than what it says — `w-10` is 20px, not 40; `w-32` is 64px, not 128. Under
  * NativeWind the named scale also stopped at 48, so `w-64` did not exist and the
  * class was dropped silently, after which the element sized to its content: that is

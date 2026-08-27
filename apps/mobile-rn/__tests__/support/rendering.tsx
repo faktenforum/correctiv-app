@@ -19,8 +19,9 @@ import { coreStore } from '@/lib/store/core';
 /**
  * The screens use SafeAreaView, which needs metrics — there is no native view to
  * measure in a test. Deliberately NOT react-native-safe-area-context/jest/mock:
- * `components/ui/SafeAreaView` wraps the real module's export with `withUniwind`, and
- * the mock has no such component to wrap.
+ * that mock reports zero insets, and several assertions here are about what a real
+ * device's insets push out of view. Explicit metrics keep the numbers honest and
+ * the same for every test.
  */
 export const METRICS: Metrics = {
   frame: { x: 0, y: 0, width: 402, height: 760 },

@@ -34,10 +34,10 @@ const setThemeSpy = jest.mocked(Uniwind.setTheme);
  * `prefers-color-scheme` to light, exercising both paths that work and neither that
  * breaks.
  *
- * Under Uniwind the correct move is the opposite one: `'system'` is a registered
- * theme, and resolving it here would be the bug — it would pin the app to whatever
- * the device said at mount and stop it following a later change. So what this now
- * asserts is that the setting arrives VERBATIM.
+ * Under Uniwind the correct move is the opposite one: `setTheme` takes `'system'`
+ * and resolves it itself, so resolving it here would be the bug — it would pin the
+ * app to whatever the device said at mount and stop it following a later change.
+ * So what this now asserts is that the setting arrives VERBATIM.
  */
 function Probe() {
   useAppearance();

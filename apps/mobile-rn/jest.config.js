@@ -3,8 +3,8 @@ const preset = require('jest-expo/jest-preset');
 /** @type {import('jest').Config} */
 module.exports = {
   ...preset,
-  // Pure logic tests (token bridge, feed parser, extraction) need no RN setup,
-  // laufen aber problemlos unter jest-expo. Node-Skripte unter scripts/ werden mitgetestet.
+  // Pure logic tests (token bridge, feed parser, extraction) need no RN setup but
+  // run happily under jest-expo. Node scripts under scripts/ are covered too.
   testMatch: ['**/__tests__/**/*.test.{ts,tsx,js,mjs}'],
   transform: {
     ...preset.transform,

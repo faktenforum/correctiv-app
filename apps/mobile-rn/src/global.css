@@ -2,7 +2,10 @@
 @import 'uniwind';
 
 /* The palette, the spacing scale and the type scale — generated from
-   tokens/theme.css into @correctiv/design-tokens, and imported by path rather
-   than through the package's exports map because the plain Tailwind CLI does not
-   read exports maps, and a CMS build is the reason that file is shareable. */
+   tokens/theme.css into @correctiv/design-tokens.
+
+   The plain file, not theme.standalone.css: Uniwind supplies the `light` and
+   `dark` variant definitions itself, and a second copy of them here would shadow
+   its own. An outside consumer, which has no Uniwind, imports the standalone
+   one. */
 @import '@correctiv/design-tokens/theme.css';

@@ -1,4 +1,5 @@
-import { WebView } from 'react-native-webview';
+import { WebView as UpstreamWebView } from 'react-native-webview';
+import { withUniwind } from 'uniwind';
 
 import type { VideoFrameProps } from './videoFrameTypes';
 
@@ -28,6 +29,19 @@ function escapeAttribute(value: string): string {
  * the nocookie embed is what the NativeScript build used, and it saves a
  * dependency that sits on WebView itself.
  */
+
+/**
+ * Wrapped, for the same reason as `components/ui/SafeAreaView`: Uniwind rewrites
+ * imports of `react-native` to its own components, but not third-party ones — so a
+ * `className` here would reach `RNCWebView` as an unknown native prop and be dropped
+ * without a word.
+ *
+ * `className` is part of this component's contract (`videoFrameTypes.ts`), and the
+ * web twin puts it on a real DOM `<iframe>` where it works. So without this the two
+ * branches disagree in exactly the way `videoFrameTypes.ts` exists to prevent, and
+ * every check stays green while they do.
+ */
+const WebView = withUniwind(UpstreamWebView);
 export function VideoFrame({ uri, className }: VideoFrameProps) {
   const html = `<!doctype html>
 <html>

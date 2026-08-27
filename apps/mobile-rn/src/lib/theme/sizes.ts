@@ -3,7 +3,8 @@
  * `design-entwurf` sibling repo, shot screen by screen into `screens/draft/`.
  *
  * Why not Tailwind utilities: the spacing scale is the design system's own
- * (`--spacing: 2px` in @correctiv/design-tokens/theme.css), so a numeric utility
+ * (`--spacing: 0.125rem` in @correctiv/design-tokens/theme.css — 2 px at Uniwind's
+ * rem base of 16), so a numeric utility
  * never means what it says — `w-32` is 64px, not Tailwind's 128. Under NativeWind
  * the scale also stopped at 48, so `w-64` did not exist at all: the class was
  * dropped without a word and the element sized to its content. Every numeric size

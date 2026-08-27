@@ -38,17 +38,15 @@ export function fontFamilyFor(family: FontFamily, weight: FontWeightName = 'norm
 }
 
 /**
- * The regular cut per family — what `font-serif` and `font-sans` resolve to.
+ * There is deliberately no `font-serif` / `font-sans` utility.
  *
- * The token bridge used to generate this, and it stayed behind in the app when the
- * bridge became @correctiv/design-tokens: a family name only means something to a
- * runtime that has loaded that font. `Merriweather_400Regular` is a React Native
- * asset name and would be nonsense to the CMS, which resolves the same two
- * typefaces through the CSS stacks in theme.css. Its counterpart is the `fontFamily`
- * entry the generator still writes into tailwind.tokens.generated.js — same two
- * values, and that generator says the same thing next to them.
+ * Typography never goes through a class in this app: `<Typo>` builds a React Native
+ * TextStyle from the token constants, because the metrics have to be computed
+ * (lineHeight = fontSize x leading) and because one loaded family per cut is what
+ * works around Android ignoring fontWeight on custom fonts. So `theme.css` declares
+ * no font families, and `fontFamilyFor()` above is the only way to reach one.
+ *
+ * A `fontFamily` constant used to sit here mirroring the Tailwind map's entry. That
+ * map is gone, nothing ever imported the constant, and its comment had quietly
+ * become wrong twice over — so it went with it.
  */
-export const fontFamily = {
-  serif: fontFamilyFor('serif'),
-  sans: fontFamilyFor('sans'),
-} as const;

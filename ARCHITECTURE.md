@@ -64,7 +64,7 @@ packages/app-core/src/
   services/         http · cache (two policies) · rss · search · podcast · peertube
   stores/           feeds · audio · podcasts · media · video · membership ·
                     interests · savedArticles · participation · settings ·
-                    create-store · persist
+                    store (Redux Toolkit) · persist
   data/             feeds.config · callouts · claims · projects · spotlight · …
   lib/              html (entities, tags, meta) · rss-parse · format (German dates)
   media/            exclusive-playback — only one medium plays at a time
@@ -76,9 +76,10 @@ Three conventions to know before editing:
 1. **State is framework-neutral.** `stores/` is one Redux Toolkit store with ten
    slices; `stores/store.ts` explains why the core owns the instance rather than the
    host. The host adds only the reactivity binding —
-   `apps/mobile-rn/src/lib/store/core.ts`, react-redux — and a second host once bound
-   the same state to Vue's `reactive` in about forty lines, which is the measure of
-   what "framework-neutral" bought.
+   `apps/mobile-rn/src/lib/store/core.ts`, react-redux. A second host once bound the
+   state this replaced to Vue's `reactive` in about forty lines, which is the measure
+   of what "framework-neutral" bought and the reason the property is still worth
+   keeping.
 2. **Derived values are exported selectors taking state, never store methods.** In
    React a method is merely awkward; the rule comes from the Vue binding, where a
    method read past the dependency tracking and the template silently stopped
@@ -176,7 +177,7 @@ Colours reach components as CSS variables, not as hex values. The generator emit
 each palette into an `@variant light` / `@variant dark` block in
 `packages/design-tokens/theme.css`; Uniwind scans those, registers the names as
 Tailwind theme keys, and generates the values under **both** a `.light`/`.dark` class
-on the root and a `prefers-color-scheme` fallback. So `bg-grey-100` and
+on the element or an ancestor and a `prefers-color-scheme` fallback. So `bg-grey-100` and
 `border-grey-300` follow the appearance setting **without a single `dark:` variant in
 the app**, and neither half can be left waiting on the other.
 

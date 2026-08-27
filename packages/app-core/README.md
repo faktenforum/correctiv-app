@@ -36,7 +36,7 @@ src/articles/    the Article model, the fact-check vocabulary, page meta,
 src/services/    http · cache (network-first / cache-first) · rss · search ·
                  podcast · peertube
 src/stores/      feeds · audio · podcasts · media · video · membership · interests ·
-                 savedArticles · participation · settings · create-store · persist
+                 savedArticles · participation · settings · store · persist
 src/data/        feeds.config and the typed sample data
 src/lib/         html · rss-parse · format
 src/media/       exclusive-playback — only one medium plays at a time
@@ -47,10 +47,10 @@ src/media/       exclusive-playback — only one medium plays at a time
 **The store is the core's, not the host's.** `stores/` is one Redux Toolkit store
 with ten slices, constructed here rather than by the host — because modules that are
 not components need to read the same instance the screens are subscribed to
-(`media/exclusive-playback.ts`, the audio watchdog). Redux Toolkit is a state
-container, not a view layer, which is why it is allowed here where `zustand` is not:
-the boundary test bans UI frameworks, and the host still supplies the binding
-(react-redux). `createAppStore()` is exported beside the singleton so a test can build
+(`media/exclusive-playback.ts`, the audio watchdog). The host still supplies the
+binding (react-redux). `zustand` stays on the boundary test's forbidden list not
+because it is a UI framework — it is not — but because a core with two state
+containers is a core with two sources of truth; the entry says so. `createAppStore()` is exported beside the singleton so a test can build
 an isolated tree. `stores/store.ts` has the full story, including why the async
 actions are plain thunks.
 

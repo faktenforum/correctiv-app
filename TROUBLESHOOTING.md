@@ -201,7 +201,8 @@ equivalents for focus, liveness and errors.
 ## Design tokens and styling
 
 - **The spacing scale is the design system's, not Tailwind's,** and it steps 2 px
-  per unit (`--spacing: 2px` in `packages/design-tokens/theme.css`). Every numeric
+  per unit (`--spacing: 0.125rem` in `packages/design-tokens/theme.css`, against
+  Uniwind's rem base of 16). Every numeric
   utility therefore means something else than it says — `w-10` is 20 px, `w-32` is
   64 px. Under NativeWind the scale also stopped at 48 and anything above it was
   dropped in silence, so the element sized to its content. `w-64` on a rail card turned into a full-screen black
@@ -242,7 +243,7 @@ equivalents for focus, liveness and errors.
   build and the web export were all green, and a browser walk missed it too: it
   flipped the setting to `'dark'` explicitly and emulated `prefers-color-scheme:
   light`, exercising both paths that work and neither that breaks. → Uniwind closes
-  that gap by construction — `'system'` is one of its themes, it resolves it itself,
+  that gap by construction — `setTheme` takes `'system'` and resolves it itself,
   and it emits both the class and the `prefers-color-scheme` path — so
   `lib/theme/appearance.ts` now passes the setting through VERBATIM and resolving it
   by hand would be the new bug. **Check a colour change in all three settings, and

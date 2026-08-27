@@ -31,6 +31,11 @@ Four notes for readers of the older ones:
 - ADRs 0002 and 0006 describe a NativeScript app that is no longer in the tree. They
   are records, not descriptions: neither has been rewritten, and 0007 says which of
   their statements have expired.
+- The same applies to 0004 and 0007 wherever they name **zustand**, **NativeWind**,
+  `nativewind-env.d.ts`, `.dark:root` or `stores/create-store`. The state moved to
+  Redux Toolkit and the styling engine to Uniwind
+  ([0008](0008-uniwind-over-nativewind.md)); those passages are what was true when
+  they were written.
 
 ADR 0004 is long because it doubles as the changelog of the pivot. Its "Offen"
 section is superseded by ADR 0006's "What is still open", of which
