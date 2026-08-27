@@ -1,13 +1,15 @@
 import { useEffect, useMemo } from 'react';
 
 import {
+  fetchFeedKey,
+  fetchMany,
   mergedFeedItems,
   mergedFeedStatus,
   type FeedStatus,
 } from '@correctiv/app-core/stores/feeds';
 import type { FeedItem, FeedKey } from '@correctiv/app-core/types/models';
 
-import { coreActions, useAppSelector } from '@/lib/store/core';
+import { useAppDispatch, useAppSelector } from '@/lib/store/core';
 
 /**
  * React bindings for the core's feed slice.
@@ -57,16 +59,17 @@ function toAsyncState<T>(items: T | null, status: FeedStatus, reload: () => void
  * reference and would therefore re-render on every unrelated dispatch.
  */
 export function useFeed(feed: FeedKey): AsyncState<FeedItem[]> {
+  const dispatch = useAppDispatch();
   const slice = useAppSelector((s) => s.feeds.byKey[feed]);
 
   useEffect(() => {
-    if (slice.status === 'idle') void coreActions.feeds.fetch(feed);
-  }, [feed, slice.status]);
+    if (slice.status === 'idle') void dispatch(fetchFeedKey(feed));
+  }, [dispatch, feed, slice.status]);
 
   return toAsyncState(
     slice.items.length > 0 ? slice.items : null,
     slice.status,
-    () => void coreActions.feeds.fetch(feed, { force: true }),
+    () => void dispatch(fetchFeedKey(feed, { force: true })),
   );
 }
 
@@ -77,10 +80,11 @@ export function useFeed(feed: FeedKey): AsyncState<FeedItem[]> {
  * on every render would re-run the effect on every render.
  */
 export function useMergedFeeds(feeds: FeedKey[]): AsyncState<FeedItem[]> {
+  const dispatch = useAppDispatch();
   const byKey = useAppSelector((s) => s.feeds.byKey);
 
   useEffect(() => {
-    void coreActions.feeds.fetchMany(feeds.filter((key) => byKey[key].status === 'idle'));
+    void dispatch(fetchMany(feeds.filter((key) => byKey[key].status === 'idle')));
     // `byKey` is intentionally not a dependency: this only has to fire for feeds
     // that have never been asked for, and re-running it on every store update
     // would restart the fetch each time one of them lands.
@@ -93,6 +97,6 @@ export function useMergedFeeds(feeds: FeedKey[]): AsyncState<FeedItem[]> {
   return toAsyncState(
     items.length > 0 ? items : null,
     status,
-    () => void Promise.all(feeds.map((key) => coreActions.feeds.fetch(key, { force: true }))),
+    () => void Promise.all(feeds.map((key) => dispatch(fetchFeedKey(key, { force: true })))),
   );
 }

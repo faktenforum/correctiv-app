@@ -61,19 +61,36 @@ const rootReducer: typeof combined = (state, action) =>
  * reach the same instance the screens are subscribed to. `createAppStore()` is
  * exported beside it so a test can build a fresh, isolated tree.
  *
- * ## The two dev-mode checks stay on
+ * ## What the dev-mode checks are tuned for
  *
- * RTK's serializable and immutability checks run on every dispatch, and this app
- * dispatches an audio position tick twice a second against a state tree that also
- * holds a few hundred feed items. That is the usual reason to switch them off.
- * They stay on because they earn it here: the feed and podcast cascades hand
- * bundled snapshots straight into state, and a reducer mutating one of those
- * generated constants would corrupt the offline bundle for the rest of the
- * session. Both checks are development-only and cost nothing in a release build.
+ * Both of RTK's development checks walk the whole state tree on every dispatch,
+ * and this app dispatches an audio position tick twice a second against a tree
+ * holding six feeds, seven podcast series and three video channels. Left at their
+ * defaults that is several full traversals a second on the JS thread whenever
+ * anything is playing.
+ *
+ * `immutableCheck` is **off**, because Immer already covers what it would catch.
+ * The worry was a reducer mutating one of the bundled offline snapshots that the
+ * feed and podcast cascades hand straight into state — but RTK leaves Immer's
+ * auto-freeze on, and that throws on exactly that mutation, at the mutation,
+ * rather than reporting it one dispatch later.
+ *
+ * `serializableCheck` stays on, because nothing else catches a Date or a function
+ * put into state, and this app deliberately stores timestamps as ISO strings. Its
+ * cost is bounded by skipping the three slices that hold network payloads: those
+ * are parsed JSON by construction, so they are the least likely to be
+ * unserialisable and by far the most expensive to walk.
+ *
+ * Both are development-only and cost nothing in a release build.
  */
 export function createAppStore() {
   return configureStore({
     reducer: rootReducer,
+    middleware: (getDefaultMiddleware) =>
+      getDefaultMiddleware({
+        immutableCheck: false,
+        serializableCheck: { ignoredPaths: ['feeds', 'media', 'podcasts'] },
+      }),
   });
 }
 

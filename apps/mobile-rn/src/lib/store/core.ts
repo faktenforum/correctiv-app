@@ -113,12 +113,20 @@ export const useExtraFeeds = () => {
  * `byKey[key]` is a stable reference between updates (Immer patches the channel
  * in place and leaves its siblings alone), so it is safe to select directly —
  * see the note above about selectors that build fresh objects.
+ *
+ * The load goes through `useAppDispatch()` rather than the imported store, so
+ * that reads and writes are always the SAME store. They cannot diverge in the
+ * app — the Provider is handed that very singleton — but `createAppStore()`
+ * exists for tests, and against an isolated store a hook that reads from the
+ * Provider while loading into the singleton would sit on `'idle'` forever: the
+ * effect's own dependency never changes, so it never retries and never errors.
  */
 export const useVideoChannel = (key: YoutubeKey) => {
+  const dispatch = useAppDispatch();
   const slice = useAppSelector((s) => s.media.byKey[key]);
   useEffect(() => {
-    if (slice.status === 'idle') void store.dispatch(fetchChannel(key));
-  }, [key, slice.status]);
+    if (slice.status === 'idle') void dispatch(fetchChannel(key));
+  }, [dispatch, key, slice.status]);
   return slice;
 };
 
@@ -129,11 +137,12 @@ export const useVideoChannel = (key: YoutubeKey) => {
  * neither can cost a render it does not owe.
  */
 export const usePodcastLibrary = () => {
+  const dispatch = useAppDispatch();
   const series = useAppSelector((s) => s.podcasts.series);
   const status = useAppSelector((s) => s.podcasts.status);
   useEffect(() => {
-    if (status === 'idle') void store.dispatch(fetchAll());
-  }, [status]);
+    if (status === 'idle') void dispatch(fetchAll());
+  }, [dispatch, status]);
   return { series, status };
 };
 
