@@ -125,8 +125,12 @@ A trap for the next test: **serve with clean URLs.** `python3 -m http.server` se
 
 ## Done after this decision (2026-08-05)
 
-**The core is framework-free.** The 8 stores run on `zustand/vanilla`;
-`boundary.test.ts` now additionally forbids `vue`, `pinia`, `react` and `react-dom`.
+**The core is framework-free.** ~~The 8 stores run on `zustand/vanilla`~~ — they
+never did (they ran on the core's own `create-store.ts`, added shortly after this was
+written) and there are ten Redux Toolkit slices now, bound with `react-redux`; see
+[ADR 0009](0009-redux-toolkit-for-the-cores-state.md). The property this paragraph
+claims still holds, and `boundary.test.ts` now additionally forbids `vue`, `pinia`,
+`react` and `react-dom`.
 Both hosts bind it themselves: `apps/mobile/src/stores/core-bindings.ts` (a Vue
 `reactive` mirror that reproduces the old Pinia surface, which is why not a single call
 site had to move) and `apps/mobile-rn/src/lib/store/core.ts` (zustand's `useStore`).
@@ -139,9 +143,12 @@ updating — no error, no warning, typecheck and Android build stay green. That 
 how I wrote it first; `apps/mobile/test/core-bindings.test.ts` found it and demonstrably
 fails if it is built that way again.
 
-**The port was synchronous, AsyncStorage is not.** `KeyValueStore.getString` is
-synchronous — inherited from NativeScript's `ApplicationSettings`.
-`apps/mobile-rn/src/lib/platform/expo.ts` solves that with an in-memory mirror:
+**~~The port was synchronous, AsyncStorage is not.~~** Voided by
+[ADR 0009](0009-redux-toolkit-for-the-cores-state.md): the port is asynchronous and
+the mirror below no longer exists. The failure it describes is worth reading anyway,
+because it is the reason the mirror went — `KeyValueStore.getString` was
+synchronous, inherited from NativeScript's `ApplicationSettings`, and
+`apps/mobile-rn/src/lib/platform/expo.ts` solved that with an in-memory mirror:
 `hydratePlatform()` loads once before the first render, reads come from memory, writes
 drain in the background. The dangerous case is **reading before hydration** — the app
 then starts with empty state and overwrites the real state on the first write, which

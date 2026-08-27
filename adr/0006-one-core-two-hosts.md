@@ -60,7 +60,7 @@ Four ports, all declared in `packages/app-core/src/ports/index.ts`:
 
 | Port | What the host answers | NativeScript | Expo |
 | --- | --- | --- | --- |
-| `KeyValueStore` | small settings, synchronously | `ApplicationSettings` | AsyncStorage + a hydrated mirror |
+| `KeyValueStore` | small settings, ~~synchronously~~ asynchronously since [0009](0009-redux-toolkit-for-the-cores-state.md) | `ApplicationSettings` | ~~AsyncStorage + a hydrated mirror~~ AsyncStorage |
 | `BlobStore` | the HTTP cache, asynchronously | `File` in `documents/cache/` | AsyncStorage |
 | `ContentBundle` | what shipped inside the app | JSON in the app folder | a generated TS module |
 | `AudioBackend` | playback, as status ticks | `TNSPlayer` + a polling timer | expo-audio's status events |
@@ -68,8 +68,10 @@ Four ports, all declared in `packages/app-core/src/ports/index.ts`:
 `BlobStore` was `FileStore` and synchronous, which was NativeScript's `File` shape
 leaking into the contract: it forced the Expo adapter to pull its entire cache into
 memory before the first frame just to answer a read. It is asynchronous now, and
-`KeyValueStore` stays synchronous because `persist()` reads it while a store is
-being constructed.
+~~`KeyValueStore` stays synchronous because `persist()` reads it while a store is
+being constructed~~ — that premise expired when Redux moved store construction to
+module load, so both ports are asynchronous now
+([0009](0009-redux-toolkit-for-the-cores-state.md)).
 
 ## Two extraction backends, on purpose
 
