@@ -10,7 +10,7 @@ import {
   SourceSans3_700Bold,
 } from '@expo-google-fonts/source-sans-3';
 
-/** An useFonts() übergeben — lädt alle Schnitte vor dem ersten Render. */
+/** Passed to useFonts() — loads every cut before the first render. */
 export const fontAssets = {
   Merriweather_400Regular,
   Merriweather_700Bold,
@@ -36,3 +36,19 @@ export function fontFamilyFor(family: FontFamily, weight: FontWeightName = 'norm
   const byWeight = FAMILY_MAP[family];
   return byWeight[weight] ?? byWeight.normal!;
 }
+
+/**
+ * The regular cut per family — what `font-serif` and `font-sans` resolve to.
+ *
+ * The token bridge used to generate this, and it stayed behind in the app when the
+ * bridge became @correctiv/design-tokens: a family name only means something to a
+ * runtime that has loaded that font. `Merriweather_400Regular` is a React Native
+ * asset name and would be nonsense to the CMS, which resolves the same two
+ * typefaces through the CSS stacks in theme.css. Its counterpart is the `fontFamily`
+ * entry the generator still writes into tailwind.tokens.generated.js — same two
+ * values, and that generator says the same thing next to them.
+ */
+export const fontFamily = {
+  serif: fontFamilyFor('serif'),
+  sans: fontFamilyFor('sans'),
+} as const;

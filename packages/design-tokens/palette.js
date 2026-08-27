@@ -22,8 +22,10 @@
  * thing in both schemes. That is the whole trick, and it is why adding a colour
  * here is rarely the right fix: ask which role it plays first.
  *
- * Read by scripts/generate-tokens.mjs (into the token bridge) and by
- * tailwind.config.js (into the CSS variables). Never imported at runtime.
+ * Read only by scripts/generate.mjs next door, which bakes both schemes into the
+ * generated artefacts: the app's Tailwind theme map receives them as CSS variables,
+ * the typed constants as hex, the reader CSS as a dark `--var-color-*` block. Never
+ * imported at runtime, by this package's consumers or by anything else.
  */
 
 /**
@@ -38,7 +40,7 @@
  * Both values are the ones the light scheme already used (grey-100 and grey-700),
  * so nothing about light mode moved when these were introduced.
  */
-const roles = {
+export const roles = {
   /** White in both schemes: on the brand red, on a photo, on `always-dark`. */
   'always-light': '#ffffff',
   /** Dark in both schemes: on club yellow, and the video stage / radio banner fill. */
@@ -50,7 +52,7 @@ const roles = {
  * generator fails loudly if one drifts away, because a silently ignored key would
  * leave that colour stuck on its light value with nothing to see.
  */
-const dark = {
+export const dark = {
   /** A lighter coral — the brand red is too dense to read on a dark surface. */
   emphasis: '#ff6173',
   /** Unchanged: club yellow carries meaning, and it reads on dark as it is. */
@@ -65,5 +67,3 @@ const dark = {
   'grey-600': '#a8a8a8', // muted text
   'grey-700': '#f2f2f2', // strong text
 };
-
-module.exports = { roles, dark };

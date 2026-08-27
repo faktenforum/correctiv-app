@@ -129,8 +129,8 @@ apps/mobile-rn/            @correctiv/mobile-rn — Expo (iOS, Android, web)
   src/lib/feeds/           React hooks over the core's feed store, search corpus
   src/lib/articles/        reader CSS wiring, the bundled articles and covers
   src/lib/podcasts/        the bundled show snapshots
-  src/lib/theme/           token-bridge output, the palette hook, typography, fonts
-  palette.js               the dark values and the two fixed role colours
+  src/lib/theme/           the shared tokens re-exported, the palette hook,
+                           typography, fonts
   signing/                 the committed throwaway test key (see its README)
   __tests__/               jest-expo, incl. the web-target and numeric-class guards
 ```
@@ -161,7 +161,10 @@ half of that generator lives in `@correctiv/app-core/articles/offline-bundle` ra
 than in the script, which is what let a second host bundle the same content in a
 completely different file format.
 
-The token generator reads `tokens/theme.css` through `scripts/tokens-source.mjs`,
+The token generator lives in `packages/design-tokens`, so that a second consumer —
+the CORRECTIV WordPress CMS — can import the same values; the app keeps only what is
+meaningless outside it, the loaded font family names and the Tailwind v3 theme map
+NativeWind needs. It reads `tokens/theme.css` through `scripts/tokens-source.mjs`,
 which resolves it via a marker rather than by counting `../` — a hard-coded depth
 broke the bridge when the app moved into `apps/*`.
 
@@ -185,7 +188,7 @@ Two things do not follow it, on purpose:
   `useColors()` from `lib/theme`; importing `colors` directly still works and is
   still right for a role colour.
 
-The dark values live in `apps/mobile-rn/palette.js`, hand-written, because
+The dark values live in `packages/design-tokens/palette.js`, hand-written, because
 `tokens/theme.css` ships a dark block that is a placeholder holding the light values.
 That file explains how each grey was assigned by role. `__tests__/tokens.test.ts`
 fails if the role colours ever start following the scheme, or if the dark palette

@@ -32,7 +32,7 @@ That trade is recorded below.
 
 | File | Consumed by |
 |---|---|
-| `theme.css` | `apps/mobile-rn/scripts/generate-tokens.mjs`, via `scripts/tokens-source.mjs` |
+| `theme.css` | `packages/design-tokens/scripts/generate.mjs`, via `scripts/tokens-source.mjs` |
 | `typography.css` | **nothing, programmatically.** Hand-transcribed into `apps/mobile-rn/src/lib/theme/typography.ts` |
 
 `utility.css` exists upstream and is deliberately not vendored: nothing in this
@@ -40,7 +40,8 @@ repo reads or mirrors it.
 
 Both files are kept **byte-identical** to upstream — no added header — so that a
 plain `diff` against a fresh checkout is meaningful, and because `theme.css` is
-embedded verbatim into the reader WebView via `readerCss.generated.ts`.
+embedded verbatim into the reader WebView via `@correctiv/design-tokens`
+(`src/reader.generated.ts`).
 
 ### Known gap
 
@@ -50,7 +51,7 @@ open for a generated typography scale later.
 
 The dark-mode block in `theme.css` is a **placeholder**: it is marked
 `@TODO Set this to the actual values` and carries the light values. The app's dark
-palette is therefore hand-written in `apps/mobile-rn/palette.js`, which says so and
+palette is therefore hand-written in `packages/design-tokens/palette.js`, which says so and
 explains how each value was assigned. When upstream fills that block in, the
 generator can read it and that file becomes a deletion.
 

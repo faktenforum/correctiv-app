@@ -6,7 +6,7 @@
  */
 import type { TextStyle } from 'react-native';
 
-import { fontSizePx, leading, letterSpacingPx } from './tokens.generated';
+import { fontSizePx, leading, letterSpacingPx } from '@correctiv/design-tokens/tokens.generated';
 import { fontFamilyFor, type FontFamily, type FontWeightName } from './fonts';
 
 export type TypoVariant =

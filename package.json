@@ -42,7 +42,7 @@
     "android": "npm run android -w @correctiv/mobile-rn",
     "ios": "npm run ios -w @correctiv/mobile-rn",
     "build:web": "npm run build:web -w @correctiv/mobile-rn",
-    "tokens": "npm run tokens -w @correctiv/mobile-rn",
+    "tokens": "npm run tokens -w @correctiv/design-tokens",
     "fonts": "npm run fonts -w @correctiv/mobile-rn",
     "offline-articles": "npm run offline-articles -w @correctiv/mobile-rn",
     "offline-podcasts": "npm run offline-podcasts -w @correctiv/mobile-rn"

@@ -2,19 +2,28 @@
  * The token bridge: makes sure the committed artefacts still match the source
  * tokens. Catches drift when someone changes wp-design-tokens and forgets
  * `npm run tokens` — or edits a generated file by hand.
+ *
+ * The bridge itself lives in @correctiv/design-tokens, so that the CMS can consume
+ * the same values; the check stays here, because this app is the consumer that
+ * would show the damage, and because this is the suite CI already runs. It spans
+ * both: two of the three artefacts belong to the package, and
+ * tailwind.tokens.generated.js is written into this app.
  */
 import { execFileSync } from 'node:child_process';
 import { readFileSync } from 'node:fs';
 import { resolve } from 'node:path';
 
-import { colors, colorsDark, spacingPx } from '../src/lib/theme/tokens.generated';
+import { colors, colorsDark, spacingPx } from '@correctiv/design-tokens/tokens.generated';
 // Resolves the vendored tokens/ and nothing else — see scripts/tokens-source.mjs.
 import { themeCssPath } from '../../../scripts/tokens-source.mjs';
 
-const ROOT = resolve(__dirname, '..');
+/** This app. */
+const APP = resolve(__dirname, '..');
+/** The package that owns the generator and the two shared artefacts. */
+const TOKENS_PKG = resolve(APP, '../../packages/design-tokens');
 
-function read(rel: string): string {
-  return readFileSync(resolve(ROOT, rel), 'utf8');
+function read(root: string, rel: string): string {
+  return readFileSync(resolve(root, rel), 'utf8');
 }
 
 /**
@@ -28,19 +37,21 @@ describe('token bridge', () => {
   it('reads the tokens from this repo, not from a foreign checkout', () => {
     // An upward search once found a foreign checkout at a different commit than
     // the repo's own copy; asserting the path is inside the repo forecloses that.
-    expect(themeCssPath()).toBe(resolve(ROOT, '../../tokens/theme.css'));
+    expect(themeCssPath()).toBe(resolve(APP, '../../tokens/theme.css'));
   });
 
   it('keeps the generated files current (no drift against theme.css)', () => {
     const before = {
-      tw: read('tailwind.tokens.generated.js'),
-      ts: read('src/lib/theme/tokens.generated.ts'),
-      css: read('src/lib/theme/readerCss.generated.ts'),
+      tw: read(APP, 'tailwind.tokens.generated.js'),
+      ts: read(TOKENS_PKG, 'src/tokens.generated.ts'),
+      css: read(TOKENS_PKG, 'src/reader.generated.ts'),
     };
-    execFileSync('node', ['scripts/generate-tokens.mjs'], { cwd: ROOT, stdio: 'pipe' });
-    expect(read('tailwind.tokens.generated.js')).toBe(before.tw);
-    expect(read('src/lib/theme/tokens.generated.ts')).toBe(before.ts);
-    expect(read('src/lib/theme/readerCss.generated.ts')).toBe(before.css);
+    // One run writes all three, this app's Tailwind map included — see the header
+    // of generate.mjs for why that one artefact does not stay in the package.
+    execFileSync('node', ['scripts/generate.mjs'], { cwd: TOKENS_PKG, stdio: 'pipe' });
+    expect(read(APP, 'tailwind.tokens.generated.js')).toBe(before.tw);
+    expect(read(TOKENS_PKG, 'src/tokens.generated.ts')).toBe(before.ts);
+    expect(read(TOKENS_PKG, 'src/reader.generated.ts')).toBe(before.css);
   });
 
   it('maps the brand core colours correctly', () => {
@@ -56,9 +67,10 @@ describe('token bridge', () => {
 });
 
 /**
- * Dark mode rests on two promises that are easy to break while editing palette.js —
- * and both break silently: the app compiles, the build is green, and only on a
- * device is there white text on a white background.
+ * Dark mode rests on two promises that are easy to break while editing
+ * packages/design-tokens/palette.js — and both break silently: the app compiles,
+ * the build is green, and only on a device is there white text on a white
+ * background.
  */
 describe('two-scheme palette', () => {
   it('keeps the role colours identical in both schemes', () => {

@@ -1,12 +1,26 @@
 #!/usr/bin/env node
 /**
  * The token bridge: reads the binding design tokens from tokens/theme.css (vendored
- * from wp-design-tokens, Tailwind v4 CSS) and generates three artefacts for the
- * React Native app (NativeWind v4 is Tailwind v3, so no `@theme inline`):
+ * from wp-design-tokens, Tailwind v4 CSS) and generates three artefacts.
  *
- *   1. tailwind.tokens.generated.js          theme map for tailwind.config.js
- *   2. src/lib/theme/tokens.generated.ts     typed constants for StyleSheets
- *   3. src/lib/theme/readerCss.generated.ts  theme.css as a string for the WebView
+ * Two are shared — they are what this package publishes:
+ *
+ *   1. src/tokens.generated.ts   typed constants: both colour schemes, spacing,
+ *                                the type scale, radii, durations
+ *   2. src/reader.generated.ts   theme.css as a string, plus the dark override block
+ *
+ * The third is written into the app instead, because it is not shared:
+ *
+ *   3. apps/mobile-rn/tailwind.tokens.generated.js   theme map for tailwind.config.js
+ *
+ * Why that one leaves the package: it is a Tailwind v3 theme map, and Tailwind v3 is
+ * what NativeWind 4 is — an engine the app happens to run on, not a property of the
+ * tokens. A CMS on Tailwind v4 reads theme.css directly and has no use for it. It is
+ * written from here rather than from a second script in the app so that theme.css is
+ * parsed ONCE: two passes could disagree about the two colour schemes, and the
+ * disagreement would only show up on a device. This generator is repo-bound anyway —
+ * it finds theme.css through the repo root (scripts/tokens-source.mjs) — so it finds
+ * the app the same way, and that is the only app path it knows.
  *
  * Values are resolved to px (rem × 16), because NativeWind inlines rem at build time
  * against a root size of 14 — px sidesteps that. The token repo stays the single
@@ -14,15 +28,17 @@
  *
  * Run:  npm run tokens
  */
-import { createRequire } from 'node:module';
 import { readFileSync, writeFileSync, mkdirSync } from 'node:fs';
 import { dirname, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
-import { themeCssPath } from '../../../scripts/tokens-source.mjs';
+import { REPO_ROOT, themeCssPath } from '../../../scripts/tokens-source.mjs';
+// The dark palette and the fixed role colours — the one part of the colour system
+// that is a decision rather than a design token. The reasoning is in palette.js.
+import { dark, roles } from '../palette.js';
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
-const ROOT = resolve(__dirname, '..');
+const PKG = resolve(__dirname, '..');
 
 // The source is tokens/theme.css in this repo (see tokens/README.md). Why the
 // resolution lives in scripts/tokens-source.mjs and not here is explained there.
@@ -137,9 +153,8 @@ const containers = {
 // ---------------------------------------------------------------------------
 // 2b. The second colour layer: dark mode and the fixed role colours
 // ---------------------------------------------------------------------------
-// From palette.js, not from theme.css, where the dark block is a placeholder
-// carrying the light values. The reasoning is in palette.js.
-const { roles, dark } = createRequire(import.meta.url)('../palette.js');
+// `roles` and `dark` come from palette.js (imported at the top), not from theme.css,
+// whose dark block is a placeholder carrying the light values.
 
 // A dark value for a token that does not (or no longer) exist would be invisible:
 // the colour would simply stay on its light value in dark mode.
@@ -162,16 +177,22 @@ for (const name of Object.keys(tokenColors)) {
 const colors = { ...tokenColors, ...roles };
 const colorsDark = { ...tokenColors, ...dark, ...roles };
 
+// ---------------------------------------------------------------------------
+// 3a. apps/mobile-rn/tailwind.tokens.generated.js — the app's own artefact
+// ---------------------------------------------------------------------------
 // Font families: the family names the app actually loads (@expo-google-fonts).
 // The CSS stacks ("Merriweather", sans-serif) are not usable directly in RN. One
 // family per cut works around the Android fontWeight bug; the regular families are
 // the NativeWind default for `font-serif`/`font-sans`, and weighted cuts go through
-// src/lib/theme/fonts.ts and the <Typo> component.
-const FONT_FAMILY = { serif: 'Merriweather_400Regular', sans: 'SourceSans3_400Regular' };
+// apps/mobile-rn/src/lib/theme/fonts.ts and the <Typo> component.
+//
+// They live in THIS section and not in src/, because a family name only means
+// something to a runtime that loaded that font: "Merriweather_400Regular" is a React
+// Native asset name and would be nonsense to a CMS. The app's typed counterpart is
+// the `fontFamily` constant in apps/mobile-rn/src/lib/theme/fonts.ts, which owns the
+// weighted cuts as well — so the two are next to each other where they are used.
+const RN_FONT_FAMILY = { serif: 'Merriweather_400Regular', sans: 'SourceSans3_400Regular' };
 
-// ---------------------------------------------------------------------------
-// 3a. tailwind.tokens.generated.js
-// ---------------------------------------------------------------------------
 /** "#ff5064" → "255 80 100" — the shape `rgb(var(--x) / <alpha-value>)` needs. */
 function toRgbTriple(hex) {
   const m = /^#([0-9a-f]{6})$/i.exec(hex.trim());
@@ -213,7 +234,7 @@ const twLetterSpacing = Object.fromEntries(
 const twLineHeight = Object.fromEntries(Object.entries(leading).map(([k, v]) => [k, String(v)]));
 
 const HEADER =
-  '// AUTO-GENERATED von scripts/generate-tokens.mjs — nicht von Hand editieren.\n// Quelle: tokens/theme.css · Regenerieren: npm run tokens\n';
+  '// AUTO-GENERATED by packages/design-tokens/scripts/generate.mjs — do not edit by hand.\n// Source: tokens/theme.css · Regenerate: npm run tokens\n';
 
 const tailwindOut = `${HEADER}
 /* eslint-disable */
@@ -226,14 +247,16 @@ module.exports = {
   fontWeight: ${JSON.stringify(fontWeights, null, 2)},
   letterSpacing: ${JSON.stringify(twLetterSpacing, null, 2)},
   lineHeight: ${JSON.stringify(twLineHeight, null, 2)},
-  fontFamily: ${JSON.stringify({ serif: [FONT_FAMILY.serif], sans: [FONT_FAMILY.sans] }, null, 2)},
+  fontFamily: ${JSON.stringify({ serif: [RN_FONT_FAMILY.serif], sans: [RN_FONT_FAMILY.sans] }, null, 2)},
   maxWidth: ${JSON.stringify(containers, null, 2)},
 };
 `;
-writeFileSync(resolve(ROOT, 'tailwind.tokens.generated.js'), tailwindOut);
+// REPO_ROOT is known to be non-null here: themeCssPath() above throws without it.
+const APP_TAILWIND_TOKENS = resolve(REPO_ROOT, 'apps/mobile-rn/tailwind.tokens.generated.js');
+writeFileSync(APP_TAILWIND_TOKENS, tailwindOut);
 
 // ---------------------------------------------------------------------------
-// 3b. src/lib/theme/tokens.generated.ts
+// 3b. src/tokens.generated.ts — the typed constants
 // ---------------------------------------------------------------------------
 const spacingPx = Object.fromEntries(
   Object.entries(spacingTokens).map(([k, v]) => [k, parseFloat(v)]),
@@ -244,7 +267,7 @@ const tsOut = `${HEADER}
 /* eslint-disable */
 // Two complete palettes. Classes (bg-, border-) switch by themselves through the
 // CSS variables; these constants do NOT — read them directly and the colour stays
-// on its light value in dark mode. Use useColors() from lib/theme instead.
+// on its light value in dark mode. In the app, use useColors() from @/lib/theme.
 export const colors = ${JSON.stringify(colors, null, 2)} as const;
 export const colorsDark: Record<ColorToken, string> = ${JSON.stringify(colorsDark, null, 2)};
 export const spacingPx = ${JSON.stringify(spacingPx, null, 2)} as const;
@@ -254,17 +277,16 @@ export const leading = ${JSON.stringify(leading, null, 2)} as const;
 export const letterSpacingPx = ${JSON.stringify(letterSpacingPx, null, 2)} as const;
 export const fontWeights = ${JSON.stringify(fontWeights, null, 2)} as const;
 export const durationsMs = ${JSON.stringify(durationsMs, null, 2)} as const;
-export const fontFamily = ${JSON.stringify(FONT_FAMILY, null, 2)} as const;
 
 export type ColorToken = keyof typeof colors;
 export type SpacingToken = keyof typeof spacingPx;
 `;
-const themeDir = resolve(ROOT, 'src', 'lib', 'theme');
-mkdirSync(themeDir, { recursive: true });
-writeFileSync(resolve(themeDir, 'tokens.generated.ts'), tsOut);
+const SRC_DIR = resolve(PKG, 'src');
+mkdirSync(SRC_DIR, { recursive: true });
+writeFileSync(resolve(SRC_DIR, 'tokens.generated.ts'), tsOut);
 
 // ---------------------------------------------------------------------------
-// 3c. src/lib/theme/readerCss.generated.ts
+// 3c. src/reader.generated.ts
 //     theme.css (base :root plus media queries; the WebView ignores @theme inline)
 // ---------------------------------------------------------------------------
 const themeCssForReader = themeCss.split('@theme inline')[0].trim();
@@ -285,16 +307,17 @@ const readerOut = `${HEADER}
 // theme.css verbatim (CSS custom properties) — the WebView uses the --var-* directly.
 export const THEME_CSS = ${JSON.stringify(themeCssForReader)};
 
-// Appended AFTER THEME_CSS when the app is running dark. See lib/articles/reader.ts.
+// Appended AFTER THEME_CSS when the app is running dark. See the host's reader
+// wiring — apps/mobile-rn/src/lib/articles/reader.ts.
 export const READER_DARK_CSS = ${JSON.stringify(readerDarkCss)};
 `;
-writeFileSync(resolve(themeDir, 'readerCss.generated.ts'), readerOut);
+writeFileSync(resolve(SRC_DIR, 'reader.generated.ts'), readerOut);
 
 // ---------------------------------------------------------------------------
 console.log('Token bridge generated:');
-console.log('  • tailwind.tokens.generated.js');
-console.log('  • src/lib/theme/tokens.generated.ts');
-console.log('  • src/lib/theme/readerCss.generated.ts');
+console.log('  • packages/design-tokens/src/tokens.generated.ts');
+console.log('  • packages/design-tokens/src/reader.generated.ts');
+console.log('  • apps/mobile-rn/tailwind.tokens.generated.js');
 console.log(
   `  (${Object.keys(colors).length} colours, ${Object.keys(spacingTokens).length} spacing tokens, ${Object.keys(fontSizePx).length} font sizes)`,
 );
