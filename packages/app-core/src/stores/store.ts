@@ -2,6 +2,7 @@ import {
   combineReducers,
   configureStore,
   createAction,
+  type StoreEnhancer,
   type ThunkAction,
   type UnknownAction,
 } from '@reduxjs/toolkit';
@@ -53,13 +54,22 @@ const rootReducer: typeof combined = (state, action) =>
  * thing that moved is who owns the transition: a reducer now, not a closure over
  * `set`.
  *
- * ## Why the store is constructed here and not by the host
+ * ## The host constructs it, and there is no singleton here
  *
- * The host still binds its own reactivity (`react-redux` in the app), but the
- * store itself is the core's, for the same reason the stores were: a module that
- * wants to read state — `media/exclusive-playback.ts`, the audio watchdog — must
- * reach the same instance the screens are subscribed to. `createAppStore()` is
- * exported beside it so a test can build a fresh, isolated tree.
+ * There used to be one, on the grounds that modules which are not components need
+ * to reach the same instance the screens are subscribed to. That is no longer true
+ * of anything: `media/exclusive-playback.ts` works through callbacks the host
+ * registers, and the audio watchdog moved inside the listener middleware, which
+ * gets its `dispatch` from the store it belongs to. Every remaining reference to
+ * this file inside the core is an `import type`.
+ *
+ * So the host calls `createAppStore()` once and owns the result. That is what lets
+ * it pass enhancers — Redux DevTools, in development — which a store built during
+ * this module's evaluation could never have received: there is no moment between
+ * "this file is imported" and "the store exists" for anyone to hand something in.
+ * It also removes a seam rather than adding one. While the core exported an
+ * instance, a test rendering screens against `createAppStore()` would have read
+ * one store and written to another, silently.
  *
  * ## Why an audio middleware is installed here
  *
@@ -92,18 +102,38 @@ const rootReducer: typeof combined = (state, action) =>
  *
  * Both are development-only and cost nothing in a release build.
  */
-export function createAppStore() {
+export interface AppStoreOptions {
+  /**
+   * Extra store enhancers, appended to RTK's defaults. The host's business: the
+   * only one in use is the Expo Redux DevTools plugin, which is an Expo package
+   * and has no place in a core that imports no platform SDK.
+   */
+  enhancers?: StoreEnhancer[];
+  /**
+   * RTK's built-in DevTools integration. Off when a host brings its own — the
+   * Expo plugin requires it, because two of them fight over the same connection.
+   */
+  devTools?: boolean;
+}
+
+export function createAppStore({ enhancers = [], devTools }: AppStoreOptions = {}) {
   return configureStore({
     reducer: rootReducer,
+    devTools,
     middleware: (getDefaultMiddleware) =>
       getDefaultMiddleware({
         immutableCheck: false,
         serializableCheck: { ignoredPaths: ['feeds', 'media', 'podcasts'] },
       }).prepend(audioMiddleware),
+    // AFTER `middleware`, and that is not cosmetic. With `enhancers` declared
+    // first, TypeScript resolves this object's inference in an order that narrows
+    // the middleware callback's expected return to RTK's default tuple, and the
+    // prepended listener middleware above then fails to assign with "Two different
+    // types with this name exist". Sorting these keys alphabetically breaks the
+    // build; the error names neither this line nor the cause.
+    enhancers: (getDefaultEnhancers) => getDefaultEnhancers().concat(...enhancers),
   });
 }
-
-export const store = createAppStore();
 
 export type AppStore = ReturnType<typeof createAppStore>;
 export type RootState = ReturnType<AppStore['getState']>;

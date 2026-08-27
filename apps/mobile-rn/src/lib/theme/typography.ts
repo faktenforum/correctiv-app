@@ -1,122 +1,53 @@
 /**
- * Composite typography as RN TextStyles — a 1:1 translation of the `ty-*`
- * utilities in wp-design-tokens/css/typography.css. lineHeight = fontSize ×
- * leading, because RN wants px rather than CSS's unitless factor. Every value
- * comes from the token bridge.
+ * Composite typography as React Native TextStyles.
+ *
+ * The specs come from `tokens/typography.css` through the token bridge — they used
+ * to be transcribed into this file by hand, eleven variants of family, weight, size,
+ * tracking and leading, with nothing checking them against the source sitting next
+ * to the generator that transcribes everything else. A changed line height upstream
+ * would have reached the app only if somebody noticed.
+ *
+ * What stays here is the part that is genuinely React Native's: `lineHeight` is
+ * fontSize x leading because RN wants px where CSS takes a unitless factor, and the
+ * family name is resolved through `fonts.ts`, which maps one loaded font per cut to
+ * work around Android ignoring fontWeight on custom fonts.
+ *
+ * **The mobile line height is used, not the tablet one.** Three headlines carry a
+ * `@media (min-width: 48rem)` override in the source; `typographySpecs` exposes it
+ * as `leadingTablet` and this file ignores it. That was always the behaviour — it is
+ * simply a decision now rather than something lost in transcription. Acting on it
+ * needs a width to react to, which a TextStyle built once at module load has not got.
  */
 import type { TextStyle } from 'react-native';
 
 import { fontSizePx, leading, letterSpacingPx } from '@correctiv/design-tokens/tokens.generated';
+import { typographySpecs, type TypoVariant } from '@correctiv/design-tokens/typography.generated';
+
 import { fontFamilyFor, type FontFamily, type FontWeightName } from './fonts';
 
-export type TypoVariant =
-  | 'text-article'
-  | 'text-s'
-  | 'text-m'
-  | 'text-l'
-  | 'headline-xs'
-  | 'headline-s'
-  | 'headline-m'
-  | 'headline-l'
-  | 'headline-xl'
-  | 'headline-xxl'
-  | 'button';
+export type { TypoVariant };
 
 type Spec = {
   family: FontFamily;
   weight: FontWeightName;
   size: keyof typeof fontSizePx;
   tracking: keyof typeof letterSpacingPx;
-  leadingToken: keyof typeof leading;
+  leading: keyof typeof leading;
 };
 
-// Mirrors typography.css (its mobile values).
-const SPECS: Record<TypoVariant, Spec> = {
-  'text-article': {
-    family: 'serif',
-    weight: 'normal',
-    size: 'text-article',
-    tracking: 'wider',
-    leadingToken: 'looser',
-  },
-  'text-s': {
-    family: 'sans',
-    weight: 'normal',
-    size: 'text-s',
-    tracking: 'wider',
-    leadingToken: 'loose',
-  },
-  'text-m': {
-    family: 'sans',
-    weight: 'normal',
-    size: 'text-m',
-    tracking: 'wide',
-    leadingToken: 'loose',
-  },
-  'text-l': {
-    family: 'sans',
-    weight: 'normal',
-    size: 'text-l',
-    tracking: 'wide',
-    leadingToken: 'relaxed',
-  },
-  'headline-xs': {
-    family: 'sans',
-    weight: 'bold',
-    size: 'headline-xs',
-    tracking: 'wider',
-    leadingToken: 'loose',
-  },
-  'headline-s': {
-    family: 'sans',
-    weight: 'bold',
-    size: 'headline-s',
-    tracking: 'wider',
-    leadingToken: 'loose',
-  },
-  'headline-m': {
-    family: 'sans',
-    weight: 'bold',
-    size: 'headline-m',
-    tracking: 'normal',
-    leadingToken: 'snug',
-  },
-  'headline-l': {
-    family: 'sans',
-    weight: 'bold',
-    size: 'headline-l',
-    tracking: 'tight',
-    leadingToken: 'tight',
-  },
-  'headline-xl': {
-    family: 'sans',
-    weight: 'bold',
-    size: 'headline-xl',
-    tracking: 'tighter',
-    leadingToken: 'tight',
-  },
-  'headline-xxl': {
-    family: 'sans',
-    weight: 'bold',
-    size: 'headline-xxl',
-    tracking: 'tighter',
-    leadingToken: 'tight',
-  },
-  button: {
-    family: 'sans',
-    weight: 'bold',
-    size: 'text-button',
-    tracking: 'wider',
-    leadingToken: 'loose',
-  },
-};
+/**
+ * The generated specs carry token NAMES as plain strings; this is where they meet
+ * the scales. If the source ever names a token the scales do not have, it fails
+ * here, at build time, rather than rendering a `NaN` font size.
+ */
+const SPECS = typographySpecs as unknown as Record<TypoVariant, Spec>;
 
 function buildStyle(spec: Spec): TextStyle {
   const size = fontSizePx[spec.size];
   return {
     fontFamily: fontFamilyFor(spec.family, spec.weight),
     fontSize: size,
-    lineHeight: Math.round(size * leading[spec.leadingToken]),
+    lineHeight: Math.round(size * leading[spec.leading]),
     letterSpacing: letterSpacingPx[spec.tracking],
   };
 }

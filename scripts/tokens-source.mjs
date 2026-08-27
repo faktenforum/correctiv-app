@@ -90,3 +90,13 @@ export function themeCssPath() {
   }
   return resolve(dir, 'theme.css');
 }
+
+/**
+ * Absolute path to typography.css — the composite `ty-*` utilities. Throws for the
+ * same reason themeCssPath() does: every caller needs it to do its job.
+ */
+export function typographyCssPath() {
+  const dir = tokensDir();
+  if (!dir) throw new Error('tokens/typography.css not found — see themeCssPath() above.');
+  return resolve(dir, 'typography.css');
+}
