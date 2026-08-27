@@ -5,7 +5,7 @@ import { Overline, ScreenHeader, Typo } from '@/components/ui';
 import { formatDateShortDe } from '@correctiv/app-core/lib/format';
 import type { SavedArticle } from '@correctiv/app-core/stores/savedArticles';
 import { openArticle } from '@/lib/openArticle';
-import { coreActions, useSavedArticles } from '@/lib/store/core';
+import { useCoreActions, useSavedArticles } from '@/lib/store/core';
 import { sizes, useColors } from '@/lib/theme';
 
 /**
@@ -43,6 +43,7 @@ export default function GespeichertScreen() {
 }
 
 function SavedRow({ article }: { article: SavedArticle }) {
+  const actions = useCoreActions();
   const colors = useColors();
   return (
     <View className="flex-row items-start border-b border-grey-300 py-s">
@@ -64,7 +65,7 @@ function SavedRow({ article }: { article: SavedArticle }) {
         accessibilityRole="button"
         accessibilityLabel={`${article.title} entfernen`}
         hitSlop={8}
-        onPress={() => coreActions.savedArticles.remove(article.url)}
+        onPress={() => actions.savedArticles.remove(article.url)}
         className="items-center justify-center active:opacity-70"
         style={{ width: sizes.iconButtonSmall, height: sizes.iconButtonSmall }}
       >
