@@ -47,7 +47,7 @@ jobs:
       - name: Install dependencies
         run: npm ci
 
-      # tsc + vue-tsc over both packages, then oxlint, oxfmt --check and vitest.
+      # tsc over every workspace, then oxlint, oxfmt --check, jest and vitest.
       # Includes the boundary guard that keeps the core free of platform SDKs.
       - name: Check
         run: npm run check
