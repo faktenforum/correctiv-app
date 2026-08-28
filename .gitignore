@@ -34,3 +34,10 @@ out/
 
 # Browser-automation scratch output.
 .playwright-mcp/
+
+# Agent skills are local tooling, installed per developer. They were once swept
+# into a commit by an `add -A`; the symlink under .claude/skills points into
+# .agents, so both have to stay out.
+.agents/
+.claude/skills/
+skills-lock.json
