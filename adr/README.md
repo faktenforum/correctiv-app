@@ -1,6 +1,6 @@
 # Architecture decisions
 
-Eleven decisions shaped this repo. Read them when you want to know *why* something is
+Twelve decisions shaped this repo. Read them when you want to know *why* something is
 the way it is; [`../ARCHITECTURE.md`](../ARCHITECTURE.md) describes *what* it is.
 
 | | Decision | Status |
@@ -16,6 +16,7 @@ the way it is; [`../ARCHITECTURE.md`](../ARCHITECTURE.md) describes *what* it is
 | [0009](0009-redux-toolkit-for-the-cores-state.md) | Redux Toolkit for the core's state | accepted |
 | [0010](0010-design-tokens-as-a-shared-package.md) | The design tokens as a shared package | accepted |
 | [0011](0011-naming-the-app-for-release.md) | Naming the app for release, and letting the old host go | accepted; retires two of 0007's |
+| [0012](0012-a-list-virtualizer-for-the-unbounded-lists.md) | A list virtualizer, for the two lists that need one | accepted |
 
 Seven notes for readers of the older ones:
 

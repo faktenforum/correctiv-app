@@ -39,8 +39,17 @@ export function ProgressBar({
       hitSlop={12}
       className="justify-center py-2xs"
     >
+      {/* The fill is full width and scaled down, not sized to a percentage. Width is
+          a layout property: setting it re-runs layout for the bar and everything
+          under it, and the position ticks twice a second for as long as audio plays,
+          so that is a layout pass per tick for a purely visual change. `scaleX` is a
+          transform, which the compositor applies without measuring anything. The
+          origin has to be named, or the bar would grow from its centre outwards. */}
       <View className="overflow-hidden rounded-s bg-grey-300" style={{ height: 4 }}>
-        <View className="h-full bg-emphasis" style={{ width: `${ratio * 100}%` }} />
+        <View
+          className="h-full w-full bg-emphasis"
+          style={{ transform: [{ scaleX: ratio }], transformOrigin: 'left' }}
+        />
       </View>
     </Pressable>
   );
