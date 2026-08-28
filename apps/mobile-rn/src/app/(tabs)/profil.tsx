@@ -27,8 +27,8 @@ const NEWSLETTERS = [
 /**
  * Three real investigations from the bundled offline index.
  *
- * The NativeScript build filtered on `feed === 'recherchen'`; this index is keyed by
- * URL and carries no feed field, so the URL decides — fact checks are not impact
+ * An earlier version filtered on `feed === 'recherchen'`. This index is keyed by URL
+ * and carries no feed field, so the URL decides. Fact checks are not impact
  * investigations.
  */
 const IMPACT_ARTICLES = Object.entries(OFFLINE_ARTICLES)

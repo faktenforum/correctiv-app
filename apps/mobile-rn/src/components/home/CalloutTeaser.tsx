@@ -11,9 +11,9 @@ import { colors } from '@/lib/theme';
  * The participate module on Home: one open callout, dark card, coral button.
  *
  * Dark is the point. Everything above it is journalism to read; this is the one
- * block that asks the reader for something, and both the draft and the
- * NativeScript build set it apart that way. Home was missing it entirely, which
- * left the Mitmachen tab as the only door into the callouts.
+ * block that asks the reader for something, and the design draft sets it apart
+ * that way. Home was missing it entirely, which left the Mitmachen tab as the only
+ * door into the callouts.
  *
  * Dark in both schemes, so everything on it is `always-light`, dimmed where the
  * light scheme used a grey. In dark mode the card no longer stands out from the

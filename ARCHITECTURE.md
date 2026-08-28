@@ -22,9 +22,8 @@ One core holds the behaviour. The app holds its screens and one adapter.
 
 Why keep the split with only one host? Because a view layer is the part any
 framework change rewrites anyway, and the domain is not. This repo has already
-replaced its whole view layer once: the second host was NativeScript/Vue, and when
-it was removed the feed cascade, the reader, the audio state machine and the
-membership logic did not move. That is the split paying for itself, and it is the
+replaced its whole view layer once, and when the old host was removed the feed
+cascade, the reader, the audio state machine and the membership logic did not move. That is the split paying for itself, and it is the
 same reason a third host — a web build, a tablet layout, whatever comes — costs one
 file and not a rewrite. [ADR 0006](adr/0006-one-core-two-hosts.md) records how the
 behaviour got here; `packages/app-core/test/boundary.test.ts` fails the build if a
@@ -48,9 +47,9 @@ constructed, before anything can await. `BlobStore` is not, because it holds a
 megabyte of cached feeds — the adapter's file header explains what the synchronous
 version used to cost.
 
-Adapter: `apps/mobile-rn/src/lib/platform/expo.ts`. It is small on purpose. When the
-NativeScript host existed it was the only file that knew about `ApplicationSettings`
-and `File`, and deleting that host meant deleting one file plus its screens.
+Adapter: `apps/mobile-rn/src/lib/platform/expo.ts`. It is small on purpose. While the repo
+had a second host, one file per host knew the platform SDK, so dropping a host meant
+dropping that file plus its screens.
 
 ## What lives in the core
 
@@ -138,9 +137,9 @@ apps/mobile-rn/            @correctiv/mobile-rn — Expo (iOS, Android, web)
 ```
 
 **Why the directory is `packages/app-core` and not `packages/core`:** the original
-reason was a build trap — `@nativescript/vite` treated `<app>/../../packages/core` as
-a NativeScript core source checkout and hijacked `@nativescript/core` with it. That
-host is gone and the trap with it, but the name stays: it is in every import path in
+reason was a build trap in the previous host's bundler, which mistook a directory
+called `packages/core` for its own framework source and hijacked the resolution. That
+host is gone and the trap with it, but the name stays. It is in every import path in
 the repo, and a rename would be churn for nothing.
 [ADR 0001](adr/0001-monorepo-and-platform-free-core.md).
 

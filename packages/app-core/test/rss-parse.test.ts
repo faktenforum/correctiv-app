@@ -11,10 +11,9 @@ const YT_ATOM = fixture('feeds/funfacts.atom.xml');
 
 /**
  * Pinned against real captures of correctiv.org/faktencheck/feed/ and the
- * FunFacts YouTube Atom feed. The parsers are deliberately regex-based (an XML
- * library collides with @nativescript/vite's CommonJS resolver), so these tests
- * are the only thing standing between a WordPress theme change and a silently
- * empty feed in the app.
+ * FunFacts YouTube Atom feed. The parsers are deliberately regex-based (see
+ * `lib/rss-parse.ts`), so these tests are the only thing standing between a
+ * WordPress theme change and a silently empty feed in the app.
  */
 describe('parseWpFeed', () => {
   const items = parseWpFeed(WP_RSS, 'faktencheck');

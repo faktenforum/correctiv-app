@@ -12,7 +12,7 @@ import { toAudioSource } from './sources';
 /**
  * The Expo audio backend: expo-audio translated into the core's `AudioBackend`
  * port. The state machine on the other side of that port lives in
- * `@correctiv/app-core/stores/audio` and is shared with the NativeScript app.
+ * `@correctiv/app-core/stores/audio`, where any host can share it.
  *
  * Deliberately `createAudioPlayer` and NOT the `useAudioPlayer` hook: the hook
  * ties the player instance to a component's lifetime and releases it on unmount.

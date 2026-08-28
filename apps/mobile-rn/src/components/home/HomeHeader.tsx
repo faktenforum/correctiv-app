@@ -7,9 +7,9 @@ import { formatDateWeekdayDe } from '@correctiv/app-core/lib/format';
  * Home's masthead: wordmark left, today's date right, hairline below.
  *
  * The date is what makes the screen read as today's edition instead of a static
- * list — the design draft and the NativeScript build both carry it, and the core
- * has had `formatDateWeekdayDe` ("Freitag, 12. Juni 2026") waiting for this one
- * spot. It replaces the fixed tagline, which said the same thing on every launch.
+ * list. The design draft carries it, and the core has had `formatDateWeekdayDe`
+ * ("Freitag, 12. Juni 2026") waiting for this one spot. It replaces the fixed
+ * tagline, which said the same thing on every launch.
  */
 export function HomeHeader() {
   return (

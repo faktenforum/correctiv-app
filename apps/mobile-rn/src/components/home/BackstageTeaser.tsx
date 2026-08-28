@@ -11,8 +11,8 @@ import { useColors } from '@/lib/theme';
  *
  * Yellow is the club's colour throughout the design system, and the card stays
  * readable for everyone — the diary is open, the bonus is the member's part. That
- * is the whole argument of the app in one card, which is why the draft and the
- * NativeScript build both put it on Home rather than hiding it behind the profile.
+ * is the whole argument of the app in one card, which is why the design draft puts
+ * it on Home rather than hiding it behind the profile.
  */
 export function BackstageTeaser({
   onOpenDiary,

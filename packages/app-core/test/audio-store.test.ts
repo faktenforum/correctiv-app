@@ -22,16 +22,15 @@ import { createAppStore, type AppStore } from '../src/stores/store';
  * The audio state machine, driven through the port rather than through a real SDK.
  *
  * `apps/mobile-rn/__tests__/audio-player.test.ts` already covers this via expo-audio.
- * What that cannot cover is a backend that behaves like the NativeScript one — and
- * the difference between them cost this project a crash on a device. So the fake here
- * is deliberately the AWKWARD shape: a backend whose commands are allowed to call the
- * status listener straight back.
+ * What that cannot cover is a backend whose commands call the status listener
+ * straight back, and that difference cost this project a crash on a device. So the
+ * fake here is deliberately the awkward shape.
  */
 interface Fake extends AudioBackend {
   /** Feed a tick in, as the host's timer or callback would. */
   tick(partial: Partial<PlaybackStatus>): void;
   calls: string[];
-  /** Emit from inside pause(), the way the NativeScript backend used to. */
+  /** Emit from inside pause(), the way a badly behaved backend does. */
   reentrant: boolean;
   /**
    * How often the core registered a status listener. Counted separately from
@@ -158,11 +157,11 @@ describe('failures', () => {
   /**
    * The regression this fake's awkward shape exists for.
    *
-   * The store calls `AudioBackend.pause()` when it gives up on a track. The
-   * NativeScript backend used to emit a status tick from inside `pause()`, so the
-   * store re-entered its own handler mid-decision and called `pause()` again — on a
-   * device that was `RangeError: Maximum call stack size exceeded`. expo-audio does
-   * not re-enter, so the Expo suite could not see it.
+   * The store calls `AudioBackend.pause()` when it gives up on a track. A backend
+   * once emitted a status tick from inside `pause()`, so the store re-entered its own
+   * handler mid-decision and called `pause()` again. On a device that was
+   * `RangeError: Maximum call stack size exceeded`. expo-audio does not re-enter, so
+   * the suite over the real SDK could not see it.
    *
    * Two things stop it now and this asserts both: the store sets state BEFORE
    * issuing a command, and the sticky-error guard turns the re-entrant tick around.

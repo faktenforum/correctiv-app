@@ -198,10 +198,10 @@ export const projectGroups: ProjectGroup[] = [
  * and `schweiz` exist in both — and the project always wins, because its page
  * is strictly the richer one: own description, own action, no invented copy.
  *
- * That is one behaviour change against the NativeScript app, which built a
- * synthetic topic page for every chip and so showed "Alle Beiträge zum Thema
- * Klima." where a real project description existed. Only interests WITHOUT a
- * project of the same id still get the synthetic page.
+ * That is a deliberate change. The earlier implementation built a synthetic topic
+ * page for every chip, so it showed "Alle Beiträge zum Thema Klima." where a real
+ * project description existed. Only interests WITHOUT a project of the same id
+ * still get the synthetic page.
  */
 export function resolveProject(id: string): Project | null {
   for (const group of projectGroups) {

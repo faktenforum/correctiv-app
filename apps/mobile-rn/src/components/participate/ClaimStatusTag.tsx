@@ -10,9 +10,9 @@ import { useColors, type Palette } from '@/lib/theme';
  * the colours live here, because the core knows no platform styles.
  *
  * "Richtig" is the one place the brand palette does not stretch to: a confirmed
- * fact check must not wear the same red as a refuted one. The NativeScript build
- * introduced a green for it (#2e7d4f) — the same one here, for the same reason, and
- * still not declared a token.
+ * fact check must not wear the same red as a refuted one. Hence this green
+ * (#2e7d4f), carried over from the first implementation and still not declared a
+ * token.
  */
 const CHECKED_TRUE_GREEN = '#2e7d4f';
 

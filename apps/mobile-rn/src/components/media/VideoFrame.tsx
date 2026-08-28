@@ -25,9 +25,8 @@ function escapeAttribute(value: string): string {
  * "React Native WebView does not support this platform." — with a green build. The
  * pairing is enforced by __tests__/web-target.test.ts.
  *
- * A dedicated YouTube player (react-native-youtube-iframe) is still not needed:
- * the nocookie embed is what the NativeScript build used, and it saves a
- * dependency that sits on WebView itself.
+ * A dedicated YouTube player (react-native-youtube-iframe) is still not needed. The
+ * nocookie embed does the job and saves a dependency that sits on WebView itself.
  */
 
 /**

@@ -14,11 +14,10 @@ import { useAppDispatch, useAppSelector, useLazyLoad } from '@/lib/store/core';
 /**
  * React bindings for the core's feed slice.
  *
- * This used to be a `useAsyncData` hook over a `client.ts` of its own — one
- * request per mounting component, no shared state, and a second offline cascade
- * next to the NativeScript app's. The cascade is the core's now
- * (`stores/feeds.ts`), so Home and a project page reading the same feed share one
- * load, one cache entry and one status.
+ * This used to be a `useAsyncData` hook over a `client.ts` of its own: one request
+ * per mounting component, no shared state, and its own offline cascade. The cascade
+ * is the core's now (`stores/feeds.ts`), so Home and a project page reading the same
+ * feed share one load, one cache entry and one status.
  *
  * The shape below only ever grows: every call site already destructures
  * `{ data, loading, error }`, so `offline` was added beside them rather than

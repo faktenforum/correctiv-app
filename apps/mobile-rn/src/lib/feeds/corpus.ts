@@ -14,8 +14,8 @@ import { coreActions, coreStore } from '@/lib/store/core';
  * feed, so this holds in airplane mode too.
  *
  * Loaded lazily, and only when the fallback is actually needed: the normal case
- * (the server answers) then costs no six extra requests. The NativeScript build
- * kicked off all six the moment the search screen opened.
+ * (the server answers) then costs no six extra requests. An earlier version kicked
+ * off all six the moment the search screen opened.
  */
 let pending: Promise<void> | null = null;
 

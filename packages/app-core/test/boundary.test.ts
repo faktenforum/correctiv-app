@@ -87,10 +87,10 @@ describe('core stays platform-free', () => {
 
   /**
    * The DOM extraction backend is the one place in the core that has runtime
-   * dependencies, and it exists precisely so the NativeScript app does not have
-   * to. Nothing the NativeScript app can reach may import it — an accidental
-   * import somewhere central would pull htmlparser2 into a bundle whose resolver
-   * cannot handle it, and that failure shows up on a device, not here.
+   * dependencies, and it exists so a host without an HTML parser does not need one.
+   * Nothing outside it may import it. An accidental import somewhere central would
+   * pull htmlparser2 into a bundle whose resolver cannot handle it, and that failure
+   * shows up on a device, not here.
    */
   it('keeps the HTML parser inside the DOM extraction backend', () => {
     const parserImports = files.filter((full) => {

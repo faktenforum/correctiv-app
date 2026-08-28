@@ -23,11 +23,11 @@ import { colors } from '@/lib/theme';
  * `video/[id]` would need `generateStaticParams`, and nobody knows a PeerTube UUID
  * in advance.
  *
- * A deliberate divergence from the NativeScript build: there the video surface sat
+ * A deliberate divergence from the earlier design, where the video surface sat
  * ABOVE the tab frames and shrank into a bar when you navigated away. React Native
  * cannot re-parent a video surface without recreating it, which would stop
- * playback — the natively appropriate answer is picture-in-picture, which
- * expo-video brings along.
+ * playback. The native answer is picture-in-picture, which expo-video brings
+ * along.
  */
 export default function VideoScreen() {
   const { current, hlsUrl, status } = useVideo();
@@ -99,7 +99,7 @@ function PeertubeStage({
       style={{ flex: 1 }}
       contentFit="contain"
       nativeControls
-      // Instead of the NativeScript build's bar: the system takes over the window.
+      // Instead of a shrinking in-app bar, the system takes over the window.
       allowsPictureInPicture
       startsPictureInPictureAutomatically
     />

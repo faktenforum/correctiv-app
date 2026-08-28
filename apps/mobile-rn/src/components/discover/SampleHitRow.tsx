@@ -21,9 +21,9 @@ type TabPath = '/(tabs)/mediathek' | '/(tabs)/mitmachen' | '/(tabs)/profil';
 /**
  * Where a non-article hit leads — or `null` when it has no place in this app.
  *
- * Books (`verlag`) have no screen. In the NativeScript build they were tappable
- * anyway and then did nothing; here they stay deliberately inert. Visibly
- * untouchable beats apparently broken.
+ * Books (`verlag`) have no screen. They were once tappable anyway and then did
+ * nothing. Here they stay deliberately inert, because visibly untouchable beats
+ * apparently broken.
  */
 export function sampleTarget(kind: SearchSample['kind']): TabPath | null {
   switch (kind) {

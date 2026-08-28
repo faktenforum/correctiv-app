@@ -1,6 +1,6 @@
 /**
- * Element sizes in dp, taken from the design draft — the `.dc.html` mockup in the
- * `design-entwurf` sibling repo, shot screen by screen into `screens/draft/`.
+ * Element sizes in dp, taken from the design draft: the `.dc.html` mockup in the
+ * `design-entwurf` sibling checkout.
  *
  * Why not Tailwind utilities: the spacing scale is the design system's own
  * (`--spacing: 0.125rem` in @correctiv/design-tokens/theme.css — 2 px at Uniwind's
@@ -20,9 +20,9 @@ export const sizes = {
   /**
    * Card in a media rail. Narrower than `railCard` so two fit on a 402pt screen
    * and the third only peeks: at 240 the second card was cut mid-word and the row
-   * read as clipped rather than scrollable. No draft value exists — the draft lists
-   * videos vertically; this follows the NativeScript build, which is the only
-   * reference that had a media rail.
+   * read as clipped rather than scrollable. No draft value exists, because the draft
+   * lists videos vertically. This number comes from the first implementation that
+   * had a media rail.
    */
   railCardMedia: 176,
   /** Square podcast cover in the series rail — draft: `w-[116px]`. */

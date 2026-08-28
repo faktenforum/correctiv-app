@@ -16,7 +16,7 @@ export type ButtonProps = Omit<PressableProps, 'children' | 'style'> & {
 //
 // `onEmphasis` is the CTA on a brand surface: white, not yellow. Yellow is the
 // club's colour and carries meaning there; on red it is also loud and low-contrast.
-// The draft and the NativeScript build both use white here.
+// The design draft uses white here.
 const SURFACE: Record<Variant, string> = {
   primary: 'bg-emphasis',
   secondary: 'bg-grey-200',

@@ -4,10 +4,10 @@
  *
  * `tokens/theme.css` carries a dark block, but it is a placeholder: it is marked
  * `@TODO Set this to the actual values` and its values are the light ones. Reading
- * it would produce a "dark mode" identical to light. So the values below are the
- * NativeScript build's `styles/dark.scss`, which assigned them by hand and shipped
- * them — carried over here with its reasoning intact. When wp-design-tokens gains
- * real dark values, this file becomes a delete, not a rewrite.
+ * it would produce a "dark mode" identical to light. So the values below were
+ * assigned by hand for the first shipped dark mode and carried over here with their
+ * reasoning intact. When wp-design-tokens gains real dark values, this file becomes
+ * a delete, not a rewrite.
  *
  * ## Why roles, not an inverted scale
  *

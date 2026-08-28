@@ -17,7 +17,7 @@ const WHATSAPP_TIP = 'https://wa.me/4915142647500';
  * demolition atlas, and a tip by WhatsApp.
  *
  * Laid out after the design draft: one group label and one card with exactly one
- * button per area. The NativeScript build used icon rows here; the card carries the
+ * button per area. An icon row was tried here first. The card carries the
  * explanation better, and with four areas the space is worth it.
  */
 export default function MitmachenScreen() {

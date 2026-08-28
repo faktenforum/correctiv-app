@@ -85,8 +85,8 @@ export default function OnboardingScreen() {
       <ScrollView
         className="flex-1"
         // The mission screen has nothing to scroll, so its block is anchored to the
-        // bottom of the viewport — that is where the draft and the NativeScript build
-        // put it, and top-aligning it left a screen-height of empty red below.
+        // bottom of the viewport, which is where the design draft puts it.
+        // Top-aligning it left a screen-height of empty red below.
         contentContainerClassName={mission ? 'px-m pb-l grow justify-end' : 'px-m pt-m pb-l'}
         showsVerticalScrollIndicator={false}
       >

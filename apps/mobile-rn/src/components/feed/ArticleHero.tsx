@@ -11,10 +11,10 @@ import { useArticleMeta } from '@/lib/articles/useArticleMeta';
  * The lead research item on Home: edge-to-edge image, kicker, serif headline,
  * teaser, byline.
  *
- * Three details come from the draft and the NativeScript build, which both read
- * as an article opening where this one read as a card: the image runs to the
- * screen edge, the kicker is set type rather than a filled badge (the coral
- * surface competed with the headline), and the byline says who did the work.
+ * Three details come from the design draft, which reads as an article opening
+ * where this one read as a card. The image runs to the screen edge, the kicker is
+ * set type rather than a filled badge (the coral surface competed with the
+ * headline), and the byline says who did the work.
  *
  * Both references give the hero a kicker unconditionally, so a feed without a
  * badge of its own falls back to "Recherche" — and the main feed deliberately has

@@ -116,66 +116,47 @@ Run the **Release Android** workflow manually (Actions tab → Run workflow, or
 `gh workflow run release-android.yml`). It builds the APK and uploads it to the run
 as an artifact, without creating a release. No secrets required — it uses the test key.
 
-> The two records below are from **before 2026-08-12**, when the repo still shipped a
-> second app (NativeScript) alongside this one and every release carried two APKs.
-> They are kept because what they prove — the version steps, the re-signing, the
-> attach job — is unchanged. Read "both APKs" as "the APK".
-
 Done once on 2026-08-06 from `9842b27`
-([run 31105467974](https://github.com/faktenforum/correctiv-app/actions/runs/31105467974)),
-before anyone relies on a real tag. What it proved:
+([run 31105467974](https://github.com/faktenforum/correctiv-app/actions/runs/31105467974)).
+The build job green, the artifact on the run, the test-key fallback taken because no
+`ANDROID_KEYSTORE_*` secrets are set (a workflow warning, an APK, no AAB), and the
+attach job correctly skipped without a tag. The APK carries
+`CN=CORRECTIV App TEST KEY (not for Play)` and verifies under signature schemes v2 and
+v3, so it installs on everything the app supports (`minSdkVersion 24`).
 
-- Both jobs green; both artifacts on the run, named `correctiv-app-{expo,nativescript}-main.apk`
-  (on a manual run `GITHUB_REF_NAME` is the branch, not a version — see the gap below).
-- **Both APKs carry the same certificate**, which is the one claim worth checking here:
-  SHA-256 `f3ee1b52…`, `CN=CORRECTIV App TEST KEY (not for Play)`. The re-signing step
-  works. Both verify under signature scheme v2 (the Expo one additionally v3), so both
-  install on everything the app supports (`minSdkVersion 24`).
-- The test-key fallback was taken, since no `ANDROID_KEYSTORE_*` secrets are set: a
-  workflow warning, an APK and **no AAB** — as intended.
-- The attach job was correctly **skipped** without a tag.
-- The NativeScript APK installs and runs: it is the build `screens/nativescript/` was
-  shot from, so the artifact is known-good, not merely present.
+A tagless run cannot cover the two `Set version from tag` steps or the attach job,
+since all three are `if:` a tag. The version steps were checked by running them
+verbatim against the real files with `GITHUB_REF_NAME=v1.2.3` and
+`GITHUB_RUN_NUMBER=47`. `app.gradle` went to `versionCode 47` and
+`versionName "1.2.3"`, and `app.json` to `version 1.2.3` with `android.versionCode 47`,
+keeping `package`, the adaptive icon and the permissions. Both `sed` patterns matched,
+which is worth checking: a `sed` that matches nothing changes nothing and says so
+nowhere.
 
-**What a tagless run cannot cover**, because both steps are `if:` a tag — the two
-`Set version from tag` steps and the attach job. The version steps were checked
-separately by running them verbatim against the real files with `GITHUB_REF_NAME=v1.2.3`
-and `GITHUB_RUN_NUMBER=47`: `app.gradle` went to `versionCode 47` / `versionName "1.2.3"`
-(both `sed` patterns match — a `sed` that matches nothing changes nothing and says so
-nowhere), and `app.json` to `version 1.2.3` with `android.versionCode 47`, keeping
-`package`, the adaptive icon and the permissions. Attaching to a release stayed unproven
-until the first real tag — the section below.
-
-One cosmetic thing: `apksigner` writes a v4 `.apk.idsig` next to the Expo APK, so it
-rides along in the run artifact. It cannot reach a GitHub Release — that step globs
-`*.apk` and `*.aab`.
+`apksigner` writes a v4 `.apk.idsig` next to the APK, so it rides along in the run
+artifact. It cannot reach a GitHub Release, because that step globs `*.apk` and
+`*.aab`.
 
 ## What the first real tag proved
 
 [`v0.0.3`](https://github.com/faktenforum/correctiv-app/releases/tag/v0.0.3), tagged on
 2026-08-12 from `0d97483`
-([run 31569569194](https://github.com/faktenforum/correctiv-app/actions/runs/31569569194))
-to hand out a build as things stood. All jobs green, both APKs attached, no AAB — the
-test-key fallback, since no secrets are set. It closes the two gaps a manual run leaves
-open:
+([run 31569569194](https://github.com/faktenforum/correctiv-app/actions/runs/31569569194)),
+closes both gaps.
 
-- **The tag drove the version in both apps.** Read off the downloaded assets, not the run
-  log: `aapt2 dump badging` reports `versionName='0.0.3' versionCode='7'` for each, under
-  the shared `org.correctiv.app.prototype`. The `versionCode` is the run number, so both
-  apps carry the same one.
-- **Attaching works**, and the assets are named per app — the release page is where the
-  APKs land, not just the run.
-- Both still carry **one identity**, SHA-256 `f3ee1b52…`, the same certificate as the dry
-  run — so re-signing the Expo APK holds across a tagged build too. NativeScript verifies
-  under scheme v2, Expo under v2 and v3.
-- **The released NativeScript APK runs**, which is the claim a release page cannot make:
-  `adb install -r` over an older build succeeded on an API 36 emulator (`versionCode 7`
-  afterwards), the app started and Home rendered with a live feed and the date header the
-  core now formats. The Expo APK was not installed — same package id, one at a time.
+The tag drove the version, read off the downloaded asset rather than the run log:
+`aapt2 dump badging` reports `versionName='0.0.3' versionCode='7'`, the `versionCode`
+being the run number. Attaching works, and the assets are named per app. The
+certificate is the same one as the dry run, so re-signing holds across a tagged build
+too.
 
-Two things the workflow does not do: the release body's note about which build this is was
-added afterwards with `gh release edit`, and nothing about a release is committed — the
-version patches live only inside the run.
+And the released APK runs, which is the claim a release page cannot make: `adb install
+-r` over an older build succeeded on an API 36 emulator, the app started, and Home
+rendered with a live feed and the date header the core formats.
+
+Two things the workflow does not do. The release body's note about which build this is
+was added afterwards with `gh release edit`, and nothing about a release is committed.
+The version patches live only inside the run.
 
 ## iOS (not yet wired up)
 

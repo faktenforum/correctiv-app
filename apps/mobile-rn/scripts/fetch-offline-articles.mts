@@ -4,11 +4,10 @@
  *
  *   npm run offline-articles -w @correctiv/mobile-rn
  *
- * Collecting is shared with the NativeScript app
- * (`@correctiv/app-core/articles/offline-bundle`); what differs is only the
- * writing — one generated TypeScript module here, JSON files in an app folder
- * there. The extraction backend is the DOM one, the same one this app uses at
- * runtime, so the bundle cannot differ from what the app would have extracted
+ * Collecting lives in the core (`@correctiv/app-core/articles/offline-bundle`), so
+ * only the writing is local: one generated TypeScript module. The extraction
+ * backend is the DOM one, the same one this app uses at runtime, so the bundle
+ * cannot differ from what the app would have extracted
  * live.
  *
  * The snapshots matter most on the web target, where they are not a fallback for a

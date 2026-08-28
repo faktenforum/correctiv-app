@@ -1,10 +1,10 @@
 /**
  * WordPress RSS 2.0, YouTube Atom and iTunes podcast feeds → typed items.
  *
- * Regex-based rather than an XML library: `fast-xml-parser` and its peers collide
- * with the CommonJS resolver in `@nativescript/vite`, and these three formats are
- * stable enough that the trade is worth it. Runs identically in Node scripts and
- * in both apps.
+ * Regex-based rather than an XML library. The original blocker was a bundler
+ * collision in a host this repo no longer has. That host is gone, but the trade
+ * still holds: these three formats are stable, and a parser-free implementation
+ * runs identically in a Node script and in the app.
  *
  * This used to be a `.mjs` file with a hand-written `.d.mts` twin, so that a plain
  * `node` script could import it. The scripts run through `tsx` now, and the twin —

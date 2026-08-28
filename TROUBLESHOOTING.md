@@ -31,8 +31,8 @@ Extracting text is the weak version of this. `uiautomator dump` and
 it looks — nine further defects hid behind exactly that, among them a video card
 grown into a full-screen black rectangle. So after touching layout, **take a
 screenshot and look at it**. `screens/tools/tour-android.sh` walks a build on the
-emulator; [`screens/README.md`](screens/) holds them next to the design draft and
-what the last comparison found.
+emulator, and [`screens/README.md`](screens/) says what makes one of those pictures
+evidence.
 
 And it is worse than weak for anything that *changes*: **`uiautomator dump` returns a
 stale tree.** A React Native text node that ticks — a player position, a countdown —

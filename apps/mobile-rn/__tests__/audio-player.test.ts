@@ -11,10 +11,9 @@ import {
  * Two things here are product rules that no typecheck can protect: only one medium
  * plays at a time, and a stream that never loads has to say so instead of spinning.
  *
- * The state machine under test lives in `@correctiv/app-core/stores/audio` and is
- * shared with the NativeScript app, so these assertions now cover both. Only the
- * translation from expo-audio's status ticks is local (`lib/audio/backend.ts`) —
- * which is why the mock below is still an expo player.
+ * The state machine under test lives in `@correctiv/app-core/stores/audio`, where
+ * any host shares it. Only the translation from expo-audio's status ticks is local
+ * (`lib/audio/backend.ts`), which is why the mock below is an expo player.
  */
 
 /**
@@ -191,8 +190,8 @@ describe('failures', () => {
 
     jest.advanceTimersByTime(12000);
 
-    // expo-audio does report errors, but the lesson from the NativeScript build
-    // was that network errors sometimes never arrive at all.
+    // expo-audio does report errors, but the lesson from an earlier backend was
+    // that network errors sometimes never arrive at all.
     expect(coreStore.getState().audio.status).toBe('error');
     expect(coreStore.getState().audio.errorMessage).toMatch(/Keine Verbindung/);
   });

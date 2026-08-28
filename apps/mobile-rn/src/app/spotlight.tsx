@@ -7,8 +7,8 @@ import { Hairline, Overline, ScreenHeader, Typo } from '@/components/ui';
 import { openArticle } from '@/lib/openArticle';
 
 /**
- * The Spotlight archive — what „Spotlight →" on Home opens, and the reason that
- * action existed in the draft and in the NativeScript build but not here.
+ * The Spotlight archive. This is what „Spotlight →“ on Home opens, and the reason
+ * that action existed in the design draft but not here.
  *
  * Home shows today's issue as an agenda of headlines; this is where the teasers
  * live, one block per issue. No new data was needed: the core already carries

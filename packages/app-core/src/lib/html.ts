@@ -2,10 +2,10 @@
  * String primitives for the markup this app reads: entity decoding, tag
  * stripping, tag balancing and meta-tag lookup.
  *
- * Dependency-free and DOM-free on purpose. Everything here runs in the
- * NativeScript runtime, in React Native, in a browser and in a Node script
- * without a parser package — which is what lets the feed parsers and the
- * string-based article extractor be one implementation rather than four.
+ * Dependency-free and DOM-free on purpose. Everything here runs in React Native,
+ * in a browser and in a Node script without a parser package, which is what lets
+ * the feed parsers and the string-based article extractor be one implementation
+ * rather than three.
  */
 
 /**

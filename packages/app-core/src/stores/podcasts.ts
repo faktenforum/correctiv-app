@@ -17,9 +17,9 @@ const TTL_MS = 60 * 60 * 1000;
  * - `partial` — some shows failed; the list mixes live, cached and bundled entries.
  * - `offline` — nothing was reachable, this is the typed sample seed.
  *
- * The NativeScript store had one flag for the last two, which is exactly the
- * distinction a demo needs to be able to make: "a show is missing" is not the
- * same as "you are looking at sample data".
+ * An earlier store had one flag for the last two, and that is exactly the
+ * distinction a demo needs to make: "a show is missing" is not the same as "you
+ * are looking at sample data".
  */
 export type PodcastsStatus = 'idle' | 'loading' | 'ready' | 'partial' | 'offline';
 

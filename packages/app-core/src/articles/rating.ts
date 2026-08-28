@@ -5,10 +5,9 @@ import type { FactcheckRating } from './types';
  *
  * A correctiv.org fact check states its verdict twice: as an image path
  * (`/rating/mostly-false.svg`) and as German prose next to it ("Größtenteils
- * falsch · Über diese Bewertung"). The two apps each read one of them and built
- * their own vocabulary around it — English slugs in the NativeScript plaque,
- * German slugs in the Expo reader — so the same article could be styled by one
- * app and unstyled by the other.
+ * falsch · Über diese Bewertung"). Two earlier readers each took one of them and
+ * built their own vocabulary around it, English slugs against German slugs, so the
+ * same article could be styled by one and unstyled by the other.
  *
  * Both readings now land on the same union.
  */

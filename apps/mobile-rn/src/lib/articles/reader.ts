@@ -11,12 +11,11 @@ import { READER_FONTS_CSS } from '@/lib/theme/readerFonts.generated';
 /**
  * The reader document, styled the Expo way.
  *
- * The document itself — structure, class names, German copy, the verdict plaque —
- * comes from the core, so it is the same one the NativeScript app renders. What
- * this file adds is the single thing that differs: the CSS arrives **inline**,
- * with the fonts base64-embedded, because this app has no app folder a WebView
- * could resolve a `file://` stylesheet against — and because the same string has
- * to work inside an `<iframe srcDoc>` on the web target.
+ * The document itself, meaning structure, class names, German copy and the verdict
+ * plaque, comes from the core, so any host renders the same one. What this file
+ * adds is the CSS, which arrives **inline** with the fonts base64-embedded. This
+ * app has no app folder a WebView could resolve a `file://` stylesheet against, and
+ * the same string has to work inside an `<iframe srcDoc>` on the web target.
  *
  * Order matters: token variables and `@font-face` first, layout last, so the
  * layout can reference the variables.
