@@ -1,11 +1,12 @@
 import { Ionicons } from '@expo/vector-icons';
 import { router, useLocalSearchParams } from 'expo-router';
-import { useEffect, useState } from 'react';
-import { ActivityIndicator, Linking, Pressable, View } from 'react-native';
+import { useCallback, useEffect, useRef, useState } from 'react';
+import { ActivityIndicator, Animated, Linking, Pressable, View } from 'react-native';
 
 import { ReaderView } from '@/components/reader/ReaderView';
 import { Button, SafeAreaView, Typo } from '@/components/ui';
 import { isInternalArticleUrl } from '@/lib/articles/articleUrl';
+import { nextHeaderHidden } from '@/lib/articles/readerChrome';
 import { loadArticle } from '@correctiv/app-core/articles/load';
 import type { Article } from '@correctiv/app-core/articles/types';
 import { readerHtml } from '@/lib/articles/reader';
@@ -41,6 +42,40 @@ export default function ArtikelScreen() {
   const isMember = useIsMember();
   const textScale = useTextScale();
   const isDark = useIsDark();
+
+  /**
+   * The overlay header gets out of the way when the reader scrolls down, and comes
+   * back on the way up.
+   *
+   * It floats over the article rather than pushing it down, which is deliberate and
+   * right for the hero image. Past the hero it was covering the text instead: a
+   * headline read "zeniert" because the back chevron sat on "insz", in both colour
+   * schemes and at every scroll position, which is the reading state rather than an
+   * edge case.
+   */
+  const [headerHidden, setHeaderHidden] = useState(false);
+  const lastOffset = useRef(0);
+  const headerOpacity = useRef(new Animated.Value(1)).current;
+
+  const onReaderScroll = useCallback((offsetY: number) => {
+    const previous = lastOffset.current;
+    lastOffset.current = offsetY;
+    setHeaderHidden((hidden) => nextHeaderHidden(hidden, previous, offsetY));
+  }, []);
+
+  // A new article starts at the top, so the header starts visible.
+  useEffect(() => {
+    lastOffset.current = 0;
+    setHeaderHidden(false);
+  }, [url, attempt]);
+
+  useEffect(() => {
+    Animated.timing(headerOpacity, {
+      toValue: headerHidden ? 0 : 1,
+      duration: 160,
+      useNativeDriver: true,
+    }).start();
+  }, [headerHidden, headerOpacity]);
 
   useEffect(() => {
     if (!url) return;
@@ -86,6 +121,7 @@ export default function ArtikelScreen() {
         <ReaderView
           html={readerHtml(article, { isMember, textScale, isDark })}
           onNavigate={onNavigate}
+          onScroll={onReaderScroll}
         />
       ) : (
         <View className="flex-1 items-center justify-center px-m">
@@ -114,37 +150,45 @@ export default function ArtikelScreen() {
         </View>
       )}
 
-      {/* Overlay header: it floats over the hero image rather than pushing it down,
-          and the article scrolls underneath it. */}
-      <SafeAreaView edges={['top']} className="absolute left-0 right-0 top-0">
-        <View className="flex-row items-center justify-between px-s py-2xs">
-          <HeaderButton icon="chevron-back" label="Zurück" onPress={goBack} />
-          {url && (
-            <View className="flex-row gap-2xs">
-              {/* Sharing a piece of journalism is the point of publishing it — the
+      {/* Overlay header: it floats over the hero image rather than pushing it down.
+          Past the hero it would sit on the text instead, so it fades out on the way
+          down and back in on the way up. `pointerEvents` follows, or an invisible
+          header would still swallow taps meant for the article. */}
+      <Animated.View
+        style={{ opacity: headerOpacity }}
+        pointerEvents={headerHidden ? 'none' : 'box-none'}
+        className="absolute left-0 right-0 top-0"
+      >
+        <SafeAreaView edges={['top']}>
+          <View className="flex-row items-center justify-between px-s py-2xs">
+            <HeaderButton icon="chevron-back" label="Zurück" onPress={goBack} />
+            {url && (
+              <View className="flex-row gap-2xs">
+                {/* Sharing a piece of journalism is the point of publishing it — the
                   one action here that works on the article rather than on the app. */}
-              <HeaderButton
-                icon="share-outline"
-                label="Artikel teilen"
-                onPress={() => shareArticle(url, title ?? article?.title)}
-              />
-              <HeaderButton
-                icon={saved ? 'bookmark' : 'bookmark-outline'}
-                label={saved ? 'Gespeichert, entfernen' : 'Artikel speichern'}
-                onPress={() =>
-                  actions.savedArticles.toggle({
-                    url,
-                    title: title ?? article?.title ?? '',
-                    kicker: article?.kicker ?? null,
-                    rating: article?.rating ?? null,
-                    savedAt: new Date().toISOString(),
-                  })
-                }
-              />
-            </View>
-          )}
-        </View>
-      </SafeAreaView>
+                <HeaderButton
+                  icon="share-outline"
+                  label="Artikel teilen"
+                  onPress={() => shareArticle(url, title ?? article?.title)}
+                />
+                <HeaderButton
+                  icon={saved ? 'bookmark' : 'bookmark-outline'}
+                  label={saved ? 'Gespeichert, entfernen' : 'Artikel speichern'}
+                  onPress={() =>
+                    actions.savedArticles.toggle({
+                      url,
+                      title: title ?? article?.title ?? '',
+                      kicker: article?.kicker ?? null,
+                      rating: article?.rating ?? null,
+                      savedAt: new Date().toISOString(),
+                    })
+                  }
+                />
+              </View>
+            )}
+          </View>
+        </SafeAreaView>
+      </Animated.View>
     </View>
   );
 }

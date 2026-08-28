@@ -8,7 +8,7 @@ import { READER_BASE_URL, type ReaderViewProps } from './types';
  * web, because react-native-webview has no web implementation — it renders the
  * text "React Native WebView does not support this platform." instead.
  */
-export function ReaderView({ html, onNavigate }: ReaderViewProps) {
+export function ReaderView({ html, onNavigate, onScroll }: ReaderViewProps) {
   return (
     <WebView
       originWhitelist={['*']}
@@ -17,6 +17,9 @@ export function ReaderView({ html, onNavigate }: ReaderViewProps) {
       showsVerticalScrollIndicator={false}
       // Let the content start underneath the transparent overlay header.
       contentInsetAdjustmentBehavior="never"
+      // The WebView's own scroll event, so nothing has to be injected into the
+      // article to know where it is.
+      onScroll={(event) => onScroll(event.nativeEvent.contentOffset.y)}
     />
   );
 }

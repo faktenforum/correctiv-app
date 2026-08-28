@@ -17,7 +17,7 @@ import { READER_BASE_URL, type ReaderViewProps } from './types';
  * can be intercepted and routed through the same onNavigate the native WebView
  * uses. That is what keeps the two platforms behaving identically.
  */
-export function ReaderView({ html, onNavigate }: ReaderViewProps) {
+export function ReaderView({ html, onNavigate, onScroll }: ReaderViewProps) {
   const frameRef = useRef<HTMLIFrameElement | null>(null);
 
   const handleClick = useCallback(
@@ -41,6 +41,10 @@ export function ReaderView({ html, onNavigate }: ReaderViewProps) {
     [onNavigate],
   );
 
+  // Kept in a ref so the effect below does not re-attach on every scroll.
+  const scrollRef = useRef(onScroll);
+  scrollRef.current = onScroll;
+
   useEffect(() => {
     const frame = frameRef.current;
     if (!frame) return;
@@ -49,9 +53,15 @@ export function ReaderView({ html, onNavigate }: ReaderViewProps) {
 
     const attach = () => {
       const doc = frame.contentDocument;
-      if (!doc) return;
+      const win = frame.contentWindow;
+      if (!doc || !win) return;
+      const handleScroll = () => scrollRef.current(win.scrollY);
       doc.addEventListener('click', handleClick);
-      detach = () => doc.removeEventListener('click', handleClick);
+      win.addEventListener('scroll', handleScroll);
+      detach = () => {
+        doc.removeEventListener('click', handleClick);
+        win.removeEventListener('scroll', handleScroll);
+      };
     };
 
     // srcDoc may already have finished parsing before this effect runs, so try

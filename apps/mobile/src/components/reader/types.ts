@@ -14,6 +14,19 @@ export interface ReaderViewProps {
    * diverge between the app and the web demo.
    */
   onNavigate: (url: string) => boolean;
+  /**
+   * The article's vertical scroll offset in px, as it scrolls.
+   *
+   * The screen uses it to move the overlay header out of the text's way. It is
+   * here rather than inside each implementation so the two cannot disagree about
+   * when the header hides.
+   *
+   * Neither platform injects script into the article to produce it: native takes
+   * the WebView's own scroll event, web listens on the `srcDoc` document from the
+   * parent. That is what keeps the web iframe's sandbox at `allow-same-origin`
+   * with no `allow-scripts`.
+   */
+  onScroll: (offsetY: number) => void;
 }
 
 /** Base URL that relative links inside the article HTML resolve against. */
