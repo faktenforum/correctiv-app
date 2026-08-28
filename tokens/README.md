@@ -7,13 +7,13 @@ The binding source of truth for colours, spacing and type, copied from
 |---|---|
 | Upstream | `https://github.com/correctiv/wp-design-tokens` |
 | Commit | `501ee105a35db74c8ad2de7abd46449ff8da11fb` (tag `v0.1.1`) |
-| Upstream licence | GPL-2.0-or-later — compatible with this repo's AGPL-3.0-or-later |
+| Upstream licence | GPL-2.0-or-later, compatible with this repo's AGPL-3.0-or-later |
 
 ## Why vendored, and not a submodule or an npm dependency
 
 - **~~npm dependency is not available.~~ That reason expired on 2026-08-27.** The
   package declares `peerDependencies: { tailwindcss: ">=4.1" }`, which NativeWind 4
-  could not satisfy because it is a Tailwind v3 engine — so installing it needed
+  could not satisfy because it is a Tailwind v3 engine, so installing it needed
   `--force` or a repo-wide `legacy-peer-deps`. The app is on Tailwind v4 since
   [ADR 0008](../adr/0008-uniwind-over-nativewind.md), so the conflict is gone.
   Vendoring stays for the two reasons below, which never depended on it.
@@ -25,8 +25,8 @@ The binding source of truth for colours, spacing and type, copied from
   fresh clone. The source is needed for exactly two things: regenerating, and
   detecting drift.
 
-Vendoring gives both of those everywhere — including CI, where the drift check
-used to skip itself — at the cost of having to notice upstream changes by hand.
+Vendoring gives both of those everywhere, CI included, where the drift check used
+to skip itself. The cost is having to notice upstream changes by hand.
 That trade is recorded below.
 
 ## What is here, and what reads it
@@ -39,7 +39,7 @@ That trade is recorded below.
 `utility.css` exists upstream and is deliberately not vendored: nothing in this
 repo reads or mirrors it.
 
-Both files are kept **byte-identical** to upstream — no added header — so that a
+Both files are kept **byte-identical** to upstream, with no added header, so that a
 plain `diff` against a fresh checkout is meaningful, and because `theme.css` is
 embedded verbatim into the reader WebView via `@correctiv/design-tokens`
 (`src/reader.generated.ts`).

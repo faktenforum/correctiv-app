@@ -1,6 +1,6 @@
 # Signing keys
 
-## `correctiv-test.keystore` — throwaway TEST key (committed on purpose)
+## `correctiv-test.keystore`, a throwaway TEST key (committed on purpose)
 
 This keystore is intentionally committed and has **no security value**. It exists
 so the Release workflow can produce an *installable* APK with a **stable signature**

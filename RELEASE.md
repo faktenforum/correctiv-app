@@ -6,7 +6,7 @@ Three GitHub Actions workflows live in `.github/workflows/`:
 | --- | --- | --- | --- |
 | **CI** | `ci.yml` | every PR, push to `main` | Checks, web export, and an Android release APK as a compile check. No secrets needed. |
 | **Pages** | `pages.yml` | push to `main` (or manual) | Rebuilds the Expo web export under the Pages base path and publishes it to <https://faktenforum.github.io/correctiv-app/>. No secrets needed. |
-| **Release Android** | `release-android.yml` | push of a `v*` tag (or manual) | Builds the APK and signs it — with your upload key when the secrets are set, otherwise with the bundled **test key**. Attaches it to the GitHub Release. |
+| **Release Android** | `release-android.yml` | push of a `v*` tag (or manual) | Builds the APK and signs it, with your upload key when the secrets are set and otherwise with the bundled **test key**. Attaches it to the GitHub Release. |
 
 ## The web preview
 
@@ -18,19 +18,19 @@ anyone at the URL:
 - **Hand out the `/preview.html` address, not the bare one.** The app is built for a
   phone and has no desktop layout, so the site's root shows it stretched across the
   whole browser window; `/preview.html` frames it at a phone or tablet size instead.
-  The root stays reachable — nothing hides it — so the framed link is the one to
+  The root stays reachable, nothing hides it, so the framed link is the one to
   send.
 - **Its articles are as old as the last `npm run offline-articles`.** The browser
-  cannot reach any CORRECTIV feed — no CORS header — so the app falls back to the
+  cannot reach any CORRECTIV feed, for want of a CORS header, so the app falls back to the
   snapshot bundled into the build, and says so on screen. Re-run the generator and
   merge it before a demo.
 - **The site is a project site**, served from `/correctiv-app/`, so the export needs
   `EXPO_BASE_URL` to prefix its asset URLs. `pages.yml` takes that value from
-  `actions/configure-pages` and asserts it reached the built HTML — the failure is
+  `actions/configure-pages` and asserts it reached the built HTML. The failure is
   otherwise invisible until the site is live and blank.
 
 Pages was previously served straight off `main:/docs`. Pointing it at this workflow
-instead is a **repository setting**, made once and not by the workflow itself —
+instead is a **repository setting**, made once and not by the workflow itself.
 `actions/configure-pages` reads an existing site but never changes its build type:
 
 ```bash
@@ -39,7 +39,7 @@ gh api -X POST repos/faktenforum/correctiv-app/pages -f build_type=workflow
 ```
 
 Until that is done, the deploy step fails with *"Not configured to use GitHub
-Actions"* — the build and every assertion above it still run, so the failure is
+Actions"*. The build and every assertion above it still run, so the failure is
 loud and specific rather than a silently stale site.
 
 ## Cutting a release
@@ -54,13 +54,13 @@ This creates a GitHub Release for the tag with auto-generated notes and attaches
 
 The tag also drives the app version: `vX.Y.Z` becomes `versionName X.Y.Z`, and the
 workflow run number becomes the `versionCode` (Play requires it to increase on every
-upload). `apps/mobile/app.json` is patched only inside CI — the change is not
+upload). `apps/mobile/app.json` is patched only inside CI. The change is not
 committed.
 
 The APK is re-signed after Gradle builds it. Gradle signs the release variant with
 the Expo template's debug key, which is **generated per machine**: two builds of the
 same commit would carry two identities, and a tester could not install one over the
-other. `apksigner` replaces that signature with a stable one — the test key, or your
+other. `apksigner` replaces that signature with a stable one, either the test key or your
 upload key when the secrets are set.
 
 ## Signing modes
@@ -72,7 +72,7 @@ The release build works **with or without** your own signing key:
 | **Real release** | yes | APK **+ AAB**, signed with your upload key | Google Play + sideloading |
 | **Test fallback** | no | APK only, signed with the in-repo **test key** (`signing/`) | Sideloading / sharing test builds |
 
-The test fallback needs no setup — every `v*` tag (or manual run) produces an
+The test fallback needs no setup. Every `v*` tag (or manual run) produces an
 installable, consistently-signed test APK (clearly marked as a test build). It must
 never go to the Play Store. To produce real releases, add the secrets below.
 
@@ -90,7 +90,7 @@ keytool -genkeypair -v \
   -keyalg RSA -keysize 2048 -validity 10000
 ```
 
-Keep this file and its passwords safe — losing it means you can no longer update the
+Keep this file and its passwords safe. Losing it means you can no longer update the
 app on Google Play. Do **not** commit it.
 
 ### 2. Add the secrets
@@ -114,7 +114,7 @@ rm keystore.b64
 
 Run the **Release Android** workflow manually (Actions tab → Run workflow, or
 `gh workflow run release-android.yml`). It builds the APK and uploads it to the run
-as an artifact, without creating a release. No secrets required — it uses the test key.
+as an artifact, without creating a release. No secrets required, because it uses the test key.
 
 Done once on 2026-08-06 from `9842b27`
 ([run 31105467974](https://github.com/faktenforum/correctiv-app/actions/runs/31105467974)).

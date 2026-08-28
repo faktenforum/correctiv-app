@@ -1,19 +1,19 @@
-# Third-party notices — @correctiv/mobile
+# Third-party notices for @correctiv/mobile
 
 This app is licensed under the **GNU Affero General Public License v3.0 or
-later**, like the rest of this repository — see [`../../LICENSE`](../../LICENSE).
+later**, like the rest of this repository. See [`../../LICENSE`](../../LICENSE).
 
 ## Why this file is not called LICENSE
 
 It was, once. This app was scaffolded with `create-expo-app`, whose templates are
 MIT-licensed, and the template's `LICENSE` file came along with it. A bare
 `LICENSE` at the root of a subtree reads as "this subtree is MIT", which is not
-the case — so the file was renamed rather than deleted.
+the case, so the file was renamed rather than deleted.
 
 Deleting it would have been wrong too: the MIT licence requires its notice to be
 retained for the portions it covers, and AGPL-3.0 permits incorporating MIT code
 precisely on that condition. So the notice stays, below, in the role it actually
-has — an attribution for scaffolded code, not the licence of this app.
+has: an attribution for scaffolded code, not the licence of this app.
 
 ## create-expo-app template
 
@@ -46,8 +46,8 @@ SOFTWARE.
 
 ## Fonts
 
-No font file is checked in here — the families are pulled from npm at build time —
-but the build **redistributes** them, so their licences apply to what ships. The
+No font file is checked in here, because the families are pulled from npm at build
+time, but the build **redistributes** them, so their licences apply to what ships. The
 reader's copies are additionally subsetted and base64-embedded into
 `src/lib/theme/readerFonts.generated.ts` by `npm run fonts`; a subset is a
 modification the OFL permits and covers.
