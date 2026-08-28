@@ -11,9 +11,20 @@ looking at a picture.
 ## The set
 
 [`android/`](android/) holds 29 shots, one per step, from `apps/mobile`. Shot on
-2026-08-28 from the release APK of `57c069c` on `Medium_Phone_API_36` at 1080x2400,
-after the rename and the identity change, so this is the first set of the app as
-`org.correctiv.app`. Both tours ran clean, with no `MISS`.
+2026-08-29 from the release APK of `cadd7ea` on `Medium_Phone_API_36` at 1080x2400.
+Both tours ran clean, with no `MISS`.
+
+This is the first set with the **native tab bar** ([ADR 0013](../adr/0013-native-tabs-and-a-web-tab-bar-of-its-own.md)),
+so every tab screen differs from the previous set at the bottom edge and only there:
+Material Symbols instead of Ionicons, and Material 3's pill behind the selected item.
+
+[`web/`](web/) holds the five tab screens at the same step names, from the static
+export of the same commit, shot at a 540x1200 viewport. It exists because the tab bar
+is now the one part of the app that is deliberately **not** the same on both, and a
+claim like that should be checkable by looking rather than by reading the ADR. It is
+five shots, not 29: the rest of the web build differs from Android only in the ways
+the note at the end of this file already lists, and a second full set would be 24
+pictures nobody compares.
 
 The AVD matters. Earlier sets used `Medium_Phone`, which is API 24. Dark mode does not
 exist below API 29, so that device cannot show the app's default appearance at all and
@@ -24,7 +35,7 @@ checked separately, on all four combinations of setting and device scheme, becau
 three of them are invisible here. See the appearance entry in
 [`TROUBLESHOOTING.md`](../TROUBLESHOOTING.md).
 
-Later rounds can add `ios/` and `web/` beside it under the same step names.
+Later rounds can add `ios/` beside them under the same step names.
 
 ## Shooting a set
 
@@ -55,6 +66,13 @@ back-without-history and a directly opened route can be tested at all.
 npm run build:web -w apps/mobile
 node screens/tools/serve-clean.mjs apps/mobile/dist 8099
 ```
+
+The `web/` set has no tour script, because the repo has no browser-automation
+dependency and adding one to take five pictures would be the wrong trade. They were
+shot by driving a browser at a 540x1200 viewport over `/`, `/entdecken`,
+`/mediathek`, `/mitmachen` and `/profil`, waiting for the feeds to settle, and
+converting with the same `magick` line as below. Any tool that does that produces a
+comparable set; what matters is the viewport and the step names.
 
 `serve-clean.mjs` maps `/artikel` to `artikel.html` and falls back to `404.html` the
 way GitHub Pages does. A plain `python3 -m http.server` does neither, and Expo Router

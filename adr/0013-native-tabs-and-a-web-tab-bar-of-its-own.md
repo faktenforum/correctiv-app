@@ -1,6 +1,7 @@
 # ADR 0013 — Native tabs on the phone, and a web tab bar of its own
 
-Status: accepted, 2026-08-28. Not yet verified on a device — see the last section.
+Status: accepted, 2026-08-28. Verified on an Android emulator 2026-08-29, which found
+two faults in the first version of it; iOS remains unrun. See the last two sections.
 
 ## Context
 
@@ -64,14 +65,21 @@ ours.
 
 ## Consequences
 
-**The Android height constant changed meaning, and is now a guess.** It used to be a
-value we SET — the drawn bar took `height: 56 + insets.bottom` from it, so the bar
+**The Android height constant changed meaning, and had to be measured.** It used to be
+a value we SET — the drawn bar took `height: 56 + insets.bottom` from it, so the bar
 and the mini player could not disagree. A native bar sizes itself, and native tabs
 expose no height: `useBottomTabBarHeight` belongs to the JS tabs only, and the
-documentation says plainly that layout information is unavailable. The same 56 now
-means "what Material's `BottomNavigationView` is expected to be", which is what
-react-native-screens renders underneath. If it is wrong, the mini player overlaps the
-tab bar, and nothing in `npm run check` can see it.
+documentation says plainly that layout information is unavailable.
+
+Carrying the 56 across looked free and was not. Material 3's navigation bar is
+**80dp**; 56 is the Material 2 figure, and the mini player sat 11px inside the bar
+with the selected item's pill clipped underneath it. It is 80 now, measured at
+y=2126..2337 on `Medium_Phone_API_36` at 420dpi — 211px, so 80.4dp — which agrees
+with the Material spec rather than merely with one device.
+
+Two things still move it and neither is reachable from JS: a large system font scale,
+and `labelVisibilityMode`. Under Material's `auto` the same bar measured 60dp, because
+dropping the labels makes it shorter.
 
 **All five tabs now mount eagerly.** Native tabs do not support lazy loading. The JS
 tabs mounted a tab on first visit; five screens now mount at startup, including the
@@ -83,6 +91,16 @@ slower. Measuring that needs a device.
 the app has exactly five. A sixth is a redesign, not an edit. The triggers are
 written out rather than mapped so that this is visible where someone would add one.
 
+**Every destination keeps its label, which took saying so.** Material's default `auto`
+drops the labels of unselected items once there are four or more — with five tabs that
+left four of five destinations as an icon and nothing else, and `Entdecken` (a compass)
+and `Mitmachen` (three figures) are the two nobody can name from the glyph.
+`labelVisibilityMode="labeled"` is one of Material's own four modes and what Material
+3's navigation-bar guidance asks for; `auto`'s behaviour is the Material 2 rule it
+inherited. So this is still the platform's bar, configured — the same line this ADR
+draws for colour. It also keeps the two tab bars legible in the same way, which is
+worth something when they are meant to be one product.
+
 **The API is alpha.** `unstable-native-tabs` is the real import path, and Expo says
 the API is subject to change. The web half of this decision is insulated from that;
 the native half is not.
@@ -92,18 +110,39 @@ screen is a `FlatList` today — [ADR 0012](0012-a-list-virtualizer-for-the-unbo
 converted two pushed routes, not tab roots — so this costs nothing yet. It is a
 constraint on where the next virtualized list may go.
 
+## What the emulator round found
+
+This decision shipped its first version with a warning that none of the native half
+had been run, and that the Android mini player position should be treated as
+unverified. Both faults it then found were in exactly that half, and neither was
+visible to `npm run check`, to the typechecker, or to the web export:
+
+- **The mini player sat inside the tab bar**, clipping the selected item's pill,
+  because 56 was Material 2's height and the bar is 80dp.
+- **Four of five destinations had no label**, because Material's `auto` drops them
+  past three items.
+
+Both are fixed above. The point worth keeping is that the warning was right and
+specific, and the thing that cashed it was one screenshot of a playing track. This is
+what [TROUBLESHOOTING.md](../TROUBLESHOOTING.md) means by a green check not being
+evidence, and it is the same shape as every other entry in
+[`screens/`](../screens/README.md): the finding survived a green build, a green
+typecheck and a green test run.
+
+The set in [`screens/android/`](../screens/) was re-shot from a release APK afterwards,
+and [`screens/web/`](../screens/web/) holds the five tab screens beside it, so the one
+part of the app this ADR deliberately makes different on the two platforms can be
+compared by looking.
+
 ## What this has not delivered
 
-**None of the native half has been run.** The web export was rebuilt and looked at,
-in both appearance settings, and it is unchanged — which verifies only that the
-platform split is clean and that the `js-tabs` import swap is transparent. The native
-tab bar, the SF Symbols, the Material Symbols, the `BottomAccessory` and the Android
-height constant have been read from the installed source and typechecked against
-`sf-symbols-typescript` and `expo-symbols`, and that is all. **A green check is not
-evidence here in exactly the way [TROUBLESHOOTING.md](../TROUBLESHOOTING.md) means
-it.** This needs `npm run android` and a look, and until then the Android mini player
-position in particular should be treated as unverified.
-
 **iOS has never been built at all**, which is not new (see the README's status note)
-but matters more now: the `BottomAccessory` is the one piece of this that exists only
-on the platform nobody here has run.
+but matters more here than usual: `BottomAccessory` is the one piece of this decision
+that exists ONLY on the platform nobody has run. Android's fault was found in ten
+minutes on an emulator; iOS's equivalent, if there is one, is still sitting there. The
+SF Symbol names are typechecked against `sf-symbols-typescript` and that is the whole
+of the assurance.
+
+**The eager-mount cost is unmeasured.** Five screens now mount at startup rather than
+on first visit, and the emulator round did not time it — it was looking at the tab
+bar. `useIsFocused()` is the documented mitigation if it turns out to matter.
