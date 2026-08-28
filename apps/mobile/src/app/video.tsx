@@ -43,8 +43,8 @@ export default function VideoScreen() {
         </View>
       ) : (
         <ScrollView className="flex-1" showsVerticalScrollIndicator={false}>
-          {/* Die Bühne bleibt in beiden Schemata dunkel — ein Video steht nicht
-              auf einer hellen Fläche, auch nicht bei heller App. */}
+          {/* The stage stays dark in both schemes. A video does not sit on a light
+              surface, not even in a light app. */}
           <View className="bg-always-dark" style={{ aspectRatio: 16 / 9 }}>
             {current.source === 'peertube' ? (
               <PeertubeStage

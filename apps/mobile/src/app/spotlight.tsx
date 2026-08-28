@@ -7,7 +7,7 @@ import { Hairline, Overline, ScreenHeader, Typo } from '@/components/ui';
 import { openArticle } from '@/lib/openArticle';
 
 /**
- * The Spotlight archive. This is what „Spotlight →“ on Home opens, and the reason
+ * The Spotlight archive. This is what "Spotlight →" on Home opens, and the reason
  * that action existed in the design draft but not here.
  *
  * Home shows today's issue as an agenda of headlines; this is where the teasers
@@ -30,7 +30,7 @@ export default function SpotlightScreen() {
         {/* Said plainly rather than implied: the newsletter archive is not public
             (see DATENQUELLEN.md), so these issues are modeled, not fetched. */}
         <Typo variant="text-s" color="grey-500" className="mt-2xs">
-          Beispielausgaben — die verlinkten Recherchen sind echt.
+          Beispielausgaben, die verlinkten Recherchen sind echt.
         </Typo>
 
         {spotlightIssues.map((issue) => (

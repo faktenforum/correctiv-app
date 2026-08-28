@@ -89,11 +89,11 @@ export default function TabsLayout() {
         The mini player sits ON TOP of the tab bar — the arrangement the design
         draft uses.
 
-        Als Overlay und NICHT über die `tabBar`-Prop mit `BottomTabBar`: dieser
-        Import aus `expo-router/tabs` zieht eine zweite React-Instanz ins Bundle,
-        und die ganze App stirbt beim Start mit React-Fehler #321 („invalid hook
-        call") — bei grünem Build, grünem Typecheck und grünen Tests. Im Browser
-        gefunden, siehe ADR 0004.
+        As an overlay, and NOT through the `tabBar` prop with `BottomTabBar`.
+        That import from `expo-router/tabs` pulls a second React instance into the
+        bundle, and the whole app dies on startup with React error #321, "invalid
+        hook call", past a green build, a green typecheck and green tests. Found in
+        the browser, see ADR 0004.
 
         `box-none` lässt Tipps durch, solange nichts läuft (dann rendert MiniPlayer
         null und hier steht eine leere, unsichtbare Zeile).

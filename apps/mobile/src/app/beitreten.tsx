@@ -11,9 +11,9 @@ import { sizes, typography, useColors } from '@/lib/theme';
 
 /** Real figures from the concept — the first step argues, it does not push. */
 const FACTS = [
-  { value: '247', label: 'Recherchen im letzten Jahr — alle frei zugänglich' },
+  { value: '247', label: 'Recherchen im letzten Jahr, alle frei zugänglich' },
   { value: '31.000+', label: 'Menschen tragen CORRECTIV bereits' },
-  { value: '0', label: 'Artikel hinter einer Paywall — heute und in Zukunft' },
+  { value: '0', label: 'Artikel hinter einer Paywall, heute und in Zukunft' },
 ];
 
 /**

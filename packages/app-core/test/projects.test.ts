@@ -70,7 +70,7 @@ describe('resolveProject', () => {
     // editorial description; the synthetic topic page would overwrite it.
     expect(interests.some((i) => i.id === 'klima')).toBe(true);
     expect(resolveProject('klima')?.description).toBe(
-      'Die Klimakrise und ihre Folgen — datenbasiert recherchiert.',
+      'Die Klimakrise und ihre Folgen, datenbasiert recherchiert.',
     );
   });
 

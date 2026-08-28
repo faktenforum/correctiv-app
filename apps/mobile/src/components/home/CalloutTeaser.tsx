@@ -42,8 +42,8 @@ export function CalloutTeaser({
       <Typo variant="text-m" color="always-light" className="mt-2xs opacity-70" numberOfLines={3}>
         {callout.excerpt}
       </Typo>
-      {/* Die Abblendung liegt auf der Zeile, damit Symbol und Zahl gleich weit
-          zurücktreten — ein Ionicon nimmt keine Deckkraft entgegen. */}
+      {/* The dimming sits on the row so the icon and the number recede together.
+          An Ionicon takes no opacity of its own. */}
       <View className="mt-s flex-row items-center opacity-70">
         <Ionicons name="people-outline" size={16} color={colors['always-light']} />
         <Typo variant="text-s" color="always-light" className="ml-2xs">

@@ -25,7 +25,7 @@ export function EarlyAccessCard({
         <Typo variant="headline-s">Die Pensionskassen-Recherche – exklusiv vorab</Typo>
         <Typo variant="text-m" color="grey-600" className="mt-2xs">
           {isMember
-            ? 'Als Clubmitglied lesen Sie jetzt – drei Tage vor allen anderen.'
+            ? 'Als Clubmitglied lesen Sie jetzt, drei Tage vor allen anderen.'
             : 'Für alle ab Montag. Clubmitglieder lesen jetzt.'}
         </Typo>
         <Typo variant="button" color="emphasis" className="mt-s">

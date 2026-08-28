@@ -61,13 +61,13 @@ export const projectGroups: ProjectGroup[] = [
       {
         id: 'klima',
         name: 'Klima',
-        description: 'Die Klimakrise und ihre Folgen — datenbasiert recherchiert.',
+        description: 'Die Klimakrise und ihre Folgen, datenbasiert recherchiert.',
         feed: 'klima',
       },
       {
         id: 'europe',
         name: 'CORRECTIV.Europe',
-        description: 'Grenzüberschreitende Recherchen in Europa — bald mit eigenem Feed.',
+        description: 'Grenzüberschreitende Recherchen in Europa, bald mit eigenem Feed.',
         teaserOnly: true,
       },
     ],
@@ -86,7 +86,7 @@ export const projectGroups: ProjectGroup[] = [
       {
         id: 'funfacts',
         name: 'FunFacts',
-        description: 'Wissen kurz und überprüfbar — bekannt von TikTok und YouTube.',
+        description: 'Wissen kurz und überprüfbar, bekannt von TikTok und YouTube.',
         url: 'https://www.youtube.com/@funfacts',
       },
     ],
@@ -98,7 +98,7 @@ export const projectGroups: ProjectGroup[] = [
       {
         id: 'crowdnewsroom',
         name: 'CrowdNewsroom',
-        description: 'Gemeinsam recherchieren — Ihre Hinweise zählen.',
+        description: 'Gemeinsam recherchieren, Ihre Hinweise zählen.',
         tab: 'participate',
       },
       {
@@ -122,7 +122,7 @@ export const projectGroups: ProjectGroup[] = [
       {
         id: 'reporterfabrik',
         name: 'Reporterfabrik',
-        description: 'Die Journalismusschule für alle — Workshops und Webinare.',
+        description: 'Die Journalismusschule für alle, mit Workshops und Webinaren.',
         url: 'https://reporterfabrik.org',
       },
       {

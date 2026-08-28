@@ -25,7 +25,7 @@ export default function MitmachenScreen() {
     <Screen>
       <Typo variant="headline-xl">Mitmachen</Typo>
       <Typo variant="text-m" color="grey-600" className="mt-2xs">
-        Recherchen entstehen mit Ihnen — Ihre Hinweise, Beobachtungen und Prüfungen machen sie erst
+        Recherchen entstehen mit Ihnen. Ihre Hinweise, Beobachtungen und Prüfungen machen sie erst
         möglich.
       </Typo>
 
@@ -43,8 +43,8 @@ export default function MitmachenScreen() {
         <Card tone="surface" className="mt-2xs">
           <Typo variant="headline-xs">Behauptungen gemeinsam prüfen</Typo>
           <Typo variant="text-s" color="grey-600" className="mt-2xs">
-            Die Community prüft Behauptungen aus dem Netz — angeleitet von der Redaktion. Gerade
-            sind {claims.length} Behauptungen in Arbeit.
+            Die Community prüft Behauptungen aus dem Netz, angeleitet von der Redaktion. Gerade sind{' '}
+            {claims.length} Behauptungen in Arbeit.
           </Typo>
           <Button
             title="Behauptungen ansehen"
@@ -89,7 +89,7 @@ export default function MitmachenScreen() {
       </View>
 
       <Typo variant="text-s" color="grey-500" className="mt-l">
-        Clubmitglieder diskutieren Recherchen im Community-Bereich — bald auch in der App.
+        Clubmitglieder diskutieren Recherchen im Community-Bereich, bald auch in der App.
       </Typo>
     </Screen>
   );

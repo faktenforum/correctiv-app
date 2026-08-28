@@ -41,7 +41,7 @@ export default function HomeScreen() {
 
       {(recherchen.offline || faktenchecks.offline) && (
         <Typo variant="text-s" color="grey-600" className="mt-2xs">
-          Ohne Verbindung — Sie sehen gespeicherte Artikel.
+          Ohne Verbindung. Sie sehen gespeicherte Artikel.
         </Typo>
       )}
 

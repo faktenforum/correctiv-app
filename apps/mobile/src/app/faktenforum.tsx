@@ -22,7 +22,7 @@ export default function FaktenforumScreen() {
       >
         <Typo variant="headline-l">Faktenforum</Typo>
         <Typo variant="text-m" color="grey-600" className="mt-2xs">
-          Die Community prüft Behauptungen — gemeinsam mit der CORRECTIV-Redaktion. Schauen Sie, was
+          Die Community prüft Behauptungen, gemeinsam mit der CORRECTIV-Redaktion. Schauen Sie, was
           gerade in Arbeit ist.
         </Typo>
 

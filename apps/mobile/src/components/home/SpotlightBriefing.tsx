@@ -6,7 +6,7 @@ import { Card, Hairline, Overline, Typo } from '@/components/ui';
 import { openArticle } from '@/lib/openArticle';
 
 /**
- * „Das Wichtigste heute" — the morning newsletter as an agenda.
+ * "Das Wichtigste heute", the morning newsletter as an agenda.
  *
  * Time and headline per line, no teaser: the draft treats this card as an index
  * into the day, and three scannable lines say more in the same space than one item

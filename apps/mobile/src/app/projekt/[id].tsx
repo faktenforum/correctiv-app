@@ -101,7 +101,7 @@ export default function ProjektScreen() {
             <Card tone="surface" className="mt-m">
               <Typo variant="headline-xs">Bald verfügbar</Typo>
               <Typo variant="text-s" color="grey-600" className="mt-4xs">
-                {project.name} startet gerade — die ersten Inhalte erscheinen hier, sobald sie
+                {project.name} startet gerade. Die ersten Inhalte erscheinen hier, sobald sie
                 veröffentlicht sind.
               </Typo>
             </Card>
@@ -131,9 +131,9 @@ function ProjectFeed({ feed }: { feed: FeedKey }) {
         </View>
       )}
 
-      {/* Kein stiller Dauer-Spinner: ohne Netz und ohne Cache steht hier, dass
-          nichts geladen werden konnte. Auf dem Web-Target ist das der Regelfall,
-          solange correctiv.org keinen CORS-Header sendet (ADR 0004). */}
+      {/* No silently endless spinner. With no network and no cache this says that
+          nothing could be loaded. On the web target that is the normal case, for as
+          long as correctiv.org sends no CORS header (ADR 0004). */}
       {error && items.length === 0 && !loading && (
         <Typo variant="text-s" color="grey-600" className="mt-2xs">
           Beiträge konnten nicht geladen werden.

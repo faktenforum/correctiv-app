@@ -65,7 +65,7 @@ export default function SerieScreen() {
               this is the normal case, not an edge one. */}
           {status === 'offline' && (
             <Typo variant="text-s" color="grey-600" className="mt-s">
-              Ohne Verbindung — Sie sehen Beispielfolgen.
+              Ohne Verbindung. Sie sehen Beispielfolgen.
             </Typo>
           )}
 

@@ -30,13 +30,13 @@ export default function MediathekScreen() {
         Mediathek
       </Typo>
 
-      <LiveBanner subtitle="24/7 aus Bottrop — von Jugendlichen für Jugendliche" />
+      <LiveBanner subtitle="24/7 aus Bottrop, von Jugendlichen für Jugendliche" />
 
       <View className="mt-l">
         <SectionHeader title="Podcasts" className="mb-s" />
         {podcasts.status === 'offline' && (
           <Typo variant="text-s" color="grey-600" className="mb-2xs">
-            Ohne Verbindung — Sie sehen Beispielfolgen.
+            Ohne Verbindung. Sie sehen Beispielfolgen.
           </Typo>
         )}
         <Rail>

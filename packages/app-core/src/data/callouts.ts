@@ -50,10 +50,10 @@ export const callouts: Callout[] = [
     kind: 'survey',
     title: 'Die Zukunft von CORRECTIV: Wir fragen Sie',
     excerpt:
-      'CORRECTIV verändert sich — und Sie gestalten mit. Was sollen wir recherchieren, welche Formate fehlen Ihnen?',
+      'CORRECTIV verändert sich, und Sie gestalten mit. Was sollen wir recherchieren, welche Formate fehlen Ihnen?',
     intro: [
       'CORRECTIV gehört niemandem. Außer allen. Deshalb fragen wir Sie: Wohin soll sich CORRECTIV entwickeln?',
-      'Ihre Antworten fließen direkt in unsere Strategie ein — von der Themenwahl bis zu neuen Formaten wie dieser App.',
+      'Ihre Antworten fließen direkt in unsere Strategie ein, von der Themenwahl bis zu neuen Formaten wie dieser App.',
     ],
     image: null,
     starts: '2026-06-12T00:00:00+02:00',
@@ -121,7 +121,7 @@ export const callouts: Callout[] = [
       'Steigende Mieten, anonyme Eigentümer: Helfen Sie uns aufzudecken, wem die Häuser in Ihrer Nachbarschaft gehören.',
     intro: [
       'In vielen Städten wissen nicht einmal die Mieter:innen, wem ihr Haus gehört. Briefkastenfirmen verschleiern die Besitzverhältnisse.',
-      'Mit Ihren Hinweisen kartieren wir die Eigentumsstrukturen — Grundlage für lokale Recherchen im ganzen Land.',
+      'Mit Ihren Hinweisen kartieren wir die Eigentumsstrukturen. Grundlage für lokale Recherchen im ganzen Land.',
     ],
     image: null,
     starts: '2026-05-02T00:00:00+02:00',
@@ -166,7 +166,7 @@ export const callouts: Callout[] = [
               key: 'foto',
               type: 'file',
               label: 'Foto oder Dokument anhängen (optional)',
-              description: 'Z. B. Schreiben der Hausverwaltung — hilft bei der Verifikation.',
+              description: 'Z. B. Schreiben der Hausverwaltung, hilft bei der Verifikation.',
               required: false,
             },
           ],
@@ -192,7 +192,7 @@ export const callouts: Callout[] = [
     kind: 'crowdnewsroom',
     title: 'Hitze, Starkregen, Dürre: Wie gut ist Ihr Ort vorbereitet?',
     excerpt:
-      'Klimafolgen treffen Kommunen unterschiedlich hart. Berichten Sie uns, was vor Ihrer Haustür passiert — oder eben nicht.',
+      'Klimafolgen treffen Kommunen unterschiedlich hart. Berichten Sie uns, was vor Ihrer Haustür passiert, oder eben nicht.',
     intro: [
       'Hitzeaktionspläne, Versickerungsflächen, Trinkbrunnen: Auf dem Papier sind viele Kommunen vorbereitet. Und in der Realität?',
       'Ihre Beobachtungen fließen in die Datenrecherche unserer Klima-Redaktion ein.',

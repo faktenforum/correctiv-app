@@ -43,7 +43,7 @@ export function MiniPlayer() {
           className="items-center justify-center rounded-full bg-emphasis active:opacity-80"
           style={{ width: sizes.iconButton, height: sizes.iconButton }}
         >
-          {/* Auf der Markenfläche des Knopfs — fest weiß, nicht Seitenfläche. */}
+          {/* On the button's brand surface, so fixed white rather than the page's. */}
           {status === 'loading' ? (
             <ActivityIndicator color={colors['always-light']} />
           ) : (

@@ -10,7 +10,7 @@ export function ImpactFooter({ onJoin }: { onJoin?: () => void }) {
         Ermöglicht durch Unterstützer:innen wie Sie
       </Typo>
       <Typo variant="text-m" color="grey-600" className="mt-2xs text-center">
-        CORRECTIV ist gemeinnützig und spendenfinanziert. Unser Journalismus bleibt frei – für alle.
+        CORRECTIV ist gemeinnützig und spendenfinanziert. Unser Journalismus bleibt frei, für alle.
       </Typo>
       <Pressable onPress={onJoin} hitSlop={8} className="mt-s active:opacity-60">
         <Typo variant="button" color="emphasis">

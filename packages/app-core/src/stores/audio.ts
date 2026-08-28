@@ -317,7 +317,7 @@ export const playRadio = (): AppThunk<Promise<void>> =>
   start({
     kind: 'radio',
     title: 'Salon5 Radio',
-    subtitle: '● LIVE — 24/7 aus Bottrop',
+    subtitle: '● LIVE · 24/7 aus Bottrop',
     url: RADIO_STREAM_URL,
   });
 

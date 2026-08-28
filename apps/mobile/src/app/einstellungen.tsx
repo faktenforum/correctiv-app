@@ -105,7 +105,7 @@ export default function EinstellungenScreen() {
           <Card className="mt-2xs">
             <Typo variant="text-m">
               CORRECTIV ist ein gemeinnütziges, unabhängiges Recherchezentrum. Recherchen für die
-              Gesellschaft — finanziert von Menschen wie Ihnen.
+              Gesellschaft, finanziert von Menschen wie Ihnen.
             </Typo>
             {LINKS.map((link) => (
               <Button
@@ -141,7 +141,7 @@ export default function EinstellungenScreen() {
             />
             {resetDone && (
               <Typo variant="text-s" color="emphasis" className="mt-s">
-                ✓ Zurückgesetzt — App neu starten für das Onboarding.
+                ✓ Zurückgesetzt. App neu starten für das Onboarding.
               </Typo>
             )}
           </Card>

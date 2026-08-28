@@ -96,7 +96,7 @@ export default function ProfilScreen() {
               </View>
               {membership.paused && (
                 <Typo variant="text-s" color="grey-600" className="mt-s">
-                  Ihre Mitgliedschaft ist pausiert (simuliert) — Backstage bleibt bis Monatsende
+                  Ihre Mitgliedschaft ist pausiert (simuliert). Backstage bleibt bis Monatsende
                   offen.
                 </Typo>
               )}
@@ -131,7 +131,7 @@ export default function ProfilScreen() {
             <NavCard
               icon="document-text-outline"
               title={quarterlyReport.quarter}
-              subtitle="Wohin Ihr Beitrag fließt — transparent aufgeschlüsselt."
+              subtitle="Wohin Ihr Beitrag fließt, transparent aufgeschlüsselt."
               club
               onPress={() => router.push('/bericht')}
             />
@@ -190,7 +190,7 @@ function impactLine(memberSince: string | null): string {
     Math.round((Date.now() - new Date(memberSince).getTime()) / (30 * 864e5)),
   );
   const time = months < 2 ? 'seit Kurzem' : `seit ${months} Monaten`;
-  return `Sie unterstützen CORRECTIV ${time} — unter anderem diese Recherchen wurden mit ermöglicht:`;
+  return `Sie unterstützen CORRECTIV ${time}. Unter anderem diese Recherchen wurden mit ermöglicht:`;
 }
 
 function openJoinFlow(): void {

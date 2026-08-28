@@ -170,8 +170,8 @@ function ThankYou({ callout }: { callout: Callout }) {
           Danke für Ihren Beitrag!
         </Typo>
         <Typo variant="text-m" color="grey-600" className="mt-s text-center">
-          Ihr Beitrag fließt in die Recherche ein. Die Redaktion prüft alle Hinweise — bei
-          Rückfragen melden wir uns.
+          Ihr Beitrag fließt in die Recherche ein. Die Redaktion prüft alle Hinweise. Bei Rückfragen
+          melden wir uns.
         </Typo>
         <Typo variant="headline-xs" className="mt-m text-center">
           {formatNumberDe(callout.responseCount + extra)} Menschen haben bereits beigetragen.

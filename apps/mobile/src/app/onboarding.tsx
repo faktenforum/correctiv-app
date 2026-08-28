@@ -10,9 +10,9 @@ import { useColors } from '@/lib/theme';
 
 /** The three sentences on the red mission screen. */
 const MISSION = [
-  'Gemeinnützig — uns gehört niemand',
-  'Spendenfinanziert — von Tausenden getragen',
-  'Ohne Paywall — Journalismus für alle',
+  'Gemeinnützig, uns gehört niemand',
+  'Spendenfinanziert, von Tausenden getragen',
+  'Ohne Paywall, Journalismus für alle',
 ];
 
 /**
@@ -123,7 +123,7 @@ export default function OnboardingScreen() {
           <>
             <Typo variant="headline-xl">Was interessiert Sie?</Typo>
             <Typo variant="text-m" color="grey-600" className="mt-2xs">
-              Ihre Auswahl ordnet die Startseite — alles bleibt trotzdem zugänglich.
+              Ihre Auswahl ordnet die Startseite. Alles bleibt trotzdem zugänglich.
             </Typo>
             <View className="mt-m flex-row flex-wrap gap-2xs">
               {interests.map((interest) => (
@@ -143,7 +143,7 @@ export default function OnboardingScreen() {
             <Typo variant="headline-xl">Recherchen, bei denen Sie mitmachen</Typo>
             <Typo variant="text-m" color="grey-600" className="mt-s">
               Im CrowdNewsroom tragen tausende Menschen zu Recherchen bei. Im Faktenforum prüft die
-              Community Behauptungen. Beides finden Sie im Tab „Mitmachen".
+              Community Behauptungen. Beides finden Sie im Tab „Mitmachen“.
             </Typo>
             <Card className="mt-m">
               <SettingRow
@@ -160,7 +160,7 @@ export default function OnboardingScreen() {
           <View className="pt-l">
             <Typo variant="headline-xl">CORRECTIV gehört niemandem. Außer allen.</Typo>
             <Typo variant="text-m" color="grey-600" className="mt-s">
-              Unser Journalismus bleibt frei — ermöglicht von Menschen, die ihn unterstützen. Der
+              Unser Journalismus bleibt frei, ermöglicht von Menschen, die ihn unterstützen. Der
               Club ist Nähe, keine Paywall: Recherchen früher lesen, Backstage-Einblicke,
               Bonusfolgen.
             </Typo>

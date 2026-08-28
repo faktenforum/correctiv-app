@@ -72,7 +72,7 @@ export function buildReaderHtml(article: Article, options: ReaderHtmlOptions = {
   const excerpt = article.excerpt ? `<p class="excerpt">${escapeHtml(article.excerpt)}</p>` : '';
 
   const footer = isMember
-    ? `<p class="support-line">Ermöglicht durch Unterstützer:innen wie Sie — danke, dass Sie dabei sind.</p>`
+    ? `<p class="support-line">Ermöglicht durch Unterstützer:innen wie Sie. Danke, dass Sie dabei sind.</p>`
     : `<p class="support-line">Diese Recherche war nur möglich durch Unterstützer:innen wie Sie.</p>
        <a class="support-btn" href="correctiv://join">Unterstützer:in werden</a>`;
 

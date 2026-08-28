@@ -43,7 +43,7 @@ export default function BackstageScreen() {
         </Typo>
         {!isMember && (
           <Typo variant="text-m" color="grey-600" className="mt-2xs">
-            Ein Blick hinein: das sehen Clubmitglieder. Nichts davon ist gesperrt — es ist eine
+            Ein Blick hinein: das sehen Clubmitglieder. Nichts davon ist gesperrt, es ist eine
             Einladung.
           </Typo>
         )}

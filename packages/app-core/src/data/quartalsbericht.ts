@@ -30,7 +30,7 @@ export const quarterlyReport = {
     },
     {
       heading: 'Wofür wir sie einsetzen',
-      text: 'Der größte Teil fließt direkt in Recherche und Redaktion — von Investigativrecherchen über Faktenchecks bis zu Salon5 und der Reporterfabrik.',
+      text: 'Der größte Teil fließt direkt in Recherche und Redaktion, von Investigativrecherchen über Faktenchecks bis zu Salon5 und der Reporterfabrik.',
       figures: [
         { label: 'Redaktion & Recherche', value: '64 %' },
         { label: 'Bildung (Salon5, Reporterfabrik)', value: '19 %' },

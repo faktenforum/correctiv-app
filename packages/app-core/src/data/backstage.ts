@@ -48,7 +48,7 @@ export const earlyAccess: EarlyAccessItem = {
   id: 'early-pensionskassen',
   title: 'Pension um jeden Preis: Wie Pensionskassen in Waffen investieren',
   teaser:
-    'Beiträge von Versicherten fließen in Rüstungsgeschäfte — oft ohne deren Wissen. Die ganze Recherche, für Clubmitglieder schon jetzt.',
+    'Beiträge von Versicherten fließen in Rüstungsgeschäfte, oft ohne deren Wissen. Die ganze Recherche, für Clubmitglieder schon jetzt.',
   publicFromLabel: 'Montag',
   publicFromIso: nextMonday().toISOString(),
   articleUrl:
@@ -61,11 +61,11 @@ export const diaries: DiaryEntry[] = [
     series: 'Pensionskassen-Recherche',
     title: 'Woche 3: Die Spur führt nach Bern',
     teaser:
-      'Ein anonymer Hinweis, ein Aktenordner und eine Adresse in der Bundesstadt — wie wir den Verbindungen der Fonds nachgegangen sind.',
+      'Ein anonymer Hinweis, ein Aktenordner und eine Adresse in der Bundesstadt. Wie wir den Verbindungen der Fonds nachgegangen sind.',
     date: new Date(Date.now() - 2 * 864e5).toISOString(),
     body: [
       'Der Umschlag lag am Dienstag im Briefkasten der Redaktion: keine Absenderin, kein Begleitschreiben, nur Kontoauszüge eines Anlagevehikels mit Sitz in Bern.',
-      'Wir haben die Nummern mit den Jahresberichten dreier Pensionskassen abgeglichen. Zwei Treffer. Die dritte Spur führt zu einer Briefkastenfirma, deren Verwaltungsrat uns bekannt vorkam — aus einer ganz anderen Recherche.',
+      'Wir haben die Nummern mit den Jahresberichten dreier Pensionskassen abgeglichen. Zwei Treffer. Die dritte Spur führt zu einer Briefkastenfirma, deren Verwaltungsrat uns bekannt vorkam, aus einer ganz anderen Recherche.',
       'Nächste Woche: Was die Aufsichtsbehörde wusste, und seit wann.',
     ],
   },
@@ -77,7 +77,7 @@ export const diaries: DiaryEntry[] = [
       'Die Renditeangaben im Geschäftsbericht widersprechen den internen Unterlagen. Wir rechnen nach.',
     date: new Date(Date.now() - 9 * 864e5).toISOString(),
     body: [
-      'Wer Geschäftsberichte liest, braucht Geduld — und ein gutes Tabellenprogramm. Die ausgewiesene Rendite von 4,2 Prozent hält der Überprüfung nicht stand.',
+      'Wer Geschäftsberichte liest, braucht Geduld und ein gutes Tabellenprogramm. Die ausgewiesene Rendite von 4,2 Prozent hält der Überprüfung nicht stand.',
       'Drei unabhängige Fachleute kommen auf Werte zwischen 2,8 und 3,1 Prozent. Die Differenz: genau jene Posten, die in den Fußnoten verschwinden.',
     ],
   },
@@ -89,7 +89,7 @@ export const bonusMedia: BonusMedia[] = [
     kind: 'audio',
     title: 'Bonusfolge: Wie wir an die Pensionskassen-Daten kamen',
     teaser:
-      'Die Reporterinnen erzählen, wie aus einem anonymen Umschlag eine Recherche wurde — und warum der schwierigste Teil die Verifikation war.',
+      'Die Reporterinnen erzählen, wie aus einem anonymen Umschlag eine Recherche wurde, und warum der schwierigste Teil die Verifikation war.',
     durationLabel: '23 Min.',
     source: 'assets/audio/sample-episode.mp3',
     club: true,
@@ -101,7 +101,7 @@ export const clubNewsletter = {
   date: new Date(Date.now() - 864e5).toISOString(),
   paragraphs: [
     'Liebe Clubmitglieder, diese Woche war laut: Die Pensionskassen-Recherche ist online gegangen, und die ersten Reaktionen aus der Politik ließen keine 24 Stunden auf sich warten.',
-    'Hinter den Kulissen arbeiten wir an zwei neuen Projekten — eines davon führt uns in die Schweiz, mehr dazu im Recherchetagebuch.',
+    'Hinter den Kulissen arbeiten wir an zwei neuen Projekten. Eines davon führt uns in die Schweiz, mehr dazu im Recherchetagebuch.',
     'Danke, dass Sie das möglich machen.',
   ],
 };
@@ -109,7 +109,7 @@ export const clubNewsletter = {
 export const qa = {
   title: 'Fragen Sie die Pensionskassen-Reporterinnen',
   description:
-    'Sophie Timmermann und das Rechercheteam beantworten Ihre Fragen zur Recherche — die Antworten erscheinen hier im Backstage.',
+    'Sophie Timmermann und das Rechercheteam beantworten Ihre Fragen zur Recherche. Die Antworten erscheinen hier im Backstage.',
   deadlineLabel: 'Fragen bis Sonntag einreichen',
 };
 
@@ -127,7 +127,7 @@ export const events = [
 export const verlagPerk = {
   title: 'Ihr Bookzine des Quartals',
   description:
-    'Als Clubmitglied liegt das aktuelle Bookzine des CORRECTIV Verlags für Sie bereit — dazu 20 % Rabatt im Shop mit dem Code CLUB20.',
+    'Als Clubmitglied liegt das aktuelle Bookzine des CORRECTIV Verlags für Sie bereit, dazu 20 % Rabatt im Shop mit dem Code CLUB20.',
   shopUrl: 'https://shop.correctiv.org',
   code: 'CLUB20',
 };

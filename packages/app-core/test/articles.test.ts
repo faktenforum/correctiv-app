@@ -213,7 +213,7 @@ describe('reader html', () => {
   it('asks guests to join and thanks members', () => {
     expect(buildReaderHtml(article)).toContain('correctiv://join');
     expect(buildReaderHtml(article, { isMember: true })).not.toContain('correctiv://join');
-    expect(buildReaderHtml(article, { isMember: true })).toContain('danke, dass Sie dabei sind');
+    expect(buildReaderHtml(article, { isMember: true })).toContain('Danke, dass Sie dabei sind');
   });
 
   it('takes CSS as inline text or as a stylesheet href, so either host can style it', () => {

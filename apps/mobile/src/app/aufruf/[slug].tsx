@@ -80,7 +80,7 @@ export default function AufrufScreen() {
 
             {submitted && (
               <Typo variant="text-s" color="emphasis" className="mt-s">
-                ✓ Sie haben bereits beigetragen — danke! Weitere Hinweise sind willkommen.
+                ✓ Sie haben bereits beigetragen, danke! Weitere Hinweise sind willkommen.
               </Typo>
             )}
           </ScrollView>

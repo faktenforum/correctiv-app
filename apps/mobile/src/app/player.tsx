@@ -58,7 +58,7 @@ export default function PlayerScreen() {
               {track.title}
             </Typo>
             <Typo variant="text-s" color={live ? 'emphasis' : 'grey-600'} className="mt-2xs">
-              {live ? '● LIVE — 24/7 aus Bottrop' : (track.subtitle ?? '')}
+              {live ? '● LIVE · 24/7 aus Bottrop' : (track.subtitle ?? '')}
             </Typo>
             {status === 'error' && (
               <Typo variant="text-s" color="emphasis" className="mt-s">
@@ -70,7 +70,7 @@ export default function PlayerScreen() {
           <View className="px-m pb-m">
             {live ? (
               <Typo variant="text-s" color="grey-600" className="mb-s">
-                Livestream — Salon5 sendet rund um die Uhr.
+                Livestream. Salon5 sendet rund um die Uhr.
               </Typo>
             ) : (
               <>
