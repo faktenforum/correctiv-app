@@ -17,7 +17,7 @@ the way it is; [`../ARCHITECTURE.md`](../ARCHITECTURE.md) describes *what* it is
 | [0010](0010-design-tokens-as-a-shared-package.md) | The design tokens as a shared package | accepted |
 | [0011](0011-naming-the-app-for-release.md) | Naming the app for release, and letting the old host go | accepted; retires two of 0007's |
 
-Six notes for readers of the older ones:
+Seven notes for readers of the older ones:
 
 - ADRs 0001–0004 were written in German and translated on 2026-08-11, so the repo
   reads in one language ([AGENTS.md](../AGENTS.md#language)). Only the wording
@@ -46,6 +46,15 @@ Six notes for readers of the older ones:
   Redux Toolkit ([0009](0009-redux-toolkit-for-the-cores-state.md)) and the styling
   engine to Uniwind ([0008](0008-uniwind-over-nativewind.md)); those passages are what
   was true when they were written.
+- **ADR 0004's licence line reads ~~decided 2026-08-05~~, and that is the one
+  strike-through in this directory that does not mark an expired decision.** The
+  licence was set that day and never put to CORRECTIV for sign-off, which has still
+  not happened — so the word claimed an approval that was never sought, rather than
+  one that was later overtaken. Nothing about the licence itself has moved:
+  AGPL-3.0-or-later is what the repo runs on, and it stays open source under it until
+  CORRECTIV decides otherwise.
+  [The README](../README.md#licensing-and-attribution) states that as it stands, and
+  is the place to quote. **The ADR's date is not CORRECTIV's position and never was.**
 
 **How an expired claim is marked.** An ADR is never rewritten to look right in
 hindsight — the reasoning is the part worth keeping. A claim a later decision made
