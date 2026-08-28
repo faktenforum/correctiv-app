@@ -50,7 +50,7 @@ git push origin v1.2.3
 ```
 
 This creates a GitHub Release for the tag with auto-generated notes and attaches
-`correctiv-app-expo-v1.2.3.apk`.
+`correctiv-app-v1.2.3.apk`.
 
 The tag also drives the app version: `vX.Y.Z` becomes `versionName X.Y.Z`, and the
 workflow run number becomes the `versionCode` (Play requires it to increase on every
@@ -70,7 +70,7 @@ The release build works **with or without** your own signing key:
 | | Secrets set? | Output | Use |
 | --- | --- | --- | --- |
 | **Real release** | yes | APK **+ AAB**, signed with your upload key | Google Play + sideloading |
-| **Test fallback** | no | APK only, signed with the in-repo **test key** (`signing/`) | Sideloading / sharing prototype builds |
+| **Test fallback** | no | APK only, signed with the in-repo **test key** (`signing/`) | Sideloading / sharing test builds |
 
 The test fallback needs no setup — every `v*` tag (or manual run) produces an
 installable, consistently-signed test APK (clearly marked as a test build). It must

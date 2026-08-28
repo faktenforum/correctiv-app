@@ -1,14 +1,14 @@
 {
   "expo": {
     "name": "CORRECTIV",
-    "slug": "app-prototype-react-native",
+    "slug": "correctiv-app",
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/images/icon.png",
     "scheme": "correctiv",
     "userInterfaceStyle": "light",
     "android": {
-      "package": "org.correctiv.app.prototype",
+      "package": "org.correctiv.app",
       "adaptiveIcon": {
         "backgroundColor": "#ffffff",
         "foregroundImage": "./assets/images/android-icon-foreground.png",
@@ -52,7 +52,7 @@
       "reactCompiler": true
     },
     "ios": {
-      "bundleIdentifier": "org.correctiv.app.prototype"
+      "bundleIdentifier": "org.correctiv.app"
     }
   }
 }

@@ -44,7 +44,7 @@ export interface ParsedFeedItem<K extends string = string> {
 /**
  * WordPress RSS → items.
  *
- * `author` is a single string, not a list. The Expo prototype assumed co-bylines
+ * `author` is a single string, not a list. An earlier version assumed co-bylines
  * arrive as repeated `<dc:creator>` elements; measured against 200 live items
  * (correctiv.org/feed/ and /category/faktencheck/feed/) every single one has
  * exactly one, and none is a composite value. If CORRECTIV ever adds a

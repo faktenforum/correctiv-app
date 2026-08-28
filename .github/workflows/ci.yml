@@ -3,11 +3,11 @@
 # Three jobs, cheapest first:
 #   check         — typecheck every package, oxlint, oxfmt --check, headless tests
 #                   (~1 min incl. install; no Android SDK, no emulator)
-#   expo-web      — static web export of apps/mobile, plus assertions that it is
+#   web           — static web export of apps/mobile, plus assertions that it is
 #                   not silently broken (see the job for why). Built for a domain
 #                   root; pages.yml rebuilds the same export under the Pages base
 #                   path and publishes it.
-#   android-expo  — Android APK of the app
+#   android       — Android APK of the app
 #
 # The repo is an npm workspace: `npm ci` runs at the root. Behaviour lives in
 # packages/app-core, which is why `check` is worth running on its own before either
@@ -52,7 +52,7 @@ jobs:
       - name: Check
         run: npm run check
 
-  expo-web:
+  web:
     name: Expo web export
     runs-on: ubuntu-latest
     needs: check
@@ -99,8 +99,8 @@ jobs:
           if-no-files-found: error
           retention-days: 14
 
-  android-expo:
-    name: Android build (Expo)
+  android:
+    name: Android build
     runs-on: ubuntu-latest
     needs: check
     steps:
@@ -166,7 +166,7 @@ jobs:
       - name: Upload APK
         uses: actions/upload-artifact@v4
         with:
-          name: correctiv-app-expo-apk
+          name: correctiv-app-apk
           path: apps/mobile/android/app/build/outputs/apk/release/*.apk
           if-no-files-found: error
           retention-days: 14

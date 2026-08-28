@@ -10,9 +10,9 @@ import { typography, useColors } from '@/lib/theme';
  * shape (`slides[].components[]`), so that a later phase only has to swap the data
  * layer — this component is the translation of one `component` into controls.
  *
- * `file` is a deliberate dummy: the prototype uploads nothing, and does not pretend
- * to. A real picker (expo-image-picker) would be another native module for a flow
- * that goes nowhere without a backend.
+ * `file` is a deliberate dummy. The app uploads nothing and does not pretend to. A
+ * real picker (expo-image-picker) would be another native module for a flow that goes
+ * nowhere without a backend.
  */
 export function FormField({
   component,

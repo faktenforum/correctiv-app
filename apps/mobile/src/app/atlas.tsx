@@ -24,8 +24,8 @@ export default function AtlasScreen() {
       >
         <Typo variant="headline-l">Abriss-Atlas</Typo>
 
-        {/* Platzhalter statt Karte: eine echte Karte wäre ein natives Modul für
-            eine Funktion, die der Prototyp laut Konzept nicht hat. */}
+        {/* A placeholder rather than a map. A real one would be another native
+            module for a feature the concept does not ask for. */}
         <View
           className="mt-s items-center justify-center rounded-md bg-grey-200"
           style={{ height: 130 }}

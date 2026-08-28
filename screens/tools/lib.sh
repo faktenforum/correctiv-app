@@ -7,7 +7,7 @@
 # no BASH_SOURCE.
 TOOLS_DIR="${TOOLS_DIR:-$(dirname "${BASH_SOURCE[0]:-screens/tools/lib.sh}")}"
 A="${ANDROID_HOME}/platform-tools/adb"
-PKG=org.correctiv.app.prototype
+PKG=org.correctiv.app
 OUT="${OUT:-out/android}"
 mkdir -p "$OUT"
 

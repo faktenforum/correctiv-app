@@ -4,7 +4,7 @@
 
 This keystore is intentionally committed and has **no security value**. It exists
 so the Release workflow can produce an *installable* APK with a **stable signature**
-when no real signing secrets are configured — handy for sharing prototype builds
+when no real signing secrets are configured. Handy for sharing test builds
 that testers can update in place (same signature = no uninstall needed).
 
 - store password / key password: `correctiv-test`

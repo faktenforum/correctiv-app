@@ -184,7 +184,7 @@ export default function BeitretenScreen() {
           <>
             <Typo variant="headline-xl">Ihre Daten</Typo>
             <Typo variant="text-s" color="grey-500" className="mt-2xs">
-              Für den Prototyp wird nichts übertragen — Zahlung und Konto sind simuliert.
+              Es wird nichts übertragen. Zahlung und Konto sind simuliert.
             </Typo>
 
             <Typo variant="headline-xs" className="mt-m">
