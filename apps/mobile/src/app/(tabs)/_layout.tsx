@@ -1,107 +1,164 @@
-import { Ionicons } from '@expo/vector-icons';
-import { Tabs } from 'expo-router';
-import { View, type ColorValue } from 'react-native';
+import { NativeTabs } from 'expo-router/unstable-native-tabs';
+import { Platform, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { MiniPlayer } from '@/components/player/MiniPlayer';
 import { useColors } from '@/lib/theme';
 
-type IoniconName = keyof typeof Ionicons.glyphMap;
+/**
+ * The tab bar on iOS and Android is the system's, not ours.
+ *
+ * It is the one control in the app a user has already learned somewhere else, so it
+ * should behave the way every other app on their phone behaves — the press feedback,
+ * the scroll-to-top on a second tap, the iOS 26 minimise-on-scroll, the way it grows
+ * with the system font size. All of that is free here and was absent from a drawn
+ * bar, which only ever imitated it. The web has no system bar to borrow and keeps
+ * the drawn one; see `_layout.web.tsx` for why that is a decision and not a
+ * shortfall.
+ *
+ * Icons are each platform's own vocabulary rather than one set stretched across
+ * both: SF Symbols on iOS, Material Symbols on Android, with a filled variant for
+ * the selected state on each. Ionicons is still what the rest of the app draws with
+ * — it is only the tab bar that defers, because the tab bar is the part users read
+ * as belonging to the phone rather than to us.
+ *
+ * The colours still come from the token palette (`useColors`), so the bar follows
+ * the appearance setting like everything else. Only its SHAPE is the platform's.
+ *
+ * See ADR 0013 for what this costs, which is not nothing: the API is alpha, all five
+ * tabs now mount eagerly, and the bar's height can no longer be measured.
+ */
+
+const IS_IOS = Platform.OS === 'ios';
 
 /**
- * An explicit height, because the mini player has to sit exactly on top of the tab
- * bar and needs a value both sides agree on. Left unset, react-navigation adds the
- * safe area itself — here both are done by hand.
+ * Where the mini player sits on Android. Measured, not guessed — and it was guessed
+ * once, which is the reason for the length of this comment.
+ *
+ * It used to be a value we SET: the drawn bar took `height: 56 + insets.bottom` from
+ * this constant, so the bar and the mini player could not disagree. A native bar
+ * sizes itself and expo-router's native tabs expose no height (`useBottomTabBarHeight`
+ * belongs to the JS tabs; the documentation says layout information is unavailable),
+ * so the number had to come from somewhere else. Carrying the 56 over looked free and
+ * was not: Material 3's navigation bar is **80dp**, 56 was the Material 2 figure, and
+ * the mini player sat 11px INSIDE the tab bar, clipping the selected item's pill.
+ *
+ * Measured on `Medium_Phone_API_36`, 1080x2400 at 420dpi: the bar occupies
+ * y=2126..2337, which is 211px, which is 80.4dp — Material 3's documented height, and
+ * it agrees with the spec rather than merely with one device. The 24dp of gesture
+ * inset below it is what `insets.bottom` adds at the call site.
+ *
+ * Two things still move it, and neither is measurable from here: a large system font
+ * scale, and `labelVisibilityMode` — under Material's `auto` the same bar measured
+ * 60dp, because dropping the labels makes it shorter. Change either and re-measure.
+ * **A screenshot of a playing track is the only check that sees this.**
  */
-const TAB_BAR_HEIGHT = 56;
-
-function tabIcon(active: IoniconName, inactive: IoniconName) {
-  const TabIcon = ({
-    focused,
-    color,
-    size,
-  }: {
-    focused: boolean;
-    color: ColorValue;
-    size: number;
-  }) => <Ionicons name={focused ? active : inactive} size={size} color={color} />;
-  TabIcon.displayName = `TabIcon(${active})`;
-  return TabIcon;
-}
+const ANDROID_TAB_BAR_HEIGHT = 80;
 
 export default function TabsLayout() {
   const colors = useColors();
   const insets = useSafeAreaInsets();
-  const barHeight = TAB_BAR_HEIGHT + insets.bottom;
+
+  /*
+   * Five triggers, written out rather than mapped. Android's Material tabs cap at
+   * five, so this list is at its limit — a sixth is a redesign, not an edit, and
+   * spelling them out is what makes that visible at the point where someone would
+   * add one.
+   */
+  const tabs = (
+    <NativeTabs
+      tintColor={colors.emphasis}
+      backgroundColor={colors['grey-100']}
+      iconColor={{ default: colors['grey-500'], selected: colors.emphasis }}
+      labelStyle={{ fontFamily: 'SourceSans3_600SemiBold', fontSize: 11 }}
+      /*
+       * Every destination keeps its label. Material's `auto` — the default — drops
+       * the labels of the unselected items once there are four or more, which on
+       * this app meant four of five destinations were an icon and nothing else.
+       * `Entdecken` (a compass) and `Mitmachen` (three figures) do not survive that:
+       * they are the two nobody can name from the glyph.
+       *
+       * This is still the platform's bar, not ours. `labeled` is one of Material's
+       * own four modes, and it is what Material 3's own navigation-bar guidance
+       * asks for; `auto`'s drop-the-labels behaviour is the Material 2 rule it
+       * inherited. It also keeps this bar and the web one legible in the same way,
+       * which is worth something when they are meant to be the same product.
+       */
+      labelVisibilityMode="labeled"
+    >
+      <NativeTabs.Trigger name="index">
+        <NativeTabs.Trigger.Label>Home</NativeTabs.Trigger.Label>
+        <NativeTabs.Trigger.Icon
+          sf={{ default: 'house', selected: 'house.fill' }}
+          md={{ default: 'home', selected: 'home' }}
+        />
+      </NativeTabs.Trigger>
+
+      <NativeTabs.Trigger name="entdecken">
+        <NativeTabs.Trigger.Label>Entdecken</NativeTabs.Trigger.Label>
+        <NativeTabs.Trigger.Icon
+          sf={{ default: 'safari', selected: 'safari.fill' }}
+          md={{ default: 'explore', selected: 'explore' }}
+        />
+      </NativeTabs.Trigger>
+
+      <NativeTabs.Trigger name="mediathek">
+        <NativeTabs.Trigger.Label>Mediathek</NativeTabs.Trigger.Label>
+        <NativeTabs.Trigger.Icon
+          sf={{ default: 'play.circle', selected: 'play.circle.fill' }}
+          md={{ default: 'play_circle', selected: 'play_circle' }}
+        />
+      </NativeTabs.Trigger>
+
+      <NativeTabs.Trigger name="mitmachen">
+        <NativeTabs.Trigger.Label>Mitmachen</NativeTabs.Trigger.Label>
+        <NativeTabs.Trigger.Icon
+          sf={{ default: 'person.2', selected: 'person.2.fill' }}
+          md={{ default: 'groups', selected: 'groups' }}
+        />
+      </NativeTabs.Trigger>
+
+      <NativeTabs.Trigger name="profil">
+        <NativeTabs.Trigger.Label>Profil</NativeTabs.Trigger.Label>
+        <NativeTabs.Trigger.Icon
+          sf={{ default: 'person.crop.circle', selected: 'person.crop.circle.fill' }}
+          md={{ default: 'account_circle', selected: 'account_circle' }}
+        />
+      </NativeTabs.Trigger>
+
+      {/*
+        iOS has a slot for exactly this: the bar above the tab bar that Apple Music
+        and Podcasts put the current track in. It is the system's own, so it handles
+        the tab bar's height and translucency itself — which is the answer to the
+        problem ANDROID_TAB_BAR_HEIGHT above has to guess its way around — and on
+        iOS 26 it knows `regular` and `inline` placement without being told.
+
+        Android has no counterpart: NativeTabsView.android.js reads no accessory. So
+        the two platforms genuinely differ here, and the overlay below is the Android
+        answer rather than a fallback — drawing your own bar above the navigation bar
+        is what Android media apps do.
+      */}
+      {IS_IOS ? (
+        <NativeTabs.BottomAccessory>
+          <MiniPlayer />
+        </NativeTabs.BottomAccessory>
+      ) : null}
+    </NativeTabs>
+  );
+
+  if (IS_IOS) return tabs;
 
   return (
     <View className="flex-1">
-      <Tabs
-        screenOptions={{
-          headerShown: false,
-          /**
-           * Bottom tabs default to `animation: 'none'` — the screen is simply
-           * replaced, which on five sibling tabs reads as a redraw rather than a
-           * move. 'shift' slides the outgoing and incoming screen against each
-           * other in the direction of the tab order, so a switch looks like one.
-           */
-          animation: 'shift',
-          tabBarActiveTintColor: colors.emphasis,
-          tabBarInactiveTintColor: colors['grey-500'],
-          // Page surface, hairline on top, no shadow — as the design draft has it.
-          tabBarStyle: {
-            backgroundColor: colors['grey-100'],
-            borderTopColor: colors['grey-300'],
-            borderTopWidth: 1,
-            elevation: 0,
-            height: barHeight,
-            paddingBottom: insets.bottom,
-          },
-          tabBarLabelStyle: { fontFamily: 'SourceSans3_600SemiBold', fontSize: 11 },
-        }}
-      >
-        <Tabs.Screen
-          name="index"
-          options={{ title: 'Home', tabBarIcon: tabIcon('home', 'home-outline') }}
-        />
-        <Tabs.Screen
-          name="entdecken"
-          options={{ title: 'Entdecken', tabBarIcon: tabIcon('compass', 'compass-outline') }}
-        />
-        <Tabs.Screen
-          name="mediathek"
-          options={{
-            title: 'Mediathek',
-            tabBarIcon: tabIcon('play-circle', 'play-circle-outline'),
-          }}
-        />
-        <Tabs.Screen
-          name="mitmachen"
-          options={{ title: 'Mitmachen', tabBarIcon: tabIcon('people', 'people-outline') }}
-        />
-        <Tabs.Screen
-          name="profil"
-          options={{ title: 'Profil', tabBarIcon: tabIcon('person', 'person-outline') }}
-        />
-      </Tabs>
-
+      {tabs}
       {/*
-        The mini player sits ON TOP of the tab bar, the arrangement the design
-        draft uses.
-
-        As an overlay, and NOT through the `tabBar` prop with `BottomTabBar`.
-        That import from `expo-router/tabs` pulls a second React instance into the
-        bundle, and the whole app dies on startup with React error #321, "invalid
-        hook call", past a green build, a green typecheck and green tests. Found in
-        the browser, see ADR 0004.
-
         `box-none` lets taps through while nothing is playing, when MiniPlayer
         renders null and this is an empty, invisible row.
       */}
       <View
         pointerEvents="box-none"
         className="absolute left-0 right-0"
-        style={{ bottom: barHeight }}
+        style={{ bottom: ANDROID_TAB_BAR_HEIGHT + insets.bottom }}
       >
         <MiniPlayer />
       </View>
