@@ -47,13 +47,13 @@ export function ClubCard({
       <Typo variant="headline-l" color="always-dark" className="mt-m">
         {name || 'Clubmitglied'}
       </Typo>
-      {memberSince && (
+      {memberSince ? (
         // Not grey-600: on the yellow the secondary line is dimmed rather than
         // recoloured, or every fixed surface would need a grey scale of its own.
         <Typo variant="text-s" color="always-dark" className="opacity-70">
           Mitglied seit {formatDateShortDe(memberSince)}
         </Typo>
-      )}
+      ) : null}
     </View>
   );
 }

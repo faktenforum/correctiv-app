@@ -95,7 +95,7 @@ export default function ProjektScreen() {
             <Button title={action.label} variant="outline" onPress={action.run} className="mt-s" />
           )}
 
-          {project.feed && <ProjectFeed feed={project.feed} />}
+          {project.feed ? <ProjectFeed feed={project.feed} /> : null}
 
           {project.teaserOnly && (
             <Card tone="surface" className="mt-m">

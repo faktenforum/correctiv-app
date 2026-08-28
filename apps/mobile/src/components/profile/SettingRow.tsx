@@ -41,11 +41,11 @@ export function SettingRow({
     <View className={['flex-row items-center py-2xs', className ?? ''].join(' ')}>
       <View className="flex-1 pr-s">
         <Typo variant="text-m">{label}</Typo>
-        {description && (
+        {description ? (
           <Typo variant="text-s" color="grey-500" className="mt-4xs">
             {description}
           </Typo>
-        )}
+        ) : null}
       </View>
       <Switch
         value={value}

@@ -15,13 +15,13 @@ export function SectionHeader({ title, actionLabel, onAction, className }: Secti
   return (
     <View className={['flex-row items-end justify-between', className ?? ''].join(' ')}>
       <Typo variant="headline-m">{title}</Typo>
-      {actionLabel && (
+      {actionLabel ? (
         <Pressable onPress={onAction} hitSlop={8} className="active:opacity-60">
           <Typo variant="text-s" color="emphasis">
             {actionLabel}
           </Typo>
         </Pressable>
-      )}
+      ) : null}
     </View>
   );
 }

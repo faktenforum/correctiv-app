@@ -35,11 +35,11 @@ export function FormField({
   return (
     <View className="mt-m">
       <Typo variant="headline-xs">{component.label}</Typo>
-      {component.description && (
+      {component.description ? (
         <Typo variant="text-s" color="grey-600" className="mt-2xs">
           {component.description}
         </Typo>
-      )}
+      ) : null}
 
       {(component.type === 'radio' || component.type === 'selectboxes') && (
         <View className="mt-s">

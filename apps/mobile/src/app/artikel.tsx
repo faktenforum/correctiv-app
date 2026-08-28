@@ -6,7 +6,7 @@ import { ActivityIndicator, Animated, Linking, Pressable, View } from 'react-nat
 import { ReaderView } from '@/components/reader/ReaderView';
 import { Button, SafeAreaView, Typo } from '@/components/ui';
 import { isInternalArticleUrl } from '@/lib/articles/articleUrl';
-import { nextHeaderHidden } from '@/lib/articles/readerChrome';
+import { type HeaderState, nextHeaderState } from '@/lib/articles/readerChrome';
 import { loadArticle } from '@correctiv/app-core/articles/load';
 import type { Article } from '@correctiv/app-core/articles/types';
 import { readerHtml } from '@/lib/articles/reader';
@@ -53,20 +53,21 @@ export default function ArtikelScreen() {
    * schemes and at every scroll position, which is the reading state rather than an
    * edge case.
    */
-  const [headerHidden, setHeaderHidden] = useState(false);
+  const [header, setHeader] = useState<HeaderState>('floating');
+  const headerHidden = header === 'hidden';
   const lastOffset = useRef(0);
   const headerOpacity = useRef(new Animated.Value(1)).current;
 
   const onReaderScroll = useCallback((offsetY: number) => {
     const previous = lastOffset.current;
     lastOffset.current = offsetY;
-    setHeaderHidden((hidden) => nextHeaderHidden(hidden, previous, offsetY));
+    setHeader((current) => nextHeaderState(current, previous, offsetY));
   }, []);
 
   // A new article starts at the top, so the header starts visible.
   useEffect(() => {
     lastOffset.current = 0;
-    setHeaderHidden(false);
+    setHeader('floating');
   }, [url, attempt]);
 
   useEffect(() => {
@@ -135,13 +136,13 @@ export default function ArtikelScreen() {
               </Typo>
               <View className="mt-m flex-row gap-s">
                 <Button title="Erneut versuchen" onPress={() => setAttempt((n) => n + 1)} />
-                {url && (
+                {url ? (
                   <Button
                     title="Im Browser öffnen"
                     variant="outline"
                     onPress={() => Linking.openURL(url)}
                   />
-                )}
+                ) : null}
               </View>
             </>
           ) : (
@@ -151,18 +152,23 @@ export default function ArtikelScreen() {
       )}
 
       {/* Overlay header: it floats over the hero image rather than pushing it down.
-          Past the hero it would sit on the text instead, so it fades out on the way
-          down and back in on the way up. `pointerEvents` follows, or an invisible
-          header would still swallow taps meant for the article. */}
+          Past the hero it would sit on the text instead, so two things happen there.
+          It fades out on the way down and back in on the way up, and while it is on
+          text it carries the page surface instead of floating on it. `pointerEvents`
+          follows the fade, or an invisible header would still swallow taps meant for
+          the article. */}
       <Animated.View
         style={{ opacity: headerOpacity }}
         pointerEvents={headerHidden ? 'none' : 'box-none'}
         className="absolute left-0 right-0 top-0"
       >
-        <SafeAreaView edges={['top']}>
+        <SafeAreaView
+          edges={['top']}
+          className={header === 'onSurface' ? 'bg-grey-100 border-b border-grey-300' : ''}
+        >
           <View className="flex-row items-center justify-between px-s py-2xs">
             <HeaderButton icon="chevron-back" label="Zurück" onPress={goBack} />
-            {url && (
+            {url ? (
               <View className="flex-row gap-2xs">
                 {/* Sharing a piece of journalism is the point of publishing it — the
                   one action here that works on the article rather than on the app. */}
@@ -185,7 +191,7 @@ export default function ArtikelScreen() {
                   }
                 />
               </View>
-            )}
+            ) : null}
           </View>
         </SafeAreaView>
       </Animated.View>

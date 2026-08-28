@@ -38,13 +38,13 @@ export function MediaCard({ video, onPress }: { video: Video; onPress: (video: V
             >
               <Ionicons name="play" size={22} color={colors['always-light']} />
             </View>
-            {duration && (
+            {duration ? (
               <View className="absolute bottom-2xs right-2xs rounded-s bg-always-dark/80 px-3xs">
                 <Typo variant="text-s" color="always-light" style={{ fontSize: 11 }}>
                   {duration}
                 </Typo>
               </View>
-            )}
+            ) : null}
           </>
         }
       />

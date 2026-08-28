@@ -1,5 +1,5 @@
 /**
- * When the reader's overlay header shows, expressed as a rule rather than as
+ * What the reader's overlay header is doing, expressed as a rule rather than as
  * scattered comparisons inside the screen.
  *
  * The header floats over the article instead of pushing it down, which is what the
@@ -8,16 +8,29 @@
  * happened in both colour schemes and at every scroll position, so it was the normal
  * reading state and not an edge case.
  *
- * It is a separate function because the alternative is testing it through a WebView,
+ * One value rather than a pair of flags, because two of the three states differ only
+ * in whether the header floats, and a `floating` header that is also allowed to hide
+ * would put the controls back on the text. Making that combination unrepresentable
+ * is cheaper than remembering not to write it.
+ *
+ * It is a separate module because the alternative is testing this through a WebView,
  * and the two numbers below are exactly the kind that get nudged until the flicker
  * "looks fine" on one device.
  */
 
 /**
- * Below this offset in px the header always shows. That band is the hero image, the
+ * - `floating`  — over the hero image, transparent, the way the design draws it.
+ * - `onSurface` — past the hero, carrying the page surface so text cannot show
+ *   through it.
+ * - `hidden`    — past the hero and scrolling down, out of the way entirely.
+ */
+export type HeaderState = 'floating' | 'onSurface' | 'hidden';
+
+/**
+ * Below this offset in px the header always floats. That band is the hero image, the
  * thing the header was meant to float over.
  */
-export const HEADER_ALWAYS_VISIBLE_UNTIL = 96;
+export const HERO_BAND = 96;
 
 /**
  * How far the reader must move in one direction before the header reacts, in px. A
@@ -27,16 +40,24 @@ export const HEADER_ALWAYS_VISIBLE_UNTIL = 96;
 export const DIRECTION_THRESHOLD = 12;
 
 /**
- * Whether the header should be hidden after a scroll from `previousY` to `nextY`.
+ * The header's state after a scroll from `previousY` to `nextY`.
  *
- * Returns `hidden` unchanged when the movement is too small to read as a direction,
- * so a caller can hand every scroll event straight in.
+ * Movement too small to read as a direction leaves `current` alone, so a caller can
+ * hand in every scroll event the platform produces.
  */
-export function nextHeaderHidden(hidden: boolean, previousY: number, nextY: number): boolean {
-  if (nextY <= HEADER_ALWAYS_VISIBLE_UNTIL) return false;
+export function nextHeaderState(
+  current: HeaderState,
+  previousY: number,
+  nextY: number,
+): HeaderState {
+  if (nextY <= HERO_BAND) return 'floating';
 
   const delta = nextY - previousY;
-  if (Math.abs(delta) < DIRECTION_THRESHOLD) return hidden;
+  if (Math.abs(delta) < DIRECTION_THRESHOLD) {
+    // Leaving the hero band without a readable direction still has to stop the
+    // header floating, or it keeps sitting on text until the next real scroll.
+    return current === 'floating' ? 'onSurface' : current;
+  }
 
-  return delta > 0;
+  return delta > 0 ? 'hidden' : 'onSurface';
 }

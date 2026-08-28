@@ -55,7 +55,7 @@ export function ScreenHeader({ onBack, backLabel = 'Zurück', children }: Screen
             </Typo>
           )}
         </Pressable>
-        {children && <View className="ml-2xs flex-1">{children}</View>}
+        {children ? <View className="ml-2xs flex-1">{children}</View> : null}
       </View>
       <Hairline />
     </SafeAreaView>

@@ -61,11 +61,11 @@ export function ArticleHero({
           {item.teaser}
         </Typo>
       )}
-      {byline && (
+      {byline ? (
         <Typo variant="text-s" color="grey-500" className="mt-2xs">
           {byline}
         </Typo>
-      )}
+      ) : null}
     </Pressable>
   );
 }

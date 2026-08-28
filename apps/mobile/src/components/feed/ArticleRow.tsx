@@ -23,17 +23,17 @@ export function ArticleRow({
           middot and the 4px of a space character on the other — visibly off-centre.
           Row gap only, and a space either side inside the text. */}
       <View className="mt-3xs flex-row flex-wrap items-center gap-y-2xs">
-        {item.author && (
+        {item.author ? (
           <Typo variant="text-s" color="grey-600">
             {item.author}
           </Typo>
-        )}
-        {item.publishedAt && (
+        ) : null}
+        {item.publishedAt ? (
           <Typo variant="text-s" color="grey-500">
             {item.author ? ' · ' : ''}
             {formatDateDe(item.publishedAt)}
           </Typo>
-        )}
+        ) : null}
       </View>
     </Pressable>
   );
