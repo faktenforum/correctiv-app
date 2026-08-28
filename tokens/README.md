@@ -34,7 +34,7 @@ That trade is recorded below.
 | File | Consumed by |
 |---|---|
 | `theme.css` | `packages/design-tokens/scripts/generate.mjs`, via `scripts/tokens-source.mjs` |
-| `typography.css` | **nothing, programmatically.** Hand-transcribed into `apps/mobile-rn/src/lib/theme/typography.ts` |
+| `typography.css` | **nothing, programmatically.** Hand-transcribed into `apps/mobile/src/lib/theme/typography.ts` |
 
 `utility.css` exists upstream and is deliberately not vendored: nothing in this
 repo reads or mirrors it.
@@ -69,6 +69,6 @@ npm run tokens                     # regenerates the three artefacts
 #    files together.
 ```
 
-Step 2 is not optional: `apps/mobile-rn/__tests__/tokens.test.ts` regenerates
+Step 2 is not optional: `apps/mobile/__tests__/tokens.test.ts` regenerates
 and byte-compares, so a token change without regeneration fails CI. That is the
 check the vendoring exists to make possible.

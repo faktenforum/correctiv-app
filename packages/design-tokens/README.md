@@ -11,7 +11,7 @@ The source of truth is `tokens/theme.css` at the repo root — vendored from
 Three files are written by hand — `palette.js`, `scripts/generate.mjs` and
 `src/index.ts`. Everything else here comes out of the generator and is never edited:
 `npm run tokens` would overwrite the edit, and the drift check in
-`apps/mobile-rn/__tests__/tokens.test.ts` fails the build if it does not. Note that
+`apps/mobile/__tests__/tokens.test.ts` fails the build if it does not. Note that
 the two CSS files are generated despite not being named `*.generated.*` — their
 names are the import paths a consumer writes.
 
@@ -24,7 +24,7 @@ carries an HTML parser for its DOM extraction backend.
 
 | Consumer | Uses |
 |---|---|
-| `apps/mobile-rn` | `theme.css` (through Uniwind), the typed constants via `src/lib/theme`, and the reader CSS |
+| `apps/mobile` | `theme.css` (through Uniwind), the typed constants via `src/lib/theme`, and the reader CSS |
 | CORRECTIV WordPress CMS | `theme.standalone.css` — *next*, not yet wired up |
 
 ```css
@@ -42,7 +42,7 @@ be on `<html>`. Worth knowing before reaching for `body_class()`, because the
 the automatic path looked fine.
 
 That the standalone file actually works for a consumer with no Uniwind is checked
-on every PR: `apps/mobile-rn/__tests__/design-tokens-standalone.test.ts` compiles it
+on every PR: `apps/mobile/__tests__/design-tokens-standalone.test.ts` compiles it
 with plain Tailwind and asserts the colour utilities appear and both dark paths carry
 the dark values. It is there because this file has already been wrong twice, and
 neither time was loud — see the test's own header.
@@ -95,6 +95,6 @@ schemes cannot be parsed twice and disagree. Nothing is written outside this
 package.
 
 **Generated files are never hand-edited.** They carry a header saying so.
-`apps/mobile-rn/__tests__/tokens.test.ts` regenerates them and byte-compares on
+`apps/mobile/__tests__/tokens.test.ts` regenerates them and byte-compares on
 every CI run, so a hand edit — or a token change without a regeneration — is a
 failed PR rather than silent drift.

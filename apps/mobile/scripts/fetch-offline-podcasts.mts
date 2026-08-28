@@ -3,7 +3,7 @@
  * TypeScript module, which the `ContentBundle` port serves when a show is
  * unreachable. Episode audio stays a remote MP3 URL — only the list is bundled.
  *
- *   npm run offline-podcasts -w @correctiv/mobile-rn
+ *   npm run offline-podcasts -w @correctiv/mobile
  *
  * It calls the core's `fetchPodcastSeries`, the same function the app calls, so the
  * snapshot cannot drift from the live shape.

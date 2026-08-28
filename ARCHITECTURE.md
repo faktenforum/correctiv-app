@@ -14,7 +14,7 @@ One core holds the behaviour. The app holds its screens and one adapter.
                     └──────────────────┬───────────────────┘
                                   ports│
                        ┌───────────────┴───────────────┐
-                       │       apps/mobile-rn          │
+                       │       apps/mobile          │
                        │    Expo / React Native        │
                        │    iOS · Android · web        │
                        └───────────────────────────────┘
@@ -47,7 +47,7 @@ constructed, before anything can await. `BlobStore` is not, because it holds a
 megabyte of cached feeds — the adapter's file header explains what the synchronous
 version used to cost.
 
-Adapter: `apps/mobile-rn/src/lib/platform/expo.ts`. It is small on purpose. While the repo
+Adapter: `apps/mobile/src/lib/platform/expo.ts`. It is small on purpose. While the repo
 had a second host, one file per host knew the platform SDK, so dropping a host meant
 dropping that file plus its screens.
 
@@ -75,7 +75,7 @@ Three conventions to know before editing:
 1. **State is framework-neutral.** `stores/` is one Redux Toolkit store with ten
    slices; `stores/store.ts` explains why the core owns the instance rather than the
    host. The host adds only the reactivity binding —
-   `apps/mobile-rn/src/lib/store/core.ts`, react-redux. A second host once bound the
+   `apps/mobile/src/lib/store/core.ts`, react-redux. A second host once bound the
    state this replaced to Vue's `reactive` in about forty lines, which is the measure
    of what "framework-neutral" bought and the reason the property is still worth
    keeping.
@@ -111,12 +111,12 @@ verdict plaque. The host supplies only the CSS, which here means the token varia
 and the fonts base64-embedded in a `<style>`: the WebView is a browser context of its
 own and cannot use the fonts React Native loaded. Dark mode costs one appended
 variable block, because `READER_LAYOUT_CSS` takes every colour from
-`--var-color-*` — see `apps/mobile-rn/src/lib/articles/reader.ts`.
+`--var-color-*` — see `apps/mobile/src/lib/articles/reader.ts`.
 
 ## What lives in the app
 
 ```
-apps/mobile-rn/            @correctiv/mobile-rn — Expo (iOS, Android, web)
+apps/mobile/            @correctiv/mobile — Expo (iOS, Android, web)
   src/app/                 expo-router routes: (tabs)/ + artikel, suche, spotlight,
                            projekt/[id], serie/[id], video, player, aufruf/[slug],
                            formular, faktenforum, behauptung/[id], atlas,
@@ -200,7 +200,7 @@ silently becomes the light one again.
 
 ## The web target
 
-`apps/mobile-rn` exports to static HTML, and that export is the published demo, best
+`apps/mobile` exports to static HTML, and that export is the published demo, best
 opened through the device frame at
 <https://faktenforum.github.io/correctiv-app/preview.html> — the same routes, screens
 and core as the native builds, with two host-level differences:

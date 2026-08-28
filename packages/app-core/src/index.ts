@@ -1,7 +1,7 @@
 /**
  * `@correctiv/app-core` — the platform-free half of the app.
  *
- * `apps/mobile-rn` (Expo/React Native, including the web target) is its host. It
+ * `apps/mobile` (Expo/React Native, including the web target) is its host. It
  * contains the model, the parsers, the services, the caches and all of the state —
  * and imports neither a UI framework nor a platform SDK, which is what a test in
  * `test/boundary.test.ts` enforces on every PR. That rule is why replacing the view

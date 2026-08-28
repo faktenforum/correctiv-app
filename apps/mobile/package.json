@@ -1,5 +1,5 @@
 {
-  "name": "@correctiv/mobile-rn",
+  "name": "@correctiv/mobile",
   "description": "CORRECTIV app on Expo/React Native — iOS, Android and a web target for demos.",
   "main": "./index.js",
   "version": "1.0.0",

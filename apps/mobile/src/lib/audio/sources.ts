@@ -23,6 +23,6 @@ export function toAudioSource(url: string): AudioSource {
   // No guessing: an unknown relative source is a data error, and silently passing
   // it on as a uri ends in a player that never loads.
   throw new Error(
-    `Unknown local audio source "${url}" — add it to apps/mobile-rn/src/lib/audio/sources.ts, or point the data at an https url.`,
+    `Unknown local audio source "${url}" — add it to apps/mobile/src/lib/audio/sources.ts, or point the data at an https url.`,
   );
 }

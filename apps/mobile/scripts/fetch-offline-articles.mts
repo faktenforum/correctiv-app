@@ -2,7 +2,7 @@
  * Builds this app's offline bundle — the feed snapshots and pre-extracted articles
  * that make the demo path (Home → read an article) work without a network.
  *
- *   npm run offline-articles -w @correctiv/mobile-rn
+ *   npm run offline-articles -w @correctiv/mobile
  *
  * Collecting lives in the core (`@correctiv/app-core/articles/offline-bundle`), so
  * only the writing is local: one generated TypeScript module. The extraction

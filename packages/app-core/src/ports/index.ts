@@ -4,7 +4,7 @@
  * `@correctiv/app-core` must never import a platform SDK. Whatever it cannot do
  * on its own is declared here as an interface and supplied at startup:
  *
- *   configurePlatform(expoPlatform)   // apps/mobile-rn/src/lib/platform/expo.ts
+ *   configurePlatform(expoPlatform)   // apps/mobile/src/lib/platform/expo.ts
  *
  * Each port has a session-only or empty default, so an unconfigured core (tests,
  * a script) degrades instead of throwing. Persistence is best-effort everywhere:

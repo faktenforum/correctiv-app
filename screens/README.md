@@ -10,7 +10,7 @@ looking at a picture.
 
 ## The set
 
-[`android/`](android/) holds 29 shots, one per step, from `apps/mobile-rn`. Shot on
+[`android/`](android/) holds 29 shots, one per step, from `apps/mobile`. Shot on
 2026-08-27 at `0919402` on `Medium_Phone_API_36` at 1080x2400, over Metro from a clean
 worktree.
 
@@ -31,8 +31,8 @@ The emulator needs a window. Headless dies on SELinux denying `execheap` to
 SwiftShader's shader JIT.
 
 ```bash
-cd apps/mobile-rn/android && ./gradlew assembleRelease && cd -
-adb install -r apps/mobile-rn/android/app/build/outputs/apk/release/app-release.apk
+cd apps/mobile/android && ./gradlew assembleRelease && cd -
+adb install -r apps/mobile/android/app/build/outputs/apk/release/app-release.apk
 
 OUT=out/android bash screens/tools/tour-android.sh          # the five tabs
 OUT=out/android bash screens/tools/tour-android-routes.sh   # the pushed routes, by deep link
@@ -51,8 +51,8 @@ Look at the web export in the same pass. It is the only place where
 back-without-history and a directly opened route can be tested at all.
 
 ```bash
-npm run build:web -w apps/mobile-rn
-node screens/tools/serve-clean.mjs apps/mobile-rn/dist 8099
+npm run build:web -w apps/mobile
+node screens/tools/serve-clean.mjs apps/mobile/dist 8099
 ```
 
 `serve-clean.mjs` maps `/artikel` to `artikel.html` and falls back to `404.html` the
@@ -66,8 +66,8 @@ domain root. On `localhost:8099/` such a build looks fine and on the real site i
 blank page.
 
 ```bash
-EXPO_BASE_URL=/correctiv-app npm run build:web -w apps/mobile-rn
-node screens/tools/serve-clean.mjs apps/mobile-rn/dist 8099 --base=/correctiv-app
+EXPO_BASE_URL=/correctiv-app npm run build:web -w apps/mobile
+node screens/tools/serve-clean.mjs apps/mobile/dist 8099 --base=/correctiv-app
 # then open http://localhost:8099/correctiv-app/
 ```
 

@@ -54,7 +54,7 @@ This creates a GitHub Release for the tag with auto-generated notes and attaches
 
 The tag also drives the app version: `vX.Y.Z` becomes `versionName X.Y.Z`, and the
 workflow run number becomes the `versionCode` (Play requires it to increase on every
-upload). `apps/mobile-rn/app.json` is patched only inside CI — the change is not
+upload). `apps/mobile/app.json` is patched only inside CI — the change is not
 committed.
 
 The APK is re-signed after Gradle builds it. Gradle signs the release variant with

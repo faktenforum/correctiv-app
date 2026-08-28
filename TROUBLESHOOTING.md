@@ -14,7 +14,7 @@ So after touching a route, a bundle-level config or anything platform-split:
 
 ```bash
 npm run build:web
-node screens/tools/serve-clean.mjs apps/mobile-rn/dist 8099   # NOT python3 -m http.server
+node screens/tools/serve-clean.mjs apps/mobile/dist 8099   # NOT python3 -m http.server
 ```
 
 And a screenshot is only evidence about **the part of the screen it shows.** The
@@ -78,7 +78,7 @@ equivalents for focus, liveness and errors.
 - **Metro's `getDefaultConfig` assumes a single-project layout,** so in this
   workspace `packages/app-core` is invisible and hoisted deps do not resolve. →
   `watchFolders` + `resolver.nodeModulesPaths` + `disableHierarchicalLookup` in
-  `apps/mobile-rn/metro.config.js`.
+  `apps/mobile/metro.config.js`.
 - **Autolinking gives a package's native module, but only its config plugin edits the
   native projects** — and a plugin has to be listed in `app.json`. `expo-audio` was
   not, so the generated manifest had no `FOREGROUND_SERVICE_MEDIA_PLAYBACK` and no
@@ -150,12 +150,12 @@ equivalents for focus, liveness and errors.
   `faktenforum.github.io/correctiv-app/`. Every asset then resolves one directory
   too high and 404s: a blank page from a build that exported cleanly, passed every
   assertion in `ci.yml` and looks perfect on `localhost:8099/`. → `experiments.baseUrl`,
-  set from `EXPO_BASE_URL` in `apps/mobile-rn/app.config.js` so only the Pages build
+  set from `EXPO_BASE_URL` in `apps/mobile/app.config.js` so only the Pages build
   carries the prefix. Verify it the only way that means anything — build with the
   variable and serve underneath the prefix:
   ```bash
   EXPO_BASE_URL=/correctiv-app npm run build:web
-  node screens/tools/serve-clean.mjs apps/mobile-rn/dist 8099 --base=/correctiv-app
+  node screens/tools/serve-clean.mjs apps/mobile/dist 8099 --base=/correctiv-app
   ```
   `pages.yml` greps the built `index.html` for the prefix, because this failure has
   no other symptom before it is public.

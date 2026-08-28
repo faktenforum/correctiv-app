@@ -36,7 +36,7 @@ One core, one app, and the tokens they are both drawn with.
 | --- | --- | --- | --- |
 | [`packages/app-core`](packages/app-core) | TypeScript, no UI framework | all | The behaviour: model, parsers, services, caches, **all** state |
 | [`packages/design-tokens`](packages/design-tokens) | TypeScript, no dependencies | all | The colours, spacing and type scale, generated from the vendored design tokens |
-| [`apps/mobile-rn`](apps/mobile-rn) | Expo SDK 56 · React Native 0.85 · expo-router · Uniwind | iOS, Android, **web** | The app |
+| [`apps/mobile`](apps/mobile) | Expo SDK 56 · React Native 0.85 · expo-router · Uniwind | iOS, Android, **web** | The app |
 
 The core is the point even with a single app: it imports no UI framework and no
 platform SDK, so the feed cascade, the reader, the audio state machine and the
@@ -58,7 +58,7 @@ The web target needs no emulator and no Android SDK:
 npm run web          # browser, Fast Refresh
 npm run android      # dev build on emulator/device (once)
 npm start            # then: Metro (dev client, NOT Expo Go)
-npm run build:web    # static export to apps/mobile-rn/dist/
+npm run build:web    # static export to apps/mobile/dist/
 ```
 
 Requirements: Node ≥ 20.19. For Android additionally JDK 17 and an Android SDK with
@@ -82,11 +82,11 @@ lists fall back to remote URLs, which is only visible with no network.
 > renders its *unmatched route* page and a working app looks broken:
 >
 > ```bash
-> node screens/tools/serve-clean.mjs apps/mobile-rn/dist 8099
+> node screens/tools/serve-clean.mjs apps/mobile/dist 8099
 > ```
 
 **The device frame linked at the top** works locally too — presets, rotation, free
-resizing and a route field. It ships in the export from `apps/mobile-rn/public/`, so
+resizing and a route field. It ships in the export from `apps/mobile/public/`, so
 the same page answers under `npm run web`, under the server above, and on Pages:
 
 ```
@@ -115,16 +115,16 @@ Dark mode, safe-area insets and touch are *not* simulated; those stay DevTools' 
 
 - **Code:** GNU Affero General Public License v3.0 or later — see [`LICENSE`](LICENSE).
   This covers every workspace; each `package.json` declares `AGPL-3.0-or-later`.
-- **`apps/mobile-rn` was scaffolded by `create-expo-app`** and arrived with the Expo
+- **`apps/mobile` was scaffolded by `create-expo-app`** and arrived with the Expo
   templates' MIT licence. AGPL applies going forward (CORRECTIV's decision,
   2026-08-05); the MIT notice is retained as attribution for the scaffolded portions
-  in [`apps/mobile-rn/NOTICE.md`](apps/mobile-rn/NOTICE.md).
+  in [`apps/mobile/NOTICE.md`](apps/mobile/NOTICE.md).
 - **Design tokens** in [`tokens/`](tokens/README.md) are vendored from
   [correctiv/wp-design-tokens](https://github.com/correctiv/wp-design-tokens)
   (GPL-2.0-or-later), compatible with AGPL-3.0-or-later.
 - **Fonts:** Merriweather and Source Sans 3 (SIL OFL 1.1) and Ionicons (MIT) are
   pulled from npm and redistributed in the build — see
-  [`apps/mobile-rn/NOTICE.md`](apps/mobile-rn/NOTICE.md).
+  [`apps/mobile/NOTICE.md`](apps/mobile/NOTICE.md).
 - **Sample content and images** are CORRECTIV material, included for prototyping.
 - This is a prototype, not a released product, and is not affiliated with any
   app-store listing.

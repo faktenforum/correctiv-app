@@ -18,7 +18,7 @@ Regenerate (if ever needed), from the repository root:
 
 ```bash
 keytool -genkeypair -v \
-  -keystore apps/mobile-rn/signing/correctiv-test.keystore \
+  -keystore apps/mobile/signing/correctiv-test.keystore \
   -alias correctiv-test -keyalg RSA -keysize 2048 -validity 10000 \
   -storepass correctiv-test -keypass correctiv-test \
   -dname "CN=CORRECTIV App TEST KEY (not for Play), O=CORRECTIV, C=DE"

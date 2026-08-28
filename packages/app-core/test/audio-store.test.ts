@@ -21,7 +21,7 @@ import { createAppStore, type AppStore } from '../src/stores/store';
 /**
  * The audio state machine, driven through the port rather than through a real SDK.
  *
- * `apps/mobile-rn/__tests__/audio-player.test.ts` already covers this via expo-audio.
+ * `apps/mobile/__tests__/audio-player.test.ts` already covers this via expo-audio.
  * What that cannot cover is a backend whose commands call the status listener
  * straight back, and that difference cost this project a crash on a device. So the
  * fake here is deliberately the awkward shape.

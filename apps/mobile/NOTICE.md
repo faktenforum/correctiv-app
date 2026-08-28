@@ -1,4 +1,4 @@
-# Third-party notices — @correctiv/mobile-rn
+# Third-party notices — @correctiv/mobile
 
 This app is licensed under the **GNU Affero General Public License v3.0 or
 later**, like the rest of this repository — see [`../../LICENSE`](../../LICENSE).

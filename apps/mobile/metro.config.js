@@ -3,7 +3,7 @@ const path = require('node:path');
 const { getDefaultConfig } = require('expo/metro-config');
 const { withUniwindConfig } = require('uniwind/metro');
 
-// This app lives in an npm workspace (apps/mobile-rn). Metro defaults to a
+// This app lives in an npm workspace (apps/mobile). Metro defaults to a
 // single-project layout, so two things have to be spelled out or module
 // resolution fails in ways that look like missing packages:
 //   1. watchFolders — without the repo root, edits in packages/app-core are

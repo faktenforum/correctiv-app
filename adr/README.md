@@ -30,6 +30,9 @@ Four notes for readers of the older ones:
   2026-08-12. Read 0006 for what the core is and why, not for how many apps there
   are — that half of it is history, and the reason it gives for the split is the
   reason the split survived the removal.
+- The app directory was renamed from `apps/mobile-rn` to `apps/mobile` on 2026-08-28,
+  and the package from `@correctiv/mobile-rn` to `@correctiv/mobile`. Paths in the ADRs
+  below are left as they were written; read `mobile-rn` as `mobile`.
 - ADRs 0002 and 0006 describe a NativeScript app that is no longer in the tree. They
   are records, not descriptions: neither has been rewritten, and 0007 says which of
   their statements have expired.

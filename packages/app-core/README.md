@@ -2,7 +2,7 @@
 
 The behaviour of the CORRECTIV app, with no UI framework and no platform SDK in it.
 
-`apps/mobile-rn` (Expo / React Native) imports it. Anything that is not a screen and
+`apps/mobile` (Expo / React Native) imports it. Anything that is not a screen and
 not an SDK call belongs here — the model, the parsers, the services, the caches and
 **all** of the state.
 

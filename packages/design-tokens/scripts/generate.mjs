@@ -38,7 +38,7 @@
  *
  * Nothing here decides how the output LOOKS except the five render functions, and
  * every byte of what they produce is pinned by
- * `apps/mobile-rn/__tests__/tokens.test.ts`, which regenerates all four artefacts
+ * `apps/mobile/__tests__/tokens.test.ts`, which regenerates all four artefacts
  * and byte-compares them against the committed copies. Restructuring this script is
  * safe exactly to the extent that check is.
  *
@@ -401,14 +401,14 @@ function renderThemeCss(vars, scales, colors, colorsDark) {
     //
     // Clearing the DEFAULT removes the bare form for ALL ten names, so no radius
     // token can collide this way — including ones the design system has not added
-    // yet. `apps/mobile-rn/__tests__/tokens.test.ts` fails if this line goes, and it
+    // yet. `apps/mobile/__tests__/tokens.test.ts` fails if this line goes, and it
     // asserts the LINE rather than relying on its drift check: once this generator
     // stops emitting the line, the committed file agrees with it again and drift
     // sees nothing.
     ['  --radius: initial;'],
     // The numeric step. The design system counts in 2px, so `p-4` is 8px and not
     // Tailwind's 16 — which is why numeric utilities are banned outright; see
-    // apps/mobile-rn/__tests__/no-numeric-utilities.test.ts.
+    // apps/mobile/__tests__/no-numeric-utilities.test.ts.
     [`  --spacing: ${raw('--var-spacing')};`],
     Object.keys(spacingTokens).map((k) => `  --spacing-${k}: ${raw(`--var-spacing-${k}`)};`),
     Object.keys(radius).map((k) => `  --radius-${k}: ${raw(`--var-radius-${k}`)};`),
@@ -555,7 +555,7 @@ function renderReaderTs(themeCss, colorsDark) {
 export const THEME_CSS = ${JSON.stringify(themeCssForReader)};
 
 // Appended AFTER THEME_CSS when the app is running dark. See the host's reader
-// wiring — apps/mobile-rn/src/lib/articles/reader.ts.
+// wiring — apps/mobile/src/lib/articles/reader.ts.
 export const READER_DARK_CSS = ${JSON.stringify(readerDarkCss)};
 `;
 }

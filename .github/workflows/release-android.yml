@@ -12,7 +12,7 @@
 #   - If the ANDROID_KEYSTORE_* secrets are set (see RELEASE.md), the APK is signed
 #     with the real upload key.
 #   - If they are NOT set, it falls back to the committed throwaway TEST keystore
-#     (apps/mobile-rn/signing/correctiv-test.keystore) — an installable test build
+#     (apps/mobile/signing/correctiv-test.keystore) — an installable test build
 #     only. Never use the test key for the Play Store.
 # Optional secrets:
 #   ANDROID_KEYSTORE_BASE64   base64 of the upload keystore (.jks)
@@ -71,7 +71,7 @@ jobs:
         run: |
           node -e '
             const fs = require("node:fs");
-            const p = "apps/mobile-rn/app.json";
+            const p = "apps/mobile/app.json";
             const j = JSON.parse(fs.readFileSync(p, "utf8"));
             j.expo.version = process.env.GITHUB_REF_NAME.replace(/^v/, "");
             j.expo.android = { ...j.expo.android, versionCode: Number(process.env.GITHUB_RUN_NUMBER) };
@@ -82,11 +82,11 @@ jobs:
       # android/ is gitignored: it is generated from app.json. --no-install because
       # npm ci already ran at the ROOT.
       - name: Prebuild the native project
-        working-directory: apps/mobile-rn
+        working-directory: apps/mobile
         run: npx expo prebuild --platform android --no-install
 
       - name: Build release APK
-        working-directory: apps/mobile-rn/android
+        working-directory: apps/mobile/android
         run: ./gradlew assembleRelease
 
       # Gradle signs the release variant with the template's debug key, which is
@@ -108,13 +108,13 @@ jobs:
             echo "real=true" >> "$GITHUB_OUTPUT"
           else
             echo "::warning::No ANDROID_KEYSTORE_* secrets set — signing with the committed TEST keystore. The result is NOT for the Play Store."
-            KS_PATH="${GITHUB_WORKSPACE}/apps/mobile-rn/signing/correctiv-test.keystore"
+            KS_PATH="${GITHUB_WORKSPACE}/apps/mobile/signing/correctiv-test.keystore"
             echo "real=false" >> "$GITHUB_OUTPUT"
           fi
           APKSIGNER="${ANDROID_HOME}/build-tools/35.0.0/apksigner"
           mkdir -p dist
           NAME="correctiv-app-expo-${GITHUB_REF_NAME}"
-          cp apps/mobile-rn/android/app/build/outputs/apk/release/app-release.apk "dist/${NAME}.apk"
+          cp apps/mobile/android/app/build/outputs/apk/release/app-release.apk "dist/${NAME}.apk"
           "$APKSIGNER" sign \
             --ks "$KS_PATH" --ks-pass "pass:${KS_PASSWORD}" \
             --ks-key-alias "$KS_ALIAS" --key-pass "pass:${KS_KEY_PASSWORD}" \

@@ -27,7 +27,7 @@ const TOKEN = 'spike-token';
  * same thing, and expo-audio is the reason it can (headers on AudioSource).
  */
 const FILE = fileURLToPath(
-  new URL('../apps/mobile-rn/assets/audio/sample-episode.mp3', import.meta.url),
+  new URL('../apps/mobile/assets/audio/sample-episode.mp3', import.meta.url),
 );
 const SIZE = statSync(FILE).size;
 

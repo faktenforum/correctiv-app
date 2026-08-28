@@ -14,7 +14,7 @@
     "jest"
   ],
   // react-perf is deliberately NOT enabled. Its jsx-no-new-{object,function,array}-as-prop
-  // rules flagged 37 sites in apps/mobile-rn, all of them inline props that the
+  // rules flagged 37 sites in apps/mobile, all of them inline props that the
   // React Compiler memoizes automatically — the app turns it on via
   // app.json "experiments": { "reactCompiler": true }. Enabling the plugin would
   // mean hand-memoizing what the compiler already does, i.e. fighting the toolchain.
@@ -41,7 +41,7 @@
   "ignorePatterns": [
     "media/**",
     "packages/app-core/test/__fixtures__/**",
-    "apps/mobile-rn/__fixtures__/**"
+    "apps/mobile/__fixtures__/**"
   ],
   "rules": {
     "no-console": "off",
@@ -55,7 +55,7 @@
     "oxc/no-map-spread": "warn",
 
     // Obsolete since React 17's automatic JSX runtime: JSX no longer expands to
-    // React.createElement, so React need not be in scope. apps/mobile-rn is on
+    // React.createElement, so React need not be in scope. apps/mobile is on
     // React 19 and babel-preset-expo's automatic runtime. Left on, this produced
     // 132 false positives in one pass.
     "react/react-in-jsx-scope": "off",
@@ -75,7 +75,7 @@
     {
       // The generator scripts fetch upstream resources one at a time on purpose —
       // sequential requests are gentler on correctiv.org than a burst.
-      "files": ["apps/mobile-rn/scripts/**"],
+      "files": ["apps/mobile/scripts/**"],
       "rules": {
         "no-await-in-loop": "off"
       }
@@ -85,7 +85,7 @@
       // wired up: `import 'expo-router/entry'` registers the root component,
       // `import '@/global.css'` is the CSS entry Uniwind's Metro transform reads.
       // There is nothing to assign.
-      "files": ["apps/mobile-rn/index.js", "apps/mobile-rn/src/app/_layout.tsx"],
+      "files": ["apps/mobile/index.js", "apps/mobile/src/app/_layout.tsx"],
       "rules": {
         "import/no-unassigned-import": "off"
       }
@@ -98,7 +98,7 @@
       // nothing to escape into. Dropping it instead breaks the player: it needs
       // storage access to initialise. What the sandbox still buys us is the part
       // that matters here — the embed cannot navigate the top-level page.
-      "files": ["apps/mobile-rn/src/components/media/VideoFrame.web.tsx"],
+      "files": ["apps/mobile/src/components/media/VideoFrame.web.tsx"],
       "rules": {
         "react/iframe-missing-sandbox": "off"
       }
@@ -110,7 +110,7 @@
       // animation. jsx-a11y's concern (focus stolen on page load, context lost)
       // applies to web forms that happen to contain an input, not to a pushed
       // search route. The field carries an accessibilityLabel.
-      "files": ["apps/mobile-rn/src/app/suche.tsx"],
+      "files": ["apps/mobile/src/app/suche.tsx"],
       "rules": {
         "jsx-a11y/no-autofocus": "off"
       }

@@ -16,7 +16,7 @@ imports no UI framework and no platform SDK; needing a platform means declaring 
 port, not widening an allow-list. Derived state is an exported selector taking state,
 never a store method. ([ADR 0006](adr/0006-one-core-two-hosts.md))
 
-`apps/mobile-rn` is the app. Its web export is published on every push to `main`, so
+`apps/mobile` is the app. Its web export is published on every push to `main`, so
 anything that lands there is public.
 
 Colours come from classes (`bg-grey-100`), which follow the appearance setting on
@@ -57,7 +57,7 @@ introduce eslint or prettier.
 
 **A green check proves nothing about how the app looks or whether it runs.** After a
 route, a bundle config or a platform split: `npm run build:web`, then
-`node screens/tools/serve-clean.mjs apps/mobile-rn/dist 8099` and open it — a plain
+`node screens/tools/serve-clean.mjs apps/mobile/dist 8099` and open it — a plain
 static server maps no clean URLs and makes a working app look broken. After layout:
 screenshot it and look
 (`screens/tools/tour-android.sh`, compared against `screens/`), or open `/preview.html`,

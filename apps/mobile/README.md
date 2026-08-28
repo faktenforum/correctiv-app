@@ -1,4 +1,4 @@
-# @correctiv/mobile-rn — the Expo app
+# @correctiv/mobile — the Expo app
 
 The CORRECTIV app on Expo / React Native: **iOS, Android and a web target**
 ([ADR 0004](../../adr/0004-react-native-pivot.md),
