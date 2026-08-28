@@ -32,21 +32,28 @@ import { useColors } from '@/lib/theme';
 const IS_IOS = Platform.OS === 'ios';
 
 /**
- * Where the mini player sits on Android, and the one number here that is a guess.
+ * Where the mini player sits on Android. Measured, not guessed — and it was guessed
+ * once, which is the reason for the length of this comment.
  *
- * It used to be a value we SET: the old drawn bar took `height: 56 + insets.bottom`
- * from this constant, so the mini player and the bar could not disagree. A native
- * bar sizes itself, and expo-router's native tabs expose no height —
- * `useBottomTabBarHeight` belongs to the JS tabs only, and the documentation says
- * plainly that layout information is unavailable. So the same 56 now means something
- * weaker: what Material's `BottomNavigationView` is expected to be, which is what
- * react-native-screens renders underneath.
+ * It used to be a value we SET: the drawn bar took `height: 56 + insets.bottom` from
+ * this constant, so the bar and the mini player could not disagree. A native bar
+ * sizes itself and expo-router's native tabs expose no height (`useBottomTabBarHeight`
+ * belongs to the JS tabs; the documentation says layout information is unavailable),
+ * so the number had to come from somewhere else. Carrying the 56 over looked free and
+ * was not: Material 3's navigation bar is **80dp**, 56 was the Material 2 figure, and
+ * the mini player sat 11px INSIDE the tab bar, clipping the selected item's pill.
  *
- * **Check this on a device before believing it.** If the bar is taller, the mini
- * player overlaps it, and no test in this repo can see that. It is the first thing
- * to look at in a screenshot of a playing track.
+ * Measured on `Medium_Phone_API_36`, 1080x2400 at 420dpi: the bar occupies
+ * y=2126..2337, which is 211px, which is 80.4dp — Material 3's documented height, and
+ * it agrees with the spec rather than merely with one device. The 24dp of gesture
+ * inset below it is what `insets.bottom` adds at the call site.
+ *
+ * Two things still move it, and neither is measurable from here: a large system font
+ * scale, and `labelVisibilityMode` — under Material's `auto` the same bar measured
+ * 60dp, because dropping the labels makes it shorter. Change either and re-measure.
+ * **A screenshot of a playing track is the only check that sees this.**
  */
-const ANDROID_TAB_BAR_HEIGHT = 56;
+const ANDROID_TAB_BAR_HEIGHT = 80;
 
 export default function TabsLayout() {
   const colors = useColors();
@@ -64,6 +71,20 @@ export default function TabsLayout() {
       backgroundColor={colors['grey-100']}
       iconColor={{ default: colors['grey-500'], selected: colors.emphasis }}
       labelStyle={{ fontFamily: 'SourceSans3_600SemiBold', fontSize: 11 }}
+      /*
+       * Every destination keeps its label. Material's `auto` — the default — drops
+       * the labels of the unselected items once there are four or more, which on
+       * this app meant four of five destinations were an icon and nothing else.
+       * `Entdecken` (a compass) and `Mitmachen` (three figures) do not survive that:
+       * they are the two nobody can name from the glyph.
+       *
+       * This is still the platform's bar, not ours. `labeled` is one of Material's
+       * own four modes, and it is what Material 3's own navigation-bar guidance
+       * asks for; `auto`'s drop-the-labels behaviour is the Material 2 rule it
+       * inherited. It also keeps this bar and the web one legible in the same way,
+       * which is worth something when they are meant to be the same product.
+       */
+      labelVisibilityMode="labeled"
     >
       <NativeTabs.Trigger name="index">
         <NativeTabs.Trigger.Label>Home</NativeTabs.Trigger.Label>
