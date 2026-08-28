@@ -86,7 +86,7 @@ export default function TabsLayout() {
       </Tabs>
 
       {/*
-        The mini player sits ON TOP of the tab bar — the arrangement the design
+        The mini player sits ON TOP of the tab bar, the arrangement the design
         draft uses.
 
         As an overlay, and NOT through the `tabBar` prop with `BottomTabBar`.
@@ -95,8 +95,8 @@ export default function TabsLayout() {
         hook call", past a green build, a green typecheck and green tests. Found in
         the browser, see ADR 0004.
 
-        `box-none` lässt Tipps durch, solange nichts läuft (dann rendert MiniPlayer
-        null und hier steht eine leere, unsichtbare Zeile).
+        `box-none` lets taps through while nothing is playing, when MiniPlayer
+        renders null and this is an empty, invisible row.
       */}
       <View
         pointerEvents="box-none"

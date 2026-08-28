@@ -16,9 +16,9 @@ import { useArticleMeta } from '@/lib/articles/useArticleMeta';
  * set type rather than a filled badge (the coral surface competed with the
  * headline), and the byline says who did the work.
  *
- * Both references give the hero a kicker unconditionally, so a feed without a
- * badge of its own falls back to "Recherche" — and the main feed deliberately has
- * none, which is the common case and left the hero bare. The byline carries
+ * The draft gives the hero a kicker unconditionally, so a feed without a badge of
+ * its own falls back to "Recherche". The main feed deliberately has none, which is
+ * the common case and left the hero bare. The byline carries
  * CORRECTIV's own reading time when the page states one; see pageMeta.ts for why
  * it is read rather than computed.
  */

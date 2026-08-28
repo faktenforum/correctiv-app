@@ -1,6 +1,6 @@
 # Architecture decisions
 
-Ten decisions shaped this repo. Read them when you want to know *why* something is
+Eleven decisions shaped this repo. Read them when you want to know *why* something is
 the way it is; [`../ARCHITECTURE.md`](../ARCHITECTURE.md) describes *what* it is.
 
 | | Decision | Status |
@@ -11,12 +11,13 @@ the way it is; [`../ARCHITECTURE.md`](../ARCHITECTURE.md) describes *what* it is
 | [0004](0004-react-native-pivot.md) | Move to React Native / Expo, with a web target | accepted |
 | [0005](0005-react-native-over-nativescript.md) | Expo is the stack; what NativeScript was better at, and when to revisit | accepted, amended by 0006, carried out by 0007 |
 | [0006](0006-one-core-two-hosts.md) | The core holds the behaviour; both apps stay for now | accepted; its second host is gone (0007), its core split is not |
-| [0007](0007-removing-the-nativescript-host.md) | Removing the NativeScript host — the audit first, then the deletion | accepted |
+| [0007](0007-removing-the-nativescript-host.md) | Removing the NativeScript host — the audit first, then the deletion | accepted; two claims retired by 0011 |
 | [0008](0008-uniwind-over-nativewind.md) | Uniwind over NativeWind, and Tailwind v4 | accepted |
 | [0009](0009-redux-toolkit-for-the-cores-state.md) | Redux Toolkit for the core's state | accepted |
 | [0010](0010-design-tokens-as-a-shared-package.md) | The design tokens as a shared package | accepted |
+| [0011](0011-naming-the-app-for-release.md) | Naming the app for release, and letting the old host go | accepted; retires two of 0007's |
 
-Four notes for readers of the older ones:
+Six notes for readers of the older ones:
 
 - ADRs 0001–0004 were written in German and translated on 2026-08-11, so the repo
   reads in one language ([AGENTS.md](../AGENTS.md#language)). Only the wording
@@ -31,8 +32,12 @@ Four notes for readers of the older ones:
   are — that half of it is history, and the reason it gives for the split is the
   reason the split survived the removal.
 - The app directory was renamed from `apps/mobile-rn` to `apps/mobile` on 2026-08-28,
-  and the package from `@correctiv/mobile-rn` to `@correctiv/mobile`. Paths in the ADRs
-  below are left as they were written; read `mobile-rn` as `mobile`.
+  and the package from `@correctiv/mobile-rn` to `@correctiv/mobile`
+  ([ADR 0011](0011-naming-the-app-for-release.md)). Paths in the ADRs are left as they
+  were written, so read `mobile-rn` as today's `mobile`. **Do not read it the other
+  way round.** In 0005, 0006 and 0007 the bare `apps/mobile` is the *deleted*
+  NativeScript app, which is why 0007's decision line reads "`apps/mobile` is deleted.
+  `apps/mobile-rn` is the app" and means two different directories.
 - ADRs 0002 and 0006 describe a NativeScript app that is no longer in the tree. They
   are records, not descriptions: neither has been rewritten, and 0007 says which of
   their statements have expired.

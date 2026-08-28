@@ -37,11 +37,13 @@ stores and both extraction backends. Those exist so that behaviour survives a ch
 of view layer — which is precisely what just happened, and the reason this removal
 touched no behaviour at all.
 
-**`apps/mobile-rn` is not renamed to `apps/mobile`**, which ADR 0005's phase 5
-proposed. The name is in every import path, both tsconfigs, three workflows and every
-document here; the rename buys a shorter directory name and costs a diff that touches
-everything while proving nothing. `-rn` reads as "React Native", which is true and
-will stay true.
+~~**`apps/mobile-rn` is not renamed to `apps/mobile`**, which ADR 0005's phase 5
+proposed.~~ Renamed on 2026-08-28 by [ADR 0011](0011-naming-the-app-for-release.md), which
+found that with one host the framework name distinguishes nothing while the platform
+is about to. The rest of this paragraph still holds as a cost estimate: the name is
+in every import path, both tsconfigs, three workflows and every document here; the
+rename buys a shorter directory name and costs a diff that touches everything while
+proving nothing. `-rn` reads as "React Native", which is true and will stay true.
 
 ## The audit, and what it found
 
@@ -89,9 +91,11 @@ Two things were checked and deliberately **not** carried over:
 - **A screen is built once.** The parity cost ADR 0006 accepted is gone. This is the
   entire benefit, and it is worth stating plainly that it is the only one.
 - **The comparison is over.** `screens/nativescript/` is now the only trace of that
-  app, and `screens/README.md` says so. It stays: it is the record of a version that
-  was, in places, the better-looking one, and its layout decisions are still worth
-  reading.
+  app, and `screens/README.md` says so. ~~It stays: it is the record of a version
+  that was, in places, the better-looking one, and its layout decisions are still
+  worth reading.~~ Deleted on 2026-08-28 by [ADR 0011](0011-naming-the-app-for-release.md),
+  together with `screens/draft/` and the three-way montages, when `screens/` was
+  reorganised by platform.
 - **CI is three jobs, not four**, and a release is one APK. The test keystore moved to
   `apps/mobile-rn/signing/` — the Expo release job was already using it, which is the
   kind of dependency a deletion finds the hard way if nobody looks.

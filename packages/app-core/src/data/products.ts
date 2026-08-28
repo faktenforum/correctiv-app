@@ -28,7 +28,7 @@ export const verlagProducts: VerlagProduct[] = [
   },
   {
     id: 'bookzine-q2',
-    title: 'CORRECTIV Bookzine — Ausgabe 2/2026',
+    title: 'CORRECTIV Bookzine, Ausgabe 2/2026',
     kind: 'Bookzine',
     price: '15 €',
     url: 'https://shop.correctiv.org',

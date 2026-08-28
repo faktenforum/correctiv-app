@@ -9,8 +9,9 @@ import { sizes } from '@/lib/theme';
 
 /**
  * An arbitrary target for the progress bar. The data carries no goal figure and the
- * bar should still show movement. The number is fixed rather than derived so the
- * same callout does not suddenly look differently filled.
+ * bar should still show movement. The value is carried over from the first
+ * implementation rather than picked afresh, so the same callout does not suddenly
+ * look differently filled.
  */
 const GOAL = 3000;
 

@@ -146,7 +146,7 @@ closes both gaps.
 
 The tag drove the version, read off the downloaded asset rather than the run log:
 `aapt2 dump badging` reports `versionName='0.0.3' versionCode='7'`, the `versionCode`
-being the run number. Attaching works, and the assets are named per app. The
+being the run number. Attaching works. The
 certificate is the same one as the dry run, so re-signing holds across a tagged build
 too.
 

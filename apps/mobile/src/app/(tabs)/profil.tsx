@@ -142,7 +142,7 @@ export default function ProfilScreen() {
             subtitle={
               membership.isMember
                 ? 'Tagebücher, Bonusfolgen, Events'
-                : 'Was Clubmitglieder erwartet — offen angeteasert.'
+                : 'Was Clubmitglieder erwartet, offen angeteasert.'
             }
             club
             onPress={() => router.push('/backstage')}

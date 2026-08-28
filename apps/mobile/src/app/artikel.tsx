@@ -130,7 +130,7 @@ export default function ArtikelScreen() {
               />
               <HeaderButton
                 icon={saved ? 'bookmark' : 'bookmark-outline'}
-                label={saved ? 'Gespeichert — entfernen' : 'Artikel speichern'}
+                label={saved ? 'Gespeichert, entfernen' : 'Artikel speichern'}
                 onPress={() =>
                   actions.savedArticles.toggle({
                     url,

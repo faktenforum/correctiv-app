@@ -28,9 +28,9 @@ export default function SpotlightScreen() {
           Das Wichtigste des Tages, jeden Morgen im Newsletter.
         </Typo>
         {/* Said plainly rather than implied: the newsletter archive is not public
-            (see DATENQUELLEN.md), so these issues are modeled, not fetched. */}
+            so these issues are modeled, not fetched. */}
         <Typo variant="text-s" color="grey-500" className="mt-2xs">
-          Beispielausgaben, die verlinkten Recherchen sind echt.
+          Beispielausgaben. Die verlinkten Recherchen sind echt.
         </Typo>
 
         {spotlightIssues.map((issue) => (

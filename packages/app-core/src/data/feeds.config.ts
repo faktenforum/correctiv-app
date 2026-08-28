@@ -1,7 +1,7 @@
 import type { FeedKey } from '../types/models';
 
 /**
- * Verified live feeds (see DATENQUELLEN.md).
+ * Verified live feeds.
  *
  * BEWARE, pitfall: URLs like correctiv.org/faktencheck/feed/ (without /category/)
  * only return the static landing page as 1 item. Real article streams

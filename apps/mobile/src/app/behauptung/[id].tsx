@@ -64,7 +64,7 @@ export default function BehauptungScreen() {
           {claim.sources.length === 0 ? (
             <Card tone="surface" className="mt-s">
               <Typo variant="text-s" color="grey-600">
-                Noch keine Quellen, die Community sammelt.
+                Noch keine Quellen. Die Community sammelt.
               </Typo>
             </Card>
           ) : (

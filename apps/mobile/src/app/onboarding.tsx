@@ -10,9 +10,9 @@ import { useColors } from '@/lib/theme';
 
 /** The three sentences on the red mission screen. */
 const MISSION = [
-  'Gemeinnützig, uns gehört niemand',
-  'Spendenfinanziert, von Tausenden getragen',
-  'Ohne Paywall, Journalismus für alle',
+  'Gemeinnützig: uns gehört niemand',
+  'Spendenfinanziert: von Tausenden getragen',
+  'Ohne Paywall: Journalismus für alle',
 ];
 
 /**

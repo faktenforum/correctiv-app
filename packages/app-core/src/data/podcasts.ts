@@ -81,7 +81,7 @@ export const podcastSeries: PodcastSeries[] = [
     episodes: [
       {
         id: 'dt-zukunftsangst',
-        title: 'Zukunftsangst, und was dagegen hilft',
+        title: 'Zukunftsangst: was dagegen hilft',
         date: '2026-06-08T16:00:00+02:00',
         durationLabel: '42 Min.',
         audio: SAMPLE_AUDIO,

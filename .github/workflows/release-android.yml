@@ -160,4 +160,4 @@ jobs:
           generate_release_notes: true
           append_body: true
           body: |
-            ${{ needs.expo.outputs.real == 'true' && '' || '> ⚠️ **Test build** — signed with the in-repo test key, **not** for the Play Store. For sideloading/testing only.' }}
+            ${{ needs.android.outputs.real == 'true' && '' || '> ⚠️ **Test build**, signed with the in-repo test key, **not** for the Play Store. For sideloading and testing only.' }}

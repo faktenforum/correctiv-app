@@ -1,6 +1,6 @@
 /**
- * Spotlight briefing — SAMPLE (the newsletter archive is not public, see
- * DATENQUELLEN.md). Modeled on the structure and tone of real Spotlight issues;
+ * Spotlight briefing, SAMPLE data: the newsletter archive is not public. Modeled on
+ * the structure and tone of real Spotlight issues;
  * article links point to actually existing correctiv.org articles from the
  * offline bundle so the briefing is clickable offline as well.
  */
@@ -77,7 +77,7 @@ export const spotlightIssues: SpotlightIssue[] = [
       {
         time: '07:31',
         title: 'Neuer Höchststand bei Förderschülern',
-        text: 'Immer mehr Kinder besuchen Förderschulen, die Inklusion stockt. Die Zahlen im Überblick.',
+        text: 'Immer mehr Kinder besuchen Förderschulen. Die Inklusion stockt. Die Zahlen im Überblick.',
         articleUrl:
           'https://correctiv.org/aktuelles/bildung/2026/06/12/neuer-hoechststand-bei-foerderschuelern/',
       },

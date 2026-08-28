@@ -19,11 +19,11 @@ const ICON: Record<SearchSample['kind'], IoniconName> = {
 type TabPath = '/(tabs)/mediathek' | '/(tabs)/mitmachen' | '/(tabs)/profil';
 
 /**
- * Where a non-article hit leads — or `null` when it has no place in this app.
+ * Where a non-article hit leads, or `null` when it has no place in this app.
  *
- * Books (`verlag`) have no screen. They were once tappable anyway and then did
- * nothing. Here they stay deliberately inert, because visibly untouchable beats
- * apparently broken.
+ * Books (`verlag`) have no screen, so they stay deliberately inert rather than
+ * tappable-and-dead, which is what an earlier design shipped. Visibly untouchable
+ * beats apparently broken.
  */
 export function sampleTarget(kind: SearchSample['kind']): TabPath | null {
   switch (kind) {
