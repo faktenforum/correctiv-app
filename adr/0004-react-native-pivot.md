@@ -116,11 +116,17 @@ A trap for the next test: **serve with clean URLs.** `python3 -m http.server` se
   Accepted deliberately.
 - **The UI has to catch up.** NativeScript leads 4,346 to 828 LOC; `entdecken`,
   `mediathek`, `mitmachen` and `profil` are stubs in the Expo state.
-- **Licence:** decided 2026-08-05 — **AGPL-3.0-or-later for everything**,
-  `apps/mobile-rn` included. The prototype carried the MIT `LICENSE` of the
-  `create-expo-app` template; it now sits at `apps/mobile-rn/NOTICE.md` and names MIT in
-  the role it really has: attribution for the scaffold. Neither deleted (MIT requires
-  the notice) nor left as `LICENSE` (that reads as "this subtree is MIT").
+- **Licence:** ~~decided 2026-08-05~~ — **set** on 2026-08-05, when this repo was
+  started, and never put to CORRECTIV for sign-off; that has still not happened. So
+  "decided" claimed an approval that was never sought, which is a different thing from
+  a decision that has since been overtaken (corrected 2026-08-28). What the word was
+  reaching for does still hold:
+  **AGPL-3.0-or-later for everything**, `apps/mobile-rn` included, and the repo stays
+  open source under it until CORRECTIV decides otherwise. The prototype carried the
+  MIT `LICENSE` of the `create-expo-app` template; it now sits at
+  `apps/mobile-rn/NOTICE.md` and names MIT in the role it really has: attribution for
+  the scaffold. Neither deleted (MIT requires the notice) nor left as `LICENSE` (that
+  reads as "this subtree is MIT").
 - **Two apps in CI**, until the swap happens.
 
 ## Done after this decision (2026-08-05)

@@ -114,10 +114,14 @@ Dark mode, safe-area insets and touch are not simulated. Those stay DevTools' jo
 
 - **Code:** GNU Affero General Public License v3.0 or later, see [`LICENSE`](LICENSE).
   This covers every workspace, and each `package.json` declares `AGPL-3.0-or-later`.
+- **The AGPL is how this repo was started, not a decision CORRECTIV has taken.** It
+  was set at the outset and never went to anyone for sign-off. Read it as the working
+  assumption it is: the repo stays open source under it, and it holds until CORRECTIV
+  decides otherwise. Do not cite it as CORRECTIV's position.
 - **`apps/mobile` was scaffolded by `create-expo-app`** and arrived with the Expo
-  templates' MIT licence. AGPL applies going forward (CORRECTIV's decision,
-  2026-08-05). The MIT notice is retained as attribution for the scaffolded portions
-  in [`apps/mobile/NOTICE.md`](apps/mobile/NOTICE.md).
+  templates' MIT licence. AGPL applies going forward. The MIT notice is retained as
+  attribution for the scaffolded portions in
+  [`apps/mobile/NOTICE.md`](apps/mobile/NOTICE.md).
 - **Design tokens** in [`tokens/`](tokens/README.md) are vendored from
   [correctiv/wp-design-tokens](https://github.com/correctiv/wp-design-tokens)
   (GPL-2.0-or-later), compatible with AGPL-3.0-or-later.
