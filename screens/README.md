@@ -11,8 +11,9 @@ looking at a picture.
 ## The set
 
 [`android/`](android/) holds 29 shots, one per step, from `apps/mobile`. Shot on
-2026-08-27 at `0919402` on `Medium_Phone_API_36` at 1080x2400, over Metro from a clean
-worktree.
+2026-08-28 from the release APK of `57c069c` on `Medium_Phone_API_36` at 1080x2400,
+after the rename and the identity change, so this is the first set of the app as
+`org.correctiv.app`. Both tours ran clean, with no `MISS`.
 
 The AVD matters. Earlier sets used `Medium_Phone`, which is API 24. Dark mode does not
 exist below API 29, so that device cannot show the app's default appearance at all and

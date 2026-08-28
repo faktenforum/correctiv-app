@@ -249,6 +249,17 @@ equivalents for focus, liveness and errors.
   by hand would be the new bug. **Check a colour change in all three settings, and
   check `'system'` against both device schemes**. That is four combinations, and only
   the fourth was broken.
+- **`userInterfaceStyle` in `app.json` is a promise to the OS, and on iOS it is
+  binding.** It was `"light"`, which `expo prebuild` writes into
+  `ios/<name>/Info.plist` as `UIUserInterfaceStyle = Light`. iOS then reports light
+  to the app whatever the device is set to, so the appearance setting on `'system'`
+  could never resolve to dark and the hand-written dark palette was unreachable on
+  that platform. Android is not affected: prebuild leaves `AppTheme` on
+  `Theme.AppCompat.DayNight`, which is why an emulator check finds nothing. → It is
+  `"automatic"` now. When changing it, read the generated `Info.plist` rather than
+  trusting the prebuild log, and remember that the Android project regenerates
+  byte-identically either way, so an Android screenshot is not evidence about this.
+
 - **The design tokens' dark block is a placeholder.** `tokens/theme.css` carries a
   `@media (prefers-color-scheme: dark)` section marked `@TODO Set this to the actual
   values`, holding the *light* values. Generating from it produces a dark mode that
