@@ -72,7 +72,7 @@ export function buildReaderHtml(article: Article, options: ReaderHtmlOptions = {
   const excerpt = article.excerpt ? `<p class="excerpt">${escapeHtml(article.excerpt)}</p>` : '';
 
   const footer = isMember
-    ? `<p class="support-line">Ermöglicht durch Unterstützer:innen wie Sie — danke, dass Sie dabei sind.</p>`
+    ? `<p class="support-line">Ermöglicht durch Unterstützer:innen wie Sie. Danke, dass Sie dabei sind.</p>`
     : `<p class="support-line">Diese Recherche war nur möglich durch Unterstützer:innen wie Sie.</p>
        <a class="support-btn" href="correctiv://join">Unterstützer:in werden</a>`;
 
@@ -106,9 +106,9 @@ ${footer}
  * The reader's layout, written against the generated `--var-*` design tokens.
  *
  * For hosts that ship no reader stylesheet of their own. Every value comes from a
- * token rather than a transcribed number — the NativeScript stylesheet was
- * hand-derived from the same tokens and has been drifting from them one rounded
- * rem at a time.
+ * token rather than a transcribed number. The hand-written stylesheet this
+ * replaced was derived from the same tokens once, then drifted from them one
+ * rounded rem at a time.
  *
  * The three `.rating--*` tones and the plain-CSS colour fallbacks are the only
  * places a literal appears, because the design tokens carry no semantic colour

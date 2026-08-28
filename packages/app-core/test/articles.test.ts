@@ -73,10 +73,10 @@ describe.each(BACKENDS)('extract (%s backend)', (_name, extract) => {
 /**
  * THE test that makes two extraction backends a choice rather than a fork.
  *
- * The core ships both because the NativeScript runtime cannot carry an HTML
- * parser and the Expo app can (see `articles/types.ts`). Every field they are
- * supposed to agree on is asserted equal here; the body markup is deliberately
- * excluded, because tighter markup is the entire reason the DOM backend exists.
+ * The core ships both because a host may not be able to carry an HTML parser (see
+ * `articles/types.ts`). Every field they are supposed to agree on is asserted equal
+ * here. The body markup is deliberately excluded, because tighter markup is the
+ * entire reason the DOM backend exists.
  */
 describe('the two backends agree', () => {
   const fromString = extractArticleFromString(ARTICLE);
@@ -213,7 +213,7 @@ describe('reader html', () => {
   it('asks guests to join and thanks members', () => {
     expect(buildReaderHtml(article)).toContain('correctiv://join');
     expect(buildReaderHtml(article, { isMember: true })).not.toContain('correctiv://join');
-    expect(buildReaderHtml(article, { isMember: true })).toContain('danke, dass Sie dabei sind');
+    expect(buildReaderHtml(article, { isMember: true })).toContain('Danke, dass Sie dabei sind');
   });
 
   it('takes CSS as inline text or as a stylesheet href, so either host can style it', () => {

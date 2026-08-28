@@ -13,7 +13,7 @@ import { describe, expect, it } from 'vitest';
  * that runs on every PR.
  *
  * If this test fails, the fix is never to widen the allow-list: move the code
- * that needs the SDK into a host (apps/mobile-rn/src/lib/platform/…) and declare what
+ * that needs the SDK into a host (apps/mobile/src/lib/platform/…) and declare what
  * the core needs as a port in src/ports/index.ts.
  */
 const SRC = fileURLToPath(new URL('../src', import.meta.url));
@@ -33,7 +33,7 @@ const FORBIDDEN = [
   // State itself lives in Redux Toolkit (stores/store.ts), which is deliberately
   // NOT on this list: it is a state container, not a view layer, and it holds the
   // same property the hand-written store had — no UI framework, no platform SDK.
-  // The binding stays the host's (react-redux in apps/mobile-rn).
+  // The binding stays the host's (react-redux in apps/mobile).
   { pattern: /^vue$|^@vue\//, why: 'Vue (hosts bind the store themselves)' },
   { pattern: /^pinia$/, why: 'Pinia (replaced by Redux Toolkit — see ADR 0004)' },
   { pattern: /^zustand/, why: 'zustand (the core is on Redux Toolkit)' },
@@ -87,10 +87,10 @@ describe('core stays platform-free', () => {
 
   /**
    * The DOM extraction backend is the one place in the core that has runtime
-   * dependencies, and it exists precisely so the NativeScript app does not have
-   * to. Nothing the NativeScript app can reach may import it — an accidental
-   * import somewhere central would pull htmlparser2 into a bundle whose resolver
-   * cannot handle it, and that failure shows up on a device, not here.
+   * dependencies, and it exists so a host without an HTML parser does not need one.
+   * Nothing outside it may import it. An accidental import somewhere central would
+   * pull htmlparser2 into a bundle whose resolver cannot handle it, and that failure
+   * shows up on a device, not here.
    */
   it('keeps the HTML parser inside the DOM extraction backend', () => {
     const parserImports = files.filter((full) => {

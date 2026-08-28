@@ -61,13 +61,13 @@ export const projectGroups: ProjectGroup[] = [
       {
         id: 'klima',
         name: 'Klima',
-        description: 'Die Klimakrise und ihre Folgen — datenbasiert recherchiert.',
+        description: 'Die Klimakrise und ihre Folgen, datenbasiert recherchiert.',
         feed: 'klima',
       },
       {
         id: 'europe',
         name: 'CORRECTIV.Europe',
-        description: 'Grenzüberschreitende Recherchen in Europa — bald mit eigenem Feed.',
+        description: 'Grenzüberschreitende Recherchen in Europa, bald mit eigenem Feed.',
         teaserOnly: true,
       },
     ],
@@ -86,7 +86,7 @@ export const projectGroups: ProjectGroup[] = [
       {
         id: 'funfacts',
         name: 'FunFacts',
-        description: 'Wissen kurz und überprüfbar — bekannt von TikTok und YouTube.',
+        description: 'Wissen kurz und überprüfbar, bekannt von TikTok und YouTube.',
         url: 'https://www.youtube.com/@funfacts',
       },
     ],
@@ -98,7 +98,7 @@ export const projectGroups: ProjectGroup[] = [
       {
         id: 'crowdnewsroom',
         name: 'CrowdNewsroom',
-        description: 'Gemeinsam recherchieren — Ihre Hinweise zählen.',
+        description: 'Gemeinsam recherchieren, Ihre Hinweise zählen.',
         tab: 'participate',
       },
       {
@@ -122,7 +122,7 @@ export const projectGroups: ProjectGroup[] = [
       {
         id: 'reporterfabrik',
         name: 'Reporterfabrik',
-        description: 'Die Journalismusschule für alle — Workshops und Webinare.',
+        description: 'Die Journalismusschule für alle, mit Workshops und Webinaren.',
         url: 'https://reporterfabrik.org',
       },
       {
@@ -198,10 +198,10 @@ export const projectGroups: ProjectGroup[] = [
  * and `schweiz` exist in both — and the project always wins, because its page
  * is strictly the richer one: own description, own action, no invented copy.
  *
- * That is one behaviour change against the NativeScript app, which built a
- * synthetic topic page for every chip and so showed "Alle Beiträge zum Thema
- * Klima." where a real project description existed. Only interests WITHOUT a
- * project of the same id still get the synthetic page.
+ * That is a deliberate change. The earlier implementation built a synthetic topic
+ * page for every chip, so it showed "Alle Beiträge zum Thema Klima." where a real
+ * project description existed. Only interests WITHOUT a project of the same id
+ * still get the synthetic page.
  */
 export function resolveProject(id: string): Project | null {
   for (const group of projectGroups) {

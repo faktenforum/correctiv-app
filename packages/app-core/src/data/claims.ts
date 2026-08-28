@@ -87,7 +87,7 @@ export const claimsResponse = {
         id: 'claim-004',
         shortId: 'FF-2424',
         quote: 'Die Bundesregierung plant eine Pflicht zur digitalen Brieftasche ab 2027.',
-        synopsis: 'Frisch eingereicht — noch keine Prüfung gestartet.',
+        synopsis: 'Frisch eingereicht, noch keine Prüfung gestartet.',
         status: 'submitted',
         submittedAt: '2026-06-12T08:05:00+02:00',
         sources: [],

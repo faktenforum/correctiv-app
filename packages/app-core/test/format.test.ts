@@ -9,8 +9,8 @@ import {
 } from '../src/lib/format';
 
 /**
- * These formatters exist because the NativeScript runtime ships no German ICU —
- * `toLocaleDateString('de-DE')` silently falls back to English on device. That
+ * These formatters exist because a JS runtime on a device may ship no German ICU
+ * data, and `toLocaleDateString('de-DE')` then silently falls back to English. That
  * failure is invisible in a browser, which is exactly why it needs tests.
  */
 describe('date formatting', () => {

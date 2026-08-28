@@ -3,7 +3,7 @@ import { createSlice, type PayloadAction } from '@reduxjs/toolkit';
 export type MembershipInterval = 'monatlich' | 'jährlich';
 
 /**
- * Club membership — local state (the prototype simulates joining/payment).
+ * Club membership, held locally. Joining and payment are simulated.
  * isMember is the central demo lever: all club touchpoints must read it through
  * the binding on every render, never snapshot it into a local variable, or the
  * app-wide status flip stops being visible.

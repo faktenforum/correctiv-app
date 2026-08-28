@@ -2,8 +2,8 @@
 
 The behaviour of the CORRECTIV app, with no UI framework and no platform SDK in it.
 
-`apps/mobile-rn` (Expo / React Native) imports it. Anything that is not a screen and
-not an SDK call belongs here — the model, the parsers, the services, the caches and
+`apps/mobile` (Expo / React Native) imports it. Anything that is not a screen and
+not an SDK call belongs here: the model, the parsers, the services, the caches and
 **all** of the state.
 
 ## The rule
@@ -13,7 +13,7 @@ and names the offender.
 
 If something needs a platform, it becomes a **port**: an interface in
 `src/ports/index.ts` that the host implements. There are four, and that file is the
-whole cost of adding a host — see [ARCHITECTURE.md](../../ARCHITECTURE.md#the-four-ports).
+whole cost of adding a host. See [ARCHITECTURE.md](../../ARCHITECTURE.md#the-four-ports).
 
 ## Layout
 
@@ -39,25 +39,25 @@ src/stores/      feeds · audio · podcasts · media · video · membership · i
                  savedArticles · participation · settings · store · persist
 src/data/        feeds.config and the typed sample data
 src/lib/         html · rss-parse · format
-src/media/       exclusive-playback — only one medium plays at a time
+src/media/       exclusive-playback, only one medium plays at a time
 ```
 
 ## Two things that will surprise you
 
 **The store is the core's, not the host's.** `stores/` is one Redux Toolkit store
-with ten slices, constructed here rather than by the host — because modules that are
+with ten slices, constructed here rather than by the host, because modules that are
 not components need to read the same instance the screens are subscribed to
 (`media/exclusive-playback.ts`, the audio watchdog). The host still supplies the
 binding (react-redux). `zustand` stays on the boundary test's forbidden list not
-because it is a UI framework — it is not — but because a core with two state
+because it is a UI framework, which it is not, but because a core with two state
 containers is a core with two sources of truth; the entry says so. `createAppStore()` is exported beside the singleton so a test can build
 an isolated tree. `stores/store.ts` has the full story, including why the async
 actions are plain thunks.
 
 **Derived state is an exported selector taking state, never a store method.** In
 React a method is merely awkward; the rule was learned on a host whose reactivity
-tracked property reads, where a method silently stopped the template updating — a
-class of bug invisible until a demo. It stays because it is also the shape the next
+tracked property reads, where a method silently stopped the template updating. That
+is a class of bug invisible until a demo. It stays because it is also the shape the next
 binding will want.
 
 ```ts

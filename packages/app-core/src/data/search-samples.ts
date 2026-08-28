@@ -13,7 +13,7 @@ export const searchSamples: SearchSample[] = [
   {
     id: 'ss-pausenbrot',
     kind: 'podcast',
-    title: 'Pausenbrot — der Nachrichten-Snack',
+    title: 'Pausenbrot, der Nachrichten-Snack',
     subtitle: 'Salon5 · Podcast-Serie',
   },
   { id: 'ss-deeptalk', kind: 'podcast', title: 'Deeptalk', subtitle: 'Salon5 · Podcast-Serie' },

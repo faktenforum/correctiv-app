@@ -1,8 +1,8 @@
 #!/usr/bin/env bash
-# Second pass over the Expo build: the pushed routes, reached by deep link rather
-# than by tapping. Covers the screens no tab leads to.
+# Second pass, for the pushed routes. These are reached by deep link rather than by
+# tapping, which covers the screens no tab leads to.
 #
-#   OUT=out/expo bash tour-android-routes.sh
+#   OUT=out/android bash tour-android-routes.sh
 set -uo pipefail
 source "$(dirname "$0")/lib.sh"
 

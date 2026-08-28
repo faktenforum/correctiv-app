@@ -6,12 +6,12 @@ import { extractPageMeta, type PageMeta } from './page-meta';
 import type { Article, ArticleExtractor } from './types';
 
 /**
- * Getting an article onto the screen — one cascade for both apps.
+ * Getting an article onto the screen, as one cascade.
  *
- * Each app had its own, and they disagreed about the order: NativeScript asked
- * the cache first and fell back to its bundled copy only after the network
- * failed; Expo checked its bundle first and never cached what it extracted. The
- * merge takes the better half of each.
+ * There were two of these once, and they disagreed about the order. One asked the
+ * cache first and fell back to its bundled copy only after the network failed.
+ * The other checked its bundle first and never cached what it extracted. This
+ * takes the better half of each.
  *
  *   1. the host's bundle      — pre-extracted, needs no network, never changes
  *   2. a fresh cached article — extracted earlier this day

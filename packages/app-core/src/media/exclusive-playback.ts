@@ -12,7 +12,7 @@
  * without touching the existing ones.
  *
  * Registration happens in the host entry point — see
- * apps/mobile-rn/src/app/_layout.tsx.
+ * apps/mobile/src/app/_layout.tsx.
  */
 
 type Stopper = () => void;

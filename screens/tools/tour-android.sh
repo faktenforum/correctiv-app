@@ -1,11 +1,11 @@
 #!/usr/bin/env bash
 # Walks a build on a running Android emulator and screenshots every step.
 #
-# The step names are the contract: they match screens/draft/ and screens/nativescript/
-# so the three sets can be read side by side. ACTIVITY and OUT are parameters because
-# this script was written to walk two different builds the same way.
+# The step names are the contract. They are what makes one round comparable to the
+# last, so rename a step only when the screen itself changed. ACTIVITY and OUT stay
+# parameters so an iOS or web tour can reuse the walk.
 #
-#   OUT=out/expo bash tour-android.sh
+#   OUT=out/android bash tour-android.sh
 set -uo pipefail
 source "$(dirname "$0")/lib.sh"
 

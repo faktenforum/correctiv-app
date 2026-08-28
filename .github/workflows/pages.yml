@@ -73,11 +73,11 @@ jobs:
         id: pages
         uses: actions/configure-pages@v5
 
-      # apps/mobile-rn/app.config.js turns EXPO_BASE_URL into experiments.baseUrl.
+      # apps/mobile/app.config.js turns EXPO_BASE_URL into experiments.baseUrl.
       # Without it every asset URL is absolute from the domain root and resolves to
       # faktenforum.github.io/_expo/…, which is a blank page served by a green build.
       - name: Export web bundle
-        working-directory: apps/mobile-rn
+        working-directory: apps/mobile
         env:
           EXPO_BASE_URL: ${{ steps.pages.outputs.base_path }}
         run: npm run build:web
@@ -92,7 +92,7 @@ jobs:
       #   4. public/ not reaching the export, which would 404 the address the README,
       #      RELEASE.md and this workflow's environment link all point people at
       - name: Assert the deployable is not silently broken
-        working-directory: apps/mobile-rn
+        working-directory: apps/mobile
         env:
           BASE_PATH: ${{ steps.pages.outputs.base_path }}
         run: |
@@ -111,7 +111,7 @@ jobs:
             test -f "dist/$route.html" || { echo "::error::missing dist/$route.html"; exit 1; }
           done
           test -f dist/preview.html || {
-            echo "::error::dist/preview.html is missing — apps/mobile-rn/public/ did not reach the export, and the address handed out for the demo would 404."
+            echo "::error::dist/preview.html is missing — apps/mobile/public/ did not reach the export, and the address handed out for the demo would 404."
             exit 1
           }
           echo "deployable OK — $(find dist -name '*.html' | wc -l) routes under $BASE_PATH"
@@ -119,7 +119,7 @@ jobs:
       - name: Upload Pages artifact
         uses: actions/upload-pages-artifact@v3
         with:
-          path: apps/mobile-rn/dist
+          path: apps/mobile/dist
 
       - name: Deploy to GitHub Pages
         id: deployment

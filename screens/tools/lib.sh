@@ -7,8 +7,8 @@
 # no BASH_SOURCE.
 TOOLS_DIR="${TOOLS_DIR:-$(dirname "${BASH_SOURCE[0]:-screens/tools/lib.sh}")}"
 A="${ANDROID_HOME}/platform-tools/adb"
-PKG=org.correctiv.app.prototype
-OUT="${OUT:-out/expo}"
+PKG=org.correctiv.app
+OUT="${OUT:-out/android}"
 mkdir -p "$OUT"
 
 shot() { $A exec-out screencap -p > "$OUT/$1.png"; echo "shot $1"; }

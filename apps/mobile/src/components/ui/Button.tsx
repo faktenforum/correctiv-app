@@ -1,0 +1,66 @@
+import { Pressable, Text, type PressableProps } from 'react-native';
+
+import { typography, useColors, type ColorToken } from '@/lib/theme';
+
+type Variant = 'primary' | 'secondary' | 'outline' | 'club' | 'onEmphasis';
+
+export type ButtonProps = Omit<PressableProps, 'children' | 'style'> & {
+  title: string;
+  variant?: Variant;
+  fullWidth?: boolean;
+  className?: string;
+};
+
+// Brand logic: red (emphasis) for the journalism CTA, yellow (alternative) for the
+// club. No shadows — shape comes from surfaces plus radius md (5px).
+//
+// `onEmphasis` is the CTA on a brand surface: white, not yellow. Yellow is the
+// club's colour and carries meaning there; on red it is also loud and low-contrast.
+// The design draft uses white here.
+const SURFACE: Record<Variant, string> = {
+  primary: 'bg-emphasis',
+  secondary: 'bg-grey-200',
+  outline: 'bg-grey-100 border border-grey-300',
+  club: 'bg-alternative',
+  // White, not the page surface: this button sits on the red mission screen,
+  // which is red in both schemes.
+  onEmphasis: 'bg-always-light',
+};
+const LABEL_COLOR: Record<Variant, ColorToken> = {
+  primary: 'always-light',
+  secondary: 'grey-700',
+  outline: 'grey-700',
+  club: 'always-dark',
+  onEmphasis: 'always-dark',
+};
+
+export function Button({
+  title,
+  variant = 'primary',
+  fullWidth,
+  className,
+  disabled,
+  ...rest
+}: ButtonProps) {
+  const colors = useColors();
+  return (
+    <Pressable
+      accessibilityRole="button"
+      // Explicit, rather than relying on the label being read off the child Text —
+      // and it gives tests a stable handle on a button.
+      accessibilityLabel={title}
+      accessibilityState={{ disabled: Boolean(disabled) }}
+      disabled={disabled}
+      className={[
+        'rounded-md px-m py-s items-center justify-center active:opacity-80',
+        SURFACE[variant],
+        fullWidth ? 'self-stretch' : 'self-start',
+        disabled ? 'opacity-40' : '',
+        className ?? '',
+      ].join(' ')}
+      {...rest}
+    >
+      <Text style={[typography.button, { color: colors[LABEL_COLOR[variant]] }]}>{title}</Text>
+    </Pressable>
+  );
+}

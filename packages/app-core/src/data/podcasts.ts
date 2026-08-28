@@ -33,7 +33,7 @@ export const podcastSeries: PodcastSeries[] = [
     id: 'correctiv-podcast',
     title: 'CORRECTIV Podcast',
     publisher: 'CORRECTIV',
-    description: 'Hintergründe zu unseren Recherchen — von den Reporter:innen selbst erzählt.',
+    description: 'Hintergründe zu unseren Recherchen, von den Reporter:innen selbst erzählt.',
     episodes: [
       {
         id: 'cp-pensionskassen',
@@ -55,7 +55,7 @@ export const podcastSeries: PodcastSeries[] = [
     id: 'pausenbrot',
     title: 'Pausenbrot',
     publisher: 'Salon5',
-    description: 'Der Nachrichten-Snack von Jugendlichen für Jugendliche — jeden Schultag neu.',
+    description: 'Der Nachrichten-Snack von Jugendlichen für Jugendliche, jeden Schultag neu.',
     episodes: [
       {
         id: 'pb-emoji',
@@ -66,7 +66,7 @@ export const podcastSeries: PodcastSeries[] = [
       },
       {
         id: 'pb-ki-schule',
-        title: 'KI im Klassenzimmer — Hilfe oder Schummelei?',
+        title: 'KI im Klassenzimmer: Hilfe oder Schummelei?',
         date: '2026-06-10T07:00:00+02:00',
         durationLabel: '11 Min.',
         audio: SAMPLE_AUDIO,
@@ -81,7 +81,7 @@ export const podcastSeries: PodcastSeries[] = [
     episodes: [
       {
         id: 'dt-zukunftsangst',
-        title: 'Zukunftsangst — und was dagegen hilft',
+        title: 'Zukunftsangst: was dagegen hilft',
         date: '2026-06-08T16:00:00+02:00',
         durationLabel: '42 Min.',
         audio: SAMPLE_AUDIO,

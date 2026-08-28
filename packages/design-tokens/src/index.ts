@@ -7,7 +7,7 @@
  * with a colour or hand a number to a layout engine. `scripts/generate.mjs` turns
  * them into that second shape, and everything in this package is its output.
  *
- * Consumers: `apps/mobile-rn` (Expo / React Native) and, next, the CORRECTIV
+ * Consumers: `apps/mobile` (Expo / React Native) and, next, the CORRECTIV
  * WordPress CMS. The package therefore imports no UI framework, no platform SDK and
  * no dependencies at all — the same rule `packages/app-core` lives by, for the same
  * reason: whatever renders these values is the part that gets replaced.
@@ -17,7 +17,7 @@
  * - **Font families.** The app loads `Merriweather_400Regular` and
  *   `SourceSans3_400Regular` from `@expo-google-fonts`; those are React Native asset
  *   names, meaningless to a CMS, which resolves the same two typefaces through the
- *   CSS stacks in theme.css. They stay in `apps/mobile-rn/src/lib/theme/fonts.ts`,
+ *   CSS stacks in theme.css. They stay in `apps/mobile/src/lib/theme/fonts.ts`,
  *   next to the weighted cuts and the `useFonts()` call that loads them.
  * - **The Tailwind theme itself.** It is not TypeScript at all: `theme.css` in this
  *   package's root is plain Tailwind v4, which is what makes it shareable. It is not

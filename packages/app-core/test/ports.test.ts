@@ -127,9 +127,9 @@ describe('cache.service', () => {
 });
 
 /**
- * The two policies are the reason this cache exists in the core at all: the Expo
- * app had them and the NativeScript app did not, so the same offline situation
- * produced different screens.
+ * The two policies are the reason this cache exists in the core at all. One host
+ * had them and the other did not, so the same offline situation produced different
+ * screens.
  */
 describe('fetchCachedText policies', () => {
   const OK = 'body';

@@ -150,7 +150,7 @@ export const audioMiddleware = audioListener.middleware;
  * It cannot move into the effect that arms it, because `resetAudioController()`
  * has to cancel it from module scope: a live 12-second timer keeps a jest worker
  * alive past the run, which is what the `afterEach` in
- * `apps/mobile-rn/__tests__/audio-player.test.ts` is there for. A plain
+ * `apps/mobile/__tests__/audio-player.test.ts` is there for. A plain
  * `setTimeout` rather than `listenerApi.delay()` for the same reason, plus one
  * more — this fires synchronously, so a test that advances fake timers sees the
  * error state on the next line rather than one microtask later.
@@ -317,7 +317,7 @@ export const playRadio = (): AppThunk<Promise<void>> =>
   start({
     kind: 'radio',
     title: 'Salon5 Radio',
-    subtitle: '● LIVE — 24/7 aus Bottrop',
+    subtitle: '● LIVE · 24/7 aus Bottrop',
     url: RADIO_STREAM_URL,
   });
 
@@ -377,7 +377,7 @@ export const audioActions = {
  * module cannot see:
  *
  * - a pending 12-second timer keeps a jest worker alive past the run, which is
- *   what `apps/mobile-rn/__tests__/audio-player.test.ts` says in its `afterEach`;
+ *   what `apps/mobile/__tests__/audio-player.test.ts` says in its `afterEach`;
  * - that suite resets its expo backend between cases, which drops the listener
  *   the core installed while keeping the backend's identity — so without
  *   clearing the memo above, no tick would ever arrive again.

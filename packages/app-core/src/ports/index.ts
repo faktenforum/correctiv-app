@@ -4,7 +4,7 @@
  * `@correctiv/app-core` must never import a platform SDK. Whatever it cannot do
  * on its own is declared here as an interface and supplied at startup:
  *
- *   configurePlatform(expoPlatform)   // apps/mobile-rn/src/lib/platform/expo.ts
+ *   configurePlatform(expoPlatform)   // apps/mobile/src/lib/platform/expo.ts
  *
  * Each port has a session-only or empty default, so an unconfigured core (tests,
  * a script) degrades instead of throwing. Persistence is best-effort everywhere:
@@ -49,9 +49,9 @@ export interface KeyValueStore {
  *
  * Asynchronous, unlike `KeyValueStore`: a blob here is a megabyte of cached
  * feeds, not a settings string, and every caller already sits inside an async
- * action. The port was sync while NativeScript's `File` was the only
- * implementation; that shape forced the Expo host to hydrate its entire cache
- * into memory before the first frame just to answer a read.
+ * action. The port was sync while a synchronous file API was the only
+ * implementation, and that shape forced this host to hydrate its entire cache into
+ * memory before the first frame just to answer a read.
  */
 export interface BlobStore {
   read(namespace: string, name: string): Promise<string | null>;
@@ -63,11 +63,11 @@ export interface BlobStore {
 /**
  * What the host ships inside its own bundle, for when the network is not there.
  *
- * The demo must never depend on Wi-Fi, and the two hosts ship that safety net in
- * completely different forms — NativeScript reads JSON files out of its app
- * folder, Expo imports a generated TypeScript module. Both answer these four
- * questions, so the cascades in the core's stores can ask them without knowing
- * which host they are running in.
+ * The demo must never depend on Wi-Fi, and a host may ship that safety net in any
+ * form it likes. This one imports a generated TypeScript module; an earlier one
+ * read JSON files out of its app folder. Both answer these four questions, so the
+ * cascades in the core's stores can ask them without knowing which host they are
+ * running in.
  *
  * Every method may return null: a host that bundles nothing implements nothing.
  */
@@ -87,13 +87,13 @@ export interface ContentBundle {
 /**
  * One playback tick as the core's audio store wants to hear it.
  *
- * Modelled on what expo-audio reports, because that is the richer of the two
- * backends: it knows about buffering, completion and live streams. The
- * NativeScript backend synthesises the same fields from a polling timer — the
- * translation, including Android's millisecond positions and its habit of
- * jumping to 0 instead of firing a completion callback, is that backend's job.
- * Keeping it there is the point: the state machine below stays one
- * implementation, and each platform's quirks stay next to the SDK that has them.
+ * Modelled on what expo-audio reports, which was the richer of the two backends
+ * this was designed against: it knows about buffering, completion and live
+ * streams. A poorer backend synthesises the same fields from a polling timer, and
+ * that translation is its own job, Android's millisecond positions and its habit
+ * of jumping to 0 instead of firing a completion callback included. Keeping it
+ * there is the point. The state machine below stays one implementation, and each
+ * platform's quirks stay next to the SDK that has them.
  */
 export interface PlaybackStatus {
   /** Actually producing sound right now. */
@@ -131,12 +131,12 @@ export interface NowPlaying {
  * that emits from inside `pause()` re-enters the store's handler mid-decision —
  * and the store may answer by calling `pause()` again.
  *
- * That is not hypothetical. The NativeScript backend did exactly this, and the
- * app died with `RangeError: Maximum call stack size exceeded` at the moment the
- * 60-second club preview ran out: the gate called `pause()`, `pause()` emitted,
- * the gate saw an unchanged position and called `pause()` again. Nothing caught
- * it — expo-audio does not re-enter, so the Expo tests stayed green, and the
- * crash only appeared on a device one minute into an episode.
+ * That is not hypothetical. A backend once did exactly this and killed the app
+ * with `RangeError: Maximum call stack size exceeded` at the moment the 60-second
+ * club preview ran out. The gate called `pause()`, `pause()` emitted, the gate saw
+ * an unchanged position and called `pause()` again. Nothing caught it, because
+ * expo-audio does not re-enter, so the tests stayed green and the crash only
+ * appeared on a device one minute into an episode.
  *
  * Emit from the player's own callbacks and from a polling timer. Never from a
  * command.

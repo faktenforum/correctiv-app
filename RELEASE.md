@@ -6,7 +6,7 @@ Three GitHub Actions workflows live in `.github/workflows/`:
 | --- | --- | --- | --- |
 | **CI** | `ci.yml` | every PR, push to `main` | Checks, web export, and an Android release APK as a compile check. No secrets needed. |
 | **Pages** | `pages.yml` | push to `main` (or manual) | Rebuilds the Expo web export under the Pages base path and publishes it to <https://faktenforum.github.io/correctiv-app/>. No secrets needed. |
-| **Release Android** | `release-android.yml` | push of a `v*` tag (or manual) | Builds the APK and signs it — with your upload key when the secrets are set, otherwise with the bundled **test key**. Attaches it to the GitHub Release. |
+| **Release Android** | `release-android.yml` | push of a `v*` tag (or manual) | Builds the APK and signs it, with your upload key when the secrets are set and otherwise with the bundled **test key**. Attaches it to the GitHub Release. |
 
 ## The web preview
 
@@ -18,19 +18,19 @@ anyone at the URL:
 - **Hand out the `/preview.html` address, not the bare one.** The app is built for a
   phone and has no desktop layout, so the site's root shows it stretched across the
   whole browser window; `/preview.html` frames it at a phone or tablet size instead.
-  The root stays reachable — nothing hides it — so the framed link is the one to
+  The root stays reachable, nothing hides it, so the framed link is the one to
   send.
 - **Its articles are as old as the last `npm run offline-articles`.** The browser
-  cannot reach any CORRECTIV feed — no CORS header — so the app falls back to the
+  cannot reach any CORRECTIV feed, for want of a CORS header, so the app falls back to the
   snapshot bundled into the build, and says so on screen. Re-run the generator and
   merge it before a demo.
 - **The site is a project site**, served from `/correctiv-app/`, so the export needs
   `EXPO_BASE_URL` to prefix its asset URLs. `pages.yml` takes that value from
-  `actions/configure-pages` and asserts it reached the built HTML — the failure is
+  `actions/configure-pages` and asserts it reached the built HTML. The failure is
   otherwise invisible until the site is live and blank.
 
 Pages was previously served straight off `main:/docs`. Pointing it at this workflow
-instead is a **repository setting**, made once and not by the workflow itself —
+instead is a **repository setting**, made once and not by the workflow itself.
 `actions/configure-pages` reads an existing site but never changes its build type:
 
 ```bash
@@ -39,7 +39,7 @@ gh api -X POST repos/faktenforum/correctiv-app/pages -f build_type=workflow
 ```
 
 Until that is done, the deploy step fails with *"Not configured to use GitHub
-Actions"* — the build and every assertion above it still run, so the failure is
+Actions"*. The build and every assertion above it still run, so the failure is
 loud and specific rather than a silently stale site.
 
 ## Cutting a release
@@ -50,17 +50,17 @@ git push origin v1.2.3
 ```
 
 This creates a GitHub Release for the tag with auto-generated notes and attaches
-`correctiv-app-expo-v1.2.3.apk`.
+`correctiv-app-v1.2.3.apk`.
 
 The tag also drives the app version: `vX.Y.Z` becomes `versionName X.Y.Z`, and the
 workflow run number becomes the `versionCode` (Play requires it to increase on every
-upload). `apps/mobile-rn/app.json` is patched only inside CI — the change is not
+upload). `apps/mobile/app.json` is patched only inside CI. The change is not
 committed.
 
 The APK is re-signed after Gradle builds it. Gradle signs the release variant with
 the Expo template's debug key, which is **generated per machine**: two builds of the
 same commit would carry two identities, and a tester could not install one over the
-other. `apksigner` replaces that signature with a stable one — the test key, or your
+other. `apksigner` replaces that signature with a stable one, either the test key or your
 upload key when the secrets are set.
 
 ## Signing modes
@@ -70,9 +70,9 @@ The release build works **with or without** your own signing key:
 | | Secrets set? | Output | Use |
 | --- | --- | --- | --- |
 | **Real release** | yes | APK **+ AAB**, signed with your upload key | Google Play + sideloading |
-| **Test fallback** | no | APK only, signed with the in-repo **test key** (`signing/`) | Sideloading / sharing prototype builds |
+| **Test fallback** | no | APK only, signed with the in-repo **test key** (`signing/`) | Sideloading / sharing test builds |
 
-The test fallback needs no setup — every `v*` tag (or manual run) produces an
+The test fallback needs no setup. Every `v*` tag (or manual run) produces an
 installable, consistently-signed test APK (clearly marked as a test build). It must
 never go to the Play Store. To produce real releases, add the secrets below.
 
@@ -90,7 +90,7 @@ keytool -genkeypair -v \
   -keyalg RSA -keysize 2048 -validity 10000
 ```
 
-Keep this file and its passwords safe — losing it means you can no longer update the
+Keep this file and its passwords safe. Losing it means you can no longer update the
 app on Google Play. Do **not** commit it.
 
 ### 2. Add the secrets
@@ -114,68 +114,49 @@ rm keystore.b64
 
 Run the **Release Android** workflow manually (Actions tab → Run workflow, or
 `gh workflow run release-android.yml`). It builds the APK and uploads it to the run
-as an artifact, without creating a release. No secrets required — it uses the test key.
-
-> The two records below are from **before 2026-08-12**, when the repo still shipped a
-> second app (NativeScript) alongside this one and every release carried two APKs.
-> They are kept because what they prove — the version steps, the re-signing, the
-> attach job — is unchanged. Read "both APKs" as "the APK".
+as an artifact, without creating a release. No secrets required, because it uses the test key.
 
 Done once on 2026-08-06 from `9842b27`
-([run 31105467974](https://github.com/faktenforum/correctiv-app/actions/runs/31105467974)),
-before anyone relies on a real tag. What it proved:
+([run 31105467974](https://github.com/faktenforum/correctiv-app/actions/runs/31105467974)).
+The build job green, the artifact on the run, the test-key fallback taken because no
+`ANDROID_KEYSTORE_*` secrets are set (a workflow warning, an APK, no AAB), and the
+attach job correctly skipped without a tag. The APK carries
+`CN=CORRECTIV App TEST KEY (not for Play)` and verifies under signature schemes v2 and
+v3, so it installs on everything the app supports (`minSdkVersion 24`).
 
-- Both jobs green; both artifacts on the run, named `correctiv-app-{expo,nativescript}-main.apk`
-  (on a manual run `GITHUB_REF_NAME` is the branch, not a version — see the gap below).
-- **Both APKs carry the same certificate**, which is the one claim worth checking here:
-  SHA-256 `f3ee1b52…`, `CN=CORRECTIV App TEST KEY (not for Play)`. The re-signing step
-  works. Both verify under signature scheme v2 (the Expo one additionally v3), so both
-  install on everything the app supports (`minSdkVersion 24`).
-- The test-key fallback was taken, since no `ANDROID_KEYSTORE_*` secrets are set: a
-  workflow warning, an APK and **no AAB** — as intended.
-- The attach job was correctly **skipped** without a tag.
-- The NativeScript APK installs and runs: it is the build `screens/nativescript/` was
-  shot from, so the artifact is known-good, not merely present.
+A tagless run cannot cover the two `Set version from tag` steps or the attach job,
+since all three are `if:` a tag. The version steps were checked by running them
+verbatim against the real files with `GITHUB_REF_NAME=v1.2.3` and
+`GITHUB_RUN_NUMBER=47`. `app.gradle` went to `versionCode 47` and
+`versionName "1.2.3"`, and `app.json` to `version 1.2.3` with `android.versionCode 47`,
+keeping `package`, the adaptive icon and the permissions. Both `sed` patterns matched,
+which is worth checking: a `sed` that matches nothing changes nothing and says so
+nowhere.
 
-**What a tagless run cannot cover**, because both steps are `if:` a tag — the two
-`Set version from tag` steps and the attach job. The version steps were checked
-separately by running them verbatim against the real files with `GITHUB_REF_NAME=v1.2.3`
-and `GITHUB_RUN_NUMBER=47`: `app.gradle` went to `versionCode 47` / `versionName "1.2.3"`
-(both `sed` patterns match — a `sed` that matches nothing changes nothing and says so
-nowhere), and `app.json` to `version 1.2.3` with `android.versionCode 47`, keeping
-`package`, the adaptive icon and the permissions. Attaching to a release stayed unproven
-until the first real tag — the section below.
-
-One cosmetic thing: `apksigner` writes a v4 `.apk.idsig` next to the Expo APK, so it
-rides along in the run artifact. It cannot reach a GitHub Release — that step globs
-`*.apk` and `*.aab`.
+`apksigner` writes a v4 `.apk.idsig` next to the APK, so it rides along in the run
+artifact. It cannot reach a GitHub Release, because that step globs `*.apk` and
+`*.aab`.
 
 ## What the first real tag proved
 
 [`v0.0.3`](https://github.com/faktenforum/correctiv-app/releases/tag/v0.0.3), tagged on
 2026-08-12 from `0d97483`
-([run 31569569194](https://github.com/faktenforum/correctiv-app/actions/runs/31569569194))
-to hand out a build as things stood. All jobs green, both APKs attached, no AAB — the
-test-key fallback, since no secrets are set. It closes the two gaps a manual run leaves
-open:
+([run 31569569194](https://github.com/faktenforum/correctiv-app/actions/runs/31569569194)),
+closes both gaps.
 
-- **The tag drove the version in both apps.** Read off the downloaded assets, not the run
-  log: `aapt2 dump badging` reports `versionName='0.0.3' versionCode='7'` for each, under
-  the shared `org.correctiv.app.prototype`. The `versionCode` is the run number, so both
-  apps carry the same one.
-- **Attaching works**, and the assets are named per app — the release page is where the
-  APKs land, not just the run.
-- Both still carry **one identity**, SHA-256 `f3ee1b52…`, the same certificate as the dry
-  run — so re-signing the Expo APK holds across a tagged build too. NativeScript verifies
-  under scheme v2, Expo under v2 and v3.
-- **The released NativeScript APK runs**, which is the claim a release page cannot make:
-  `adb install -r` over an older build succeeded on an API 36 emulator (`versionCode 7`
-  afterwards), the app started and Home rendered with a live feed and the date header the
-  core now formats. The Expo APK was not installed — same package id, one at a time.
+The tag drove the version, read off the downloaded asset rather than the run log:
+`aapt2 dump badging` reports `versionName='0.0.3' versionCode='7'`, the `versionCode`
+being the run number. Attaching works. The
+certificate is the same one as the dry run, so re-signing holds across a tagged build
+too.
 
-Two things the workflow does not do: the release body's note about which build this is was
-added afterwards with `gh release edit`, and nothing about a release is committed — the
-version patches live only inside the run.
+And the released APK runs, which is the claim a release page cannot make: `adb install
+-r` over an older build succeeded on an API 36 emulator, the app started, and Home
+rendered with a live feed and the date header the core formats.
+
+Two things the workflow does not do. The release body's note about which build this is
+was added afterwards with `gh release edit`, and nothing about a release is committed.
+The version patches live only inside the run.
 
 ## iOS (not yet wired up)
 
