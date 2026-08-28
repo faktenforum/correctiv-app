@@ -1,5 +1,5 @@
 import { Ionicons } from '@expo/vector-icons';
-import { Pressable, ScrollView, View } from 'react-native';
+import { FlatList, Pressable, View, type ListRenderItemInfo } from 'react-native';
 
 import { Overline, ScreenHeader, Typo } from '@/components/ui';
 import { formatDateShortDe } from '@correctiv/app-core/lib/format';
@@ -8,9 +8,26 @@ import { openArticle } from '@/lib/openArticle';
 import { useCoreActions, useSavedArticles } from '@/lib/store/core';
 import { sizes, useColors } from '@/lib/theme';
 
+const keyExtractor = (article: SavedArticle) => article.url;
+
+const renderSavedRow = ({ item }: ListRenderItemInfo<SavedArticle>) => <SavedRow article={item} />;
+
+const EMPTY = (
+  <Typo variant="text-m" color="grey-600" className="mt-m">
+    Noch nichts gespeichert. Tippen Sie im Artikel auf das Lesezeichen, um ihn hier abzulegen.
+  </Typo>
+);
+
 /**
  * Saved articles — the same list the bookmark in the reader fills. `savedArticles`
  * in the core, persisted, so it survives a restart.
+ *
+ * A FlatList rather than a mapped ScrollView, because this is one of the two lists
+ * in the app whose length nobody here decides: it is however many articles the
+ * reader's bookmark has been tapped on, and it only ever grows. A ScrollView mounts
+ * every row up front, and each row costs two hook subscriptions (`useCoreActions`,
+ * `useColors`) whether or not it is on screen. See ADR 0012 for why the other lists
+ * were left alone.
  */
 export default function GespeichertScreen() {
   const items = useSavedArticles();
@@ -18,26 +35,24 @@ export default function GespeichertScreen() {
   return (
     <View className="flex-1 bg-grey-100">
       <ScreenHeader />
-      <ScrollView
+      <FlatList
         className="flex-1"
+        data={items}
+        keyExtractor={keyExtractor}
+        renderItem={renderSavedRow}
+        // The heading belongs to the list, not above it: as a sibling it would sit
+        // outside the scroller and stay put while the rows moved under it. The gap
+        // below it used to belong to the row container and to the empty notice
+        // respectively, which is why it is still two different sizes.
+        ListHeaderComponent={
+          <Typo variant="headline-l" className={items.length > 0 ? 'mb-s' : ''}>
+            Gespeicherte Artikel
+          </Typo>
+        }
+        ListEmptyComponent={EMPTY}
         contentContainerClassName="px-m pt-m pb-2xl"
         showsVerticalScrollIndicator={false}
-      >
-        <Typo variant="headline-l">Gespeicherte Artikel</Typo>
-
-        {items.length === 0 ? (
-          <Typo variant="text-m" color="grey-600" className="mt-m">
-            Noch nichts gespeichert. Tippen Sie im Artikel auf das Lesezeichen, um ihn hier
-            abzulegen.
-          </Typo>
-        ) : (
-          <View className="mt-s">
-            {items.map((article) => (
-              <SavedRow key={article.url} article={article} />
-            ))}
-          </View>
-        )}
-      </ScrollView>
+      />
     </View>
   );
 }

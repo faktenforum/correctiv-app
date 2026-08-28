@@ -6,6 +6,10 @@ import { View } from 'react-native';
 
 import { useColors } from '@/lib/theme';
 
+/** The frame sizes the image; the image never sizes the frame. Module scope, so
+ *  the object is one reference rather than a new one on every render. */
+const FILL = { width: '100%', height: '100%' } as const;
+
 export type ThumbnailProps = {
   uri?: string | null;
   /** 16/9 for video, 1 for podcast covers. */
@@ -35,7 +39,17 @@ export function Thumbnail({
   className,
 }: ThumbnailProps) {
   const colors = useColors();
-  const [failed, setFailed] = useState(false);
+  /**
+   * WHICH image failed, not THAT one did.
+   *
+   * A boolean outlives the address it was set for: the same Thumbnail is reused
+   * across a feed refresh and along a rail, so one unreachable host used to leave
+   * the frame empty for every later image in that slot, with no way back. Keyed on
+   * the URI, the state answers a question about the image currently being shown,
+   * and a new address is simply not the failed one.
+   */
+  const [failedUri, setFailedUri] = useState<string | null>(null);
+  const failed = uri != null && failedUri === uri;
 
   return (
     <View
@@ -45,10 +59,17 @@ export function Thumbnail({
       {uri && !failed ? (
         <Image
           source={{ uri }}
-          style={{ width: '100%', height: '100%' }}
+          style={FILL}
           contentFit="cover"
           transition={200}
-          onError={() => setFailed(true)}
+          // Thumbnails come back into view constantly — the rails scroll sideways
+          // past the same covers, and Home re-renders them on every feed poll. The
+          // default 'disk' re-decodes each time; the memory tier hands back the
+          // decoded bitmap. `recyclingKey` is the other half: without it a reused
+          // view keeps painting the previous cover until the new one has loaded.
+          cachePolicy="memory-disk"
+          recyclingKey={uri}
+          onError={() => setFailedUri(uri)}
         />
       ) : (
         <View className="flex-1 items-center justify-center">
