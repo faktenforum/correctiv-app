@@ -117,10 +117,8 @@ A trap for the next test: **serve with clean URLs.** `python3 -m http.server` se
 - **The UI has to catch up.** NativeScript leads 4,346 to 828 LOC; `entdecken`,
   `mediathek`, `mitmachen` and `profil` are stubs in the Expo state.
 - **Licence: AGPL-3.0-or-later for everything**, `apps/mobile-rn` included. The
-  prototype carried the MIT `LICENSE` of the `create-expo-app` template; it now sits
-  at `apps/mobile-rn/NOTICE.md` and names MIT in the role it really has: attribution
-  for the scaffold. Neither deleted (MIT requires the notice) nor left as `LICENSE`
-  (that reads as "this subtree is MIT").
+  `create-expo-app` template's MIT `LICENSE` moves to `apps/mobile-rn/NOTICE.md`:
+  MIT requires the notice, and a `LICENSE` file would read as "this subtree is MIT".
 - **Two apps in CI**, until the swap happens.
 
 ## Done after this decision (2026-08-05)
