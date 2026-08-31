@@ -1,0 +1,148 @@
+// The desktop build.
+//
+// ADR 0032 section 12: the build chain belongs to the consumer. gjsify supplies the
+// plugins; this file is where this application composes them, and every entry below is
+// a decision rather than boilerplate.
+
+import { existsSync, statSync } from 'node:fs';
+import { dirname, resolve } from 'node:path';
+import { fileURLToPath } from 'node:url';
+
+import { rnRouteManifestPlugin } from '@gjsify/rolldown-plugin-gjsify';
+
+const HERE = dirname(fileURLToPath(import.meta.url));
+const here = (...parts) => resolve(HERE, ...parts);
+const shim = (name) => here('src/shims', name);
+
+/**
+ * Exact-match redirects. A bare specifier this application answers itself.
+ *
+ * NOT `--dialect react-native`, and that is the one genuinely awkward decision in this
+ * build. The flag aliases `react-native` onto `@gjsify/react-native` and adds ADR 0032
+ * section 8's build-time support gate, which is worth having — but its alias plugin is
+ * `pre`, so it would also win over the redirect below, and this application needs a
+ * layer in between: 110 call sites pass props the GTK layer refuses by name
+ * (`hitSlop`, the five accessibility props, `pointerEvents="box-none"`), and
+ * `src/shims/react-native.tsx` is where each gets ONE deliberate answer instead of 110
+ * render-time throws.
+ *
+ * The gate is not given up. `test/support-gate.test.ts` reproduces it against the same
+ * published support table, and additionally reports refused PROPS — the half that
+ * actually bites this application.
+ */
+const EXACT = {
+  'react-native': shim('react-native.tsx'),
+  'expo-router': shim('expo-router.ts'),
+  uniwind: shim('uniwind.ts'),
+  '@expo/vector-icons': shim('vector-icons.tsx'),
+
+  // Only what `apps/mobile/src` actually imports. expo-linking, expo-web-browser,
+  // expo-constants and expo-system-ui are declared in the app's package.json and
+  // imported NOWHERE, so shimming them would be dead code pretending to be coverage.
+  'expo-image': shim('expo-image.tsx'),
+  'expo-video': shim('expo-video.tsx'),
+  'expo-font': shim('expo-font.ts'),
+  'expo-status-bar': shim('expo-status-bar.tsx'),
+  'expo-splash-screen': shim('expo-splash-screen.ts'),
+  'react-native-safe-area-context': shim('react-native-safe-area-context.tsx'),
+  'react-native-gesture-handler': shim('react-native-gesture-handler.tsx'),
+  'react-native-webview': shim('react-native-webview.tsx'),
+  '@expo-google-fonts/merriweather': shim('expo-google-fonts.ts'),
+  '@expo-google-fonts/source-sans-3': shim('expo-google-fonts.ts'),
+
+  // Video is a placeholder on this host; the override's own header says why that is a
+  // decision rather than a gap in the toolkit. Redirected by MODULE rather than forked
+  // as a `.gtk.tsx` sibling, because a sibling would have to live inside
+  // `apps/mobile/src`, where the app's typecheck and two of its recursive test guards
+  // would each need an exception for it.
+  '@/components/media/VideoFrame': here('src/overrides/VideoFrame.tsx'),
+
+  // Uniwind's CSS entry. It is the file Uniwind's Metro transform reads, and there is
+  // no Metro here — the class vocabulary reaches GTK through `configureStyle`. Nothing
+  // in the desktop tree imports it, but a mobile module that grows the import should
+  // find an empty module rather than a bundler that cannot parse CSS.
+  '@/global.css': here('src/shims/empty.ts'),
+};
+
+/** Prefix redirects, longest first so `@/assets/` wins over `@/`. */
+const PREFIX = [
+  ['@/assets/', here('../mobile/assets/')],
+  ['@/', here('../mobile/src/')],
+  ['@correctiv/app-core/', here('../../packages/app-core/src/')],
+  ['@correctiv/design-tokens/', here('../../packages/design-tokens/src/')],
+];
+
+/**
+ * The extension search, and why it is here rather than left to the resolver.
+ *
+ * `@correctiv/app-core`'s exports map is `"./*": "./src/*"` — extensionless on
+ * purpose, because it is only ever resolved by Metro and by this repo's tsconfig
+ * paths, "both of which guess an extension" (ADR 0010). Nothing guesses once a
+ * redirect has produced an absolute path, so this guesses.
+ *
+ * `.gtk.*` comes first, which is ADR 0032 section 9's platform chain: a
+ * `Foo.gtk.tsx` beside a `Foo.tsx` wins on this host. Nothing uses it yet, and it
+ * costs one array entry to leave the door open.
+ */
+const EXTENSIONS = ['.gtk.tsx', '.gtk.ts', '.tsx', '.ts', '.mjs', '.js', '.json'];
+
+function withExtension(base) {
+  if (existsSync(base) && !statSync(base).isDirectory()) return base;
+  for (const extension of EXTENSIONS) {
+    const candidate = `${base}${extension}`;
+    if (existsSync(candidate)) return candidate;
+  }
+  if (existsSync(base) && statSync(base).isDirectory()) {
+    for (const extension of EXTENSIONS) {
+      const candidate = resolve(base, `index${extension}`);
+      if (existsSync(candidate)) return candidate;
+    }
+  }
+  return null;
+}
+
+/**
+ * The redirects, as a plugin.
+ *
+ * A PLUGIN rather than `bundler.resolve.alias`, and that is measured rather than
+ * preferred: the alias table in this file's first version was ignored outright — the
+ * build pulled the real `react-native` (`PARSE_ERROR: Flow is not supported`) and the
+ * real `@expo/vector-icons` with its eight `.ttf` imports. A `resolveId` hook at
+ * `order: 'pre'` is honoured.
+ */
+function redirectPlugin() {
+  return {
+    name: 'correctiv-desktop-redirects',
+    resolveId: {
+      order: 'pre',
+      handler(source) {
+        const exact = EXACT[source];
+        if (exact !== undefined) return exact;
+        for (const [prefix, target] of PREFIX) {
+          if (!source.startsWith(prefix)) continue;
+          const resolved = withExtension(resolve(target, source.slice(prefix.length)));
+          if (resolved !== null) return resolved;
+        }
+        // `@correctiv/app-core` and `@correctiv/design-tokens` with no subpath.
+        if (source === '@correctiv/app-core') return here('../../packages/app-core/src/index.ts');
+        if (source === '@correctiv/design-tokens') {
+          return here('../../packages/design-tokens/src/index.ts');
+        }
+        return null;
+      },
+    },
+  };
+}
+
+export default {
+  bundler: {
+    plugins: [
+      redirectPlugin(),
+      // expo-router discovers routes with Metro's `require.context`, which does not
+      // exist in this chain. This walks `src/app` instead and emits one module that
+      // statically imports every route file, which `@gjsify/react-native/router` turns
+      // into a tree using expo-router's own four file conventions.
+      rnRouteManifestPlugin({ routesDir: here('src/app') }),
+    ],
+  },
+};

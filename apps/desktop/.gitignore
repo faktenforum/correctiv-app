@@ -1,0 +1,2 @@
+# The bundle, its captures and the sweep's PNGs. Build output: `npm run build`.
+dist/
