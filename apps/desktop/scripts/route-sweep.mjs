@@ -1,0 +1,127 @@
+/**
+ * Launch the app once per route and report whether that route rendered.
+ *
+ * WHY A SWEEP AND NOT A TEST. "All routes render" is a claim about a GTK process, and
+ * the failure it is looking for is the one that cannot be seen any other way: this
+ * layer refuses an unmappable prop or an unknown utility at RENDER time, per screen.
+ * A build that succeeds says nothing about it, a typecheck says nothing about it, and
+ * Home rendering says nothing about the other twenty-five. So each route is actually
+ * opened.
+ *
+ * WHAT COUNTS AS A FAILURE. Any of the layer's named refusals reaching the log
+ * (`UnknownUtilityError`, `PrimitiveError`, `GtkHostError`, `RouterError`), plus GJS's
+ * own `JS ERROR` and React's uncaught-error line. Deliberately NOT the `[desktop]`
+ * bridge reports — those are the shims saying they did their job, and they are
+ * expected on several screens.
+ *
+ * The sweep is honest about what it does not prove: it opens a route and reads the
+ * log. It does not look at the window, so a screen that renders an empty box with no
+ * diagnostic passes here. `dist/*.png` and the README's screenshots are the other half.
+ */
+
+import { execFileSync } from 'node:child_process';
+import { readdirSync, statSync } from 'node:fs';
+import { dirname, join, resolve } from 'node:path';
+import { fileURLToPath } from 'node:url';
+
+const HERE = dirname(fileURLToPath(import.meta.url));
+const APP = resolve(HERE, '..');
+const ROUTES_DIR = join(APP, 'src', 'app');
+const BUNDLE = join(APP, 'dist', 'app.gjs.mjs');
+
+/** Milliseconds each route gets to render before the process is killed. */
+const DWELL = Number(process.env.SWEEP_DWELL_MS ?? '3500');
+
+const FAILURE =
+  /UnknownUtilityError|PrimitiveError|GtkHostError|RouterError|JS ERROR|no boundary caught/;
+
+/** Every route file, as the manifest's context keys. */
+function routeFiles(dir, prefix = '') {
+  return readdirSync(dir).flatMap((entry) => {
+    const full = join(dir, entry);
+    if (statSync(full).isDirectory()) return routeFiles(full, `${prefix}${entry}/`);
+    return entry.endsWith('.tsx') ? [`${prefix}${entry}`] : [];
+  });
+}
+
+/**
+ * A context key -> the href the router would match.
+ *
+ * `_layout` files are not routes; a `[param]` needs a value, and the values below are
+ * real ids out of the app's own bundled sample data, because a route that 404s inside
+ * its own screen renders a legitimate empty state and would pass for the wrong reason.
+ */
+const PARAM_VALUES = {
+  'aufruf/[slug].tsx': 'heizungsgesetz',
+  'behauptung/[id].tsx': 'c1',
+  'projekt/[id].tsx': 'klimacheck',
+  'serie/[id].tsx': 'salon5-nachrichten',
+  'tagebuch/[id].tsx': 'd1',
+};
+
+function hrefFor(contextKey) {
+  if (contextKey.endsWith('_layout.tsx')) return null;
+  if (contextKey in PARAM_VALUES) {
+    return '/' + contextKey.replace(/\/\[[^\]]+\]\.tsx$/, `/${PARAM_VALUES[contextKey]}`);
+  }
+  if (contextKey.includes('[')) return null;
+  const withoutGroups = contextKey
+    .replace(/\.tsx$/, '')
+    .split('/')
+    .filter((segment) => !segment.startsWith('('))
+    .join('/');
+  if (withoutGroups === 'index') return '/';
+  return `/${withoutGroups}`;
+}
+
+const keys = routeFiles(ROUTES_DIR).sort();
+const targets = keys.map((key) => [key, hrefFor(key)]).filter(([, href]) => href !== null);
+
+console.log(`route sweep: ${keys.length} route files, ${targets.length} openable hrefs\n`);
+
+let failed = 0;
+for (const [key, href] of targets) {
+  let log = '';
+  try {
+    log = execFileSync('timeout', [String(Math.ceil(DWELL / 1000) + 6), 'gjs', '-m', BUNDLE], {
+      cwd: APP,
+      encoding: 'utf8',
+      stdio: ['ignore', 'pipe', 'pipe'],
+      env: {
+        ...process.env,
+        CORRECTIV_DESKTOP_ASSETS: resolve(APP, '..', 'mobile'),
+        CORRECTIV_DESKTOP_ROUTE: href,
+        // A capture is what makes the process exit on its own, and its side effect
+        // is a PNG per route — which is the visual half this sweep does not check
+        // but a human can then flip through.
+        CORRECTIV_DESKTOP_SCREENSHOT: join(APP, 'dist', 'sweep', `${key.replaceAll('/', '_')}.png`),
+        CORRECTIV_DESKTOP_SCREENSHOT_DELAY_MS: String(DWELL),
+      },
+    });
+  } catch (error) {
+    // `timeout` exits 124 when it had to kill the process, which happens whenever the
+    // capture did not close the window. Not a failure by itself — the log decides.
+    log = `${error.stdout ?? ''}${error.stderr ?? ''}`;
+  }
+
+  const problems = log
+    .split('\n')
+    .filter((line) => FAILURE.test(line))
+    .slice(0, 2);
+
+  if (problems.length > 0) {
+    failed++;
+    console.log(`FAIL  ${href}  (${key})`);
+    for (const problem of problems) console.log(`        ${problem.trim().slice(0, 180)}`);
+  } else {
+    const wrote = /screenshot: wrote (\d+) bytes/.exec(log);
+    console.log(
+      `ok    ${href}  (${key})${wrote ? `  [${wrote[1]} byte capture]` : '  [no capture]'}`,
+    );
+  }
+}
+
+console.log(`\n${targets.length - failed} of ${targets.length} routes rendered without a refusal.`);
+const layouts = keys.filter((key) => key.endsWith('_layout.tsx'));
+console.log(`(${layouts.length} layout files are not openable hrefs: ${layouts.join(', ')})`);
+process.exit(failed === 0 ? 0 : 1);

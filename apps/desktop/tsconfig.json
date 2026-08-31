@@ -1,0 +1,57 @@
+{
+  "extends": "../../tsconfig.base.json",
+  "compilerOptions": {
+    // `bundler`, like the rest of the repo. NOT `NodeNext`: the workspace packages are
+    // consumed as TypeScript SOURCE with extensionless subpath exports (ADR 0010 —
+    // "both of which guess an extension"), and NodeNext refuses to guess, so
+    // `@correctiv/app-core`'s own internal imports fail to resolve.
+    "module": "ESNext",
+    "moduleResolution": "bundler",
+    "target": "ESNext",
+    "strict": true,
+    "skipLibCheck": true,
+    "noEmit": true,
+    "types": ["node"],
+    "lib": ["ESNext"],
+    // The automatic JSX runtime pointed at gtk-host rather than at `react`, which is
+    // the recipe gjsify's own showcase documents and it earns its place twice here.
+    // This host writes no intrinsic element at all: every widget is chosen by
+    // @gjsify/react-native's primitive table. With `jsxImportSource: "react"` the
+    // element list would come from @types/react, so all 208 HTML tags would
+    // typecheck clean against a GTK renderer and render nothing — an accidental
+    // <div> would be a blank window rather than a type error.
+    "jsx": "react-jsx",
+    "jsxImportSource": "@gjsify/gtk-host/react",
+    "paths": {
+      // The mobile app's own alias. The desktop route tree re-exports its screens,
+      // so every `@/...` inside them has to resolve from here too.
+      "@/*": ["../mobile/src/*"],
+      "@correctiv/app-core": ["../../packages/app-core/src/index.ts"],
+      "@correctiv/app-core/*": ["../../packages/app-core/src/*"],
+      "@correctiv/design-tokens": ["../../packages/design-tokens/src/index.ts"],
+      "@correctiv/design-tokens/*": ["../../packages/design-tokens/src/*"],
+      // Every specifier this host answers itself. The bundler is told the same
+      // thing in gjsify.config.mjs; this half is what makes `tsc` agree with it.
+      // The SHIM, not @gjsify/react-native — the same target gjsify.config.mjs
+      // redirects to. Pointing tsc at the underlying package instead was a real
+      // defect: the types said `View` takes no `ref` while the code that actually
+      // runs accepts one, so the typecheck reported errors about the wrong module.
+      "react-native": ["./src/shims/react-native.tsx"],
+      "expo-router": ["./src/shims/expo-router.ts"],
+      "uniwind": ["./src/shims/uniwind.ts"],
+      "@expo/vector-icons": ["./src/shims/vector-icons.tsx"],
+      "expo-image": ["./src/shims/expo-image.tsx"],
+      "expo-font": ["./src/shims/expo-font.ts"],
+      "expo-status-bar": ["./src/shims/expo-status-bar.tsx"],
+      "expo-splash-screen": ["./src/shims/expo-splash-screen.ts"],
+      "expo-video": ["./src/shims/expo-video.tsx"],
+      "@expo-google-fonts/merriweather": ["./src/shims/expo-google-fonts.ts"],
+      "@expo-google-fonts/source-sans-3": ["./src/shims/expo-google-fonts.ts"],
+      "react-native-safe-area-context": ["./src/shims/react-native-safe-area-context.tsx"],
+      "react-native-gesture-handler": ["./src/shims/react-native-gesture-handler.tsx"],
+      "react-native-webview": ["./src/shims/react-native-webview.tsx"],
+      "@react-native-async-storage/async-storage": ["./src/shims/async-storage.ts"]
+    }
+  },
+  "include": ["src/**/*.ts", "src/**/*.tsx", "test/**/*.ts", "scripts/**/*.mjs", "globals.d.ts"]
+}

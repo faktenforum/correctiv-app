@@ -1,0 +1,91 @@
+// The desktop entry point.
+//
+// ## The ordering constraint, which is the whole content of this file
+//
+// Three things have to happen and two of them cannot happen at module scope:
+//
+//   1. `registerBuiltinWidgets()` — the GTK widget table the reconciler resolves tags
+//      against. Pure data, safe at import.
+//   2. `configureStyle({ tokens, sheet })` — must run BEFORE the first styled element
+//      renders, because the class compiler resolves `bg-grey-100` against the token
+//      scale when it MINTS the class. Configure it late and every class already minted
+//      resolved against `MINIMAL_TOKENS`.
+//   3. `registerRootComponent` — builds the `Adw.ApplicationWindow` and renders into it.
+//
+// Step 2 cannot go above step 3, and finding that out is the reason this file has a
+// comment instead of three lines. `StyleSheet` constructs a `Gtk.CssProvider` and
+// installs it on the DEFAULT `Gdk.Display`, and `Adw.StyleManager.get_default()` wants
+// the same display — neither exists until `Gtk.init()`, which `AppRegistry` calls
+// inside the application's `activate`. Doing it at module scope aborts the process
+// before any of it: `Gdk-ERROR **: gdk_display_manager_get() was called before
+// gtk_init()`, SIGABRT and a core dump, measured.
+//
+// So it happens at the top of the root component's first render, which
+// `AppRegistry.runApplication` reaches only after the window exists — and still before
+// any child of it has rendered a single class.
+//
+// ## The palette is chosen once, here
+//
+// `Adw.StyleManager:dark` is what the user is actually looking at, as opposed to
+// `color-scheme`, which is what the application asked for. Reading it picks one of the
+// two generated token scales, so `bg-grey-100` is a white page surface in light and
+// `#1a1a1a` in dark — the same two palettes the phone and the web target use, from the
+// same generated file.
+//
+// It is read ONCE per launch, and that is this host's one real divergence from the
+// phone, where the same setting flips both halves live. `configureStyle` installs a
+// module-level scale and the sheet mints a class per declaration set, so
+// re-configuring mid-session would change what NEW classes resolve to while every
+// widget already on screen kept the class it was given — half the window in each
+// scheme. Adwaita's own chrome still follows the setting immediately (see
+// `shims/uniwind.ts`); the app's token colours need a restart. Named here, in that
+// shim, and in README.md.
+
+import { registerBuiltinWidgets } from '@gjsify/gtk-host';
+import { configureStyle, registerRootComponent } from '@gjsify/react-native';
+import { RouterRoot } from '@gjsify/react-native/router';
+import { manifest } from 'virtual:gjsify-rn-routes';
+
+import { armScreenshot } from './debug/screenshot.js';
+import { tokensFor } from './generated/tokens.generated.js';
+import { sheet } from './style/sheet.js';
+
+registerBuiltinWidgets();
+
+let styleConfigured = false;
+
+/**
+ * Idempotent, and guarded rather than left to run per render: `configureStyle` would
+ * happily re-assign the same scale every time, but re-reading `Adw.StyleManager` on
+ * every render of the root is work with no answer that can change (see above).
+ */
+function configureStyleOnce(): void {
+  if (styleConfigured) return;
+  styleConfigured = true;
+  // Imported here rather than at the top of the file: `gi://Adw` itself is safe to
+  // import, but keeping the display-dependent read next to its guard is what stops
+  // someone hoisting it back to module scope.
+  const dark = imports.gi.Adw.StyleManager.get_default().dark;
+  configureStyle({ tokens: tokensFor(dark), sheet: sheet() });
+}
+
+function App() {
+  configureStyleOnce();
+  // Opt-in and env-gated; a no-op unless CORRECTIV_DESKTOP_SCREENSHOT names a path.
+  armScreenshot();
+  return <RouterRoot manifest={manifest} />;
+}
+
+await registerRootComponent(App, {
+  // Experimental by name. This build is a feasibility demonstration and must not be
+  // mistaken for a shipped CORRECTIV application by a desktop that indexes it —
+  // `.desktop` files, the shell's app grid and D-Bus activation all key off this.
+  applicationId: 'org.correctiv.AppDesktopExperimental',
+  title: 'CORRECTIV (Desktop, experimentell)',
+  // `defaultWidth`/`defaultHeight`, not `width`/`height`. The wrong names were
+  // accepted by JavaScript and ignored, and the window stayed at the documented
+  // 900x700 default — which is exactly the kind of silently-dropped option that a
+  // typecheck catches and a screenshot does not.
+  defaultWidth: 1100,
+  defaultHeight: 820,
+});
