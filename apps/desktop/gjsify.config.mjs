@@ -83,8 +83,28 @@ const PREFIX = [
  * `.gtk.*` comes first, which is ADR 0032 section 9's platform chain: a
  * `Foo.gtk.tsx` beside a `Foo.tsx` wins on this host. Nothing uses it yet, and it
  * costs one array entry to leave the door open.
+ *
+ * The middle rung is the OS one, and leaving it out was a hole rather than a thrift.
+ * gjsify's own `platformResolvePlugin` searches `['gtk', <os>, 'desktop']` — but it
+ * answers RELATIVE imports only, and this plugin runs at `order: 'pre'`, so it wins for
+ * every specifier the redirects above produce: every `@/…`, `@correctiv/app-core/…`,
+ * `@correctiv/design-tokens/…`. Without the rung a `Foo.macos.tsx` beside a `Foo.tsx`
+ * was INVISIBLE, with no error — and that shape is exactly what the macOS WebView needs,
+ * so the hole was about to be stepped in.
+ *
+ * Order is load-bearing: `.gtk` → `.<os>` → `.desktop` → bare, most specific host first.
+ * `.native` and `.web` stay OUT — they belong to Metro and to the web target, and
+ * gjsify's own chain refuses them by name for the same reason.
  */
-const EXTENSIONS = ['.gtk.tsx', '.gtk.ts', '.tsx', '.ts', '.mjs', '.js', '.json'];
+const OS_SUFFIX = { linux: 'linux', darwin: 'macos', win32: 'windows' }[process.platform];
+const EXTENSIONS = [
+  '.gtk',
+  ...(OS_SUFFIX === undefined ? [] : [`.${OS_SUFFIX}`]),
+  '.desktop',
+  '',
+].flatMap((platform) =>
+  ['.tsx', '.ts', '.mjs', '.js', '.json'].map((extension) => `${platform}${extension}`),
+);
 
 function withExtension(base) {
   if (existsSync(base) && !statSync(base).isDirectory()) return base;
@@ -136,6 +156,25 @@ function redirectPlugin() {
 
 export default {
   bundler: {
+    /**
+     * Compile-time substitutions, HERE rather than on the command line, because there
+     * are now two build targets and a `--define` repeated per target is a define that
+     * will eventually differ between them. `transform.define` is the only place
+     * Rolldown reads (a top-level `bundler.define` is auto-mapped with a warning).
+     *
+     * Both entries are load-bearing, not hygiene. `@reduxjs/toolkit`'s ESM build reads
+     * `process.env.NODE_ENV` in 57 places; undefined there re-enables `serializableCheck`,
+     * which the store deliberately narrows because the audio backend dispatches twice a
+     * second against a tree holding six feeds and seven podcast series.
+     *
+     * The value side is a JS EXPRESSION, so a string needs its own quotes.
+     */
+    transform: {
+      define: {
+        'process.env.NODE_ENV': '"production"',
+        __DEV__: 'false',
+      },
+    },
     plugins: [
       redirectPlugin(),
       // expo-router discovers routes with Metro's `require.context`, which does not

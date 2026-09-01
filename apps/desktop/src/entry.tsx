@@ -41,6 +41,14 @@
 // `shims/uniwind.ts`); the app's token colours need a restart. Named here, in that
 // shim, and in README.md.
 
+// Version-pinned, like every other `gi://` import in this tree — and it replaces an
+// `imports.gi.Adw` that resolved UNVERSIONED. On GJS that read the one Adw the process
+// had; through `@gjsify/node-gi`'s `imports` proxy it became `requireGi('Adw',
+// undefined)`, an unversioned namespace resolution, which is the hazard the WebView
+// shim's own header spells out in capitals for WebKit. Importing the module here is
+// safe; only the display-dependent READ below must stay inside its guard.
+import Adw from 'gi://Adw?version=1';
+
 import { registerBuiltinWidgets } from '@gjsify/gtk-host';
 import { configureStyle, registerRootComponent } from '@gjsify/react-native';
 import { RouterRoot } from '@gjsify/react-native/router';
@@ -62,10 +70,12 @@ let styleConfigured = false;
 function configureStyleOnce(): void {
   if (styleConfigured) return;
   styleConfigured = true;
-  // Imported here rather than at the top of the file: `gi://Adw` itself is safe to
-  // import, but keeping the display-dependent read next to its guard is what stops
-  // someone hoisting it back to module scope.
-  const dark = imports.gi.Adw.StyleManager.get_default().dark;
+  // The READ stays here, not at module scope: `StyleManager.get_default()` needs a
+  // `Gdk.Display`, which does not exist until `Gtk.init()` has run inside `activate`.
+  // Hoisting it is the measured `gdk_display_manager_get() was called before
+  // gtk_init()` abort, and the import above is deliberately separate so that the guard
+  // is the only thing anyone has to preserve.
+  const dark = Adw.StyleManager.get_default().dark;
   configureStyle({ tokens: tokensFor(dark), sheet: sheet() });
 }
 

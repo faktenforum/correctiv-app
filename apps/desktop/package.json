@@ -8,23 +8,34 @@
   "main": "dist/app.gjs.mjs",
   "scripts": {
     "tokens": "node scripts/generate-tokens.mjs",
-    "build": "gjsify build src/entry.tsx --app gjs --outfile dist/app.gjs.mjs --define 'process.env.NODE_ENV=\"production\"' --define '__DEV__=false' --exclude-globals navigator",
-    "start": "CORRECTIV_DESKTOP_ASSETS=../mobile gjs -m dist/app.gjs.mjs",
+    "build": "npm run build:gjs",
+    "build:gjs": "gjsify build src/entry.tsx --app gjs --outfile dist/app.gjs.mjs --exclude-globals navigator",
+    "build:node": "gjsify build src/entry.tsx --app node --outfile dist/app.node.mjs",
+    "build:all": "npm run build:gjs && npm run build:node",
+    "start": "node scripts/start.mjs",
+    "start:gjs": "node scripts/start.mjs --host gjs",
+    "start:node": "node scripts/start.mjs --host node",
     "typecheck": "tsc --noEmit",
     "test": "vitest run",
-    "screenshot": "CORRECTIV_DESKTOP_ASSETS=../mobile CORRECTIV_DESKTOP_SCREENSHOT=$PWD/dist/screenshot.png gjs -m dist/app.gjs.mjs",
-    "audio-probe": "gjsify build src/debug/audio-probe.ts --app gjs --outfile dist/audio-probe.gjs.mjs --define 'process.env.NODE_ENV=\"production\"' --define '__DEV__=false' --exclude-globals navigator && CORRECTIV_DESKTOP_ASSETS=../mobile gjs -m dist/audio-probe.gjs.mjs",
+    "screenshot": "node scripts/start.mjs --screenshot dist/screenshot.png",
+    "audio-probe": "gjsify build src/debug/audio-probe.ts --app gjs --outfile dist/audio-probe.gjs.mjs --exclude-globals navigator && node scripts/start.mjs --bundle dist/audio-probe.gjs.mjs",
     "route-sweep": "node scripts/route-sweep.mjs"
   },
   "dependencies": {
     "@correctiv/app-core": "*",
     "@correctiv/design-tokens": "*",
     "@gjsify/gtk-host": "^0.45.0",
+    "@gjsify/node-gi": "^0.45.0",
     "@gjsify/react-native": "^0.45.0",
     "@react-navigation/core": "^7.21.13",
     "@react-navigation/routers": "^7.6.4",
     "react": "19.2.3",
     "react-reconciler": "^0.33.0"
+  },
+  "optionalDependencies": {
+    "@gjsify/gtk-runtime-darwin-arm64": "^0.45.0",
+    "@gjsify/gtk-runtime-darwin-x64": "^0.45.0",
+    "@gjsify/gtk-runtime-win32-x64": "^0.45.0"
   },
   "devDependencies": {
     "@girs/adw-1": "^4.4.0",

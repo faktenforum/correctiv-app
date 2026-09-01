@@ -9,10 +9,16 @@
  * opened.
  *
  * WHAT COUNTS AS A FAILURE. Any of the layer's named refusals reaching the log
- * (`UnknownUtilityError`, `PrimitiveError`, `GtkHostError`, `RouterError`), plus GJS's
- * own `JS ERROR` and React's uncaught-error line. Deliberately NOT the `[desktop]`
- * bridge reports — those are the shims saying they did their job, and they are
- * expected on several screens.
+ * (`UnknownUtilityError`, `PrimitiveError`, `GtkHostError`, `RouterError`), plus each
+ * host's own uncaught-exception spelling and React's uncaught-error line — see
+ * `FAILURE_PATTERN` in `hosts.mjs`, which carries both, because `JS ERROR` is GJS's
+ * word and a node-host sweep matching only that would report a clean run no matter what
+ * happened. Deliberately NOT the `[desktop]` bridge reports — those are the shims saying
+ * they did their job, and they are expected on several screens.
+ *
+ * WHICH HOST. `--host gjs` (the Linux default) or `--host node` (the macOS/Windows
+ * bundle). Sweeping the node host from Linux is the only coverage it gets, this being
+ * the one machine that runs both.
  *
  * The sweep is honest about what it does not prove: it opens a route and reads the
  * log. It does not look at the window, so a screen that renders an empty box with no
@@ -24,16 +30,42 @@ import { readdirSync, statSync } from 'node:fs';
 import { dirname, join, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
+import { DEFAULT_HOST, FAILURE_PATTERN, HOSTS } from './hosts.mjs';
+
 const HERE = dirname(fileURLToPath(import.meta.url));
 const APP = resolve(HERE, '..');
 const ROUTES_DIR = join(APP, 'src', 'app');
-const BUNDLE = join(APP, 'dist', 'app.gjs.mjs');
+
+/**
+ * Which host to sweep. `--host node` sweeps the macOS/Windows bundle, which on Linux is
+ * the only way it gets swept at all — this is the one machine that can run both.
+ */
+const hostArg = process.argv.indexOf('--host');
+const HOST_NAME = hostArg === -1 ? DEFAULT_HOST : process.argv[hostArg + 1];
+const HOST = HOSTS[HOST_NAME];
+if (HOST === undefined) {
+  console.error(
+    `route sweep: unknown --host '${HOST_NAME}'. Expected: ${Object.keys(HOSTS).join(', ')}`,
+  );
+  process.exit(2);
+}
+const BUNDLE = join(APP, HOST.bundle);
 
 /** Milliseconds each route gets to render before the process is killed. */
 const DWELL = Number(process.env.SWEEP_DWELL_MS ?? '3500');
 
-const FAILURE =
-  /UnknownUtilityError|PrimitiveError|GtkHostError|RouterError|JS ERROR|no boundary caught/;
+/**
+ * The kill deadline, in the CHILD's own terms rather than a wrapper's.
+ *
+ * This used to shell out to `timeout(1)`, which is GNU coreutils: absent on macOS
+ * (where it is `gtimeout`) and on Windows entirely. `execFileSync` carries the same
+ * capability itself, so the deadline now costs no external program and works on all
+ * three hosts. SIGKILL rather than SIGTERM because a wedged GTK process in a
+ * screenshot-armed state has already shown it will not unwind on request.
+ */
+const KILL_AFTER_MS = DWELL + 6000;
+
+const FAILURE = FAILURE_PATTERN;
 
 /** Every route file, as the manifest's context keys. */
 function routeFiles(dir, prefix = '') {
@@ -77,16 +109,22 @@ function hrefFor(contextKey) {
 const keys = routeFiles(ROUTES_DIR).sort();
 const targets = keys.map((key) => [key, hrefFor(key)]).filter(([, href]) => href !== null);
 
-console.log(`route sweep: ${keys.length} route files, ${targets.length} openable hrefs\n`);
+// Naming the host is not decoration: the two bundles fail differently, and a sweep
+// result without it is a number whose subject nobody can reconstruct later.
+console.log(
+  `route sweep [--host ${HOST_NAME}]: ${keys.length} route files, ${targets.length} openable hrefs\n`,
+);
 
 let failed = 0;
 for (const [key, href] of targets) {
   let log = '';
   try {
-    log = execFileSync('timeout', [String(Math.ceil(DWELL / 1000) + 6), 'gjs', '-m', BUNDLE], {
+    log = execFileSync(HOST.command, [...HOST.args, BUNDLE], {
       cwd: APP,
       encoding: 'utf8',
       stdio: ['ignore', 'pipe', 'pipe'],
+      timeout: KILL_AFTER_MS,
+      killSignal: 'SIGKILL',
       env: {
         ...process.env,
         CORRECTIV_DESKTOP_ASSETS: resolve(APP, '..', 'mobile'),
@@ -99,8 +137,10 @@ for (const [key, href] of targets) {
       },
     });
   } catch (error) {
-    // `timeout` exits 124 when it had to kill the process, which happens whenever the
-    // capture did not close the window. Not a failure by itself — the log decides.
+    // Reaching the deadline throws (`error.killed`), and so does a signal death — which
+    // on the node host is a real possibility, the GI bridge having a known intermittent
+    // lifetime fault. Neither is a failure BY ITSELF: the capture routinely does not
+    // close the window in time. The log decides, so the output is salvaged and read.
     log = `${error.stdout ?? ''}${error.stderr ?? ''}`;
   }
 

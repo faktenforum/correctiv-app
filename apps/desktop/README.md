@@ -94,12 +94,13 @@ measures with it; and a chip row does not wrap, because `Gtk.Box` cannot.
 
 ## How to run it
 
-Needs GTK4, libadwaita, WebKitGTK 6.0, GStreamer (base + good) and `gjs`.
+Needs GTK4, libadwaita, WebKitGTK 6.0 and GStreamer (base + good). On Linux it also
+needs `gjs`; on macOS and Windows it does not — see *Two hosts, one source* below.
 
 ```bash
-npm install                              # from the repo root
-npm run build   -w @correctiv/desktop    # bundles to dist/app.gjs.mjs
-npm run start   -w @correctiv/desktop
+npm install                                 # from the repo root
+npm run build     -w @correctiv/desktop     # dist/app.gjs.mjs   (Linux)
+npm run start     -w @correctiv/desktop
 ```
 
 Three development aids, all environment-gated and all no-ops otherwise:
@@ -110,11 +111,45 @@ CORRECTIV_DESKTOP_ROUTE=/spotlight npm run start -w @correctiv/desktop
 
 # Capture the window to a PNG and exit. In-process, because GNOME 45+ refuses
 # org.gnome.Shell.Screenshot to an unsandboxed caller and this session is Wayland.
-CORRECTIV_DESKTOP_SCREENSHOT=$PWD/out.png npm run start -w @correctiv/desktop
+npm run screenshot   -w @correctiv/desktop   # writes dist/screenshot.png
 
 npm run audio-probe  -w @correctiv/desktop   # drives the audio port, prints the ticks
 npm run route-sweep  -w @correctiv/desktop   # opens every route, reads the log
 ```
+
+### Two hosts, one source
+
+Linux runs the `--app gjs` bundle on the distribution's own GJS. macOS and Windows have
+no system GJS at all, so there the same source is built `--app node` and runs on Node
+with [`@gjsify/node-gi`](https://www.npmjs.com/package/@gjsify/node-gi) bridging `gi://`.
+ADR 0024 makes the same split for packaging: on Linux a `Depends: gjs` is honest, and
+bundling ~100 MiB of interpreter beside it would not be.
+
+Nothing in `src/` is host-conditional — the bundler rewrites every `gi://` import into a
+lazy `requireGi()` call, so the split lives entirely in how the bundle is produced:
+
+```bash
+npm run build:node -w @correctiv/desktop     # dist/app.node.mjs  (macOS, Windows)
+npm run build:all  -w @correctiv/desktop     # both
+
+npm run start:node -w @correctiv/desktop     # run the other bundle deliberately
+npm run route-sweep -w @correctiv/desktop -- --host node
+```
+
+**Run the node host from Linux.** It is the only machine that can run both, so it is the
+only place the macOS/Windows bundle gets exercised before it reaches those machines.
+
+Two things are known to be missing on the new targets, and neither is in this tree:
+
+| | state |
+|---|---|
+| **The reader's WebView** | `gi://WebKit` is in none of the shipped GTK runtime bundles. macOS has a separate WKWebView shim behind the same namespace, but it declares the node runtime unsupported and implements no `decide-policy`, which is what the navigation gate uses. Windows has no engine at all. |
+| **Live radio** | the bundles carry an audio-only GStreamer plugin set with no `souphttpsrc`, so an `https://` stream finds no source element. The bundled episode plays. |
+
+And one defect is measured and open upstream: a GTK app on `@gjsify/node-gi` dies
+intermittently in the GI bridge (SIGSEGV or SIGABRT, roughly one run in three here),
+which is a known nondeterministic lifetime bug in the bridge rather than anything this
+app does. `npm run start:node` reports the signal by name rather than swallowing it.
 
 ## How it is put together
 
