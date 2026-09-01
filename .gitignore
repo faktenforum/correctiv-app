@@ -41,3 +41,5 @@ out/
 .agents/
 .claude/skills/
 skills-lock.json
+apps/mobile/public/preview.html
+apps/mobile/public/preview-assets/

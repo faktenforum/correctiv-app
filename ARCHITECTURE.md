@@ -119,6 +119,12 @@ the tokens with the palette hook. `src/components/reader/` and
 `src/components/media/` are the two platform splits, each a `.tsx`, a `.web.tsx` and
 a shared props type.
 
+Outside both, `tools/preview` is the device frame that wraps the web target, a
+workspace of its own because it is neither a host nor a library the app ships. It
+builds into `apps/mobile/public/` so that it stays on the app's origin, which is what
+lets it reach the frame at all; [ADR 0014](adr/0014-the-preview-shell-as-a-package.md)
+explains why that folder is load-bearing.
+
 ## Generated artefacts
 
 Committed, so a fresh clone builds. Regenerate only when the source changes. A test
@@ -191,6 +197,11 @@ core as the native builds, with two host-level differences.
 `.github/workflows/pages.yml` rebuilds and publishes it on every push to `main`. It
 is worth using while developing, because back-without-history and directly opened
 routes can only be tested where URLs exist at all.
+
+The published copy is the demo half of the frame only. `expo export` sets `__DEV__`
+false, so the appearance control has no dev handle to talk to and disables itself,
+and element-to-source has no Metro to ask; both want `npm run web`. The storage
+fixtures, the console, the palette and the checks need neither and hold on Pages.
 
 ## Checks
 

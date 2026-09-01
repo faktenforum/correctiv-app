@@ -20,6 +20,11 @@ taking state, never a store method.
 `apps/mobile` is the app. Its web export is published on every push to `main`, so
 anything that lands there is public.
 
+`tools/` is the third place, for what is neither: `tools/preview` is the device frame
+around the web build. It must keep building into `apps/mobile/public/`, because every
+capability it has comes from sharing the app's origin.
+([ADR 0014](adr/0014-the-preview-shell-as-a-package.md))
+
 Colours come from classes (`bg-grey-100`), which follow the appearance setting on
 their own. Reading a colour in TypeScript needs `useColors()`, or it is pinned to
 light. `always-light` and `always-dark` are the exceptions and mean it.
@@ -67,6 +72,7 @@ route, a bundle config or a platform split, run `npm run build:web`, then
 static server maps no clean URLs and makes a working app look broken. After layout,
 screenshot it and look (`screens/tools/tour-android.sh`, compared against
 `screens/`), or open `/preview.html`, which frames the web target at a phone or
-tablet size. Anything touching colour has to be seen in **both** appearance settings
-*and* with the setting on "System" against a dark device. That last combination is
-the app's default and is the one that has already shipped broken.
+tablet size and carries device, route, appearance and app state in its URL. Anything
+touching colour has to be seen in **both** appearance settings *and* with the setting
+on "System" against a dark device. That last combination is the app's default and is
+the one that has already shipped broken.
