@@ -46,6 +46,8 @@ export function App() {
   } | null>(null);
   const [picking, setPicking] = useState(false);
   const [hit, setHit] = useState<{ label: string; frames: Located[] } | null>(null);
+  /** The innermost frame is the usual answer, so it is the one preselected. */
+  const [selected, setSelected] = useState(0);
   /** Bumped on every load, so everything injected into the frame is re-injected. */
   const [loaded, setLoaded] = useState(0);
 
@@ -108,6 +110,7 @@ export function App() {
     if (!picking) return;
     return armPicker(win(), (frames, label) => {
       setHit({ label, frames });
+      setSelected(0);
       setPicking(false);
     });
   }, [picking, loaded]);
@@ -178,7 +181,14 @@ export function App() {
       setTextPass,
     },
     measure: { outline, setOutline: setOutlineOn, report, run: () => setReport(audit(win())) },
-    inspect: { picking, setPicking, hit, open: (frame) => void openInEditor(frame) },
+    inspect: {
+      picking,
+      setPicking,
+      hit,
+      selected,
+      setSelected,
+      open: (frame) => void openInEditor(frame),
+    },
   };
 
   return (

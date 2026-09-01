@@ -114,8 +114,26 @@ token. Run the colour half in dark: in the light palette `#ffffff` is both `grey
 and `always-light`, so a value match cannot say which was meant.
 
 **Inspect.** Click an element, get the file and line that drew it, and a button that
-opens it in the editor. Dev server only — React 19 keeps no source on a fiber, so this
-walks the owner chain and asks Metro's `/symbolicate` to map it back.
+opens it in the editor. Dev server only, because React 19 keeps no source on a fiber:
+this walks the owner chain and asks Metro's `/symbolicate` to map it back. Picking is
+inert, so choosing a card does not also open it.
+
+What comes back is the whole chain, not one answer, because only the person looking
+knows which level they mean. Selecting one makes it the `Source:` line of a block
+built for handing over:
+
+```
+Element: "Klima"
+Source:  apps/mobile/src/components/ui/Chip.tsx:31 · Chip
+Context: apps/mobile/src/app/(tabs)/entdecken.tsx:88
+View:    http://localhost:8081/preview.html#/entdecken?d=iphone-se&t=dark
+```
+
+`Copy for agent` puts that on the clipboard. Paste it into a chat, say what should be
+different, and whoever picks it up has both halves: the line to change, and the
+address that puts the same thing back on screen to check the change against.
+
+![Picking an element](screens/handover.webp)
 
 ## Layout
 

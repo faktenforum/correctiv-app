@@ -159,7 +159,21 @@ function isElement(value: EventTarget | undefined): value is Element {
   return value !== undefined && 'nodeType' in value && (value as Node).nodeType === 1;
 }
 
-/** Re-armed after every navigation: the frame's document is replaced each time. */
+/**
+ * Arms the picker on the frame's document, and swallows the whole interaction.
+ *
+ * Not only `pointerdown`. A press that reaches the app activates it, and a click
+ * on a card navigates: the first time this was tried against a real mouse, the
+ * app moved to `/suche` while the note was still being written, so the address
+ * recorded in the handover pointed at a screen the element is not on. Picking has
+ * to be inert, which means every event of that one interaction is caught here and
+ * goes no further.
+ *
+ * Re-armed after every navigation, because the frame's document is replaced each
+ * time.
+ */
+const SWALLOWED = ['pointerdown', 'pointerup', 'mousedown', 'mouseup', 'click'] as const;
+
 export function armPicker(
   win: Window | null,
   onHit: (hits: Located[], label: string) => void,
@@ -167,15 +181,23 @@ export function armPicker(
   const doc = win?.document;
   if (!doc) return () => {};
 
-  const onPointerDown = (event: Event) => {
-    const target = event.composedPath()[0];
-    if (!isElement(target)) return;
+  const swallow = (event: Event) => {
     event.preventDefault();
     event.stopPropagation();
+
+    // Only the press does the work; the rest of the interaction is merely
+    // stopped. `locate()` is async, so the click that follows arrives before
+    // this listener is taken down, which is exactly what has to be swallowed.
+    if (event.type !== 'pointerdown') return;
+
+    const target = event.composedPath()[0];
+    if (!isElement(target)) return;
     const label = (target.textContent ?? '').trim().slice(0, 40);
     void locate(win, target).then((hits) => onHit(hits, label));
   };
 
-  doc.addEventListener('pointerdown', onPointerDown, { capture: true });
-  return () => doc.removeEventListener('pointerdown', onPointerDown, { capture: true });
+  for (const type of SWALLOWED) doc.addEventListener(type, swallow, { capture: true });
+  return () => {
+    for (const type of SWALLOWED) doc.removeEventListener(type, swallow, { capture: true });
+  };
 }
