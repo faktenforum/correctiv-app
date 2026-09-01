@@ -2,7 +2,7 @@ import { createSlice, type PayloadAction } from '@reduxjs/toolkit';
 
 import { MEDIA_SOURCE, PEERTUBE_CHANNELS, YOUTUBE_FEEDS } from '../data/feeds.config';
 import { getCached, getStale, setCached } from '../services/cache.service';
-import { fetchPeertubeChannelAsVideos } from '../services/peertube.service';
+import { fetchPeertubeChannelsAsVideos } from '../services/peertube.service';
 import { fetchYoutubeFeed } from '../services/rss.service';
 import type { Video } from '../types/models';
 import type { AppThunk } from './store';
@@ -65,12 +65,28 @@ export const fetchChannel =
     if (getState().media.byKey[key].videos.length === 0)
       dispatch(patch(key, { status: 'loading' }));
     try {
-      const videos =
-        source === 'peertube'
-          ? await fetchPeertubeChannelAsVideos(
-              PEERTUBE_CHANNELS[key as keyof typeof PEERTUBE_CHANNELS],
-            )
-          : await fetchYoutubeFeed(YOUTUBE_FEEDS[key], key);
+      /**
+       * The cast this replaces (`PEERTUBE_CHANNELS[key as keyof typeof …]`) was
+       * load-bearing and wrong: `key` is one of three channels and the PeerTube
+       * table held one, so the cast promised a handle for `gespraech` too and would
+       * have answered `undefined` for it. A `Partial<Record<…>>` plus this check
+       * says the same thing honestly, and the error names the missing entry instead
+       * of requesting `/video-channels/undefined/videos`.
+       */
+      const channels = PEERTUBE_CHANNELS[key];
+      let videos: Video[];
+      if (source === 'peertube') {
+        // `MEDIA_SOURCE` is the declared truth about where a channel streams from,
+        // so it decides the branch. Reading the branch off "does the table have an
+        // entry" instead would make a forgotten config line look like a YouTube
+        // channel and fetch the wrong thing quietly.
+        if (!channels?.length) {
+          throw new Error(`Channel '${key}' is peertube-sourced but has no channel handle`);
+        }
+        videos = await fetchPeertubeChannelsAsVideos(channels);
+      } else {
+        videos = await fetchYoutubeFeed(YOUTUBE_FEEDS[key], key);
+      }
       dispatch(patch(key, { videos, status: 'ready' }));
       await setCached(source, key, videos);
     } catch (err) {

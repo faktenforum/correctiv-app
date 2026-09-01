@@ -10,7 +10,20 @@ import { formatMinutesDe } from '../lib/format';
  * existing audio player streams directly. No auth.
  */
 const PUBLISHER = 'Salon5';
-const MAX_EPISODES = 20;
+
+/**
+ * How much of a show to keep.
+ *
+ * It was 20, which turned „Pausenbrot“ into a taster: that feed carries 439
+ * episodes and „Politik“ 396. Measured on the live feed, the parsed episodes cost
+ * about 0,3 KB each in the cache, so 20 was 6 KB and this is 31 KB per show,
+ * around 150 KB for the seven curated ones. Taking everything would be 127 KB for
+ * Pausenbrot alone, for a tail nobody scrolls to.
+ *
+ * The screen that shows these is a `FlatList` (ADR 0012), so the number of rows
+ * costs nothing to render — the ceiling is the cache, not the list.
+ */
+const MAX_EPISODES = 100;
 const MAX_DESCRIPTION = 240;
 
 function feedUrl(handle: string): string {
