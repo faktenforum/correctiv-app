@@ -36,12 +36,30 @@ function cleanStaleAssets(): Plugin {
         return; // nothing written yet, nothing stale
       }
       for (const name of present) {
-        if (!keep.has(`${ASSETS_DIR}/${name}`)) rmSync(join(ASSETS, name), { force: true });
+        if (keep.has(`${ASSETS_DIR}/${name}`)) continue;
+        rmSync(join(ASSETS, name), { recursive: true, force: true });
       }
     },
   };
 }
 
+/**
+ * Builds the shell straight into the app's `public/` folder, and nowhere else.
+ *
+ * This is the one setting the whole tool hangs on. `@expo/cli` serves `public/`
+ * from the dev server and copies it into `dist/` on export, so a single build
+ * output answers at `localhost:8081/preview.html`, at `serve-clean.mjs`'s port
+ * and on Pages — always **same-origin with the app**. Same-origin is not a
+ * convenience here: it is what lets the shell reach `frame.contentWindow`, read
+ * the app's console, seed its storage and dispatch into its store. Give this
+ * package a dev server of its own and every one of those capabilities is gone,
+ * silently, because the browser simply refuses the property access.
+ *
+ * `emptyOutDir: false` because the out directory is the app's, not ours.
+ * `base: './'` because the export is published under `/correctiv-app/` on Pages
+ * and under `/` locally; relative asset URLs are correct in both without anyone
+ * having to thread a base path through.
+ */
 export default defineConfig({
   plugins: [cleanStaleAssets(), react()],
   base: './',

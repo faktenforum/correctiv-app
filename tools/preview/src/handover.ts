@@ -51,8 +51,11 @@ export function frameShort(frame: Located): string {
 const CONTEXT_LINES = 3;
 
 export function handover({ label, frames, selected, view }: Selection): string {
-  const chosen = frames[selected] ?? frames[0];
-  const context = frames.filter((_, i) => i !== (chosen ? frames.indexOf(chosen) : -1));
+  // A selection out of range means the link was written before the chain got
+  // shorter, or nobody chose: the innermost frame is the useful answer either way.
+  const index = selected >= 0 && selected < frames.length ? selected : 0;
+  const chosen = frames[index];
+  const context = frames.filter((_, i) => i !== index);
 
   const lines = [`Element: ${label ? `"${label}"` : '(no label)'}`];
   if (chosen)
