@@ -97,10 +97,11 @@ http://localhost:8099/preview.html          # a static export
 Device, route, appearance and app state travel in the URL
 (`preview.html#/artikel?d=ipad-pro-11&t=dark&s=member`), so a finding can be handed
 over as a link. The frame is the app untouched: inside it, `useWindowDimensions` and
-the reader's `48rem` breakpoint see the simulated size. `Tools` adds the app's state
-and console, a live palette and an element-to-source picker, all of which need the dev
-server. Safe-area insets and touch are not simulated, and the *device's* colour scheme
-is the browser's to emulate; those stay DevTools' job.
+the reader's `48rem` breakpoint see the simulated size. `Tools` adds the app's
+appearance and state, its console, a live palette, layout checks and an
+element-to-source picker; the first and the last of those need the dev server, the
+rest hold against the export too. Safe-area insets and touch are not simulated, and
+the *device's* colour scheme is the browser's to emulate; those stay DevTools' job.
 
 ## Where to go next
 

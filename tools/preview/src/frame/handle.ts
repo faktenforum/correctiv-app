@@ -1,4 +1,5 @@
 import type { ThemeSetting } from '../state';
+import type { Scheme } from './tokens';
 
 /**
  * The shell's half of the contract with the app.
@@ -45,13 +46,33 @@ export function handleOf(win: Window | null): DevHandle | null {
   }
 }
 
-/** What the *device* reports, measured inside the frame where it counts. */
-export function frameScheme(win: Window | null): 'light' | 'dark' | null {
+/**
+ * What the *device* reports, measured inside the frame where it counts.
+ *
+ * `null` for a frame there is nothing to ask yet, rather than a cheerful
+ * "light": the appearance readout counts `'system'` against a light device as
+ * combination 3, and guessing that before the frame exists would name a
+ * combination nobody is in.
+ */
+export function frameScheme(win: Window | null): Scheme | null {
+  if (!win) return null;
   try {
-    return win?.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
+    return win.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
   } catch {
     return null;
   }
+}
+
+/**
+ * Which palette the app is painting with, which is not the same question.
+ *
+ * On web Uniwind puts exactly one of `light` / `dark` on `<html>`, and that
+ * class is the setting after `'system'` has been resolved. `frameScheme()` above
+ * is what the device asked for; the two differ on every screen where the setting
+ * is explicit, and keeping them apart is the whole of the appearance readout.
+ */
+export function activeScheme(win: Window | null): Scheme {
+  return win?.document.documentElement.classList.contains('dark') ? 'dark' : 'light';
 }
 
 /** The app's appearance setting, as the store currently holds it. */

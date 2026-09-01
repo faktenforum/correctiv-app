@@ -39,20 +39,15 @@ export function set(patch: Partial<PreviewState>): PreviewState {
   return state;
 }
 
-/** Adopts whatever is in the address bar. Returns true if anything changed. */
-export function readFromHash(): boolean {
-  const parsed = parseHash(location.hash);
-  const before = state;
-  state = parsed;
-  const changed = writeHash(before) !== writeHash(parsed);
-  if (changed) for (const listener of listeners) listener();
-  return changed;
-}
-
 export function start(): void {
   state = parseHash(location.hash);
   history.replaceState(null, '', writeHash(state));
+
+  // Only a person editing the address bar, or a step through history, gets here:
+  // `set()` writes with `replaceState`, which fires no `hashchange`. So whatever
+  // is in the URL wins, exactly as it does at load.
   window.addEventListener('hashchange', () => {
-    readFromHash();
+    state = parseHash(location.hash);
+    for (const listener of listeners) listener();
   });
 }

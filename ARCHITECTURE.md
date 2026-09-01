@@ -199,8 +199,9 @@ is worth using while developing, because back-without-history and directly opene
 routes can only be tested where URLs exist at all.
 
 The published copy is the demo half of the frame only. `expo export` sets `__DEV__`
-false, so the appearance, state and inspection controls have no dev handle to talk to
-there and disable themselves; they work against `npm run web`.
+false, so the appearance control has no dev handle to talk to and disables itself,
+and element-to-source has no Metro to ask; both want `npm run web`. The storage
+fixtures, the console, the palette and the checks need neither and hold on Pages.
 
 ## Checks
 

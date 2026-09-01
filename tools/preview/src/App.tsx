@@ -7,11 +7,11 @@ import {
   useSyncExternalStore,
 } from 'react';
 
-import { combinationOf, readFrame, registerFrame, type Status } from './api';
+import { NO_FRAME, readFrame, registerFrame, statusOf, type FrameInfo } from './api';
 import { attachConsole } from './frame/console';
 import { applyTheme, BASE, frameRoute, navigate } from './frame/handle';
 import { armPicker, openInEditor, type Located } from './frame/locate';
-import { audit, schemeOf, setOutline, type Finding } from './frame/measure';
+import { audit, setOutline, type Finding } from './frame/measure';
 import { waitReady } from './frame/ready';
 import { applyFixture } from './frame/seed';
 import { apply as applyTokens, type Scheme } from './frame/tokens';
@@ -30,13 +30,8 @@ export function App() {
   const frameRef = useRef<HTMLIFrameElement>(null);
   const win = () => frameRef.current?.contentWindow ?? null;
 
-  const [frameInfo, setFrameInfo] = useState({
-    handle: false,
-    appTheme: null as Status['appTheme'],
-    scheme: null as Status['scheme'],
-    active: 'light' as Scheme,
-    route: undefined as string | undefined,
-  });
+  const [frameInfo, setFrameInfo] = useState<FrameInfo>(NO_FRAME);
+  const [reportedRoute, setReportedRoute] = useState<string | undefined>(undefined);
   const [routeField, setRouteField] = useState(state.route);
 
   // The overrides live in the URL with everything else: a proposed palette is
@@ -57,23 +52,10 @@ export function App() {
   const size = frameSize(state);
   const scale = useScale(stageRef, size, state.zoom);
 
-  const status: Status = {
-    ...state,
-    handle: frameInfo.handle,
-    appTheme: frameInfo.appTheme,
-    scheme: frameInfo.scheme,
-    combination: combinationOf(frameInfo.appTheme, frameInfo.scheme),
-    frameRoute: frameInfo.route,
-    warnings: logs.filter((l) => l.level === 'warn').length,
-    errors: logs.filter((l) => l.level === 'error').length,
-  };
+  const status = statusOf(state, frameInfo, reportedRoute, logs);
 
-  // `window.preview` reads the live status through a ref, so installing it once
-  // is enough and no caller is handed a stale snapshot.
-  const statusRef = useRef(status);
-  statusRef.current = status;
   useEffect(() => {
-    registerFrame(frameRef.current, () => statusRef.current);
+    registerFrame(frameRef.current);
   }, []);
 
   /**
@@ -83,18 +65,23 @@ export function App() {
    * rather than in an effect of its own: same-origin means this page's
    * `localStorage` IS the app's, and the app reads it while mounting.
    */
-  const seeded = useRef<string | null | undefined>(undefined);
+  const seeded = useRef<string | null>(null);
   useEffect(() => {
     const frame = frameRef.current;
     if (!frame) return;
 
-    const reseed = seeded.current !== state.seed;
-    if (reseed) {
+    // No fixture means leave the storage alone, which is what the plain demo
+    // asks for: `preview.html` with no `s` is the link `README.md` hands out,
+    // and it must not wipe what the last visit left behind on its way in.
+    let reseed = false;
+    if (state.seed !== null && seeded.current !== state.seed) {
       applyFixture(window.localStorage, state.seed);
       seeded.current = state.seed;
+      reseed = true;
     }
     if (reseed || frameRoute(frame.contentWindow) !== state.route) {
       clearLogs();
+      document.body.dataset.state = 'loading';
       navigate(frame, state.route);
     }
   }, [state.route, state.seed]);
@@ -132,11 +119,9 @@ export function App() {
     document.body.dataset.state = 'loading';
 
     void waitReady(frame).then(() => {
-      const current = getState();
-      if (current.theme) applyTheme(frame.contentWindow, current.theme);
       setLoaded((n) => n + 1);
       document.body.dataset.state = 'ready';
-      return undefined;
+      return undefined; // `promise/always-return`, which has nothing to be given here
     });
   }, []);
 
@@ -150,9 +135,16 @@ export function App() {
   useEffect(() => {
     const id = window.setInterval(() => {
       const current = win();
-      const route = frameRoute(current);
+
+      // Also patched here, not only on load, because `load` is late: the app's
+      // first render happens before it, and a React warning from that render is
+      // exactly what this panel exists to catch. Attaching is idempotent.
+      attachConsole(current, addLog);
+
       const info = readFrame(current);
-      setFrameInfo({ ...info, active: schemeOf(current), route });
+      setFrameInfo((previous) => (unchanged(previous, info) ? previous : info));
+      const route = frameRoute(current);
+      setReportedRoute(route);
 
       // The setting is re-asserted rather than set once. `persist()` hydrates
       // asynchronously and dispatches the stored theme, so a single dispatch at
@@ -163,10 +155,7 @@ export function App() {
       const wanted = getState().theme;
       if (wanted && info.appTheme && info.appTheme !== wanted) applyTheme(current, wanted);
 
-      if (route !== undefined && route !== getState().route) {
-        setRouteField(route);
-        set({ route });
-      }
+      if (route !== undefined && route !== getState().route) set({ route });
     }, 300);
     return () => window.clearInterval(id);
   }, []);
@@ -174,6 +163,11 @@ export function App() {
   useEffect(() => setRouteField(state.route), [state.route]);
 
   const onChange = useCallback((patch: Partial<PreviewState>) => set(patch), []);
+  // Stable, because `Stage` re-attaches its drag handles whenever this changes.
+  const onResize = useCallback(
+    ({ w, h }: { w: number; h: number }) => set({ device: 'custom', landscape: false, w, h }),
+    [],
+  );
 
   const tools: ToolBindings = {
     scheme: frameInfo.active,
@@ -213,11 +207,26 @@ export function App() {
         scale={scale}
         stageRef={stageRef}
         frameRef={frameRef}
-        onResize={({ w, h }) => set({ device: 'custom', landscape: false, w, h })}
+        onResize={onResize}
         onLoad={onLoad}
       />
       <Readout status={status} size={size} scale={scale} />
     </>
+  );
+}
+
+/**
+ * The poll reads the frame three times a second, and almost always reads the
+ * same four values. Comparing them keeps that from re-rendering the whole shell
+ * at 3 Hz, which is enough to make the route field and the colour inputs stutter
+ * under the person using them.
+ */
+function unchanged(a: FrameInfo, b: FrameInfo): boolean {
+  return (
+    a.handle === b.handle &&
+    a.appTheme === b.appTheme &&
+    a.scheme === b.scheme &&
+    a.active === b.active
   );
 }
 

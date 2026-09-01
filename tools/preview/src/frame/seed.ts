@@ -50,7 +50,7 @@ const kv = (store: Storage, slice: string, value: unknown) =>
   store.setItem(`kv:store.${slice}`, JSON.stringify(value));
 
 /** Everything the app owns, and nothing else. */
-export function clearApp(store: Storage): void {
+function clearApp(store: Storage): void {
   for (const key of Object.keys(store)) {
     if (key.startsWith('kv:store.') || key.startsWith('blob:')) store.removeItem(key);
   }
@@ -159,10 +159,6 @@ export const FIXTURES: Fixture[] = [
   },
 ];
 
-export function fixture(id: string | null): Fixture | undefined {
-  return FIXTURES.find((f) => f.id === id);
-}
-
 /**
  * Wipes the app's storage and writes one fixture.
  *
@@ -170,8 +166,14 @@ export function fixture(id: string | null): Fixture | undefined {
  * patch on whatever the last visit left behind. Seeding is a boot-time input,
  * not durable state: the app's own `persist()` overwrites these keys 250 ms after
  * anything changes.
+ *
+ * An id nothing answers to leaves the storage alone instead of wiping it. A link
+ * naming a fixture that has since been renamed should open the app, not clear
+ * whatever the person looking at it had set up.
  */
-export function applyFixture(store: Storage, id: string | null): void {
+export function applyFixture(store: Storage, id: string): void {
+  const chosen = FIXTURES.find((f) => f.id === id);
+  if (!chosen) return;
   clearApp(store);
-  fixture(id)?.write(store);
+  chosen.write(store);
 }

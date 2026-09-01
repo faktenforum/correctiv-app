@@ -1,3 +1,32 @@
+/** Long enough for a cold Metro bundle, short enough to still be an answer. */
+const LOAD_DEADLINE = 15_000;
+
+/**
+ * Resolves on the frame's next `load`, or when the deadline passes without one.
+ *
+ * Two callers, and the deadline is for both. `waitReady()` below uses it for a
+ * document that is already on its way; `window.preview.set()` arms it *before*
+ * React's effect points the frame anywhere, which is the only ordering that
+ * cannot miss the event — `set()` returns while the navigation is still a render
+ * away, and until it commits every question about the frame is answered by the
+ * page on its way out.
+ *
+ * A load that never comes has to become a slow answer rather than a hang: on the
+ * other side of this is an automation session sitting in an `await`.
+ */
+export function waitNavigation(frame: HTMLIFrameElement): Promise<void> {
+  return new Promise<void>((resolve) => {
+    let timer = 0;
+    const done = () => {
+      window.clearTimeout(timer);
+      frame.removeEventListener('load', done);
+      resolve();
+    };
+    timer = window.setTimeout(done, LOAD_DEADLINE);
+    frame.addEventListener('load', done);
+  });
+}
+
 /**
  * Resolves when the frame has stopped moving.
  *
@@ -19,11 +48,7 @@ export async function waitReady(frame: HTMLIFrameElement): Promise<void> {
   const win = frame.contentWindow;
   if (!win) return;
 
-  if (win.document.readyState !== 'complete') {
-    await new Promise<void>((resolve) => {
-      frame.addEventListener('load', () => resolve(), { once: true });
-    });
-  }
+  if (win.document.readyState !== 'complete') await waitNavigation(frame);
 
   try {
     await frame.contentDocument?.fonts?.ready;
@@ -32,8 +57,20 @@ export async function waitReady(frame: HTMLIFrameElement): Promise<void> {
     // the next navigation will run this again.
   }
 
+  // The frames have to be the FRAME's. A bare `const raf = win.requestAnimationFrame`
+  // does not throw — WebIDL substitutes the current realm's global for an undefined
+  // receiver — it silently schedules against the shell's window instead, which is
+  // not the document anyone here is waiting for.
+  const live = frame.contentWindow ?? window;
   await new Promise<void>((resolve) => {
-    const raf = frame.contentWindow?.requestAnimationFrame ?? requestAnimationFrame;
-    raf(() => raf(() => resolve()));
+    // And a document replaced between the two frames never runs its callbacks,
+    // so this settles either way rather than leaving an await outstanding.
+    const timer = window.setTimeout(resolve, 2000);
+    live.requestAnimationFrame(() =>
+      live.requestAnimationFrame(() => {
+        window.clearTimeout(timer);
+        resolve();
+      }),
+    );
   });
 }

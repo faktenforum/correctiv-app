@@ -81,19 +81,12 @@ function css(overrides: Overrides, includeText: boolean): string {
 export function apply(win: Window | null, overrides: Overrides, includeText: boolean): void {
   const doc = win?.document;
   if (!doc) return;
-  let style = doc.getElementById(STYLE_ID);
-  if (!style) {
-    style = doc.createElement('style');
-    style.id = STYLE_ID;
-    doc.head.append(style);
-  }
-  // Appended last and unlayered, so document order settles any remaining tie.
+  const style = doc.getElementById(STYLE_ID) ?? doc.createElement('style');
+  style.id = STYLE_ID;
+  // Appended, and on every later pass re-appended, so it stays last: unlayered
+  // rules of equal specificity are settled by document order.
   doc.head.append(style);
   style.textContent = css(overrides, includeText);
-}
-
-export function clear(win: Window | null): void {
-  win?.document.getElementById(STYLE_ID)?.remove();
 }
 
 /** What a person carries upstream to `wp-design-tokens`, not what we write. */

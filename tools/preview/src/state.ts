@@ -60,18 +60,20 @@ export function parseHash(hash: string): PreviewState {
   const route = (cut === -1 ? raw : raw.slice(0, cut)) || '/';
   const p = new URLSearchParams(cut === -1 ? '' : raw.slice(cut + 1));
 
-  const device = DEVICES.some((d) => d.id === p.get('d')) ? p.get('d')! : INITIAL.device;
-  const zoomRaw = p.get('z');
+  const asked = p.get('d') ?? '';
+  const device = DEVICES.some((d) => d.id === asked) ? asked : INITIAL.device;
   const size = preset(device);
+  const theme = p.get('t');
 
   return {
     route,
     device,
     landscape: p.get('o') === 'l',
-    zoom: zoomRaw && zoomRaw !== 'fit' ? Number(zoomRaw) || 'fit' : 'fit',
+    // `z=fit`, a missing `z` and a junk one all come out as "fit".
+    zoom: Number(p.get('z')) || 'fit',
     w: Number(p.get('w')) || size.w || INITIAL.w,
     h: Number(p.get('h')) || size.h || INITIAL.h,
-    theme: isTheme(p.get('t')) ? (p.get('t') as ThemeSetting) : null,
+    theme: isTheme(theme) ? theme : null,
     seed: p.get('s'),
     tools: p.has('tools'),
     overrides: parseOverrides(p.get('kl'), p.get('kd')),

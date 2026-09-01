@@ -1,7 +1,14 @@
-import { append, type LogEntry } from './frame/console';
+/**
+ * The frame's warnings and errors since the last navigation.
+ *
+ * Bounded, because the interesting entry is almost always the newest and a page
+ * that logs in a render loop must not be able to grow this without limit.
+ */
+import type { LogEntry } from './frame/console';
 
-/** The frame's warnings and errors since the last navigation. */
 type Listener = () => void;
+
+const LIMIT = 200;
 
 let entries: LogEntry[] = [];
 const listeners = new Set<Listener>();
@@ -20,7 +27,7 @@ function emit(): void {
 }
 
 export function addLog(entry: LogEntry): void {
-  entries = append(entries, entry);
+  entries = [...entries, entry].slice(-LIMIT);
   emit();
 }
 

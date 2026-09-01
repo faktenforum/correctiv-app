@@ -132,11 +132,31 @@ export async function locate(win: Window | null, node: Element): Promise<Located
 
 /** Expo's dev server mounts this; it opens the file in the editor. */
 export async function openInEditor(frame: Located): Promise<void> {
-  await fetch('/open-stack-frame', {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ file: frame.file, lineNumber: frame.lineNumber }),
-  });
+  try {
+    await fetch('/open-stack-frame', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ file: frame.file, lineNumber: frame.lineNumber }),
+    });
+  } catch (error) {
+    // There is no second thing to try, and no panel state that would help: a
+    // frame to open at all means the symbolicator answered a moment ago. So it
+    // goes where whoever is inspecting already is, the shell's own console,
+    // rather than into a rejection nobody is holding.
+    console.warn('preview: /open-stack-frame did not answer.', error);
+  }
+}
+
+/**
+ * An element, from whichever realm.
+ *
+ * `instanceof Element` cannot answer this and quietly says no: the frame is a
+ * realm of its own, its nodes are instances of ITS `Element`, and the shell's
+ * constructor is a different object. The `nodeType` of an element is 1 in every
+ * realm there is.
+ */
+function isElement(value: EventTarget | undefined): value is Element {
+  return value !== undefined && 'nodeType' in value && (value as Node).nodeType === 1;
 }
 
 /** Re-armed after every navigation: the frame's document is replaced each time. */
@@ -149,7 +169,7 @@ export function armPicker(
 
   const onPointerDown = (event: Event) => {
     const target = event.composedPath()[0];
-    if (!(target instanceof Element)) return;
+    if (!isElement(target)) return;
     event.preventDefault();
     event.stopPropagation();
     const label = (target.textContent ?? '').trim().slice(0, 40);

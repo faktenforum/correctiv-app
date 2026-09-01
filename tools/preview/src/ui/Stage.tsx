@@ -97,14 +97,19 @@ function drag(
       onResize(next);
     };
 
+    // `pointercancel` as well as `pointerup`: a touch the browser takes over
+    // (a scroll gesture, a call coming in) ends the drag without an up, and the
+    // move listener left behind would then run a second time on the next drag.
     const up = () => {
       handle.removeEventListener('pointermove', move);
       handle.removeEventListener('pointerup', up);
+      handle.removeEventListener('pointercancel', up);
       document.body.classList.remove('dragging');
     };
 
     handle.addEventListener('pointermove', move);
     handle.addEventListener('pointerup', up);
+    handle.addEventListener('pointercancel', up);
   };
 
   handle.addEventListener('pointerdown', down);

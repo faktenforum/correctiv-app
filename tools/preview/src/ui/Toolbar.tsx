@@ -22,8 +22,15 @@ interface Props {
  * behind `Tools`, off by default. A debug surface is not what someone following
  * a link to see the app came for.
  */
-export function Toolbar(props: Props) {
-  const { state, status, onChange } = props;
+export function Toolbar({
+  state,
+  status,
+  routeField,
+  onRouteField,
+  onChange,
+  onReload,
+  onRaw,
+}: Props) {
   const size = frameSize(state);
 
   return (
@@ -116,12 +123,12 @@ export function Toolbar(props: Props) {
           className="route-field"
           list="routes"
           spellCheck={false}
-          value={props.routeField}
-          onChange={(e) => props.onRouteField(e.target.value)}
+          value={routeField}
+          onChange={(e) => onRouteField(e.target.value)}
           onKeyDown={(e) => {
-            if (e.key === 'Enter') onChange({ route: props.routeField });
+            if (e.key === 'Enter') onChange({ route: routeField });
           }}
-          onBlur={() => onChange({ route: props.routeField })}
+          onBlur={() => onChange({ route: routeField })}
         />
         <datalist id="routes">
           {ROUTES.map((r) => (
@@ -133,10 +140,10 @@ export function Toolbar(props: Props) {
       </div>
 
       <div className="group">
-        <button title="Reload the frame" onClick={props.onReload}>
+        <button title="Reload the frame" onClick={onReload}>
           Reload
         </button>
-        <button title="Open this route without the shell" onClick={props.onRaw}>
+        <button title="Open this route without the shell" onClick={onRaw}>
           Raw ↗
         </button>
         <button

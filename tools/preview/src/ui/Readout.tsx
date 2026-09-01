@@ -1,11 +1,4 @@
-import type { Status } from '../api';
-
-const NAMES: Record<number, string> = {
-  1: 'setting light',
-  2: 'setting dark',
-  3: 'setting system · device light',
-  4: 'setting system · device dark',
-};
+import { COMBINATIONS, type Status } from '../api';
 
 /**
  * Size, zoom, and which appearance combination is actually on screen.
@@ -25,18 +18,18 @@ export function Readout({
   size: { w: number; h: number };
   scale: number;
 }) {
-  const combo = status.combination;
+  const combo = COMBINATIONS.find((c) => c.n === status.combination);
   return (
     <div className="readout">
       {size.w} × {size.h} px <span className="sep">·</span> {Math.round(scale * 100)}%
-      {combo !== null && (
+      {combo && (
         <>
           {' '}
-          <span className="sep">·</span> appearance {combo}/4 ({NAMES[combo]})
-          {combo === 4 && ' · the default'}
+          <span className="sep">·</span> appearance {combo.n}/4 ({combo.label.toLowerCase()})
+          {combo.isDefault && ' · the default'}
         </>
       )}
-      {status.handle === false && (
+      {!status.handle && (
         <>
           {' '}
           <span className="sep">·</span> no dev handle

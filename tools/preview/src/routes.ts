@@ -33,6 +33,3 @@ export const ROUTES = [
   '/serie/klima',
   '/tagebuch/diary-bern-2',
 ];
-
-/** The five tab screens, in the order `screens/` shoots them. */
-export const TAB_ROUTES = ['/', '/entdecken', '/mediathek', '/mitmachen', '/profil'];

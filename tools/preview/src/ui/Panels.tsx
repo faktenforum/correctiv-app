@@ -1,10 +1,10 @@
-import type { Status } from '../api';
+import { COMBINATIONS, type Status } from '../api';
 import type { LogEntry } from '../frame/console';
 import type { Located } from '../frame/locate';
 import type { Finding } from '../frame/measure';
 import { FIXTURES } from '../frame/seed';
 import { asCss, PALETTE, TOKENS, type Overrides, type Scheme } from '../frame/tokens';
-import type { PreviewState, ThemeSetting } from '../state';
+import type { PreviewState } from '../state';
 
 export interface ToolBindings {
   scheme: Scheme;
@@ -50,14 +50,6 @@ export function Panels(props: Props) {
   );
 }
 
-/** The two halves of a combination: what the app is set to, what the device says. */
-const COMBINATIONS: { n: number; label: string; theme: ThemeSetting; scheme?: Scheme }[] = [
-  { n: 1, label: 'Setting light', theme: 'light' },
-  { n: 2, label: 'Setting dark', theme: 'dark' },
-  { n: 3, label: 'System · light device', theme: 'system', scheme: 'light' },
-  { n: 4, label: 'System · dark device', theme: 'system', scheme: 'dark' },
-];
-
 /**
  * All four combinations of appearance setting and device scheme, named.
  *
@@ -79,7 +71,7 @@ function Appearance({ status, onChange }: Props) {
         {COMBINATIONS.map((c) => (
           <button
             key={c.n}
-            className={`combo${c.n === 4 ? ' default' : ''}`}
+            className={`combo${c.isDefault ? ' default' : ''}`}
             aria-current={status.combination === c.n}
             disabled={missing}
             onClick={() => onChange({ theme: c.theme })}
@@ -278,11 +270,12 @@ function Inspect({ tools }: Props) {
       </div>
       {inspect.hit && (
         <>
-          <p className="note">{inspect.hit.label ? `“${inspect.hit.label}”` : 'Element'}</p>
+          <p className="note">{inspect.hit.label ? `"${inspect.hit.label}"` : 'Element'}</p>
           {inspect.hit.frames.length === 0 ? (
             <p className="note warn">
-              No source. A production bundle keeps no owner stacks, so this works against{' '}
-              <code>npm run web</code> only.
+              No source: either nothing in this node's owner chain is app code, or the bundle keeps
+              no owner stacks at all, which is every production build. Inspect wants{' '}
+              <code>npm run web</code>.
             </p>
           ) : (
             <ul className="log">

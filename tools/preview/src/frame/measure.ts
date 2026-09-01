@@ -1,3 +1,4 @@
+import { activeScheme } from './handle';
 import { PALETTE, TOKENS, toRgb, type Scheme } from './tokens';
 
 /**
@@ -65,11 +66,7 @@ export function setOutline(win: Window | null, on: boolean): void {
 function path(el: Element): string {
   const label = el.getAttribute('aria-label') ?? (el.textContent ?? '').trim();
   const role = el.getAttribute('role') ?? el.tagName.toLowerCase();
-  return label ? `${role} “${label.slice(0, 40)}”` : role;
-}
-
-export function schemeOf(win: Window | null): Scheme {
-  return win?.document.documentElement.classList.contains('dark') ? 'dark' : 'light';
+  return label ? `${role} "${label.slice(0, 40)}"` : role;
 }
 
 export function audit(win: Window | null): {
@@ -78,7 +75,7 @@ export function audit(win: Window | null): {
   scanned: number;
 } {
   const doc = win?.document;
-  const scheme = schemeOf(win);
+  const scheme = activeScheme(win);
   if (!doc || !win) return { findings: [], scheme, scanned: 0 };
 
   const findings: Finding[] = [];

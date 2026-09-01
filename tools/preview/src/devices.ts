@@ -24,5 +24,5 @@ export const DEVICES: Device[] = [
 export const DEFAULT_DEVICE = 'iphone-15-pro';
 
 export function preset(id: string): Device {
-  return DEVICES.find((d) => d.id === id) ?? DEVICES[1]!;
+  return DEVICES.find((d) => d.id === id) ?? DEVICES.find((d) => d.id === DEFAULT_DEVICE)!;
 }

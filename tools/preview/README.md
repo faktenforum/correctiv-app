@@ -40,9 +40,12 @@ node screens/tools/serve-clean.mjs apps/mobile/dist 8099
 open http://localhost:8099/preview.html
 ```
 
-The difference between the two matters. `expo export` sets `__DEV__` false, so the
-export carries no dev handle: appearance, state and inspection are inert there, and
-the shell says so rather than pretending. Everything else works in both.
+The difference between the two matters, and it is narrower than "dev only" suggests.
+`expo export` sets `__DEV__` false, so the export carries no dev handle: the
+appearance panel disables itself and says why, and `Inspect` comes back empty,
+because a production bundle keeps no owner stacks and there is no `/symbolicate` to
+ask. Everything else is same-origin DOM work and holds in both — the fixtures, the
+console, the palette and the checks.
 
 ## The URL is the interface
 
@@ -71,10 +74,16 @@ preview.audit();    // the checks, as data
 preview.logs();     // warnings and errors since the last navigation
 ```
 
-`set()` resolves after the frame has settled — document parsed, webfonts decoded, two
-animation frames of quiet. That is the difference between a screenshot of the app and
-a screenshot of its first paint, and it is why `screens/README.md`'s "waiting for the
-feeds to settle" no longer needs a person doing the waiting.
+`set()` resolves after the frame has settled — the navigation the patch causes, then
+document parsed, webfonts decoded, two animation frames of quiet. That is the
+difference between a screenshot of the app and a screenshot of its first paint, and it
+is why `screens/README.md`'s "waiting for the feeds to settle" no longer needs a
+person doing the waiting. What comes back is read out of the frame at that moment, not
+out of the shell's last poll, so it cannot describe the page on its way out.
+
+A driver with no promise to await has the same signal on the shell's own `<body>`,
+which carries `data-state="loading"` from the moment a navigation is issued and
+`data-state="ready"` once it has settled.
 
 ## What each panel is for
 
@@ -84,9 +93,13 @@ the browser's to emulate, so 3 and 4 are reached in DevTools and the panel tells
 which one you are actually in. Combination 4 is the app's default and the one that has
 already shipped broken.
 
-**State.** Storage fixtures, written before the frame boots. Each is a whole state, not
-a patch, and each costs a reload, because `onboardingDone` and the feed cache are both
-read before the first render.
+**State.** Storage fixtures, written before the frame boots, which is what costs the
+reload: `onboardingDone` and the feed cache are both read before the first render.
+Picking one wipes the app's storage first, so a fixture is a whole state rather than a
+patch on whatever was there. No `s` in the URL leaves that storage alone — the plain
+demo link must not clear what the last visit left behind. A fixture needs no dev
+handle either, because this page's `localStorage` is literally the app's, which makes
+it the one way to change the app's state in the published export.
 
 **Console.** The frame's warnings and errors. The blind spot it closes: a page that
 looks finished in a screenshot while the console is red.
@@ -110,7 +123,10 @@ walks the owner chain and asks Metro's `/symbolicate` to map it back.
 src/
   state.ts      the URL contract, and the only shape the shell has
   store.ts      one authority; the toolbar and window.preview both go through it
-  api.ts        window.preview
+  api.ts        window.preview, and the one place a Status is assembled
+  devices.ts    the size presets
+  routes.ts     the list behind the route field
+  logs.ts       what the console panel shows, bounded
   frame/        everything that reaches into the iframe
     handle.ts     the app's dev handle: appearance, route, the store
     ready.ts      when the frame has stopped moving

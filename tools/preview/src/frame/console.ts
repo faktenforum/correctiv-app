@@ -21,17 +21,35 @@ export interface LogEntry {
 }
 
 const MARKER = '__previewPatched';
-const LIMIT = 200;
 
 let counter = 0;
+
+/**
+ * An Error, whatever realm it was thrown in.
+ *
+ * `instanceof Error` is the obvious spelling and is wrong here for the same
+ * reason it was wrong in `locate.ts`: the frame has its own `Error`, so an error
+ * the app logged is not an instance of this page's one. It would fall through to
+ * `JSON.stringify`, which renders an Error as `{}` — the console panel would show
+ * a row that says nothing, which is worse than showing no row.
+ */
+function isError(value: unknown): value is Error {
+  return (
+    typeof value === 'object' &&
+    value !== null &&
+    typeof (value as Error).message === 'string' &&
+    typeof (value as Error).name === 'string'
+  );
+}
 
 function format(args: unknown[]): string {
   return args
     .map((arg) => {
       if (typeof arg === 'string') return arg;
-      if (arg instanceof Error) return `${arg.name}: ${arg.message}`;
+      if (isError(arg)) return `${arg.name}: ${arg.message}`;
       try {
-        return JSON.stringify(arg);
+        // `undefined` for a function or a symbol, which `String()` can name.
+        return JSON.stringify(arg) ?? String(arg);
       } catch {
         return String(arg);
       }
@@ -43,31 +61,36 @@ function format(args: unknown[]): string {
 /**
  * Patches the frame's console and its two unhandled-failure paths.
  *
- * Returns a detach function, but note that a navigation replaces the frame's
- * global anyway, so the usual lifecycle is "attach on every load and forget".
- * The marker keeps a double attach from wrapping the wrapper.
+ * Nothing is ever detached: a navigation replaces the frame's global, and with
+ * it the console and both listeners. What has to be guarded is the opposite
+ * case, attaching twice to one document — the marker does that for the wrappers
+ * *and* the listeners, so this can be called as often as anyone likes.
+ *
+ * Which matters, because `load` is late. The app's own first render, and every
+ * warning it emits, happens before the frame fires it. So this is also called
+ * from the poll in `App.tsx`, which reaches a booting document that the load
+ * handler alone would only meet after the fact.
  */
-export function attachConsole(win: Window | null, onEntry: (entry: LogEntry) => void): () => void {
-  if (!win) return () => {};
+export function attachConsole(win: Window | null, onEntry: (entry: LogEntry) => void): void {
+  if (!win) return;
 
-  let live = true;
   const emit = (level: Level, text: string) => {
-    if (live && text) onEntry({ id: ++counter, level, text, at: Date.now() });
+    if (text) onEntry({ id: ++counter, level, text, at: Date.now() });
   };
 
   try {
     const target = (win as Window & typeof globalThis).console as Console & {
       [MARKER]?: boolean;
     };
-    if (!target[MARKER]) {
-      target[MARKER] = true;
-      for (const level of ['error', 'warn'] as const) {
-        const original = target[level].bind(target);
-        target[level] = (...args: unknown[]) => {
-          emit(level, format(args));
-          original(...args);
-        };
-      }
+    if (target[MARKER]) return;
+    target[MARKER] = true;
+
+    for (const level of ['error', 'warn'] as const) {
+      const original = target[level].bind(target);
+      target[level] = (...args: unknown[]) => {
+        emit(level, format(args));
+        original(...args);
+      };
     }
 
     win.addEventListener('error', (event) => {
@@ -79,13 +102,4 @@ export function attachConsole(win: Window | null, onEntry: (entry: LogEntry) => 
   } catch {
     // The frame navigated away mid-attach. The next load attaches again.
   }
-
-  return () => {
-    live = false;
-  };
-}
-
-/** Keeps the list bounded; the interesting entry is almost always the newest. */
-export function append(entries: LogEntry[], entry: LogEntry): LogEntry[] {
-  return [...entries, entry].slice(-LIMIT);
 }
