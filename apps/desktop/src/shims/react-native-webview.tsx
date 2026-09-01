@@ -23,7 +23,7 @@
 // puts the web view inside it through the `ref`, which on this host hands back the
 // author's own `Gtk.Widget` rather than a wrapper.
 //
-// ## Scrolling, and why it needs an injected script
+// ## Two injected scripts, and why each one is not a signal
 //
 // WebKit emits no scroll signal: the scroll position lives inside the web process.
 // `onScroll` is therefore driven by a user script that posts `window.scrollY` through
@@ -31,13 +31,24 @@
 // exactly this, and it costs one message per scroll event rather than a polling
 // timer.
 //
+// The navigation gate is injected for a different reason: `decide-policy` exists only
+// on WebKitGTK. On macOS this namespace is a WKWebView behind a GObject shim with three
+// signals and not that one, and on Windows there is no WebKit at all — so a
+// signal-only gate is a gate the reader silently loses on both hosts this app is being
+// ported to. The click interception is the mechanism the WEB target already uses for
+// the same absence, so all three non-GTK hosts now behave identically. Details and the
+// non-overlap argument sit on `NAVIGATE_SCRIPT` below.
+//
 // It also means the reader document runs script on this host, where on the web target
 // it deliberately does not (`ReaderView.web.tsx` withholds `allow-scripts` and
 // listens from the parent instead, because `srcDoc` keeps the frame same-origin). The
 // difference is named here because it is a real widening of what the article document
-// may do: an injected script of ours, plus whatever the document itself carries.
-// Narrowing it would mean a WebKit settings pass (`enable-javascript: false` plus a
-// different scroll channel) and is worth doing before this is anything but a demo.
+// may do: two injected scripts of ours, plus whatever the document itself carries.
+// Narrowing it is now HARDER than it was, and the trade is worth stating: a WebKit
+// settings pass (`enable-javascript: false`) would have cost only the scroll channel
+// before, and would now cost the navigation gate too — on the hosts that have no
+// `decide-policy` to fall back on, that is the whole gate. Worth doing before this is
+// anything but a demo, and it needs a different answer than "turn script off".
 
 // Type-only: the values come from `gi://` at runtime, which resolves only inside a
 // GTK process. `@girs/*` is the same vocabulary as data, so `tsc` can read it here.
@@ -80,20 +91,13 @@ export interface WebViewProps {
   domStorageEnabled?: boolean;
 }
 
-/** The name the injected script posts to, and the handler this shim registers. */
-const SCROLL_CHANNEL = 'correctivReaderScroll';
-
-const SCROLL_SCRIPT = `
-(function () {
-  var post = function () {
-    try {
-      window.webkit.messageHandlers.${SCROLL_CHANNEL}.postMessage(String(window.scrollY));
-    } catch (error) { /* the handler is gone: the view is being torn down */ }
-  };
-  window.addEventListener('scroll', post, { passive: true });
-  post();
-})();
-`;
+import {
+  NAVIGATE_CHANNEL,
+  NAVIGATE_SCRIPT,
+  READER_FALLBACK_BASE,
+  SCROLL_CHANNEL,
+  SCROLL_SCRIPT,
+} from './webview-scripts.js';
 
 export function WebView({
   source,
@@ -132,15 +136,18 @@ export function WebView({
 
       const manager = new WebKit.UserContentManager();
       manager.register_script_message_handler(SCROLL_CHANNEL, null);
-      manager.add_script(
-        new WebKit.UserScript(
-          SCROLL_SCRIPT,
-          WebKit.UserContentInjectedFrames.TOP_FRAME,
-          WebKit.UserScriptInjectionTime.END,
-          null,
-          null,
-        ),
-      );
+      manager.register_script_message_handler(NAVIGATE_CHANNEL, null);
+      for (const code of [SCROLL_SCRIPT, NAVIGATE_SCRIPT(source.baseUrl ?? READER_FALLBACK_BASE)]) {
+        manager.add_script(
+          new WebKit.UserScript(
+            code,
+            WebKit.UserContentInjectedFrames.TOP_FRAME,
+            WebKit.UserScriptInjectionTime.END,
+            null,
+            null,
+          ),
+        );
+      }
 
       const view = new WebKit.WebView({
         userContentManager: manager,
@@ -179,28 +186,76 @@ export function WebView({
         },
       );
 
-      // The navigation gate. `onShouldStartLoadWithRequest` returning false is how
-      // the app keeps an in-app link inside the router and sends an external one to
-      // the system browser, so ignoring it would turn every tap in an article into a
-      // full-page navigation inside the reader.
-      const policyId = view.connect(
-        'decide-policy',
-        (_v: WebKit.WebView, decision: WebKit.PolicyDecision, type: WebKit.PolicyDecisionType) => {
-          if (type !== WebKit.PolicyDecisionType.NAVIGATION_ACTION) return false;
-          // Everything up to and including the first commit is OUR document arriving,
-          // not the user following a link. See `committed` above.
-          if (!committed) return false;
-          const navigation = decision as WebKit.NavigationPolicyDecision;
-          const uri = navigation.get_navigation_action()?.get_request()?.get_uri();
-          if (uri === undefined || uri === null || uri === 'about:blank') return false;
+      /**
+       * The navigation gate, portable half: a click the injected script intercepted.
+       *
+       * `onShouldStartLoadWithRequest` returning false is how the app keeps an in-app
+       * link inside the router and sends an external one to the system browser, so
+       * ignoring it would turn every tap in an article into a full-page navigation
+       * inside the reader.
+       *
+       * The script has already called `preventDefault()`, so the DEFAULT here is to do
+       * nothing further — an app that handled the URL wants exactly that. Only an
+       * explicit allow needs an action, and then the host performs the navigation the
+       * script suppressed.
+       */
+      const navigateId = manager.connect(
+        `script-message-received::${NAVIGATE_CHANNEL}`,
+        (_m: WebKit.UserContentManager, value: GLibVariantLike) => {
+          const uri = value.to_string();
+          if (uri === '' || uri === 'about:blank') return;
           const allowed = handlers.current.onShouldStartLoadWithRequest?.({ url: uri }) ?? true;
-          if (!allowed) {
-            decision.ignore();
-            return true;
-          }
-          return false;
+          if (allowed) view.load_uri(uri);
         },
       );
+
+      /**
+       * The same gate, backstop half — and it exists only on WebKitGTK.
+       *
+       * It catches what a click handler structurally cannot see: a redirect, a
+       * script-driven navigation, a target the document reached without a click. On
+       * this document class that should be nothing (`extract.ts` drops `<script>`,
+       * `<style>`, `<iframe>` and `<form>` before the HTML is built), so it is defence
+       * rather than function — which is precisely why losing it on the other two hosts
+       * is acceptable and losing the click half would not be.
+       *
+       * CONNECTED DEFENSIVELY, and that is not superstition: on macOS this namespace is
+       * `@gjsify/webkit-native`, a WKWebView behind a GObject shim that implements
+       * `script-message-received`, `load-changed` and `load-failed` — and not this
+       * signal. Connecting to a signal a GObject does not have throws, and an
+       * unconditional connect here would take the whole reader down on the host it was
+       * meant to serve. The refusal is reported once rather than swallowed.
+       */
+      let policyId: number | null = null;
+      try {
+        policyId = view.connect(
+          'decide-policy',
+          (
+            _v: WebKit.WebView,
+            decision: WebKit.PolicyDecision,
+            type: WebKit.PolicyDecisionType,
+          ) => {
+            if (type !== WebKit.PolicyDecisionType.NAVIGATION_ACTION) return false;
+            // Everything up to and including the first commit is OUR document arriving,
+            // not the user following a link. See `committed` above.
+            if (!committed) return false;
+            const navigation = decision as WebKit.NavigationPolicyDecision;
+            const uri = navigation.get_navigation_action()?.get_request()?.get_uri();
+            if (uri === undefined || uri === null || uri === 'about:blank') return false;
+            const allowed = handlers.current.onShouldStartLoadWithRequest?.({ url: uri }) ?? true;
+            if (!allowed) {
+              decision.ignore();
+              return true;
+            }
+            return false;
+          },
+        );
+      } catch (error) {
+        console.log(
+          '[desktop] WebView: no `decide-policy` on this WebKit, so only link clicks are ' +
+            `gated (expected on macOS, where the namespace is a WKWebView shim): ${String(error)}`,
+        );
+      }
 
       // Load reporting, because a blank web view is the single most ambiguous state
       // this host can be in: "the HTML never arrived", "WebKit refused it" and "it
@@ -224,7 +279,11 @@ export function WebView({
 
       teardown = () => {
         manager.disconnect(scrollId);
-        view.disconnect(policyId);
+        manager.disconnect(navigateId);
+        // Null on a WebKit without `decide-policy`; see the connect above. Passing a
+        // null handler id to `g_signal_handler_disconnect` is a CRITICAL, and a
+        // teardown that warns on every unmount is one nobody reads by the tenth time.
+        if (policyId !== null) view.disconnect(policyId);
         view.disconnect(loadId);
         view.disconnect(failId);
         // Unparent before dropping the reference. A widget still parented at
