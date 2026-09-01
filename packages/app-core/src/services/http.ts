@@ -26,6 +26,24 @@ const DEFAULT_HEADERS: Record<string, string> = {
 export interface FetchTextOptions {
   timeoutMs?: number;
   headers?: Record<string, string>;
+  /**
+   * Send the browser user agent above. Defaults to true.
+   *
+   * **Turn it off for a JSON API, and the reason is CORS.** Browsers refuse to let
+   * a page override `User-Agent`, so on the web target this header is at best
+   * dropped. At worst it is honoured: a non-safelisted request header makes the
+   * browser send a preflight, and correctiv.org answers `OPTIONS` with
+   * `Access-Control-Allow-Headers: Authorization, X-WP-Nonce, Content-Disposition,
+   * Content-MD5, Content-Type` — no `User-Agent` in the list, so that preflight
+   * fails and the request never happens. A header that cannot help and might block
+   * has no business on a request that does not need it.
+   *
+   * Measured 2026-09-01 with a plain `CorrectivApp/1.0` agent: `wp/v2/posts`,
+   * `wp/v2/newspack_nl_cpt`, `tube.funfacts.de/api/v1/videos` and Icecast's
+   * `status-json.xsl` all answer 200. The bot challenge is on the HTML and RSS
+   * paths, and those keep the header.
+   */
+  browserAgent?: boolean;
 }
 
 /** True when the runtime can cancel a request rather than merely stop waiting. */
@@ -43,8 +61,10 @@ function canAbort(): boolean {
  * jest refusing to exit after a suite that fetched once.
  */
 export async function fetchText(url: string, options: FetchTextOptions = {}): Promise<string> {
-  const { timeoutMs = DEFAULT_TIMEOUT_MS, headers } = options;
-  const merged = { ...DEFAULT_HEADERS, ...headers };
+  const { timeoutMs = DEFAULT_TIMEOUT_MS, headers, browserAgent = true } = options;
+  const merged = browserAgent
+    ? { ...DEFAULT_HEADERS, ...headers }
+    : { Accept: DEFAULT_HEADERS.Accept, ...headers };
 
   if (canAbort()) {
     const controller = new AbortController();
@@ -70,5 +90,27 @@ export async function fetchText(url: string, options: FetchTextOptions = {}): Pr
     return await Promise.race([request, timeout]);
   } finally {
     clearTimeout(timer);
+  }
+}
+
+/**
+ * The same fetch, parsed.
+ *
+ * Three callers wanted this before it existed: `peertube.service.ts` kept a
+ * private wrapper, `search.service.ts` inlined `JSON.parse(await fetchText(...))`
+ * and `wp.service.ts` would have been the third. A JSON API answering with an
+ * HTML error page is the failure this centralises: `JSON.parse` then throws
+ * `Unexpected token '<'`, which says nothing about which URL produced it.
+ */
+export async function fetchJson<T>(url: string, options: FetchTextOptions = {}): Promise<T> {
+  const body = await fetchText(url, {
+    browserAgent: false,
+    ...options,
+    headers: { Accept: 'application/json', ...options.headers },
+  });
+  try {
+    return JSON.parse(body) as T;
+  } catch {
+    throw new Error(`Not JSON from ${url}: ${body.slice(0, 80)}`);
   }
 }

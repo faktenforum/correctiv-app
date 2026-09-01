@@ -27,8 +27,22 @@ export interface FeedItem {
   /** ISO-8601 */
   publishedAt: string;
   categories: string[];
-  /** og:image — the feed provides no images, loaded lazily */
+  /**
+   * The lead image. RSS carries none, so on that path this is filled in later;
+   * the REST path (`services/wp.service.ts`) brings it in the same response.
+   */
   imageUrl?: string | null;
+  /**
+   * Reading time in minutes, as correctiv.org prints it.
+   *
+   * Absent on the RSS path, which knows nothing about it. It is here because the
+   * alternative was measurably worse: `ArticleHero` fetched the entire article
+   * page per lead item — about 115 KB — for this one number, and in a browser that
+   * request is blocked outright, so the hero's byline lost its reading time on the
+   * web target and logged a CORS error while doing it. Found by opening the export
+   * in a browser, which is the only place it shows.
+   */
+  readingMinutes?: number;
 }
 
 /**

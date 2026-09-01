@@ -11,7 +11,7 @@
 // streaming URLs at all.
 
 import type { Video } from '../types/models';
-import { fetchText } from './http';
+import { fetchJson } from './http';
 
 /** Base URL of the FunFacts PeerTube instance. */
 export const PEERTUBE_HOST = 'https://tube.funfacts.de';
@@ -59,10 +59,6 @@ export interface PeerTubeVideo {
 interface ApiList<T> {
   total: number;
   data: T[];
-}
-
-async function fetchJson<T>(url: string): Promise<T> {
-  return JSON.parse(await fetchText(url)) as T;
 }
 
 /** PeerTube returns absolute URLs for some fields, relative paths for others. */
@@ -139,4 +135,39 @@ export async function fetchPeertubeChannelAsVideos(
 ): Promise<Video[]> {
   const list = await fetchChannelVideos(channel, count);
   return list.map(toVideo);
+}
+
+/**
+ * Several channels of the instance as one stream, newest first.
+ *
+ * One request per channel, in parallel, and a channel that fails is skipped rather
+ * than fatal: with nine channels on the instance, one unreachable channel must not
+ * empty a rail that eight others could fill. `count` is per channel, so the merged
+ * list is at most `channels.length * count` before the caller slices it.
+ *
+ * Sorted here because the API sorts within a channel and cannot sort across them.
+ */
+export async function fetchPeertubeChannelsAsVideos(
+  channels: readonly string[],
+  count = 12,
+): Promise<Video[]> {
+  const lists = await Promise.all(
+    channels.map(async (channel) => {
+      try {
+        return await fetchPeertubeChannelAsVideos(channel, count);
+      } catch (err) {
+        console.warn(
+          `PeerTube channel '${channel}' failed:`,
+          err instanceof Error ? err.message : err,
+        );
+        return [] as Video[];
+      }
+    }),
+  );
+  const merged = lists.flat();
+  if (merged.length === 0) throw new Error(`No PeerTube channel answered: ${channels.join(', ')}`);
+  return merged.sort((a, b) => {
+    if (a.publishedAt === b.publishedAt) return 0;
+    return a.publishedAt < b.publishedAt ? 1 : -1;
+  });
 }

@@ -18,9 +18,10 @@ import { useArticleMeta } from '@/lib/articles/useArticleMeta';
  *
  * The draft gives the hero a kicker unconditionally, so a feed without a badge of
  * its own falls back to "Recherche". The main feed deliberately has none, which is
- * the common case and left the hero bare. The byline carries
- * CORRECTIV's own reading time when the page states one; see pageMeta.ts for why
- * it is read rather than computed.
+ * the common case and left the hero bare. The byline carries CORRECTIV's own
+ * reading time rather than a computed one, and it now comes with the feed item
+ * instead of costing a page fetch — see `useArticleMeta` for what that cost on the
+ * web target.
  */
 export function ArticleHero({
   item,
@@ -32,6 +33,7 @@ export function ArticleHero({
   const { heroImageUrl: imageUrl, readingMinutes } = useArticleMeta(
     item.url,
     item.imageUrl ?? undefined,
+    item.readingMinutes,
   );
   const kicker = FEEDS[item.feed]?.badge ?? 'Recherche';
   const byline = [
