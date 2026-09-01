@@ -8,9 +8,9 @@ import { coreActions, coreStore } from '@/lib/store/core';
  * The search's offline fallback: everything this device knows about correctiv.org
  * without a network.
  *
- * Full-text search runs server-side (WordPress REST). When that is unreachable — or
- * simply not allowed, as in a browser: see the CORS note in ADR 0004 — the app
- * searches the feeds instead. The core's feed slice falls back to its cache per
+ * Full-text search runs server-side (WordPress REST). When that is unreachable the
+ * app searches the feeds instead. It is not blocked in a browser: `wp/v2` sends a
+ * CORS header, which is what ADR 0015 is about. The core's feed slice falls back to its cache per
  * feed, so this holds in airplane mode too.
  *
  * Loaded lazily, and only when the fallback is actually needed: the normal case

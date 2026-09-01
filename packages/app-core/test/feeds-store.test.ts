@@ -1,15 +1,25 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
-// The store's only network call. Mocked so the cascade can be driven per test.
+/**
+ * The store's two network calls, mocked so the cascade can be driven per test.
+ *
+ * `fetchWpFeed` is the REST path and comes first; `fetchFeed` is the RSS fallback
+ * behind it. Every test that only sets up `fetchFeed` is therefore exercising the
+ * fallback, which is deliberate: those tests predate the REST path and still
+ * describe what RSS has to keep doing.
+ */
 vi.mock('../src/services/rss.service', () => ({ fetchFeed: vi.fn() }));
+vi.mock('../src/services/wp.service', () => ({ fetchWpFeed: vi.fn() }));
 
 import { configurePlatform, createEmptyContentBundle, createMemoryPlatform } from '../src/ports';
 import { clearMemoryCache, setCached } from '../src/services/cache.service';
 import { fetchFeed } from '../src/services/rss.service';
+import { fetchWpFeed } from '../src/services/wp.service';
 import {
   enrichImage,
   fetchFeedKey,
   fetchMany,
+  loadMore,
   mergedFeedItems,
   mergedFeedStatus,
   patch,
@@ -28,6 +38,7 @@ import type { FeedItem, FeedKey } from '../src/types/models';
  * assertions now cover both of them.
  */
 const fetchMock = vi.mocked(fetchFeed);
+const restMock = vi.mocked(fetchWpFeed);
 let store: AppStore;
 
 function item(id: string, publishedAt = '2026-06-12T10:00:00.000Z'): FeedItem {
@@ -60,8 +71,15 @@ function seed(partial: Partial<Record<FeedKey, Partial<FeedSlice>>>) {
 }
 
 beforeEach(() => {
+  // The REST round is off by default here, and it says so once per call. That is
+  // the right behaviour and the wrong test output.
+  vi.spyOn(console, 'warn').mockImplementation(() => {});
   store = createAppStore();
   fetchMock.mockReset();
+  // Default: the REST path is unavailable, so the cascade falls through to RSS.
+  // A test that wants the REST path says so by resolving this itself.
+  restMock.mockReset();
+  restMock.mockRejectedValue(new Error('REST off in this test'));
   clearMemoryCache();
   configurePlatform(createMemoryPlatform());
 });
@@ -219,6 +237,230 @@ describe('merged reads', () => {
     expect(mergedFeedStatus(state(), ['recherchen', 'faktencheck'])).toBe('ready');
     expect(mergedFeedStatus(state(), ['faktencheck'])).toBe('offline');
     expect(mergedFeedStatus(state(), ['klima'])).toBe('idle');
+  });
+});
+
+describe('the REST path', () => {
+  it('prefers the API and never touches RSS when it answers', async () => {
+    restMock.mockResolvedValue({ items: [item('a'), item('b')], hasMore: true });
+    await store.dispatch(fetchFeedKey('recherchen'));
+
+    const slice = store.getState().feeds.byKey.recherchen;
+    expect(slice.items).toHaveLength(2);
+    expect(slice.status).toBe('ready');
+    expect(slice.page).toBe(1);
+    expect(slice.hasMore).toBe(true);
+    expect(fetchMock).not.toHaveBeenCalled();
+  });
+
+  it('asks for the configured category, and for none on the site-wide feed', async () => {
+    restMock.mockResolvedValue({ items: [item('a')], hasMore: false });
+    await store.dispatch(fetchFeedKey('faktencheck'));
+    await store.dispatch(fetchFeedKey('recherchen'));
+
+    expect(restMock).toHaveBeenNthCalledWith(
+      1,
+      'faktencheck',
+      expect.objectContaining({ categoryId: 5, page: 1 }),
+    );
+    expect(restMock).toHaveBeenNthCalledWith(
+      2,
+      'recherchen',
+      expect.objectContaining({ categoryId: undefined }),
+    );
+  });
+
+  /**
+   * The failure the second round exists for, and the one it could not see: a
+   * category id that stops matching upstream answers `200 []`, not an error.
+   */
+  it('falls through to RSS when the API answers an empty first page', async () => {
+    restMock.mockResolvedValue({ items: [], hasMore: false });
+    fetchMock.mockResolvedValue([item('a')]);
+
+    await store.dispatch(fetchFeedKey('faktencheck'));
+
+    expect(fetchMock).toHaveBeenCalledTimes(1);
+    expect(store.getState().feeds.byKey.faktencheck.items.map((i) => i.id)).toEqual(['a']);
+    expect(store.getState().feeds.byKey.faktencheck.status).toBe('ready');
+  });
+
+  it('falls through to RSS when the API fails, without disturbing the reader', async () => {
+    fetchMock.mockResolvedValue([item('a')]);
+    await store.dispatch(fetchFeedKey('recherchen'));
+
+    const slice = store.getState().feeds.byKey.recherchen;
+    expect(slice.items.map((i) => i.id)).toEqual(['a']);
+    expect(slice.status).toBe('ready');
+    // RSS cannot page, so nothing may offer a "mehr laden" button.
+    expect(slice.hasMore).toBe(false);
+  });
+
+  /**
+   * `europe` has no category upstream. Without the guard, a REST call without a
+   * `categoryId` returns the whole site under the label "CORRECTIV.Europe".
+   */
+  it('never asks the network for a feed whose category does not exist', async () => {
+    const error = vi.spyOn(console, 'error').mockImplementation(() => {});
+    await store.dispatch(fetchFeedKey('europe'));
+    expect(restMock).not.toHaveBeenCalled();
+    expect(fetchMock).not.toHaveBeenCalled();
+    expect(store.getState().feeds.byKey.europe.items).toHaveLength(0);
+    error.mockRestore();
+  });
+});
+
+describe('loading more', () => {
+  async function firstPage(hasMore = true) {
+    restMock.mockResolvedValueOnce({
+      items: [item('a', '2026-08-31T10:00:00.000Z'), item('b', '2026-08-30T10:00:00.000Z')],
+      hasMore,
+    });
+    await store.dispatch(fetchFeedKey('faktencheck'));
+  }
+
+  it('appends the next page and remembers where it is', async () => {
+    await firstPage();
+    restMock.mockResolvedValueOnce({
+      items: [item('c', '2026-08-29T10:00:00.000Z')],
+      hasMore: false,
+    });
+    await store.dispatch(loadMore('faktencheck'));
+
+    const slice = store.getState().feeds.byKey.faktencheck;
+    expect(slice.items.map((i) => i.id)).toEqual(['a', 'b', 'c']);
+    expect(slice.page).toBe(2);
+    expect(slice.hasMore).toBe(false);
+    expect(slice.loadingMore).toBe(false);
+  });
+
+  /**
+   * WordPress pages an offset into a list that moves. Publish something between
+   * two requests and the last item of page 1 arrives again as the first of page 2.
+   */
+  it('drops an item the moving offset served twice', async () => {
+    await firstPage();
+    restMock.mockResolvedValueOnce({
+      items: [item('b', '2026-08-30T10:00:00.000Z'), item('c', '2026-08-29T10:00:00.000Z')],
+      hasMore: false,
+    });
+    await store.dispatch(loadMore('faktencheck'));
+
+    expect(store.getState().feeds.byKey.faktencheck.items.map((i) => i.id)).toEqual([
+      'a',
+      'b',
+      'c',
+    ]);
+  });
+
+  /**
+   * WordPress answers a page past the end with 400, and `hasMore` is a guess from
+   * a full page, so a category with an exact multiple of PAGE_SIZE posts asks for
+   * one page too many. Leaving `hasMore` set would keep a button that fails on
+   * every press.
+   */
+  it('treats a 400 on the next page as the end of the list', async () => {
+    await firstPage();
+    const error = vi.spyOn(console, 'error').mockImplementation(() => {});
+    restMock.mockRejectedValueOnce(new Error('HTTP 400 for https://correctiv.org/wp-json'));
+
+    await store.dispatch(loadMore('faktencheck'));
+
+    const slice = store.getState().feeds.byKey.faktencheck;
+    expect(slice.hasMore).toBe(false);
+    expect(slice.items.map((i) => i.id)).toEqual(['a', 'b']);
+    error.mockRestore();
+  });
+
+  /**
+   * A refresh that lands while a page is in flight must not be undone. The thunk
+   * used to append to a snapshot taken before its own await.
+   */
+  it('appends to the list as it is after the await, not as it was before', async () => {
+    await firstPage();
+    let release: (page: { items: FeedItem[]; hasMore: boolean }) => void = () => {};
+    restMock.mockReturnValueOnce(new Promise((resolve) => (release = resolve)));
+
+    const pending = store.dispatch(loadMore('faktencheck'));
+    // A pull-to-refresh resolves first, with an article published since page 1.
+    store.dispatch(
+      patch('faktencheck', {
+        items: [item('neu', '2026-09-01T08:00:00.000Z'), item('a', '2026-08-31T10:00:00.000Z')],
+      }),
+    );
+    release({ items: [item('c', '2026-08-29T10:00:00.000Z')], hasMore: false });
+    await pending;
+
+    expect(store.getState().feeds.byKey.faktencheck.items.map((i) => i.id)).toContain('neu');
+  });
+
+  it('does nothing when there is no next page', async () => {
+    await firstPage(false);
+    restMock.mockClear();
+    await store.dispatch(loadMore('faktencheck'));
+    expect(restMock).not.toHaveBeenCalled();
+  });
+
+  it('leaves the list untouched when the next page fails', async () => {
+    await firstPage();
+    const error = vi.spyOn(console, 'error').mockImplementation(() => {});
+    restMock.mockRejectedValueOnce(new Error('gone'));
+    await store.dispatch(loadMore('faktencheck'));
+    error.mockRestore();
+
+    const slice = store.getState().feeds.byKey.faktencheck;
+    expect(slice.items.map((i) => i.id)).toEqual(['a', 'b']);
+    expect(slice.page).toBe(1);
+    expect(slice.loadingMore).toBe(false);
+  });
+});
+
+describe('order', () => {
+  /**
+   * The shape correctiv.org/feed/ actually returns: one older post hoisted to
+   * position 1, the rest descending. Measured 2026-09-01. Home takes the first
+   * item as its lead, so an unsorted slice puts a four-week-old post on the front
+   * page while the feed behind it is current.
+   */
+  const hoisted = [
+    item('alt', '2026-08-01T07:27:22.000Z'),
+    item('neu', '2026-08-31T16:51:04.000Z'),
+    item('mittel', '2026-08-31T12:39:48.000Z'),
+  ];
+
+  it('sorts the network result newest first', async () => {
+    fetchMock.mockResolvedValue(hoisted);
+    await store.dispatch(fetchFeedKey('recherchen'));
+    expect(store.getState().feeds.byKey.recherchen.items.map((i) => i.id)).toEqual([
+      'neu',
+      'mittel',
+      'alt',
+    ]);
+  });
+
+  it('sorts a cache written before the sort existed', async () => {
+    await setCached('feeds', 'recherchen', hoisted);
+    await store.dispatch(fetchFeedKey('recherchen'));
+    expect(store.getState().feeds.byKey.recherchen.items[0].id).toBe('neu');
+    expect(fetchMock).not.toHaveBeenCalled();
+  });
+
+  it('leaves items published at the same instant in the order the feed sent them', async () => {
+    fetchMock.mockResolvedValue([item('a'), item('b'), item('c')]);
+    await store.dispatch(fetchFeedKey('recherchen'));
+    expect(store.getState().feeds.byKey.recherchen.items.map((i) => i.id)).toEqual(['a', 'b', 'c']);
+  });
+
+  it('sorts the bundled snapshot too', async () => {
+    fetchMock.mockRejectedValue(new Error('offline'));
+    configurePlatform({
+      ...createMemoryPlatform(),
+      content: { ...createEmptyContentBundle(), feed: () => hoisted },
+    });
+    await store.dispatch(fetchFeedKey('recherchen'));
+    const { items, status } = store.getState().feeds.byKey.recherchen;
+    expect(status).toBe('offline');
+    expect(items[0].id).toBe('neu');
   });
 });
 

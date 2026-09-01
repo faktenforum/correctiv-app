@@ -39,7 +39,7 @@ import { createAppStore, resetStore, type AppStore } from '../src/stores/store';
 import { close, isActive, opened, play, statusChanged } from '../src/stores/video';
 
 /**
- * The state moved from ten observable stores to ten slices of one Redux store.
+ * The state moved from ten observable stores to twelve slices of one Redux store.
  * These tests pin the behaviour that move could quietly change: immutable
  * updates, action semantics, and the pure selectors that were never methods.
  *

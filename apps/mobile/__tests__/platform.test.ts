@@ -116,9 +116,9 @@ describe('blobs port', () => {
 
 /**
  * The bundle is this host's offline promise: the reader has to open without a
- * network, which is the whole reason `npm run offline-articles` exists. On the web
- * target it is more than a promise — correctiv.org sends no CORS header, so the
- * snapshots are the only articles a browser will ever see.
+ * network, which is the whole reason `npm run offline-articles` exists. It was more
+ * than a promise on the web target until ADR 0015, when the app moved to an API that
+ * a browser can reach; the snapshots are the floor there now, not the ceiling.
  */
 describe('content bundle', () => {
   it('serves a bundled article by its url, and null for anything else', () => {

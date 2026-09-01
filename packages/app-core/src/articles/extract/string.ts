@@ -1,4 +1,4 @@
-import { balancedBlock, stripTags } from '../../lib/html';
+import { balancedBlock, sanitizeArticleHtml, stripTags } from '../../lib/html';
 import { estimateReadingMinutes, extractPageMeta } from '../page-meta';
 import { ratingFromPage, ratingFromText } from '../rating';
 import type { ArticleExtractor, ExtractedArticle } from '../types';
@@ -16,21 +16,6 @@ import type { ArticleExtractor, ExtractedArticle } from '../types';
  * an allowlist instead and produces tighter markup — see `types.ts` for why both
  * exist and `test/articles.test.ts` for what holds them together.
  */
-
-/** Elements that are never article content. Removed with their contents. */
-const DROP_TAGS = ['script', 'noscript', 'iframe', 'form', 'style', 'svg', 'button'];
-
-function sanitizeBody(body: string): string {
-  let out = body;
-  for (const tag of DROP_TAGS) {
-    out = out.replace(new RegExp(`<${tag}[\\s\\S]*?</${tag}>`, 'gi'), '');
-  }
-  // Tracking pixels (1×1) and empty lazyload imgs without a src.
-  out = out.replace(/<img[^>]+(facebook\.com\/tr|height="1")[^>]*>/gi, '');
-  // Reduce <picture>/<source> variants to the <img> — the reader loads srcset itself.
-  out = out.replace(/<source[^>]*>/gi, '');
-  return out.trim();
-}
 
 function blockText(html: string, className: string): string | undefined {
   const block = balancedBlock(html, new RegExp(`<\\w+[^>]*class="[^"]*${className}[^"]*"[^>]*>`));
@@ -66,7 +51,7 @@ export const extractArticleFromString: ArticleExtractor = (html: string): Extrac
   const rating = ratingFromPage(html) ?? ratingFromText(blockText(html, 'detail__rating-text'));
 
   const bodyBlock = balancedBlock(html, /<div[^>]*class="[^"]*detail__content[^"]*"[^>]*>/);
-  const bodyHtml = bodyBlock ? sanitizeBody(bodyBlock) : '';
+  const bodyHtml = bodyBlock ? sanitizeArticleHtml(bodyBlock) : '';
 
   return {
     title,

@@ -20,10 +20,12 @@ anyone at the URL:
   whole browser window; `/preview.html` frames it at a phone or tablet size instead.
   The root stays reachable, nothing hides it, so the framed link is the one to
   send.
-- **Its articles are as old as the last `npm run offline-articles`.** The browser
-  cannot reach any CORRECTIV feed, for want of a CORS header, so the app falls back to the
-  snapshot bundled into the build, and says so on screen. Re-run the generator and
-  merge it before a demo.
+- **Its articles are live**, since [ADR 0015](adr/0015-reading-correctiv-org-through-its-rest-api.md).
+  This bullet used to say they were as old as the last `npm run offline-articles`,
+  because a browser cannot reach an RSS feed for want of a CORS header. The app reads
+  the REST API now, which sends one. The bundled snapshot is still there and still
+  worth refreshing before a demo, because it is what the page falls back to when a
+  request fails, and it is what an offline reader sees.
 - **The site is a project site**, served from `/correctiv-app/`, so the export needs
   `EXPO_BASE_URL` to prefix its asset URLs. `pages.yml` takes that value from
   `actions/configure-pages` and asserts it reached the built HTML. The failure is

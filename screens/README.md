@@ -18,8 +18,11 @@ This is the first set with the **native tab bar** ([ADR 0013](../adr/0013-native
 so every tab screen differs from the previous set at the bottom edge and only there:
 Material Symbols instead of Ionicons, and Material 3's pill behind the selected item.
 
-[`web/`](web/) holds the five tab screens at the same step names, from the static
-export of the same commit, shot at a 540x1200 viewport. It exists because the tab bar
+[`web/`](web/) holds the five tab screens at the same step names plus the reader on a
+fact check, from the static export, shot at a 540x1200 viewport. The reader is there
+because it is where the verdict plaque shows, and the plaque is what
+[ADR 0015](../adr/0015-reading-correctiv-org-through-its-rest-api.md) corrected: this
+article was labelled „Falsch“ until it read „Teilweise falsch“. It exists because the tab bar
 is now the one part of the app that is deliberately **not** the same on both, and a
 claim like that should be checkable by looking rather than by reading the ADR. It is
 five shots, not 29: the rest of the web build differs from Android only in the ways
@@ -128,10 +131,13 @@ Each of these cost a wrong conclusion or a worthless committed picture.
   carries no cover at all, no `og:image` and no image in the feed item. Both the app
   and its predecessor degrade quietly, which is what the first comparison round asked
   for.
-- On the web export, Home's articles come from the bundled snapshot rather than the
-  network, because correctiv.org sends no `Access-Control-Allow-Origin`. Judge layout
-  on the emulator shots. The web build shows a snapshot as old as the last
-  `npm run offline-articles`.
+- Home's articles used to come from the bundled snapshot on the web export, because
+  correctiv.org's RSS feeds send no `Access-Control-Allow-Origin`. Since
+  [ADR 0015](../adr/0015-reading-correctiv-org-through-its-rest-api.md) the app reads
+  the REST API, which does send it, so the web build has a live path. **The five `web/`
+  shots were re-taken from that build on 2026-09-01** and show live content: the lead
+  article is that morning's. The `android/` set is older and still shows the state
+  before it.
 
 ## Where the comparison history went
 

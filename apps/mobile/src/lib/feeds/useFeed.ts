@@ -31,8 +31,9 @@ export interface AsyncState<T> {
   /**
    * The list came out of the app bundle rather than off the network — a snapshot,
    * not today's news. Not an error, and not the same as `error`: there is something
-   * to read. A screen that shows the data owes the reader this much, which on the
-   * web target is every screen, every time (no `Access-Control-Allow-Origin`).
+   * to read. A screen that shows the data owes the reader this much. It used to be
+   * every screen on the web target, every time; since ADR 0015 the REST API answers
+   * a browser, so this is the state of a reader with no network on either target.
    */
   offline: boolean;
   reload: () => void;

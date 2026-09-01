@@ -23,8 +23,10 @@ const DEBOUNCE_MS = 300;
  * The order: WordPress REST (`searchArticles`, in the core) → on an error OR an
  * empty result, the feeds already loaded (`searchFeedCorpus`). The fallback is not
  * a stopgap but the promise the cache design makes: the demo must never hang on
- * Wi-Fi. On the web target it is in fact the normal case, because correctiv.org
- * sends no CORS header (ADR 0004).
+ * Wi-Fi. It is the exception rather than the rule even on the web target: this
+ * search has always run on `wp/v2`, which sends a CORS header, so the note that
+ * used to stand here — that a browser is blocked and the fallback is normal — was
+ * never true of the search. [ADR 0015](../../../../adr/0015-reading-correctiv-org-through-its-rest-api.md).
  *
  * The project hits (podcasts, callouts, backstage, publishing) are not in the feeds
  * and are filtered locally — without a debounce, because that costs nothing.

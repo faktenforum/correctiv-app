@@ -183,7 +183,8 @@ describe('Projektseite', () => {
   });
 
   it('says so when the feed cannot be loaded, rather than spinning forever', () => {
-    // This is the web target's normal state: correctiv.org sends no CORS header.
+    // This was the web target's normal state until ADR 0015. It is now the state of
+    // a reader with no network, which is what the assertion is really about.
     params.mockReturnValue({ id: 'klima' });
     useFeedMock.mockReturnValue({
       data: null,

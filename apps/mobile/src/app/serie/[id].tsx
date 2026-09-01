@@ -79,7 +79,8 @@ export default function SerieScreen() {
 
               {/* The same note the Mediathek shows over its rail. Without it this page is
                   where the offline fallback stops being honest: two seeded episodes read
-                  as the whole show. Castopod sends no CORS header, so on the web target
+                  as the whole show. Castopod sends no CORS header (unlike correctiv.org's
+                  REST API since ADR 0015), so on the web target
                   this is the normal case, not an edge one. */}
               {status === 'offline' && (
                 <Typo variant="text-s" color="grey-600" className="mt-s">

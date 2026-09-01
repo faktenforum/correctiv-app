@@ -132,8 +132,8 @@ function ProjectFeed({ feed }: { feed: FeedKey }) {
       )}
 
       {/* No silently endless spinner. With no network and no cache this says that
-          nothing could be loaded. On the web target that is the normal case, for as
-          long as correctiv.org sends no CORS header (ADR 0004). */}
+          nothing could be loaded. It stopped being the web target's normal case with
+          ADR 0015: the REST API sends a CORS header, so a browser has a live path. */}
       {error && items.length === 0 && !loading && (
         <Typo variant="text-s" color="grey-600" className="mt-2xs">
           Beiträge konnten nicht geladen werden.

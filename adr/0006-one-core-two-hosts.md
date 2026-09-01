@@ -158,12 +158,16 @@ finds the new state rather than the old one.
 ## What is still open
 
 - **CORS on the web target.** `correctiv.org`, `salon5.correctiv.net` and
-  `youtube.com/feeds` send no `Access-Control-Allow-Origin`, so no feed is ever live
-  in a browser. Fixed as far as the port can fix it: the Expo host bundles a snapshot
-  of every content feed, the store's cascade lands on it, and the browser demo has a
-  real front page that says it is a snapshot. What is still open is the header itself
-  — until CORRECTIV ops send one, the web build's articles are as old as the last
-  `npm run offline-articles`.
+  `youtube.com/feeds` send no `Access-Control-Allow-Origin`, ~~so no feed is ever live
+  in a browser~~ — true of the RSS feeds and not of the site, retired by
+  [ADR 0015](0015-reading-correctiv-org-through-its-rest-api.md): `wp/v2` reflects
+  whatever `Origin` it is given, so the app reads correctiv.org through the REST API
+  and the browser build has a live path. Fixed as far as the port can fix it: the Expo
+  host bundles a snapshot of every content feed, the store's cascade lands on it, and
+  the browser demo has a real front page that says it is a snapshot. ~~What is still
+  open is the header itself — until CORRECTIV ops send one, the web build's articles
+  are as old as the last `npm run offline-articles`.~~ Nothing was open; the header was
+  there on a different endpoint the whole time.
 - **Lock-screen metadata on NativeScript.** `TNSPlayer` offers none, so
   `AudioBackend.load` accepts `nowPlaying` and the NativeScript backend drops it.
   Named in that file rather than silently missing.

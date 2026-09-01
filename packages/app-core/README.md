@@ -45,7 +45,7 @@ src/media/       exclusive-playback, only one medium plays at a time
 ## Two things that will surprise you
 
 **The store is the core's, not the host's.** `stores/` is one Redux Toolkit store
-with ten slices, constructed here rather than by the host, because modules that are
+with twelve slices, constructed here rather than by the host, because modules that are
 not components need to read the same instance the screens are subscribed to
 (`media/exclusive-playback.ts`, the audio watchdog). The host still supplies the
 binding (react-redux). `zustand` stays on the boundary test's forbidden list not

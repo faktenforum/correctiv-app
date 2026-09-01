@@ -57,7 +57,7 @@ dropping a host meant dropping that file plus its screens.
 
 ## Three conventions in the core
 
-1. **State is framework-neutral.** `stores/` is one Redux Toolkit store with ten
+1. **State is framework-neutral.** `stores/` is one Redux Toolkit store with twelve
    slices. `stores/store.ts` explains why the core owns the instance rather than the
    host. The host adds only the reactivity binding, `apps/mobile/src/lib/store/core.ts`
    over react-redux. A second host once bound the state this replaced to Vue's
@@ -89,12 +89,19 @@ The one worth tracing, because it crosses every layer.
 a tap on a card
   → loadArticle(url)                    articles/load.ts
       1. platform().content.article()    the host's bundle, no network
-      2. getCached()                     a fresh extraction from earlier today
-      3. fetchText() → extract(html)     the network, then the host's backend
-      4. getStale()                      expired beats absent
+      2. getCached()                     a fresh read from earlier today
+      3. fetchWpArticle(url)             the REST API: one request, everything
+      4. fetchText() → extract(html)     the page, for what the API cannot answer
+      5. getStale()                      expired beats absent
   → buildReaderHtml(article, { css })   articles/reader-html.ts
   → ReaderView                          WebView on native, iframe on web
 ```
+
+Rung 3 arrived with [ADR 0015](adr/0015-reading-correctiv-org-through-its-rest-api.md)
+and answers everything rung 4 used to scrape for, the fact-check verdict included. Rung
+4 stays because a plugin can switch the API off per endpoint, and because it is the only
+rung that works on a URL the API does not know — every page in the app that is not a
+post.
 
 `buildReaderHtml` owns the document: structure, class names, German copy, the verdict
 plaque. The host supplies only the CSS, which here means the token variables and the
@@ -106,8 +113,9 @@ See `apps/mobile/src/lib/articles/reader.ts`.
 ## Where things are
 
 In the core, `ports/` and `types/` hold the contracts, `articles/` the Article model
-and its load cascade, `services/` the HTTP, cache, RSS, search, podcast and PeerTube
-clients, `stores/` the Redux slices, `data/` the typed content, `lib/` the
+and its load cascade, `services/` the HTTP, cache, WordPress REST, RSS, search,
+podcast, PeerTube, Spotlight and radio clients, `stores/` the Redux slices, `data/`
+the typed content, `lib/` the
 dependency-free string and date helpers, and `media/` the rule that only one medium
 plays at a time. `articles/extract/` holds two backends, string and DOM, behind one
 `ArticleExtractor` type.
@@ -190,9 +198,12 @@ core as the native builds, with two host-level differences.
 - **The two platform splits.** `ReaderView` and `VideoFrame` each have a `.web.tsx`
   sibling, an `<iframe>` where native uses a WebView. `__tests__/web-target.test.ts`
   fails if a component without a web implementation reaches the bundle.
-- **No feed is ever live.** A browser blocks every CORRECTIV RSS request, since there
-  is no CORS header, so the store's cascade lands on the bundled snapshot. The demo
-  is only as current as the last `npm run offline-articles`.
+- **Feeds are live here too, since [ADR 0015](adr/0015-reading-correctiv-org-through-its-rest-api.md).**
+  This entry used to read "no feed is ever live", because a browser blocks every
+  CORRECTIV *RSS* request. It still does. The REST API is the app's network path now
+  and it reflects whatever `Origin` it is given, so the store's cascade reaches the
+  network before it reaches the bundled snapshot. The snapshot is the floor for a
+  reader with no connection, not the ceiling for everyone in a browser.
 
 `.github/workflows/pages.yml` rebuilds and publishes it on every push to `main`. It
 is worth using while developing, because back-without-history and directly opened

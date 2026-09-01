@@ -43,6 +43,22 @@ export function stripTags(html: string): string {
     .trim();
 }
 
+/**
+ * One line of plain text out of a WordPress `rendered` field.
+ *
+ * Not the same as `stripTags`, and the second decode is the reason. A `rendered`
+ * title or excerpt can carry its entities encoded twice (`&amp;#8217;` for an
+ * apostrophe), where one pass leaves a visible `&#8217;` standing in a headline.
+ * The collapse repeats after it because that pass can turn an `&nbsp;` into a
+ * space.
+ *
+ * `services/wp.service.ts` and `services/spotlight.service.ts` read two different
+ * post types out of the same API and had a private copy of this each.
+ */
+export function plainText(html: string): string {
+  return decodeEntities(stripTags(html)).replace(/\s+/g, ' ').trim();
+}
+
 /** The inverse, for text going into HTML we build ourselves. */
 export function escapeHtml(s: string): string {
   return s
@@ -110,4 +126,30 @@ export function metaTags(html: string): Map<string, string> {
 /** One meta tag by `property` or `name`. */
 export function extractMeta(html: string, key: string): string | null {
   return metaTags(html).get(key) ?? null;
+}
+
+/** Elements that are never article content. Removed with their contents. */
+const DROP_TAGS = ['script', 'noscript', 'iframe', 'form', 'style', 'svg', 'button'];
+
+/**
+ * Clean an article body for the reader, by denylist.
+ *
+ * Known-bad elements are cut out and everything else survives, wrappers and
+ * classes included. It lived in `articles/extract/string.ts` while HTML scraping
+ * was the only way in; `services/wp.service.ts` needs the same treatment for the
+ * REST API's `content.rendered`, and two copies of a security-shaped function is
+ * one copy too many. Measured on a live article body, `content.rendered` carries
+ * only `a br div em figure h2 hr img p span strong` — so this is defence against
+ * the post that embeds something, not a fix for one that already does.
+ */
+export function sanitizeArticleHtml(body: string): string {
+  let out = body;
+  for (const tag of DROP_TAGS) {
+    out = out.replace(new RegExp(`<${tag}[\\s\\S]*?</${tag}>`, 'gi'), '');
+  }
+  // Tracking pixels (1x1) and empty lazyload imgs without a src.
+  out = out.replace(/<img[^>]+(facebook\.com\/tr|height="1")[^>]*>/gi, '');
+  // Reduce <picture>/<source> variants to the <img> - the reader loads srcset itself.
+  out = out.replace(/<source[^>]*>/gi, '');
+  return out.trim();
 }

@@ -53,6 +53,10 @@ import { press, render, renderedText } from './support/rendering';
 import MediathekScreen from '@/app/(tabs)/mediathek';
 import { playEpisode } from '@/lib/audio/player';
 import { loaded } from '@correctiv/app-core/stores/podcasts';
+import {
+  loaded as radioLoaded,
+  statusChanged as radioStatusChanged,
+} from '@correctiv/app-core/stores/radio';
 import { patch as mediaPatch } from '@correctiv/app-core/stores/media';
 import { resetStore } from '@correctiv/app-core/stores/store';
 
@@ -66,6 +70,20 @@ const BONUS = bonusMedia[0];
 /** How many times the screen marks something as club content. */
 const clubMarks = (tree: Parameters<typeof renderedText>[0]): number =>
   renderedText(tree).match(/\bClub\b/g)?.length ?? 0;
+
+/**
+ * What Icecast reports for the mount the app plays. Seeded like the other slices
+ * so the banner's lazy loader does not reach the network, and asserted below,
+ * because the live line is the one part of this screen that is new.
+ */
+const STATION = {
+  online: true,
+  listeners: 5,
+  listenerPeak: 86,
+  bitrateKbps: 64,
+  nowPlaying: 'Salon5 Mitschnitt 2024 04 05, 17 Uhr 02',
+  stationName: 'Salon5 low',
+};
 
 const SERIES: PodcastSeries = {
   id: PODCAST_CHANNELS[0],
@@ -95,6 +113,7 @@ beforeEach(() => {
       coreStore.dispatch(mediaPatch(key, { videos: [], status: 'ready' }));
     }
     coreStore.dispatch(loaded({ series: [SERIES], status: 'ready' }));
+    coreStore.dispatch(radioLoaded(STATION));
   });
 });
 
@@ -168,5 +187,37 @@ describe('the club bonus', () => {
       coreActions.membership.join(10, 'monatlich', 'Test');
     });
     expect(clubMarks(render(<MediathekScreen />))).toBe(1);
+  });
+});
+
+/**
+ * The banner used to print a fixed "24/7 aus Bottrop" whatever was on air. It
+ * now says what Icecast reports, and falls back to that copy only when the
+ * status could not be read — which on the web target is every time, because
+ * icecast.correctiv.net sends no CORS header.
+ */
+describe('the live banner', () => {
+  it('prints the title on air and the listener count', () => {
+    const tree = render(<MediathekScreen />);
+    const text = renderedText(tree);
+
+    expect(text).toContain('Salon5 Mitschnitt 2024 04 05, 17 Uhr 02');
+    expect(text).toContain('5 Hörer:innen');
+    expect(text).not.toContain('24/7 aus Bottrop');
+  });
+
+  it('keeps its own subtitle when the station status is unknown', () => {
+    act(() => {
+      coreStore.dispatch(resetStore());
+      coreStore.dispatch(loaded({ series: [SERIES], status: 'ready' }));
+      for (const key of ['gespraech', 'funfacts', 'hauptkanal'] as const) {
+        coreStore.dispatch(mediaPatch(key, { videos: [], status: 'ready' }));
+      }
+      coreStore.dispatch(radioStatusChanged('unknown'));
+    });
+
+    const text = renderedText(render(<MediathekScreen />));
+    expect(text).toContain('24/7 aus Bottrop');
+    expect(text).not.toContain('Hörer:innen');
   });
 });
