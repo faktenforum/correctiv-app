@@ -21,6 +21,8 @@
  * It works only against `npm run web`. A production bundle has no `_debugStack`,
  * and this returns nothing rather than guessing — the panel says which case it is.
  */
+import { clearHighlight, markHovered, markPicked } from './highlight';
+
 export interface Located {
   file: string;
   lineNumber: number;
@@ -159,7 +161,29 @@ function isElement(value: EventTarget | undefined): value is Element {
   return value !== undefined && 'nodeType' in value && (value as Node).nodeType === 1;
 }
 
-/** Re-armed after every navigation: the frame's document is replaced each time. */
+/**
+ * Arms the picker on the frame's document, and swallows the whole interaction.
+ *
+ * Not only `pointerdown`. A press that reaches the app activates it, and a click
+ * on a link navigates: the address recorded in the handover would then point at a
+ * screen the element is not on.
+ *
+ * The subtle half is **when** to stop swallowing. Tying it to the hit is wrong,
+ * and wrong in a way that hides itself: `locate()` is async, so a fast synthetic
+ * click is still swallowed while a person, who holds the button for a moment
+ * longer than a symbolicate round trip takes, gets their link followed. That is
+ * exactly how this shipped and exactly how it was reported. So the interaction
+ * ends the swallowing, not the answer: the hit is delivered on the `click`, after
+ * that event has been stopped, with a timer as the fallback for interactions that
+ * never produce one.
+ *
+ * Re-armed after every navigation, because the frame's document is replaced.
+ */
+const SWALLOWED = ['pointerdown', 'pointerup', 'mousedown', 'mouseup', 'click'] as const;
+
+/** A press that ends without a click still has to answer. */
+const INTERACTION_END_MS = 400;
+
 export function armPicker(
   win: Window | null,
   onHit: (hits: Located[], label: string) => void,
@@ -167,15 +191,53 @@ export function armPicker(
   const doc = win?.document;
   if (!doc) return () => {};
 
-  const onPointerDown = (event: Event) => {
-    const target = event.composedPath()[0];
-    if (!isElement(target)) return;
-    event.preventDefault();
-    event.stopPropagation();
-    const label = (target.textContent ?? '').trim().slice(0, 40);
-    void locate(win, target).then((hits) => onHit(hits, label));
+  clearHighlight(win);
+
+  let pending: { hits: Promise<Located[]>; label: string } | null = null;
+  let fallback: number | undefined;
+
+  const deliver = () => {
+    const current = pending;
+    pending = null;
+    win?.clearTimeout(fallback);
+    if (current) void current.hits.then((hits) => onHit(hits, current.label));
   };
 
-  doc.addEventListener('pointerdown', onPointerDown, { capture: true });
-  return () => doc.removeEventListener('pointerdown', onPointerDown, { capture: true });
+  const swallow = (event: Event) => {
+    event.preventDefault();
+    event.stopPropagation();
+
+    if (event.type === 'pointerdown') {
+      const target = event.composedPath()[0];
+      if (!isElement(target)) return;
+      markPicked(win, target);
+      pending = {
+        hits: locate(win, target),
+        label: (target.textContent ?? '').trim().slice(0, 40),
+      };
+      return;
+    }
+
+    // `click` is the last event of an ordinary interaction, so delivering here
+    // means every event of it has already been stopped.
+    if (event.type === 'click') deliver();
+    else if (event.type === 'pointerup' && pending) {
+      fallback = win?.setTimeout(deliver, INTERACTION_END_MS);
+    }
+  };
+
+  const hover = (event: Event) => {
+    const target = event.composedPath()[0];
+    if (isElement(target)) markHovered(win, target);
+  };
+
+  for (const type of SWALLOWED) doc.addEventListener(type, swallow, { capture: true });
+  doc.addEventListener('pointermove', hover, { capture: true });
+
+  return () => {
+    win?.clearTimeout(fallback);
+    for (const type of SWALLOWED) doc.removeEventListener(type, swallow, { capture: true });
+    doc.removeEventListener('pointermove', hover, { capture: true });
+    markHovered(win, null);
+  };
 }

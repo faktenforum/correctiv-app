@@ -391,3 +391,36 @@ body.dragging .app {
 .token .changed {
   color: var(--accent);
 }
+
+/* The owner chain, and what gets handed over */
+
+.log.frames li {
+  display: flex;
+  gap: 6px;
+  align-items: center;
+  margin-bottom: 2px;
+}
+
+button.frame {
+  flex: 1;
+  height: 20px;
+  overflow: hidden;
+  font-family: inherit;
+  text-align: left;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.handover {
+  width: 100%;
+  margin: 6px 0;
+  padding: 6px;
+  border: 1px solid var(--line);
+  border-radius: 4px;
+  background: #1a1a1a;
+  color: var(--bar-fg);
+  font-family: ui-monospace, 'SF Mono', Menlo, monospace;
+  font-size: 11px;
+  line-height: 1.5;
+  resize: vertical;
+}

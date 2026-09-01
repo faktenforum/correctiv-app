@@ -1,5 +1,8 @@
+import { useEffect, useRef } from 'react';
+
 import { COMBINATIONS, type Status } from '../api';
 import type { LogEntry } from '../frame/console';
+import { frameLabel, frameShort, handover } from '../handover';
 import type { Located } from '../frame/locate';
 import type { Finding } from '../frame/measure';
 import { FIXTURES } from '../frame/seed';
@@ -24,6 +27,9 @@ export interface ToolBindings {
     picking: boolean;
     setPicking: (on: boolean) => void;
     hit: { label: string; frames: Located[] } | null;
+    /** Which frame of the owner chain the person meant. */
+    selected: number;
+    setSelected: (index: number) => void;
     open: (frame: Located) => void;
   };
 }
@@ -257,15 +263,40 @@ function Measure({ tools }: Props) {
   );
 }
 
-/** Click a thing, get the line that drew it. */
+/**
+ * Click a thing, get the line that drew it, and hand both to someone else.
+ *
+ * The owner chain is offered rather than resolved, because only the person
+ * looking knows which level they mean: "this chip" and "the row of chips" are two
+ * entries of the same chain. The selected one becomes `Source:` in the block
+ * below, the rest become `Context:`.
+ */
 function Inspect({ tools }: Props) {
   const { inspect } = tools;
+  const panel = useRef<HTMLElement>(null);
+
+  // The panels row scrolls, and this panel is the one that grows: on a laptop
+  // the result of a pick lands below the fold, which would hide the only part of
+  // the interaction that matters.
+  useEffect(() => {
+    if (inspect.hit) panel.current?.scrollIntoView({ block: 'nearest' });
+  }, [inspect.hit]);
+  const block =
+    inspect.hit && inspect.hit.frames.length > 0
+      ? handover({
+          label: inspect.hit.label,
+          frames: inspect.hit.frames,
+          selected: inspect.selected,
+          view: location.href,
+        })
+      : '';
+
   return (
-    <section className="panel">
+    <section className="panel" ref={panel}>
       <h2>Inspect</h2>
       <div className="row">
         <button aria-pressed={inspect.picking} onClick={() => inspect.setPicking(!inspect.picking)}>
-          {inspect.picking ? 'Picking — click the app' : 'Pick an element'}
+          {inspect.picking ? 'Picking, click the app' : 'Pick an element'}
         </button>
       </div>
       {inspect.hit && (
@@ -278,17 +309,36 @@ function Inspect({ tools }: Props) {
               <code>npm run web</code>.
             </p>
           ) : (
-            <ul className="log">
-              {inspect.hit.frames.map((f) => (
-                <li key={`${f.file}:${f.lineNumber}:${f.column}`}>
-                  <button style={{ height: 20 }} onClick={() => inspect.open(f)}>
-                    open
-                  </button>{' '}
-                  {f.file.replace(/^.*\/(apps|packages)\//, '$1/')}:{f.lineNumber}
-                  {f.methodName ? ` · ${f.methodName}` : ''}
-                </li>
-              ))}
-            </ul>
+            <>
+              <ul className="log frames">
+                {inspect.hit.frames.map((f, i) => (
+                  <li key={`${f.file}:${f.lineNumber}:${f.column}`}>
+                    <button
+                      className="frame"
+                      aria-pressed={i === inspect.selected}
+                      onClick={() => inspect.setSelected(i)}
+                      title={`Use this level as the source line — ${frameLabel(f)}`}
+                    >
+                      {frameShort(f)}
+                      {f.methodName ? ` \u00b7 ${f.methodName}` : ''}
+                    </button>{' '}
+                    <button style={{ height: 20 }} onClick={() => inspect.open(f)}>
+                      open
+                    </button>
+                  </li>
+                ))}
+              </ul>
+              <textarea className="handover" readOnly rows={5} value={block} />
+              <div className="row">
+                <button onClick={() => void navigator.clipboard.writeText(block)}>
+                  Copy for agent
+                </button>
+              </div>
+              <p className="note">
+                Paste it, then say what should be different. The view address is in there, so
+                whoever picks this up can put the same thing back on screen before and after.
+              </p>
+            </>
           )}
         </>
       )}
