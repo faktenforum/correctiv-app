@@ -38,6 +38,17 @@ const TTL_MS = 24 * 60 * 60 * 1000;
 const PAGE_TIMEOUT_MS = 12000;
 
 /**
+ * The REST rung gets a shorter budget than the page it precedes.
+ *
+ * Both rungs can time out on a dead network, one after the other, and the stale
+ * cache sits behind both — so the reader's spinner runs for their sum. At 12 s
+ * each that was 24 s to reach an article already on the device, against 12 s
+ * before this rung existed. 6 s is generous for a JSON response that measures a
+ * few kilobytes, and it keeps the worst case within sight of the old one.
+ */
+const API_TIMEOUT_MS = 6000;
+
+/**
  * Which extraction backend this host uses. The string one is the default because
  * it runs anywhere; a host that has installed an HTML parser registers the DOM
  * one at startup. See `articles/types.ts` for the trade-off.
@@ -63,7 +74,7 @@ export interface LoadArticleOptions {
  */
 async function readFromNetwork(url: string, kicker?: string): Promise<Article> {
   try {
-    const fromApi = await fetchWpArticle(url);
+    const fromApi = await fetchWpArticle(url, API_TIMEOUT_MS);
     if (fromApi) return { url, ...fromApi, kicker: fromApi.kicker ?? kicker };
   } catch (err) {
     console.warn(

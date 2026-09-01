@@ -150,11 +150,11 @@ describe('fact-check vocabulary', () => {
   });
 
   /**
-   * The regression this was written for. „Teilweise falsch“ contains „falsch“,
+   * The regression this was written for. "Teilweise falsch" contains "falsch",
    * so before `teilweise-falsch` existed the prose matcher printed the harder
-   * verdict „Falsch“ over an article CORRECTIV had rated more softly.
+   * verdict "Falsch" over an article CORRECTIV had rated more softly.
    */
-  it('does not harden „Teilweise falsch“ into „Falsch“', () => {
+  it('does not harden "Teilweise falsch" into "Falsch"', () => {
     expect(ratingFromText('Teilweise falsch Über diese Bewertung')).toBe('teilweise-falsch');
     expect(ratingLabel('teilweise-falsch')).toBe('Teilweise falsch');
     expect(ratingTone('teilweise-falsch')).toBe('qualified');

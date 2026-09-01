@@ -10,6 +10,7 @@
 // therefore the only source of `hlsMasterUrl`; the channel list payload carries no
 // streaming URLs at all.
 
+import { byPublishedAt } from '../lib/sort';
 import type { Video } from '../types/models';
 import { fetchJson } from './http';
 
@@ -166,8 +167,5 @@ export async function fetchPeertubeChannelsAsVideos(
   );
   const merged = lists.flat();
   if (merged.length === 0) throw new Error(`No PeerTube channel answered: ${channels.join(', ')}`);
-  return merged.sort((a, b) => {
-    if (a.publishedAt === b.publishedAt) return 0;
-    return a.publishedAt < b.publishedAt ? 1 : -1;
-  });
+  return merged.sort(byPublishedAt);
 }

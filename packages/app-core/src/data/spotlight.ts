@@ -17,7 +17,7 @@
  * supports.
  *
  * **Why an issue links out to the browser instead of into the reader.** Its
- * `content.rendered` is the sent email: 52.323 characters of table layout with a
+ * `content.rendered` is the sent email: 52,323 characters of table layout with a
  * GIF masthead on the measured issue. The reader builds its own document from an
  * article's body and has nothing to do with that. Rendering the newsletter
  * properly in-app would be a second reader, so the tap opens correctiv.org.

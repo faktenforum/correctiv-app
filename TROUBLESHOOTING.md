@@ -169,23 +169,20 @@ equivalents for focus, liveness and errors.
   general shape of this: a prop RN honours and RNW quietly reads differently is
   invisible to typecheck, tests and every native screenshot.
 - **`correctiv.org`'s RSS feeds send no `Access-Control-Allow-Origin`,** so a browser
-  blocks every RSS request. ~~and **no feed is ever live on web**~~ — struck through on
-  2026-09-01 by [ADR 0015](adr/0015-reading-correctiv-org-through-its-rest-api.md).
-  **The header is a property of the format, not of the server.** `wp/v2/posts`
-  reflects whatever `Origin` it is given (`localhost:8081`, `localhost:8099`,
-  `faktenforum.github.io`, an arbitrary host, even `null`) and answers the `OPTIONS`
-  preflight; the feeds under `/feed/` send nothing. The app reads the REST API now, so
-  a browser has a live path. Native was never affected, because there is no CORS
-  there. Measured 2026-08-05 across every source: only `tube.funfacts.de` sends `*`
-  (so FunFacts videos and their HLS streams do work); `correctiv.org`'s feeds,
-  `salon5.correctiv.net` and `youtube.com/feeds` send none. → The Expo host also
-  bundles a snapshot of every content feed (`npm run offline-articles`), which is
-  still the reader's floor with no network at all. It says so on screen: "Ohne
-  Verbindung. Sie sehen gespeicherte Artikel."
-  - ~~So the web demo's articles are **as old as the last generator run**, and no
-    amount of reloading changes that.~~ They are as old as the snapshot only when the
-    network path fails. Re-running the generator before a demo is still worth doing,
-    because it is what an offline reader sees.
+  blocks every RSS request. **The header is a property of the format, not of the
+  server**, which took until 2026-09-01 to notice: `wp/v2/posts` reflects whatever
+  `Origin` it is given (`localhost:8081`, `localhost:8099`, `faktenforum.github.io`,
+  an arbitrary host, even `null`) and answers the `OPTIONS` preflight, while the feeds
+  under `/feed/` send nothing. This entry read "no feed is ever live on web" for
+  months on the strength of testing one of the two.
+  [ADR 0015](adr/0015-reading-correctiv-org-through-its-rest-api.md) moved the app to
+  the REST API, so a browser has a live path, and native was never affected because
+  there is no CORS there. → The Expo host also bundles a snapshot of every content
+  feed (`npm run offline-articles`), which is still the reader's floor with no network
+  at all. It says so on screen: "Ohne Verbindung. Sie sehen gespeicherte Artikel."
+  - **The demo's articles are as old as the last generator run only when the network
+    path fails.** Re-running it before a demo is still worth doing, because it is what
+    an offline reader sees.
   - **The one header a browser will not let you set is the one this repo sets.**
     `http.ts` sends a browser `User-Agent` to get past WordPress's bot challenge. A
     page cannot override that header, and were a browser to honour the attempt it
@@ -208,7 +205,7 @@ equivalents for focus, liveness and errors.
     | `correctiv.org/…/feed/` | none | the RSS fallback cannot run in a browser |
     | `salon5.correctiv.net` | none | all seven podcast feeds fail, the bundle answers |
     | `icecast.correctiv.net` | none | the station status fails, the banner keeps its subtitle |
-    | `youtube.com/feeds` | none | „Videos derzeit nicht erreichbar.“ |
+    | `youtube.com/feeds` | none | "Videos derzeit nicht erreichbar." |
 
     Each degrades as built, so nothing here is a defect — but half the media on the
     web target is a fallback, and two of those hosts are CORRECTIV's own.
@@ -320,14 +317,15 @@ equivalents for focus, liveness and errors.
   `correctiv.org/faktencheck/feed/` returns the landing page as a single item. → See
   `packages/app-core/src/data/feeds.config.ts`; a test guards the one feed that is
   legitimately empty upstream.
-- **Icecast answers HEAD requests with 400,** so availability cannot be probed
-  ~~at all~~ **that way**. → Availability of the *stream* still means: try to play.
-  But the server's own status document is a public GET:
-  `icecast.correctiv.net/status-json.xsl` lists every mount with its bitrate, current
-  and peak listeners, and the title on air. `services/radio.service.ts` reads it, and
-  the Mediathek banner prints the title instead of a fixed subtitle. Retired the
-  absolute reading of this entry on 2026-09-01,
-  [ADR 0015](adr/0015-reading-correctiv-org-through-its-rest-api.md).
+- **Icecast answers HEAD requests with 400,** so availability cannot be probed. →
+  Availability means: try to play.
+  - **True of the stream, and it was read as true of the server.** The server's own
+    status document is a public GET: `icecast.correctiv.net/status-json.xsl` lists
+    every mount with its bitrate, current and peak listeners, and the title on air.
+    `services/radio.service.ts` reads it, and the Mediathek banner prints what is
+    playing instead of a fixed subtitle. Whether the *stream* will play is still only
+    answerable by playing it. Added 2026-09-01,
+    [ADR 0015](adr/0015-reading-correctiv-org-through-its-rest-api.md).
   - Two things that document revealed. `source` is an **array** with several mounts
     and a bare **object** with one, so a reader that assumes either breaks when the
     other happens. And `title` joins artist and track with " - " and keeps the

@@ -1,7 +1,7 @@
 import { Pressable, View } from 'react-native';
 
-import { formatDateShortDe } from '@correctiv/app-core/lib/format';
 import type { SpotlightIssue } from '@correctiv/app-core/data/spotlight';
+import { formatDateShortDe } from '@correctiv/app-core/lib/format';
 
 import { Card, Hairline, Overline, Typo } from '@/components/ui';
 import { openExternal } from '@/lib/openExternal';

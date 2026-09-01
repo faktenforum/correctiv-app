@@ -43,7 +43,7 @@ export const FEEDS: Record<FeedKey, FeedConfig> = {
   recherchen: { label: 'Recherchen', url: 'https://correctiv.org/feed/' },
   faktencheck: {
     label: 'Faktencheck',
-    categoryId: 5, // 2.951 posts
+    categoryId: 5, // 2,951 posts
     slug: 'faktencheck',
     url: 'https://correctiv.org/category/faktencheck/feed/',
     badge: 'Faktencheck',
@@ -100,6 +100,9 @@ export const FEEDS: Record<FeedKey, FeedConfig> = {
   },
 };
 
+/** Category slugs in the order that decides a post's feed. See `FEED_PRIORITY`. */
+export type FeedPriority = readonly { slug: string; feed: FeedKey }[];
+
 /**
  * Which feed a post belongs to when it could belong to several.
  *
@@ -117,7 +120,7 @@ export const FEED_PRIORITY = [
   { slug: 'lokal', feed: 'lokal' },
   { slug: 'salon5', feed: 'salon5' },
   { slug: 'schweiz', feed: 'schweiz' },
-] as const satisfies readonly { slug: string; feed: FeedKey }[];
+] as const satisfies FeedPriority;
 
 /** Feeds that actually carry articles — everything a list should offer to load. */
 export const CONTENT_FEEDS = (Object.keys(FEEDS) as FeedKey[]).filter((k) => !FEEDS[k].empty);

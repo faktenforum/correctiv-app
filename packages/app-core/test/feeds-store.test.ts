@@ -270,6 +270,21 @@ describe('the REST path', () => {
     );
   });
 
+  /**
+   * The failure the second round exists for, and the one it could not see: a
+   * category id that stops matching upstream answers `200 []`, not an error.
+   */
+  it('falls through to RSS when the API answers an empty first page', async () => {
+    restMock.mockResolvedValue({ items: [], hasMore: false });
+    fetchMock.mockResolvedValue([item('a')]);
+
+    await store.dispatch(fetchFeedKey('faktencheck'));
+
+    expect(fetchMock).toHaveBeenCalledTimes(1);
+    expect(store.getState().feeds.byKey.faktencheck.items.map((i) => i.id)).toEqual(['a']);
+    expect(store.getState().feeds.byKey.faktencheck.status).toBe('ready');
+  });
+
   it('falls through to RSS when the API fails, without disturbing the reader', async () => {
     fetchMock.mockResolvedValue([item('a')]);
     await store.dispatch(fetchFeedKey('recherchen'));
@@ -277,13 +292,13 @@ describe('the REST path', () => {
     const slice = store.getState().feeds.byKey.recherchen;
     expect(slice.items.map((i) => i.id)).toEqual(['a']);
     expect(slice.status).toBe('ready');
-    // RSS cannot page, so nothing may offer a „mehr laden“ button.
+    // RSS cannot page, so nothing may offer a "mehr laden" button.
     expect(slice.hasMore).toBe(false);
   });
 
   /**
    * `europe` has no category upstream. Without the guard, a REST call without a
-   * `categoryId` returns the whole site under the label „CORRECTIV.Europe“.
+   * `categoryId` returns the whole site under the label "CORRECTIV.Europe".
    */
   it('never asks the network for a feed whose category does not exist', async () => {
     const error = vi.spyOn(console, 'error').mockImplementation(() => {});
@@ -336,6 +351,47 @@ describe('loading more', () => {
       'b',
       'c',
     ]);
+  });
+
+  /**
+   * WordPress answers a page past the end with 400, and `hasMore` is a guess from
+   * a full page, so a category with an exact multiple of PAGE_SIZE posts asks for
+   * one page too many. Leaving `hasMore` set would keep a button that fails on
+   * every press.
+   */
+  it('treats a 400 on the next page as the end of the list', async () => {
+    await firstPage();
+    const error = vi.spyOn(console, 'error').mockImplementation(() => {});
+    restMock.mockRejectedValueOnce(new Error('HTTP 400 for https://correctiv.org/wp-json'));
+
+    await store.dispatch(loadMore('faktencheck'));
+
+    const slice = store.getState().feeds.byKey.faktencheck;
+    expect(slice.hasMore).toBe(false);
+    expect(slice.items.map((i) => i.id)).toEqual(['a', 'b']);
+    error.mockRestore();
+  });
+
+  /**
+   * A refresh that lands while a page is in flight must not be undone. The thunk
+   * used to append to a snapshot taken before its own await.
+   */
+  it('appends to the list as it is after the await, not as it was before', async () => {
+    await firstPage();
+    let release: (page: { items: FeedItem[]; hasMore: boolean }) => void = () => {};
+    restMock.mockReturnValueOnce(new Promise((resolve) => (release = resolve)));
+
+    const pending = store.dispatch(loadMore('faktencheck'));
+    // A pull-to-refresh resolves first, with an article published since page 1.
+    store.dispatch(
+      patch('faktencheck', {
+        items: [item('neu', '2026-09-01T08:00:00.000Z'), item('a', '2026-08-31T10:00:00.000Z')],
+      }),
+    );
+    release({ items: [item('c', '2026-08-29T10:00:00.000Z')], hasMore: false });
+    await pending;
+
+    expect(store.getState().feeds.byKey.faktencheck.items.map((i) => i.id)).toContain('neu');
   });
 
   it('does nothing when there is no next page', async () => {

@@ -91,9 +91,9 @@ export const fetchIssues =
       console.error('Spotlight failed:', err instanceof Error ? err.message : err);
       const stale = await getStale<SpotlightIssue[]>(CACHE_NS, 'all');
       dispatch(
-        stale?.length
-          ? loaded({ issues: stale, status: 'ready' })
-          : loaded({ issues: seed, status: 'offline' }),
+        loaded(
+          stale?.length ? { issues: stale, status: 'ready' } : { issues: seed, status: 'offline' },
+        ),
       );
     }
   };

@@ -43,6 +43,22 @@ export function stripTags(html: string): string {
     .trim();
 }
 
+/**
+ * One line of plain text out of a WordPress `rendered` field.
+ *
+ * Not the same as `stripTags`, and the second decode is the reason. A `rendered`
+ * title or excerpt can carry its entities encoded twice (`&amp;#8217;` for an
+ * apostrophe), where one pass leaves a visible `&#8217;` standing in a headline.
+ * The collapse repeats after it because that pass can turn an `&nbsp;` into a
+ * space.
+ *
+ * `services/wp.service.ts` and `services/spotlight.service.ts` read two different
+ * post types out of the same API and had a private copy of this each.
+ */
+export function plainText(html: string): string {
+  return decodeEntities(stripTags(html)).replace(/\s+/g, ' ').trim();
+}
+
 /** The inverse, for text going into HTML we build ourselves. */
 export function escapeHtml(s: string): string {
   return s

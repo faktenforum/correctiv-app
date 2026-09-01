@@ -4,16 +4,16 @@ import { fetchJson } from './http';
 /**
  * What is on air, from Icecast's own status document.
  *
- * `TROUBLESHOOTING.md` says availability cannot be probed, because Icecast answers
+ * `TROUBLESHOOTING.md` said availability cannot be probed, because Icecast answers
  * a HEAD request with 400 and "availability means: try to play". That is true of
- * HEAD and only of HEAD. `status-json.xsl` is a plain GET, it is public, and it
+ * HEAD and only of HEAD, and the entry carries the distinction now. `status-json.xsl` is a plain GET, it is public, and it
  * answers with every mount on the server: bitrate, current listeners, the peak,
  * and the title currently playing.
  *
  * So the banner can say what is running instead of a fixed subtitle. Worth knowing
  * what that revealed on 2026-09-01: both Salon5 mounts were playing
- * „Salon5 Mitschnitt 2024 04 05, 17 Uhr 02“, a recording, while the app's banner
- * read „24/7 aus Bottrop“. The app was not wrong about the stream, only about what
+ * "Salon5 Mitschnitt 2024 04 05, 17 Uhr 02", a recording, while the app's banner
+ * read "24/7 aus Bottrop". The app was not wrong about the stream, only about what
  * was on it.
  *
  * Three mounts live on this server. `salon5low` (64 kbit/s) is the one the app
@@ -33,7 +33,7 @@ export interface RadioStatus {
   bitrateKbps: number;
   /** What is playing, or null when the server reports no title. */
   nowPlaying: string | null;
-  /** The station name the server broadcasts, e.g. „Salon5 low“. */
+  /** The station name the server broadcasts, e.g. "Salon5 low". */
   stationName: string | null;
 }
 

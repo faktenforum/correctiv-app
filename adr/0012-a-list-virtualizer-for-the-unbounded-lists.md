@@ -25,7 +25,8 @@ lot is cheaper than virtualizing it:
 | `(tabs)/index.tsx`, "Neueste Recherchen" | 5 | `recherchen.data?.slice(1, 6)` |
 | `(tabs)/index.tsx`, fact-check rail | ≤ 8 | `.slice(0, 8)` |
 | `(tabs)/mediathek.tsx`, videos | ≤ 6 | `videos.slice(0, 6)` |
-| `einstellungen`, `onboarding`, `beitreten`, `bericht`, `atlas`, `faktenforum`, `spotlight`, `backstage` | fixed | sample data in the core |
+| `einstellungen`, `onboarding`, `beitreten`, `bericht`, `atlas`, `faktenforum`, `backstage` | fixed | sample data in the core |
+| `spotlight` | ≤ 12 | ~~sample data in the core~~ the archive's page size, since [ADR 0015](0015-reading-correctiv-org-through-its-rest-api.md) made these issues live. The conclusion is unchanged: still bounded, still not worth virtualizing |
 | **`gespeichert.tsx`** | **unbounded** | **the user's bookmarks, and it only grows** |
 | **`serie/[id].tsx`** | **unbounded** | **an RSS podcast feed** |
 

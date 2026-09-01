@@ -47,6 +47,7 @@ import {
 import { fetchAll, findSeries, type PodcastsStatus } from '@correctiv/app-core/stores/podcasts';
 import {
   fetchStatus as fetchRadioStatus,
+  listenerCount as selectListenerCount,
   nowPlayingLine as selectNowPlayingLine,
   type RadioStatusState,
 } from '@correctiv/app-core/stores/radio';
@@ -57,7 +58,6 @@ import {
 import { settingsActions } from '@correctiv/app-core/stores/settings';
 import {
   fetchIssues,
-  latestIssue as selectLatestIssue,
   recentIssues as selectRecentIssues,
   type SpotlightStatus,
 } from '@correctiv/app-core/stores/spotlight';
@@ -236,8 +236,13 @@ export const useRadioStation = () => {
   const station = useAppSelector((s) => s.radio.station);
   useLazyLoad(status, fetchRadioStatus, undefined);
 
-  const nowPlaying = useMemo(() => selectNowPlayingLine({ status, station }), [status, station]);
-  return { nowPlaying, listeners: station?.online ? station.listeners : null, status };
+  // No `useMemo` around the selector, unlike `useSpotlight` below: this one
+  // answers a string, and a string is compared by value.
+  return {
+    nowPlaying: selectNowPlayingLine({ status, station }),
+    listeners: selectListenerCount({ status, station }),
+    status,
+  };
 };
 
 /**
@@ -247,22 +252,21 @@ export const useRadioStation = () => {
  * narrow subscriptions cost less than one whole-slice read — the same reasoning as
  * `usePodcastLibrary` below, and the same reason neither hook selects its slice.
  *
- * The derived reads are the core's exported selectors rather than a `slice(0, n)`
- * in a screen, and they are memoised because both build a fresh array: handed
- * straight to `useSelector` they would compare unequal on every unrelated dispatch
- * and re-render Home for a podcast that finished loading.
+ * `recent` is the core's exported selector rather than a `slice(0, n)` in a
+ * screen, and it is memoised because it builds a fresh array: handed straight to
+ * `useSelector` it would compare unequal on every unrelated dispatch and
+ * re-render Home for a podcast that finished loading. Same shape as
+ * `usePodcastSeries` below.
  */
 export const useSpotlight = (recent = 3) => {
   const issues = useAppSelector((s) => s.spotlight.issues);
   const status = useAppSelector((s) => s.spotlight.status);
   useLazyLoad(status, fetchIssues, undefined);
 
-  const state = useMemo(() => ({ issues, status }), [issues, status]);
   return {
     issues,
     status,
-    latest: useMemo(() => selectLatestIssue(state), [state]),
-    recent: useMemo(() => selectRecentIssues(state, recent), [state, recent]),
+    recent: useMemo(() => selectRecentIssues({ issues, status }, recent), [issues, status, recent]),
   };
 };
 

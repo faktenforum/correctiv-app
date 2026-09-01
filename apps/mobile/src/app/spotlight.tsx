@@ -11,8 +11,8 @@ import { useColors } from '@/lib/theme';
 /**
  * The Spotlight archive, live.
  *
- * This screen used to carry the line „Beispielausgaben. Die verlinkten Recherchen
- * sind echt.“, because the issues were modelled on the note that the archive was
+ * This screen used to carry the line "Beispielausgaben. Die verlinkten Recherchen
+ * sind echt.", because the issues were modelled on the note that the archive was
  * not public. It is public: `wp/v2/newspack_nl_cpt` held 523 issues on 2026-09-01.
  * The twelve newest are what this shows, and the disclaimer only appears when the
  * app is actually falling back to its four bundled issues.

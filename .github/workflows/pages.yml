@@ -19,7 +19,9 @@
 # existing one and leaves its build type alone — so until the switch is made,
 # `deploy-pages` fails with "Not configured to use GitHub Actions".
 #
-# The demo runs on bundled content, not the live feeds: correctiv.org sends no CORS
+# The demo runs on live content since ADR 0015: correctiv.org's REST API reflects the
+# Origin, so a browser reaches it. The bundle below is the floor when a request fails.
+# Only the RSS feeds send no CORS
 # header, so every feed request fails in a browser and the store's cascade lands on
 # the snapshot from `npm run offline-articles`. Re-run that generator and merge it
 # before you want the published demo to show recent articles — TROUBLESHOOTING.md,

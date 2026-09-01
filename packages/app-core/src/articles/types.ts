@@ -25,10 +25,10 @@ export type FactcheckRating =
   | 'falsch'
   | 'groesstenteils-falsch'
   /**
-   * „Teilweise falsch“, weaker than `groesstenteils-falsch` and a verdict of its
+   * "Teilweise falsch", weaker than `groesstenteils-falsch` and a verdict of its
    * own. It was missing here, and the gap was not cosmetic: the prose matcher
    * fell through to the bare /\bfalsch\b/ it contains, so the reader printed
-   * „Falsch“ over an article CORRECTIV had rated „Teilweise falsch“ — an app
+   * "Falsch" over an article CORRECTIV had rated "Teilweise falsch" — an app
    * about fact checks overstating a verdict. Measured 2026-09-01: 5 of 200
    * sampled fact checks carry it. See `rating.ts`.
    */

@@ -13,7 +13,7 @@ import { createAppStore, type AppStore } from '../src/stores/store';
  * The Spotlight archive: fresh cache → network → stale cache → the bundled seed.
  *
  * The rung worth testing is the last one. This screen carried a printed
- * disclaimer („Beispielausgaben“) for as long as the data was invented, and the
+ * disclaimer ("Beispielausgaben") for as long as the data was invented, and the
  * replacement for that disclaimer is `status === 'offline'` — so if the status
  * ever came back `'ready'` over seeded issues, the app would present four issues
  * from August 2026 as this morning's newsletter.

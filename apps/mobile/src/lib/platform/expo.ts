@@ -75,11 +75,12 @@ const blobs: BlobStore = {
  * `npm run offline-podcasts`.
  *
  * On native these are what the first round of this port was for — the demo must not
- * depend on Wi-Fi. On **web** they are not a fallback at all but the only way
- * content ever appears: neither correctiv.org nor the Castopod instance sends an
- * `Access-Control-Allow-Origin` header, so a browser blocks every one of those
- * requests, each store's cascade lands here, and the app shows the snapshot instead
- * of an error.
+ * depend on Wi-Fi. On **web** they used to be the only way content ever appeared;
+ * since [ADR 0015](../../../../../adr/0015-reading-correctiv-org-through-its-rest-api.md)
+ * articles come live from correctiv.org's REST API, which reflects the Origin. The
+ * Castopod instance still sends no `Access-Control-Allow-Origin`, so the podcast
+ * snapshot is what a browser gets, and every bundle here remains the floor when a
+ * request fails.
  *
  * `image` answers with an inlined data URI rather than the remote URL it used to
  * echo back. Echoing it was a no-op: `adoptBundledImages` in the core swaps a feed

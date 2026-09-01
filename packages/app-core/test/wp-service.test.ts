@@ -72,6 +72,22 @@ describe('a post as a feed card', () => {
     expect(card.author).toBe('Sara Pichireddu');
   });
 
+  /**
+   * Two of the hundred newest posts have their WordPress display name set to
+   * "admin", both "In eigener Sache" notices — the category that reaches the
+   * site-wide feed and so Home's lead card. The first screenshot of this branch
+   * read "admin · 1. September · 3 Min. Lesezeit". No byline beats a wrong one.
+   */
+  it('drops a byline that names an account rather than a person', () => {
+    const houseNotice = { ...post, yoast_head_json: { author: 'admin' } };
+    expect(toFeedItem(houseNotice, 'recherchen').author).toBeUndefined();
+    expect(toArticle(houseNotice).authors).toEqual([]);
+
+    // An organisation is a plausible author, so it is left alone.
+    const byTheHouse = { ...post, yoast_head_json: { author: 'CORRECTIV' } };
+    expect(toFeedItem(byTheHouse, 'recherchen').author).toBe('CORRECTIV');
+  });
+
   it('takes the list-sized image, not the 2560 px one', () => {
     expect(card.imageUrl).toBe('https://correctiv.org/i/list.jpg');
   });
@@ -107,7 +123,7 @@ describe('picking an image size', () => {
     expect(wpImage(onlyThumb, 'list')).toBe('https://x/t.jpg');
 
     expect(wpImage(post, 'thumbnail')).toBe('https://correctiv.org/i/thumb.jpg');
-    expect(wpImage(bare)).toBeNull();
+    expect(wpImage(bare, 'list')).toBeNull();
   });
 });
 

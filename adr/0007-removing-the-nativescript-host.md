@@ -105,8 +105,10 @@ Two things were checked and deliberately **not** carried over:
   side effect of touching nearly every file, and `AGENTS.md` now says a German
   comment is a regression rather than a leftover.
 - **Two of ADR 0006's open items are closed by disappearing**: lock-screen metadata
-  and iOS live radio were both NativeScript limitations. CORS on the web target is
-  unchanged and still open.
+  and iOS live radio were both NativeScript limitations. ~~CORS on the web target is
+  unchanged and still open.~~ It was neither: correctiv.org's REST API sends the
+  header and its RSS feeds do not, which
+  [ADR 0015](0015-reading-correctiv-org-through-its-rest-api.md) found and acted on.
 - **A second host is still cheap.** Nothing here re-couples the core to React. The
   next one implements four interfaces in one file — that estimate is not theoretical
   any more, because this removal is what tested it.

@@ -89,12 +89,19 @@ The one worth tracing, because it crosses every layer.
 a tap on a card
   → loadArticle(url)                    articles/load.ts
       1. platform().content.article()    the host's bundle, no network
-      2. getCached()                     a fresh extraction from earlier today
-      3. fetchText() → extract(html)     the network, then the host's backend
-      4. getStale()                      expired beats absent
+      2. getCached()                     a fresh read from earlier today
+      3. fetchWpArticle(url)             the REST API: one request, everything
+      4. fetchText() → extract(html)     the page, for what the API cannot answer
+      5. getStale()                      expired beats absent
   → buildReaderHtml(article, { css })   articles/reader-html.ts
   → ReaderView                          WebView on native, iframe on web
 ```
+
+Rung 3 arrived with [ADR 0015](adr/0015-reading-correctiv-org-through-its-rest-api.md)
+and answers everything rung 4 used to scrape for, the fact-check verdict included. Rung
+4 stays because a plugin can switch the API off per endpoint, and because it is the only
+rung that works on a URL the API does not know — every page in the app that is not a
+post.
 
 `buildReaderHtml` owns the document: structure, class names, German copy, the verdict
 plaque. The host supplies only the CSS, which here means the token variables and the

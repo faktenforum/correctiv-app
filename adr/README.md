@@ -1,6 +1,6 @@
 # Architecture decisions
 
-Thirteen decisions shaped this repo. Read them when you want to know *why* something
+Fifteen decisions shaped this repo. Read them when you want to know *why* something
 is the way it is; [`../ARCHITECTURE.md`](../ARCHITECTURE.md) describes *what* it is.
 
 | | Decision | Status |
@@ -18,6 +18,7 @@ is the way it is; [`../ARCHITECTURE.md`](../ARCHITECTURE.md) describes *what* it
 | [0011](0011-naming-the-app-for-release.md) | Naming the app for release, and letting the old host go | accepted; retires two of 0007's |
 | [0012](0012-a-list-virtualizer-for-the-unbounded-lists.md) | A list virtualizer, for the two lists that need one | accepted |
 | [0013](0013-native-tabs-and-a-web-tab-bar-of-its-own.md) | Native tabs on the phone, and a web tab bar of its own | accepted; verified on Android, iOS unrun |
+| [0014](0014-the-preview-shell-as-a-package.md) | The preview shell as a package that can reach the app | accepted |
 | [0015](0015-reading-correctiv-org-through-its-rest-api.md) | Reading correctiv.org through its REST API, not its RSS feeds | accepted; retires the CORS item in 0006, unopened in a browser |
 
 Six notes for readers of the older ones:
@@ -65,4 +66,7 @@ is in [AGENTS.md](../AGENTS.md#decisions).
 
 ADR 0004 is long because it doubles as the changelog of the pivot. Its "Offen"
 section is superseded by ADR 0006's "What is still open", of which
-[ADR 0007](0007-removing-the-nativescript-host.md) closes all but the CORS item.
+[ADR 0007](0007-removing-the-nativescript-host.md) closes all but the CORS item —
+which [ADR 0015](0015-reading-correctiv-org-through-its-rest-api.md) then closed too,
+by finding that the missing header was a property of the RSS feeds and not of
+correctiv.org.

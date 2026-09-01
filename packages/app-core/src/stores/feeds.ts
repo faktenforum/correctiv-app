@@ -1,7 +1,8 @@
 import { createSlice, type PayloadAction } from '@reduxjs/toolkit';
 
 import { loadPageMeta } from '../articles/load';
-import { FEEDS, FEED_PRIORITY } from '../data/feeds.config';
+import { FEEDS } from '../data/feeds.config';
+import { byPublishedAt } from '../lib/sort';
 import { platform } from '../ports';
 import { getCached, getStale, setCached } from '../services/cache.service';
 import { fetchFeed } from '../services/rss.service';
@@ -104,24 +105,7 @@ export function feedItems(state: FeedsState, key: FeedKey): FeedItem[] {
  * slice is one order, and that guarantee belongs to the state.
  */
 function sortNewestFirst(items: FeedItem[]): FeedItem[] {
-  return [...items].sort(byNewest);
-}
-
-/**
- * Returns 0 for two items published at the same instant, and that zero is the
- * point.
- *
- * The comparator this replaces read `a.publishedAt < b.publishedAt ? 1 : -1`,
- * which answers -1 for a tie in BOTH directions — an inconsistent comparator, so
- * `sort` may reverse equal items instead of leaving them alone. It only ever ran
- * on merged lists, where nobody would have noticed; the first single-feed test
- * with two items on the same timestamp caught it immediately. With 0 the sort is
- * stable (ES2019), so items that agree on the minute keep the order the feed put
- * them in, which is the only order left that means anything.
- */
-function byNewest(a: FeedItem, b: FeedItem): number {
-  if (a.publishedAt === b.publishedAt) return 0;
-  return a.publishedAt < b.publishedAt ? 1 : -1;
+  return [...items].sort(byPublishedAt);
 }
 
 /** Several feeds as one stream: newest first, one entry per article. */
@@ -214,12 +198,12 @@ interface NetworkPage {
  *
  * A feed marked `empty` skips both rounds. `europe` has no category upstream, so
  * asking REST without a `categoryId` would quietly return the whole site under
- * the label „CORRECTIV.Europe“.
+ * the label "CORRECTIV.Europe".
  *
  * **Throws rather than answering with an empty page**, and the difference is not
  * academic. Returning `{ items: [], hasMore: false }` for a page it cannot serve
  * reads to `loadMore` as "the list ends here": it would bank the page number,
- * clear `hasMore`, and leave „mehr laden“ gone until the app restarts, over
+ * clear `hasMore`, and leave "mehr laden" gone until the app restarts, over
  * nothing worse than one timeout. A throw leaves the list exactly as it was. A
  * test asked for page 2 with both rounds failing and caught precisely that.
  */
@@ -228,19 +212,39 @@ async function readFromNetwork(key: FeedKey, page: number): Promise<NetworkPage>
   if (config.empty) throw new Error(`Feed '${key}' has no source: no such category upstream`);
 
   try {
-    return await fetchWpFeed(key, {
+    const rest = await fetchWpFeed(key, {
       categoryId: config.categoryId,
       page,
       perPage: PAGE_SIZE,
     });
+    /**
+     * An empty page counts as a failed round, not as an answer.
+     *
+     * A category id that stops matching upstream does not produce an error: WP
+     * answers `200 []`. Accepting that would skip the RSS round entirely and put
+     * the feed on the bundled snapshot while `/category/<slug>/feed/` was serving
+     * fine — the one shape of outage the second round exists for, and the one it
+     * could not see. On page 2 and beyond an empty page is the honest end of the
+     * list, so it is only the first page that falls through.
+     */
+    if (page > 1 || rest.items.length > 0) return rest;
+    console.warn(`Feed '${key}': REST answered an empty first page, trying RSS`);
   } catch (err) {
+    /**
+     * Rethrown as it came for a later page, not replaced with a message of our
+     * own. RSS has no pages, so there is no second round to describe — and the
+     * caller reads this error: `loadMore` recognises WordPress's 400 for a page
+     * past the end and stops offering "mehr laden". Swallowing the cause here
+     * cost exactly that, and a test caught it.
+     */
+    if (page > 1) throw err;
     console.warn(
-      `Feed '${key}' page ${page}: REST failed, trying RSS:`,
+      `Feed '${key}' page 1: REST failed, trying RSS:`,
       err instanceof Error ? err.message : err,
     );
   }
 
-  // RSS has no pages. Asking it for a second one would re-serve the first.
+  // Only page 1 can reach RSS. Asking it for a second page would re-serve the first.
   if (page > 1) throw new Error(`Feed '${key}': no page ${page}, RSS cannot paginate`);
   return { items: await fetchFeed(key, config.url), hasMore: false };
 }
@@ -320,7 +324,7 @@ export const fetchMany =
  * filter the list grows a duplicate on every such refresh, and React gets two
  * children with the same key.
  *
- * Silent on failure by design. A failed „mehr laden“ leaves the list exactly as
+ * Silent on failure by design. A failed "mehr laden" leaves the list exactly as
  * it was, which is the honest outcome; only `loadingMore` goes back to false so
  * the reader can try again.
  *
@@ -328,7 +332,7 @@ export const fetchMany =
  * is the project page, and [ADR 0012](../../../../adr/0012-a-list-virtualizer-for-the-unbounded-lists.md)
  * names that list as bounded by `data?.slice(0, 12)` and virtualizing it as
  * busywork. Both halves of that are true only while the list has a ceiling. Wiring
- * a „mehr laden“ button there makes the list unbounded, which moves it into the
+ * a "mehr laden" button there makes the list unbounded, which moves it into the
  * category the ADR virtualizes — so the UI change is a `FlatList` conversion plus
  * an amendment to that ADR, not a button. The capability sits here, tested, until
  * someone wants to spend that.
@@ -336,21 +340,39 @@ export const fetchMany =
 export const loadMore =
   (key: FeedKey): AppThunk<Promise<void>> =>
   async (dispatch, getState) => {
-    const slice = getState().feeds.byKey[key];
-    if (!slice.hasMore || slice.loadingMore) return;
+    const before = getState().feeds.byKey[key];
+    if (!before.hasMore || before.loadingMore) return;
 
     dispatch(patch(key, { loadingMore: true }));
-    const next = slice.page + 1;
+    const next = before.page + 1;
     try {
       const { items, hasMore } = await readFromNetwork(key, next);
-      const seen = new Set(slice.items.map((i) => i.url));
-      const fresh = items.filter((i) => !seen.has(i.url));
-      const appended = [...slice.items, ...fresh];
+      /**
+       * The list is read again AFTER the await, never from the snapshot taken
+       * before it. A pull-to-refresh dispatched while this page was in flight has
+       * already replaced page 1, and appending to the copy captured beforehand
+       * would put the old page 1 back and persist it — so a newly published
+       * article would vanish again until the next forced refresh.
+       */
+      const current = getState().feeds.byKey[key].items;
+      const seen = new Set(current.map((i) => i.url));
+      const appended = [...current, ...items.filter((i) => !seen.has(i.url))];
       dispatch(patch(key, { items: appended, page: next, hasMore, loadingMore: false }));
       await setCached(CACHE_NS, key, appended);
     } catch (err) {
-      console.error(`Feed '${key}' page ${next} failed:`, err instanceof Error ? err.message : err);
-      dispatch(patch(key, { loadingMore: false }));
+      const message = err instanceof Error ? err.message : String(err);
+      console.error(`Feed '${key}' page ${next} failed:`, message);
+      /**
+       * A 400 from WordPress is the end of the list, not an outage.
+       *
+       * `hasMore` is inferred from a full page, so a category whose post count is
+       * an exact multiple of the page size reports one more page than it has, and
+       * WP answers that page with `rest_post_invalid_page_number`. Leaving
+       * `hasMore` set would keep a "mehr laden" button that fails on every press
+       * for the rest of the session.
+       */
+      const ended = message.includes('HTTP 400');
+      dispatch(patch(key, { loadingMore: false, ...(ended ? { hasMore: false } : {}) }));
     }
   };
 

@@ -2,7 +2,7 @@
  * No bundled covers in a browser — deliberately, and it is not a gap.
  *
  * The bundle exists because an offline phone cannot fetch a cover. A browser can:
- * images are not subject to the CORS rule that blocks the feeds, so every remote
+ * images are not subject to the CORS rule that blocks the RSS feeds, so every remote
  * cover loads exactly as it does on correctiv.org. Serving the inlined copies here
  * would replace working URLs with half a megabyte of base64 in the JS bundle — paid
  * on every page load, for no visible difference.

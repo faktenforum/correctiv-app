@@ -35,7 +35,7 @@ const TONES: Record<FactcheckRating, RatingTone> = {
   falsch: 'refuted',
   'groesstenteils-falsch': 'refuted',
   manipuliert: 'refuted',
-  // Qualified, not refuted: „teilweise falsch“ says part of the claim holds.
+  // Qualified, not refuted: "teilweise falsch" says part of the claim holds.
   'teilweise-falsch': 'qualified',
   'fehlender-kontext': 'qualified',
   unbelegt: 'qualified',
@@ -55,10 +55,13 @@ const TONES: Record<FactcheckRating, RatingTone> = {
  *
  * Three of these were missing until 2026-09-01, and each one cost a plaque or,
  * worse, printed the wrong one:
- * - `partly-false` fell through to the prose matcher and came out as „Falsch“.
- * - `faktenforum-false` and `faktenforum-misleading` are the Faktenforum-branded
- *   variants of two existing verdicts. They matched nothing and the plaque was
- *   simply absent. Together 20 of 200 sampled fact checks, so a tenth of them.
+ * - `partly-false` (5 of 200 sampled fact checks) fell through to the prose
+ *   matcher and came out as "Falsch", a harder verdict than the one published.
+ * - `faktenforum-false` (9) and `faktenforum-misleading` (6) are the
+ *   Faktenforum-branded variants of two existing verdicts. They matched nothing
+ *   and the plaque was simply absent.
+ *
+ * Twenty of two hundred between them, a tenth.
  */
 const FROM_SVG_SLUG: Record<string, FactcheckRating> = {
   false: 'falsch',
