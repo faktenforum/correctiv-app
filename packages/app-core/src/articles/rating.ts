@@ -15,6 +15,7 @@ import type { FactcheckRating } from './types';
 const LABELS: Record<FactcheckRating, string> = {
   falsch: 'Falsch',
   'groesstenteils-falsch': 'Größtenteils falsch',
+  'teilweise-falsch': 'Teilweise falsch',
   'fehlender-kontext': 'Fehlender Kontext',
   unbelegt: 'Unbelegt',
   irrefuehrend: 'Irreführend',
@@ -34,6 +35,8 @@ const TONES: Record<FactcheckRating, RatingTone> = {
   falsch: 'refuted',
   'groesstenteils-falsch': 'refuted',
   manipuliert: 'refuted',
+  // Qualified, not refuted: „teilweise falsch“ says part of the claim holds.
+  'teilweise-falsch': 'qualified',
   'fehlender-kontext': 'qualified',
   unbelegt: 'qualified',
   irrefuehrend: 'qualified',
@@ -42,13 +45,30 @@ const TONES: Record<FactcheckRating, RatingTone> = {
   richtig: 'confirmed',
 };
 
-/** The English slugs CORRECTIV uses in its rating image paths. */
+/**
+ * The slugs CORRECTIV publishes a verdict under.
+ *
+ * One map, two readers. The theme names the rating image
+ * `/rating/<slug>.svg`, and the REST API carries the same token in
+ * `acf["post::interpretation"].value`. Verified equal on every sampled article,
+ * which is why `ratingFromInterpretation` is a rename and not a second table.
+ *
+ * Three of these were missing until 2026-09-01, and each one cost a plaque or,
+ * worse, printed the wrong one:
+ * - `partly-false` fell through to the prose matcher and came out as „Falsch“.
+ * - `faktenforum-false` and `faktenforum-misleading` are the Faktenforum-branded
+ *   variants of two existing verdicts. They matched nothing and the plaque was
+ *   simply absent. Together 20 of 200 sampled fact checks, so a tenth of them.
+ */
 const FROM_SVG_SLUG: Record<string, FactcheckRating> = {
   false: 'falsch',
+  'faktenforum-false': 'falsch',
   'mostly-false': 'groesstenteils-falsch',
+  'partly-false': 'teilweise-falsch',
   'missing-context': 'fehlender-kontext',
   unproven: 'unbelegt',
   misleading: 'irrefuehrend',
+  'faktenforum-misleading': 'irrefuehrend',
   manipulated: 'manipuliert',
   satire: 'satire',
   'mostly-true': 'groesstenteils-richtig',
@@ -63,6 +83,8 @@ const FROM_SVG_SLUG: Record<string, FactcheckRating> = {
 const FROM_TEXT: { test: RegExp; value: FactcheckRating }[] = [
   { test: /gr(ö|oe)(ß|ss)tenteils falsch/i, value: 'groesstenteils-falsch' },
   { test: /gr(ö|oe)(ß|ss)tenteils richtig/i, value: 'groesstenteils-richtig' },
+  // The case the ordering rule above was written for, and the one it missed.
+  { test: /teilweise falsch/i, value: 'teilweise-falsch' },
   { test: /fehlender kontext/i, value: 'fehlender-kontext' },
   { test: /irref(ü|ue)hrend/i, value: 'irrefuehrend' },
   { test: /manipuliert/i, value: 'manipuliert' },
@@ -76,6 +98,20 @@ const FROM_TEXT: { test: RegExp; value: FactcheckRating }[] = [
 export function ratingFromSvgSlug(slug: string | null | undefined): FactcheckRating | undefined {
   if (!slug) return undefined;
   return FROM_SVG_SLUG[slug.toLowerCase().replace(/_/g, '-')];
+}
+
+/**
+ * The verdict as the REST API states it, from `acf["post::interpretation"]`.
+ *
+ * Reads the same closed set as the image path, so an article fetched through the
+ * API and the same article scraped from HTML cannot disagree about its verdict.
+ * The field is already public on correctiv.org — no CMS change was needed, which
+ * took a measurement to find out: it is in `acf`, not in WordPress's `meta`.
+ */
+export function ratingFromInterpretation(
+  value: string | null | undefined,
+): FactcheckRating | undefined {
+  return ratingFromSvgSlug(value);
 }
 
 const SVG_PATH = /\/rating\/([a-z0-9_-]+)\.svg/i;

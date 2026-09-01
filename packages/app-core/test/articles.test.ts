@@ -5,7 +5,14 @@ import { describe, expect, it } from 'vitest';
 import { extractArticleFromDom } from '../src/articles/extract/dom';
 import { extractArticleFromString } from '../src/articles/extract/string';
 import { estimateReadingMinutes, extractPageMeta } from '../src/articles/page-meta';
-import { ratingFromPage, ratingFromText, ratingLabel, ratingTone } from '../src/articles/rating';
+import {
+  FACTCHECK_RATINGS,
+  ratingFromInterpretation,
+  ratingFromPage,
+  ratingFromText,
+  ratingLabel,
+  ratingTone,
+} from '../src/articles/rating';
 import { buildReaderHtml } from '../src/articles/reader-html';
 import type { Article, ArticleExtractor } from '../src/articles/types';
 import { decodeEntities, stripTags } from '../src/lib/html';
@@ -129,6 +136,44 @@ describe('fact-check vocabulary', () => {
     expect(ratingTone('falsch')).toBe('refuted');
     expect(ratingTone('unbelegt')).toBe('qualified');
     expect(ratingTone('richtig')).toBe('confirmed');
+  });
+
+  /**
+   * The three slugs correctiv.org publishes that this vocabulary did not know,
+   * measured 2026-09-01 over 200 fact checks: `partly_false` (5),
+   * `faktenforum_false` (9), `faktenforum_misleading` (6).
+   */
+  it('knows the Faktenforum variants and the partly-false verdict', () => {
+    expect(ratingFromPage('<img src="/x/rating/partly_false.svg">')).toBe('teilweise-falsch');
+    expect(ratingFromPage('<img src="/x/rating/faktenforum_false.svg">')).toBe('falsch');
+    expect(ratingFromPage('<img src="/x/rating/faktenforum_misleading.svg">')).toBe('irrefuehrend');
+  });
+
+  /**
+   * The regression this was written for. „Teilweise falsch“ contains „falsch“,
+   * so before `teilweise-falsch` existed the prose matcher printed the harder
+   * verdict „Falsch“ over an article CORRECTIV had rated more softly.
+   */
+  it('does not harden „Teilweise falsch“ into „Falsch“', () => {
+    expect(ratingFromText('Teilweise falsch Über diese Bewertung')).toBe('teilweise-falsch');
+    expect(ratingLabel('teilweise-falsch')).toBe('Teilweise falsch');
+    expect(ratingTone('teilweise-falsch')).toBe('qualified');
+  });
+
+  /** The API states the verdict in the same tokens as the image path. */
+  it('reads the verdict out of the REST field', () => {
+    expect(ratingFromInterpretation('faktenforum_false')).toBe('falsch');
+    expect(ratingFromInterpretation('partly_false')).toBe('teilweise-falsch');
+    expect(ratingFromInterpretation('mostly_true')).toBe('groesstenteils-richtig');
+    expect(ratingFromInterpretation('')).toBeUndefined();
+    expect(ratingFromInterpretation(null)).toBeUndefined();
+  });
+
+  it('covers every verdict with a label and a tone', () => {
+    for (const rating of FACTCHECK_RATINGS) {
+      expect(ratingLabel(rating)).toBeTruthy();
+      expect(['refuted', 'qualified', 'confirmed']).toContain(ratingTone(rating));
+    }
   });
 });
 
