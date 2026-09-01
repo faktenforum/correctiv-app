@@ -37,15 +37,19 @@ Everything the core cannot do on its own is declared in
 
 | Port | What the host answers | How this host answers it |
 | --- | --- | --- |
-| `KeyValueStore` | small settings, **synchronously** | AsyncStorage behind a mirror hydrated before the first render |
+| `KeyValueStore` | small settings, asynchronously | AsyncStorage, one prefixed key per setting |
 | `BlobStore` | the HTTP cache, asynchronously | AsyncStorage |
 | `ContentBundle` | what shipped inside the app | generated TS modules |
 | `AudioBackend` | playback, as status ticks | expo-audio's status events |
 
-`KeyValueStore` is synchronous because `persist()` reads it while a store is being
-constructed, before anything can await. `BlobStore` is not, because it holds a
-megabyte of cached feeds. The adapter's file header explains what the synchronous
-version used to cost.
+Both storage ports are asynchronous, and what separates them is what they hold: a
+settings string against a megabyte of cached feeds. `KeyValueStore` was synchronous
+once, because `persist()` read it while a store was being constructed — which forced
+this host to keep an in-memory mirror, hydrate it before the first render, and carry
+a data-loss trap in two file headers. Redux moved store construction to module load
+and made `persist()` a later call the host already awaits, so there was nothing left
+to be earlier than. [ADR 0009](adr/0009-redux-toolkit-for-the-cores-state.md) records
+the change and the 45 lines it deleted.
 
 The adapter is `apps/mobile/src/lib/platform/expo.ts`, and it is small on purpose.
 While the repo had a second host, one file per host knew the platform SDK, so

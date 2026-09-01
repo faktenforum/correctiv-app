@@ -47,11 +47,12 @@ export interface KeyValueStore {
  * Namespaced text-blob store — the HTTP and feed cache. `namespace` groups
  * entries (one per feed kind), `name` is an opaque file-safe key.
  *
- * Asynchronous, unlike `KeyValueStore`: a blob here is a megabyte of cached
- * feeds, not a settings string, and every caller already sits inside an async
- * action. The port was sync while a synchronous file API was the only
- * implementation, and that shape forced this host to hydrate its entire cache into
- * memory before the first frame just to answer a read.
+ * Asynchronous, as `KeyValueStore` also became: what separates the two ports is
+ * what they hold, not when they answer. A blob here is a megabyte of cached feeds,
+ * not a settings string, and every caller already sits inside an async action. The
+ * port was sync while a synchronous file API was the only implementation, and that
+ * shape forced this host to hydrate its entire cache into memory before the first
+ * frame just to answer a read.
  */
 export interface BlobStore {
   read(namespace: string, name: string): Promise<string | null>;
