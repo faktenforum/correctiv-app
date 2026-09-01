@@ -16,7 +16,8 @@
   },
   "workspaces": [
     "apps/*",
-    "packages/*"
+    "packages/*",
+    "tools/*"
   ],
   "devDependencies": {
     "@types/node": "^20.19.43",
@@ -42,6 +43,7 @@
     "android": "npm run android -w @correctiv/mobile",
     "ios": "npm run ios -w @correctiv/mobile",
     "build:web": "npm run build:web -w @correctiv/mobile",
+    "preview": "npm run build -w @correctiv/preview",
     "tokens": "npm run tokens -w @correctiv/design-tokens",
     "fonts": "npm run fonts -w @correctiv/mobile",
     "offline-articles": "npm run offline-articles -w @correctiv/mobile",

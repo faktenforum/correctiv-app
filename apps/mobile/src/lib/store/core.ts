@@ -52,6 +52,7 @@ import {
 import { settingsActions } from '@correctiv/app-core/stores/settings';
 import {
   createAppStore,
+  resetStore,
   type AppDispatch,
   type AppThunk,
   type RootState,
@@ -317,3 +318,46 @@ export const useCoreActions = (): CoreActions => {
   const dispatch = useAppDispatch();
   return useMemo(() => bindCoreActions(dispatch), [dispatch]);
 };
+
+// --- the dev shell's handle --------------------------------------------------
+
+/** What `preview.html` finds on the frame's `globalThis` in a dev build. */
+export interface DevHandle {
+  store: typeof coreStore;
+  actions: CoreActions;
+  /** Every slice back to its initial value, without rebuilding the store. */
+  resetStore: typeof resetStore;
+}
+
+/**
+ * Hands the running app to the device preview.
+ *
+ * `apps/mobile/public/preview.html` frames the web build **same-origin**, so a
+ * page outside the app can reach into it — but only if the app leaves something
+ * to reach for. This is that something: the store the Provider actually holds
+ * (the singleton above, which `app/_layout.tsx` passes on), plus the bound
+ * actions.
+ *
+ * Why a handle and not storage. The shell could write `kv:store.settings`
+ * itself, and for the onboarding gate it still has to, because that has to be
+ * true before the first render. For everything after it, a dispatch is strictly
+ * better: it speaks the core's vocabulary instead of duplicating the key format
+ * `stores/persist.ts` owns, it is typed, and it lands now rather than at the
+ * next reload.
+ *
+ * Guarded exactly like `devToolsEnhancers()` above, and for the same two
+ * reasons: a release build has no business carrying a remote control, and jest
+ * has no shell to talk to. Note that `expo export` also sets `__DEV__` false, so
+ * the published web demo has no handle — deliberate, and the shell says so in
+ * the toolbar instead of appearing to work.
+ */
+function exposeDevHandle(): void {
+  if (!__DEV__ || process.env.NODE_ENV === 'test') return;
+  (globalThis as typeof globalThis & { __correctiv?: DevHandle }).__correctiv = {
+    store: coreStore,
+    actions: coreActions,
+    resetStore,
+  };
+}
+
+exposeDevHandle();

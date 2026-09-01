@@ -85,18 +85,22 @@ lists fall back to remote URLs, which is only visible with no network.
 > ```
 
 **The device frame linked at the top** works locally too, with presets, rotation, free
-resizing and a route field. It ships in the export from `apps/mobile/public/`, so the
-same page answers under `npm run web`, under the server above, and on Pages.
+resizing and a route field. It is built from [`tools/preview`](tools/preview/README.md)
+into `apps/mobile/public/`, so the same page answers under `npm run web`, under the
+server above, and on Pages.
 
 ```
 http://localhost:8081/preview.html          # dev server, Fast Refresh in the frame
 http://localhost:8099/preview.html          # a static export
 ```
 
-Device and route travel in the URL (`preview.html#/artikel?d=ipad-pro-11`), so a
-layout finding can be handed over as a link. The frame is the app untouched: inside
-it, `useWindowDimensions` and the reader's `48rem` breakpoint see the simulated size.
-Dark mode, safe-area insets and touch are not simulated. Those stay DevTools' job.
+Device, route, appearance and app state travel in the URL
+(`preview.html#/artikel?d=ipad-pro-11&t=dark&s=member`), so a finding can be handed
+over as a link. The frame is the app untouched: inside it, `useWindowDimensions` and
+the reader's `48rem` breakpoint see the simulated size. `Tools` adds the app's state
+and console, a live palette and an element-to-source picker, all of which need the dev
+server. Safe-area insets and touch are not simulated, and the *device's* colour scheme
+is the browser's to emulate; those stay DevTools' job.
 
 ## Where to go next
 

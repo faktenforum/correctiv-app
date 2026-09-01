@@ -114,6 +114,14 @@ jobs:
             echo "::error::dist/preview.html is missing — apps/mobile/public/ did not reach the export, and the address handed out for the demo would 404."
             exit 1
           }
+          # The shell is built (tools/preview) rather than committed, so it can be
+          # present and reference a bundle that is not. That is a white page at the
+          # address the README hands out, produced by an otherwise green build.
+          bundle=$(grep -o 'preview-assets/[^"]*\.js' dist/preview.html | head -1)
+          test -n "$bundle" && test -f "dist/$bundle" || {
+            echo "::error::dist/preview.html references no bundle that reached the export ($bundle) — run npm run preview -w @correctiv/mobile before exporting."
+            exit 1
+          }
           echo "deployable OK — $(find dist -name '*.html' | wc -l) routes under $BASE_PATH"
 
       - name: Upload Pages artifact
