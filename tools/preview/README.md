@@ -11,6 +11,18 @@ state, its console, the palette, the checks, and the source line behind an eleme
 Built by Vite into `apps/mobile/public/`, which is not a detail. See
 [ADR 0014](../../adr/0014-the-preview-shell-as-a-package.md) before moving it.
 
+![The plain demo](screens/demo.webp)
+
+With `Tools` on, and the checks run against `/entdecken` — every filter chip there is
+35px tall, under the 44px a thumb needs:
+
+![The panels](screens/tools.webp)
+
+The palette, overridden live. Nothing is written back; `Copy CSS` is how a proposal
+leaves here:
+
+![Two tokens overridden](screens/tokens.webp)
+
 ## Running it
 
 ```bash

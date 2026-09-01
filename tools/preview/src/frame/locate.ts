@@ -46,20 +46,27 @@ function fiberOf(node: Element | null): Fiber | null {
 }
 
 /**
- * `react-dom`'s own `formatOwnerStack`, re-implemented: drop the synthetic
- * header, drop the `jsx()` frame, stop at React's bottom frame. What is left
- * begins with the exact line that wrote this element.
+ * The frames of one element's creation site.
+ *
+ * `react-dom` truncates this at its own `react_stack_bottom_frame` marker, and
+ * copying that was a mistake: the marker is only present when the stack is long
+ * enough to contain it, and `Error.stackTraceLimit` is 10 by default. Raising the
+ * limit does not help either, because these Errors were created during a render
+ * that already happened. So the first version of this returned nothing at all,
+ * every time, on every element.
+ *
+ * Truncating is also unnecessary here. React's own frames and everything under
+ * `node_modules` are marked `collapse` by Metro a moment later, so the cheapest
+ * correct thing is to hand over the top few frames of each owner and let the
+ * symbolicator sort them out.
  */
-function ownerFrame(err: Error | null | undefined): string {
-  if (!err?.stack) return '';
-  let stack = err.stack;
-  if (stack.startsWith('Error: react-stack-top-frame\n')) stack = stack.slice(29);
-  const newline = stack.indexOf('\n');
-  if (newline !== -1) stack = stack.slice(newline + 1);
-  const bottom = stack.indexOf('react_stack_bottom_frame');
-  if (bottom === -1) return ''; // past React's owner-stack budget, or too short a stack limit
-  const cut = stack.lastIndexOf('\n', bottom);
-  return cut === -1 ? '' : (stack.slice(0, cut).split('\n')[0] ?? '');
+function ownerFrames(err: Error | null | undefined): string[] {
+  if (!err?.stack) return [];
+  return err.stack
+    .split('\n')
+    .filter((line) => /^\s*(at\s|\S+@)/.test(line))
+    .filter((line) => !line.includes('react_stack_bottom_frame'))
+    .slice(0, 3);
 }
 
 /** Metro wants an absolute bundle URL and a zero-based column. */
@@ -92,16 +99,15 @@ export async function locate(win: Window | null, node: Element): Promise<Located
     // Frozen or gone; the walk below simply finds fewer frames.
   }
 
-  const lines: string[] = [];
+  const lines = new Set<string>();
   let fiber = fiberOf(node);
-  for (let depth = 0; fiber && depth < 24; depth++) {
-    const line = ownerFrame(fiber._debugStack);
-    if (line) lines.push(line);
+  for (let depth = 0; fiber && depth < 24 && lines.size < 40; depth++) {
+    for (const line of ownerFrames(fiber._debugStack)) lines.add(line);
     fiber = fiber._debugOwner ?? null;
   }
-  if (lines.length === 0) return [];
+  if (lines.size === 0) return [];
 
-  const stack = lines.map(toFrame).filter((f): f is Located => f !== null);
+  const stack = [...lines].map(toFrame).filter((f): f is Located => f !== null);
 
   try {
     const response = await fetch('/symbolicate', {
@@ -111,7 +117,14 @@ export async function locate(win: Window | null, node: Element): Promise<Located
     });
     const body = (await response.json()) as { stack: (Located & { collapse?: boolean })[] };
     // Expo collapses every `node_modules/.+/` frame, so what is left is this app.
-    return body.stack.filter((f) => !f.collapse);
+    // The owner chain repeats a call site whenever one component wraps another,
+    // so the same file and line can arrive several times.
+    const seen = new Set<string>();
+    return body.stack.filter((f) => {
+      if (f.collapse) return false;
+      const key = `${f.file}:${f.lineNumber}`;
+      return seen.has(key) ? false : (seen.add(key), true);
+    });
   } catch {
     return []; // no Metro to ask: the static export, or the server is gone
   }
