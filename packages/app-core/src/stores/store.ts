@@ -14,8 +14,10 @@ import { mediaReducer } from './media';
 import { membershipReducer } from './membership';
 import { participationReducer } from './participation';
 import { podcastsReducer } from './podcasts';
+import { radioReducer } from './radio';
 import { savedArticlesReducer } from './savedArticles';
 import { settingsReducer } from './settings';
+import { spotlightReducer } from './spotlight';
 import { videoReducer } from './video';
 
 /**
@@ -38,6 +40,8 @@ const combined = combineReducers({
   feeds: feedsReducer,
   media: mediaReducer,
   podcasts: podcastsReducer,
+  spotlight: spotlightReducer,
+  radio: radioReducer,
   audio: audioReducer,
   video: videoReducer,
 });

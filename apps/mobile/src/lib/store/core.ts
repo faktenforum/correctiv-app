@@ -46,10 +46,21 @@ import {
 } from '@correctiv/app-core/stores/participation';
 import { fetchAll, findSeries, type PodcastsStatus } from '@correctiv/app-core/stores/podcasts';
 import {
+  fetchStatus as fetchRadioStatus,
+  nowPlayingLine as selectNowPlayingLine,
+  type RadioStatusState,
+} from '@correctiv/app-core/stores/radio';
+import {
   isSaved as selectIsSaved,
   savedArticlesActions,
 } from '@correctiv/app-core/stores/savedArticles';
 import { settingsActions } from '@correctiv/app-core/stores/settings';
+import {
+  fetchIssues,
+  latestIssue as selectLatestIssue,
+  recentIssues as selectRecentIssues,
+  type SpotlightStatus,
+} from '@correctiv/app-core/stores/spotlight';
 import {
   createAppStore,
   resetStore,
@@ -151,7 +162,12 @@ export const useExtraFeeds = () => {
 // --- lazy loads --------------------------------------------------------------
 
 /** What the lazily loaded slices' statuses have in common: all start at `'idle'`. */
-type LazyStatus = FeedStatus | PodcastsStatus | VideoListState['status'];
+type LazyStatus =
+  | FeedStatus
+  | PodcastsStatus
+  | SpotlightStatus
+  | RadioStatusState
+  | VideoListState['status'];
 
 /**
  * Fills a slice the first time something asks for it.
@@ -206,6 +222,48 @@ export const useVideoChannel = (key: YoutubeKey) => {
   const slice = useAppSelector((s) => s.media.byKey[key]);
   useLazyLoad(slice.status, fetchChannel, key);
   return slice;
+};
+
+/**
+ * What is on air on the Salon5 stream, read once when something first asks.
+ *
+ * Returns the line to print, not the raw status, because the decision "is there
+ * anything worth saying" is the core's (`nowPlayingLine`) and the fallback copy is
+ * the banner's. A `null` here means the banner keeps its own subtitle.
+ */
+export const useRadioStation = () => {
+  const status = useAppSelector((s) => s.radio.status);
+  const station = useAppSelector((s) => s.radio.station);
+  useLazyLoad(status, fetchRadioStatus, undefined);
+
+  const nowPlaying = useMemo(() => selectNowPlayingLine({ status, station }), [status, station]);
+  return { nowPlaying, listeners: station?.online ? station.listeners : null, status };
+};
+
+/**
+ * The Spotlight newsletter archive, loaded on first use.
+ *
+ * `issues` is a stable reference between updates and `status` is a string, so two
+ * narrow subscriptions cost less than one whole-slice read — the same reasoning as
+ * `usePodcastLibrary` below, and the same reason neither hook selects its slice.
+ *
+ * The derived reads are the core's exported selectors rather than a `slice(0, n)`
+ * in a screen, and they are memoised because both build a fresh array: handed
+ * straight to `useSelector` they would compare unequal on every unrelated dispatch
+ * and re-render Home for a podcast that finished loading.
+ */
+export const useSpotlight = (recent = 3) => {
+  const issues = useAppSelector((s) => s.spotlight.issues);
+  const status = useAppSelector((s) => s.spotlight.status);
+  useLazyLoad(status, fetchIssues, undefined);
+
+  const state = useMemo(() => ({ issues, status }), [issues, status]);
+  return {
+    issues,
+    status,
+    latest: useMemo(() => selectLatestIssue(state), [state]),
+    recent: useMemo(() => selectRecentIssues(state, recent), [state, recent]),
+  };
 };
 
 /**
@@ -274,6 +332,8 @@ function bindCoreActions(dispatch: AppDispatch) {
       enrichImage: bind(enrichImage),
     },
     podcasts: { fetchAll: bind(fetchAll) },
+    spotlight: { fetchIssues: bind(fetchIssues) },
+    radio: { fetchStatus: bind(fetchRadioStatus) },
     media: { fetch: bind(fetchChannel) },
     video: {
       ...bindActionCreators(

@@ -1,20 +1,26 @@
-import { Pressable, ScrollView, View } from 'react-native';
+import { ActivityIndicator, Pressable, ScrollView, View } from 'react-native';
 
-import { spotlightIssues } from '@correctiv/app-core/data/spotlight';
+import type { SpotlightIssue } from '@correctiv/app-core/data/spotlight';
 import { formatDateWeekdayDe } from '@correctiv/app-core/lib/format';
 
-import { Hairline, Overline, ScreenHeader, Typo } from '@/components/ui';
-import { openArticle } from '@/lib/openArticle';
+import { Hairline, ScreenHeader, Typo } from '@/components/ui';
+import { openExternal } from '@/lib/openExternal';
+import { useSpotlight } from '@/lib/store/core';
+import { useColors } from '@/lib/theme';
 
 /**
- * The Spotlight archive. This is what "Spotlight →" on Home opens, and the reason
- * that action existed in the design draft but not here.
+ * The Spotlight archive, live.
  *
- * Home shows today's issue as an agenda of headlines; this is where the teasers
- * live, one block per issue. No new data was needed: the core already carries
- * several issues, only the first of which Home ever showed.
+ * This screen used to carry the line „Beispielausgaben. Die verlinkten Recherchen
+ * sind echt.“, because the issues were modelled on the note that the archive was
+ * not public. It is public: `wp/v2/newspack_nl_cpt` held 523 issues on 2026-09-01.
+ * The twelve newest are what this shows, and the disclaimer only appears when the
+ * app is actually falling back to its four bundled issues.
  */
 export default function SpotlightScreen() {
+  const colors = useColors();
+  const { issues, status } = useSpotlight();
+
   return (
     <View className="flex-1 bg-grey-100">
       <ScreenHeader />
@@ -27,45 +33,51 @@ export default function SpotlightScreen() {
         <Typo variant="text-m" color="grey-600" className="mt-2xs">
           Das Wichtigste des Tages, jeden Morgen im Newsletter.
         </Typo>
-        {/* Said plainly rather than implied: the newsletter archive is not public
-            so these issues are modeled, not fetched. */}
-        <Typo variant="text-s" color="grey-500" className="mt-2xs">
-          Beispielausgaben. Die verlinkten Recherchen sind echt.
-        </Typo>
 
-        {spotlightIssues.map((issue) => (
-          <View key={issue.id} className="mt-l">
-            <Overline label={formatDateWeekdayDe(issue.date)} />
-            <Typo variant="headline-m" className="mt-3xs">
-              {issue.subject}
-            </Typo>
-            {issue.items.map((entry) => (
-              <View key={entry.title}>
-                <Hairline className="mt-s" />
-                <Pressable
-                  disabled={!entry.articleUrl}
-                  onPress={() =>
-                    entry.articleUrl && openArticle({ url: entry.articleUrl, title: entry.title })
-                  }
-                  accessibilityRole="link"
-                  accessibilityLabel={entry.title}
-                  className="pt-s active:opacity-70"
-                >
-                  <Typo variant="text-s" weight="bold" color="emphasis">
-                    {entry.time} Uhr
-                  </Typo>
-                  <Typo variant="headline-xs" className="mt-4xs">
-                    {entry.title}
-                  </Typo>
-                  <Typo variant="text-m" color="grey-600" className="mt-4xs">
-                    {entry.text}
-                  </Typo>
-                </Pressable>
-              </View>
-            ))}
+        {status === 'offline' && (
+          <Typo variant="text-s" color="grey-500" className="mt-2xs">
+            Ohne Verbindung. Sie sehen gespeicherte Ausgaben vom Ende des Sommers.
+          </Typo>
+        )}
+
+        {status === 'loading' && issues.length === 0 && (
+          <View className="py-2xl">
+            <ActivityIndicator color={colors.emphasis} />
           </View>
-        ))}
+        )}
+
+        <View className="mt-s">
+          {issues.map((issue) => (
+            <IssueBlock key={issue.id} issue={issue} />
+          ))}
+        </View>
       </ScrollView>
+    </View>
+  );
+}
+
+function IssueBlock({ issue }: { issue: SpotlightIssue }) {
+  return (
+    <View>
+      <Hairline className="mt-m" />
+      <Pressable
+        onPress={() => openExternal(issue.url)}
+        accessibilityRole="link"
+        accessibilityLabel={issue.subject}
+        className="pt-m active:opacity-70"
+      >
+        <Typo variant="text-s" weight="bold" color="emphasis">
+          {formatDateWeekdayDe(issue.date)}
+        </Typo>
+        <Typo variant="headline-xs" className="mt-4xs">
+          {issue.subject}
+        </Typo>
+        {issue.teaser ? (
+          <Typo variant="text-m" color="grey-600" className="mt-4xs">
+            {issue.teaser}
+          </Typo>
+        ) : null}
+      </Pressable>
     </View>
   );
 }

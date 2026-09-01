@@ -1,28 +1,37 @@
 import { Pressable, View } from 'react-native';
 
-import { spotlightIssues } from '@correctiv/app-core/data/spotlight';
+import { formatDateShortDe } from '@correctiv/app-core/lib/format';
+import type { SpotlightIssue } from '@correctiv/app-core/data/spotlight';
 
 import { Card, Hairline, Overline, Typo } from '@/components/ui';
-import { openArticle } from '@/lib/openArticle';
+import { openExternal } from '@/lib/openExternal';
+import { useSpotlight } from '@/lib/store/core';
 
 /**
- * "Das Wichtigste heute", the morning newsletter as an agenda.
+ * Spotlight on Home: the last three issues, by date and subject.
  *
- * Time and headline per line, no teaser: the draft treats this card as an index
- * into the day, and three scannable lines say more in the same space than one item
- * quoted in full. The teasers are not lost, they are what /spotlight shows.
+ * The draft's card was an agenda of one morning, "06:58" beside a headline, and
+ * this component rendered exactly that off invented data. The archive turns out to
+ * be public (`wp/v2/newspack_nl_cpt`, 523 issues), and a real issue has no timed
+ * entries: it is one subject and one lead. So the card is still a scannable index
+ * with a small bold label on the left, and the label is now a date instead of a
+ * clock. Three real days beat five invented hours.
  *
- * The sample data comes from the core, which is a strict upgrade on the copy this
- * app carried: every item has an `articleUrl` pointing at an article that is in
- * the offline bundle, so the briefing is tappable even with no network. The old
- * local spotlight.json had no links at all.
+ * Tapping opens the issue on correctiv.org rather than in the reader, because a
+ * newsletter's body is the sent email, tables and masthead GIF included. See
+ * `data/spotlight.ts`.
  */
 export function SpotlightBriefing({ onOpenArchive }: { onOpenArchive: () => void }) {
-  const issue = spotlightIssues[0];
+  const { recent, status } = useSpotlight(3);
+
+  // Nothing to show and nothing said: the card would be an empty box. The first
+  // load resolves from the seed at worst, so this is the very first paint only.
+  if (recent.length === 0) return null;
+
   return (
     <Card tone="surface">
       <View className="flex-row items-center justify-between">
-        <Overline label={issue.subject} color="grey-700" />
+        <Overline label="Spotlight" color="grey-700" />
         <Pressable
           onPress={onOpenArchive}
           hitSlop={8}
@@ -31,34 +40,43 @@ export function SpotlightBriefing({ onOpenArchive }: { onOpenArchive: () => void
           className="active:opacity-60"
         >
           <Typo variant="text-s" weight="bold" color="emphasis">
-            Spotlight →
+            Alle Ausgaben →
           </Typo>
         </Pressable>
       </View>
 
-      {issue.items.map((entry) => (
-        <View key={entry.title}>
-          {/* A hairline above every row, including the first — it separates the
-              agenda from its own header, as in the draft. */}
-          <Hairline className="mt-s" />
-          <Pressable
-            disabled={!entry.articleUrl}
-            onPress={() =>
-              entry.articleUrl && openArticle({ url: entry.articleUrl, title: entry.title })
-            }
-            accessibilityRole="link"
-            accessibilityLabel={entry.title}
-            className="flex-row gap-s pt-s active:opacity-70"
-          >
-            <Typo variant="text-s" weight="bold" color="grey-600">
-              {entry.time}
-            </Typo>
-            <Typo variant="text-m" className="flex-1">
-              {entry.title}
-            </Typo>
-          </Pressable>
-        </View>
+      {recent.map((issue) => (
+        <IssueRow key={issue.id} issue={issue} />
       ))}
+
+      {status === 'offline' && (
+        <Typo variant="text-s" color="grey-500" className="mt-s">
+          Ohne Verbindung. Sie sehen gespeicherte Ausgaben.
+        </Typo>
+      )}
     </Card>
+  );
+}
+
+function IssueRow({ issue }: { issue: SpotlightIssue }) {
+  return (
+    <View>
+      {/* A hairline above every row, including the first — it separates the
+          index from its own header, as in the draft. */}
+      <Hairline className="mt-s" />
+      <Pressable
+        onPress={() => openExternal(issue.url)}
+        accessibilityRole="link"
+        accessibilityLabel={issue.subject}
+        className="flex-row gap-s pt-s active:opacity-70"
+      >
+        <Typo variant="text-s" weight="bold" color="grey-600">
+          {formatDateShortDe(issue.date)}
+        </Typo>
+        <Typo variant="text-m" numberOfLines={2} className="flex-1">
+          {issue.subject}
+        </Typo>
+      </Pressable>
+    </View>
   );
 }
