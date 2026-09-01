@@ -115,8 +115,11 @@ and `always-light`, so a value match cannot say which was meant.
 
 **Inspect.** Click an element, get the file and line that drew it, and a button that
 opens it in the editor. Dev server only, because React 19 keeps no source on a fiber:
-this walks the owner chain and asks Metro's `/symbolicate` to map it back. Picking is
-inert, so choosing a card does not also open it.
+this walks the owner chain and asks Metro's `/symbolicate` to map it back.
+
+Picking is inert: choosing a link does not follow it. What is under the cursor is
+outlined while the picker is armed, and what was picked stays outlined afterwards, so
+a wrong hit is visible as a wrong hit rather than as a surprising file name.
 
 What comes back is the whole chain, not one answer, because only the person looking
 knows which level they mean. Selecting one makes it the `Source:` line of a block
