@@ -18,6 +18,7 @@ is the way it is; [`../ARCHITECTURE.md`](../ARCHITECTURE.md) describes *what* it
 | [0011](0011-naming-the-app-for-release.md) | Naming the app for release, and letting the old host go | accepted; retires two of 0007's |
 | [0012](0012-a-list-virtualizer-for-the-unbounded-lists.md) | A list virtualizer, for the two lists that need one | accepted |
 | [0013](0013-native-tabs-and-a-web-tab-bar-of-its-own.md) | Native tabs on the phone, and a web tab bar of its own | accepted; verified on Android, iOS unrun |
+| [0015](0015-reading-correctiv-org-through-its-rest-api.md) | Reading correctiv.org through its REST API, not its RSS feeds | accepted; retires the CORS item in 0006, unopened in a browser |
 
 Six notes for readers of the older ones:
 
@@ -48,6 +49,11 @@ Six notes for readers of the older ones:
   Redux Toolkit ([0009](0009-redux-toolkit-for-the-cores-state.md)) and the styling
   engine to Uniwind ([0008](0008-uniwind-over-nativewind.md)); those passages are what
   was true when they were written.
+
+[ADR 0015](0015-reading-correctiv-org-through-its-rest-api.md) retires the CORS item
+in 0006 and four claims in the top-level docs. Read its last section for the list; the
+short version is that "correctiv.org sends no CORS header" was true of the RSS feeds
+and never of the REST API.
 
 **How an expired claim is marked.** An ADR is never rewritten to look right in
 hindsight — the reasoning is the part worth keeping. A claim a later decision made

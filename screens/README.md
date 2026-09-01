@@ -128,10 +128,14 @@ Each of these cost a wrong conclusion or a worthless committed picture.
   carries no cover at all, no `og:image` and no image in the feed item. Both the app
   and its predecessor degrade quietly, which is what the first comparison round asked
   for.
-- On the web export, Home's articles come from the bundled snapshot rather than the
-  network, because correctiv.org sends no `Access-Control-Allow-Origin`. Judge layout
-  on the emulator shots. The web build shows a snapshot as old as the last
-  `npm run offline-articles`.
+- On the web export, Home's articles came from the bundled snapshot rather than the
+  network, because correctiv.org's RSS feeds send no `Access-Control-Allow-Origin`.
+  ~~The web build shows a snapshot as old as the last `npm run offline-articles`.~~
+  Retired on 2026-09-01 by
+  [ADR 0015](../adr/0015-reading-correctiv-org-through-its-rest-api.md): the app reads
+  the REST API, which sends the header, so the web build has a live path. **Every shot
+  in `web/` predates that**, so those five pictures still show snapshot content. Judge
+  layout on the emulator shots either way.
 
 ## Where the comparison history went
 

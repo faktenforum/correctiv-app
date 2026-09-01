@@ -168,20 +168,67 @@ equivalents for focus, liveness and errors.
   `Platform.OS === 'web'` variable, since the prop is not in RN's `SwitchProps`. The
   general shape of this: a prop RN honours and RNW quietly reads differently is
   invisible to typecheck, tests and every native screenshot.
-- **`correctiv.org` sends no `Access-Control-Allow-Origin`,** so a browser blocks
-  every RSS request and **no feed is ever live on web**. Native is unaffected, because there
-  is no CORS there. Measured 2026-08-05 across every source: only `tube.funfacts.de`
-  sends `*` (so FunFacts videos and their HLS streams do work); `correctiv.org`,
-  `salon5.correctiv.net` and `youtube.com/feeds` send none. → The Expo host now
-  bundles a snapshot of every content feed (`npm run offline-articles`), so the
-  store's cascade lands on it and the web demo has articles without waiting on a
-  response header from CORRECTIV ops. It says so on screen: "Ohne Verbindung. Sie
-  sehen gespeicherte Artikel."
-  - So the web demo's articles are **as old as the last generator run**, and no
-    amount of reloading changes that. Re-run it before showing the browser build.
-  - Article images survive because an `<img>` is not subject to CORS and the
-    bundled articles carry their real cover URLs. Feed items the generator did not
-    extract have no image, because finding one needs a request the browser blocks.
+- **`correctiv.org`'s RSS feeds send no `Access-Control-Allow-Origin`,** so a browser
+  blocks every RSS request. ~~and **no feed is ever live on web**~~ — struck through on
+  2026-09-01 by [ADR 0015](adr/0015-reading-correctiv-org-through-its-rest-api.md).
+  **The header is a property of the format, not of the server.** `wp/v2/posts`
+  reflects whatever `Origin` it is given (`localhost:8081`, `localhost:8099`,
+  `faktenforum.github.io`, an arbitrary host, even `null`) and answers the `OPTIONS`
+  preflight; the feeds under `/feed/` send nothing. The app reads the REST API now, so
+  a browser has a live path. Native was never affected, because there is no CORS
+  there. Measured 2026-08-05 across every source: only `tube.funfacts.de` sends `*`
+  (so FunFacts videos and their HLS streams do work); `correctiv.org`'s feeds,
+  `salon5.correctiv.net` and `youtube.com/feeds` send none. → The Expo host also
+  bundles a snapshot of every content feed (`npm run offline-articles`), which is
+  still the reader's floor with no network at all. It says so on screen: "Ohne
+  Verbindung. Sie sehen gespeicherte Artikel."
+  - ~~So the web demo's articles are **as old as the last generator run**, and no
+    amount of reloading changes that.~~ They are as old as the snapshot only when the
+    network path fails. Re-running the generator before a demo is still worth doing,
+    because it is what an offline reader sees.
+  - **The one header a browser will not let you set is the one this repo sets.**
+    `http.ts` sends a browser `User-Agent` to get past WordPress's bot challenge. A
+    page cannot override that header, and were a browser to honour the attempt it
+    would promote a simple request to a preflighted one — which correctiv.org
+    rejects, because its `Access-Control-Allow-Headers` lists only `Authorization,
+    X-WP-Nonce, Content-Disposition, Content-MD5, Content-Type`. → `fetchJson` sends
+    no user agent (`browserAgent: false`), measured unnecessary: all four JSON
+    endpoints answer 200 without it. Only the HTML and RSS paths keep it. Nothing
+    about this is visible in a test, on a device, or in a green export.
+  - Article images survive an offline start because an `<img>` is not subject to CORS
+    and the bundled articles carry their real cover URLs. A live list gets its images
+    from `cvui_featured_image` in the same response, in four sizes.
+  - **CORS is per host, and the browser is the only place you see the whole set.**
+    Measured from `localhost:8099` on 2026-09-01 with the export loaded:
+
+    | Host | header | what the app does |
+    | --- | --- | --- |
+    | `correctiv.org/wp-json` | reflects the origin | articles and Spotlight are live |
+    | `tube.funfacts.de` | `*` | FunFacts videos and HLS are live |
+    | `correctiv.org/…/feed/` | none | the RSS fallback cannot run in a browser |
+    | `salon5.correctiv.net` | none | all seven podcast feeds fail, the bundle answers |
+    | `icecast.correctiv.net` | none | the station status fails, the banner keeps its subtitle |
+    | `youtube.com/feeds` | none | „Videos derzeit nicht erreichbar.“ |
+
+    Each degrades as built, so nothing here is a defect — but half the media on the
+    web target is a fallback, and two of those hosts are CORRECTIV's own.
+
+- **A field the list does not carry costs a request per card, and the browser is
+  where you find out.** `ArticleHero` called `useArticleMeta`, which fetched the whole
+  article page (about 115 KB) for one number, the reading time, because `FeedItem` had
+  no field for it. The doc comment said so and was true when written. After the move
+  to the REST API the response carried the reading time and `toFeedItem` threw it
+  away, so the fetch stayed — and on the web target it is blocked by CORS, meaning the
+  lead item silently lost its reading time and logged an error. Every test stayed
+  green, because no test renders Home against a network. → Found by opening the export
+  and reading the network panel: four requests succeeded and one failed. Whenever a
+  card fetches something per item, ask what field would remove the fetch.
+- **A cache written by the previous build makes the new one look unchanged.** After
+  fixing the above, the same page still made the failing request: the feed cache from
+  the earlier visit held items without the new field, and the guard reads the item.
+  Fifteen minutes of TTL is enough to make a fix look like it did not work. → Clear
+  site data between builds when checking a change to a cached shape, or the thing you
+  are looking at is the previous build's data.
 
 ## Android builds and the emulator
 
@@ -273,8 +320,19 @@ equivalents for focus, liveness and errors.
   `correctiv.org/faktencheck/feed/` returns the landing page as a single item. → See
   `packages/app-core/src/data/feeds.config.ts`; a test guards the one feed that is
   legitimately empty upstream.
-- **Icecast answers HEAD requests with 400,** so availability cannot be probed. →
-  Availability means: try to play.
+- **Icecast answers HEAD requests with 400,** so availability cannot be probed
+  ~~at all~~ **that way**. → Availability of the *stream* still means: try to play.
+  But the server's own status document is a public GET:
+  `icecast.correctiv.net/status-json.xsl` lists every mount with its bitrate, current
+  and peak listeners, and the title on air. `services/radio.service.ts` reads it, and
+  the Mediathek banner prints the title instead of a fixed subtitle. Retired the
+  absolute reading of this entry on 2026-09-01,
+  [ADR 0015](adr/0015-reading-correctiv-org-through-its-rest-api.md).
+  - Two things that document revealed. `source` is an **array** with several mounts
+    and a bare **object** with one, so a reader that assumes either breaks when the
+    other happens. And `title` joins artist and track with " - " and keeps the
+    separator when the artist is empty, so the real value arrives as
+    " - Salon5 Mitschnitt 2024 04 05, 17 Uhr 02".
 - **Ops, and it affects real clients:** `icecast.correctiv.net`,
   `salon5.correctiv.net` and `tube.funfacts.de` serve Let's Encrypt's new **YR**
   chain (ISRG Root YR, cross-signed May 2026). Clients with an older trust store fail

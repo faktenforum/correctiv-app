@@ -9,8 +9,10 @@ proximity.
 No install, no emulator, the same code and the same screens as the Android and iOS
 builds, republished on every push to `main`. It opens inside a device frame,
 switchable between phone and tablet sizes, because the app is built for a phone and
-has no desktop layout. It runs on content bundled into the build, since correctiv.org
-sends no CORS header. See [the web target](TROUBLESHOOTING.md#the-web-target).
+has no desktop layout. Its articles come live from correctiv.org's REST API, with a
+snapshot bundled into the build as the floor when a request fails. See
+[the web target](TROUBLESHOOTING.md#the-web-target) and
+[ADR 0015](adr/0015-reading-correctiv-org-through-its-rest-api.md).
 
 <p align="center">
   <img src="media/demo.gif" alt="Walkthrough of the CORRECTIV app on Android: live home feed, article reader, media library and the persistent Salon5 live-radio mini player" width="270">
