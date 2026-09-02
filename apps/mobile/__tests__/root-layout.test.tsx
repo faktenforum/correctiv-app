@@ -2,7 +2,7 @@ import { act, create, type ReactTestRenderer } from 'react-test-renderer';
 import { Provider } from 'react-redux';
 
 /**
- * The root layout's two decisions that nothing else can see.
+ * The root layout's three decisions that nothing else can see.
  *
  *  1. **The Provider has to hold the core's singleton.** Screens read through the
  *     Provider (`useAppSelector`), while `coreActions` and the two modules that run
@@ -14,6 +14,11 @@ import { Provider } from 'react-redux';
  *     it would overwrite every shared link on the web target, which is the whole
  *     reason the pathname is checked; and it is a `replace`, because the onboarding
  *     is not a place one returns to.
+ *  3. **The door comes first.** Nothing behind it is decided, the onboarding jump
+ *     included, until the session is admitted, and admitted means an entitlement
+ *     with the app in it, never a contribution. The session hydrates before the
+ *     first render like everything else, so a returning member is not shown the
+ *     form for a frame.
  *
  * Neither was testable while the gate was a module-level `let`: the first mount in
  * a suite consumed it for every mount after it, so any second assertion passed
@@ -49,6 +54,10 @@ jest.mock('expo-splash-screen', () => ({
 jest.mock('uniwind', () => ({
   Uniwind: { setTheme: jest.fn() },
   useUniwind: () => ({ theme: 'light', hasAdaptiveThemes: true }),
+  // The door imports the design system, whose SafeAreaView is wrapped at module
+  // load; the wrapper is an identity here because nothing below the early return
+  // is ever rendered.
+  withUniwind: (component: unknown) => component,
 }));
 
 /**
@@ -69,11 +78,30 @@ jest.mock('@/lib/audio/backend', () => ({
 
 import { router, usePathname } from 'expo-router';
 
+import { sessionActions } from '@correctiv/app-core/stores/session';
 import { completeOnboarding } from '@correctiv/app-core/stores/settings';
 import { resetStore } from '@correctiv/app-core/stores/store';
+import type { Entitlement } from '@correctiv/app-core/types/models';
 
 import RootLayout from '@/app/_layout';
+import { expoPlatform } from '@/lib/platform/expo';
 import { coreActions, coreStore } from '@/lib/store/core';
+
+const account = { email: 'alex@example.org', name: 'Alex' };
+const PAID: Entitlement = {
+  tier: 'paid',
+  appAccess: true,
+  source: 'paid',
+  validUntil: null,
+  localAreas: [],
+};
+
+/** Through the door, the way a sign-in leaves the store. */
+function admit(entitlement: Entitlement = PAID): void {
+  act(() => {
+    coreStore.dispatch(sessionActions.succeeded({ account, entitlement }));
+  });
+}
 
 const replace = router.replace as jest.Mock;
 const push = router.push as jest.Mock;
@@ -134,6 +162,9 @@ describe('the Provider', () => {
 });
 
 describe('the onboarding gate', () => {
+  // Every case here is about what happens BEHIND the door.
+  beforeEach(() => admit());
+
   it('jumps into the onboarding when the app starts on the home route', async () => {
     await mount();
 
@@ -192,5 +223,48 @@ describe('the onboarding gate', () => {
 
     await mount();
     expect(replace).toHaveBeenCalledTimes(2);
+  });
+});
+
+describe('the door', () => {
+  it('holds the onboarding jump until the session is admitted', async () => {
+    // Signed out: the shell renders the gate in place of the navigator, so there
+    // is nothing to jump to and nothing is decided.
+    await mount();
+    expect(replace).not.toHaveBeenCalled();
+
+    // The sign-in lands, the navigator mounts, and the onboarding decision is
+    // taken then, from the same mount.
+    admit();
+    expect(replace).toHaveBeenCalledWith('/onboarding');
+    expect(replace).toHaveBeenCalledTimes(1);
+  });
+
+  it('does not admit a member whose membership has no app in it', async () => {
+    admit({ tier: 'free', appAccess: false, source: null, validUntil: null, localAreas: [] });
+    await mount();
+    expect(replace).not.toHaveBeenCalled();
+  });
+
+  it('admits a trial by its entitlement, whatever it pays', async () => {
+    admit({ ...PAID, source: 'trial', validUntil: '2999-01-01T00:00:00.000Z' });
+    await mount();
+    expect(replace).toHaveBeenCalledWith('/onboarding');
+  });
+
+  it('hydrates a persisted session before deciding anything', async () => {
+    // What a returning member has on disk: the account and the entitlement, no
+    // status. The status is what having an account means, derived on hydration.
+    await expoPlatform.keyValue.setString(
+      'store.session',
+      JSON.stringify({ account, entitlement: PAID }),
+    );
+
+    await mount();
+
+    expect(coreStore.getState().session.status).toBe('signed-in');
+    // And the onboarding decision saw the hydrated session, not the empty default.
+    expect(replace).toHaveBeenCalledWith('/onboarding');
+    await expoPlatform.keyValue.remove('store.session');
   });
 });

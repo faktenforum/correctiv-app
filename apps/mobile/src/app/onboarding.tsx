@@ -8,20 +8,26 @@ import { interests } from '@correctiv/app-core/data/interests';
 import { useCoreActions, useSelectedInterests, useSettings } from '@/lib/store/core';
 import { useColors } from '@/lib/theme';
 
-/** The three sentences on the red mission screen. */
-const MISSION = [
-  'Gemeinnützig: uns gehört niemand',
-  'Spendenfinanziert: von Tausenden getragen',
-  'Ohne Paywall: Journalismus für alle',
-];
+/**
+ * The sentences on the red mission screen.
+ *
+ * There was a third, "Ohne Paywall: Journalismus für alle". It became false with the
+ * door (ADR 0016) and the login wall the scope puts on correctiv.org, so it is gone
+ * rather than reworded: what takes its place is a claim about the new arrangement,
+ * and that wording is CORRECTIV's to write, not this repo's. Removed with ADR 0018.
+ */
+const MISSION = ['Gemeinnützig: uns gehört niemand', 'Spendenfinanziert: von Tausenden getragen'];
 
 /**
- * Onboarding: mission → interests → participate/push → club.
+ * Onboarding: mission → interests → participate/push.
  *
- * The last step offers **two equal ways out** ("Unterstützer:in werden" and
- * "Erstmal umsehen"), and from step 2 on there is "Überspringen" in the top right.
- * That is deliberate — no dark pattern — and `completeOnboarding()` runs either
- * way, so skipping does not mean being asked again on the next launch.
+ * There was a fourth step, the club pitch, ending in "Unterstützer:in werden" beside
+ * "Erstmal umsehen". Both addressed someone who had not paid, and behind the door
+ * (ADR 0016) nobody here is that person: they paid to get this far, and "erstmal
+ * umsehen" was the thing they could no longer do. The step is gone with ADR 0018.
+ *
+ * "Überspringen" stays from step 2 on, and `completeOnboarding()` runs either way,
+ * so skipping does not mean being asked again on the next launch.
  *
  * The mission screen is brand red and therefore independent of the colour scheme;
  * the steps after it run on the normal surface.
@@ -34,10 +40,9 @@ export default function OnboardingScreen() {
   const selected = useSelectedInterests();
   const selectedIds = new Set(selected.map((interest) => interest.id));
 
-  const finish = (withJoin: boolean) => {
+  const finish = () => {
     actions.settings.completeOnboarding();
     router.replace('/(tabs)');
-    if (withJoin) router.push('/beitreten');
   };
 
   const mission = step === 0;
@@ -49,7 +54,7 @@ export default function OnboardingScreen() {
     >
       <View className="flex-row items-center justify-between px-m py-s">
         <View className="flex-row gap-2xs">
-          {[0, 1, 2, 3].map((i) => (
+          {[0, 1, 2].map((i) => (
             <View
               key={i}
               className="rounded-full"
@@ -71,7 +76,7 @@ export default function OnboardingScreen() {
           <Pressable
             accessibilityRole="button"
             accessibilityLabel="Überspringen"
-            onPress={() => finish(false)}
+            onPress={finish}
             hitSlop={8}
             className="active:opacity-70"
           >
@@ -123,7 +128,7 @@ export default function OnboardingScreen() {
           <>
             <Typo variant="headline-xl">Was interessiert Sie?</Typo>
             <Typo variant="text-m" color="grey-600" className="mt-2xs">
-              Ihre Auswahl ordnet die Startseite. Alles bleibt trotzdem zugänglich.
+              Ihre Auswahl ordnet die Startseite.
             </Typo>
             <View className="mt-m flex-row flex-wrap gap-2xs">
               {interests.map((interest) => (
@@ -155,39 +160,15 @@ export default function OnboardingScreen() {
             </Card>
           </>
         )}
-
-        {step === 3 && (
-          <View className="pt-l">
-            <Typo variant="headline-xl">CORRECTIV gehört niemandem. Außer allen.</Typo>
-            <Typo variant="text-m" color="grey-600" className="mt-s">
-              Unser Journalismus bleibt frei, ermöglicht von Menschen, die ihn unterstützen. Der
-              Club ist Nähe, keine Paywall: Recherchen früher lesen, Backstage-Einblicke,
-              Bonusfolgen.
-            </Typo>
-          </View>
-        )}
       </ScrollView>
 
       <View className="px-m pb-m">
-        {step < 3 ? (
-          <Button
-            title={step === 0 ? 'Los geht’s' : 'Weiter'}
-            variant={mission ? 'onEmphasis' : 'primary'}
-            fullWidth
-            onPress={() => setStep(step + 1)}
-          />
-        ) : (
-          <>
-            <Button title="Unterstützer:in werden" fullWidth onPress={() => finish(true)} />
-            <Button
-              title="Erstmal umsehen"
-              variant="secondary"
-              fullWidth
-              className="mt-2xs"
-              onPress={() => finish(false)}
-            />
-          </>
-        )}
+        <Button
+          title={step === 0 ? 'Los geht’s' : step === 2 ? 'Fertig' : 'Weiter'}
+          variant={mission ? 'onEmphasis' : 'primary'}
+          fullWidth
+          onPress={() => (step === 2 ? finish() : setStep(step + 1))}
+        />
       </View>
     </SafeAreaView>
   );

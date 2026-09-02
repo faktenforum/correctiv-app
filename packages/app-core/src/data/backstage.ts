@@ -1,7 +1,7 @@
 /**
  * Backstage content — SAMPLE (editorial club content does not yet exist
  * as an API). Examples from the concept, linked to real articles from the
- * offline bundle so that early access really opens after the status flip.
+ * offline bundle, so early access plays without a network.
  */
 
 export interface EarlyAccessItem {
@@ -48,7 +48,7 @@ export const earlyAccess: EarlyAccessItem = {
   id: 'early-pensionskassen',
   title: 'Pension um jeden Preis: Wie Pensionskassen in Waffen investieren',
   teaser:
-    'Beiträge von Versicherten fließen in Rüstungsgeschäfte, oft ohne deren Wissen. Die ganze Recherche, für Clubmitglieder schon jetzt.',
+    'Beiträge von Versicherten fließen in Rüstungsgeschäfte, oft ohne deren Wissen. Die ganze Recherche, für Sie schon jetzt.',
   publicFromLabel: 'Montag',
   publicFromIso: nextMonday().toISOString(),
   articleUrl:

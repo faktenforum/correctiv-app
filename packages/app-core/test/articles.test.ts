@@ -254,11 +254,19 @@ describe('reader html', () => {
     expect(checked).toContain('Falsch');
   });
 
-  /** The support moment is an invitation for guests and a thank-you for members. */
-  it('asks guests to join and thanks members', () => {
-    expect(buildReaderHtml(article)).toContain('correctiv://join');
-    expect(buildReaderHtml(article, { isMember: true })).not.toContain('correctiv://join');
-    expect(buildReaderHtml(article, { isMember: true })).toContain('Danke, dass Sie dabei sind');
+  /**
+   * The support moment is a thank-you, and only that.
+   *
+   * It used to branch: an invitation with a `correctiv://join` button for a guest,
+   * a thank-you for a member. Since the door (ADR 0016) every reader of this document
+   * is a member, so the branch went with ADR 0018. The assertion that the join link
+   * is gone stays, because a document that offers someone what they already pay for
+   * is the failure this once shipped.
+   */
+  it('thanks the reader and never offers to join', () => {
+    const html = buildReaderHtml(article);
+    expect(html).toContain('Danke, dass Sie dabei sind');
+    expect(html).not.toContain('correctiv://join');
   });
 
   it('takes CSS as inline text or as a stylesheet href, so either host can style it', () => {

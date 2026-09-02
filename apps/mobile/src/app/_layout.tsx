@@ -18,11 +18,20 @@ import {
   settingsActions,
   type SettingsState,
 } from '@correctiv/app-core/stores/settings';
-import { membershipActions, type MembershipState } from '@correctiv/app-core/stores/membership';
+import {
+  PERSISTED_KEYS as MEMBERSHIP_KEYS,
+  membershipActions,
+  type MembershipState,
+} from '@correctiv/app-core/stores/membership';
 import {
   savedArticlesActions,
   type SavedArticlesState,
 } from '@correctiv/app-core/stores/savedArticles';
+import {
+  PERSISTED_KEYS as SESSION_KEYS,
+  sessionActions,
+  type SessionState,
+} from '@correctiv/app-core/stores/session';
 import { interestsActions, type InterestsState } from '@correctiv/app-core/stores/interests';
 import {
   participationActions,
@@ -30,10 +39,11 @@ import {
 } from '@correctiv/app-core/stores/participation';
 import { close as closeVideo } from '@correctiv/app-core/stores/video';
 
+import { LoginGate } from '@/components/gate/LoginGate';
 import { expoAudio } from '@/lib/audio/backend';
 import { stop as stopAudio } from '@/lib/audio/player';
 import { expoPlatform } from '@/lib/platform/expo';
-import { coreStore, useAppStore } from '@/lib/store/core';
+import { coreStore, useAppStore, useIsAdmitted } from '@/lib/store/core';
 import { fontAssets, useAppearance, useColors, useIsDark } from '@/lib/theme';
 
 // Hand the core its platform capabilities before anything reads a store. Storage
@@ -75,12 +85,11 @@ SplashScreen.preventAutoHideAsync();
 function registerPersistence(): Promise<void> {
   return persist(coreStore, [
     persisted<SettingsState>('settings', PERSISTED_KEYS, settingsActions.hydrate),
+    // The door reads this before anything else renders, for the same reason as
+    // `onboardingDone`: hydrated late, a returning member would see the form.
+    persisted<SessionState>('session', SESSION_KEYS, sessionActions.hydrate),
     persisted<SavedArticlesState>('savedArticles', ['items'], savedArticlesActions.hydrate),
-    persisted<MembershipState>(
-      'membership',
-      ['isMember', 'name', 'memberSince', 'amountEur', 'interval', 'paused'],
-      membershipActions.hydrate,
-    ),
+    persisted<MembershipState>('membership', MEMBERSHIP_KEYS, membershipActions.hydrate),
     persisted<InterestsState>('interests', ['selected'], interestsActions.hydrate),
     persisted<ParticipationState>('participation', ['submissions'], participationActions.hydrate),
   ]);
@@ -140,9 +149,26 @@ function AppShell() {
   }, [fontsLoaded, storeReady]);
 
   /**
+   * The door. The whole route tree hangs on this one value: while the session is
+   * not admitted the shell renders the gate INSTEAD of the navigator, so there is
+   * no route to reach by deep link, by shared web address or by back. A redirect
+   * could not do that. The onboarding jump below is a redirect, and it is latched,
+   * fires only from `/` and blocks nothing, all of which is right for an
+   * onboarding and wrong for a door.
+   *
+   * A selector, not `getState()`, because unlike the onboarding decision this one
+   * is a value the shell renders: signing in has to open the app in the same tick,
+   * and signing out has to close it. It reads the entitlement, never the
+   * contribution, see `stores/session`.
+   */
+  const admitted = useIsAdmitted();
+
+  /**
    * First start: into the onboarding once per session, as soon as the state is
    * hydrated — before that `onboardingDone` would always be false, which is the
-   * very fault registerPersistence above avoids.
+   * very fault registerPersistence above avoids. And only once admitted: the
+   * onboarding is the first thing behind the door, not something in front of it,
+   * and a navigator that is not mounted has nowhere to jump to.
    *
    * ONLY when the app starts on the home route. Otherwise the jump overwrites every
    * shared link on the web target: someone opening `/backstage` should see
@@ -165,11 +191,11 @@ function AppShell() {
   const store = useAppStore();
   const gated = useRef(false);
   useEffect(() => {
-    if (!storeReady || gated.current) return;
+    if (!storeReady || !admitted || gated.current) return;
     gated.current = true;
     if (pathname !== '/') return;
     if (!store.getState().settings.onboardingDone) router.replace('/onboarding');
-  }, [pathname, store, storeReady]);
+  }, [admitted, pathname, store, storeReady]);
 
   if (!fontsLoaded || !storeReady) return null;
 
@@ -178,22 +204,26 @@ function AppShell() {
       {/* Explicit rather than "auto": auto follows the device, and the app's
           appearance setting may deliberately disagree with it. */}
       <StatusBar style={isDark ? 'light' : 'dark'} />
-      <Stack
-        screenOptions={{
-          headerShown: false,
-          // The stack's own surface, visible for the length of a push animation.
-          // Left at its default white it flashed on every navigation in dark mode.
-          contentStyle: { backgroundColor: palette['grey-100'] },
-        }}
-      >
-        <Stack.Screen name="(tabs)" />
-        {/* The full player is a view onto the running singleton, not state of its
-            own — a modal, because it replaces nothing. */}
-        <Stack.Screen name="player" options={{ presentation: 'modal' }} />
-        {/* Both are flows over the app, not places in it. */}
-        <Stack.Screen name="onboarding" options={{ presentation: 'modal' }} />
-        <Stack.Screen name="beitreten" options={{ presentation: 'modal' }} />
-      </Stack>
+      {admitted ? (
+        <Stack
+          screenOptions={{
+            headerShown: false,
+            // The stack's own surface, visible for the length of a push animation.
+            // Left at its default white it flashed on every navigation in dark mode.
+            contentStyle: { backgroundColor: palette['grey-100'] },
+          }}
+        >
+          <Stack.Screen name="(tabs)" />
+          {/* The full player is a view onto the running singleton, not state of its
+              own — a modal, because it replaces nothing. */}
+          <Stack.Screen name="player" options={{ presentation: 'modal' }} />
+          {/* Both are flows over the app, not places in it. */}
+          <Stack.Screen name="onboarding" options={{ presentation: 'modal' }} />
+          <Stack.Screen name="beitreten" options={{ presentation: 'modal' }} />
+        </Stack>
+      ) : (
+        <LoginGate />
+      )}
     </GestureHandlerRootView>
   );
 }

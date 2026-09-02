@@ -3,9 +3,11 @@ import { act } from 'react-test-renderer';
 import { quarterlyReport } from '@correctiv/app-core/data/quartalsbericht';
 
 /**
- * `isMember` is the demo's central lever — practically every section of the profile
- * reads it, and the app-wide flip when someone joins is the moment the demo is
- * built around. These tests pin both states and the transitions in between.
+ * The profile used to render two versions of itself, one for a member and one for a
+ * guest, and these tests pinned both. Since the door (ADR 0016) there is no guest to
+ * render for, so the guest cases became assertions that its copy is gone (ADR 0018).
+ * The membership sections are now unconditional, which is what the remaining cases
+ * check.
  */
 
 jest.mock('expo-router', () => ({
@@ -29,7 +31,9 @@ import { findAllPressable, press, render, renderedText } from './support/renderi
 import EinstellungenScreen from '@/app/einstellungen';
 import GespeichertScreen from '@/app/gespeichert';
 import ProfilScreen from '@/app/(tabs)/profil';
+import { sessionActions } from '@correctiv/app-core/stores/session';
 import { resetStore } from '@correctiv/app-core/stores/store';
+import type { MembershipTier } from '@correctiv/app-core/types/models';
 
 import { coreActions, coreStore } from '@/lib/store/core';
 
@@ -50,44 +54,76 @@ beforeEach(() => {
   });
 });
 
-function join(): void {
+/**
+ * Through the door. The screen takes the reader's name and tier from the session,
+ * so a test that does not sign in exercises the fallbacks instead of the real path.
+ */
+function signIn(tier: MembershipTier = 'paid'): void {
   act(() => {
-    coreActions.membership.join(25, 'jährlich', 'Testperson');
+    coreStore.dispatch(
+      sessionActions.succeeded({
+        account: { email: 'alex@example.org', name: 'Alex Beispiel' },
+        entitlement: { tier, appAccess: true, source: 'paid', validUntil: null, localAreas: [] },
+      }),
+    );
   });
 }
 
-describe('Profil as a guest', () => {
-  it('invites instead of locking', () => {
+function join(): void {
+  act(() => {
+    coreActions.membership.join(25, 'jährlich');
+  });
+}
+
+describe('Profil without a simulated join', () => {
+  it('has no guest copy left anywhere', () => {
     const text = renderedText(render(<ProfilScreen />));
-    expect(text).toContain('Sie sind als Gast unterwegs');
-    expect(text).toContain('Alles Wichtige bleibt frei zugänglich');
-    expect(text).toContain('Unterstützer:in werden');
+    expect(text).not.toContain('Sie sind als Gast unterwegs');
+    expect(text).not.toContain('Alles Wichtige bleibt frei zugänglich');
+    expect(text).not.toContain('Unterstützer:in werden');
   });
 
-  it('hides the member-only sections but keeps Backstage visible', () => {
+  it('shows the membership sections even before the join flow has run', () => {
     const tree = render(<ProfilScreen />);
     const text = renderedText(tree);
-    expect(text).not.toContain('Ihr Beitrag');
-    expect(text).not.toContain(quarterlyReport.quarter);
-    // Backstage is teased openly to guests — that is the concept, not an oversight.
-    expect(text).toContain('Backstage ansehen');
-    // …and it is marked as the club's, so the tease reads as an invitation. Asserted
-    // on the row's accessibility label rather than on the badge text, because
-    // "Club" also occurs in the subtitle — and this way a screen reader is covered too.
-    expect(findAllPressable(tree, 'Backstage ansehen, Club')).toHaveLength(1);
+    // These were member-only and are now unconditional: whoever renders this screen
+    // came through the door, whether or not the simulated join stamped a date.
+    expect(text).toContain('Ihr Beitrag');
+    expect(text).toContain(quarterlyReport.quarter);
+    expect(text).toContain('Ihr Backstage');
+    // …and no invented amount. The slice defaults to 10; printing it here told a
+    // trial paying 0 € that it pays 10 € a month.
+    expect(text).toContain('Noch nicht festgelegt');
+    expect(text).not.toContain('10 € / Monat');
+    // …and nothing to pause until something is set.
+    expect(text).toContain('Beitrag festlegen');
+    expect(text).not.toContain('Pausieren');
+    // …and it is still marked as the club's. Asserted on the row's accessibility
+    // label rather than on the badge text, because "Club" also occurs in the
+    // subtitle — and this way a screen reader is covered too.
+    expect(findAllPressable(tree, 'Ihr Backstage, Club')).toHaveLength(1);
   });
 });
 
 describe('Profil as a member', () => {
-  it('shows the club card with name and join date', () => {
+  it('takes the name from the session and the tier from the entitlement', () => {
+    signIn();
     join();
     const text = renderedText(render(<ProfilScreen />));
     expect(text).toContain('CORRECTIV CLUB');
-    expect(text).toContain('Testperson');
-    expect(text).toContain('Mitglied seit');
+    expect(text).toContain('Alex Beispiel');
+    expect(text).toContain('Mitgliedschaft mit Beitrag');
+    expect(text).toContain('seit');
+  });
+
+  /** The card names what the membership system answered, not a fixed word. */
+  it('names a Soli membership as such', () => {
+    signIn('soli');
+    expect(renderedText(render(<ProfilScreen />))).toContain('Soli-Mitgliedschaft');
   });
 
   it('shows the contribution and the quarterly report', () => {
+    signIn();
     join();
     const text = renderedText(render(<ProfilScreen />));
     expect(text).toContain('25 € / Jahr');
@@ -95,7 +131,8 @@ describe('Profil as a member', () => {
     expect(text).toContain('Ihr Backstage');
   });
 
-  it('pauses without cancelling', () => {
+  it('pauses without clearing the contribution', () => {
+    signIn();
     join();
     const tree = render(<ProfilScreen />);
 
@@ -103,14 +140,14 @@ describe('Profil as a member', () => {
 
     const state = coreStore.getState().membership;
     expect(state.paused).toBe(true);
-    expect(state.isMember).toBe(true); // Backstage stays open
+    expect(state.memberSince).not.toBeNull();
     const text = renderedText(tree);
     expect(text).toContain('ist pausiert');
     expect(text).toContain('Fortsetzen');
   });
 
   it('opens the report, the saved list and the settings', () => {
-    join();
+    signIn();
     const tree = render(<ProfilScreen />);
 
     press(tree, `${quarterlyReport.quarter}, Club`);
@@ -201,7 +238,7 @@ describe('settings', () => {
     const tree = render(<EinstellungenScreen />);
     press(tree, 'Demo-Zustand zurücksetzen');
 
-    expect(coreStore.getState().membership.isMember).toBe(false);
+    expect(coreStore.getState().membership.memberSince).toBeNull();
     expect(coreStore.getState().interests.selected).toEqual([]);
     expect(coreStore.getState().settings).toMatchObject({
       onboardingDone: false,

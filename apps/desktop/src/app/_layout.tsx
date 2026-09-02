@@ -13,7 +13,15 @@
 //      transform reads, and there is no Metro here. The class vocabulary reaches GTK
 //      through `configureStyle` in `../entry.tsx` instead (ADR 0032 section 3).
 //   2. `gtkPlatform` + `gstAudio` instead of `expoPlatform` + `expoAudio`.
-//   3. Nothing else. Kept in the same order as the phone's file on purpose, so a
+//   3. No door. The phone renders `components/gate/LoginGate` instead of the
+//      navigator while the session is not admitted (ADR 0016); this host still
+//      mounts the navigator unconditionally. That is the one difference here which
+//      is NOT platform-specific, and it is a gap rather than a decision — nothing
+//      blocks it: the gate imports only names this host already answers, and the
+//      session slice is hydrated below, so the door has its state waiting for it.
+//      Until it lands, this host shows the app to a session that has not been
+//      admitted, which is exactly what the phone stopped doing.
+//   4. Nothing else. Kept in the same order as the phone's file on purpose, so a
 //      `diff` between the two is short enough to read.
 
 import { router, Stack, usePathname } from 'expo-router';
@@ -34,11 +42,20 @@ import {
   settingsActions,
   type SettingsState,
 } from '@correctiv/app-core/stores/settings';
-import { membershipActions, type MembershipState } from '@correctiv/app-core/stores/membership';
+import {
+  PERSISTED_KEYS as MEMBERSHIP_KEYS,
+  membershipActions,
+  type MembershipState,
+} from '@correctiv/app-core/stores/membership';
 import {
   savedArticlesActions,
   type SavedArticlesState,
 } from '@correctiv/app-core/stores/savedArticles';
+import {
+  PERSISTED_KEYS as SESSION_KEYS,
+  sessionActions,
+  type SessionState,
+} from '@correctiv/app-core/stores/session';
 import { interestsActions, type InterestsState } from '@correctiv/app-core/stores/interests';
 import {
   participationActions,
@@ -80,12 +97,13 @@ SplashScreen.preventAutoHideAsync();
 function registerPersistence(): Promise<void> {
   return persist(coreStore, [
     persisted<SettingsState>('settings', PERSISTED_KEYS, settingsActions.hydrate),
+    // Hydrated here even though this host has no door to read it yet, because the
+    // list is the phone's and a slice missing from it fails silently: whoever ports
+    // the gate would get a returning member shown the sign-in form, which is the
+    // exact fault the phone's copy of this line exists to prevent.
+    persisted<SessionState>('session', SESSION_KEYS, sessionActions.hydrate),
     persisted<SavedArticlesState>('savedArticles', ['items'], savedArticlesActions.hydrate),
-    persisted<MembershipState>(
-      'membership',
-      ['isMember', 'name', 'memberSince', 'amountEur', 'interval', 'paused'],
-      membershipActions.hydrate,
-    ),
+    persisted<MembershipState>('membership', MEMBERSHIP_KEYS, membershipActions.hydrate),
     persisted<InterestsState>('interests', ['selected'], interestsActions.hydrate),
     persisted<ParticipationState>('participation', ['submissions'], participationActions.hydrate),
   ]);

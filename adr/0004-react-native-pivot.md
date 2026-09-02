@@ -346,11 +346,13 @@ diary. All five tabs and all secondary screens are in place.
 touchpoint reacts in the same tick — clicked through in the browser: onboarding → app →
 profile → join → contribution → data.
 
-*No dark pattern, and that is tested.* Until the final step, every "Weiter" has an
-equivalent "Erstmal umsehen" beside it, and from step 2 of the onboarding a
+*No dark pattern, and that is tested.* ~~Until the final step, every "Weiter" has an
+equivalent "Erstmal umsehen" beside it~~, and from step 2 of the onboarding a
 "Überspringen" — and skipping **counts as completed**, so it does not ask again on the
-next start. Backstage is fully visible to guests; the buttons invite rather than lock
-("the club is proximity, not a paywall").
+next start. ~~Backstage is fully visible to guests; the buttons invite rather than lock~~
+("the club is proximity, not a paywall"). The struck halves were retired by
+[ADR 0018](0018-removing-the-guest.md): behind the door there is no guest to invite and
+nowhere to escape to. "Überspringen" and the rule in brackets both still hold.
 
 *Contribution as presets instead of a slider.* React Native no longer has a slider, and
 for money tapping is more precise than dragging — the same deviation from the design

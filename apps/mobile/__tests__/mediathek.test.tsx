@@ -5,12 +5,13 @@ import { PODCAST_CHANNELS } from '@correctiv/app-core/data/feeds.config';
 import type { PodcastSeries } from '@correctiv/app-core/data/podcasts';
 
 /**
- * The Mediathek's one irreversible decision: who hears the whole thing.
+ * The Mediathek's audio, and who hears it.
  *
- * Club bonus audio is a 60-second invitation for guests and a full episode for
- * members, and the difference is one boolean read at tap time. Get it wrong in
- * the guest direction and the demo gives away the club; wrong the other way and
- * the invitation never appears. Neither shows up in a typecheck.
+ * Club bonus audio plays in full. It branched on membership twice over: a
+ * 60-second preview until 2026-08-06, then a note saying it was open to all until
+ * ADR 0018. Both are gone, and what is left to pin is that the tap reaches the
+ * whole episode and that nothing on the row suggests otherwise. Neither shows up
+ * in a typecheck.
  */
 
 jest.mock('expo-router', () => ({
@@ -60,7 +61,7 @@ import {
 import { patch as mediaPatch } from '@correctiv/app-core/stores/media';
 import { resetStore } from '@correctiv/app-core/stores/store';
 
-import { coreActions, coreStore } from '@/lib/store/core';
+import { coreStore } from '@/lib/store/core';
 
 const push = router.push as jest.Mock;
 const playEpisodeMock = playEpisode as jest.Mock;
@@ -143,13 +144,18 @@ describe('Mediathek', () => {
 
 /**
  * Club bonus content plays in full for everyone — the 60-second preview was dropped
- * on 2026-08-06. The `CLUB` badge and the note are labels now; they withhold nothing.
- * What is worth pinning is exactly that: a guest and a member get the SAME call.
+ * on 2026-08-06. The `CLUB` badge is a label now; it withholds nothing.
+ *
+ * There used to be two cases here, a guest and a member, asserting they get the same
+ * call and differ only in a "Für alle hörbar" note. Since the door (ADR 0016) there is
+ * no guest, and the note addressed one, so both the note and the second case went with
+ * ADR 0018. What is worth pinning is what is left: the episode plays in full, and
+ * nothing on the row hints at a distinction that no longer exists.
  */
 describe('the club bonus', () => {
-  it('gives a guest the full episode, and says it is open to all', () => {
+  it('plays the full episode, with no note about who may hear it', () => {
     const tree = render(<MediathekScreen />);
-    expect(renderedText(tree)).toContain('Für alle hörbar');
+    expect(renderedText(tree)).not.toContain('Für alle hörbar');
 
     press(tree, `${BONUS.title} abspielen`);
 
@@ -160,21 +166,8 @@ describe('the club bonus', () => {
     });
   });
 
-  it('gives a member the same episode, without the note', () => {
-    act(() => {
-      coreActions.membership.join(10, 'monatlich', 'Test');
-    });
-    const tree = render(<MediathekScreen />);
-
-    expect(renderedText(tree)).not.toContain('Für alle hörbar');
-    press(tree, `${BONUS.title} abspielen`);
-
-    expect(playEpisodeMock).toHaveBeenCalledTimes(1);
-    expect(playEpisodeMock.mock.calls[0][0]).toMatchObject({ episodeId: BONUS.id });
-  });
-
-  it('marks the club exactly once, member or not', () => {
-    // The badge is the invitation's label, not a lock — it stays for members too.
+  it('marks the club exactly once', () => {
+    // The badge is a label, not a lock.
     //
     // Counted, not merely present: the section used to carry a coral "Club" overline
     // above rows that already had the yellow badge, so the mark appeared twice and in
@@ -182,10 +175,10 @@ describe('the club bonus', () => {
     // read 'CLUB', which only ever matched that overline — `Badge` uppercases through
     // a style, so the tree carries "Club". It would have stayed green with the badge
     // itself deleted.
-    expect(clubMarks(render(<MediathekScreen />))).toBe(1);
-    act(() => {
-      coreActions.membership.join(10, 'monatlich', 'Test');
-    });
+    //
+    // It used to count again after a join, to show the badge stays for a member. No
+    // render path reads the membership any more (ADR 0018), so the second count was
+    // the same render twice.
     expect(clubMarks(render(<MediathekScreen />))).toBe(1);
   });
 });

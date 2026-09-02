@@ -15,20 +15,17 @@ import {
 import { formatDateShortDe } from '@correctiv/app-core/lib/format';
 import { openArticle } from '@/lib/openArticle';
 import { openExternal } from '@/lib/openExternal';
-import { useIsMember } from '@/lib/store/core';
 import { useColors } from '@/lib/theme';
 
 /**
  * Backstage — early access, the research diary, the club letter, the Q&A, events,
  * the publishing house.
  *
- * For guests it is **teased openly**: everything is visible, but the acting buttons
- * invite you to join rather than lock you out. That is the concept's rule that the
- * club is closeness, not a paywall — so there is no padlock here, only an offer.
+ * Nothing here is locked, and that has not changed: the rule was and is that the club
+ * is closeness rather than a paywall. What has gone is the second copy for a guest,
+ * because since the door (ADR 0016) there is no guest to tease. Removed with ADR 0018.
  */
 export default function BackstageScreen() {
-  const isMember = useIsMember();
-
   return (
     <View className="flex-1 bg-grey-100">
       <ScreenHeader />
@@ -41,12 +38,6 @@ export default function BackstageScreen() {
         <Typo variant="headline-xl" className="mt-s">
           Backstage
         </Typo>
-        {!isMember && (
-          <Typo variant="text-m" color="grey-600" className="mt-2xs">
-            Ein Blick hinein: das sehen Clubmitglieder. Nichts davon ist gesperrt, es ist eine
-            Einladung.
-          </Typo>
-        )}
 
         <View className="mt-l">
           <Overline label="Früher lesen" color="emphasis" />
@@ -56,17 +47,12 @@ export default function BackstageScreen() {
               {earlyAccess.teaser}
             </Typo>
             <Typo variant="text-s" color="grey-500" className="mt-s">
-              Für alle ab {earlyAccess.publicFromLabel}
+              Öffentlich ab {earlyAccess.publicFromLabel}
             </Typo>
             <Button
-              title={isMember ? 'Jetzt lesen' : 'Mit dem Club jetzt lesen'}
-              variant={isMember ? 'primary' : 'outline'}
+              title="Jetzt lesen"
               className="mt-s"
-              onPress={() =>
-                isMember
-                  ? openArticle({ url: earlyAccess.articleUrl, title: earlyAccess.title })
-                  : router.push('/beitreten')
-              }
+              onPress={() => openArticle({ url: earlyAccess.articleUrl, title: earlyAccess.title })}
             />
           </Card>
         </View>

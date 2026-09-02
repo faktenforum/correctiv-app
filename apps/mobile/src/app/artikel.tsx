@@ -12,15 +12,17 @@ import type { Article } from '@correctiv/app-core/articles/types';
 import { readerHtml } from '@/lib/articles/reader';
 import { goBack } from '@/lib/navigation/goBack';
 import { shareArticle } from '@/lib/shareArticle';
-import { useCoreActions, useIsMember, useIsSaved, useTextScale } from '@/lib/store/core';
+import { useCoreActions, useIsSaved, useTextScale } from '@/lib/store/core';
 import { sizes, useColors, useIsDark } from '@/lib/theme';
 
 /**
  * Article reader: full-page webview over cleaned-up article HTML (token CSS and
  * embedded fonts, so it works offline). Native overlay header for back and save.
  *
- * Links are intercepted: a correctiv.org article pushes another reader,
- * `correctiv://join` opens the join flow, anything else goes to the system browser.
+ * Links are intercepted: a correctiv.org article pushes another reader, anything
+ * else goes to the system browser. There used to be a third case, `correctiv://join`,
+ * for a button in the reader's second footer; ADR 0018 removed the footer, and a test
+ * in the core now asserts the scheme never reaches a document again.
  */
 export default function ArtikelScreen() {
   const colors = useColors();
@@ -37,9 +39,8 @@ export default function ArtikelScreen() {
   // Subscribes to just this one article's saved flag, so bookmarking another
   // article does not re-render the reader.
   const saved = useIsSaved(url ?? '');
-  // Both are read per render, never snapshotted: the membership flip has to reach
-  // the reader's support footer, and the text-size setting its root font size.
-  const isMember = useIsMember();
+  // Both are read per render, never snapshotted: the appearance has to reach the
+  // reader's colour block, and the text-size setting its root font size.
   const textScale = useTextScale();
   const isDark = useIsDark();
 
@@ -100,10 +101,6 @@ export default function ArtikelScreen() {
   const onNavigate = (target: string): boolean => {
     if (target === 'about:blank' || target.startsWith('data:') || target.startsWith('file:'))
       return true;
-    if (target.startsWith('correctiv://join')) {
-      router.push('/(tabs)/profil');
-      return false;
-    }
     if (isInternalArticleUrl(target)) {
       router.push({ pathname: '/artikel', params: { url: target } });
       return false;
@@ -120,7 +117,7 @@ export default function ArtikelScreen() {
     <View className="flex-1 bg-grey-100">
       {article ? (
         <ReaderView
-          html={readerHtml(article, { isMember, textScale, isDark })}
+          html={readerHtml(article, { textScale, isDark })}
           onNavigate={onNavigate}
           onScroll={onReaderScroll}
         />
