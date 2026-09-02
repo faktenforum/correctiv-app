@@ -38,6 +38,24 @@ const ONBOARDED = {
   theme: 'system',
 };
 
+/**
+ * Through the door. The root layout renders the gate in place of every route
+ * until the session carries an entitlement with the app in it, so every fixture
+ * that wants to show a screen has to carry this. It is what a sign-in leaves on
+ * disk: the account and the entitlement, no status. `stores/session.ts` derives
+ * the status from the account on hydration.
+ */
+const SIGNED_IN = {
+  account: { email: 'alex.beispiel@example.org', name: 'Alex Beispiel' },
+  entitlement: { tier: 'paid', appAccess: true, source: 'paid', validUntil: null, localAreas: [] },
+};
+
+/** A member of the 0 € tier: signed in, and the app is not part of it. */
+const NO_ACCESS = {
+  account: { email: 'frei@example.org', name: 'Frei' },
+  entitlement: { tier: 'free', appAccess: false, source: null, validUntil: null, localAreas: [] },
+};
+
 export interface Fixture {
   id: string;
   label: string;
@@ -60,20 +78,39 @@ export const FIXTURES: Fixture[] = [
   {
     id: 'fresh',
     label: 'Fresh install',
-    hint: 'Nothing stored. The app starts at onboarding.',
+    hint: 'Nothing stored. The app starts at the door, signed out.',
     write: () => {},
+  },
+  {
+    id: 'signed-in',
+    label: 'Signed in',
+    hint: "A member's first start: through the door, into the onboarding.",
+    write: (s) => kv(s, 'session', SIGNED_IN),
+  },
+  {
+    id: 'no-access',
+    label: 'Signed in, no app access',
+    hint: "The door's fourth state: a 0 € member, sent to the upgrade.",
+    write: (s) => kv(s, 'session', NO_ACCESS),
   },
   {
     id: 'onboarded',
     label: 'Onboarded',
     hint: 'The ordinary case: the app starts on Home.',
-    write: (s) => kv(s, 'settings', ONBOARDED),
+    write: (s) => {
+      kv(s, 'session', SIGNED_IN);
+      kv(s, 'settings', ONBOARDED);
+    },
   },
   {
     id: 'member',
     label: 'Member',
-    hint: "The demo's central lever, visible on nearly every screen.",
+    // It used to be "the demo's central lever, visible on nearly every screen".
+    // Since ADR 0018 no screen branches on it: what this fixture still changes is
+    // the join date on the club card and the contribution row under it.
+    hint: 'A simulated join on top: the club card gets a name and a date.',
     write: (s) => {
+      kv(s, 'session', SIGNED_IN);
       kv(s, 'settings', ONBOARDED);
       kv(s, 'membership', {
         isMember: true,
@@ -90,6 +127,7 @@ export const FIXTURES: Fixture[] = [
     label: 'Saved articles',
     hint: '/gespeichert is otherwise empty and shows only its empty state.',
     write: (s) => {
+      kv(s, 'session', SIGNED_IN);
       kv(s, 'settings', ONBOARDED);
       kv(s, 'savedArticles', {
         items: [
@@ -116,6 +154,7 @@ export const FIXTURES: Fixture[] = [
     label: 'Interests picked',
     hint: 'A personalised Home: extra feeds, and modules in a different order.',
     write: (s) => {
+      kv(s, 'session', SIGNED_IN);
       kv(s, 'settings', ONBOARDED);
       kv(s, 'interests', { selected: ['klima', 'faktenchecks', 'jugend'] });
     },
@@ -125,6 +164,7 @@ export const FIXTURES: Fixture[] = [
     label: 'Callout answered',
     hint: 'The form then shows its thanks instead of its questions.',
     write: (s) => {
+      kv(s, 'session', SIGNED_IN);
       kv(s, 'settings', ONBOARDED);
       kv(s, 'participation', {
         submissions: [
@@ -142,6 +182,7 @@ export const FIXTURES: Fixture[] = [
     label: 'Bundled content only',
     hint: "Forces the bundle fallback, the feeds' 'offline' status.",
     write: (s) => {
+      kv(s, 'session', SIGNED_IN);
       kv(s, 'settings', ONBOARDED);
       // A STALE and EMPTY entry, which is the only combination that reaches the
       // fallback: fresh-and-empty short-circuits to `ready` with nothing in it
@@ -155,7 +196,10 @@ export const FIXTURES: Fixture[] = [
     id: 'big-type',
     label: 'Largest text scale',
     hint: 'A++ (1.15), the setting the reader breaks under first.',
-    write: (s) => kv(s, 'settings', { ...ONBOARDED, textScale: 1.15 }),
+    write: (s) => {
+      kv(s, 'session', SIGNED_IN);
+      kv(s, 'settings', { ...ONBOARDED, textScale: 1.15 });
+    },
   },
 ];
 

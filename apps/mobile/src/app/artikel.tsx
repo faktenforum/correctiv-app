@@ -12,7 +12,7 @@ import type { Article } from '@correctiv/app-core/articles/types';
 import { readerHtml } from '@/lib/articles/reader';
 import { goBack } from '@/lib/navigation/goBack';
 import { shareArticle } from '@/lib/shareArticle';
-import { useCoreActions, useIsMember, useIsSaved, useTextScale } from '@/lib/store/core';
+import { useCoreActions, useIsSaved, useTextScale } from '@/lib/store/core';
 import { sizes, useColors, useIsDark } from '@/lib/theme';
 
 /**
@@ -39,7 +39,6 @@ export default function ArtikelScreen() {
   const saved = useIsSaved(url ?? '');
   // Both are read per render, never snapshotted: the membership flip has to reach
   // the reader's support footer, and the text-size setting its root font size.
-  const isMember = useIsMember();
   const textScale = useTextScale();
   const isDark = useIsDark();
 
@@ -120,7 +119,7 @@ export default function ArtikelScreen() {
     <View className="flex-1 bg-grey-100">
       {article ? (
         <ReaderView
-          html={readerHtml(article, { isMember, textScale, isDark })}
+          html={readerHtml(article, { textScale, isDark })}
           onNavigate={onNavigate}
           onScroll={onReaderScroll}
         />

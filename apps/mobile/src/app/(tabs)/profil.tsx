@@ -7,8 +7,15 @@ import { SettingRow } from '@/components/profile/SettingRow';
 import { Button, Card, Hairline, Overline, Screen, Typo } from '@/components/ui';
 import { quarterlyReport } from '@correctiv/app-core/data/quartalsbericht';
 import { OFFLINE_ARTICLES } from '@/lib/articles/offlineBundle.generated';
+import { TIER_LABELS } from '@/lib/membership/tierLabel';
 import { openArticle } from '@/lib/openArticle';
-import { useCoreActions, useMembership, useSavedArticles, useSettings } from '@/lib/store/core';
+import {
+  useCoreActions,
+  useMembership,
+  useSavedArticles,
+  useSession,
+  useSettings,
+} from '@/lib/store/core';
 
 /**
  * The three newsletters from the concept. State lives in the core store, so a
@@ -40,12 +47,15 @@ const IMPACT_ARTICLES = Object.entries(OFFLINE_ARTICLES)
  * Profil — membership, impact, report, backstage, saved articles, newsletters,
  * settings.
  *
- * `isMember` drives nearly every section, which is why it is read per render and
- * never parked in a local variable: the app-wide status flip is the demo's moment
- * (ADR 0004).
+ * Every section used to hang on `isMember`, with a second copy for a guest. Since
+ * the door (ADR 0016) there is no guest here: whoever renders this screen signed in
+ * with an entitlement that includes the app. The branches are gone with ADR 0018,
+ * and what identifies the reader now comes from the session rather than from the
+ * simulated club lever.
  */
 export default function ProfilScreen() {
   const actions = useCoreActions();
+  const session = useSession();
   const membership = useMembership();
   const settings = useSettings();
   const saved = useSavedArticles();
@@ -62,88 +72,75 @@ export default function ProfilScreen() {
       <Typo variant="headline-xl">Profil</Typo>
 
       <ClubCard
-        isMember={membership.isMember}
-        name={membership.name}
+        name={session.account?.name || membership.name}
+        tierLabel={TIER_LABELS[session.entitlement?.tier ?? 'paid']}
         memberSince={membership.memberSince}
-        onJoin={openJoinFlow}
       />
 
-      {membership.isMember && (
-        <>
-          <View className="mt-l">
-            <Overline label="Meine Mitgliedschaft" />
-            <Card className="mt-2xs">
-              <View className="flex-row items-center justify-between">
-                <Typo variant="text-m">Ihr Beitrag</Typo>
-                <Typo variant="headline-xs">
-                  {membership.amountEur} € /{' '}
-                  {membership.interval === 'monatlich' ? 'Monat' : 'Jahr'}
-                </Typo>
-              </View>
-              <View className="mt-s flex-row gap-s">
-                <Button
-                  title="Beitrag ändern"
-                  variant="secondary"
-                  onPress={openJoinFlow}
-                  className="flex-1"
-                />
-                <Button
-                  title={membership.paused ? 'Fortsetzen' : 'Pausieren'}
-                  variant="secondary"
-                  onPress={() => actions.membership.setPaused(!membership.paused)}
-                  className="flex-1"
-                />
-              </View>
-              {membership.paused && (
-                <Typo variant="text-s" color="grey-600" className="mt-s">
-                  Ihre Mitgliedschaft ist pausiert (simuliert). Backstage bleibt bis Monatsende
-                  offen.
-                </Typo>
-              )}
-            </Card>
+      <View className="mt-l">
+        <Overline label="Meine Mitgliedschaft" />
+        <Card className="mt-2xs">
+          <View className="flex-row items-center justify-between">
+            <Typo variant="text-m">Ihr Beitrag</Typo>
+            <Typo variant="headline-xs">
+              {membership.amountEur} € / {membership.interval === 'monatlich' ? 'Monat' : 'Jahr'}
+            </Typo>
           </View>
-
-          <View className="mt-m">
-            <Overline label="Mein Impact" />
-            <Card tone="surface" className="mt-2xs">
-              <Typo variant="text-m">{impactLine(membership.memberSince)}</Typo>
-              {IMPACT_ARTICLES.map((article) => (
-                <Typo
-                  key={article.url}
-                  variant="text-m"
-                  weight="semibold"
-                  numberOfLines={2}
-                  className="mt-s"
-                  onPress={() => openArticle(article)}
-                >
-                  {article.title}
-                </Typo>
-              ))}
-            </Card>
+          <View className="mt-s flex-row gap-s">
+            <Button
+              title="Beitrag ändern"
+              variant="secondary"
+              onPress={openJoinFlow}
+              className="flex-1"
+            />
+            <Button
+              title={membership.paused ? 'Fortsetzen' : 'Pausieren'}
+              variant="secondary"
+              onPress={() => actions.membership.setPaused(!membership.paused)}
+              className="flex-1"
+            />
           </View>
-        </>
-      )}
+          {membership.paused && (
+            <Typo variant="text-s" color="grey-600" className="mt-s">
+              Ihre Mitgliedschaft ist pausiert (simuliert). Backstage bleibt bis Monatsende offen.
+            </Typo>
+          )}
+        </Card>
+      </View>
 
       <View className="mt-m">
-        <Overline label={membership.isMember ? 'Ihr Bereich' : 'Meine App'} />
+        <Overline label="Mein Impact" />
+        <Card tone="surface" className="mt-2xs">
+          <Typo variant="text-m">{impactLine(membership.memberSince)}</Typo>
+          {IMPACT_ARTICLES.map((article) => (
+            <Typo
+              key={article.url}
+              variant="text-m"
+              weight="semibold"
+              numberOfLines={2}
+              className="mt-s"
+              onPress={() => openArticle(article)}
+            >
+              {article.title}
+            </Typo>
+          ))}
+        </Card>
+      </View>
+
+      <View className="mt-m">
+        <Overline label="Ihr Bereich" />
         <View className="mt-2xs">
-          {membership.isMember && (
-            <NavCard
-              icon="document-text-outline"
-              title={quarterlyReport.quarter}
-              subtitle="Wohin Ihr Beitrag fließt, transparent aufgeschlüsselt."
-              club
-              onPress={() => router.push('/bericht')}
-            />
-          )}
+          <NavCard
+            icon="document-text-outline"
+            title={quarterlyReport.quarter}
+            subtitle="Wohin Ihr Beitrag fließt, transparent aufgeschlüsselt."
+            club
+            onPress={() => router.push('/bericht')}
+          />
           <NavCard
             icon="sparkles-outline"
-            title={membership.isMember ? 'Ihr Backstage' : 'Backstage ansehen'}
-            subtitle={
-              membership.isMember
-                ? 'Tagebücher, Bonusfolgen, Events'
-                : 'Was Clubmitglieder erwartet, offen angeteasert.'
-            }
+            title="Ihr Backstage"
+            subtitle="Tagebücher, Bonusfolgen, Events"
             club
             onPress={() => router.push('/backstage')}
           />
@@ -182,9 +179,16 @@ export default function ProfilScreen() {
   );
 }
 
-/** How long they have been aboard — rough, but never "for 0 months". */
+/**
+ * How long they have been aboard — rough, but never "for 0 months".
+ *
+ * `memberSince` is stamped by the simulated join, so an account that signed in at
+ * the door has none. That used to be unreachable, because the section only rendered
+ * for a member the join had created. It is reachable now, hence the second sentence
+ * rather than an empty card.
+ */
 function impactLine(memberSince: string | null): string {
-  if (!memberSince) return '';
+  if (!memberSince) return 'Ihr Beitrag ermöglicht diese Recherchen. Unter anderem diese hier:';
   const months = Math.max(
     1,
     Math.round((Date.now() - new Date(memberSince).getTime()) / (30 * 864e5)),

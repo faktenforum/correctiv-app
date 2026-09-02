@@ -82,3 +82,44 @@ export interface AudioTrack {
   url: string;
   episodeId?: string;
 }
+
+// --- the account, and what it is entitled to ------------------------------------
+
+/**
+ * The membership tiers the scope names: a 0 € membership that is the website's
+ * login wall, a paid one, and "Soli" above it. The amount is deliberately NOT here.
+ * A trial reduces the contribution to 0 € for a month and keeps the paid tier, so a
+ * tier read off an amount would lock out exactly the people being courted.
+ */
+export type MembershipTier = 'free' | 'paid' | 'soli';
+
+/**
+ * Why an account has the app. `paid` is the ordinary case; `local-bundle` is a
+ * local-newsletter subscription that includes the app without being an app
+ * membership; `trial` is a paid tier at a reduced contribution, with an end date.
+ */
+export type EntitlementSource = 'paid' | 'local-bundle' | 'trial';
+
+/**
+ * What the membership system answers at sign-in, and the only thing the app's door
+ * reads. Server-decided end to end: the app respects `appAccess`, it never derives
+ * it, because the rules behind it (trials, bundles, a contribution set to 0 € for a
+ * month) live in beabee and change without an app release.
+ */
+export interface Entitlement {
+  tier: MembershipTier;
+  /** Whether this membership includes the app. */
+  appAccess: boolean;
+  /** Why it does; null when it does not. */
+  source: EntitlementSource | null;
+  /** ISO timestamp after which the entitlement lapses; null for open-ended. */
+  validUntil: string | null;
+  /** The local newsletters this account pays for, the second access level. */
+  localAreas: string[];
+}
+
+/** Who is signed in. The same account as on correctiv.org. */
+export interface Account {
+  email: string;
+  name: string;
+}

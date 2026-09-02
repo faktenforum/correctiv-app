@@ -4,7 +4,8 @@ import { Pressable, ScrollView, View } from 'react-native';
 import { SettingRow } from '@/components/profile/SettingRow';
 import { Button, Card, Hairline, Overline, ScreenHeader, Typo } from '@/components/ui';
 import { openExternal } from '@/lib/openExternal';
-import { useCoreActions, useSettings } from '@/lib/store/core';
+import { useCoreActions, useSession, useSettings } from '@/lib/store/core';
+import type { EntitlementSource } from '@correctiv/app-core/types/models';
 
 /** Affects the article typography in the reader. */
 const TEXT_SCALES = [
@@ -19,12 +20,23 @@ const LINKS = [
   { title: 'Datenschutz', url: 'https://correctiv.org/datenschutz/' },
 ];
 
+/** Why the app is open to this account, as the membership system answered it. */
+const ACCESS_SOURCE: Record<EntitlementSource, string> = {
+  paid: 'Mitgliedschaft mit Beitrag',
+  'local-bundle': 'Lokal-Bundle',
+  trial: 'Testphase',
+};
+
 export default function EinstellungenScreen() {
   const actions = useCoreActions();
   const settings = useSettings();
+  const session = useSession();
   const [resetDone, setResetDone] = useState(false);
 
   const followSystem = settings.theme === 'system';
+  const accessLine = session.entitlement?.source
+    ? ACCESS_SOURCE[session.entitlement.source]
+    : 'Ohne App-Zugang';
 
   return (
     <View className="flex-1 bg-grey-100">
@@ -35,6 +47,27 @@ export default function EinstellungenScreen() {
         showsVerticalScrollIndicator={false}
       >
         <Typo variant="headline-l">Einstellungen</Typo>
+
+        {/* The way back out of the door. Signing out closes the app in the same
+            tick, because the root layout renders the gate in place of the routes. */}
+        <View className="mt-m">
+          <Overline label="Konto" />
+          <Card className="mt-2xs">
+            <Typo variant="text-m" weight="semibold">
+              {session.account?.email ?? 'Nicht angemeldet'}
+            </Typo>
+            <Typo variant="text-s" color="grey-600" className="mt-3xs">
+              {accessLine}
+            </Typo>
+            <Button
+              title="Abmelden"
+              variant="outline"
+              className="mt-s"
+              fullWidth
+              onPress={() => actions.session.signOut()}
+            />
+          </Card>
+        </View>
 
         <View className="mt-m">
           <Overline label="Benachrichtigungen" />

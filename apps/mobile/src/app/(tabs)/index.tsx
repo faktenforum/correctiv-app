@@ -115,7 +115,7 @@ export default function HomeScreen() {
         />
       </View>
 
-      <ImpactFooter onJoin={() => router.push('/(tabs)/profil')} />
+      <ImpactFooter />
     </Screen>
   );
 }

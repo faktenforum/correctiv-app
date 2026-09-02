@@ -111,8 +111,9 @@ describe('onboarding', () => {
   it('opens on the mission screen with no skip', () => {
     const text = renderedText(render(<OnboardingScreen />));
     expect(text).toContain('Recherchen für die Gesellschaft');
-    expect(text).toContain('Ohne Paywall');
     expect(text).not.toContain('Überspringen');
+    // "Ohne Paywall: Journalismus für alle" stood here until ADR 0018.
+    expect(text).not.toContain('Paywall');
   });
 
   it('records interests', () => {
@@ -135,44 +136,40 @@ describe('onboarding', () => {
     expect(push).not.toHaveBeenCalled();
   });
 
-  it('offers two equal paths at the end', () => {
+  /**
+   * The last step used to be the club pitch, with "Unterstützer:in werden" beside
+   * "Erstmal umsehen". Behind the door (ADR 0016) both address someone who is not
+   * here, so the step went with ADR 0018 and the walk ends one screen earlier.
+   */
+  it('ends after the participate step, with nothing left to buy', () => {
     const tree = render(<OnboardingScreen />);
     press(tree, 'Los geht’s');
     press(tree, 'Weiter');
-    press(tree, 'Weiter');
 
     const text = renderedText(tree);
-    expect(text).toContain('Unterstützer:in werden');
-    expect(text).toContain('Erstmal umsehen');
+    expect(text).not.toContain('Unterstützer:in werden');
+    expect(text).not.toContain('Erstmal umsehen');
 
-    press(tree, 'Unterstützer:in werden');
+    press(tree, 'Fertig');
     expect(coreStore.getState().settings.onboardingDone).toBe(true);
-    expect(push).toHaveBeenCalledWith('/beitreten');
+    expect(push).not.toHaveBeenCalledWith('/beitreten');
   });
 });
 
 describe('Backstage', () => {
-  it('shows everything to a guest, and invites instead of locking', () => {
-    const text = renderedText(render(<BackstageScreen />));
+  /**
+   * Nothing here is locked, and that has not changed. What went with ADR 0018 is the
+   * guest's copy: the teaser line and the "Mit dem Club jetzt lesen" button that
+   * routed to the join flow instead of the article.
+   */
+  it('shows everything and opens the article directly', () => {
+    const tree = render(<BackstageScreen />);
+    const text = renderedText(tree);
     expect(text).toContain(earlyAccess.title);
     expect(text).toContain(diaries[0].title);
-    // The concept's rule: closeness, not a paywall.
-    expect(text).toContain('Mit dem Club jetzt lesen');
-    expect(text).toContain('es ist eine Einladung');
-  });
+    expect(text).not.toContain('Mit dem Club jetzt lesen');
+    expect(text).not.toContain('es ist eine Einladung');
 
-  it('sends a guest to the join flow from the early-access card', () => {
-    press(render(<BackstageScreen />), 'Mit dem Club jetzt lesen');
-    expect(push).toHaveBeenCalledWith('/beitreten');
-  });
-
-  it('opens the article for a member', () => {
-    act(() => {
-      coreActions.membership.join(10, 'monatlich', 'Testperson');
-    });
-    const tree = render(<BackstageScreen />);
-
-    expect(renderedText(tree)).not.toContain('es ist eine Einladung');
     press(tree, 'Jetzt lesen');
     expect(push).not.toHaveBeenCalled(); // openArticle is mocked, not a route push
   });

@@ -3,9 +3,11 @@ import { act } from 'react-test-renderer';
 import { quarterlyReport } from '@correctiv/app-core/data/quartalsbericht';
 
 /**
- * `isMember` is the demo's central lever — practically every section of the profile
- * reads it, and the app-wide flip when someone joins is the moment the demo is
- * built around. These tests pin both states and the transitions in between.
+ * The profile used to render two versions of itself, one for a member and one for a
+ * guest, and these tests pinned both. Since the door (ADR 0016) there is no guest to
+ * render for, so the guest cases became assertions that its copy is gone (ADR 0018).
+ * The membership sections are now unconditional, which is what the remaining cases
+ * check.
  */
 
 jest.mock('expo-router', () => ({
@@ -56,35 +58,37 @@ function join(): void {
   });
 }
 
-describe('Profil as a guest', () => {
-  it('invites instead of locking', () => {
+describe('Profil without a simulated join', () => {
+  it('has no guest copy left anywhere', () => {
     const text = renderedText(render(<ProfilScreen />));
-    expect(text).toContain('Sie sind als Gast unterwegs');
-    expect(text).toContain('Alles Wichtige bleibt frei zugänglich');
-    expect(text).toContain('Unterstützer:in werden');
+    expect(text).not.toContain('Sie sind als Gast unterwegs');
+    expect(text).not.toContain('Alles Wichtige bleibt frei zugänglich');
+    expect(text).not.toContain('Unterstützer:in werden');
   });
 
-  it('hides the member-only sections but keeps Backstage visible', () => {
+  it('shows the membership sections even before the join flow has run', () => {
     const tree = render(<ProfilScreen />);
     const text = renderedText(tree);
-    expect(text).not.toContain('Ihr Beitrag');
-    expect(text).not.toContain(quarterlyReport.quarter);
-    // Backstage is teased openly to guests — that is the concept, not an oversight.
-    expect(text).toContain('Backstage ansehen');
-    // …and it is marked as the club's, so the tease reads as an invitation. Asserted
-    // on the row's accessibility label rather than on the badge text, because
-    // "Club" also occurs in the subtitle — and this way a screen reader is covered too.
-    expect(findAllPressable(tree, 'Backstage ansehen, Club')).toHaveLength(1);
+    // These were member-only and are now unconditional: whoever renders this screen
+    // came through the door, whether or not the simulated join stamped a date.
+    expect(text).toContain('Ihr Beitrag');
+    expect(text).toContain(quarterlyReport.quarter);
+    expect(text).toContain('Ihr Backstage');
+    // …and it is still marked as the club's. Asserted on the row's accessibility
+    // label rather than on the badge text, because "Club" also occurs in the
+    // subtitle — and this way a screen reader is covered too.
+    expect(findAllPressable(tree, 'Ihr Backstage, Club')).toHaveLength(1);
   });
 });
 
 describe('Profil as a member', () => {
-  it('shows the club card with name and join date', () => {
+  it('shows the club card with name, tier and join date', () => {
     join();
     const text = renderedText(render(<ProfilScreen />));
     expect(text).toContain('CORRECTIV CLUB');
     expect(text).toContain('Testperson');
-    expect(text).toContain('Mitglied seit');
+    expect(text).toContain('Mitgliedschaft mit Beitrag');
+    expect(text).toContain('seit');
   });
 
   it('shows the contribution and the quarterly report', () => {

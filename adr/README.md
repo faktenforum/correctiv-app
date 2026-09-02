@@ -1,6 +1,6 @@
 # Architecture decisions
 
-Fifteen decisions shaped this repo. Read them when you want to know *why* something
+Sixteen decisions shaped this repo. Read them when you want to know *why* something
 is the way it is; [`../ARCHITECTURE.md`](../ARCHITECTURE.md) describes *what* it is.
 
 | | Decision | Status |
@@ -20,6 +20,9 @@ is the way it is; [`../ARCHITECTURE.md`](../ARCHITECTURE.md) describes *what* it
 | [0013](0013-native-tabs-and-a-web-tab-bar-of-its-own.md) | Native tabs on the phone, and a web tab bar of its own | accepted; verified on Android, iOS unrun |
 | [0014](0014-the-preview-shell-as-a-package.md) | The preview shell as a package that can reach the app | accepted |
 | [0015](0015-reading-correctiv-org-through-its-rest-api.md) | Reading correctiv.org through its REST API, not its RSS feeds | accepted; retires the CORS item in 0006, unopened in a browser |
+| [0016](0016-a-door-at-the-root-and-an-entitlement-not-an-amount.md) | A door at the root, and an entitlement rather than an amount | accepted; simulated sign-in, the copy it contradicts listed and left to CORRECTIV |
+| [0017](0017-native-rendering-as-the-rule-a-webview-for-the-exception.md) | Native rendering as the rule, a webview for the exception | accepted; corrects a frame-header claim in `ReaderView.web.tsx`, one open question named |
+| [0018](0018-removing-the-guest.md) | Removing the guest | accepted; carries out what 0016 left standing, retires no interior rule |
 
 Six notes for readers of the older ones:
 

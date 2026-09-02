@@ -28,7 +28,7 @@ import { READER_FONTS_CSS } from '@/lib/theme/readerFonts.generated';
  */
 export function readerHtml(
   article: Article,
-  options: Pick<ReaderHtmlOptions, 'isMember' | 'textScale'> & { isDark?: boolean } = {},
+  options: Pick<ReaderHtmlOptions, 'textScale'> & { isDark?: boolean } = {},
 ): string {
   const { isDark, ...rest } = options;
   return buildReaderHtml(article, {

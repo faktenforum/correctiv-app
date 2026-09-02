@@ -1,9 +1,11 @@
 # CORRECTIV App
 
 The CORRECTIV community in one app: the organisation's investigations, fact checks,
-Salon5 radio, CrowdNewsroom callouts, the Faktenforum and the membership club. Built
-on *closeness, not a paywall*. Journalism stays free for everyone, and membership adds
-proximity.
+Salon5 radio, CrowdNewsroom callouts, the Faktenforum and the membership club. The app
+is the members' place: it opens to a membership that includes it, and inside it nothing
+is gated ([ADR 0016](adr/0016-a-door-at-the-root-and-an-entitlement-not-an-amount.md)).
+The prototype was built on *closeness, not a paywall*, and several of its screens still
+say so; which wording replaces that is CORRECTIV's call, and the ADR lists the places.
 
 [**Open the app in a browser**](https://faktenforum.github.io/correctiv-app/preview.html).
 No install, no emulator, the same code and the same screens as the Android and iOS
@@ -21,11 +23,13 @@ snapshot bundled into the build as the floor when a request fails. See
 <p align="center"><sub>The same journey on Android. Every screen:
 <a href="screens/">screens/</a></sub></p>
 
-> **Status.** The full journey works end to end: onboarding, home, reader, media,
-> participate, club join, backstage, profile. Live content comes from correctiv.org,
-> Salon5 and PeerTube, mixed with typed sample data shaped like the API responses that
-> will replace it. The real backends (Beabee, Faktenforum GraphQL, payment, SSO) are
-> not wired up yet, and joining the club is simulated, which the app says on screen.
+> **Status.** The full journey works end to end: the door, onboarding, home, reader,
+> media, participate, club join, backstage, profile. Live content comes from
+> correctiv.org, Salon5 and PeerTube, mixed with typed sample data shaped like the API
+> responses that will replace it. The real backends (Beabee, Faktenforum GraphQL,
+> payment, SSO) are not wired up yet; signing in and joining the club are simulated,
+> which the app says on screen. In the browser, any address signs in, or open
+> `preview.html#/?s=signed-in` to start behind the door.
 > Developed on the Android emulator and in the browser. iOS is maintained in code and
 > has not been built. Nothing is on an app store.
 

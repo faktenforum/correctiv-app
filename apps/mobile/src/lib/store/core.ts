@@ -55,6 +55,12 @@ import {
   isSaved as selectIsSaved,
   savedArticlesActions,
 } from '@correctiv/app-core/stores/savedArticles';
+import {
+  isAdmitted as selectIsAdmitted,
+  refreshEntitlement,
+  sessionActions,
+  signIn,
+} from '@correctiv/app-core/stores/session';
 import { settingsActions } from '@correctiv/app-core/stores/settings';
 import {
   fetchIssues,
@@ -117,14 +123,29 @@ export const useAppStore = () => useStore<RootState>();
 // --- whole-slice hooks (use a narrower selector below where you can) ----------
 
 export const useSettings = () => useAppSelector((s) => s.settings);
+export const useSession = () => useAppSelector((s) => s.session);
 export const useMembership = () => useAppSelector((s) => s.membership);
 export const useMedia = () => useAppSelector((s) => s.media);
 export const useVideo = () => useAppSelector((s) => s.video);
 
 // --- narrow selectors --------------------------------------------------------
 
-/** The demo's central lever — read it per render, never snapshot it. */
+/**
+ * The simulated club lever, still written by the join flow and still persisted.
+ *
+ * **No screen reads it since ADR 0018**, and none should read it as a gate again:
+ * behind the door everyone has an entitlement that includes the app, so a branch on
+ * this asks a question with one answer. It stays because the slice is live and the
+ * join flow's future is an open product decision, not because anything renders on it.
+ * For "may this person be here", use `useIsAdmitted`.
+ */
 export const useIsMember = () => useAppSelector((s) => s.membership.isMember);
+/**
+ * The door's one question, read per render. It reads the
+ * entitlement and never the contribution: a trial pays 0 € and has the app. The
+ * clock is passed in so that a trial's end closes the door on the next dispatch.
+ */
+export const useIsAdmitted = () => useAppSelector((s) => selectIsAdmitted(s.session, Date.now()));
 export const useActiveTab = () => useAppSelector((s) => s.settings.activeTab);
 export const useTextScale = () => useAppSelector((s) => s.settings.textScale);
 export const useTheme = () => useAppSelector((s) => s.settings.theme);
@@ -317,6 +338,14 @@ function bindCoreActions(dispatch: AppDispatch) {
 
   return {
     settings: bindActionCreators(settingsActions, dispatch),
+    session: {
+      ...bindActionCreators(
+        { signOut: sessionActions.signOut, upgradeStarted: sessionActions.upgradeStarted },
+        dispatch,
+      ),
+      signIn: bind(signIn),
+      refreshEntitlement: bind(refreshEntitlement),
+    },
     membership: bindActionCreators(membershipActions, dispatch),
     savedArticles: bindActionCreators(savedArticlesActions, dispatch),
     interests: bindActionCreators(interestsActions, dispatch),

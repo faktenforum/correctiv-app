@@ -143,13 +143,18 @@ describe('Mediathek', () => {
 
 /**
  * Club bonus content plays in full for everyone — the 60-second preview was dropped
- * on 2026-08-06. The `CLUB` badge and the note are labels now; they withhold nothing.
- * What is worth pinning is exactly that: a guest and a member get the SAME call.
+ * on 2026-08-06. The `CLUB` badge is a label now; it withholds nothing.
+ *
+ * There used to be two cases here, a guest and a member, asserting they get the same
+ * call and differ only in a "Für alle hörbar" note. Since the door (ADR 0016) there is
+ * no guest, and the note addressed one, so both the note and the second case went with
+ * ADR 0018. What is worth pinning is what is left: the episode plays in full, and
+ * nothing on the row hints at a distinction that no longer exists.
  */
 describe('the club bonus', () => {
-  it('gives a guest the full episode, and says it is open to all', () => {
+  it('plays the full episode, with no note about who may hear it', () => {
     const tree = render(<MediathekScreen />);
-    expect(renderedText(tree)).toContain('Für alle hörbar');
+    expect(renderedText(tree)).not.toContain('Für alle hörbar');
 
     press(tree, `${BONUS.title} abspielen`);
 
@@ -158,19 +163,6 @@ describe('the club bonus', () => {
       episodeId: BONUS.id,
       url: BONUS.source,
     });
-  });
-
-  it('gives a member the same episode, without the note', () => {
-    act(() => {
-      coreActions.membership.join(10, 'monatlich', 'Test');
-    });
-    const tree = render(<MediathekScreen />);
-
-    expect(renderedText(tree)).not.toContain('Für alle hörbar');
-    press(tree, `${BONUS.title} abspielen`);
-
-    expect(playEpisodeMock).toHaveBeenCalledTimes(1);
-    expect(playEpisodeMock.mock.calls[0][0]).toMatchObject({ episodeId: BONUS.id });
   });
 
   it('marks the club exactly once, member or not', () => {
