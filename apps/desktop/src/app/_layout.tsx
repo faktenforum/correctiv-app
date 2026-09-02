@@ -67,7 +67,7 @@ import { stop as stopAudio } from '@/lib/audio/player';
 import { coreStore, useAppStore } from '@/lib/store/core';
 import { fontAssets, useAppearance, useIsDark } from '@/lib/theme';
 
-import { applyDebugRoute } from '../debug/route.js';
+import { applyDebugRoute, debugRouteRequested, noteCurrentPath } from '../debug/route.js';
 import { gstAudio } from '../audio/backend.js';
 import { gtkPlatform } from '../platform/index.js';
 
@@ -153,14 +153,25 @@ function AppShell() {
 
   const pathname = usePathname();
   const store = useAppStore();
+  // So the capture can name the screen it photographed. Without it a screenshot is a
+  // picture with no claim attached, and a picture of the WRONG screen is
+  // indistinguishable from a picture of the right one.
+  useEffect(() => noteCurrentPath(pathname), [pathname]);
   const gated = useRef(false);
   useEffect(() => {
     if (!storeReady || gated.current) return;
     gated.current = true;
-    // A development aid, checked before the onboarding gate so that asking for a
-    // screen actually gets that screen. See src/debug/route.ts; it is a no-op unless
-    // CORRECTIV_DESKTOP_ROUTE is set.
+    // A development aid. See src/debug/route.ts; a no-op unless CORRECTIV_DESKTOP_ROUTE
+    // is set.
     applyDebugRoute((href) => router.replace(href));
+    // The aid has chosen a screen, so the gate below must not overrule it. Ordering
+    // alone did NOT achieve that, which is what the comment here used to claim:
+    // `pathname` is the render-time value and is still '/' at this point, so the
+    // guard never returned and the gate replaced the requested route two lines later.
+    // Every capture on a profile that has not finished onboarding was therefore the
+    // onboarding screen, whatever route was asked for — measured across four
+    // different routes, including one that does not exist, all byte-identical.
+    if (debugRouteRequested()) return;
     if (pathname !== '/') return;
     if (!store.getState().settings.onboardingDone) router.replace('/onboarding');
   }, [pathname, store, storeReady]);

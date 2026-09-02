@@ -34,6 +34,8 @@ import Gtk from 'gi://Gtk?version=4.0';
 
 import { dumpTree } from '@gjsify/gtk-host/conformance';
 
+import { debugCurrentPath, onDebugRouteApplied } from './route.js';
+
 /** One capture attempt, with the reason it failed rather than a bare null. */
 function capture(widget: Gtk.Widget, label: string): Uint8Array | null {
   const native = widget.get_native();
@@ -99,44 +101,49 @@ export function armScreenshot(): void {
   const delay = Number.isFinite(requested) && requested > 0 ? requested : 4000;
   const quit = GLib.getenv('CORRECTIV_DESKTOP_SCREENSHOT_QUIT') !== '0';
 
-  GLib.timeout_add(GLib.PRIORITY_DEFAULT, delay, () => {
-    // The first MAPPED toplevel, not item 0: `get_toplevels()` lists every toplevel GTK
-    // knows about, and an unmapped one has no renderer at all.
-    const toplevels = Gtk.Window.get_toplevels();
-    let window: Gtk.Window | null = null;
-    for (let index = 0; index < toplevels.get_n_items(); index++) {
-      const candidate = toplevels.get_item(index) as Gtk.Window;
-      if (candidate.get_mapped()) {
-        window = candidate;
-        break;
+  // The delay below lets a screen SETTLE; it was never a wait for the screen to be
+  // CHOSEN. `onDebugRouteApplied` supplies the second half, and runs its callback
+  // immediately when no route was requested, so the ordinary path keeps its timing.
+  onDebugRouteApplied(() => {
+    GLib.timeout_add(GLib.PRIORITY_DEFAULT, delay, () => {
+      // The first MAPPED toplevel, not item 0: `get_toplevels()` lists every toplevel GTK
+      // knows about, and an unmapped one has no renderer at all.
+      const toplevels = Gtk.Window.get_toplevels();
+      let window: Gtk.Window | null = null;
+      for (let index = 0; index < toplevels.get_n_items(); index++) {
+        const candidate = toplevels.get_item(index) as Gtk.Window;
+        if (candidate.get_mapped()) {
+          window = candidate;
+          break;
+        }
       }
-    }
-    if (window === null) {
-      console.error(
-        `[desktop] screenshot: none of the ${toplevels.get_n_items()} toplevel window(s) is mapped. ` +
-          'Raise CORRECTIV_DESKTOP_SCREENSHOT_DELAY_MS.',
-      );
-      return GLib.SOURCE_REMOVE;
-    }
+      if (window === null) {
+        console.error(
+          `[desktop] screenshot: none of the ${toplevels.get_n_items()} toplevel window(s) is mapped. ` +
+            'Raise CORRECTIV_DESKTOP_SCREENSHOT_DELAY_MS.',
+        );
+        return GLib.SOURCE_REMOVE;
+      }
 
-    // RAISE IT FIRST, then capture on a later frame.
-    //
-    // A complete widget tree, a live renderer, a sane size and an EMPTY snapshot is
-    // what an unfocused window looks like: on Wayland the compositor stops asking a
-    // surface it is not showing to draw, GTK's frame clock throttles with it, and
-    // `Gtk.WidgetPaintable` then has no recorded content to hand over. That is why the
-    // same code captures a freshly presented probe window and not this one.
-    //
-    // `present()` asks for focus; the second timeout gives the frame clock a chance to
-    // run before anything is measured. If this still comes back empty the log below
-    // says so with the tree attached, which distinguishes "nothing drew" from "nothing
-    // rendered".
-    window.present();
-    GLib.timeout_add(GLib.PRIORITY_DEFAULT, 1200, () => {
-      captureNow(window as Gtk.Window, path, quit);
+      // RAISE IT FIRST, then capture on a later frame.
+      //
+      // A complete widget tree, a live renderer, a sane size and an EMPTY snapshot is
+      // what an unfocused window looks like: on Wayland the compositor stops asking a
+      // surface it is not showing to draw, GTK's frame clock throttles with it, and
+      // `Gtk.WidgetPaintable` then has no recorded content to hand over. That is why the
+      // same code captures a freshly presented probe window and not this one.
+      //
+      // `present()` asks for focus; the second timeout gives the frame clock a chance to
+      // run before anything is measured. If this still comes back empty the log below
+      // says so with the tree attached, which distinguishes "nothing drew" from "nothing
+      // rendered".
+      window.present();
+      GLib.timeout_add(GLib.PRIORITY_DEFAULT, 1200, () => {
+        captureNow(window as Gtk.Window, path, quit);
+        return GLib.SOURCE_REMOVE;
+      });
       return GLib.SOURCE_REMOVE;
     });
-    return GLib.SOURCE_REMOVE;
   });
 }
 
@@ -166,7 +173,14 @@ function writePng(path: string, png: Uint8Array, label: string): boolean {
     console.error(`[desktop] screenshot: could not write ${path} (the ${label}): ${error}`);
     return false;
   }
-  console.log(`[desktop] screenshot: wrote ${png.length} bytes to ${path} (the ${label}).`);
+  // THE PATHNAME IS THE CLAIM. A PNG on its own cannot say which screen it is, so a
+  // picture of the WRONG screen reads exactly like a picture of the right one — which
+  // is how every capture taken on a profile that had not finished onboarding came out
+  // as the onboarding screen, under four different route names, unnoticed.
+  console.log(
+    `[desktop] screenshot: wrote ${png.length} bytes to ${path} ` +
+      `(the ${label}, at "${debugCurrentPath()}").`,
+  );
   return true;
 }
 

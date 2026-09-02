@@ -28,6 +28,13 @@ export const DEFAULT_HOST = platform === 'linux' ? 'gjs' : 'node';
  * clean run on the node host no matter what happened. Both spellings are matched here
  * rather than switched on the host, because a false positive costs a second look and a
  * false negative costs the whole point of the sweep.
+ *
+ * `was never applied within` is the debug router giving up on a requested route. It is
+ * a failure for the sweep specifically: every line the sweep prints is about a named
+ * route, and a run that never reached that route has nothing to say about it.
+ *
+ * The last two alternatives span a newline, so they only match against a WHOLE log —
+ * `route-sweep.mjs` tests both ways for that reason.
  */
 export const FAILURE_PATTERN =
-  /UnknownUtilityError|PrimitiveError|GtkHostError|RouterError|JS ERROR|no boundary caught|^\s+at .*\n.*Error:|Error: .*\n\s+at /m;
+  /UnknownUtilityError|PrimitiveError|GtkHostError|RouterError|JS ERROR|no boundary caught|was never applied within|^\s+at .*\n.*Error:|Error: .*\n\s+at /m;

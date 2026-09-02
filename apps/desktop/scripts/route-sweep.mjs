@@ -63,7 +63,19 @@ const DWELL = Number(process.env.SWEEP_DWELL_MS ?? '3500');
  * three hosts. SIGKILL rather than SIGTERM because a wedged GTK process in a
  * screenshot-armed state has already shown it will not unwind on request.
  */
-const KILL_AFTER_MS = DWELL + 6000;
+// THE BUDGET HAS TO CONTAIN THE CAPTURE, and since `CORRECTIV_DESKTOP_SCREENSHOT_QUIT`
+// is '0' below, nothing else ends the run — the deadline is the ordinary end of a
+// healthy one, so a capture that does not fit inside it simply never happens.
+//
+// It was DWELL + 6000, sized for a capture timer that started at ARMING. It now starts
+// when the requested route has actually been applied, so startup, mount and store
+// hydration sit inside the window too: route landing + DWELL + the capture's own second
+// frame (1200 ms). On this host the route lands in 0.5-0.8 s and the capture follows at
+// 5-6 s, but the macOS VM that lost a 4 s race to its own mount would land at roughly
+// 9 s — inside the old 9.5 s budget by 500 ms. A miss there is printed as
+// `[no capture]` beside an `ok`, which is the quiet kind of wrong this sweep exists to
+// avoid, so the slack is bought rather than the margin trusted.
+const KILL_AFTER_MS = DWELL + 12000;
 
 const FAILURE = FAILURE_PATTERN;
 
@@ -171,10 +183,19 @@ for (const [key, href] of targets) {
     .filter((line) => FAILURE.test(line))
     .slice(0, 2);
 
-  if (problems.length > 0) {
+  // Two of FAILURE_PATTERN's alternatives span a newline — an `Error:` line and the
+  // `    at ` frames under it — and a per-line filter can never see either, because a
+  // line contains no newline. So the whole log is tested as well. Without this the
+  // node host's bare stacks, which are the reason those alternatives exist, were
+  // matched by nothing and every run read as clean.
+  const straddles = problems.length === 0 && FAILURE.test(log);
+
+  if (problems.length > 0 || straddles) {
     failed++;
     console.log(`FAIL  ${href}  (${key})`);
-    for (const problem of problems) console.log(`        ${problem.trim().slice(0, 180)}`);
+    const shown =
+      problems.length > 0 ? problems : [FAILURE.exec(log)?.[0] ?? '(matched across lines)'];
+    for (const problem of shown) console.log(`        ${problem.trim().slice(0, 180)}`);
   } else {
     const wrote = /screenshot: wrote (\d+) bytes/.exec(log);
     console.log(
