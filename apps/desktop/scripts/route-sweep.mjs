@@ -129,18 +129,30 @@ for (const [key, href] of targets) {
         ...process.env,
         CORRECTIV_DESKTOP_ASSETS: resolve(APP, '..', 'mobile'),
         CORRECTIV_DESKTOP_ROUTE: href,
-        // A capture is what makes the process exit on its own, and its side effect
-        // is a PNG per route — which is the visual half this sweep does not check
-        // but a human can then flip through.
+        // A PNG per route — the visual half this sweep does not check, but a human
+        // can then flip through.
         CORRECTIV_DESKTOP_SCREENSHOT: join(APP, 'dist', 'sweep', `${key.replaceAll('/', '_')}.png`),
         CORRECTIV_DESKTOP_SCREENSHOT_DELAY_MS: String(DWELL),
+        // THE CAPTURE MUST NOT END THE OBSERVATION, and this line is the whole
+        // difference between a sweep and a screenshot session. Closing the window on
+        // capture made the process exit at DWELL + ~1.2 s, so anything the app refused
+        // after that was never in the log — measured: `/suche` and `/gespeichert` both
+        // reported `ok` with a capture attached while a run of the SAME bundle without
+        // the capture threw `<TextInput> prop "placeholderTextColor"` and `<FlatList>
+        // prop "contentContainerClassName"`. The screens render first and refuse when
+        // their data arrives, which is later than any capture delay worth waiting for.
+        // So the deadline below bounds the run, not the capture; the cost is that every
+        // route now takes the full KILL_AFTER_MS, and that cost buys the sweep its
+        // subject back.
+        CORRECTIV_DESKTOP_SCREENSHOT_QUIT: '0',
       },
     });
   } catch (error) {
     // Reaching the deadline throws (`error.killed`), and so does a signal death — which
     // on the node host is a real possibility, the GI bridge having a known intermittent
-    // lifetime fault. Neither is a failure BY ITSELF: the capture routinely does not
-    // close the window in time. The log decides, so the output is salvaged and read.
+    // lifetime fault. Neither is a failure BY ITSELF, and since the capture no longer
+    // closes the window, the deadline is now the ORDINARY end of a healthy run. The log
+    // decides, so the output is salvaged and read.
     log = `${error.stdout ?? ''}${error.stderr ?? ''}`;
   }
 

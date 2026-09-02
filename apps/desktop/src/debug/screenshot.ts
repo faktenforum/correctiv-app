@@ -28,6 +28,7 @@
 // `runHostProbeApp`, which is a different job and a better one.
 
 import GLib from 'gi://GLib?version=2.0';
+import Gio from 'gi://Gio?version=2.0';
 import Graphene from 'gi://Graphene?version=1.0';
 import Gtk from 'gi://Gtk?version=4.0';
 
@@ -139,6 +140,36 @@ export function armScreenshot(): void {
   });
 }
 
+/**
+ * Write the PNG, creating the directory the caller named.
+ *
+ * `GLib.file_set_contents` THROWS when the parent directory is absent, and that throw
+ * leaves a timeout callback — so GJS prints it as `JS ERROR: GLib.FileError` with no
+ * `[desktop]` prefix. Anything reading the log then sees an application error where the
+ * application was fine: the route sweep hands over `dist/sweep/<route>.png`, a build
+ * wipes `dist/`, and one absent directory reported all 25 routes as refusals. A
+ * development aid must not be able to look like the thing it is there to observe.
+ *
+ * So the directory is created (the caller named a path, which is the request), and a
+ * write that still fails reports itself the way every other step in this file does.
+ */
+function writePng(path: string, png: Uint8Array, label: string): boolean {
+  const parent = Gio.File.new_for_path(path).get_parent();
+  try {
+    parent?.make_directory_with_parents(null);
+  } catch {
+    // Already there — the ordinary case on every run after the first.
+  }
+  try {
+    GLib.file_set_contents(path, png);
+  } catch (error) {
+    console.error(`[desktop] screenshot: could not write ${path} (the ${label}): ${error}`);
+    return false;
+  }
+  console.log(`[desktop] screenshot: wrote ${png.length} bytes to ${path} (the ${label}).`);
+  return true;
+}
+
 /** The capture itself, once the window has been raised and a frame has passed. */
 function captureNow(window: Gtk.Window, path: string, quit: boolean): void {
   // Tried outermost-first and each attempt names itself, so the log says WHAT was
@@ -156,8 +187,7 @@ function captureNow(window: Gtk.Window, path: string, quit: boolean): void {
     if (widget === null) continue;
     const png = capture(widget, label);
     if (png === null) continue;
-    GLib.file_set_contents(path, png);
-    console.log(`[desktop] screenshot: wrote ${png.length} bytes to ${path} (the ${label}).`);
+    if (!writePng(path, png, label)) return;
     if (quit) window.close();
     return;
   }
