@@ -48,7 +48,7 @@ for (const line of themeCss.split('\n')) {
 /** rem at the 16px root the app assumes, px as written, bare numbers as numbers. */
 function px(name) {
   const value = scale[name];
-  if (value === undefined) throw new Error('kein Token: --' + name);
+  if (value === undefined) throw new Error('no such token: --' + name);
   const rem = value.match(/^(-?[\d.]+)rem$/);
   if (rem) return Math.round(Number.parseFloat(rem[1]) * 16 * 1000) / 1000;
   const p = value.match(/^(-?[\d.]+)px$/);
@@ -80,7 +80,7 @@ const specs = JSON.parse(
  */
 function ty(variant, extra) {
   const spec = specs[variant];
-  if (spec === undefined) throw new Error('keine Variante: ' + variant);
+  if (spec === undefined) throw new Error('no such variant: ' + variant);
   const size = px('text-' + spec.size.replace(/^text-/, ''));
   const out = {
     t: 'text',
@@ -664,6 +664,159 @@ const KIT = [
   },
 ];
 
+// ---------------------------------------------------------------- the audit
+//
+// A component that quietly lacks a prop its source has is the same failure as a
+// comment that says serif over sans: the drawing looks finished and is wrong, and
+// nothing says so. So every prop in the source has to be accounted for here, in one
+// of three ways, and an unaccounted one fails this script rather than shipping.
+//
+//   maps    the prop IS a Figma property (one prop may feed several)
+//   ignore  the prop has no visual effect, or belongs to the call site
+//   gaps    the prop is visual and Figma cannot express it — printed, every run
+//
+// The third is the point. A gap that is written down is a decision; a gap that is
+// merely absent is a bug waiting to be found by eye.
+
+/** Never visual in this sense, whatever component they appear on. */
+const NEVER_VISUAL = ['className', 'style', 'children'];
+
+const AUDIT = {
+  'ui/Button': {
+    maps: { title: 'Titel', variant: 'Variante' },
+    // Whether the button stretches is a fact about the column it sits in, and the
+    // spec carries that as `w` on the instance.
+    ignore: ['fullWidth'],
+  },
+  'ui/Badge': { maps: { label: 'Label', tone: 'Ton' } },
+  'ui/Chip': { maps: { label: 'Label', selected: 'Gewählt' } },
+  'ui/Card': { maps: { tone: 'Ton' } },
+  'ui/Overline': {
+    maps: { label: 'Label' },
+    gaps: { color: 'an instance cannot override a colour; it would need a variant per colour' },
+  },
+  'ui/Hairline': { maps: {} },
+  'ui/SectionHeader': { maps: { title: 'Titel', actionLabel: ['Aktion', 'Aktion zeigen'] } },
+  'ui/ScreenHeader': {
+    maps: { backLabel: 'Zurück' },
+    gaps: { children: 'a slot — the search field on /suche — and an instance takes no children' },
+  },
+  'profile/NavCard': {
+    maps: { title: 'Titel', subtitle: 'Untertitel', club: 'Club' },
+    gaps: { icon: 'an Ionicon; the spec has no vectors, so the kit draws a glyph' },
+  },
+  'profile/SettingRow': {
+    maps: {
+      label: 'Label',
+      description: ['Beschreibung', 'Beschreibung zeigen'],
+      value: 'An',
+    },
+  },
+  'profile/ClubCard': { maps: { name: 'Name', tierLabel: 'Stufe', memberSince: 'Stufe' } },
+  'discover/ProjectRow': { maps: { project: ['Name', 'Teaser'] } },
+  'participate/ClaimStatusTag': { maps: { claim: ['Status', 'Label'] } },
+};
+
+/** The innermost `{ … }` starting at `from`, by brace matching. */
+function literal(source, from) {
+  const open = source.indexOf('{', from);
+  if (open === -1) return null;
+  let depth = 0;
+  for (let i = open; i < source.length; i++) {
+    if (source[i] === '{') depth++;
+    if (source[i] === '}') {
+      depth--;
+      if (depth === 0) return source.slice(open + 1, i);
+    }
+  }
+  return null;
+}
+
+/**
+ * The props a component file declares, from `export type XProps` or from the inline
+ * type on the function's own parameter.
+ *
+ * The inline search is anchored at `export function`, because a file may well hold a
+ * helper whose RETURN type is an object literal — `toneFor` in ClaimStatusTag does —
+ * and the first `}: {` in the file would otherwise be that one.
+ */
+function sourceProps(source) {
+  const clean = source.replace(/\/\*[\s\S]*?\*\//g, '').replace(/\/\/[^\n]*/g, '');
+  const named = clean.match(/export type \w*Props\s*=/);
+  const fn = clean.search(/export function \w+\(/);
+  const inline = fn === -1 ? -1 : clean.slice(fn).search(/\}\s*:\s*\{/);
+  const body = named
+    ? literal(clean, named.index)
+    : inline === -1
+      ? null
+      : literal(clean, fn + inline + 1);
+  if (body === null) return [];
+
+  const out = [];
+  let depth = 0;
+  let atTop = true;
+  let word = '';
+  for (let i = 0; i < body.length; i++) {
+    const ch = body[i];
+    if (ch === '{') depth++;
+    else if (ch === '}') depth--;
+    else if (depth === 0) {
+      if (/[A-Za-z0-9_]/.test(ch)) {
+        word += ch;
+        continue;
+      }
+      if ((ch === ':' || (ch === '?' && body[i + 1] === ':')) && atTop && word) out.push(word);
+      if (ch === ';' || ch === ',' || ch === '\n') {
+        atTop = true;
+        word = '';
+        continue;
+      }
+      if (ch !== ' ' && ch !== '?') atTop = false;
+      word = '';
+      continue;
+    }
+    word = '';
+  }
+  return [...new Set(out)];
+}
+
+const problems = [];
+const gaps = [];
+
+for (const entry of KIT) {
+  const plan = AUDIT[entry.name];
+  if (plan === undefined) continue;
+  const source = await readFile(
+    join(ROOT, 'apps/mobile/src/components', entry.name + '.tsx'),
+    'utf8',
+  );
+
+  // Which Figma properties this entry actually has, variant property included.
+  const has = {};
+  for (const name of Object.keys(entry.props || {})) has[name] = true;
+  if (entry.prop) has[entry.prop] = true;
+
+  for (const prop of sourceProps(source)) {
+    if (NEVER_VISUAL.indexOf(prop) !== -1 && plan.gaps?.[prop] === undefined) continue;
+    // A handler is behaviour; the board draws no behaviour.
+    if (/^on[A-Z]/.test(prop)) continue;
+    if ((plan.ignore || []).indexOf(prop) !== -1) continue;
+    if (plan.gaps?.[prop] !== undefined) {
+      gaps.push(`${entry.name}.${prop}: ${plan.gaps[prop]}`);
+      continue;
+    }
+    const to = plan.maps[prop];
+    if (to === undefined) {
+      problems.push(`${entry.name}.${prop} is neither a Figma property nor a declared gap`);
+      continue;
+    }
+    for (const one of Array.isArray(to) ? to : [to]) {
+      if (has[one] !== true)
+        problems.push(`${entry.name}.${prop} points at "${one}", which does not exist`);
+    }
+  }
+}
+
 // ---------------------------------------------------------------- the page
 //
 // Laid out by hand rather than by a grid: a variant set grows downwards with its
@@ -711,10 +864,16 @@ for (const [name, mode] of [
 }
 await writeFile(SPEC, `${JSON.stringify(spec, null, 2)}\n`);
 
+for (const gap of gaps) console.log(`  gap: ${gap}`);
+if (problems.length > 0) {
+  for (const problem of problems) console.error(`  MISSING: ${problem}`);
+  throw new Error(`${problems.length} prop(s) the kit does not account for`);
+}
+
 const sets = screens.filter((s) => s.t === 'variants');
-console.log(`2 Bausatz-Seiten: "${PAGE}" und "${SKETCH_PAGE}"`);
+console.log(`two kit pages: "${PAGE}" and "${SKETCH_PAGE}"`);
 console.log(
-  `${screens.length - 1} Komponenten auf "${PAGE}" (${sets.length} Variantensätze, ` +
-    `${sets.reduce((n, s) => n + s.options.length, 0)} Varianten), ` +
-    `${TEXT_STYLES.length} Textstile`,
+  `${screens.length - 1} components on "${PAGE}" (${sets.length} variant sets, ` +
+    `${sets.reduce((n, s) => n + s.options.length, 0)} variants), ` +
+    `${TEXT_STYLES.length} text styles`,
 );

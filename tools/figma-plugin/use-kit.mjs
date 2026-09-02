@@ -234,7 +234,7 @@ spec.screens = convert(spec.screens || []);
 await writeFile(SPEC, `${JSON.stringify(spec, null, 2)}\n`);
 
 const total = Object.values(counts).reduce((a, b) => a + b, 0);
-console.log(`${total} Kopien sind jetzt Instanzen`);
+console.log(`${total} copies are now instances`);
 for (const of of Object.keys(counts).sort())
   console.log(`  ${String(counts[of]).padStart(3)}  ${of}`);
-for (const s of skipped) console.log(`  übersprungen: ${s}`);
+for (const s of skipped) console.log(`  skipped: ${s}`);

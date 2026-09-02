@@ -143,6 +143,24 @@ A colour is the other thing an instance cannot override, and `ClubCard` shows it
 prop would have to become a variant, one per colour, so the kit draws those four
 lines itself and says so where it does.
 
+### Every prop accounted for
+
+A component that quietly lacks a prop its source has is the same failure as a comment
+that says serif over sans: the drawing looks finished and is wrong, and nothing says
+so. So `kit.mjs` reads each component's own prop list out of its `.tsx` and requires
+every prop to be one of three things.
+
+- **mapped** to a Figma property, one prop possibly feeding several
+- **ignored**, having no visual effect or belonging to the call site (`className`,
+  every `on*` handler, `fullWidth`)
+- **a declared gap**, visual but beyond what Figma can express, printed on every run
+
+Anything else fails the script. The three gaps today are `Overline.color` (an
+instance cannot override a colour, it would need a variant per colour),
+`ScreenHeader.children` (a slot) and `NavCard.icon` (an Ionicon, drawn as a glyph
+until the spec learns vectors). A gap that is written down is a decision; a gap that
+is merely absent is a bug waiting to be found by eye.
+
 ## Pointing the screens at the kit
 
 `use-kit.mjs` replaces each recognised subtree in the screens with an instance.
