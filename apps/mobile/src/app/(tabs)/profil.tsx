@@ -11,6 +11,7 @@ import { TIER_LABELS } from '@/lib/membership/tierLabel';
 import { openArticle } from '@/lib/openArticle';
 import {
   useCoreActions,
+  useHasSimulatedJoin,
   useMembership,
   useSavedArticles,
   useSession,
@@ -57,6 +58,7 @@ export default function ProfilScreen() {
   const actions = useCoreActions();
   const session = useSession();
   const membership = useMembership();
+  const joined = useHasSimulatedJoin();
   const settings = useSettings();
   const saved = useSavedArticles();
 
@@ -72,44 +74,56 @@ export default function ProfilScreen() {
       <Typo variant="headline-xl">Profil</Typo>
 
       <ClubCard
-        name={session.account?.name || membership.name}
+        name={session.account?.name ?? ''}
         tierLabel={TIER_LABELS[session.entitlement?.tier ?? 'paid']}
         memberSince={membership.memberSince}
       />
 
       <View className="mt-l">
-        <Overline label="Meine Mitgliedschaft" />
+        <Overline label="Ihre Mitgliedschaft" />
         <Card className="mt-2xs">
           <View className="flex-row items-center justify-between">
             <Typo variant="text-m">Ihr Beitrag</Typo>
-            <Typo variant="headline-xs">
-              {membership.amountEur} € / {membership.interval === 'monatlich' ? 'Monat' : 'Jahr'}
-            </Typo>
+            {/* Only an amount somebody set. The slice defaults to 10, so printing it
+                unconditionally invented a contribution for every account that never
+                ran the join flow, a trial paying 0 € included. */}
+            {joined ? (
+              <Typo variant="headline-xs">
+                {membership.amountEur} € / {membership.interval === 'monatlich' ? 'Monat' : 'Jahr'}
+              </Typo>
+            ) : (
+              <Typo variant="text-m" color="grey-600">
+                Noch nicht festgelegt
+              </Typo>
+            )}
           </View>
           <View className="mt-s flex-row gap-s">
             <Button
-              title="Beitrag ändern"
+              title={joined ? 'Beitrag ändern' : 'Beitrag festlegen'}
               variant="secondary"
               onPress={openJoinFlow}
               className="flex-1"
             />
-            <Button
-              title={membership.paused ? 'Fortsetzen' : 'Pausieren'}
-              variant="secondary"
-              onPress={() => actions.membership.setPaused(!membership.paused)}
-              className="flex-1"
-            />
+            {/* Nothing to pause until something is set. */}
+            {joined && (
+              <Button
+                title={membership.paused ? 'Fortsetzen' : 'Pausieren'}
+                variant="secondary"
+                onPress={() => actions.membership.setPaused(!membership.paused)}
+                className="flex-1"
+              />
+            )}
           </View>
           {membership.paused && (
             <Typo variant="text-s" color="grey-600" className="mt-s">
-              Ihre Mitgliedschaft ist pausiert (simuliert). Backstage bleibt bis Monatsende offen.
+              Ihre Mitgliedschaft ist pausiert (simuliert).
             </Typo>
           )}
         </Card>
       </View>
 
       <View className="mt-m">
-        <Overline label="Mein Impact" />
+        <Overline label="Ihr Impact" />
         <Card tone="surface" className="mt-2xs">
           <Typo variant="text-m">{impactLine(membership.memberSince)}</Typo>
           {IMPACT_ARTICLES.map((article) => (

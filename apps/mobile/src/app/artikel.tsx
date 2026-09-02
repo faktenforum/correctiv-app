@@ -19,8 +19,10 @@ import { sizes, useColors, useIsDark } from '@/lib/theme';
  * Article reader: full-page webview over cleaned-up article HTML (token CSS and
  * embedded fonts, so it works offline). Native overlay header for back and save.
  *
- * Links are intercepted: a correctiv.org article pushes another reader,
- * `correctiv://join` opens the join flow, anything else goes to the system browser.
+ * Links are intercepted: a correctiv.org article pushes another reader, anything
+ * else goes to the system browser. There used to be a third case, `correctiv://join`,
+ * for a button in the reader's second footer; ADR 0018 removed the footer, and a test
+ * in the core now asserts the scheme never reaches a document again.
  */
 export default function ArtikelScreen() {
   const colors = useColors();
@@ -99,10 +101,6 @@ export default function ArtikelScreen() {
   const onNavigate = (target: string): boolean => {
     if (target === 'about:blank' || target.startsWith('data:') || target.startsWith('file:'))
       return true;
-    if (target.startsWith('correctiv://join')) {
-      router.push('/(tabs)/profil');
-      return false;
-    }
     if (isInternalArticleUrl(target)) {
       router.push({ pathname: '/artikel', params: { url: target } });
       return false;

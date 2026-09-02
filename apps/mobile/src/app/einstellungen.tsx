@@ -157,7 +157,8 @@ export default function EinstellungenScreen() {
           <Overline label="Demo" />
           <Card tone="surface" className="mt-2xs">
             <Typo variant="text-s" color="grey-600">
-              Für Vorführungen: setzt Mitgliedschaft, Interessen und Onboarding zurück.
+              Für Vorführungen: setzt Beitrag, Interessen und Onboarding zurück. Ihr Konto bleibt
+              angemeldet.
             </Typo>
             <Button
               title="Demo-Zustand zurücksetzen"

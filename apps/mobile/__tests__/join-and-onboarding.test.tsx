@@ -4,7 +4,7 @@ import { diaries, earlyAccess } from '@correctiv/app-core/data/backstage';
 
 /**
  * The two flows that change what the app is: onboarding decides whether it asks
- * again, and the join flow performs the status flip every club touchpoint reacts to.
+ * again, and the join flow records the simulated contribution.
  *
  * Both are also where a dark pattern would be easiest to introduce, so the tests
  * assert the escape hatches too: skipping still counts as done, and every step
@@ -28,14 +28,14 @@ jest.mock('@expo/vector-icons', () => {
 
 import { router } from 'expo-router';
 
-import { isDisabled, press, render, renderedText, typeInto } from './support/rendering';
+import { press, render, renderedText } from './support/rendering';
 
 import BackstageScreen from '@/app/backstage';
 import BeitretenScreen from '@/app/beitreten';
 import OnboardingScreen from '@/app/onboarding';
 import { resetStore } from '@correctiv/app-core/stores/store';
 
-import { coreActions, coreStore } from '@/lib/store/core';
+import { coreStore } from '@/lib/store/core';
 
 const push = router.push as jest.Mock;
 const replace = router.replace as jest.Mock;
@@ -47,18 +47,24 @@ beforeEach(() => {
   });
 });
 
-describe('the join flow', () => {
-  it('argues with numbers before asking for anything', () => {
+describe('the contribution flow', () => {
+  /**
+   * It opened with a case for joining and then asked for a name and an email. Behind
+   * the door it is reached from „Beitrag ändern“ by somebody who has already paid to
+   * be here, so ADR 0019 dropped both steps: the case has no audience, and the app
+   * already knows the two fields the form asked for.
+   */
+  it('opens on the amount, with no case to make and no form to fill', () => {
     const text = renderedText(render(<BeitretenScreen />));
-    expect(text).toContain('CORRECTIV gehört niemandem');
-    expect(text).toContain('31.000+');
-    // No amount, no form — and an equal-weight way out.
-    expect(text).toContain('Erstmal umsehen');
+    expect(text).toContain('Ihr Beitrag');
+    expect(text).toContain('10 €');
+    expect(text).not.toContain('CORRECTIV gehört niemandem');
+    expect(text).not.toContain('Paywall');
+    expect(text).not.toContain('Erstmal umsehen');
   });
 
   it('lets the amount and the interval be chosen', () => {
     const tree = render(<BeitretenScreen />);
-    press(tree, 'Weiter');
 
     expect(renderedText(tree)).toContain('10 €');
     press(tree, '30 €');
@@ -71,39 +77,21 @@ describe('the join flow', () => {
     expect(text).toContain('✓ ');
   });
 
-  it('will not submit half a form', () => {
+  it('records the contribution and confirms with the chosen amount', () => {
     const tree = render(<BeitretenScreen />);
-    press(tree, 'Weiter');
-    press(tree, 'Mit 10 € unterstützen');
-
-    expect(isDisabled(tree, 'Jetzt Mitglied werden')).toBe(true);
-    typeInto(tree, 'Name', 'Testperson');
-    expect(isDisabled(tree, 'Jetzt Mitglied werden')).toBe(true);
-    typeInto(tree, 'E-Mail', 'test@beispiel.de');
-    expect(isDisabled(tree, 'Jetzt Mitglied werden')).toBe(false);
-  });
-
-  it('flips the app-wide status and welcomes with the chosen amount', () => {
-    const tree = render(<BeitretenScreen />);
-    press(tree, 'Weiter');
     press(tree, '20 €');
-    press(tree, 'Mit 20 € unterstützen');
-    typeInto(tree, 'Name', 'Testperson');
-    typeInto(tree, 'E-Mail', 'test@beispiel.de');
-    press(tree, 'Jetzt Mitglied werden');
+    press(tree, 'Beitrag auf 20 € setzen');
 
-    // THE flip — every club touchpoint reads this in the same tick.
     expect(coreStore.getState().membership).toMatchObject({
-      isMember: true,
       amountEur: 20,
       interval: 'monatlich',
-      name: 'Testperson',
     });
+    expect(coreStore.getState().membership.memberSince).not.toBeNull();
     const text = renderedText(tree);
-    expect(text).toContain('Willkommen im Club.');
+    expect(text).toContain('Ihr Beitrag ist gesetzt.');
     expect(text).toContain('20 €');
-    // Past the flip there is nothing to escape from, so no "Erstmal umsehen".
-    expect(text).not.toContain('Erstmal umsehen');
+    // Nobody is welcomed into something they are already inside.
+    expect(text).not.toContain('Willkommen im Club');
   });
 });
 

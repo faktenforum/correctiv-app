@@ -1,30 +1,52 @@
 import { createSlice, type PayloadAction } from '@reduxjs/toolkit';
 
+import { sessionActions } from './session';
+
 export type MembershipInterval = 'monatlich' | 'jährlich';
 
 /**
- * Club membership, held locally. Joining and payment are simulated.
- * isMember is the central demo lever: all club touchpoints must read it through
- * the binding on every render, never snapshot it into a local variable, or the
- * app-wide status flip stops being visible.
+ * The simulated contribution, and nothing else about the person.
+ *
+ * Who is signed in, and whether the app is open to them, is `stores/session`: the
+ * name on the profile comes from `session.account`, the door reads the entitlement.
+ * This slice holds only what the in-app join flow simulates, a contribution the
+ * membership system will own once it answers with one.
+ *
+ * It used to hold `name` and `isMember` as well, and behind the door both were dead.
+ * `name` could never win against `session.account.name`, which is never empty;
+ * `isMember` was true in exactly the states `memberSince !== null` is, so it is a
+ * selector now rather than a second stored answer that can disagree with the first.
  */
 export interface MembershipState {
-  isMember: boolean;
-  name: string;
+  /** Stamped by the first simulated join; null until then. */
   memberSince: string | null;
   amountEur: number;
   interval: MembershipInterval;
   paused: boolean;
 }
 
+/** What survives a restart. Declared here, beside the state, as `session` does. */
+export const PERSISTED_KEYS = ['memberSince', 'amountEur', 'interval', 'paused'] satisfies Array<
+  keyof MembershipState
+>;
+
 const initialState: MembershipState = {
-  isMember: false,
-  name: '',
   memberSince: null,
   amountEur: 10,
   interval: 'monatlich',
   paused: false,
 };
+
+/**
+ * Whether the simulated join has run.
+ *
+ * A selector rather than a stored flag, and what it replaces says why it matters:
+ * the amount defaults to 10, so a screen printing it unconditionally invents a
+ * contribution for every account that never set one, including a trial paying 0 €.
+ */
+export function hasSimulatedJoin(state: MembershipState): boolean {
+  return state.memberSince !== null;
+}
 
 const slice = createSlice({
   name: 'membership',
@@ -44,27 +66,21 @@ const slice = createSlice({
         action: PayloadAction<{
           amountEur: number;
           interval: MembershipInterval;
-          name?: string;
           joinedAt: string;
         }>,
       ) {
-        const { amountEur, interval, name, joinedAt } = action.payload;
-        state.isMember = true;
-        if (name) state.name = name;
+        const { amountEur, interval, joinedAt } = action.payload;
         state.memberSince = state.memberSince ?? joinedAt;
         state.amountEur = amountEur;
         state.interval = interval;
         state.paused = false;
       },
-      prepare: (amountEur: number, interval: MembershipInterval, name?: string) => ({
-        payload: { amountEur, interval, name, joinedAt: new Date().toISOString() },
+      prepare: (amountEur: number, interval: MembershipInterval) => ({
+        payload: { amountEur, interval, joinedAt: new Date().toISOString() },
       }),
     },
 
-    /**
-     * Pausing is simulated, and it deliberately does NOT revoke membership:
-     * Backstage stays open, per the concept.
-     */
+    /** Pausing is simulated. Nothing inside the app closes when it is set. */
     setPaused(state, action: PayloadAction<boolean>) {
       state.paused = action.payload;
     },
@@ -78,6 +94,15 @@ const slice = createSlice({
     hydrate(state, action: PayloadAction<Partial<MembershipState>>) {
       Object.assign(state, action.payload);
     },
+  },
+  extraReducers: (builder) => {
+    /**
+     * A contribution belongs to the account that set it, not to the device.
+     * `signOut` used to clear only the session, so the next person to sign in on
+     * this phone inherited the previous one's amount and join date: their name and
+     * tier on the card, someone else's date and amount under it.
+     */
+    builder.addCase(sessionActions.signOut, () => initialState);
   },
 });
 

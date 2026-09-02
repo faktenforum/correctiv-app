@@ -102,8 +102,8 @@ describe('signed out', () => {
     }
   });
 
-  it('sends "Mitglied werden" outside, where membership is managed', () => {
-    press(render(<LoginGate />), 'Mitglied werden');
+  it('sends "Mitglied mit Beitrag werden" outside, where membership is managed', () => {
+    press(render(<LoginGate />), 'Mitglied mit Beitrag werden');
     expect(openExternal).toHaveBeenCalledWith(expect.stringContaining('correctiv.org'));
   });
 });

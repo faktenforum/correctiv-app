@@ -1,5 +1,5 @@
 import { Ionicons } from '@expo/vector-icons';
-import { useState } from 'react';
+import { useRef, useState } from 'react';
 import { ActivityIndicator, Pressable, ScrollView, TextInput, View } from 'react-native';
 
 import { Button, Card, Hairline, Overline, SafeAreaView, Typo } from '@/components/ui';
@@ -34,7 +34,7 @@ const COPY = {
     submit: 'Anmelden',
     checking: 'Wir prüfen Ihre Mitgliedschaft …',
     forgot: 'Passwort vergessen?',
-    join: 'Mitglied werden',
+    join: 'Mitglied mit Beitrag werden',
     failure: {
       'wrong-credentials': 'E-Mail-Adresse oder Passwort stimmen nicht. Bitte prüfen Sie beides.',
       unreachable:
@@ -51,6 +51,7 @@ const COPY = {
     lapsed: (date: string) =>
       `Ihre Testphase ist am ${date} zu Ende gegangen. Danke, dass Sie die App ausprobiert haben. Mit einem Beitrag geht es hier weiter, mit allem, was Sie schon kennen.`,
     tierRow: 'Ihre Stufe',
+    tierTrial: 'Testphase',
     accessRow: 'App-Zugang',
     accessNone: 'Nicht enthalten',
     accessLapsed: (date: string) => `Testphase, beendet am ${date}`,
@@ -58,8 +59,8 @@ const COPY = {
     resume: 'Beitrag festlegen',
     recheck: 'Erneut prüfen',
     switchAccount: 'Mit einem anderen Konto anmelden',
-    simulated:
-      'Es wird nichts übertragen. Nach „Mitgliedschaft erweitern“ findet „Erneut prüfen“ eine Mitgliedschaft mit Beitrag.',
+    simulated: (button: string) =>
+      `Es wird nichts übertragen. Nach „${button}“ findet „Erneut prüfen“ eine Mitgliedschaft mit Beitrag.`,
   },
   simulatedHeading: 'Simuliert',
   /** Shared with the profile, see lib/membership/tierLabel.ts. */
@@ -111,7 +112,11 @@ export function LoginGate() {
         <Card tone="surface" className="mt-l">
           <Overline label={COPY.simulatedHeading} />
           <Typo variant="text-s" color="grey-600" className="mt-2xs">
-            {shortfall ? COPY.noAccess.simulated : COPY.form.simulated}
+            {shortfall
+              ? COPY.noAccess.simulated(
+                  shortfall === 'lapsed' ? COPY.noAccess.resume : COPY.noAccess.upgrade,
+                )
+              : COPY.form.simulated}
           </Typo>
         </Card>
       </ScrollView>
@@ -125,6 +130,12 @@ function SignInForm() {
   const session = useSession();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  /**
+   * The email field's return key says „Weiter“, and React Native moves no focus on
+   * its own: without this the key closed the keyboard on Android and did nothing on
+   * iOS, and the person tapped the second field by hand.
+   */
+  const passwordRef = useRef<TextInput>(null);
 
   const busy = session.status === 'signing-in';
   const failed = session.status === 'failed';
@@ -165,6 +176,8 @@ function SignInForm() {
         autoComplete="email"
         textContentType="emailAddress"
         returnKeyType="next"
+        onSubmitEditing={() => passwordRef.current?.focus()}
+        submitBehavior="submit"
         editable={!busy}
         className={field}
         style={fieldText}
@@ -174,6 +187,7 @@ function SignInForm() {
         {COPY.form.passwordHeading}
       </Typo>
       <TextInput
+        ref={passwordRef}
         value={password}
         onChangeText={setPassword}
         placeholder={COPY.form.passwordPlaceholder}
@@ -192,8 +206,12 @@ function SignInForm() {
 
       {failed && session.failure && (
         <View className="mt-s flex-row items-start" accessibilityLiveRegion="polite">
+          {/* The icon and the field borders carry the coral; the sentence does not.
+              Measured against the tokens, `emphasis` on `grey-100` is 3.19:1 in the
+              light scheme, below AA for 14 px text, and 5.98:1 in the dark one. The
+              colour is not what makes this readable, the words are. */}
           <Ionicons name="alert-circle" size={18} color={colors.emphasis} />
-          <Typo variant="text-s" color="emphasis" className="ml-2xs flex-1">
+          <Typo variant="text-s" color="grey-700" className="ml-2xs flex-1">
             {COPY.form.failure[session.failure]}
           </Typo>
         </View>
@@ -249,7 +267,17 @@ function NoAccess({ shortfall }: { shortfall: AccessShortfall }) {
       {/* The entitlement as the membership system answered it. Tier and access,
           never an amount: a trial pays 0 € and has the app. */}
       <Card className="mt-m">
-        <Row label={COPY.noAccess.tierRow} value={COPY.tiers[entitlement?.tier ?? 'free']} />
+        {/* A trial keeps `tier: 'paid'`, so printing the tier here said „Mitgliedschaft
+            mit Beitrag“ directly under a sentence explaining that the app belongs to
+            one. The source is what the reader needs in that state. */}
+        <Row
+          label={COPY.noAccess.tierRow}
+          value={
+            shortfall === 'lapsed'
+              ? COPY.noAccess.tierTrial
+              : COPY.tiers[entitlement?.tier ?? 'free']
+          }
+        />
         <Hairline className="my-s" />
         <Row
           label={COPY.noAccess.accessRow}

@@ -57,7 +57,7 @@ dropping a host meant dropping that file plus its screens.
 
 ## Three conventions in the core
 
-1. **State is framework-neutral.** `stores/` is one Redux Toolkit store with thirteen
+1. **State is framework-neutral.** `stores/` is one Redux Toolkit store with fourteen
    slices. `stores/store.ts` explains why the core owns the instance rather than the
    host. The host adds only the reactivity binding, `apps/mobile/src/lib/store/core.ts`
    over react-redux. A second host once bound the state this replaced to Vue's
@@ -72,11 +72,13 @@ dropping a host meant dropping that file plus its screens.
    thing every host must touch.
 
 `membership.isMember` was the demo's central lever, read in the render path by every
-club touchpoint. Since [ADR 0018](adr/0018-removing-the-guest.md) **no screen reads it
-at all**: behind the door everyone has an entitlement that includes the app, so a
-branch on it asks a question with one answer. The slice stays because the join flow
-still writes it and still feeds "Beitrag ändern". For "may this person be here", read
-`useIsAdmitted`.
+club touchpoint. It is gone. Behind the door everyone has an entitlement that includes
+the app, so a branch on it asks a question with one answer
+([ADR 0018](adr/0018-removing-the-guest.md)), and the flag itself was a second stored
+answer to what `memberSince` already said
+([ADR 0019](adr/0019-identity-lives-in-the-session.md)). What is left in `membership`
+is the simulated contribution. Who is signed in is `stores/session`, and for "may this
+person be here" the answer is `useIsAdmitted`.
 
 ## The door
 

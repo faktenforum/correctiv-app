@@ -132,7 +132,7 @@ Every tab is real, with no stubs: onboarding, home, reader, discover and search,
 media (live radio, seven Castopod series, PeerTube HLS, YouTube embeds, mini and full
 player, with club bonus content playing in full for everyone), participate (three
 CrowdNewsroom callouts with a multi-step form, Faktenforum, Abriss-Atlas), and club
-and profile (join flow with the app-wide status flip, Backstage, quarterly report,
+and profile (contribution, Backstage, quarterly report,
 saved articles, settings).
 
 Verified in the browser: home with full content and all five tabs, the reader with a

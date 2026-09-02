@@ -17,15 +17,12 @@ export function EpisodeRow({
   title,
   meta,
   club = false,
-  /** Extra line under the title, e.g. a club note. */
-  metaSuffix,
   onPress,
 }: {
   episodeId: string;
   title: string;
   meta: string;
   club?: boolean;
-  metaSuffix?: string;
   onPress: () => void;
 }) {
   const colors = useColors();
@@ -59,7 +56,7 @@ export function EpisodeRow({
           {title}
         </Typo>
         <Typo variant="text-s" color="grey-500" className="mt-4xs">
-          {metaSuffix ? `${meta} · ${metaSuffix}` : meta}
+          {meta}
         </Typo>
       </View>
       {club && <Badge label="Club" tone="club" />}

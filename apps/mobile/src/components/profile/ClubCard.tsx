@@ -33,7 +33,7 @@ export function ClubCard({
         <Ionicons name="heart" size={20} color={colors['always-dark']} />
       </View>
       <Typo variant="headline-l" color="always-dark" className="mt-m">
-        {name || 'Clubmitglied'}
+        {name || 'Mitglied'}
       </Typo>
       {/* Not grey-600: on the yellow the secondary line is dimmed rather than
           recoloured, or every fixed surface would need a grey scale of its own. */}

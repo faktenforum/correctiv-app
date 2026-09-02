@@ -18,7 +18,11 @@ import {
   settingsActions,
   type SettingsState,
 } from '@correctiv/app-core/stores/settings';
-import { membershipActions, type MembershipState } from '@correctiv/app-core/stores/membership';
+import {
+  PERSISTED_KEYS as MEMBERSHIP_KEYS,
+  membershipActions,
+  type MembershipState,
+} from '@correctiv/app-core/stores/membership';
 import {
   savedArticlesActions,
   type SavedArticlesState,
@@ -85,11 +89,7 @@ function registerPersistence(): Promise<void> {
     // `onboardingDone`: hydrated late, a returning member would see the form.
     persisted<SessionState>('session', SESSION_KEYS, sessionActions.hydrate),
     persisted<SavedArticlesState>('savedArticles', ['items'], savedArticlesActions.hydrate),
-    persisted<MembershipState>(
-      'membership',
-      ['isMember', 'name', 'memberSince', 'amountEur', 'interval', 'paused'],
-      membershipActions.hydrate,
-    ),
+    persisted<MembershipState>('membership', MEMBERSHIP_KEYS, membershipActions.hydrate),
     persisted<InterestsState>('interests', ['selected'], interestsActions.hydrate),
     persisted<ParticipationState>('participation', ['submissions'], participationActions.hydrate),
   ]);

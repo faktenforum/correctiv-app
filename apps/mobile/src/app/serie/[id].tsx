@@ -103,7 +103,6 @@ function SeriesEpisodeRow({ series, episode }: { series: PodcastSeries; episode:
       episodeId={episode.id}
       title={episode.title}
       meta={`${formatDateShortDe(episode.date)} · ${episode.durationLabel}`}
-      club={episode.club}
       onPress={() => {
         if (status !== 'off') {
           togglePlay();

@@ -11,8 +11,8 @@ looking at a picture.
 ## The set
 
 [`android/`](android/) holds 31 shots, one per step, from `apps/mobile`. Shot on
-2026-09-02 from the release APK of `8fc8d01` on `Medium_Phone_API_36` at 1080x2400,
-night mode off. Both tours ran clean, with no `MISS`.
+2026-09-02 from the release APK of the review round on `Medium_Phone_API_36` at
+1080x2400, night mode off. Both tours ran clean, with no `MISS`.
 
 **This is the first set that opens at the door.** Since
 [ADR 0016](../adr/0016-a-door-at-the-root-and-an-entitlement-not-an-amount.md) a
@@ -27,11 +27,15 @@ club pitch, and [ADR 0018](../adr/0018-removing-the-guest.md) removed it along w
 every other branch that addressed someone who had not paid. The walk now ends that
 sequence on "Fertig".
 
-The rest were re-shot in the same round rather than carried over, and two of them are
-the reason ADR 0018 exists. The first round after the door still showed "Sie sind als
-Gast unterwegs" on the profile of an account that had just signed in, and offered
-"Erstmal umsehen" two screens after a door that could not be looked past. Neither was
-visible in a test. Both were visible in a picture.
+The rest were re-shot rather than carried over, and three of them are the reason two
+ADRs exist. The first round after the door still showed "Sie sind als Gast unterwegs"
+on the profile of an account that had just signed in, and offered "Erstmal umsehen"
+two screens after a door that could not be looked past
+([ADR 0018](../adr/0018-removing-the-guest.md)). The round after *that* still printed
+"Ihr Beitrag: 10 € / Monat" for an account that had never set one, because the slice
+defaults to ten and the row rendered unconditionally
+([ADR 0019](../adr/0019-identity-lives-in-the-session.md)). None of the three was
+visible in a test. All three were visible in a picture.
 
 The **native tab bar** ([ADR 0013](../adr/0013-native-tabs-and-a-web-tab-bar-of-its-own.md))
 arrived with the previous set and is unchanged here: Material Symbols instead of
@@ -133,6 +137,11 @@ Each of these cost a wrong conclusion or a worthless committed picture.
 - **A `MISS` is not a picture.** The tours report a missed step and walk on regardless.
   Two committed screenshots documented nothing for that reason and nobody looked at
   them. Read the tour's log, then look at what it produced.
+- **Neither is a dead emulator.** `set -uo pipefail` does not stop the walk when the
+  device goes away: every step prints `error: no devices/emulators found`, `shot`
+  redirects an empty stream into a `.png`, and the tour still ends with `done`. One run
+  produced 31 zero-byte files and a clean-looking log. Check the device is attached
+  before converting, and check the file sizes after.
 - **A shot of a colour scheme has to carry its own proof.** A dark page and a light
   one are told apart by eye, and an eye has been wrong here once already: a shot that
   measured `rgb(32,32,32)` at three points was reported as light. There is no browser

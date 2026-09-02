@@ -106,15 +106,13 @@ export const FIXTURES: Fixture[] = [
     id: 'member',
     label: 'Member',
     // It used to be "the demo's central lever, visible on nearly every screen".
-    // Since ADR 0018 no screen branches on it: what this fixture still changes is
-    // the join date on the club card and the contribution row under it.
-    hint: 'A simulated join on top: the club card gets a name and a date.',
+    // Since ADR 0019 the slice holds only the contribution, and the name on the card
+    // comes from the session, so what this fixture adds is the date and the amount.
+    hint: 'A simulated join on top: the contribution row gets an amount and a date.',
     write: (s) => {
       kv(s, 'session', SIGNED_IN);
       kv(s, 'settings', ONBOARDED);
       kv(s, 'membership', {
-        isMember: true,
-        name: 'Alex Beispiel',
         memberSince: '2026-03-04T09:12:00.000Z',
         amountEur: 10,
         interval: 'monatlich',

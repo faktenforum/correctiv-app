@@ -14,8 +14,8 @@ import type { AppThunk } from './store';
  *
  * This is what the door in the host's root layout reads, and it is a slice of its
  * own rather than a field on `membership` for one reason: `membership` is the
- * demo's club lever, a simulated contribution that every club touchpoint reacts
- * to, and the door must not depend on it. The scope makes the point concrete. A
+ * simulated contribution the in-app join flow sets, and the door must not depend
+ * on it. The scope makes the point concrete. A
  * member in a trial month pays 0 € and has the app; a 0 € member outside a trial
  * does not. Nothing about that is readable off an amount, so the door reads the
  * entitlement the membership system answered with, and only that.

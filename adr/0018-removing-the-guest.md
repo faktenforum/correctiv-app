@@ -61,8 +61,11 @@ has no audience.
 - **The `membership` slice and the join flow.** The slice still holds the simulated
   contribution and still feeds "Beitrag ändern". Whether a contribution is set inside
   the app at all is a product and app-store decision that is not this repo's to take;
-  ADR 0016 named it and it is still open. `useIsMember` therefore stays as a binding,
-  with a comment saying no screen reads it and none should read it as a gate again.
+  ADR 0016 named it and it is still open. ~~`useIsMember` therefore stays as a binding,
+  with a comment saying no screen reads it and none should read it as a gate again.~~
+  Retired by [ADR 0019](0019-identity-lives-in-the-session.md): the field it read was
+  a second stored answer to a question `memberSince` already answered, so both the
+  field and the binding went.
 
 ## What this retires
 
@@ -83,8 +86,9 @@ it is inverted. Backstage is still fully visible, to everyone who is inside.
 
 ## Consequences
 
-- The eight tests that pinned the guest states are not deleted but inverted: they now
-  assert its copy is absent. "A document that offers someone what they already pay
+- The tests that pinned the guest states are inverted rather than deleted wherever a
+  state remained to assert; where the guest and the member case had collapsed into the
+  same render, the two were merged into one. "A document that offers someone what they already pay
   for" is a failure this shipped once, and an assertion is cheaper than remembering.
 - The onboarding is three steps rather than four, so
   `screens/android/04-onboarding-club.webp` is removed and the tour taps "Fertig".

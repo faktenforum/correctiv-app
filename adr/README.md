@@ -1,6 +1,6 @@
 # Architecture decisions
 
-Eighteen decisions shaped this repo. Read them when you want to know *why* something
+Nineteen decisions shaped this repo. Read them when you want to know *why* something
 is the way it is; [`../ARCHITECTURE.md`](../ARCHITECTURE.md) describes *what* it is.
 
 | | Decision | Status |
@@ -23,6 +23,7 @@ is the way it is; [`../ARCHITECTURE.md`](../ARCHITECTURE.md) describes *what* it
 | [0016](0016-a-door-at-the-root-and-an-entitlement-not-an-amount.md) | A door at the root, and an entitlement rather than an amount | accepted; simulated sign-in, two of its statements retired by 0018 |
 | [0017](0017-native-rendering-as-the-rule-a-webview-for-the-exception.md) | Native rendering as the rule, a webview for the exception | accepted; corrects a frame-header claim in `ReaderView.web.tsx`, one open question named |
 | [0018](0018-removing-the-guest.md) | Removing the guest | accepted; carries out what 0016 left standing, retires two of its statements and one of 0004's |
+| [0019](0019-identity-lives-in-the-session.md) | Identity lives in the session, the contribution in membership | accepted; retires two of 0018's, and the invented contribution with them |
 
 Six notes for readers of the older ones:
 

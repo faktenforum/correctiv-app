@@ -38,7 +38,10 @@ import {
   type VideoListState,
   type YoutubeKey,
 } from '@correctiv/app-core/stores/media';
-import { membershipActions } from '@correctiv/app-core/stores/membership';
+import {
+  hasSimulatedJoin as selectHasSimulatedJoin,
+  membershipActions,
+} from '@correctiv/app-core/stores/membership';
 import {
   extraCount as selectExtraCount,
   hasSubmitted as selectHasSubmitted,
@@ -131,19 +134,17 @@ export const useVideo = () => useAppSelector((s) => s.video);
 // --- narrow selectors --------------------------------------------------------
 
 /**
- * The simulated club lever, still written by the join flow and still persisted.
- *
- * **No screen reads it since ADR 0018**, and none should read it as a gate again:
- * behind the door everyone has an entitlement that includes the app, so a branch on
- * this asks a question with one answer. It stays because the slice is live and the
- * join flow's future is an open product decision, not because anything renders on it.
- * For "may this person be here", use `useIsAdmitted`.
+ * Whether the simulated join has run. Nothing gates on it, and nothing should: for
+ * "may this person be here", read `useIsAdmitted`. The profile's contribution row
+ * reads this, so that it prints an amount somebody set rather than the slice's
+ * default (ADR 0019).
  */
-export const useIsMember = () => useAppSelector((s) => s.membership.isMember);
+export const useHasSimulatedJoin = () =>
+  useAppSelector((s) => selectHasSimulatedJoin(s.membership));
 /**
- * The door's one question, read per render. It reads the
- * entitlement and never the contribution: a trial pays 0 € and has the app. The
- * clock is passed in so that a trial's end closes the door on the next dispatch.
+ * The door's one question, read per render. It reads the entitlement and never the
+ * contribution: a trial pays 0 € and has the app. The clock is passed in so that a
+ * trial's end closes the door on the next dispatch.
  */
 export const useIsAdmitted = () => useAppSelector((s) => selectIsAdmitted(s.session, Date.now()));
 export const useActiveTab = () => useAppSelector((s) => s.settings.activeTab);

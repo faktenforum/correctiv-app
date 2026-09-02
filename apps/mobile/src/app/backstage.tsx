@@ -47,7 +47,7 @@ export default function BackstageScreen() {
               {earlyAccess.teaser}
             </Typo>
             <Typo variant="text-s" color="grey-500" className="mt-s">
-              Für alle ab {earlyAccess.publicFromLabel}
+              Öffentlich ab {earlyAccess.publicFromLabel}
             </Typo>
             <Button
               title="Jetzt lesen"
