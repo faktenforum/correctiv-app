@@ -39,6 +39,22 @@ tap() {
   sleep 1.4
 }
 
+# Types into the field found by label. `input text` takes no spaces, and none of
+# the door's inputs need one.
+type_into() { tap "$1" || return 1; $A shell input text "$2"; sleep 0.6; }
+
+# The keyboard's action key: on the password field it submits the form.
+submit() { $A shell input keyevent 66; sleep "${1:-4}"; }
+
+# Through the door. A cleared app starts at the gate; every address signs in, and
+# the door prints the rules for the other states (ADR 0016).
+sign_in() { type_into "E-Mail-Adresse" "$1"; type_into "Passwort eingeben" "$2"; submit "${3:-4}"; }
+
+# For a tour that does not start from a cleared app: sign in only when the door is up.
+ensure_signed_in() {
+  if ui_dump | grep -q 'content-desc="Anmelden"'; then sign_in alex.beispiel@example.org geheim; fi
+}
+
 # Every label on screen — run this when a tour step stops finding its target.
 labels() {
   ui_dump | python3 -c '

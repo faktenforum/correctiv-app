@@ -4,7 +4,7 @@ import { diaries, earlyAccess } from '@correctiv/app-core/data/backstage';
 
 /**
  * The two flows that change what the app is: onboarding decides whether it asks
- * again, and the join flow performs the status flip every club touchpoint reacts to.
+ * again, and the join flow records the simulated contribution.
  *
  * Both are also where a dark pattern would be easiest to introduce, so the tests
  * assert the escape hatches too: skipping still counts as done, and every step
@@ -28,14 +28,14 @@ jest.mock('@expo/vector-icons', () => {
 
 import { router } from 'expo-router';
 
-import { isDisabled, press, render, renderedText, typeInto } from './support/rendering';
+import { press, render, renderedText } from './support/rendering';
 
 import BackstageScreen from '@/app/backstage';
 import BeitretenScreen from '@/app/beitreten';
 import OnboardingScreen from '@/app/onboarding';
 import { resetStore } from '@correctiv/app-core/stores/store';
 
-import { coreActions, coreStore } from '@/lib/store/core';
+import { coreStore } from '@/lib/store/core';
 
 const push = router.push as jest.Mock;
 const replace = router.replace as jest.Mock;
@@ -47,18 +47,24 @@ beforeEach(() => {
   });
 });
 
-describe('the join flow', () => {
-  it('argues with numbers before asking for anything', () => {
+describe('the contribution flow', () => {
+  /**
+   * It opened with a case for joining and then asked for a name and an email. Behind
+   * the door it is reached from „Beitrag ändern“ by somebody who has already paid to
+   * be here, so ADR 0019 dropped both steps: the case has no audience, and the app
+   * already knows the two fields the form asked for.
+   */
+  it('opens on the amount, with no case to make and no form to fill', () => {
     const text = renderedText(render(<BeitretenScreen />));
-    expect(text).toContain('CORRECTIV gehört niemandem');
-    expect(text).toContain('31.000+');
-    // No amount, no form — and an equal-weight way out.
-    expect(text).toContain('Erstmal umsehen');
+    expect(text).toContain('Ihr Beitrag');
+    expect(text).toContain('10 €');
+    expect(text).not.toContain('CORRECTIV gehört niemandem');
+    expect(text).not.toContain('Paywall');
+    expect(text).not.toContain('Erstmal umsehen');
   });
 
   it('lets the amount and the interval be chosen', () => {
     const tree = render(<BeitretenScreen />);
-    press(tree, 'Weiter');
 
     expect(renderedText(tree)).toContain('10 €');
     press(tree, '30 €');
@@ -71,39 +77,21 @@ describe('the join flow', () => {
     expect(text).toContain('✓ ');
   });
 
-  it('will not submit half a form', () => {
+  it('records the contribution and confirms with the chosen amount', () => {
     const tree = render(<BeitretenScreen />);
-    press(tree, 'Weiter');
-    press(tree, 'Mit 10 € unterstützen');
-
-    expect(isDisabled(tree, 'Jetzt Mitglied werden')).toBe(true);
-    typeInto(tree, 'Name', 'Testperson');
-    expect(isDisabled(tree, 'Jetzt Mitglied werden')).toBe(true);
-    typeInto(tree, 'E-Mail', 'test@beispiel.de');
-    expect(isDisabled(tree, 'Jetzt Mitglied werden')).toBe(false);
-  });
-
-  it('flips the app-wide status and welcomes with the chosen amount', () => {
-    const tree = render(<BeitretenScreen />);
-    press(tree, 'Weiter');
     press(tree, '20 €');
-    press(tree, 'Mit 20 € unterstützen');
-    typeInto(tree, 'Name', 'Testperson');
-    typeInto(tree, 'E-Mail', 'test@beispiel.de');
-    press(tree, 'Jetzt Mitglied werden');
+    press(tree, 'Beitrag auf 20 € setzen');
 
-    // THE flip — every club touchpoint reads this in the same tick.
     expect(coreStore.getState().membership).toMatchObject({
-      isMember: true,
       amountEur: 20,
       interval: 'monatlich',
-      name: 'Testperson',
     });
+    expect(coreStore.getState().membership.memberSince).not.toBeNull();
     const text = renderedText(tree);
-    expect(text).toContain('Willkommen im Club.');
+    expect(text).toContain('Ihr Beitrag ist gesetzt.');
     expect(text).toContain('20 €');
-    // Past the flip there is nothing to escape from, so no "Erstmal umsehen".
-    expect(text).not.toContain('Erstmal umsehen');
+    // Nobody is welcomed into something they are already inside.
+    expect(text).not.toContain('Willkommen im Club');
   });
 });
 
@@ -111,8 +99,9 @@ describe('onboarding', () => {
   it('opens on the mission screen with no skip', () => {
     const text = renderedText(render(<OnboardingScreen />));
     expect(text).toContain('Recherchen für die Gesellschaft');
-    expect(text).toContain('Ohne Paywall');
     expect(text).not.toContain('Überspringen');
+    // "Ohne Paywall: Journalismus für alle" stood here until ADR 0018.
+    expect(text).not.toContain('Paywall');
   });
 
   it('records interests', () => {
@@ -135,44 +124,40 @@ describe('onboarding', () => {
     expect(push).not.toHaveBeenCalled();
   });
 
-  it('offers two equal paths at the end', () => {
+  /**
+   * The last step used to be the club pitch, with "Unterstützer:in werden" beside
+   * "Erstmal umsehen". Behind the door (ADR 0016) both address someone who is not
+   * here, so the step went with ADR 0018 and the walk ends one screen earlier.
+   */
+  it('ends after the participate step, with nothing left to buy', () => {
     const tree = render(<OnboardingScreen />);
     press(tree, 'Los geht’s');
     press(tree, 'Weiter');
-    press(tree, 'Weiter');
 
     const text = renderedText(tree);
-    expect(text).toContain('Unterstützer:in werden');
-    expect(text).toContain('Erstmal umsehen');
+    expect(text).not.toContain('Unterstützer:in werden');
+    expect(text).not.toContain('Erstmal umsehen');
 
-    press(tree, 'Unterstützer:in werden');
+    press(tree, 'Fertig');
     expect(coreStore.getState().settings.onboardingDone).toBe(true);
-    expect(push).toHaveBeenCalledWith('/beitreten');
+    expect(push).not.toHaveBeenCalledWith('/beitreten');
   });
 });
 
 describe('Backstage', () => {
-  it('shows everything to a guest, and invites instead of locking', () => {
-    const text = renderedText(render(<BackstageScreen />));
+  /**
+   * Nothing here is locked, and that has not changed. What went with ADR 0018 is the
+   * guest's copy: the teaser line and the "Mit dem Club jetzt lesen" button that
+   * routed to the join flow instead of the article.
+   */
+  it('shows everything and opens the article directly', () => {
+    const tree = render(<BackstageScreen />);
+    const text = renderedText(tree);
     expect(text).toContain(earlyAccess.title);
     expect(text).toContain(diaries[0].title);
-    // The concept's rule: closeness, not a paywall.
-    expect(text).toContain('Mit dem Club jetzt lesen');
-    expect(text).toContain('es ist eine Einladung');
-  });
+    expect(text).not.toContain('Mit dem Club jetzt lesen');
+    expect(text).not.toContain('es ist eine Einladung');
 
-  it('sends a guest to the join flow from the early-access card', () => {
-    press(render(<BackstageScreen />), 'Mit dem Club jetzt lesen');
-    expect(push).toHaveBeenCalledWith('/beitreten');
-  });
-
-  it('opens the article for a member', () => {
-    act(() => {
-      coreActions.membership.join(10, 'monatlich', 'Testperson');
-    });
-    const tree = render(<BackstageScreen />);
-
-    expect(renderedText(tree)).not.toContain('es ist eine Einladung');
     press(tree, 'Jetzt lesen');
     expect(push).not.toHaveBeenCalled(); // openArticle is mocked, not a route push
   });

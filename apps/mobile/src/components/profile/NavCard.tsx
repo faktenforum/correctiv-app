@@ -12,8 +12,9 @@ type IoniconName = keyof typeof Ionicons.glyphMap;
  * directory on Entdecken, so the app speaks one list language and not two.
  *
  * `club` marks what membership brings, in the club's yellow. The draft carries that
- * badge on every member-only entry; without it a guest cannot tell which rows are
- * an invitation, and the app's whole argument is that the invitation stays visible.
+ * badge on every entry the membership brings. It marks what a contribution pays
+ * for; it has never withheld anything, and since ADR 0018 there is nobody here it
+ * could withhold from.
  */
 export function NavCard({
   icon,

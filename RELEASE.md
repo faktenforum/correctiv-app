@@ -26,6 +26,12 @@ anyone at the URL:
   the REST API now, which sends one. The bundled snapshot is still there and still
   worth refreshing before a demo, because it is what the page falls back to when a
   request fails, and it is what an offline reader sees.
+- **It opens on the door.** Since
+  [ADR 0016](adr/0016-a-door-at-the-root-and-an-entitlement-not-an-amount.md) the app
+  is for members whose membership includes it, and the published copy starts signed
+  out. Sign-in is simulated and the screen prints the rules: any address gets in, one
+  containing "frei" shows the upgrade state. `preview.html#/?s=signed-in` skips the
+  form, `s=onboarded` lands on Home.
 - **The site is a project site**, served from `/correctiv-app/`, so the export needs
   `EXPO_BASE_URL` to prefix its asset URLs. `pages.yml` takes that value from
   `actions/configure-pages` and asserts it reached the built HTML. The failure is

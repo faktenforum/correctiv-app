@@ -3,7 +3,7 @@
  * from the Salon5 Castopod instance via stores/podcasts.ts (real episodes with
  * real MP3 enclosures). This typed sample is only used when neither the network
  * nor a bundled snapshot (assets/data/podcasts/) is available; its audio points
- * to the bundled sample episode so the player and preview gate still work.
+ * to the bundled sample episode so the player still works.
  */
 
 export interface PodcastEpisode {
@@ -13,7 +13,6 @@ export interface PodcastEpisode {
   durationLabel: string;
   /** Path relative to the app folder, or a URL */
   audio: string;
-  club?: boolean;
 }
 
 export interface PodcastSeries {

@@ -6,6 +6,12 @@
 set -uo pipefail
 source "$(dirname "$0")/lib.sh"
 
+# Every deep link lands on the door while nobody is signed in. Run after
+# tour-android.sh, whose sign-in persists; this covers running it alone.
+$A shell am start -n "$PKG/${ACTIVITY:-.MainActivity}" >/dev/null
+sleep 6
+ensure_signed_in
+
 # A real article URL, read off the live feed. An invented one 404s, and the shot then
 # documents the reader's error state instead of the reader.
 ARTICLE='https://correctiv.org/faktencheck/2026/08/04/video-zeigt-feiernde-fussballfans-keine-menschen-in-ceuta/'

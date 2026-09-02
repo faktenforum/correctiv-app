@@ -10,8 +10,11 @@ import { READER_BASE_URL, type ReaderViewProps } from './types';
  * static-renders and exports without error, which makes the failure easy to miss.
  * An iframe is the honest equivalent here: the reader HTML is built locally by
  * buildReaderHtml(), so it goes in via `srcDoc` and no remote framing is
- * involved. (Embedding remote correctiv.org pages would be a different matter —
- * X-Frame-Options and CSP would block it, while a native WebView is unaffected.)
+ * involved. (This used to add that framing remote correctiv.org pages would be
+ * blocked by X-Frame-Options and CSP. Measured on 2026-09-02, the server sends
+ * neither header and the page carries no CSP meta tag, so that was never true.
+ * What does stand in the way of a remote frame here is third-party cookies once
+ * the page needs a session — see ADR 0017.)
  *
  * A srcDoc iframe stays same-origin with its parent, so link clicks inside it
  * can be intercepted and routed through the same onNavigate the native WebView

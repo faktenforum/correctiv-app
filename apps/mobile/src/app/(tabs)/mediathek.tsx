@@ -12,7 +12,7 @@ import type { YoutubeKey } from '@correctiv/app-core/stores/media';
 import type { Video } from '@correctiv/app-core/types/models';
 import { playEpisode, togglePlay } from '@/lib/audio/player';
 import { useEpisodeStatus } from '@/lib/audio/useAudio';
-import { useCoreActions, useIsMember, usePodcastLibrary, useVideoChannel } from '@/lib/store/core';
+import { useCoreActions, usePodcastLibrary, useVideoChannel } from '@/lib/store/core';
 
 /**
  * Mediathek — everything audible and watchable: live radio, the Salon5 podcasts
@@ -93,11 +93,12 @@ function VideoRail({ title, channel }: { title: string; channel: YoutubeKey }) {
 }
 
 /**
- * The club's bonus audio. Members hear the whole episode, everyone else 60 seconds —
- * the preview is the invitation, not the lock.
+ * The club's bonus audio, played in full. The 60-second preview this comment used to
+ * describe was dropped on 2026-08-06 (ADR 0006), and the note that named the
+ * distinction went with ADR 0018, since behind the door there is nobody on the other
+ * side of it. The CLUB badge stays as a label.
  */
 function BonusRow({ bonus }: { bonus: BonusMedia }) {
-  const isMember = useIsMember();
   const status = useEpisodeStatus(bonus.id);
 
   const track = {
@@ -112,7 +113,6 @@ function BonusRow({ bonus }: { bonus: BonusMedia }) {
       episodeId={bonus.id}
       title={bonus.title}
       meta={bonus.durationLabel}
-      metaSuffix={isMember ? undefined : 'Für alle hörbar'}
       club={bonus.club}
       onPress={() => {
         // If this episode is already loaded, the tap is play/pause, not a restart.

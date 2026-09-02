@@ -19,7 +19,7 @@ import {
   coreStore,
   useCoreActions,
   useExtraFeeds,
-  useIsMember,
+  useHasSimulatedJoin,
   useIsSaved,
   useLazyLoad,
   useSelectedInterests,
@@ -126,29 +126,29 @@ function renderHook<T>(
 
 describe('useSelector over the core store', () => {
   it('reads the current value', () => {
-    const { value } = renderHook(() => useIsMember());
+    const { value } = renderHook(() => useHasSimulatedJoin());
     expect(value()).toBe(false);
   });
 
   it('re-renders when the store changes', () => {
-    const { value } = renderHook(() => useIsMember());
+    const { value } = renderHook(() => useHasSimulatedJoin());
 
     act(() => {
-      coreStore.dispatch(join(10, 'monatlich', 'Test'));
+      coreStore.dispatch(join(10, 'monatlich'));
     });
 
     expect(value()).toBe(true);
   });
 
   it('does not re-render for an unrelated field in the same slice', () => {
-    const { renders } = renderHook(() => useIsMember());
+    const { renders } = renderHook(() => useHasSimulatedJoin());
     const before = renders();
 
     act(() => {
       coreStore.dispatch(setPaused(true));
     });
 
-    // The selector narrows to isMember, so a pause must not cost a render.
+    // The selector narrows to one derived boolean, so a pause costs no render.
     expect(renders()).toBe(before);
   });
 

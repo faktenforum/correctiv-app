@@ -8,7 +8,7 @@ import type { PodcastEpisode, PodcastSeries } from '@correctiv/app-core/data/pod
 import { formatDateShortDe } from '@correctiv/app-core/lib/format';
 import { playEpisode, togglePlay } from '@/lib/audio/player';
 import { useEpisodeStatus } from '@/lib/audio/useAudio';
-import { useIsMember, usePodcastSeries } from '@/lib/store/core';
+import { usePodcastSeries } from '@/lib/store/core';
 import { useColors } from '@/lib/theme';
 
 /**
@@ -96,17 +96,13 @@ export default function SerieScreen() {
 }
 
 function SeriesEpisodeRow({ series, episode }: { series: PodcastSeries; episode: PodcastEpisode }) {
-  const isMember = useIsMember();
   const status = useEpisodeStatus(episode.id);
-  const previewOnly = Boolean(episode.club) && !isMember;
 
   return (
     <EpisodeRow
       episodeId={episode.id}
       title={episode.title}
       meta={`${formatDateShortDe(episode.date)} · ${episode.durationLabel}`}
-      club={episode.club}
-      metaSuffix={previewOnly ? 'Für alle hörbar' : undefined}
       onPress={() => {
         if (status !== 'off') {
           togglePlay();

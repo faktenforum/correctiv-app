@@ -38,7 +38,10 @@ import {
   type VideoListState,
   type YoutubeKey,
 } from '@correctiv/app-core/stores/media';
-import { membershipActions } from '@correctiv/app-core/stores/membership';
+import {
+  hasSimulatedJoin as selectHasSimulatedJoin,
+  membershipActions,
+} from '@correctiv/app-core/stores/membership';
 import {
   extraCount as selectExtraCount,
   hasSubmitted as selectHasSubmitted,
@@ -55,6 +58,12 @@ import {
   isSaved as selectIsSaved,
   savedArticlesActions,
 } from '@correctiv/app-core/stores/savedArticles';
+import {
+  isAdmitted as selectIsAdmitted,
+  refreshEntitlement,
+  sessionActions,
+  signIn,
+} from '@correctiv/app-core/stores/session';
 import { settingsActions } from '@correctiv/app-core/stores/settings';
 import {
   fetchIssues,
@@ -117,14 +126,27 @@ export const useAppStore = () => useStore<RootState>();
 // --- whole-slice hooks (use a narrower selector below where you can) ----------
 
 export const useSettings = () => useAppSelector((s) => s.settings);
+export const useSession = () => useAppSelector((s) => s.session);
 export const useMembership = () => useAppSelector((s) => s.membership);
 export const useMedia = () => useAppSelector((s) => s.media);
 export const useVideo = () => useAppSelector((s) => s.video);
 
 // --- narrow selectors --------------------------------------------------------
 
-/** The demo's central lever — read it per render, never snapshot it. */
-export const useIsMember = () => useAppSelector((s) => s.membership.isMember);
+/**
+ * Whether the simulated join has run. Nothing gates on it, and nothing should: for
+ * "may this person be here", read `useIsAdmitted`. The profile's contribution row
+ * reads this, so that it prints an amount somebody set rather than the slice's
+ * default (ADR 0019).
+ */
+export const useHasSimulatedJoin = () =>
+  useAppSelector((s) => selectHasSimulatedJoin(s.membership));
+/**
+ * The door's one question, read per render. It reads the entitlement and never the
+ * contribution: a trial pays 0 € and has the app. The clock is passed in so that a
+ * trial's end closes the door on the next dispatch.
+ */
+export const useIsAdmitted = () => useAppSelector((s) => selectIsAdmitted(s.session, Date.now()));
 export const useActiveTab = () => useAppSelector((s) => s.settings.activeTab);
 export const useTextScale = () => useAppSelector((s) => s.settings.textScale);
 export const useTheme = () => useAppSelector((s) => s.settings.theme);
@@ -317,6 +339,14 @@ function bindCoreActions(dispatch: AppDispatch) {
 
   return {
     settings: bindActionCreators(settingsActions, dispatch),
+    session: {
+      ...bindActionCreators(
+        { signOut: sessionActions.signOut, upgradeStarted: sessionActions.upgradeStarted },
+        dispatch,
+      ),
+      signIn: bind(signIn),
+      refreshEntitlement: bind(refreshEntitlement),
+    },
     membership: bindActionCreators(membershipActions, dispatch),
     savedArticles: bindActionCreators(savedArticlesActions, dispatch),
     interests: bindActionCreators(interestsActions, dispatch),

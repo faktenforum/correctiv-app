@@ -29,14 +29,12 @@ export interface ReaderHtmlOptions {
   stylesheets?: string[];
   /** The app's text-size setting; scales the root font size. 1 = default. */
   textScale?: number;
-  /** Members are thanked; everyone else is invited. Never a barrier. */
-  isMember?: boolean;
 }
 
 const ROOT_FONT_PX = 16;
 
 export function buildReaderHtml(article: Article, options: ReaderHtmlOptions = {}): string {
-  const { css = [], stylesheets = [], textScale = 1, isMember = false } = options;
+  const { css = [], stylesheets = [], textScale = 1 } = options;
 
   const rootStyle = `font-size:${ROOT_FONT_PX * textScale}px`;
   const links = stylesheets
@@ -71,10 +69,15 @@ export function buildReaderHtml(article: Article, options: ReaderHtmlOptions = {
 
   const excerpt = article.excerpt ? `<p class="excerpt">${escapeHtml(article.excerpt)}</p>` : '';
 
-  const footer = isMember
-    ? `<p class="support-line">Ermöglicht durch Unterstützer:innen wie Sie. Danke, dass Sie dabei sind.</p>`
-    : `<p class="support-line">Diese Recherche war nur möglich durch Unterstützer:innen wie Sie.</p>
-       <a class="support-btn" href="correctiv://join">Unterstützer:in werden</a>`;
+  /**
+   * One footer, not two.
+   *
+   * There used to be a second one for a non-member, with a `correctiv://join` button.
+   * Since the door (ADR 0016) every reader of this document has a membership that
+   * includes the app, so that branch addressed nobody and the button offered them
+   * what they already had. Removed with ADR 0018.
+   */
+  const footer = `<p class="support-line">Ermöglicht durch Unterstützer:innen wie Sie. Danke, dass Sie dabei sind.</p>`;
 
   return `<!DOCTYPE html>
 <html lang="de" style="${rootStyle}">
@@ -167,7 +170,4 @@ h1{font-family:'Merriweather',Georgia,serif;font-weight:700;font-size:var(--var-
 .support-line{font-family:'Merriweather',Georgia,serif;color:var(--var-color-grey-700);
   font-size:var(--var-font-size-text-m);line-height:var(--var-leading-loose);
   margin-bottom:var(--var-spacing-s)}
-.support-btn{display:inline-block;font-family:'SourceSans3',sans-serif;font-weight:700;
-  background:var(--var-color-emphasis);color:#fff;text-decoration:none;
-  padding:var(--var-spacing-s) var(--var-spacing-m);border-radius:var(--var-radius-md)}
 `;
