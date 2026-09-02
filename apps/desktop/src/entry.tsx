@@ -56,6 +56,7 @@ import { manifest } from 'virtual:gjsify-rn-routes';
 
 import { armScreenshot } from './debug/screenshot.js';
 import { tokensFor } from './generated/tokens.generated.js';
+import { persistedAppearance } from './platform/storage.js';
 import { sheet } from './style/sheet.js';
 
 registerBuiltinWidgets();
@@ -75,8 +76,28 @@ function configureStyleOnce(): void {
   // Hoisting it is the measured `gdk_display_manager_get() was called before
   // gtk_init()` abort, and the import above is deliberately separate so that the guard
   // is the only thing anyone has to preserve.
-  const dark = Adw.StyleManager.get_default().dark;
-  configureStyle({ tokens: tokensFor(dark), sheet: sheet() });
+  const manager = Adw.StyleManager.get_default();
+
+  // APPLY THE USER'S PREFERENCE FIRST, then read what it produced.
+  //
+  // `StyleManager:dark` answers "what is on screen", and at this point that is still
+  // the SYSTEM scheme: the app's own preference lives in a Redux slice that hydrates
+  // asynchronously, and `useAppearance()` applies it to `color-scheme` several frames
+  // later — by which time this palette has been minted and every class stamped from it.
+  // A user whose preference differs from the system therefore got Adwaita's chrome in
+  // one scheme and the app's own token colours in the other, from the first frame, with
+  // no way back short of changing the system to match. README named only the
+  // MID-SESSION switch as a limitation; this was wrong at startup, with nothing
+  // switched at all.
+  //
+  // Reading the preference straight out of the settings file is the narrow fix: it is
+  // the same value `useAppearance()` goes on to apply, so that later call becomes a
+  // no-op rather than a second opinion, and both halves agree from the first frame.
+  const preference = persistedAppearance();
+  if (preference === 'light') manager.colorScheme = Adw.ColorScheme.FORCE_LIGHT;
+  else if (preference === 'dark') manager.colorScheme = Adw.ColorScheme.FORCE_DARK;
+
+  configureStyle({ tokens: tokensFor(manager.dark), sheet: sheet() });
 }
 
 function App() {

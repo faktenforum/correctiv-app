@@ -77,6 +77,31 @@ function flush(): void {
   }
 }
 
+/**
+ * The persisted appearance preference, read SYNCHRONOUSLY.
+ *
+ * The port below is promise-shaped because `KeyValueStore` is, but the read underneath
+ * has always been a synchronous `GLib.KeyFile` lookup. One caller needs it that way and
+ * only one: the host must know which token palette to mint BEFORE the first styled
+ * element renders, and the store that would otherwise answer this hydrates
+ * asynchronously, several frames later. Reading it late is what produced a window with
+ * Adwaita's chrome in one scheme and the app's own colours in the other.
+ *
+ * `null` means "nothing usable recorded" — a first run, an unreadable file, or a value
+ * outside the three. All of them mean "follow the system", which is also the app's own
+ * default, so they collapse into one answer instead of three branches.
+ */
+export function persistedAppearance(): 'system' | 'light' | 'dark' | null {
+  try {
+    const theme: unknown = (
+      JSON.parse(settings().get_string(GROUP, 'store.settings')) as { theme?: unknown }
+    ).theme;
+    return theme === 'light' || theme === 'dark' || theme === 'system' ? theme : null;
+  } catch {
+    return null;
+  }
+}
+
 export const keyValue: KeyValueStore = {
   getString(key) {
     try {
