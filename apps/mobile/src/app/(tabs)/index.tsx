@@ -58,7 +58,7 @@ export default function HomeScreen() {
       </View>
 
       <View className="mt-l">
-        <EarlyAccessCard onPress={() => router.push('/(tabs)/profil')} />
+        <EarlyAccessCard onPress={() => router.push('/backstage')} />
       </View>
 
       {neueste.length > 0 && (
@@ -115,7 +115,7 @@ export default function HomeScreen() {
         />
       </View>
 
-      <ImpactFooter onJoin={() => router.push('/(tabs)/profil')} />
+      <ImpactFooter />
     </Screen>
   );
 }

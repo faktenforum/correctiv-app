@@ -57,7 +57,7 @@ dropping a host meant dropping that file plus its screens.
 
 ## Three conventions in the core
 
-1. **State is framework-neutral.** `stores/` is one Redux Toolkit store with twelve
+1. **State is framework-neutral.** `stores/` is one Redux Toolkit store with fourteen
    slices. `stores/store.ts` explains why the core owns the instance rather than the
    host. The host adds only the reactivity binding, `apps/mobile/src/lib/store/core.ts`
    over react-redux. A second host once bound the state this replaced to Vue's
@@ -71,8 +71,35 @@ dropping a host meant dropping that file plus its screens.
    root re-export. The root entry exposes only the ports, because that is the one
    thing every host must touch.
 
-`membership.isMember` is the demo's central lever. Every club touchpoint reads it in
-the render path, so never snapshot it into a local ref.
+`membership.isMember` was the demo's central lever, read in the render path by every
+club touchpoint. It is gone. Behind the door everyone has an entitlement that includes
+the app, so a branch on it asks a question with one answer
+([ADR 0018](adr/0018-removing-the-guest.md)), and the flag itself was a second stored
+answer to what `memberSince` already said
+([ADR 0019](adr/0019-identity-lives-in-the-session.md)). What is left in `membership`
+is the simulated contribution. Who is signed in is `stores/session`, and for "may this
+person be here" the answer is `useIsAdmitted`.
+
+## The door
+
+The app is for members whose membership includes it, so the root layout renders one
+of two things: the route tree, or `components/gate/LoginGate` in its place. That is a
+render branch on `isAdmitted(state.session, now)`, not a redirect. A redirect leaves
+every route reachable by address, and on the static export every route is an address;
+a branch mounts none of them. The onboarding jump stays a redirect and waits behind
+the door, taken at the moment of admission.
+
+What the door reads is `stores/session`: an account and an `Entitlement` (the tier,
+whether the app is included, why, until when), as the membership system answered it.
+It never reads `membership.amountEur`, because a trial month pays 0 € and has the app,
+and a local-newsletter bundle has the app without being an app membership. Sign-in is
+simulated in `services/auth.service.ts` against a directory of rules the screen
+prints, and that file is the seam to beabee.
+[ADR 0016](adr/0016-a-door-at-the-root-and-an-entitlement-not-an-amount.md).
+
+The web demo's fixtures carry a session for the same reason: `preview.html#/?s=signed-in`
+is a member's first start, `s=no-access` is the door's fourth state, and every fixture
+that shows a screen signs in first.
 
 **Why the directory is `packages/app-core` and not `packages/core`:** the original
 reason was a build trap in the previous host's bundler, which mistook a directory
@@ -121,7 +148,7 @@ plays at a time. `articles/extract/` holds two backends, string and DOM, behind 
 `ArticleExtractor` type.
 
 In the app, `src/app/` is expo-router's route tree, `src/components/ui/` the design
-system, and `src/lib/` the wiring: `platform/` implements the ports, `audio/` wraps
+system, `src/components/gate/` the door, and `src/lib/` the wiring: `platform/` implements the ports, `audio/` wraps
 expo-audio, `feeds/` puts React hooks over the core's feed store, `theme/` re-exports
 the tokens with the palette hook. `src/components/reader/` and
 `src/components/media/` are the two platform splits, each a `.tsx`, a `.web.tsx` and

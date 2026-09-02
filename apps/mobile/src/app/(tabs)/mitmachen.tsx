@@ -89,7 +89,8 @@ export default function MitmachenScreen() {
       </View>
 
       <Typo variant="text-s" color="grey-500" className="mt-l">
-        Clubmitglieder diskutieren Recherchen im Community-Bereich, bald auch in der App.
+        Im Community-Bereich diskutieren Sie Recherchen mit anderen Mitgliedern, bald auch in der
+        App.
       </Typo>
     </Screen>
   );

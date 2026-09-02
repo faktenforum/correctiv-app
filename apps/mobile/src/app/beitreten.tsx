@@ -1,20 +1,13 @@
 import { Ionicons } from '@expo/vector-icons';
 import { router } from 'expo-router';
 import { useState } from 'react';
-import { Pressable, ScrollView, TextInput, View } from 'react-native';
+import { Pressable, ScrollView, View } from 'react-native';
 
 import { Button, Card, Hairline, SafeAreaView, Typo } from '@/components/ui';
 import type { MembershipInterval } from '@correctiv/app-core/stores/membership';
 import { goBack } from '@/lib/navigation/goBack';
 import { useCoreActions } from '@/lib/store/core';
-import { sizes, typography, useColors } from '@/lib/theme';
-
-/** Real figures from the concept — the first step argues, it does not push. */
-const FACTS = [
-  { value: '247', label: 'Recherchen im letzten Jahr, alle frei zugänglich' },
-  { value: '31.000+', label: 'Menschen tragen CORRECTIV bereits' },
-  { value: '0', label: 'Artikel hinter einer Paywall, heute und in Zukunft' },
-];
+import { sizes, useColors } from '@/lib/theme';
 
 /**
  * Contribution levels as presets rather than a slider: React Native no longer ships
@@ -30,14 +23,17 @@ const PERKS = [
 ];
 
 /**
- * The join flow: why → contribution → details → welcome.
+ * Setting the contribution: amount → confirmation.
  *
- * Step 4 is the status change the whole demo is built around: `join()` sets
- * `isMember`, and every club touchpoint in the app reacts in the same tick. Payment
- * and account are simulated, and the screen says so.
+ * It used to open with a case for joining and then ask for a name and an email.
+ * Behind the door (ADR 0016) it is reached from the profile's „Beitrag ändern“ by
+ * somebody who has already paid to be here, so the case has no audience and the
+ * app already knows who they are: `session.account` holds both fields the form
+ * asked for, and it threw the email away. Both steps are gone with ADR 0019.
  *
- * No dark pattern: until the last step, every "Weiter" has an equally weighted
- * "Erstmal umsehen" beside it.
+ * Whether a contribution is set inside the app at all is a product and app-store
+ * question that ADR 0016 named and nobody has answered. Until then this flow is
+ * what it always was: simulated, and it says so on the screen.
  */
 export default function BeitretenScreen() {
   const colors = useColors();
@@ -45,21 +41,17 @@ export default function BeitretenScreen() {
   const [step, setStep] = useState(0);
   const [amount, setAmount] = useState(10);
   const [interval, setInterval] = useState<MembershipInterval>('monatlich');
-  const [name, setName] = useState('');
-  const [email, setEmail] = useState('');
-
-  const dataValid = name.trim().length > 1 && email.includes('@');
   const per = interval === 'monatlich' ? 'im Monat' : 'im Jahr';
 
-  const join = () => {
-    actions.membership.join(amount, interval, name.trim());
-    setStep(3);
+  const save = () => {
+    actions.membership.join(amount, interval);
+    setStep(1);
   };
 
   return (
     <SafeAreaView edges={['top', 'bottom']} className="flex-1 bg-grey-100">
       <View className="flex-row justify-end px-s py-2xs">
-        {step < 3 && (
+        {step < 1 && (
           <Pressable
             accessibilityRole="button"
             accessibilityLabel="Schließen"
@@ -74,7 +66,7 @@ export default function BeitretenScreen() {
       </View>
 
       <View className="flex-row gap-3xs px-m">
-        {[0, 1, 2, 3].map((i) => (
+        {[0, 1].map((i) => (
           <View
             key={i}
             className={['flex-1 rounded-s', i <= step ? 'bg-emphasis' : 'bg-grey-300'].join(' ')}
@@ -91,26 +83,10 @@ export default function BeitretenScreen() {
       >
         {step === 0 && (
           <>
-            <Typo variant="headline-xl">CORRECTIV gehört niemandem. Außer allen.</Typo>
-            <Typo variant="text-l" className="mt-s">
-              Unser Journalismus bleibt frei. Für alle. Ihr Beitrag macht genau das möglich.
-            </Typo>
-            {FACTS.map((fact) => (
-              <View key={fact.value} className="mt-m flex-row items-baseline">
-                <Typo variant="headline-l" color="emphasis" style={{ minWidth: 96 }}>
-                  {fact.value}
-                </Typo>
-                <Typo variant="text-s" color="grey-600" className="flex-1">
-                  {fact.label}
-                </Typo>
-              </View>
-            ))}
-          </>
-        )}
-
-        {step === 1 && (
-          <>
             <Typo variant="headline-xl">Ihr Beitrag</Typo>
+            <Typo variant="text-s" color="grey-500" className="mt-2xs">
+              Es wird nichts übertragen. Die Zahlung ist simuliert.
+            </Typo>
             <View className="mt-m flex-row items-baseline justify-center">
               <Typo variant="headline-xxl">{amount} €</Typo>
               <Typo variant="text-m" color="grey-600" className="ml-2xs">
@@ -180,52 +156,7 @@ export default function BeitretenScreen() {
           </>
         )}
 
-        {step === 2 && (
-          <>
-            <Typo variant="headline-xl">Ihre Daten</Typo>
-            <Typo variant="text-s" color="grey-500" className="mt-2xs">
-              Es wird nichts übertragen. Zahlung und Konto sind simuliert.
-            </Typo>
-
-            <Typo variant="headline-xs" className="mt-m">
-              Name
-            </Typo>
-            <TextInput
-              value={name}
-              onChangeText={setName}
-              placeholder="Vor- und Nachname"
-              placeholderTextColor={colors['grey-500']}
-              accessibilityLabel="Name"
-              autoComplete="name"
-              className="mt-2xs rounded-md border border-grey-300 px-s py-s"
-              style={[typography['text-m'], { color: colors['grey-700'] }]}
-            />
-
-            <Typo variant="headline-xs" className="mt-s">
-              E-Mail
-            </Typo>
-            <TextInput
-              value={email}
-              onChangeText={setEmail}
-              placeholder="name@beispiel.de"
-              placeholderTextColor={colors['grey-500']}
-              accessibilityLabel="E-Mail"
-              keyboardType="email-address"
-              autoCapitalize="none"
-              autoComplete="email"
-              className="mt-2xs rounded-md border border-grey-300 px-s py-s"
-              style={[typography['text-m'], { color: colors['grey-700'] }]}
-            />
-
-            <Card tone="surface" className="mt-m">
-              <Typo variant="text-s" color="grey-600">
-                Zahlungsart: SEPA-Lastschrift (simuliert)
-              </Typo>
-            </Card>
-          </>
-        )}
-
-        {step === 3 && (
+        {step === 1 && (
           <View className="items-center pt-l">
             <View
               className="items-center justify-center rounded-full bg-alternative"
@@ -234,11 +165,10 @@ export default function BeitretenScreen() {
               <Ionicons name="checkmark" size={48} color={colors['grey-700']} />
             </View>
             <Typo variant="headline-xl" className="mt-m text-center">
-              Willkommen im Club.
+              Ihr Beitrag ist gesetzt.
             </Typo>
             <Typo variant="text-m" color="grey-600" className="mt-s text-center">
-              Sie unterstützen CORRECTIV ab jetzt mit {amount} € {per}. Ab sofort lesen Sie
-              Recherchen früher, hören Bonusfolgen und sehen hinter die Kulissen.
+              Sie unterstützen CORRECTIV mit {amount} € {per}. Vielen Dank.
             </Typo>
           </View>
         )}
@@ -247,14 +177,10 @@ export default function BeitretenScreen() {
       <View>
         <Hairline />
         <View className="px-m py-s">
-          {step === 0 && <Button title="Weiter" fullWidth onPress={() => setStep(1)} />}
+          {step === 0 && (
+            <Button title={`Beitrag auf ${amount} € setzen`} fullWidth onPress={save} />
+          )}
           {step === 1 && (
-            <Button title={`Mit ${amount} € unterstützen`} fullWidth onPress={() => setStep(2)} />
-          )}
-          {step === 2 && (
-            <Button title="Jetzt Mitglied werden" fullWidth disabled={!dataValid} onPress={join} />
-          )}
-          {step === 3 && (
             <Button
               title="Ins Backstage"
               fullWidth
@@ -264,9 +190,9 @@ export default function BeitretenScreen() {
               }}
             />
           )}
-          {step < 3 && (
+          {step < 1 && (
             <Button
-              title="Erstmal umsehen"
+              title="Abbrechen"
               variant="outline"
               fullWidth
               className="mt-2xs"
