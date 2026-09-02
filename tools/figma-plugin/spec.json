@@ -79,236 +79,1362 @@
     {
       "name": "Bausteine",
       "mode": "replica",
-      "owned": [
-        "ui/ScreenHeader",
-        "ui/Button, gefüllt",
-        "ui/Button, umrandet",
-        "ui/Badge, Club",
-        "ui/Card",
-        "profile/ClubCard",
-        "profile/NavCard",
-        "profile/SettingRow",
-        "participate/CalloutCard",
-        "participate/ClaimRow",
-        "media/LiveBanner",
-        "media/SeriesTile",
-        "discover/ProjectRow",
-        "discover/SearchEntry",
-        "navigation/TabBar"
-      ],
+      "owned": "*",
       "screens": [
+        {
+          "t": "frame",
+          "name": "ui/Typo, Textstile",
+          "x": 0,
+          "y": 0,
+          "dir": "V",
+          "w": "hug",
+          "gap": 24,
+          "pad": [24, 24, 24, 24],
+          "fill": "@color-grey-100",
+          "children": [
+            {
+              "t": "frame",
+              "name": "text-article",
+              "dir": "V",
+              "w": "hug",
+              "gap": 2,
+              "children": [
+                {
+                  "t": "text",
+                  "font": "sans",
+                  "weight": "regular",
+                  "size": 11,
+                  "leading": 150,
+                  "tracking": 1.43,
+                  "color": "@color-grey-500",
+                  "chars": "text-article"
+                },
+                {
+                  "t": "text",
+                  "style": "text-article/undefined",
+                  "font": "serif",
+                  "size": 15.5,
+                  "leading": 180,
+                  "tracking": 1.29,
+                  "color": "@color-grey-700",
+                  "chars": "Recherchen, die etwas ändern"
+                }
+              ]
+            },
+            {
+              "t": "frame",
+              "name": "text-s",
+              "dir": "V",
+              "w": "hug",
+              "gap": 2,
+              "children": [
+                {
+                  "t": "text",
+                  "font": "sans",
+                  "weight": "regular",
+                  "size": 11,
+                  "leading": 150,
+                  "tracking": 1.43,
+                  "color": "@color-grey-500",
+                  "chars": "text-s"
+                },
+                {
+                  "t": "text",
+                  "style": "text-s/undefined",
+                  "font": "sans",
+                  "size": 14,
+                  "leading": 150,
+                  "tracking": 1.43,
+                  "color": "@color-grey-700",
+                  "chars": "Recherchen, die etwas ändern"
+                }
+              ]
+            },
+            {
+              "t": "frame",
+              "name": "text-m",
+              "dir": "V",
+              "w": "hug",
+              "gap": 2,
+              "children": [
+                {
+                  "t": "text",
+                  "font": "sans",
+                  "weight": "regular",
+                  "size": 11,
+                  "leading": 150,
+                  "tracking": 1.43,
+                  "color": "@color-grey-500",
+                  "chars": "text-m"
+                },
+                {
+                  "t": "text",
+                  "style": "text-m/undefined",
+                  "font": "sans",
+                  "size": 15,
+                  "leading": 150,
+                  "tracking": 0.67,
+                  "color": "@color-grey-700",
+                  "chars": "Recherchen, die etwas ändern"
+                }
+              ]
+            },
+            {
+              "t": "frame",
+              "name": "text-l",
+              "dir": "V",
+              "w": "hug",
+              "gap": 2,
+              "children": [
+                {
+                  "t": "text",
+                  "font": "sans",
+                  "weight": "regular",
+                  "size": 11,
+                  "leading": 150,
+                  "tracking": 1.43,
+                  "color": "@color-grey-500",
+                  "chars": "text-l"
+                },
+                {
+                  "t": "text",
+                  "style": "text-l/undefined",
+                  "font": "sans",
+                  "size": 18.5,
+                  "leading": 145,
+                  "tracking": 0.54,
+                  "color": "@color-grey-700",
+                  "chars": "Recherchen, die etwas ändern"
+                }
+              ]
+            },
+            {
+              "t": "frame",
+              "name": "headline-xs",
+              "dir": "V",
+              "w": "hug",
+              "gap": 2,
+              "children": [
+                {
+                  "t": "text",
+                  "font": "sans",
+                  "weight": "regular",
+                  "size": 11,
+                  "leading": 150,
+                  "tracking": 1.43,
+                  "color": "@color-grey-500",
+                  "chars": "headline-xs"
+                },
+                {
+                  "t": "text",
+                  "style": "headline-xs/undefined",
+                  "font": "sans",
+                  "size": 17,
+                  "leading": 150,
+                  "tracking": 1.18,
+                  "color": "@color-grey-700",
+                  "chars": "Recherchen, die etwas ändern"
+                }
+              ]
+            },
+            {
+              "t": "frame",
+              "name": "headline-s",
+              "dir": "V",
+              "w": "hug",
+              "gap": 2,
+              "children": [
+                {
+                  "t": "text",
+                  "font": "sans",
+                  "weight": "regular",
+                  "size": 11,
+                  "leading": 150,
+                  "tracking": 1.43,
+                  "color": "@color-grey-500",
+                  "chars": "headline-s"
+                },
+                {
+                  "t": "text",
+                  "style": "headline-s/undefined",
+                  "font": "sans",
+                  "size": 17,
+                  "leading": 150,
+                  "tracking": 1.18,
+                  "color": "@color-grey-700",
+                  "chars": "Recherchen, die etwas ändern"
+                }
+              ]
+            },
+            {
+              "t": "frame",
+              "name": "headline-m",
+              "dir": "V",
+              "w": "hug",
+              "gap": 2,
+              "children": [
+                {
+                  "t": "text",
+                  "font": "sans",
+                  "weight": "regular",
+                  "size": 11,
+                  "leading": 150,
+                  "tracking": 1.43,
+                  "color": "@color-grey-500",
+                  "chars": "headline-m"
+                },
+                {
+                  "t": "text",
+                  "style": "headline-m/undefined",
+                  "font": "sans",
+                  "size": 19,
+                  "leading": 130,
+                  "tracking": 0,
+                  "color": "@color-grey-700",
+                  "chars": "Recherchen, die etwas ändern"
+                }
+              ]
+            },
+            {
+              "t": "frame",
+              "name": "headline-l",
+              "dir": "V",
+              "w": "hug",
+              "gap": 2,
+              "children": [
+                {
+                  "t": "text",
+                  "font": "sans",
+                  "weight": "regular",
+                  "size": 11,
+                  "leading": 150,
+                  "tracking": 1.43,
+                  "color": "@color-grey-500",
+                  "chars": "headline-l"
+                },
+                {
+                  "t": "text",
+                  "style": "headline-l/undefined",
+                  "font": "sans",
+                  "size": 23,
+                  "leading": 120,
+                  "tracking": -0.43,
+                  "color": "@color-grey-700",
+                  "chars": "Recherchen, die etwas ändern"
+                }
+              ]
+            },
+            {
+              "t": "frame",
+              "name": "headline-xl",
+              "dir": "V",
+              "w": "hug",
+              "gap": 2,
+              "children": [
+                {
+                  "t": "text",
+                  "font": "sans",
+                  "weight": "regular",
+                  "size": 11,
+                  "leading": 150,
+                  "tracking": 1.43,
+                  "color": "@color-grey-500",
+                  "chars": "headline-xl"
+                },
+                {
+                  "t": "text",
+                  "style": "headline-xl/undefined",
+                  "font": "sans",
+                  "size": 28,
+                  "leading": 120,
+                  "tracking": -0.71,
+                  "color": "@color-grey-700",
+                  "chars": "Recherchen, die etwas ändern"
+                }
+              ]
+            },
+            {
+              "t": "frame",
+              "name": "headline-xxl",
+              "dir": "V",
+              "w": "hug",
+              "gap": 2,
+              "children": [
+                {
+                  "t": "text",
+                  "font": "sans",
+                  "weight": "regular",
+                  "size": 11,
+                  "leading": 150,
+                  "tracking": 1.43,
+                  "color": "@color-grey-500",
+                  "chars": "headline-xxl"
+                },
+                {
+                  "t": "text",
+                  "style": "headline-xxl/undefined",
+                  "font": "sans",
+                  "size": 32,
+                  "leading": 120,
+                  "tracking": -0.62,
+                  "color": "@color-grey-700",
+                  "chars": "Recherchen, die etwas ändern"
+                }
+              ]
+            },
+            {
+              "t": "frame",
+              "name": "button",
+              "dir": "V",
+              "w": "hug",
+              "gap": 2,
+              "children": [
+                {
+                  "t": "text",
+                  "font": "sans",
+                  "weight": "regular",
+                  "size": 11,
+                  "leading": 150,
+                  "tracking": 1.43,
+                  "color": "@color-grey-500",
+                  "chars": "button"
+                },
+                {
+                  "t": "text",
+                  "style": "button/undefined",
+                  "font": "sans",
+                  "size": 16,
+                  "leading": 150,
+                  "tracking": 1.25,
+                  "color": "@color-grey-700",
+                  "chars": "Recherchen, die etwas ändern"
+                }
+              ]
+            },
+            {
+              "t": "frame",
+              "name": "text-m/bold",
+              "dir": "V",
+              "w": "hug",
+              "gap": 2,
+              "children": [
+                {
+                  "t": "text",
+                  "font": "sans",
+                  "weight": "regular",
+                  "size": 11,
+                  "leading": 150,
+                  "tracking": 1.43,
+                  "color": "@color-grey-500",
+                  "chars": "text-m/bold"
+                },
+                {
+                  "t": "text",
+                  "style": "text-m/bold",
+                  "font": "sans",
+                  "weight": "bold",
+                  "size": 15,
+                  "leading": 150,
+                  "tracking": 0.67,
+                  "color": "@color-grey-700",
+                  "chars": "Recherchen, die etwas ändern"
+                }
+              ]
+            },
+            {
+              "t": "frame",
+              "name": "text-m/semibold",
+              "dir": "V",
+              "w": "hug",
+              "gap": 2,
+              "children": [
+                {
+                  "t": "text",
+                  "font": "sans",
+                  "weight": "regular",
+                  "size": 11,
+                  "leading": 150,
+                  "tracking": 1.43,
+                  "color": "@color-grey-500",
+                  "chars": "text-m/semibold"
+                },
+                {
+                  "t": "text",
+                  "style": "text-m/semibold",
+                  "font": "sans",
+                  "weight": "semibold",
+                  "size": 15,
+                  "leading": 150,
+                  "tracking": 0.67,
+                  "color": "@color-grey-700",
+                  "chars": "Recherchen, die etwas ändern"
+                }
+              ]
+            },
+            {
+              "t": "frame",
+              "name": "text-s/bold",
+              "dir": "V",
+              "w": "hug",
+              "gap": 2,
+              "children": [
+                {
+                  "t": "text",
+                  "font": "sans",
+                  "weight": "regular",
+                  "size": 11,
+                  "leading": 150,
+                  "tracking": 1.43,
+                  "color": "@color-grey-500",
+                  "chars": "text-s/bold"
+                },
+                {
+                  "t": "text",
+                  "style": "text-s/bold",
+                  "font": "sans",
+                  "weight": "bold",
+                  "size": 14,
+                  "leading": 150,
+                  "tracking": 1.43,
+                  "color": "@color-grey-700",
+                  "chars": "Recherchen, die etwas ändern"
+                }
+              ]
+            },
+            {
+              "t": "frame",
+              "name": "text-s/semibold",
+              "dir": "V",
+              "w": "hug",
+              "gap": 2,
+              "children": [
+                {
+                  "t": "text",
+                  "font": "sans",
+                  "weight": "regular",
+                  "size": 11,
+                  "leading": 150,
+                  "tracking": 1.43,
+                  "color": "@color-grey-500",
+                  "chars": "text-s/semibold"
+                },
+                {
+                  "t": "text",
+                  "style": "text-s/semibold",
+                  "font": "sans",
+                  "weight": "semibold",
+                  "size": 14,
+                  "leading": 150,
+                  "tracking": 1.43,
+                  "color": "@color-grey-700",
+                  "chars": "Recherchen, die etwas ändern"
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "t": "variants",
+          "name": "ui/Button",
+          "x": 460,
+          "y": 0,
+          "prop": "Variante",
+          "props": {
+            "Titel": {
+              "type": "TEXT",
+              "default": "Beitrag festlegen"
+            }
+          },
+          "options": [
+            {
+              "value": "primary",
+              "dir": "H",
+              "w": "hug",
+              "align": "CENTER",
+              "cross": "CENTER",
+              "pad": [24, 24, 12, 12],
+              "radius": 5,
+              "fill": "@color-emphasis",
+              "children": [
+                {
+                  "t": "text",
+                  "style": "button",
+                  "font": "sans",
+                  "weight": "bold",
+                  "size": 16,
+                  "leading": 150,
+                  "tracking": 1.25,
+                  "color": "@color-always-light",
+                  "chars": "Beitrag festlegen",
+                  "bind": "Titel"
+                }
+              ]
+            },
+            {
+              "value": "secondary",
+              "dir": "H",
+              "w": "hug",
+              "align": "CENTER",
+              "cross": "CENTER",
+              "pad": [24, 24, 12, 12],
+              "radius": 5,
+              "fill": "@color-grey-200",
+              "children": [
+                {
+                  "t": "text",
+                  "style": "button",
+                  "font": "sans",
+                  "weight": "bold",
+                  "size": 16,
+                  "leading": 150,
+                  "tracking": 1.25,
+                  "color": "@color-grey-700",
+                  "chars": "Beitrag festlegen",
+                  "bind": "Titel"
+                }
+              ]
+            },
+            {
+              "value": "outline",
+              "dir": "H",
+              "w": "hug",
+              "align": "CENTER",
+              "cross": "CENTER",
+              "pad": [24, 24, 12, 12],
+              "radius": 5,
+              "fill": "@color-grey-100",
+              "children": [
+                {
+                  "t": "text",
+                  "style": "button",
+                  "font": "sans",
+                  "weight": "bold",
+                  "size": 16,
+                  "leading": 150,
+                  "tracking": 1.25,
+                  "color": "@color-grey-700",
+                  "chars": "Beitrag festlegen",
+                  "bind": "Titel"
+                }
+              ],
+              "stroke": "@color-grey-300"
+            },
+            {
+              "value": "club",
+              "dir": "H",
+              "w": "hug",
+              "align": "CENTER",
+              "cross": "CENTER",
+              "pad": [24, 24, 12, 12],
+              "radius": 5,
+              "fill": "@color-alternative",
+              "children": [
+                {
+                  "t": "text",
+                  "style": "button",
+                  "font": "sans",
+                  "weight": "bold",
+                  "size": 16,
+                  "leading": 150,
+                  "tracking": 1.25,
+                  "color": "@color-always-dark",
+                  "chars": "Beitrag festlegen",
+                  "bind": "Titel"
+                }
+              ]
+            },
+            {
+              "value": "onEmphasis",
+              "dir": "H",
+              "w": "hug",
+              "align": "CENTER",
+              "cross": "CENTER",
+              "pad": [24, 24, 12, 12],
+              "radius": 5,
+              "fill": "@color-always-light",
+              "children": [
+                {
+                  "t": "text",
+                  "style": "button",
+                  "font": "sans",
+                  "weight": "bold",
+                  "size": 16,
+                  "leading": 150,
+                  "tracking": 1.25,
+                  "color": "@color-always-dark",
+                  "chars": "Beitrag festlegen",
+                  "bind": "Titel"
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "t": "variants",
+          "name": "ui/Badge",
+          "x": 460,
+          "y": 570,
+          "prop": "Ton",
+          "props": {
+            "Label": {
+              "type": "TEXT",
+              "default": "CLUB"
+            }
+          },
+          "options": [
+            {
+              "value": "emphasis",
+              "dir": "H",
+              "w": "hug",
+              "cross": "CENTER",
+              "gap": 4,
+              "pad": [6, 6, 2, 2],
+              "radius": 2,
+              "children": [
+                {
+                  "t": "text",
+                  "font": "sans",
+                  "weight": "bold",
+                  "size": 11,
+                  "leading": 150,
+                  "tracking": 3.64,
+                  "color": "@color-always-light",
+                  "chars": "CLUB",
+                  "bind": "Label"
+                }
+              ],
+              "fill": "@color-emphasis"
+            },
+            {
+              "value": "club",
+              "dir": "H",
+              "w": "hug",
+              "cross": "CENTER",
+              "gap": 4,
+              "pad": [6, 6, 2, 2],
+              "radius": 2,
+              "children": [
+                {
+                  "t": "text",
+                  "font": "sans",
+                  "weight": "bold",
+                  "size": 11,
+                  "leading": 150,
+                  "tracking": 3.64,
+                  "color": "@color-always-dark",
+                  "chars": "CLUB",
+                  "bind": "Label"
+                }
+              ],
+              "fill": "@color-alternative"
+            },
+            {
+              "value": "neutral",
+              "dir": "H",
+              "w": "hug",
+              "cross": "CENTER",
+              "gap": 4,
+              "pad": [6, 6, 2, 2],
+              "radius": 2,
+              "children": [
+                {
+                  "t": "text",
+                  "font": "sans",
+                  "weight": "bold",
+                  "size": 11,
+                  "leading": 150,
+                  "tracking": 3.64,
+                  "color": "@color-grey-600",
+                  "chars": "CLUB",
+                  "bind": "Label"
+                }
+              ],
+              "fill": "@color-grey-250"
+            },
+            {
+              "value": "live",
+              "dir": "H",
+              "w": "hug",
+              "cross": "CENTER",
+              "gap": 4,
+              "pad": [6, 6, 2, 2],
+              "radius": 2,
+              "children": [
+                {
+                  "t": "ellipse",
+                  "w": 7,
+                  "h": 7,
+                  "fill": "@color-emphasis"
+                },
+                {
+                  "t": "text",
+                  "font": "sans",
+                  "weight": "bold",
+                  "size": 11,
+                  "leading": 150,
+                  "tracking": 3.64,
+                  "color": "@color-emphasis",
+                  "chars": "CLUB",
+                  "bind": "Label"
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "t": "variants",
+          "name": "ui/Chip",
+          "x": 460,
+          "y": 1050,
+          "prop": "Gewählt",
+          "props": {
+            "Label": {
+              "type": "TEXT",
+              "default": "Klima"
+            }
+          },
+          "options": [
+            {
+              "value": "ja",
+              "dir": "H",
+              "w": "hug",
+              "cross": "CENTER",
+              "pad": [12, 12, 6, 6],
+              "radius": 5,
+              "fill": "@color-emphasis",
+              "children": [
+                {
+                  "t": "text",
+                  "style": "text-s/semibold",
+                  "font": "sans",
+                  "weight": "semibold",
+                  "size": 14,
+                  "leading": 150,
+                  "tracking": 1.43,
+                  "color": "@color-always-light",
+                  "chars": "Klima",
+                  "bind": "Label"
+                }
+              ]
+            },
+            {
+              "value": "nein",
+              "dir": "H",
+              "w": "hug",
+              "cross": "CENTER",
+              "pad": [12, 12, 6, 6],
+              "radius": 5,
+              "fill": "@color-grey-200",
+              "children": [
+                {
+                  "t": "text",
+                  "style": "text-s/semibold",
+                  "font": "sans",
+                  "weight": "semibold",
+                  "size": 14,
+                  "leading": 150,
+                  "tracking": 1.43,
+                  "color": "@color-grey-700",
+                  "chars": "Klima",
+                  "bind": "Label"
+                }
+              ],
+              "stroke": "@color-grey-300"
+            }
+          ]
+        },
+        {
+          "t": "variants",
+          "name": "ui/Card",
+          "x": 460,
+          "y": 1350,
+          "prop": "Ton",
+          "props": {},
+          "options": [
+            {
+              "value": "surface",
+              "dir": "V",
+              "w": 280,
+              "pad": [16, 16, 16, 16],
+              "radius": 5,
+              "fill": "@color-grey-200",
+              "children": [
+                {
+                  "t": "frame",
+                  "name": "Inhalt",
+                  "dir": "V",
+                  "w": "fill",
+                  "h": 56,
+                  "cross": "CENTER",
+                  "align": "CENTER",
+                  "stroke": "@color-grey-400",
+                  "dash": [4, 4],
+                  "children": [
+                    {
+                      "t": "text",
+                      "style": "text-s",
+                      "font": "sans",
+                      "weight": "regular",
+                      "size": 14,
+                      "leading": 150,
+                      "tracking": 1.43,
+                      "color": "@color-grey-500",
+                      "chars": "Inhalt"
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "value": "outline",
+              "dir": "V",
+              "w": 280,
+              "pad": [16, 16, 16, 16],
+              "radius": 5,
+              "fill": "@color-grey-100",
+              "children": [
+                {
+                  "t": "frame",
+                  "name": "Inhalt",
+                  "dir": "V",
+                  "w": "fill",
+                  "h": 56,
+                  "cross": "CENTER",
+                  "align": "CENTER",
+                  "stroke": "@color-grey-400",
+                  "dash": [4, 4],
+                  "children": [
+                    {
+                      "t": "text",
+                      "style": "text-s",
+                      "font": "sans",
+                      "weight": "regular",
+                      "size": 14,
+                      "leading": 150,
+                      "tracking": 1.43,
+                      "color": "@color-grey-500",
+                      "chars": "Inhalt"
+                    }
+                  ]
+                }
+              ],
+              "stroke": "@color-grey-300"
+            }
+          ]
+        },
+        {
+          "t": "component",
+          "name": "ui/Overline",
+          "x": 460,
+          "y": 1650,
+          "props": {
+            "Label": {
+              "type": "TEXT",
+              "default": "IHRE MITGLIEDSCHAFT"
+            }
+          },
+          "dir": "V",
+          "w": "hug",
+          "fill": "@color-grey-100",
+          "children": [
+            {
+              "t": "text",
+              "font": "sans",
+              "weight": "bold",
+              "size": 12,
+              "leading": 150,
+              "tracking": 10,
+              "color": "@color-grey-600",
+              "chars": "IHRE MITGLIEDSCHAFT",
+              "bind": "Label"
+            }
+          ]
+        },
+        {
+          "t": "component",
+          "name": "ui/Hairline",
+          "x": 460,
+          "y": 1860,
+          "props": {},
+          "dir": "V",
+          "w": 280,
+          "fill": "@color-grey-100",
+          "children": [
+            {
+              "t": "line",
+              "color": "@color-grey-300"
+            }
+          ]
+        },
+        {
+          "t": "component",
+          "name": "ui/SectionHeader",
+          "x": 460,
+          "y": 2070,
+          "props": {
+            "Titel": {
+              "type": "TEXT",
+              "default": "Aus dem Backstage"
+            },
+            "Aktion": {
+              "type": "TEXT",
+              "default": "Alles ansehen"
+            },
+            "Aktion zeigen": {
+              "type": "BOOLEAN",
+              "default": true
+            }
+          },
+          "dir": "H",
+          "w": 320,
+          "cross": "MAX",
+          "align": "SPACE_BETWEEN",
+          "fill": "@color-grey-100",
+          "children": [
+            {
+              "t": "text",
+              "style": "headline-m",
+              "font": "sans",
+              "weight": "bold",
+              "size": 19,
+              "leading": 130,
+              "tracking": 0,
+              "color": "@color-grey-700",
+              "chars": "Aus dem Backstage",
+              "bind": "Titel"
+            },
+            {
+              "t": "frame",
+              "name": "Aktion",
+              "dir": "H",
+              "w": "hug",
+              "bind": "Aktion zeigen",
+              "children": [
+                {
+                  "t": "text",
+                  "style": "text-s",
+                  "font": "sans",
+                  "weight": "regular",
+                  "size": 14,
+                  "leading": 150,
+                  "tracking": 1.43,
+                  "color": "@color-emphasis",
+                  "chars": "Alles ansehen",
+                  "bind": "Aktion"
+                }
+              ]
+            }
+          ]
+        },
         {
           "t": "component",
           "name": "ui/ScreenHeader",
-          "x": 0,
-          "y": 0,
+          "x": 460,
+          "y": 2280,
+          "props": {
+            "Zurück": {
+              "type": "TEXT",
+              "default": "Zurück"
+            }
+          },
           "dir": "V",
-          "w": "hug",
-          "pad": [16, 16, 16, 16],
+          "w": 320,
           "fill": "@color-grey-100",
           "children": [
             {
               "t": "frame",
-              "name": "Inhalt",
               "dir": "H",
-              "gap": 6,
-              "pad": [16, 16, 14, 14],
+              "w": "fill",
               "cross": "CENTER",
-              "clip": true,
-              "w": 320,
+              "gap": 4,
+              "pad": [16, 16, 12, 12],
               "children": [
                 {
                   "t": "text",
-                  "chars": "‹",
+                  "font": "sans",
+                  "weight": "regular",
+                  "size": 20,
+                  "leading": 150,
+                  "tracking": 0.67,
+                  "color": "@color-grey-700",
+                  "chars": "‹"
+                },
+                {
+                  "t": "text",
+                  "style": "text-m",
+                  "font": "sans",
+                  "weight": "regular",
                   "size": 15,
-                  "color": "@color-grey-700"
-                },
-                {
-                  "t": "text",
+                  "leading": 150,
+                  "tracking": 0.67,
+                  "color": "@color-grey-700",
                   "chars": "Zurück",
-                  "size": 13,
-                  "color": "@color-grey-700"
+                  "bind": "Zurück"
                 }
               ]
+            },
+            {
+              "t": "line",
+              "color": "@color-grey-300"
             }
           ]
         },
         {
           "t": "component",
-          "name": "ui/Button, gefüllt",
-          "x": 380,
+          "name": "profile/NavCard",
+          "x": 920,
           "y": 0,
-          "dir": "V",
-          "w": "hug",
-          "pad": [16, 16, 16, 16],
-          "fill": "@color-grey-100",
-          "children": [
-            {
-              "t": "frame",
-              "name": "Inhalt",
-              "dir": "H",
-              "w": 320,
-              "h": 48,
-              "fill": "@color-emphasis",
-              "radius": 5,
-              "align": "CENTER",
-              "cross": "CENTER",
-              "children": [
-                {
-                  "t": "text",
-                  "chars": "Mitgliedschaft erweitern",
-                  "size": 14,
-                  "color": "@color-grey-100",
-                  "weight": "semibold"
-                }
-              ]
+          "props": {
+            "Titel": {
+              "type": "TEXT",
+              "default": "Backstage"
+            },
+            "Untertitel": {
+              "type": "TEXT",
+              "default": "Was gerade in der Redaktion passiert"
+            },
+            "Club": {
+              "type": "BOOLEAN",
+              "default": true
             }
-          ]
-        },
-        {
-          "t": "component",
-          "name": "ui/Button, umrandet",
-          "x": 760,
-          "y": 0,
-          "dir": "V",
-          "w": "hug",
-          "pad": [16, 16, 16, 16],
+          },
+          "dir": "H",
+          "w": 320,
+          "cross": "CENTER",
+          "pad": [0, 0, 12, 12],
+          "stroke": "@color-grey-300",
+          "strokeSides": "bottom",
           "fill": "@color-grey-100",
           "children": [
             {
-              "t": "frame",
-              "name": "Inhalt",
-              "dir": "H",
-              "w": 320,
-              "h": 48,
-              "fill": "@color-grey-100",
-              "radius": 5,
-              "stroke": "@color-grey-300",
-              "align": "CENTER",
-              "cross": "CENTER",
-              "children": [
-                {
-                  "t": "text",
-                  "chars": "Erneut prüfen",
-                  "size": 14,
-                  "color": "@color-grey-700",
-                  "weight": "semibold"
-                }
-              ]
-            }
-          ]
-        },
-        {
-          "t": "component",
-          "name": "ui/Badge, Club",
-          "x": 1140,
-          "y": 0,
-          "dir": "V",
-          "w": "hug",
-          "pad": [16, 16, 16, 16],
-          "fill": "@color-grey-100",
-          "children": [
+              "t": "text",
+              "font": "sans",
+              "weight": "regular",
+              "size": 20,
+              "leading": 150,
+              "tracking": 0.67,
+              "color": "@color-grey-600",
+              "chars": "◎"
+            },
             {
               "t": "frame",
-              "name": "Inhalt",
-              "dir": "H",
-              "pad": [8, 8, 4, 4],
-              "fill": "@color-alternative",
-              "radius": 3,
-              "clip": true,
-              "children": [
-                {
-                  "t": "text",
-                  "chars": "CLUB",
-                  "size": 9,
-                  "color": "@color-grey-700",
-                  "weight": "semibold"
-                }
-              ]
-            }
-          ]
-        },
-        {
-          "t": "component",
-          "name": "ui/Card",
-          "x": 0,
-          "y": 220,
-          "dir": "V",
-          "w": "hug",
-          "pad": [16, 16, 16, 16],
-          "fill": "@color-grey-100",
-          "children": [
-            {
-              "t": "frame",
-              "name": "Inhalt",
               "dir": "V",
-              "w": 320,
-              "fill": "@color-grey-100",
-              "stroke": "@color-grey-300",
-              "radius": 6,
-              "pad": [16, 16, 4, 4],
+              "w": "fill",
+              "gap": 2,
+              "pad": [12, 0, 0, 0],
               "children": [
                 {
                   "t": "frame",
-                  "name": "Zeile, Ihre Stufe",
                   "dir": "H",
-                  "w": "fill",
+                  "w": "hug",
                   "cross": "CENTER",
-                  "pad": [0, 0, 14, 14],
+                  "gap": 6,
                   "children": [
                     {
                       "t": "text",
-                      "chars": "Ihre Stufe",
-                      "size": 13,
-                      "color": "@color-grey-600"
-                    },
-                    {
-                      "t": "frame",
-                      "name": "Dehnung",
-                      "dir": "H",
-                      "w": "fill"
-                    },
-                    {
-                      "t": "text",
-                      "chars": "Kostenlose Mitgliedschaft",
-                      "size": 13,
+                      "style": "text-m/bold",
+                      "font": "sans",
+                      "weight": "bold",
+                      "size": 15,
+                      "leading": 150,
+                      "tracking": 0.67,
                       "color": "@color-grey-700",
-                      "weight": "semibold"
+                      "chars": "Backstage",
+                      "bind": "Titel"
+                    },
+                    {
+                      "t": "instance",
+                      "of": "ui/Badge",
+                      "set": {
+                        "Ton": "club",
+                        "Label": "CLUB"
+                      },
+                      "bind": "Club"
                     }
                   ]
                 },
                 {
-                  "t": "line",
-                  "w": "fill"
+                  "t": "text",
+                  "style": "text-s",
+                  "font": "sans",
+                  "weight": "regular",
+                  "size": 14,
+                  "leading": 150,
+                  "tracking": 1.43,
+                  "color": "@color-grey-600",
+                  "chars": "Was gerade in der Redaktion passiert",
+                  "bind": "Untertitel"
+                }
+              ]
+            },
+            {
+              "t": "text",
+              "font": "sans",
+              "weight": "regular",
+              "size": 16,
+              "leading": 150,
+              "tracking": 0.67,
+              "color": "@color-grey-500",
+              "chars": "›"
+            }
+          ]
+        },
+        {
+          "t": "component",
+          "name": "profile/SettingRow",
+          "x": 920,
+          "y": 210,
+          "props": {
+            "Label": {
+              "type": "TEXT",
+              "default": "Push-Mitteilungen"
+            },
+            "Beschreibung": {
+              "type": "TEXT",
+              "default": "Neue Recherchen und Mitmach-Aufrufe"
+            },
+            "Beschreibung zeigen": {
+              "type": "BOOLEAN",
+              "default": true
+            },
+            "An": {
+              "type": "BOOLEAN",
+              "default": true
+            }
+          },
+          "dir": "H",
+          "w": 320,
+          "cross": "CENTER",
+          "gap": 12,
+          "pad": [0, 0, 6, 6],
+          "fill": "@color-grey-100",
+          "children": [
+            {
+              "t": "frame",
+              "dir": "V",
+              "w": "fill",
+              "gap": 2,
+              "children": [
+                {
+                  "t": "text",
+                  "style": "text-m",
+                  "font": "sans",
+                  "weight": "regular",
+                  "size": 15,
+                  "leading": 150,
+                  "tracking": 0.67,
+                  "color": "@color-grey-700",
+                  "chars": "Push-Mitteilungen",
+                  "bind": "Label"
                 },
                 {
                   "t": "frame",
-                  "name": "Zeile, App-Zugang",
-                  "dir": "H",
+                  "dir": "V",
                   "w": "fill",
-                  "cross": "CENTER",
-                  "pad": [0, 0, 14, 14],
+                  "bind": "Beschreibung zeigen",
                   "children": [
                     {
                       "t": "text",
-                      "chars": "App-Zugang",
-                      "size": 13,
-                      "color": "@color-grey-600"
-                    },
-                    {
-                      "t": "frame",
-                      "name": "Dehnung",
-                      "dir": "H",
-                      "w": "fill"
-                    },
-                    {
-                      "t": "text",
-                      "chars": "Nicht enthalten",
-                      "size": 13,
-                      "color": "@color-grey-700",
-                      "weight": "semibold"
+                      "style": "text-s",
+                      "font": "sans",
+                      "weight": "regular",
+                      "size": 14,
+                      "leading": 150,
+                      "tracking": 1.43,
+                      "color": "@color-grey-600",
+                      "chars": "Neue Recherchen und Mitmach-Aufrufe",
+                      "bind": "Beschreibung"
                     }
                   ]
+                }
+              ]
+            },
+            {
+              "t": "frame",
+              "name": "Schalter, an",
+              "dir": "H",
+              "w": 44,
+              "h": 26,
+              "cross": "CENTER",
+              "align": "MAX",
+              "pad": [3, 3, 3, 3],
+              "radius": 13,
+              "fill": "@color-emphasis",
+              "bind": "An",
+              "children": [
+                {
+                  "t": "ellipse",
+                  "w": 20,
+                  "h": 20,
+                  "fill": "@color-always-light"
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "t": "component",
+          "name": "discover/ProjectRow",
+          "x": 920,
+          "y": 420,
+          "props": {
+            "Name": {
+              "type": "TEXT",
+              "default": "CrimeTech"
+            },
+            "Teaser": {
+              "type": "TEXT",
+              "default": "Wie Polizeibehörden mit Technik gegen Kriminalität vorgehen"
+            }
+          },
+          "dir": "H",
+          "w": 320,
+          "cross": "CENTER",
+          "pad": [0, 0, 12, 12],
+          "stroke": "@color-grey-300",
+          "strokeSides": "bottom",
+          "fill": "@color-grey-100",
+          "children": [
+            {
+              "t": "frame",
+              "dir": "V",
+              "w": "fill",
+              "gap": 2,
+              "pad": [0, 12, 0, 0],
+              "children": [
+                {
+                  "t": "text",
+                  "style": "text-m/bold",
+                  "font": "sans",
+                  "weight": "bold",
+                  "size": 15,
+                  "leading": 150,
+                  "tracking": 0.67,
+                  "color": "@color-grey-700",
+                  "chars": "CrimeTech",
+                  "bind": "Name"
+                },
+                {
+                  "t": "text",
+                  "style": "text-s",
+                  "font": "sans",
+                  "weight": "regular",
+                  "size": 14,
+                  "leading": 150,
+                  "tracking": 1.43,
+                  "color": "@color-grey-600",
+                  "chars": "Wie Polizeibehörden mit Technik gegen Kriminalität vorgehen",
+                  "w": 230,
+                  "bind": "Teaser"
+                }
+              ]
+            },
+            {
+              "t": "text",
+              "font": "sans",
+              "weight": "regular",
+              "size": 16,
+              "leading": 150,
+              "tracking": 0.67,
+              "color": "@color-grey-500",
+              "chars": "›"
+            }
+          ]
+        },
+        {
+          "t": "variants",
+          "name": "participate/ClaimStatusTag",
+          "x": 920,
+          "y": 630,
+          "prop": "Status",
+          "props": {
+            "Label": {
+              "type": "TEXT"
+            }
+          },
+          "options": [
+            {
+              "value": "richtig",
+              "dir": "H",
+              "w": "hug",
+              "pad": [6, 6, 2, 2],
+              "radius": 1,
+              "fill": "#2e7d4f",
+              "children": [
+                {
+                  "t": "text",
+                  "font": "sans",
+                  "weight": "bold",
+                  "size": 11,
+                  "leading": 150,
+                  "tracking": 1.43,
+                  "color": "@color-always-light",
+                  "chars": "RICHTIG",
+                  "bind": "Label"
+                }
+              ]
+            },
+            {
+              "value": "falsch",
+              "dir": "H",
+              "w": "hug",
+              "pad": [6, 6, 2, 2],
+              "radius": 1,
+              "fill": "@color-emphasis",
+              "children": [
+                {
+                  "t": "text",
+                  "font": "sans",
+                  "weight": "bold",
+                  "size": 11,
+                  "leading": 150,
+                  "tracking": 1.43,
+                  "color": "@color-always-light",
+                  "chars": "FALSCH",
+                  "bind": "Label"
+                }
+              ]
+            },
+            {
+              "value": "inArbeit",
+              "dir": "H",
+              "w": "hug",
+              "pad": [6, 6, 2, 2],
+              "radius": 1,
+              "fill": "@color-grey-100",
+              "children": [
+                {
+                  "t": "text",
+                  "font": "sans",
+                  "weight": "bold",
+                  "size": 11,
+                  "leading": 150,
+                  "tracking": 1.43,
+                  "color": "@color-grey-700",
+                  "chars": "IN ARBEIT",
+                  "bind": "Label"
+                }
+              ],
+              "stroke": "@color-grey-400"
+            },
+            {
+              "value": "offen",
+              "dir": "H",
+              "w": "hug",
+              "pad": [6, 6, 2, 2],
+              "radius": 1,
+              "fill": "@color-grey-250",
+              "children": [
+                {
+                  "t": "text",
+                  "font": "sans",
+                  "weight": "bold",
+                  "size": 11,
+                  "leading": 150,
+                  "tracking": 1.43,
+                  "color": "@color-grey-600",
+                  "chars": "OFFEN",
+                  "bind": "Label"
                 }
               ]
             }
@@ -317,733 +1443,74 @@
         {
           "t": "component",
           "name": "profile/ClubCard",
-          "x": 380,
-          "y": 220,
-          "dir": "V",
-          "w": "hug",
-          "pad": [16, 16, 16, 16],
-          "fill": "@color-grey-100",
-          "children": [
-            {
-              "t": "frame",
-              "name": "Inhalt",
-              "dir": "V",
-              "w": 320,
-              "fill": "@color-alternative",
-              "radius": 6,
-              "pad": [20, 20, 20, 20],
-              "children": [
-                {
-                  "t": "frame",
-                  "name": "Kopf",
-                  "dir": "H",
-                  "w": "fill",
-                  "cross": "CENTER",
-                  "children": [
-                    {
-                      "t": "text",
-                      "chars": "CORRECTIV CLUB",
-                      "size": 10,
-                      "color": "@color-grey-700",
-                      "weight": "semibold",
-                      "tracking": 8
-                    },
-                    {
-                      "t": "frame",
-                      "name": "Dehnung",
-                      "dir": "H",
-                      "w": "fill"
-                    },
-                    {
-                      "t": "text",
-                      "chars": "♡",
-                      "size": 14,
-                      "color": "@color-grey-700"
-                    }
-                  ]
-                },
-                {
-                  "t": "space",
-                  "h": 16,
-                  "w": "fill"
-                },
-                {
-                  "t": "text",
-                  "chars": "Alex Beispiel",
-                  "size": 20,
-                  "color": "@color-grey-700",
-                  "weight": "semibold",
-                  "w": 280
-                },
-                {
-                  "t": "space",
-                  "h": 4,
-                  "w": "fill"
-                },
-                {
-                  "t": "text",
-                  "chars": "Mitgliedschaft mit Beitrag",
-                  "size": 13,
-                  "color": "#5a4f14",
-                  "w": 280
-                }
-              ]
+          "x": 920,
+          "y": 1110,
+          "props": {
+            "Name": {
+              "type": "TEXT",
+              "default": "Pascal Garber"
+            },
+            "Stufe": {
+              "type": "TEXT",
+              "default": "Fördermitglied"
+            },
+            "Seit": {
+              "type": "TEXT",
+              "default": "Mitglied seit 12.03.2024"
             }
-          ]
-        },
-        {
-          "t": "component",
-          "name": "profile/NavCard",
-          "x": 760,
-          "y": 220,
+          },
           "dir": "V",
-          "w": "hug",
+          "w": 320,
+          "gap": 4,
           "pad": [16, 16, 16, 16],
-          "fill": "@color-grey-100",
+          "radius": 5,
+          "fill": "@color-alternative",
           "children": [
             {
-              "t": "frame",
-              "name": "Inhalt",
-              "dir": "H",
-              "w": 320,
-              "gap": 12,
-              "cross": "CENTER",
-              "children": [
-                {
-                  "t": "frame",
-                  "name": "Symbol",
-                  "dir": "H",
-                  "w": 20,
-                  "h": 20,
-                  "fill": "@color-grey-200",
-                  "radius": 3
-                },
-                {
-                  "t": "frame",
-                  "name": "Text",
-                  "dir": "V",
-                  "w": "fill",
-                  "gap": 3,
-                  "children": [
-                    {
-                      "t": "frame",
-                      "name": "Titel",
-                      "dir": "H",
-                      "gap": 8,
-                      "cross": "CENTER",
-                      "children": [
-                        {
-                          "t": "text",
-                          "chars": "Quartalsbericht 1/2026",
-                          "size": 13,
-                          "color": "@color-grey-700",
-                          "weight": "semibold"
-                        },
-                        {
-                          "t": "frame",
-                          "name": "Badge, CLUB",
-                          "dir": "H",
-                          "fill": "@color-alternative",
-                          "radius": 2,
-                          "pad": [6, 6, 3, 3],
-                          "children": [
-                            {
-                              "t": "text",
-                              "chars": "CLUB",
-                              "size": 9,
-                              "color": "@color-grey-700",
-                              "weight": "semibold",
-                              "tracking": 6
-                            }
-                          ]
-                        }
-                      ]
-                    },
-                    {
-                      "t": "text",
-                      "chars": "Wohin Ihr Beitrag fließt, transparent aufgeschlüsselt.",
-                      "size": 11,
-                      "color": "@color-grey-600",
-                      "w": 250
-                    }
-                  ]
-                },
-                {
-                  "t": "text",
-                  "chars": "›",
-                  "size": 13,
-                  "color": "@color-grey-600"
-                }
-              ]
-            }
-          ]
-        },
-        {
-          "t": "component",
-          "name": "profile/SettingRow",
-          "x": 1140,
-          "y": 220,
-          "dir": "V",
-          "w": "hug",
-          "pad": [16, 16, 16, 16],
-          "fill": "@color-grey-100",
-          "children": [
+              "t": "text",
+              "font": "sans",
+              "weight": "bold",
+              "size": 12,
+              "leading": 150,
+              "tracking": 10,
+              "color": "@color-always-dark",
+              "chars": "IHR CLUB"
+            },
             {
-              "t": "frame",
-              "name": "Inhalt",
-              "dir": "H",
-              "w": 320,
-              "gap": 12,
-              "cross": "CENTER",
-              "children": [
-                {
-                  "t": "frame",
-                  "name": "Text",
-                  "dir": "V",
-                  "w": "fill",
-                  "gap": 3,
-                  "children": [
-                    {
-                      "t": "text",
-                      "chars": "Spotlight",
-                      "size": 12,
-                      "color": "@color-grey-700",
-                      "w": 220
-                    },
-                    {
-                      "t": "text",
-                      "chars": "Das Wichtigste, werktags am Morgen",
-                      "size": 11,
-                      "color": "@color-grey-600",
-                      "w": 220
-                    }
-                  ]
-                },
-                {
-                  "t": "frame",
-                  "name": "Schalter",
-                  "dir": "H",
-                  "w": 34,
-                  "h": 18,
-                  "fill": "#e0e0e3",
-                  "radius": 9,
-                  "children": [
-                    {
-                      "t": "ellipse",
-                      "w": 14,
-                      "h": 14,
-                      "fill": "@color-grey-100"
-                    }
-                  ]
-                }
-              ]
-            }
-          ]
-        },
-        {
-          "t": "component",
-          "name": "participate/CalloutCard",
-          "x": 0,
-          "y": 440,
-          "dir": "V",
-          "w": "hug",
-          "pad": [16, 16, 16, 16],
-          "fill": "@color-grey-100",
-          "children": [
+              "t": "text",
+              "style": "headline-s",
+              "font": "sans",
+              "weight": "bold",
+              "size": 17,
+              "leading": 150,
+              "tracking": 1.18,
+              "color": "@color-always-dark",
+              "chars": "Pascal Garber",
+              "bind": "Name"
+            },
             {
-              "t": "frame",
-              "name": "Inhalt",
-              "dir": "V",
-              "pad": [16, 16, 16, 16],
-              "fill": "@color-grey-100",
-              "stroke": "@color-grey-300",
-              "radius": 6,
-              "clip": true,
-              "w": 320,
-              "children": [
-                {
-                  "t": "text",
-                  "chars": "UMFRAGE",
-                  "size": 9,
-                  "color": "@color-emphasis",
-                  "weight": "semibold",
-                  "w": 288
-                },
-                {
-                  "t": "space",
-                  "h": 8,
-                  "w": "fill"
-                },
-                {
-                  "t": "text",
-                  "chars": "Die Zukunft von CORRECTIV: Wir fragen Sie",
-                  "size": 15,
-                  "color": "@color-grey-700",
-                  "weight": "semibold",
-                  "w": 288
-                },
-                {
-                  "t": "space",
-                  "h": 8,
-                  "w": "fill"
-                },
-                {
-                  "t": "text",
-                  "chars": "CORRECTIV verändert sich, und Sie gestalten mit. Was sollen wir recherchieren, welche Formate fehl…",
-                  "size": 12,
-                  "color": "@color-grey-600",
-                  "w": 288
-                },
-                {
-                  "t": "space",
-                  "h": 14,
-                  "w": "fill"
-                },
-                {
-                  "t": "frame",
-                  "name": "Fortschritt",
-                  "fill": "#e5e5e8",
-                  "radius": 2,
-                  "clip": true,
-                  "w": "fill",
-                  "h": 4,
-                  "children": [
-                    {
-                      "t": "frame",
-                      "name": "Anteil",
-                      "fill": "@color-grey-700",
-                      "radius": 2,
-                      "clip": true,
-                      "w": 202,
-                      "h": 4,
-                      "x": 0,
-                      "y": 0
-                    }
-                  ]
-                },
-                {
-                  "t": "space",
-                  "h": 8,
-                  "w": "fill"
-                },
-                {
-                  "t": "text",
-                  "chars": "2.143 Teilnahmen",
-                  "size": 11,
-                  "color": "@color-grey-600",
-                  "w": 288
-                },
-                {
-                  "t": "space",
-                  "h": 14,
-                  "w": "fill"
-                },
-                {
-                  "t": "frame",
-                  "name": "Button, Teilnehmen",
-                  "dir": "H",
-                  "pad": [20, 20, 12, 12],
-                  "align": "CENTER",
-                  "cross": "CENTER",
-                  "fill": "@color-grey-100",
-                  "stroke": "#bfbfc7",
-                  "radius": 4,
-                  "clip": true,
-                  "children": [
-                    {
-                      "t": "text",
-                      "chars": "Teilnehmen",
-                      "size": 12,
-                      "color": "@color-grey-700",
-                      "weight": "semibold"
-                    }
-                  ]
-                }
-              ]
-            }
-          ]
-        },
-        {
-          "t": "component",
-          "name": "participate/ClaimRow",
-          "x": 380,
-          "y": 440,
-          "dir": "V",
-          "w": "hug",
-          "pad": [16, 16, 16, 16],
-          "fill": "@color-grey-100",
-          "children": [
+              "t": "text",
+              "style": "text-m",
+              "font": "sans",
+              "weight": "regular",
+              "size": 15,
+              "leading": 150,
+              "tracking": 0.67,
+              "color": "@color-always-dark",
+              "chars": "Fördermitglied",
+              "bind": "Stufe"
+            },
             {
-              "t": "frame",
-              "name": "Inhalt",
-              "dir": "V",
-              "pad": [16, 16, 16, 16],
-              "fill": "@color-grey-100",
-              "stroke": "@color-grey-300",
-              "radius": 6,
-              "w": 320,
-              "children": [
-                {
-                  "t": "frame",
-                  "name": "ClaimStatusTag",
-                  "dir": "H",
-                  "gap": 8,
-                  "children": [
-                    {
-                      "t": "frame",
-                      "name": "Badge, Geprüft: Falsch",
-                      "dir": "H",
-                      "pad": [8, 8, 4, 4],
-                      "fill": "@color-emphasis",
-                      "radius": 2,
-                      "children": [
-                        {
-                          "t": "text",
-                          "chars": "Geprüft: Falsch",
-                          "size": 9,
-                          "color": "@color-grey-100",
-                          "weight": "semibold"
-                        }
-                      ]
-                    }
-                  ]
-                },
-                {
-                  "t": "space",
-                  "h": 10,
-                  "w": "fill"
-                },
-                {
-                  "t": "text",
-                  "chars": "„Ein Video zeigt, wie die US-Botschaft in Kiew im Mai 2026 evakuiert wird.“",
-                  "size": 13,
-                  "color": "@color-grey-700",
-                  "weight": "semibold",
-                  "w": 288
-                },
-                {
-                  "t": "space",
-                  "h": 8,
-                  "w": "fill"
-                },
-                {
-                  "t": "text",
-                  "chars": "FF-2418 · eingereicht 10. Juni",
-                  "size": 11,
-                  "color": "@color-grey-500",
-                  "w": 288
-                }
-              ]
-            }
-          ]
-        },
-        {
-          "t": "component",
-          "name": "media/LiveBanner",
-          "x": 760,
-          "y": 440,
-          "dir": "V",
-          "w": "hug",
-          "pad": [16, 16, 16, 16],
-          "fill": "@color-grey-100",
-          "children": [
-            {
-              "t": "frame",
-              "name": "Inhalt",
-              "dir": "H",
-              "gap": 14,
-              "pad": [16, 16, 16, 16],
-              "cross": "CENTER",
-              "fill": "#333336",
-              "radius": 6,
-              "clip": true,
-              "w": 320,
-              "children": [
-                {
-                  "t": "ellipse",
-                  "w": 44,
-                  "h": 44,
-                  "fill": "@color-emphasis"
-                },
-                {
-                  "t": "frame",
-                  "name": "Text",
-                  "dir": "V",
-                  "gap": 4,
-                  "clip": true,
-                  "w": "fill",
-                  "children": [
-                    {
-                      "t": "text",
-                      "chars": "● LIVE",
-                      "size": 9,
-                      "color": "@color-emphasis",
-                      "weight": "semibold"
-                    },
-                    {
-                      "t": "text",
-                      "chars": "Salon5 Radio",
-                      "size": 15,
-                      "color": "@color-grey-100",
-                      "weight": "semibold",
-                      "w": 210
-                    },
-                    {
-                      "t": "text",
-                      "chars": "24/7 aus Bottrop, von Jugendlichen für Jugendliche",
-                      "size": 11,
-                      "color": "#b8b8bf",
-                      "w": 210
-                    }
-                  ]
-                }
-              ]
-            }
-          ]
-        },
-        {
-          "t": "component",
-          "name": "media/SeriesTile",
-          "x": 1140,
-          "y": 440,
-          "dir": "V",
-          "w": "hug",
-          "pad": [16, 16, 16, 16],
-          "fill": "@color-grey-100",
-          "children": [
-            {
-              "t": "frame",
-              "name": "Inhalt",
-              "dir": "H",
-              "align": "CENTER",
-              "cross": "CENTER",
-              "fill": "#dadadd",
-              "radius": 4,
-              "clip": true,
-              "w": 112,
-              "children": [
-                {
-                  "t": "text",
-                  "chars": "Cover",
-                  "size": 8,
-                  "color": "#6b6b73"
-                }
-              ],
-              "h": 112
-            }
-          ]
-        },
-        {
-          "t": "component",
-          "name": "discover/ProjectRow",
-          "x": 0,
-          "y": 660,
-          "dir": "V",
-          "w": "hug",
-          "pad": [16, 16, 16, 16],
-          "fill": "@color-grey-100",
-          "children": [
-            {
-              "t": "frame",
-              "name": "Inhalt",
-              "dir": "H",
-              "gap": 10,
-              "cross": "CENTER",
-              "clip": true,
-              "w": 320,
-              "children": [
-                {
-                  "t": "frame",
-                  "name": "Text",
-                  "dir": "V",
-                  "gap": 3,
-                  "clip": true,
-                  "w": "fill",
-                  "children": [
-                    {
-                      "t": "text",
-                      "chars": "Recherchen",
-                      "size": 13,
-                      "color": "@color-grey-700",
-                      "weight": "semibold",
-                      "w": 280
-                    },
-                    {
-                      "t": "text",
-                      "chars": "Investigative Recherchen für die Gesellschaft.",
-                      "size": 11,
-                      "color": "@color-grey-600",
-                      "w": 280
-                    }
-                  ]
-                },
-                {
-                  "t": "text",
-                  "chars": "›",
-                  "size": 14,
-                  "color": "@color-grey-600"
-                }
-              ]
-            }
-          ]
-        },
-        {
-          "t": "component",
-          "name": "discover/SearchEntry",
-          "x": 380,
-          "y": 660,
-          "dir": "V",
-          "w": "hug",
-          "pad": [16, 16, 16, 16],
-          "fill": "@color-grey-100",
-          "children": [
-            {
-              "t": "frame",
-              "name": "Inhalt",
-              "dir": "H",
-              "gap": 10,
-              "pad": [14, 14, 12, 12],
-              "cross": "CENTER",
-              "fill": "@color-grey-200",
-              "radius": 6,
-              "clip": true,
-              "w": 320,
-              "children": [
-                {
-                  "t": "ellipse",
-                  "w": 12,
-                  "h": 12,
-                  "stroke": "@color-grey-600"
-                },
-                {
-                  "t": "text",
-                  "chars": "Recherchen, Faktenchecks, Projekte …",
-                  "size": 12,
-                  "color": "@color-grey-600"
-                }
-              ]
-            }
-          ]
-        },
-        {
-          "t": "component",
-          "name": "navigation/TabBar",
-          "x": 760,
-          "y": 660,
-          "dir": "V",
-          "w": "hug",
-          "pad": [16, 16, 16, 16],
-          "fill": "@color-grey-100",
-          "children": [
-            {
-              "t": "frame",
-              "name": "Inhalt",
-              "fill": "@color-grey-100",
-              "stroke": "@color-grey-300",
-              "clip": true,
-              "w": 360,
-              "h": 60,
-              "children": [
-                {
-                  "t": "ellipse",
-                  "w": 46,
-                  "h": 26,
-                  "fill": "#e8e8fa",
-                  "x": 13,
-                  "y": 8
-                },
-                {
-                  "t": "ellipse",
-                  "w": 16,
-                  "h": 16,
-                  "stroke": "#f9545f",
-                  "x": 28,
-                  "y": 13
-                },
-                {
-                  "t": "text",
-                  "chars": "Home",
-                  "size": 8,
-                  "color": "@color-emphasis",
-                  "weight": "semibold",
-                  "w": 72,
-                  "align": "center",
-                  "x": 0,
-                  "y": 38
-                },
-                {
-                  "t": "ellipse",
-                  "w": 16,
-                  "h": 16,
-                  "stroke": "@color-grey-600",
-                  "x": 100,
-                  "y": 13
-                },
-                {
-                  "t": "text",
-                  "chars": "Entdecken",
-                  "size": 8,
-                  "color": "@color-grey-600",
-                  "w": 72,
-                  "align": "center",
-                  "x": 72,
-                  "y": 38
-                },
-                {
-                  "t": "ellipse",
-                  "w": 16,
-                  "h": 16,
-                  "stroke": "@color-grey-600",
-                  "x": 172,
-                  "y": 13
-                },
-                {
-                  "t": "text",
-                  "chars": "Mediathek",
-                  "size": 8,
-                  "color": "@color-grey-600",
-                  "w": 72,
-                  "align": "center",
-                  "x": 144,
-                  "y": 38
-                },
-                {
-                  "t": "ellipse",
-                  "w": 16,
-                  "h": 16,
-                  "stroke": "@color-grey-600",
-                  "x": 244,
-                  "y": 13
-                },
-                {
-                  "t": "text",
-                  "chars": "Mitmachen",
-                  "size": 8,
-                  "color": "@color-grey-600",
-                  "w": 72,
-                  "align": "center",
-                  "x": 216,
-                  "y": 38
-                },
-                {
-                  "t": "ellipse",
-                  "w": 16,
-                  "h": 16,
-                  "stroke": "@color-grey-600",
-                  "x": 316,
-                  "y": 13
-                },
-                {
-                  "t": "text",
-                  "chars": "Profil",
-                  "size": 8,
-                  "color": "@color-grey-600",
-                  "w": 72,
-                  "align": "center",
-                  "x": 288,
-                  "y": 38
-                }
-              ]
+              "t": "text",
+              "style": "text-s",
+              "font": "sans",
+              "weight": "regular",
+              "size": 14,
+              "leading": 150,
+              "tracking": 1.43,
+              "color": "@color-always-dark",
+              "chars": "Mitglied seit 12.03.2024",
+              "bind": "Seit"
             }
           ]
         }
@@ -11090,5 +11557,128 @@
       "light": "#333333",
       "dark": "#333333"
     }
-  }
+  },
+  "focus": "Bausteine",
+  "textStyles": [
+    {
+      "name": "text-article",
+      "font": "serif",
+      "weight": "regular",
+      "size": 15.5,
+      "leading": 180,
+      "tracking": 1.29
+    },
+    {
+      "name": "text-s",
+      "font": "sans",
+      "weight": "regular",
+      "size": 14,
+      "leading": 150,
+      "tracking": 1.43
+    },
+    {
+      "name": "text-m",
+      "font": "sans",
+      "weight": "regular",
+      "size": 15,
+      "leading": 150,
+      "tracking": 0.67
+    },
+    {
+      "name": "text-l",
+      "font": "sans",
+      "weight": "regular",
+      "size": 18.5,
+      "leading": 145,
+      "tracking": 0.54
+    },
+    {
+      "name": "headline-xs",
+      "font": "sans",
+      "weight": "bold",
+      "size": 17,
+      "leading": 150,
+      "tracking": 1.18
+    },
+    {
+      "name": "headline-s",
+      "font": "sans",
+      "weight": "bold",
+      "size": 17,
+      "leading": 150,
+      "tracking": 1.18
+    },
+    {
+      "name": "headline-m",
+      "font": "sans",
+      "weight": "bold",
+      "size": 19,
+      "leading": 130,
+      "tracking": 0
+    },
+    {
+      "name": "headline-l",
+      "font": "sans",
+      "weight": "bold",
+      "size": 23,
+      "leading": 120,
+      "tracking": -0.43
+    },
+    {
+      "name": "headline-xl",
+      "font": "sans",
+      "weight": "bold",
+      "size": 28,
+      "leading": 120,
+      "tracking": -0.71
+    },
+    {
+      "name": "headline-xxl",
+      "font": "sans",
+      "weight": "bold",
+      "size": 32,
+      "leading": 120,
+      "tracking": -0.62
+    },
+    {
+      "name": "button",
+      "font": "sans",
+      "weight": "bold",
+      "size": 16,
+      "leading": 150,
+      "tracking": 1.25
+    },
+    {
+      "name": "text-m/bold",
+      "font": "sans",
+      "weight": "bold",
+      "size": 15,
+      "leading": 150,
+      "tracking": 0.67
+    },
+    {
+      "name": "text-m/semibold",
+      "font": "sans",
+      "weight": "semibold",
+      "size": 15,
+      "leading": 150,
+      "tracking": 0.67
+    },
+    {
+      "name": "text-s/bold",
+      "font": "sans",
+      "weight": "bold",
+      "size": 14,
+      "leading": 150,
+      "tracking": 1.43
+    },
+    {
+      "name": "text-s/semibold",
+      "font": "sans",
+      "weight": "semibold",
+      "size": 14,
+      "leading": 150,
+      "tracking": 1.43
+    }
+  ]
 }

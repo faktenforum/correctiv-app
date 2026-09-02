@@ -1,0 +1,673 @@
+// Build the component kit from the APP, not from the board.
+//
+// An earlier version cut components out of the drawn screens by name. That is the
+// wrong direction and it showed: the screens are transcribed from screenshots, so
+// what came out was a *usage* wearing a component's name — `ui/Card` arrived
+// carrying a heading, a paragraph and two buttons, none of which `ui/Card.tsx` has
+// ever known about.
+//
+// So this file describes each component the way its source file does, and takes the
+// numbers from the same tokens the app compiles. A component here has the props its
+// React counterpart has, as Figma component properties, and the ones with a `variant`
+// union become a Figma variant set. Editing the main component in Figma therefore
+// changes every instance, exactly as editing the .tsx changes every call site.
+//
+//   node tools/figma-plugin/kit.mjs
+//
+// It only ever rewrites the `Bausteine` page. Screens are untouched.
+
+import { readdir, readFile, writeFile } from 'node:fs/promises';
+import { dirname, join } from 'node:path';
+import { fileURLToPath } from 'node:url';
+
+const HERE = dirname(fileURLToPath(import.meta.url));
+const ROOT = join(HERE, '../..');
+const SPEC = join(HERE, 'spec.json');
+const PAGE = 'Bausteine';
+
+// ---------------------------------------------------------------- the scales
+//
+// Read, not retyped. A size that moves in the tokens moves the kit on the next run;
+// a size typed in here would be a second opinion about a number that already has an
+// owner.
+
+const themeCss = await readFile(join(ROOT, 'packages/design-tokens/theme.css'), 'utf8');
+const typographyTs = await readFile(
+  join(ROOT, 'packages/design-tokens/src/typography.generated.ts'),
+  'utf8',
+);
+
+/** Every `--name: value` in the file's first block, which is `@theme`. */
+const scale = {};
+for (const line of themeCss.split('\n')) {
+  const m = line.match(/^\s*--([a-z0-9-]+):\s*([^;]+);/);
+  if (m && scale[m[1]] === undefined) scale[m[1]] = m[2].trim();
+}
+
+/** rem at the 16px root the app assumes, px as written, bare numbers as numbers. */
+function px(name) {
+  const value = scale[name];
+  if (value === undefined) throw new Error('kein Token: --' + name);
+  const rem = value.match(/^(-?[\d.]+)rem$/);
+  if (rem) return Math.round(Number.parseFloat(rem[1]) * 16 * 1000) / 1000;
+  const p = value.match(/^(-?[\d.]+)px$/);
+  if (p) return Number.parseFloat(p[1]);
+  return Number.parseFloat(value);
+}
+
+const S = {
+  '4xs': px('spacing-4xs'),
+  '3xs': px('spacing-3xs'),
+  '2xs': px('spacing-2xs'),
+  xs: px('spacing-xs'),
+  s: px('spacing-s'),
+  sm: px('spacing-sm'),
+  m: px('spacing-m'),
+};
+const R = { xs: px('radius-xs'), s: px('radius-s'), md: px('radius-md') };
+
+const specs = JSON.parse(
+  typographyTs.slice(typographyTs.indexOf('{'), typographyTs.lastIndexOf('}') + 1),
+);
+
+/**
+ * One `ty-*` variant as the interpreter's text properties.
+ *
+ * `leading` is a percentage here and a factor in the tokens; `tracking` is a
+ * percentage here and px there, so it is divided by the size it applies to. Both
+ * conversions belong to Figma, not to the token, which is why they live here.
+ */
+function ty(variant, extra) {
+  const spec = specs[variant];
+  if (spec === undefined) throw new Error('keine Variante: ' + variant);
+  const size = px('text-' + spec.size.replace(/^text-/, ''));
+  const out = {
+    t: 'text',
+    // The variant's name, which is also the name of its Figma text style. The
+    // numbers below stay as well: the replica binds the style, the wireframe draws
+    // from the numbers, and neither needs the other.
+    style: variant,
+    font: spec.family,
+    weight: spec.weight === 'normal' ? 'regular' : spec.weight,
+    size: size,
+    leading: Math.round(px('leading-' + spec.leading) * 100),
+    tracking: Math.round((px('tracking-' + spec.tracking) / size) * 10000) / 100,
+    color: '@color-grey-700',
+  };
+  for (const key of Object.keys(extra || {})) out[key] = extra[key];
+  // `<Typo variant="text-m" weight="bold">` is a variant with its weight overridden,
+  // and Figma has no such thing: a text style pins the whole font, cut included. So
+  // the pair gets a style of its own, named the way the JSX reads.
+  if (out.weight !== (spec.weight === 'normal' ? 'regular' : spec.weight)) {
+    out.style = variant + '/' + out.weight;
+  }
+  // A hand-set size or leading is not this variant any more, and a style would
+  // silently undo it.
+  if ((extra || {}).size !== undefined || (extra || {}).leading !== undefined) {
+    delete out.style;
+  }
+  return out;
+}
+
+const VARIANTS = Object.keys(specs);
+
+/**
+ * Every `ty-*` variant as a Figma text style.
+ *
+ * This, not a component, is what `<Typo variant="headline-l">` is: a style applied
+ * to a text node. Change `headline-l` in Figma and every headline on every page
+ * follows, including the ones inside components — which is the behaviour a variant
+ * set could never give, because a component only reaches what it contains.
+ */
+function styleOf(name, variant, weight) {
+  const one = ty(variant, weight === undefined ? undefined : { weight: weight });
+  return {
+    name: name,
+    font: one.font,
+    weight: one.weight,
+    size: one.size,
+    leading: one.leading,
+    tracking: one.tracking,
+  };
+}
+
+/**
+ * Which `variant` + `weight` pairs the app actually writes.
+ *
+ * Read off the JSX rather than listed here, because a list would be a second place
+ * to remember. Four pairs today; a fifth appears in the kit the moment somebody
+ * writes it in a screen.
+ */
+async function usedWeightOverrides() {
+  const files = [];
+  async function walk(dir) {
+    for (const entry of await readdir(dir, { withFileTypes: true })) {
+      const full = join(dir, entry.name);
+      if (entry.isDirectory()) await walk(full);
+      else if (entry.name.endsWith('.tsx')) files.push(full);
+    }
+  }
+  await walk(join(ROOT, 'apps/mobile/src'));
+
+  const pairs = {};
+  for (const file of files) {
+    const source = await readFile(file, 'utf8');
+    // The whole opening tag, newlines included: three call sites break the
+    // attributes across lines and a single-line regex would miss them.
+    for (const tag of source.match(/<Typo\b[^>]*>/g) || []) {
+      const variant = tag.match(/variant="([a-z0-9-]+)"/);
+      const weight = tag.match(/weight="([a-z]+)"/);
+      if (variant === null || weight === null) continue;
+      const spec = specs[variant[1]];
+      if (spec === undefined) continue;
+      const own = spec.weight === 'normal' ? 'regular' : spec.weight;
+      if (weight[1] === own) continue;
+      pairs[variant[1] + '/' + weight[1]] = [variant[1], weight[1]];
+    }
+  }
+  return pairs;
+}
+
+const overrides = await usedWeightOverrides();
+const TEXT_STYLES = VARIANTS.map((v) => styleOf(v, v)).concat(
+  Object.keys(overrides)
+    .sort()
+    .map((name) => styleOf(name, overrides[name][0], overrides[name][1])),
+);
+
+// ---------------------------------------------------------------- the components
+//
+// Named after the file each one lives in, so that moving a `NavCard` in Figma and
+// opening `profile/NavCard.tsx` are the same conversation. Order matters: a
+// component may only instance one that is already registered, which is why the ui/
+// primitives come first — the same order their imports run in.
+
+/** `text-button` is the label of every button; only the two colours differ. */
+const BUTTON_TONES = [
+  ['primary', '@color-emphasis', '@color-always-light', null],
+  ['secondary', '@color-grey-200', '@color-grey-700', null],
+  ['outline', '@color-grey-100', '@color-grey-700', '@color-grey-300'],
+  ['club', '@color-alternative', '@color-always-dark', null],
+  ['onEmphasis', '@color-always-light', '@color-always-dark', null],
+];
+
+const BADGE_TONES = [
+  ['emphasis', '@color-emphasis', '@color-always-light'],
+  ['club', '@color-alternative', '@color-always-dark'],
+  ['neutral', '@color-grey-250', '@color-grey-600'],
+  ['live', null, '@color-emphasis'],
+];
+
+/** `claimStatusTag` decides the words; this file only carries the four surfaces. */
+const CLAIM_TONES = [
+  ['richtig', '#2e7d4f', '@color-always-light', null, 'RICHTIG'],
+  ['falsch', '@color-emphasis', '@color-always-light', null, 'FALSCH'],
+  ['inArbeit', '@color-grey-100', '@color-grey-700', '@color-grey-400', 'IN ARBEIT'],
+  ['offen', '@color-grey-250', '@color-grey-600', null, 'OFFEN'],
+];
+
+/** A chevron, a switch, an icon: glyphs until the spec learns to carry vectors. */
+const CHEVRON = '›';
+
+function badgeLabel(color) {
+  return ty('text-s', {
+    chars: 'CLUB',
+    weight: 'bold',
+    size: 11,
+    tracking: Math.round((0.4 / 11) * 10000) / 100,
+    color: color,
+    bind: 'Label',
+  });
+}
+
+const KIT = [
+  {
+    // A specimen sheet, deliberately not a component. The styles are the deliverable;
+    // this frame only makes them visible, and puts each name next to what it does.
+    t: 'frame',
+    name: 'ui/Typo, Textstile',
+    dir: 'V',
+    w: 'hug',
+    gap: S.m,
+    pad: [S.m, S.m, S.m, S.m],
+    fill: '@color-grey-100',
+    children: VARIANTS.map((v) => [v, v, undefined])
+      .concat(
+        Object.keys(overrides)
+          .sort()
+          .map((n) => [n, overrides[n][0], overrides[n][1]]),
+      )
+      .map(([name, variant, weight]) => ({
+        t: 'frame',
+        name: name,
+        dir: 'V',
+        w: 'hug',
+        gap: S['4xs'],
+        children: [
+          ty('text-s', { chars: name, size: 11, color: '@color-grey-500' }),
+          ty(variant, { chars: 'Recherchen, die etwas ändern', weight: weight }),
+        ],
+      })),
+  },
+  {
+    t: 'variants',
+    name: 'ui/Button',
+    prop: 'Variante',
+    props: { Titel: { type: 'TEXT', default: 'Beitrag festlegen' } },
+    options: BUTTON_TONES.map(([value, surface, label, border]) => {
+      const option = {
+        value: value,
+        dir: 'H',
+        w: 'hug',
+        align: 'CENTER',
+        cross: 'CENTER',
+        pad: [S.m, S.m, S.s, S.s],
+        radius: R.md,
+        fill: surface,
+        children: [ty('button', { chars: 'Beitrag festlegen', color: label, bind: 'Titel' })],
+      };
+      if (border !== null) option.stroke = border;
+      return option;
+    }),
+  },
+  {
+    t: 'variants',
+    name: 'ui/Badge',
+    prop: 'Ton',
+    props: { Label: { type: 'TEXT', default: 'CLUB' } },
+    options: BADGE_TONES.map(([value, surface, label]) => {
+      const children = [];
+      // The live tone is a red dot plus a label on no fill at all.
+      if (value === 'live') children.push({ t: 'ellipse', w: 7, h: 7, fill: '@color-emphasis' });
+      children.push(badgeLabel(label));
+      const option = {
+        value: value,
+        dir: 'H',
+        w: 'hug',
+        cross: 'CENTER',
+        gap: S['3xs'],
+        pad: [S['2xs'], S['2xs'], S['4xs'], S['4xs']],
+        radius: R.s,
+        children: children,
+      };
+      if (surface !== null) option.fill = surface;
+      return option;
+    }),
+  },
+  {
+    t: 'variants',
+    name: 'ui/Chip',
+    prop: 'Gewählt',
+    props: { Label: { type: 'TEXT', default: 'Klima' } },
+    options: [
+      ['ja', '@color-emphasis', '@color-always-light', null],
+      ['nein', '@color-grey-200', '@color-grey-700', '@color-grey-300'],
+    ].map(([value, surface, label, border]) => {
+      const option = {
+        value: value,
+        dir: 'H',
+        w: 'hug',
+        cross: 'CENTER',
+        pad: [S.s, S.s, S['2xs'], S['2xs']],
+        radius: R.md,
+        fill: surface,
+        children: [
+          ty('text-s', { chars: 'Klima', weight: 'semibold', color: label, bind: 'Label' }),
+        ],
+      };
+      if (border !== null) option.stroke = border;
+      return option;
+    }),
+  },
+  {
+    // The container, and nothing else. What used to stand here was one filled-in
+    // card off the profile screen; `Card.tsx` is thirteen lines and holds no copy.
+    // The dashed slot is what a Figma component cannot express: an instance may
+    // override text and visibility, never add children. Cards that DO carry content
+    // are their own components in the app, or should be — see the four still inline.
+    t: 'variants',
+    name: 'ui/Card',
+    prop: 'Ton',
+    props: {},
+    options: [
+      ['surface', '@color-grey-200', null],
+      ['outline', '@color-grey-100', '@color-grey-300'],
+    ].map(([value, surface, border]) => {
+      const option = {
+        value: value,
+        dir: 'V',
+        w: 280,
+        pad: [S.sm, S.sm, S.sm, S.sm],
+        radius: R.md,
+        fill: surface,
+        children: [
+          {
+            t: 'frame',
+            name: 'Inhalt',
+            dir: 'V',
+            w: 'fill',
+            h: 56,
+            cross: 'CENTER',
+            align: 'CENTER',
+            stroke: '@color-grey-400',
+            dash: [4, 4],
+            children: [ty('text-s', { chars: 'Inhalt', color: '@color-grey-500' })],
+          },
+        ],
+      };
+      if (border !== null) option.stroke = border;
+      return option;
+    }),
+  },
+  {
+    t: 'component',
+    name: 'ui/Overline',
+    props: { Label: { type: 'TEXT', default: 'IHRE MITGLIEDSCHAFT' } },
+    dir: 'V',
+    w: 'hug',
+    fill: '@color-grey-100',
+    children: [
+      ty('text-s', {
+        chars: 'IHRE MITGLIEDSCHAFT',
+        weight: 'bold',
+        size: 12,
+        tracking: 10,
+        color: '@color-grey-600',
+        bind: 'Label',
+      }),
+    ],
+  },
+  {
+    t: 'component',
+    name: 'ui/Hairline',
+    props: {},
+    dir: 'V',
+    w: 280,
+    fill: '@color-grey-100',
+    children: [{ t: 'line', color: '@color-grey-300' }],
+  },
+  {
+    t: 'component',
+    name: 'ui/SectionHeader',
+    props: {
+      Titel: { type: 'TEXT', default: 'Aus dem Backstage' },
+      Aktion: { type: 'TEXT', default: 'Alles ansehen' },
+      'Aktion zeigen': { type: 'BOOLEAN', default: true },
+    },
+    dir: 'H',
+    w: 320,
+    cross: 'MAX',
+    align: 'SPACE_BETWEEN',
+    fill: '@color-grey-100',
+    children: [
+      ty('headline-m', { chars: 'Aus dem Backstage', bind: 'Titel' }),
+      {
+        t: 'frame',
+        name: 'Aktion',
+        dir: 'H',
+        w: 'hug',
+        bind: 'Aktion zeigen',
+        children: [
+          ty('text-s', { chars: 'Alles ansehen', color: '@color-emphasis', bind: 'Aktion' }),
+        ],
+      },
+    ],
+  },
+  {
+    t: 'component',
+    name: 'ui/ScreenHeader',
+    props: { Zurück: { type: 'TEXT', default: 'Zurück' } },
+    dir: 'V',
+    w: 320,
+    fill: '@color-grey-100',
+    children: [
+      {
+        t: 'frame',
+        dir: 'H',
+        w: 'fill',
+        cross: 'CENTER',
+        gap: S['3xs'],
+        pad: [S.sm, S.sm, S.s, S.s],
+        children: [
+          ty('text-m', { chars: '‹', size: 20, color: '@color-grey-700' }),
+          ty('text-m', { chars: 'Zurück', color: '@color-grey-700', bind: 'Zurück' }),
+        ],
+      },
+      { t: 'line', color: '@color-grey-300' },
+    ],
+  },
+  {
+    t: 'component',
+    name: 'profile/NavCard',
+    props: {
+      Titel: { type: 'TEXT', default: 'Backstage' },
+      Untertitel: { type: 'TEXT', default: 'Was gerade in der Redaktion passiert' },
+      Club: { type: 'BOOLEAN', default: true },
+    },
+    dir: 'H',
+    w: 320,
+    cross: 'CENTER',
+    pad: [0, 0, S.s, S.s],
+    stroke: '@color-grey-300',
+    strokeSides: 'bottom',
+    fill: '@color-grey-100',
+    children: [
+      ty('text-m', { chars: '◎', size: 20, color: '@color-grey-600' }),
+      {
+        t: 'frame',
+        dir: 'V',
+        w: 'fill',
+        gap: S['4xs'],
+        pad: [S.s, 0, 0, 0],
+        children: [
+          {
+            t: 'frame',
+            dir: 'H',
+            w: 'hug',
+            cross: 'CENTER',
+            gap: S['2xs'],
+            children: [
+              ty('text-m', { chars: 'Backstage', weight: 'bold', bind: 'Titel' }),
+              // A nested instance, because `NavCard.tsx` renders a `<Badge>`. Change
+              // the badge once and it changes here too, in Figma as in the app.
+              { t: 'instance', of: 'ui/Badge', set: { Ton: 'club', Label: 'CLUB' }, bind: 'Club' },
+            ],
+          },
+          ty('text-s', {
+            chars: 'Was gerade in der Redaktion passiert',
+            color: '@color-grey-600',
+            bind: 'Untertitel',
+          }),
+        ],
+      },
+      ty('text-m', { chars: CHEVRON, size: 16, color: '@color-grey-500' }),
+    ],
+  },
+  {
+    t: 'component',
+    name: 'profile/SettingRow',
+    props: {
+      Label: { type: 'TEXT', default: 'Push-Mitteilungen' },
+      Beschreibung: { type: 'TEXT', default: 'Neue Recherchen und Mitmach-Aufrufe' },
+      'Beschreibung zeigen': { type: 'BOOLEAN', default: true },
+      An: { type: 'BOOLEAN', default: true },
+    },
+    dir: 'H',
+    w: 320,
+    cross: 'CENTER',
+    gap: S.s,
+    pad: [0, 0, S['2xs'], S['2xs']],
+    fill: '@color-grey-100',
+    children: [
+      {
+        t: 'frame',
+        dir: 'V',
+        w: 'fill',
+        gap: S['4xs'],
+        children: [
+          ty('text-m', { chars: 'Push-Mitteilungen', bind: 'Label' }),
+          {
+            t: 'frame',
+            dir: 'V',
+            w: 'fill',
+            bind: 'Beschreibung zeigen',
+            children: [
+              ty('text-s', {
+                chars: 'Neue Recherchen und Mitmach-Aufrufe',
+                color: '@color-grey-600',
+                bind: 'Beschreibung',
+              }),
+            ],
+          },
+        ],
+      },
+      {
+        t: 'frame',
+        name: 'Schalter, an',
+        dir: 'H',
+        w: 44,
+        h: 26,
+        cross: 'CENTER',
+        align: 'MAX',
+        pad: [3, 3, 3, 3],
+        radius: 13,
+        fill: '@color-emphasis',
+        bind: 'An',
+        children: [{ t: 'ellipse', w: 20, h: 20, fill: '@color-always-light' }],
+      },
+    ],
+  },
+  {
+    t: 'component',
+    name: 'discover/ProjectRow',
+    props: {
+      Name: { type: 'TEXT', default: 'CrimeTech' },
+      Teaser: {
+        type: 'TEXT',
+        default: 'Wie Polizeibehörden mit Technik gegen Kriminalität vorgehen',
+      },
+    },
+    dir: 'H',
+    w: 320,
+    cross: 'CENTER',
+    pad: [0, 0, S.s, S.s],
+    stroke: '@color-grey-300',
+    strokeSides: 'bottom',
+    fill: '@color-grey-100',
+    children: [
+      {
+        t: 'frame',
+        dir: 'V',
+        w: 'fill',
+        gap: S['4xs'],
+        pad: [0, S.s, 0, 0],
+        children: [
+          ty('text-m', { chars: 'CrimeTech', weight: 'bold', bind: 'Name' }),
+          ty('text-s', {
+            chars: 'Wie Polizeibehörden mit Technik gegen Kriminalität vorgehen',
+            color: '@color-grey-600',
+            w: 230,
+            bind: 'Teaser',
+          }),
+        ],
+      },
+      ty('text-m', { chars: CHEVRON, size: 16, color: '@color-grey-500' }),
+    ],
+  },
+  {
+    t: 'variants',
+    name: 'participate/ClaimStatusTag',
+    prop: 'Status',
+    props: { Label: { type: 'TEXT' } },
+    options: CLAIM_TONES.map(([value, surface, label, border, text]) => {
+      const option = {
+        value: value,
+        dir: 'H',
+        w: 'hug',
+        pad: [S['2xs'], S['2xs'], S['4xs'], S['4xs']],
+        radius: R.xs,
+        fill: surface,
+        children: [
+          ty('text-s', { chars: text, weight: 'bold', size: 11, color: label, bind: 'Label' }),
+        ],
+      };
+      if (border !== null) option.stroke = border;
+      return option;
+    }),
+  },
+  {
+    t: 'component',
+    name: 'profile/ClubCard',
+    props: {
+      Name: { type: 'TEXT', default: 'Pascal Garber' },
+      Stufe: { type: 'TEXT', default: 'Fördermitglied' },
+      Seit: { type: 'TEXT', default: 'Mitglied seit 12.03.2024' },
+    },
+    dir: 'V',
+    w: 320,
+    gap: S['3xs'],
+    pad: [S.sm, S.sm, S.sm, S.sm],
+    radius: R.md,
+    // Yellow in both schemes, so everything on it takes the fixed dark role colour.
+    fill: '@color-alternative',
+    children: [
+      ty('text-s', {
+        chars: 'IHR CLUB',
+        weight: 'bold',
+        size: 12,
+        tracking: 10,
+        color: '@color-always-dark',
+      }),
+      ty('headline-s', { chars: 'Pascal Garber', color: '@color-always-dark', bind: 'Name' }),
+      ty('text-m', { chars: 'Fördermitglied', color: '@color-always-dark', bind: 'Stufe' }),
+      ty('text-s', {
+        chars: 'Mitglied seit 12.03.2024',
+        color: '@color-always-dark',
+        bind: 'Seit',
+      }),
+    ],
+  },
+];
+
+// ---------------------------------------------------------------- the page
+//
+// Laid out by hand rather than by a grid: a variant set grows downwards with its
+// options, so a column that fits `ui/Typo` (eleven of them) wastes a screen on
+// `ui/Hairline`. Three columns, each with its own running y.
+
+const COLUMN_X = [0, 460, 920];
+const columnY = [0, 0, 0];
+const HEADS = ['ui/Typo, Textstile', 'ui/Button', 'profile/NavCard'];
+
+const screens = [];
+let column = -1;
+for (const entry of KIT) {
+  if (HEADS.indexOf(entry.name) !== -1) column++;
+  const at = Math.max(column, 0);
+  const placed = { t: entry.t, name: entry.name, x: COLUMN_X[at], y: columnY[at] };
+  for (const key of Object.keys(entry)) if (key !== 't' && key !== 'name') placed[key] = entry[key];
+  screens.push(placed);
+  // Enough room for the tallest variant set; the exact height is only known in Figma.
+  const options = entry.options ? entry.options.length : 1;
+  columnY[at] += 120 + options * 90;
+}
+
+const spec = JSON.parse(await readFile(SPEC, 'utf8'));
+spec.textStyles = TEXT_STYLES;
+spec.pages = (spec.pages || []).filter((p) => p.name !== PAGE);
+spec.pages.push({
+  name: PAGE,
+  mode: 'replica',
+  // The kit is the only thing on this page, so it sweeps the page rather than
+  // naming what it made: a component that loses its name would otherwise stay behind.
+  owned: '*',
+  screens: screens,
+});
+await writeFile(SPEC, `${JSON.stringify(spec, null, 2)}\n`);
+
+const sets = screens.filter((s) => s.t === 'variants');
+console.log(
+  `${screens.length - 1} Komponenten auf "${PAGE}" (${sets.length} Variantensätze, ` +
+    `${sets.reduce((n, s) => n + s.options.length, 0)} Varianten), ` +
+    `${TEXT_STYLES.length} Textstile`,
+);

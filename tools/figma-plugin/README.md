@@ -76,17 +76,66 @@ whole token set over it.
 
 ## The vocabulary
 
-    t: 'frame'    dir V|H, pad, gap, fill, stroke, radius, w, h, align, cross, clip,
-                  dash, children
-    t: 'text'     chars, size, font sans|serif, weight, color, w, tracking, align
-    t: 'rect'     w, h, fill, stroke, radius
-    t: 'ellipse'  w, h, fill, stroke
-    t: 'space'    h
-    t: 'line'     a hairline that fills its parent
+    t: 'frame'     dir V|H, pad, gap, fill, stroke, strokeSides, radius, w, h, align,
+                   cross, clip, dash, children
+    t: 'text'      chars, size, font sans|serif, weight, color, w, tracking, align,
+                   style
+    t: 'rect'      w, h, fill, stroke, radius
+    t: 'ellipse'   w, h, fill, stroke
+    t: 'space'     h
+    t: 'line'      a hairline that fills its parent
+    t: 'component' a frame instances can point at; props, and `bind` on a descendant
+    t: 'variants'  prop, options[{ value, ... }] — one component set
+    t: 'instance'  of, set { property: value }
 
 `w`/`h` take a number, `'fill'` or `'hug'`. Any node may carry `x`/`y`, which Figma
 honours inside a plain frame and ignores inside auto-layout — the API's own rule, so
 there is nothing extra to remember.
+
+A page entry takes `owned` — a list of frame names, or `'*'` for the whole page —
+and the document takes `focus`, the page the file should open on. Without `focus`
+that is whichever page was drawn last, and the kit has to be drawn first.
+
+## The kit, from the app
+
+`kit.mjs` writes the `Bausteine` page: one Figma component per component file in
+`apps/mobile/src/components`, carrying the props its React counterpart carries.
+
+    node tools/figma-plugin/kit.mjs
+
+**It is built from the source, not cut out of the board.** An earlier version matched
+component names against the drawn screens and lifted the first subtree that fitted.
+That is the wrong direction, and it showed: the screens are transcribed from
+screenshots, so what came back was a *usage* wearing a component's name. `ui/Card`
+arrived carrying a heading, a paragraph and two buttons, none of which the thirteen
+lines of `ui/Card.tsx` have ever known about.
+
+| in the app | in Figma |
+| --- | --- |
+| `title: string` | a TEXT property |
+| `club?: boolean` | a BOOLEAN property, driving one node's visibility |
+| `variant: 'primary' \| …` | a variant set, one component per value |
+| `<Badge>` inside `NavCard` | a nested instance, which follows `ui/Badge` |
+| `<Typo variant="headline-l">` | a text style, not a component |
+
+The last row is the one worth arguing about. A variant set for typography was the
+first attempt and it is the wrong Figma object: `variant` is not something the app
+instantiates, it is something the app *applies*, and a text style changes every text
+node carrying it across every page — including nodes inside other components, which
+a component can never reach. `<Typo variant weight>` is a pair, and Figma has no
+partial style, so the four pairs the JSX actually writes (`text-m/bold` and three
+more) become styles of their own. Which four is read off the source, not listed.
+
+Colour is deliberately not part of a text style: the app picks a variant and a colour
+token separately, so the style carries typography and a bound variable carries the
+fill. Both in one would make every coloured headline its own style.
+
+**What Figma cannot express is a slot.** An instance may override text and
+visibility; it can never be given children. So `ui/Card` is the container it is in
+the code, with a dashed placeholder where content goes, and a card that carries
+content has to be its own component — in Figma *and* in the app. Seventeen places
+still write `Overline` over a `Card` inline, which is why seventeen cards on the
+board are copies rather than instances.
 
 ## Why a plugin and not the MCP server
 
@@ -141,7 +190,9 @@ Manifest note: a localhost origin belongs in `devAllowedDomains`, not
 
 **Re-running is safe.** Every frame a page's `owned` list names is deleted before it
 is rebuilt, so a redraw converges instead of stacking copies. Frames it does not own
-are never touched.
+are never touched. A fully generated page says `owned: '*'` and sweeps itself
+instead: a name list only removes what the document still mentions, so a component
+that gets renamed would otherwise stay behind for good.
 
 **Arrows do not follow.** Figma design files have no Connector node, so navigation
 would have to be drawn: vectors with `strokeCap: 'ARROW_LINES'` in one locked overlay.

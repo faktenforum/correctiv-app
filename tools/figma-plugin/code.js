@@ -275,6 +275,9 @@ function collectFonts(node, out) {
     out[f.family + '|' + f.style] = f;
   }
   for (const n of node.children || []) collectFonts(n, out);
+  // A variant set carries its children one level deeper, and a font missing there
+  // takes down the whole page just the same.
+  for (const n of node.options || []) collectFonts(n, out);
   return out;
 }
 
@@ -288,6 +291,109 @@ function collectFonts(node, out) {
 
 const PENCIL = '#6b6b73';
 let pending = [];
+
+// ------------------------------------------------------------- the component kit
+//
+// A component drawn on one page and used on another is the whole point of the kit:
+// edit `ui/Button` once and every screen follows. That only works if the screens
+// hold INSTANCES rather than copies, so the interpreter keeps a registry.
+//
+// `COMPONENTS` maps a spec name to the node an instance is made from — the component
+// itself, or a variant set's default variant. `PROP_IDS` maps the property names a
+// spec writes ('Titel') to the keys `setProperties` wants ('Titel#12:3'), which
+// Figma only hands out once the property exists.
+let COMPONENTS = {};
+let PROP_IDS = {};
+let TEXT_STYLES = {};
+
+// Filled by `build()` wherever a node carries `bind`, drained by the component that
+// encloses it. A binding is what turns a text node into a component property: the
+// node keeps its own copy in the main component, and every instance may override it.
+let bindings = [];
+
+/** Which slot on a node a property of this type drives. */
+const REFERENCE = { TEXT: 'characters', BOOLEAN: 'visible', INSTANCE_SWAP: 'mainComponent' };
+
+/**
+ * Turn the `bind` marks collected under a component into component properties.
+ *
+ * The default of a TEXT property is whatever the bound node already says, so a
+ * component drawn with real copy keeps that copy as its default instead of needing
+ * it written twice.
+ */
+function defineProperties(node, spec, bound) {
+  const byName = {};
+  for (const b of bound) {
+    if (byName[b.name] === undefined) byName[b.name] = [];
+    byName[b.name].push(b.node);
+  }
+  for (const name of Object.keys(spec.props || {})) {
+    const definition = spec.props[name];
+    const targets = byName[name] || [];
+    let value = definition.default;
+    if (value === undefined && definition.type === 'TEXT' && targets.length > 0) {
+      value = targets[0].characters;
+    }
+    if (value === undefined) value = definition.type === 'BOOLEAN' ? true : '';
+    const id = node.addComponentProperty(name, definition.type, value);
+    for (const target of targets) {
+      // A node may drive several properties, so the existing references are kept.
+      const next = {};
+      const refs = target.componentPropertyReferences || {};
+      for (const k of Object.keys(refs)) next[k] = refs[k];
+      next[REFERENCE[definition.type]] = id;
+      target.componentPropertyReferences = next;
+    }
+  }
+}
+
+/**
+ * Read a component's property keys back out.
+ *
+ * Not the ids `addComponentProperty` returned: on a variant set the set merges the
+ * per-variant properties into one list with keys of its own, and those are the ones
+ * `setProperties` accepts. Reading them back is the only way to be right in both
+ * cases.
+ */
+function recordProperties(name, node) {
+  const ids = {};
+  const defs = node.componentPropertyDefinitions || {};
+  for (const key of Object.keys(defs)) {
+    const hash = key.indexOf('#');
+    ids[hash === -1 ? key : key.slice(0, hash)] = key;
+  }
+  PROP_IDS[name] = ids;
+}
+
+/**
+ * A set of variants, from one entry per value.
+ *
+ * Figma derives the variant property from the component NAMES, which have to read
+ * `Property=Value`. So each option is built as an ordinary component under that
+ * name, its own properties defined, and only then are they combined — properties
+ * cannot be added to a component that is already a variant.
+ */
+function buildVariantSet(spec, parent) {
+  const made = [];
+  for (const option of spec.options) {
+    const one = { t: 'component', name: spec.prop + '=' + option.value, props: spec.props };
+    for (const key of Object.keys(option)) if (key !== 'value') one[key] = option[key];
+    made.push(build(one, parent, false));
+  }
+  const set = figma.combineAsVariants(made, parent);
+  set.name = spec.name;
+  set.layoutMode = 'VERTICAL';
+  set.itemSpacing = 16;
+  set.paddingLeft = 16;
+  set.paddingRight = 16;
+  set.paddingTop = 16;
+  set.paddingBottom = 16;
+  set.primaryAxisSizingMode = 'AUTO';
+  set.counterAxisSizingMode = 'AUTO';
+  COMPONENTS[spec.name] = set.defaultVariant;
+  recordProperties(spec.name, set);
+  return set;
+}
 
 function seedOf(text) {
   let h = 2166136261;
@@ -415,6 +521,10 @@ function build(spec, parent, parentIsAutoLayout) {
       node.letterSpacing = { unit: 'PERCENT', value: spec.tracking };
     }
     if (spec.align) node.textAlignHorizontal = spec.align.toUpperCase();
+    // The style AFTER the literal values, so it wins where it applies and the raw
+    // numbers stay as the wireframe's fallback. Colour is not part of it.
+    const style = MODE.bindVariables && spec.style ? TEXT_STYLES[spec.style] : undefined;
+    if (style !== undefined) node.textStyleId = style.id;
     if (typeof spec.w === 'number') {
       // A wrapping block needs HEIGHT auto-resize AND an explicit width; the default
       // mode ignores the width and collapses the node to a thread.
@@ -428,6 +538,29 @@ function build(spec, parent, parentIsAutoLayout) {
   } else if (spec.t === 'ellipse') {
     node = figma.createEllipse();
     node.fills = paint(spec.fill);
+  } else if (spec.t === 'instance') {
+    const main = COMPONENTS[spec.of];
+    if (main === undefined) {
+      // Magenta, not nothing. An instance of a component that does not exist is a
+      // typo in the spec, and a silently missing row is far harder to find than a
+      // box shouting its own name.
+      node = figma.createFrame();
+      node.name = 'FEHLT: ' + spec.of;
+      node.resize(typeof spec.w === 'number' ? spec.w : 160, spec.h || 24);
+      node.fills = [{ type: 'SOLID', color: { r: 1, g: 0, b: 1 } }];
+    } else {
+      node = main.createInstance();
+      const ids = PROP_IDS[spec.of] || {};
+      const set = {};
+      for (const key of Object.keys(spec.set || {})) {
+        if (ids[key] !== undefined) set[ids[key]] = spec.set[key];
+      }
+      if (Object.keys(set).length > 0) node.setProperties(set);
+    }
+  } else if (spec.t === 'variants') {
+    // Already parented and already registered; the tail below only names and places
+    // it, and re-appending to the same parent is a move to the end, not a copy.
+    node = buildVariantSet(spec, parent);
   } else if (spec.t === 'line' || spec.t === 'space') {
     node = figma.createFrame();
     node.name = spec.t === 'line' ? 'Hairline' : 'Abstand';
@@ -464,9 +597,10 @@ function build(spec, parent, parentIsAutoLayout) {
   if (spec.stroke) {
     node.strokes = paint(spec.stroke);
     if (spec.dash) node.dashPattern = spec.dash;
-    if (spec.strokeSides === 'top') {
-      node.strokeTopWeight = 1;
-      node.strokeBottomWeight = 0;
+    if (spec.strokeSides === 'top' || spec.strokeSides === 'bottom') {
+      const only = spec.strokeSides === 'top';
+      node.strokeTopWeight = only ? 1 : 0;
+      node.strokeBottomWeight = only ? 0 : 1;
       node.strokeLeftWeight = 0;
       node.strokeRightWeight = 0;
     }
@@ -482,7 +616,20 @@ function build(spec, parent, parentIsAutoLayout) {
   if (spec.y !== undefined) node.y = spec.y;
 
   const isAuto = spec.dir !== undefined;
+  // Everything bound below this node belongs to THIS component, so the mark is taken
+  // before the children and the slice drained after: a component nested inside
+  // another keeps its own properties instead of handing them upwards.
+  const bindMark = bindings.length;
   for (const child of spec.children || []) build(child, node, isAuto);
+  if (spec.t === 'component') {
+    defineProperties(node, spec, bindings.splice(bindMark));
+    // A variant registers under its set's name, not its own `Variante=club`.
+    if (spec.name && spec.name.indexOf('=') === -1) {
+      COMPONENTS[spec.name] = node;
+      recordProperties(spec.name, node);
+    }
+  }
+  if (spec.bind) bindings.push({ node: node, name: spec.bind });
 
   // Re-assert after children, because a hugging parent resizes as they arrive.
   if (parentIsAutoLayout && spec.w === 'fill') node.layoutSizingHorizontal = 'FILL';
@@ -580,6 +727,54 @@ function drawArrows(page, arrows) {
   return drawn;
 }
 
+/**
+ * The app's typography variants as Figma text styles.
+ *
+ * A variant set was the wrong shape for this. `<Typo variant="headline-l">` is not a
+ * component the app instantiates, it is a style it applies — and Figma has exactly
+ * that object. A text style changes every text node that carries it, across every
+ * page, which is the behaviour the variant asks for and the one a component cannot
+ * give a node it does not contain.
+ *
+ * Colour is deliberately NOT part of a style here: the app picks a variant and a
+ * colour token separately, so the style carries the typography and a bound variable
+ * carries the fill. Putting both in the style would make every coloured headline its
+ * own style.
+ *
+ * Built from the replica's typefaces whatever the current mode is. A style is
+ * file-global while a mode is per page, and the wireframe exists in order not to be
+ * about the brand — so it draws from the numbers in the spec and ignores these.
+ */
+async function syncTextStyles(list) {
+  TEXT_STYLES = {};
+  if (!list || list.length === 0) return 0;
+
+  const fonts = MODES.replica.fonts;
+  const wanted = {};
+  for (const entry of list) {
+    const f = fonts[entry.font || 'sans'][entry.weight || 'regular'];
+    wanted[f.family + '|' + f.style] = f;
+  }
+  for (const key of Object.keys(wanted)) await figma.loadFontAsync(wanted[key]);
+
+  const existing = {};
+  for (const style of figma.getLocalTextStyles()) existing[style.name] = style;
+
+  for (const entry of list) {
+    // Reuse rather than recreate: a style that is deleted and remade loses every
+    // node that pointed at it, and the board would silently fall back to defaults.
+    let style = existing[entry.name];
+    if (style === undefined) style = figma.createTextStyle();
+    style.name = entry.name;
+    style.fontName = fonts[entry.font || 'sans'][entry.weight || 'regular'];
+    style.fontSize = entry.size;
+    style.lineHeight = { unit: 'PERCENT', value: entry.leading };
+    style.letterSpacing = { unit: 'PERCENT', value: entry.tracking };
+    TEXT_STYLES[entry.name] = style;
+  }
+  return list.length;
+}
+
 async function drawPage(entry, screens) {
   MODE = MODES[entry.mode] || MODES.replica;
 
@@ -608,10 +803,19 @@ async function drawPage(entry, screens) {
 
   // Converge instead of stacking: drop what this document owns, then rebuild it.
   // Anything else on the page is left alone.
-  const owned = {};
-  for (const n of entry.owned || []) owned[n] = true;
-  if (entry.arrows) owned[entry.arrows.overlay] = true;
-  for (const n of page.children.slice()) if (owned[n.name]) n.remove();
+  //
+  // `owned: "*"` claims the WHOLE page. A generated page needs that: a name list only
+  // removes what the document still mentions, so a component that has been renamed
+  // or dropped stays behind forever, and the board slowly fills with things no
+  // description explains. Pages that share space with hand-drawn work keep the list.
+  if (entry.owned === '*') {
+    for (const n of page.children.slice()) n.remove();
+  } else {
+    const owned = {};
+    for (const n of entry.owned || []) owned[n] = true;
+    if (entry.arrows) owned[entry.arrows.overlay] = true;
+    for (const n of page.children.slice()) if (owned[n.name]) n.remove();
+  }
 
   pending = [];
   for (const screen of screens) build(screen, page, false);
@@ -757,6 +961,17 @@ function readPage(name) {
   return screens;
 }
 
+function definesComponents(node) {
+  if (node === null || typeof node !== 'object') return false;
+  if (Array.isArray(node)) {
+    for (const n of node) if (definesComponents(n)) return true;
+    return false;
+  }
+  if (node.t === 'component' || node.t === 'variants') return true;
+  for (const n of node.children || []) if (definesComponents(n)) return true;
+  return false;
+}
+
 async function draw(spec) {
   // One description, rendered once per page. `screens` may live on the page entry or,
   // when both pages show the same thing, once at the top for all of them.
@@ -766,18 +981,42 @@ async function draw(spec) {
 
   // Variables first: a fill can only bind to a variable that already exists.
   const tokenCount = await syncVariables(spec.tokens);
+  const styleCount = await syncTextStyles(spec.textStyles);
+
+  // The kit before its users, for the same reason: an instance can only point at a
+  // component that has already been drawn. A page is a kit page if anything on it
+  // defines a component, so the order follows from the document rather than from a
+  // flag somebody has to remember to set.
+  COMPONENTS = {};
+  PROP_IDS = {};
+  bindings = [];
+  const ordered = [];
+  for (const entry of pages)
+    if (definesComponents(entry.screens || spec.screens || [])) ordered.push(entry);
+  for (const entry of pages) if (ordered.indexOf(entry) === -1) ordered.push(entry);
 
   const done = [];
-  for (const entry of pages) {
+  for (const entry of ordered) {
     const screens = entry.screens || spec.screens || [];
     done.push(await drawPage(entry, screens));
+  }
+
+  // Which page the file opens on. Without this it is whichever was drawn last, and
+  // the kit has to be drawn first — so the landing page would be decided by a
+  // dependency order that has nothing to do with what anyone wants to look at.
+  if (spec.focus) {
+    for (const p of figma.root.children) if (p.name === spec.focus) figma.currentPage = p;
   }
 
   return (
     done.map((d) => d.name + ': ' + d.screens + ' Screens, ' + d.arrows + ' Pfeile').join(' · ') +
     ' · ' +
     tokenCount +
-    ' Tokens'
+    ' Tokens · ' +
+    styleCount +
+    ' Textstile · ' +
+    Object.keys(COMPONENTS).length +
+    ' Komponenten'
   );
 }
 
