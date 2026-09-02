@@ -4,11 +4,13 @@
       "name": "Screens, nach Screenshots",
       "mode": "replica",
       "owned": [
+        "gate, Anmeldung",
+        "gate, Fehler",
+        "gate, kein Zugang",
         "(tabs)/index, Start",
         "(tabs)/entdecken",
         "(tabs)/mediathek",
         "(tabs)/mitmachen",
-        "(tabs)/profil, Gast",
         "onboarding, 1 Willkommen",
         "onboarding, 2 Interessen",
         "onboarding, 3 Push",
@@ -31,18 +33,22 @@
         "gespeichert",
         "einstellungen",
         "beitreten",
-        "atlas"
+        "atlas",
+        "(tabs)/profil",
+        "(tabs)/profil, Gast"
       ]
     },
     {
       "name": "Wireframes",
       "mode": "wireframe",
       "owned": [
+        "gate, Anmeldung",
+        "gate, Fehler",
+        "gate, kein Zugang",
         "(tabs)/index, Start",
         "(tabs)/entdecken",
         "(tabs)/mediathek",
         "(tabs)/mitmachen",
-        "(tabs)/profil, Gast",
         "onboarding, 1 Willkommen",
         "onboarding, 2 Interessen",
         "onboarding, 3 Push",
@@ -65,11 +71,901 @@
         "gespeichert",
         "einstellungen",
         "beitreten",
-        "atlas"
+        "atlas",
+        "(tabs)/profil",
+        "(tabs)/profil, Gast"
       ]
     }
   ],
   "screens": [
+    {
+      "t": "frame",
+      "name": "gate, Anmeldung",
+      "x": 0,
+      "y": -880,
+      "w": 360,
+      "h": 800,
+      "fill": "#ffffff",
+      "stroke": "#e2e2e5",
+      "radius": 10,
+      "clip": true,
+      "children": [
+        {
+          "t": "frame",
+          "name": "Statusleiste",
+          "fill": "#ffffff",
+          "clip": true,
+          "w": 360,
+          "h": 24,
+          "x": 0,
+          "y": 0,
+          "children": [
+            {
+              "t": "text",
+              "chars": "12:32",
+              "size": 9,
+              "color": "#212124",
+              "weight": "semibold",
+              "x": 12,
+              "y": 7
+            },
+            {
+              "t": "text",
+              "chars": ". il I",
+              "size": 9,
+              "color": "#212124",
+              "x": 320,
+              "y": 7
+            }
+          ]
+        },
+        {
+          "t": "frame",
+          "name": "Inhalt",
+          "dir": "V",
+          "w": 360,
+          "x": 0,
+          "y": 24,
+          "children": [
+            {
+              "t": "frame",
+              "name": "Spalte",
+              "dir": "V",
+              "w": "fill",
+              "pad": [20, 20, 0, 0],
+              "children": [
+                {
+                  "t": "space",
+                  "h": 40,
+                  "w": "fill"
+                },
+                {
+                  "t": "text",
+                  "chars": "CORRECTIV",
+                  "size": 15,
+                  "color": "#212124",
+                  "weight": "semibold",
+                  "w": 320,
+                  "tracking": 8
+                },
+                {
+                  "t": "space",
+                  "h": 26,
+                  "w": "fill"
+                },
+                {
+                  "t": "text",
+                  "chars": "Für alle, die CORRECTIV tragen.",
+                  "size": 30,
+                  "color": "#212124",
+                  "weight": "semibold",
+                  "w": 320,
+                  "font": "serif"
+                },
+                {
+                  "t": "space",
+                  "h": 14,
+                  "w": "fill"
+                },
+                {
+                  "t": "text",
+                  "chars": "Diese App ist der Ort für Mitglieder mit Beitrag. Ihr Konto ist dasselbe wie auf correctiv.org.",
+                  "size": 14,
+                  "color": "#212124",
+                  "w": 320
+                },
+                {
+                  "t": "space",
+                  "h": 28,
+                  "w": "fill"
+                },
+                {
+                  "t": "text",
+                  "chars": "E-Mail",
+                  "size": 13,
+                  "color": "#212124",
+                  "weight": "semibold",
+                  "w": 320
+                },
+                {
+                  "t": "space",
+                  "h": 8,
+                  "w": "fill"
+                },
+                {
+                  "t": "frame",
+                  "name": "Eingabe",
+                  "dir": "H",
+                  "w": "fill",
+                  "h": 44,
+                  "fill": "#ffffff",
+                  "radius": 5,
+                  "stroke": "#e2e2e5",
+                  "cross": "CENTER",
+                  "pad": [14, 14, 0, 0],
+                  "children": [
+                    {
+                      "t": "text",
+                      "chars": "name@beispiel.de",
+                      "size": 13,
+                      "color": "#a8a8b0"
+                    }
+                  ]
+                },
+                {
+                  "t": "space",
+                  "h": 16,
+                  "w": "fill"
+                },
+                {
+                  "t": "text",
+                  "chars": "Passwort",
+                  "size": 13,
+                  "color": "#212124",
+                  "weight": "semibold",
+                  "w": 320
+                },
+                {
+                  "t": "space",
+                  "h": 8,
+                  "w": "fill"
+                },
+                {
+                  "t": "frame",
+                  "name": "Eingabe",
+                  "dir": "H",
+                  "w": "fill",
+                  "h": 44,
+                  "fill": "#ffffff",
+                  "radius": 5,
+                  "stroke": "#e2e2e5",
+                  "cross": "CENTER",
+                  "pad": [14, 14, 0, 0],
+                  "children": [
+                    {
+                      "t": "text",
+                      "chars": "Ihr Passwort",
+                      "size": 13,
+                      "color": "#a8a8b0"
+                    }
+                  ]
+                },
+                {
+                  "t": "space",
+                  "h": 20,
+                  "w": "fill"
+                },
+                {
+                  "t": "frame",
+                  "name": "Button, Anmelden",
+                  "dir": "H",
+                  "w": "fill",
+                  "h": 48,
+                  "fill": "#ffc0c8",
+                  "radius": 5,
+                  "align": "CENTER",
+                  "cross": "CENTER",
+                  "children": [
+                    {
+                      "t": "text",
+                      "chars": "Anmelden",
+                      "size": 14,
+                      "color": "#ffffff",
+                      "weight": "semibold"
+                    }
+                  ]
+                },
+                {
+                  "t": "space",
+                  "h": 14,
+                  "w": "fill"
+                },
+                {
+                  "t": "frame",
+                  "name": "Fusszeile",
+                  "dir": "H",
+                  "w": "fill",
+                  "cross": "CENTER",
+                  "children": [
+                    {
+                      "t": "text",
+                      "chars": "Passwort vergessen?",
+                      "size": 12,
+                      "color": "#212124"
+                    },
+                    {
+                      "t": "frame",
+                      "name": "Dehnung",
+                      "dir": "H",
+                      "w": "fill"
+                    },
+                    {
+                      "t": "text",
+                      "chars": "Mitglied mit Beitrag werden",
+                      "size": 12,
+                      "color": "#ff5064",
+                      "weight": "semibold"
+                    }
+                  ]
+                },
+                {
+                  "t": "space",
+                  "h": 40,
+                  "w": "fill"
+                },
+                {
+                  "t": "frame",
+                  "name": "Card, Simuliert",
+                  "dir": "V",
+                  "w": "fill",
+                  "fill": "#f4f4f6",
+                  "radius": 6,
+                  "pad": [16, 16, 16, 16],
+                  "children": [
+                    {
+                      "t": "text",
+                      "chars": "SIMULIERT",
+                      "size": 10,
+                      "color": "#7a7a82",
+                      "weight": "semibold",
+                      "w": 288,
+                      "tracking": 8
+                    },
+                    {
+                      "t": "space",
+                      "h": 8,
+                      "w": "fill"
+                    },
+                    {
+                      "t": "text",
+                      "chars": "Es wird nichts übertragen. Jede Adresse meldet an: mit „frei“ als kostenlose Stufe ohne App-Zugang, mit „test“ in der Testphase, mit „lokal“ über das Lokal-Bundle. Ein Passwort unter vier Zeichen schlägt fehl.",
+                      "size": 12,
+                      "color": "#7a7a82",
+                      "w": 288
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "t": "frame",
+      "name": "gate, Fehler",
+      "x": 420,
+      "y": -880,
+      "w": 360,
+      "h": 800,
+      "fill": "#ffffff",
+      "stroke": "#e2e2e5",
+      "radius": 10,
+      "clip": true,
+      "children": [
+        {
+          "t": "frame",
+          "name": "Statusleiste",
+          "fill": "#ffffff",
+          "clip": true,
+          "w": 360,
+          "h": 24,
+          "x": 0,
+          "y": 0,
+          "children": [
+            {
+              "t": "text",
+              "chars": "12:32",
+              "size": 9,
+              "color": "#212124",
+              "weight": "semibold",
+              "x": 12,
+              "y": 7
+            },
+            {
+              "t": "text",
+              "chars": ". il I",
+              "size": 9,
+              "color": "#212124",
+              "x": 320,
+              "y": 7
+            }
+          ]
+        },
+        {
+          "t": "frame",
+          "name": "Inhalt",
+          "dir": "V",
+          "w": 360,
+          "x": 0,
+          "y": 24,
+          "children": [
+            {
+              "t": "frame",
+              "name": "Spalte",
+              "dir": "V",
+              "w": "fill",
+              "pad": [20, 20, 0, 0],
+              "children": [
+                {
+                  "t": "space",
+                  "h": 40,
+                  "w": "fill"
+                },
+                {
+                  "t": "text",
+                  "chars": "CORRECTIV",
+                  "size": 15,
+                  "color": "#212124",
+                  "weight": "semibold",
+                  "w": 320,
+                  "tracking": 8
+                },
+                {
+                  "t": "space",
+                  "h": 26,
+                  "w": "fill"
+                },
+                {
+                  "t": "text",
+                  "chars": "Für alle, die CORRECTIV tragen.",
+                  "size": 30,
+                  "color": "#212124",
+                  "weight": "semibold",
+                  "w": 320,
+                  "font": "serif"
+                },
+                {
+                  "t": "space",
+                  "h": 14,
+                  "w": "fill"
+                },
+                {
+                  "t": "text",
+                  "chars": "Diese App ist der Ort für Mitglieder mit Beitrag. Ihr Konto ist dasselbe wie auf correctiv.org.",
+                  "size": 14,
+                  "color": "#212124",
+                  "w": 320
+                },
+                {
+                  "t": "space",
+                  "h": 28,
+                  "w": "fill"
+                },
+                {
+                  "t": "text",
+                  "chars": "E-Mail",
+                  "size": 13,
+                  "color": "#212124",
+                  "weight": "semibold",
+                  "w": 320
+                },
+                {
+                  "t": "space",
+                  "h": 8,
+                  "w": "fill"
+                },
+                {
+                  "t": "frame",
+                  "name": "Eingabe",
+                  "dir": "H",
+                  "w": "fill",
+                  "h": 44,
+                  "fill": "#ffffff",
+                  "radius": 5,
+                  "stroke": "#ff5064",
+                  "cross": "CENTER",
+                  "pad": [14, 14, 0, 0],
+                  "children": [
+                    {
+                      "t": "text",
+                      "chars": "frei@example.org",
+                      "size": 13,
+                      "color": "#212124"
+                    }
+                  ]
+                },
+                {
+                  "t": "space",
+                  "h": 16,
+                  "w": "fill"
+                },
+                {
+                  "t": "text",
+                  "chars": "Passwort",
+                  "size": 13,
+                  "color": "#212124",
+                  "weight": "semibold",
+                  "w": 320
+                },
+                {
+                  "t": "space",
+                  "h": 8,
+                  "w": "fill"
+                },
+                {
+                  "t": "frame",
+                  "name": "Eingabe",
+                  "dir": "H",
+                  "w": "fill",
+                  "h": 44,
+                  "fill": "#ffffff",
+                  "radius": 5,
+                  "stroke": "#ff5064",
+                  "cross": "CENTER",
+                  "pad": [14, 14, 0, 0],
+                  "children": [
+                    {
+                      "t": "text",
+                      "chars": "•••",
+                      "size": 13,
+                      "color": "#212124"
+                    }
+                  ]
+                },
+                {
+                  "t": "space",
+                  "h": 10,
+                  "w": "fill"
+                },
+                {
+                  "t": "frame",
+                  "name": "Fehlermeldung",
+                  "dir": "H",
+                  "w": "fill",
+                  "gap": 8,
+                  "children": [
+                    {
+                      "t": "ellipse",
+                      "w": 14,
+                      "h": 14,
+                      "fill": "#ff5064"
+                    },
+                    {
+                      "t": "text",
+                      "chars": "E-Mail-Adresse oder Passwort stimmen nicht. Bitte prüfen Sie beides.",
+                      "size": 12,
+                      "color": "#212124",
+                      "w": 280
+                    }
+                  ]
+                },
+                {
+                  "t": "space",
+                  "h": 16,
+                  "w": "fill"
+                },
+                {
+                  "t": "frame",
+                  "name": "Button, Anmelden",
+                  "dir": "H",
+                  "w": "fill",
+                  "h": 48,
+                  "fill": "#ff5064",
+                  "radius": 5,
+                  "align": "CENTER",
+                  "cross": "CENTER",
+                  "children": [
+                    {
+                      "t": "text",
+                      "chars": "Anmelden",
+                      "size": 14,
+                      "color": "#ffffff",
+                      "weight": "semibold"
+                    }
+                  ]
+                },
+                {
+                  "t": "space",
+                  "h": 14,
+                  "w": "fill"
+                },
+                {
+                  "t": "frame",
+                  "name": "Fusszeile",
+                  "dir": "H",
+                  "w": "fill",
+                  "cross": "CENTER",
+                  "children": [
+                    {
+                      "t": "frame",
+                      "name": "Fokus",
+                      "dir": "H",
+                      "fill": "#f4f4f6",
+                      "pad": [4, 4, 2, 2],
+                      "children": [
+                        {
+                          "t": "text",
+                          "chars": "Passwort vergessen?",
+                          "size": 12,
+                          "color": "#7a7a82"
+                        }
+                      ]
+                    },
+                    {
+                      "t": "frame",
+                      "name": "Dehnung",
+                      "dir": "H",
+                      "w": "fill"
+                    },
+                    {
+                      "t": "text",
+                      "chars": "Mitglied mit Beitrag werden",
+                      "size": 12,
+                      "color": "#ff5064",
+                      "weight": "semibold"
+                    }
+                  ]
+                },
+                {
+                  "t": "space",
+                  "h": 30,
+                  "w": "fill"
+                },
+                {
+                  "t": "frame",
+                  "name": "Card, Simuliert",
+                  "dir": "V",
+                  "w": "fill",
+                  "fill": "#f4f4f6",
+                  "radius": 6,
+                  "pad": [16, 16, 16, 16],
+                  "children": [
+                    {
+                      "t": "text",
+                      "chars": "SIMULIERT",
+                      "size": 10,
+                      "color": "#7a7a82",
+                      "weight": "semibold",
+                      "w": 288,
+                      "tracking": 8
+                    },
+                    {
+                      "t": "space",
+                      "h": 8,
+                      "w": "fill"
+                    },
+                    {
+                      "t": "text",
+                      "chars": "Es wird nichts übertragen. Jede Adresse meldet an: mit „frei“ als kostenlose Stufe ohne App-Zugang, mit „test“ in der Testphase, mit „lokal“ über das Lokal-Bundle. Ein Passwort unter vier Zeichen schlägt fehl.",
+                      "size": 12,
+                      "color": "#7a7a82",
+                      "w": 288
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "t": "frame",
+      "name": "gate, kein Zugang",
+      "x": 840,
+      "y": -880,
+      "w": 360,
+      "h": 800,
+      "fill": "#f4f4f6",
+      "stroke": "#e2e2e5",
+      "radius": 10,
+      "clip": true,
+      "children": [
+        {
+          "t": "frame",
+          "name": "Statusleiste",
+          "fill": "#ffffff",
+          "clip": true,
+          "w": 360,
+          "h": 24,
+          "x": 0,
+          "y": 0,
+          "children": [
+            {
+              "t": "text",
+              "chars": "12:32",
+              "size": 9,
+              "color": "#212124",
+              "weight": "semibold",
+              "x": 12,
+              "y": 7
+            },
+            {
+              "t": "text",
+              "chars": ". il I",
+              "size": 9,
+              "color": "#212124",
+              "x": 320,
+              "y": 7
+            }
+          ]
+        },
+        {
+          "t": "frame",
+          "name": "Inhalt",
+          "dir": "V",
+          "w": 360,
+          "x": 0,
+          "y": 24,
+          "children": [
+            {
+              "t": "frame",
+              "name": "Spalte",
+              "dir": "V",
+              "w": "fill",
+              "pad": [20, 20, 0, 0],
+              "children": [
+                {
+                  "t": "space",
+                  "h": 40,
+                  "w": "fill"
+                },
+                {
+                  "t": "text",
+                  "chars": "CORRECTIV",
+                  "size": 15,
+                  "color": "#212124",
+                  "weight": "semibold",
+                  "w": 320,
+                  "tracking": 8
+                },
+                {
+                  "t": "space",
+                  "h": 26,
+                  "w": "fill"
+                },
+                {
+                  "t": "text",
+                  "chars": "Angemeldet als frei@example.org",
+                  "size": 12,
+                  "color": "#7a7a82",
+                  "w": 320
+                },
+                {
+                  "t": "space",
+                  "h": 10,
+                  "w": "fill"
+                },
+                {
+                  "t": "text",
+                  "chars": "Schön, dass Sie dabei sind.",
+                  "size": 28,
+                  "color": "#212124",
+                  "weight": "semibold",
+                  "w": 320,
+                  "font": "serif"
+                },
+                {
+                  "t": "space",
+                  "h": 12,
+                  "w": "fill"
+                },
+                {
+                  "t": "text",
+                  "chars": "Die App gehört zur Mitgliedschaft mit Beitrag.",
+                  "size": 15,
+                  "color": "#212124",
+                  "w": 320
+                },
+                {
+                  "t": "space",
+                  "h": 12,
+                  "w": "fill"
+                },
+                {
+                  "t": "text",
+                  "chars": "Ihr Konto hat die kostenlose Stufe. Damit lesen Sie weiter alles auf correctiv.org. Die App kommt mit dem Beitrag dazu: Er finanziert die Recherchen, und dafür gibt es hier Audio, Video und Formate, die es nur in der App gibt.",
+                  "size": 13,
+                  "color": "#7a7a82",
+                  "w": 320
+                },
+                {
+                  "t": "space",
+                  "h": 20,
+                  "w": "fill"
+                },
+                {
+                  "t": "frame",
+                  "name": "Card, Stufe",
+                  "dir": "V",
+                  "w": "fill",
+                  "fill": "#ffffff",
+                  "stroke": "#e2e2e5",
+                  "radius": 6,
+                  "pad": [16, 16, 4, 4],
+                  "children": [
+                    {
+                      "t": "frame",
+                      "name": "Zeile, Ihre Stufe",
+                      "dir": "H",
+                      "w": "fill",
+                      "cross": "CENTER",
+                      "pad": [0, 0, 14, 14],
+                      "children": [
+                        {
+                          "t": "text",
+                          "chars": "Ihre Stufe",
+                          "size": 13,
+                          "color": "#7a7a82"
+                        },
+                        {
+                          "t": "frame",
+                          "name": "Dehnung",
+                          "dir": "H",
+                          "w": "fill"
+                        },
+                        {
+                          "t": "text",
+                          "chars": "Kostenlose Mitgliedschaft",
+                          "size": 13,
+                          "color": "#212124",
+                          "weight": "semibold"
+                        }
+                      ]
+                    },
+                    {
+                      "t": "line",
+                      "w": "fill"
+                    },
+                    {
+                      "t": "frame",
+                      "name": "Zeile, App-Zugang",
+                      "dir": "H",
+                      "w": "fill",
+                      "cross": "CENTER",
+                      "pad": [0, 0, 14, 14],
+                      "children": [
+                        {
+                          "t": "text",
+                          "chars": "App-Zugang",
+                          "size": 13,
+                          "color": "#7a7a82"
+                        },
+                        {
+                          "t": "frame",
+                          "name": "Dehnung",
+                          "dir": "H",
+                          "w": "fill"
+                        },
+                        {
+                          "t": "text",
+                          "chars": "Nicht enthalten",
+                          "size": 13,
+                          "color": "#212124",
+                          "weight": "semibold"
+                        }
+                      ]
+                    }
+                  ]
+                },
+                {
+                  "t": "space",
+                  "h": 18,
+                  "w": "fill"
+                },
+                {
+                  "t": "frame",
+                  "name": "Button, Mitgliedschaft erweitern",
+                  "dir": "H",
+                  "w": "fill",
+                  "h": 48,
+                  "fill": "#ff5064",
+                  "radius": 5,
+                  "align": "CENTER",
+                  "cross": "CENTER",
+                  "children": [
+                    {
+                      "t": "text",
+                      "chars": "Mitgliedschaft erweitern",
+                      "size": 14,
+                      "color": "#ffffff",
+                      "weight": "semibold"
+                    }
+                  ]
+                },
+                {
+                  "t": "space",
+                  "h": 10,
+                  "w": "fill"
+                },
+                {
+                  "t": "frame",
+                  "name": "Button, Erneut prüfen",
+                  "dir": "H",
+                  "w": "fill",
+                  "h": 48,
+                  "fill": "#ffffff",
+                  "radius": 5,
+                  "stroke": "#e2e2e5",
+                  "align": "CENTER",
+                  "cross": "CENTER",
+                  "children": [
+                    {
+                      "t": "text",
+                      "chars": "Erneut prüfen",
+                      "size": 14,
+                      "color": "#212124",
+                      "weight": "semibold"
+                    }
+                  ]
+                },
+                {
+                  "t": "space",
+                  "h": 14,
+                  "w": "fill"
+                },
+                {
+                  "t": "text",
+                  "chars": "Mit einem anderen Konto anmelden",
+                  "size": 12,
+                  "color": "#7a7a82",
+                  "w": 320,
+                  "align": "center"
+                },
+                {
+                  "t": "space",
+                  "h": 28,
+                  "w": "fill"
+                },
+                {
+                  "t": "frame",
+                  "name": "Card, Simuliert",
+                  "dir": "V",
+                  "w": "fill",
+                  "fill": "#f4f4f6",
+                  "radius": 6,
+                  "pad": [16, 16, 16, 16],
+                  "children": [
+                    {
+                      "t": "text",
+                      "chars": "SIMULIERT",
+                      "size": 10,
+                      "color": "#7a7a82",
+                      "weight": "semibold",
+                      "w": 288,
+                      "tracking": 8
+                    },
+                    {
+                      "t": "space",
+                      "h": 8,
+                      "w": "fill"
+                    },
+                    {
+                      "t": "text",
+                      "chars": "Es wird nichts übertragen. Nach „Mitgliedschaft erweitern“ findet „Erneut prüfen“ eine Mitgliedschaft mit Beitrag.",
+                      "size": 12,
+                      "color": "#7a7a82",
+                      "w": 288
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    },
     {
       "t": "frame",
       "name": "(tabs)/index, Start",
@@ -2275,714 +3171,6 @@
               "chars": "Profil",
               "size": 8,
               "color": "#7a7a82",
-              "w": 72,
-              "align": "center",
-              "x": 288,
-              "y": 38
-            }
-          ]
-        }
-      ]
-    },
-    {
-      "t": "frame",
-      "name": "(tabs)/profil, Gast",
-      "fill": "#ffffff",
-      "stroke": "#e2e2e5",
-      "radius": 10,
-      "clip": true,
-      "w": 360,
-      "h": 800,
-      "x": 1680,
-      "y": 0,
-      "children": [
-        {
-          "t": "frame",
-          "name": "Statusleiste",
-          "fill": "#ffffff",
-          "clip": true,
-          "w": 360,
-          "h": 24,
-          "x": 0,
-          "y": 0,
-          "children": [
-            {
-              "t": "text",
-              "chars": "12:32",
-              "size": 9,
-              "color": "#212124",
-              "weight": "semibold",
-              "x": 12,
-              "y": 7
-            }
-          ]
-        },
-        {
-          "t": "frame",
-          "name": "Inhalt",
-          "dir": "V",
-          "w": 360,
-          "x": 0,
-          "y": 24,
-          "children": [
-            {
-              "t": "frame",
-              "name": "Spalte",
-              "dir": "V",
-              "pad": [20, 20, 0, 0],
-              "w": "fill",
-              "children": [
-                {
-                  "t": "space",
-                  "h": 14,
-                  "w": "fill"
-                },
-                {
-                  "t": "text",
-                  "chars": "Profil",
-                  "size": 26,
-                  "color": "#212124",
-                  "weight": "semibold",
-                  "w": 320
-                },
-                {
-                  "t": "space",
-                  "h": 12,
-                  "w": "fill"
-                },
-                {
-                  "t": "frame",
-                  "name": "ClubCard",
-                  "dir": "V",
-                  "pad": [16, 16, 16, 16],
-                  "fill": "#ffffff",
-                  "stroke": "#e2e2e5",
-                  "radius": 6,
-                  "clip": true,
-                  "w": "fill",
-                  "children": [
-                    {
-                      "t": "text",
-                      "chars": "Sie sind als Gast unterwegs",
-                      "size": 15,
-                      "color": "#212124",
-                      "weight": "semibold",
-                      "w": 288
-                    },
-                    {
-                      "t": "space",
-                      "h": 8,
-                      "w": "fill"
-                    },
-                    {
-                      "t": "text",
-                      "chars": "Alles Wichtige bleibt frei zugänglich. Der Club bringt Sie näher ran: früher lesen, Backstage, Bonusfolgen.",
-                      "size": 12,
-                      "color": "#7a7a82",
-                      "w": 288
-                    },
-                    {
-                      "t": "space",
-                      "h": 14,
-                      "w": "fill"
-                    },
-                    {
-                      "t": "frame",
-                      "name": "Button, Unterstützer:in werden",
-                      "dir": "H",
-                      "pad": [20, 20, 12, 12],
-                      "align": "CENTER",
-                      "cross": "CENTER",
-                      "fill": "#ff5064",
-                      "radius": 4,
-                      "clip": true,
-                      "w": "fill",
-                      "children": [
-                        {
-                          "t": "text",
-                          "chars": "Unterstützer:in werden",
-                          "size": 12,
-                          "color": "#ffffff",
-                          "weight": "semibold"
-                        }
-                      ]
-                    }
-                  ]
-                },
-                {
-                  "t": "space",
-                  "h": 22,
-                  "w": "fill"
-                },
-                {
-                  "t": "text",
-                  "chars": "MEINE APP",
-                  "size": 9,
-                  "color": "#7a7a82",
-                  "weight": "semibold",
-                  "w": 320
-                },
-                {
-                  "t": "space",
-                  "h": 10,
-                  "w": "fill"
-                },
-                {
-                  "t": "frame",
-                  "name": "NavCard, Backstage ansehen",
-                  "dir": "H",
-                  "gap": 12,
-                  "cross": "CENTER",
-                  "clip": true,
-                  "w": "fill",
-                  "children": [
-                    {
-                      "t": "frame",
-                      "name": "Symbol",
-                      "fill": "#f4f4f6",
-                      "radius": 3,
-                      "clip": true,
-                      "w": 20,
-                      "h": 20
-                    },
-                    {
-                      "t": "frame",
-                      "name": "Text",
-                      "dir": "V",
-                      "gap": 3,
-                      "clip": true,
-                      "w": "fill",
-                      "children": [
-                        {
-                          "t": "frame",
-                          "name": "Titel",
-                          "dir": "H",
-                          "gap": 8,
-                          "cross": "CENTER",
-                          "clip": true,
-                          "children": [
-                            {
-                              "t": "text",
-                              "chars": "Backstage ansehen",
-                              "size": 13,
-                              "color": "#212124",
-                              "weight": "semibold"
-                            },
-                            {
-                              "t": "frame",
-                              "name": "Badge, Club",
-                              "dir": "H",
-                              "pad": [6, 6, 2, 2],
-                              "fill": "#fde162",
-                              "radius": 3,
-                              "clip": true,
-                              "children": [
-                                {
-                                  "t": "text",
-                                  "chars": "CLUB",
-                                  "size": 8,
-                                  "color": "#212124",
-                                  "weight": "semibold"
-                                }
-                              ]
-                            }
-                          ]
-                        },
-                        {
-                          "t": "text",
-                          "chars": "Was Clubmitglieder erwartet, offen angeteasert.",
-                          "size": 11,
-                          "color": "#7a7a82",
-                          "w": 250
-                        }
-                      ]
-                    },
-                    {
-                      "t": "text",
-                      "chars": "›",
-                      "size": 14,
-                      "color": "#7a7a82"
-                    }
-                  ]
-                },
-                {
-                  "t": "space",
-                  "h": 12,
-                  "w": "fill"
-                },
-                {
-                  "t": "line",
-                  "w": "fill"
-                },
-                {
-                  "t": "space",
-                  "h": 12,
-                  "w": "fill"
-                },
-                {
-                  "t": "frame",
-                  "name": "NavCard, Gespeicherte Artikel",
-                  "dir": "H",
-                  "gap": 12,
-                  "cross": "CENTER",
-                  "clip": true,
-                  "w": "fill",
-                  "children": [
-                    {
-                      "t": "frame",
-                      "name": "Symbol",
-                      "fill": "#f4f4f6",
-                      "radius": 3,
-                      "clip": true,
-                      "w": 20,
-                      "h": 20
-                    },
-                    {
-                      "t": "frame",
-                      "name": "Text",
-                      "dir": "V",
-                      "gap": 3,
-                      "clip": true,
-                      "w": "fill",
-                      "children": [
-                        {
-                          "t": "frame",
-                          "name": "Titel",
-                          "dir": "H",
-                          "gap": 8,
-                          "cross": "CENTER",
-                          "clip": true,
-                          "children": [
-                            {
-                              "t": "text",
-                              "chars": "Gespeicherte Artikel",
-                              "size": 13,
-                              "color": "#212124",
-                              "weight": "semibold"
-                            }
-                          ]
-                        },
-                        {
-                          "t": "text",
-                          "chars": "Noch nichts gespeichert",
-                          "size": 11,
-                          "color": "#7a7a82",
-                          "w": 250
-                        }
-                      ]
-                    },
-                    {
-                      "t": "text",
-                      "chars": "›",
-                      "size": 14,
-                      "color": "#7a7a82"
-                    }
-                  ]
-                },
-                {
-                  "t": "space",
-                  "h": 12,
-                  "w": "fill"
-                },
-                {
-                  "t": "line",
-                  "w": "fill"
-                },
-                {
-                  "t": "space",
-                  "h": 12,
-                  "w": "fill"
-                },
-                {
-                  "t": "frame",
-                  "name": "NavCard, App-Einstellungen",
-                  "dir": "H",
-                  "gap": 12,
-                  "cross": "CENTER",
-                  "clip": true,
-                  "w": "fill",
-                  "children": [
-                    {
-                      "t": "frame",
-                      "name": "Symbol",
-                      "fill": "#f4f4f6",
-                      "radius": 3,
-                      "clip": true,
-                      "w": 20,
-                      "h": 20
-                    },
-                    {
-                      "t": "frame",
-                      "name": "Text",
-                      "dir": "V",
-                      "gap": 3,
-                      "clip": true,
-                      "w": "fill",
-                      "children": [
-                        {
-                          "t": "frame",
-                          "name": "Titel",
-                          "dir": "H",
-                          "gap": 8,
-                          "cross": "CENTER",
-                          "clip": true,
-                          "children": [
-                            {
-                              "t": "text",
-                              "chars": "App-Einstellungen",
-                              "size": 13,
-                              "color": "#212124",
-                              "weight": "semibold"
-                            }
-                          ]
-                        },
-                        {
-                          "t": "text",
-                          "chars": "Benachrichtigungen, Textgröße, Über CORRECTIV",
-                          "size": 11,
-                          "color": "#7a7a82",
-                          "w": 250
-                        }
-                      ]
-                    },
-                    {
-                      "t": "text",
-                      "chars": "›",
-                      "size": 14,
-                      "color": "#7a7a82"
-                    }
-                  ]
-                },
-                {
-                  "t": "space",
-                  "h": 22,
-                  "w": "fill"
-                },
-                {
-                  "t": "text",
-                  "chars": "NEWSLETTER",
-                  "size": 9,
-                  "color": "#7a7a82",
-                  "weight": "semibold",
-                  "w": 320
-                },
-                {
-                  "t": "space",
-                  "h": 10,
-                  "w": "fill"
-                },
-                {
-                  "t": "frame",
-                  "name": "Newsletter",
-                  "dir": "V",
-                  "pad": [16, 16, 16, 16],
-                  "fill": "#ffffff",
-                  "stroke": "#e2e2e5",
-                  "radius": 6,
-                  "clip": true,
-                  "w": "fill",
-                  "children": [
-                    {
-                      "t": "frame",
-                      "name": "SettingRow, Spotlight",
-                      "dir": "H",
-                      "gap": 12,
-                      "cross": "CENTER",
-                      "clip": true,
-                      "w": "fill",
-                      "children": [
-                        {
-                          "t": "frame",
-                          "name": "Text",
-                          "dir": "V",
-                          "gap": 3,
-                          "clip": true,
-                          "w": "fill",
-                          "children": [
-                            {
-                              "t": "text",
-                              "chars": "Spotlight",
-                              "size": 12,
-                              "color": "#212124",
-                              "w": 220
-                            },
-                            {
-                              "t": "text",
-                              "chars": "Das Wichtigste, werktags am Morgen",
-                              "size": 11,
-                              "color": "#7a7a82",
-                              "w": 220
-                            }
-                          ]
-                        },
-                        {
-                          "t": "frame",
-                          "name": "Schalter",
-                          "fill": "#e0e0e3",
-                          "radius": 9,
-                          "clip": true,
-                          "w": 34,
-                          "h": 18,
-                          "children": [
-                            {
-                              "t": "ellipse",
-                              "w": 14,
-                              "h": 14,
-                              "fill": "#ffffff",
-                              "x": 2,
-                              "y": 2
-                            }
-                          ]
-                        }
-                      ]
-                    },
-                    {
-                      "t": "space",
-                      "h": 12,
-                      "w": "fill"
-                    },
-                    {
-                      "t": "line",
-                      "w": "fill"
-                    },
-                    {
-                      "t": "space",
-                      "h": 12,
-                      "w": "fill"
-                    },
-                    {
-                      "t": "frame",
-                      "name": "SettingRow, Spotlight Schweiz",
-                      "dir": "H",
-                      "gap": 12,
-                      "cross": "CENTER",
-                      "clip": true,
-                      "w": "fill",
-                      "children": [
-                        {
-                          "t": "frame",
-                          "name": "Text",
-                          "dir": "V",
-                          "gap": 3,
-                          "clip": true,
-                          "w": "fill",
-                          "children": [
-                            {
-                              "t": "text",
-                              "chars": "Spotlight Schweiz",
-                              "size": 12,
-                              "color": "#212124",
-                              "w": 220
-                            },
-                            {
-                              "t": "text",
-                              "chars": "Recherchen aus der Schweiz",
-                              "size": 11,
-                              "color": "#7a7a82",
-                              "w": 220
-                            }
-                          ]
-                        },
-                        {
-                          "t": "frame",
-                          "name": "Schalter",
-                          "fill": "#e0e0e3",
-                          "radius": 9,
-                          "clip": true,
-                          "w": 34,
-                          "h": 18,
-                          "children": [
-                            {
-                              "t": "ellipse",
-                              "w": 14,
-                              "h": 14,
-                              "fill": "#ffffff",
-                              "x": 2,
-                              "y": 2
-                            }
-                          ]
-                        }
-                      ]
-                    },
-                    {
-                      "t": "space",
-                      "h": 12,
-                      "w": "fill"
-                    },
-                    {
-                      "t": "line",
-                      "w": "fill"
-                    },
-                    {
-                      "t": "space",
-                      "h": 12,
-                      "w": "fill"
-                    },
-                    {
-                      "t": "frame",
-                      "name": "SettingRow, Klima",
-                      "dir": "H",
-                      "gap": 12,
-                      "cross": "CENTER",
-                      "clip": true,
-                      "w": "fill",
-                      "children": [
-                        {
-                          "t": "frame",
-                          "name": "Text",
-                          "dir": "V",
-                          "gap": 3,
-                          "clip": true,
-                          "w": "fill",
-                          "children": [
-                            {
-                              "t": "text",
-                              "chars": "Klima",
-                              "size": 12,
-                              "color": "#212124",
-                              "w": 220
-                            },
-                            {
-                              "t": "text",
-                              "chars": "Die Klima-Recherchen der Woche",
-                              "size": 11,
-                              "color": "#7a7a82",
-                              "w": 220
-                            }
-                          ]
-                        },
-                        {
-                          "t": "frame",
-                          "name": "Schalter",
-                          "fill": "#e0e0e3",
-                          "radius": 9,
-                          "clip": true,
-                          "w": 34,
-                          "h": 18,
-                          "children": [
-                            {
-                              "t": "ellipse",
-                              "w": 14,
-                              "h": 14,
-                              "fill": "#ffffff",
-                              "x": 2,
-                              "y": 2
-                            }
-                          ]
-                        }
-                      ]
-                    }
-                  ]
-                }
-              ]
-            }
-          ]
-        },
-        {
-          "t": "frame",
-          "name": "Tab bar",
-          "fill": "#ffffff",
-          "stroke": "#e2e2e5",
-          "clip": true,
-          "w": 360,
-          "h": 60,
-          "x": 0,
-          "y": 740,
-          "children": [
-            {
-              "t": "ellipse",
-              "w": 16,
-              "h": 16,
-              "stroke": "#7a7a82",
-              "x": 28,
-              "y": 13
-            },
-            {
-              "t": "text",
-              "chars": "Home",
-              "size": 8,
-              "color": "#7a7a82",
-              "w": 72,
-              "align": "center",
-              "x": 0,
-              "y": 38
-            },
-            {
-              "t": "ellipse",
-              "w": 16,
-              "h": 16,
-              "stroke": "#7a7a82",
-              "x": 100,
-              "y": 13
-            },
-            {
-              "t": "text",
-              "chars": "Entdecken",
-              "size": 8,
-              "color": "#7a7a82",
-              "w": 72,
-              "align": "center",
-              "x": 72,
-              "y": 38
-            },
-            {
-              "t": "ellipse",
-              "w": 16,
-              "h": 16,
-              "stroke": "#7a7a82",
-              "x": 172,
-              "y": 13
-            },
-            {
-              "t": "text",
-              "chars": "Mediathek",
-              "size": 8,
-              "color": "#7a7a82",
-              "w": 72,
-              "align": "center",
-              "x": 144,
-              "y": 38
-            },
-            {
-              "t": "ellipse",
-              "w": 16,
-              "h": 16,
-              "stroke": "#7a7a82",
-              "x": 244,
-              "y": 13
-            },
-            {
-              "t": "text",
-              "chars": "Mitmachen",
-              "size": 8,
-              "color": "#7a7a82",
-              "w": 72,
-              "align": "center",
-              "x": 216,
-              "y": 38
-            },
-            {
-              "t": "ellipse",
-              "w": 46,
-              "h": 26,
-              "fill": "#e8e8fa",
-              "x": 301,
-              "y": 8
-            },
-            {
-              "t": "ellipse",
-              "w": 16,
-              "h": 16,
-              "stroke": "#f9545f",
-              "x": 316,
-              "y": 13
-            },
-            {
-              "t": "text",
-              "chars": "Profil",
-              "size": 8,
-              "color": "#ff5064",
-              "weight": "semibold",
               "w": 72,
               "align": "center",
               "x": 288,
@@ -8868,6 +9056,985 @@
                   ]
                 }
               ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "t": "frame",
+      "name": "(tabs)/profil",
+      "x": 1680,
+      "y": 0,
+      "w": 360,
+      "h": 800,
+      "fill": "#ffffff",
+      "stroke": "#e2e2e5",
+      "radius": 10,
+      "clip": true,
+      "children": [
+        {
+          "t": "frame",
+          "name": "Statusleiste",
+          "fill": "#ffffff",
+          "clip": true,
+          "w": 360,
+          "h": 24,
+          "x": 0,
+          "y": 0,
+          "children": [
+            {
+              "t": "text",
+              "chars": "12:32",
+              "size": 9,
+              "color": "#212124",
+              "weight": "semibold",
+              "x": 12,
+              "y": 7
+            },
+            {
+              "t": "text",
+              "chars": ". il I",
+              "size": 9,
+              "color": "#212124",
+              "x": 320,
+              "y": 7
+            }
+          ]
+        },
+        {
+          "t": "frame",
+          "name": "Inhalt",
+          "dir": "V",
+          "w": 360,
+          "x": 0,
+          "y": 24,
+          "children": [
+            {
+              "t": "frame",
+              "name": "Spalte",
+              "dir": "V",
+              "w": "fill",
+              "pad": [20, 20, 0, 0],
+              "children": [
+                {
+                  "t": "space",
+                  "h": 14,
+                  "w": "fill"
+                },
+                {
+                  "t": "text",
+                  "chars": "Profil",
+                  "size": 26,
+                  "color": "#212124",
+                  "weight": "semibold",
+                  "w": 320
+                },
+                {
+                  "t": "space",
+                  "h": 12,
+                  "w": "fill"
+                },
+                {
+                  "t": "frame",
+                  "name": "ClubCard",
+                  "dir": "V",
+                  "w": "fill",
+                  "fill": "#fde162",
+                  "radius": 6,
+                  "pad": [20, 20, 20, 20],
+                  "children": [
+                    {
+                      "t": "frame",
+                      "name": "Kopf",
+                      "dir": "H",
+                      "w": "fill",
+                      "cross": "CENTER",
+                      "children": [
+                        {
+                          "t": "text",
+                          "chars": "CORRECTIV CLUB",
+                          "size": 10,
+                          "color": "#212124",
+                          "weight": "semibold",
+                          "tracking": 8
+                        },
+                        {
+                          "t": "frame",
+                          "name": "Dehnung",
+                          "dir": "H",
+                          "w": "fill"
+                        },
+                        {
+                          "t": "text",
+                          "chars": "♡",
+                          "size": 14,
+                          "color": "#212124"
+                        }
+                      ]
+                    },
+                    {
+                      "t": "space",
+                      "h": 16,
+                      "w": "fill"
+                    },
+                    {
+                      "t": "text",
+                      "chars": "Alex Beispiel",
+                      "size": 20,
+                      "color": "#212124",
+                      "weight": "semibold",
+                      "w": 280
+                    },
+                    {
+                      "t": "space",
+                      "h": 4,
+                      "w": "fill"
+                    },
+                    {
+                      "t": "text",
+                      "chars": "Mitgliedschaft mit Beitrag",
+                      "size": 13,
+                      "color": "#5a4f14",
+                      "w": 280
+                    }
+                  ]
+                },
+                {
+                  "t": "space",
+                  "h": 24,
+                  "w": "fill"
+                },
+                {
+                  "t": "text",
+                  "chars": "IHRE MITGLIEDSCHAFT",
+                  "size": 10,
+                  "color": "#7a7a82",
+                  "weight": "semibold",
+                  "w": 320,
+                  "tracking": 8
+                },
+                {
+                  "t": "space",
+                  "h": 10,
+                  "w": "fill"
+                },
+                {
+                  "t": "frame",
+                  "name": "Card, Mitgliedschaft",
+                  "dir": "V",
+                  "w": "fill",
+                  "fill": "#ffffff",
+                  "stroke": "#e2e2e5",
+                  "radius": 6,
+                  "pad": [16, 16, 16, 16],
+                  "children": [
+                    {
+                      "t": "frame",
+                      "name": "Zeile",
+                      "dir": "H",
+                      "w": "fill",
+                      "cross": "CENTER",
+                      "children": [
+                        {
+                          "t": "text",
+                          "chars": "Ihr Beitrag",
+                          "size": 13,
+                          "color": "#212124"
+                        },
+                        {
+                          "t": "frame",
+                          "name": "Dehnung",
+                          "dir": "H",
+                          "w": "fill"
+                        },
+                        {
+                          "t": "text",
+                          "chars": "Noch nicht festgelegt",
+                          "size": 13,
+                          "color": "#7a7a82"
+                        }
+                      ]
+                    },
+                    {
+                      "t": "space",
+                      "h": 14,
+                      "w": "fill"
+                    },
+                    {
+                      "t": "frame",
+                      "name": "Aktionen",
+                      "dir": "H",
+                      "w": "fill",
+                      "gap": 10,
+                      "children": [
+                        {
+                          "t": "frame",
+                          "name": "Button, Beitrag ändern",
+                          "dir": "H",
+                          "w": "fill",
+                          "h": 44,
+                          "fill": "#f4f4f6",
+                          "radius": 4,
+                          "align": "CENTER",
+                          "cross": "CENTER",
+                          "children": [
+                            {
+                              "t": "text",
+                              "chars": "Beitrag ändern",
+                              "size": 13,
+                              "color": "#212124",
+                              "weight": "semibold"
+                            }
+                          ]
+                        },
+                        {
+                          "t": "frame",
+                          "name": "Button, Pausieren",
+                          "dir": "H",
+                          "w": "fill",
+                          "h": 44,
+                          "fill": "#f4f4f6",
+                          "radius": 4,
+                          "align": "CENTER",
+                          "cross": "CENTER",
+                          "children": [
+                            {
+                              "t": "text",
+                              "chars": "Pausieren",
+                              "size": 13,
+                              "color": "#212124",
+                              "weight": "semibold"
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  ]
+                },
+                {
+                  "t": "space",
+                  "h": 24,
+                  "w": "fill"
+                },
+                {
+                  "t": "text",
+                  "chars": "IHR IMPACT",
+                  "size": 10,
+                  "color": "#7a7a82",
+                  "weight": "semibold",
+                  "w": 320,
+                  "tracking": 8
+                },
+                {
+                  "t": "space",
+                  "h": 10,
+                  "w": "fill"
+                },
+                {
+                  "t": "frame",
+                  "name": "Card, Impact",
+                  "dir": "V",
+                  "w": "fill",
+                  "fill": "#f4f4f6",
+                  "radius": 6,
+                  "pad": [16, 16, 16, 16],
+                  "children": [
+                    {
+                      "t": "text",
+                      "chars": "Ihr Beitrag ermöglicht diese Recherchen. Unter anderem diese hier:",
+                      "size": 13,
+                      "color": "#212124",
+                      "w": 288
+                    },
+                    {
+                      "t": "space",
+                      "h": 14,
+                      "w": "fill"
+                    },
+                    {
+                      "t": "text",
+                      "chars": "Russisches Haus – Ein Ende für Propaganda und Spionage?",
+                      "size": 13,
+                      "color": "#212124",
+                      "weight": "semibold",
+                      "w": 288
+                    },
+                    {
+                      "t": "space",
+                      "h": 12,
+                      "w": "fill"
+                    },
+                    {
+                      "t": "text",
+                      "chars": "Riskante Grauzone: Bundeswehr schafft Einfallstor für chinesische Spionage",
+                      "size": 13,
+                      "color": "#212124",
+                      "weight": "semibold",
+                      "w": 288
+                    },
+                    {
+                      "t": "space",
+                      "h": 12,
+                      "w": "fill"
+                    },
+                    {
+                      "t": "text",
+                      "chars": "Jugendliche erleben Wald, Klimawandel und Gesundheit hautnah",
+                      "size": 13,
+                      "color": "#212124",
+                      "weight": "semibold",
+                      "w": 288
+                    }
+                  ]
+                },
+                {
+                  "t": "space",
+                  "h": 24,
+                  "w": "fill"
+                },
+                {
+                  "t": "text",
+                  "chars": "IHR BEREICH",
+                  "size": 10,
+                  "color": "#7a7a82",
+                  "weight": "semibold",
+                  "w": 320,
+                  "tracking": 8
+                },
+                {
+                  "t": "space",
+                  "h": 12,
+                  "w": "fill"
+                },
+                {
+                  "t": "frame",
+                  "name": "NavCard, Quartalsbericht 1/2026",
+                  "dir": "H",
+                  "w": "fill",
+                  "gap": 12,
+                  "cross": "CENTER",
+                  "children": [
+                    {
+                      "t": "frame",
+                      "name": "Symbol",
+                      "dir": "H",
+                      "w": 20,
+                      "h": 20,
+                      "fill": "#f4f4f6",
+                      "radius": 3
+                    },
+                    {
+                      "t": "frame",
+                      "name": "Text",
+                      "dir": "V",
+                      "w": "fill",
+                      "gap": 3,
+                      "children": [
+                        {
+                          "t": "frame",
+                          "name": "Titel",
+                          "dir": "H",
+                          "gap": 8,
+                          "cross": "CENTER",
+                          "children": [
+                            {
+                              "t": "text",
+                              "chars": "Quartalsbericht 1/2026",
+                              "size": 13,
+                              "color": "#212124",
+                              "weight": "semibold"
+                            },
+                            {
+                              "t": "frame",
+                              "name": "Badge, CLUB",
+                              "dir": "H",
+                              "fill": "#fde162",
+                              "radius": 2,
+                              "pad": [6, 6, 3, 3],
+                              "children": [
+                                {
+                                  "t": "text",
+                                  "chars": "CLUB",
+                                  "size": 9,
+                                  "color": "#212124",
+                                  "weight": "semibold",
+                                  "tracking": 6
+                                }
+                              ]
+                            }
+                          ]
+                        },
+                        {
+                          "t": "text",
+                          "chars": "Wohin Ihr Beitrag fließt, transparent aufgeschlüsselt.",
+                          "size": 11,
+                          "color": "#7a7a82",
+                          "w": 250
+                        }
+                      ]
+                    },
+                    {
+                      "t": "text",
+                      "chars": "›",
+                      "size": 13,
+                      "color": "#7a7a82"
+                    }
+                  ]
+                },
+                {
+                  "t": "space",
+                  "h": 12,
+                  "w": "fill"
+                },
+                {
+                  "t": "line",
+                  "w": "fill"
+                },
+                {
+                  "t": "space",
+                  "h": 12,
+                  "w": "fill"
+                },
+                {
+                  "t": "frame",
+                  "name": "NavCard, Ihr Backstage",
+                  "dir": "H",
+                  "w": "fill",
+                  "gap": 12,
+                  "cross": "CENTER",
+                  "children": [
+                    {
+                      "t": "frame",
+                      "name": "Symbol",
+                      "dir": "H",
+                      "w": 20,
+                      "h": 20,
+                      "fill": "#f4f4f6",
+                      "radius": 3
+                    },
+                    {
+                      "t": "frame",
+                      "name": "Text",
+                      "dir": "V",
+                      "w": "fill",
+                      "gap": 3,
+                      "children": [
+                        {
+                          "t": "frame",
+                          "name": "Titel",
+                          "dir": "H",
+                          "gap": 8,
+                          "cross": "CENTER",
+                          "children": [
+                            {
+                              "t": "text",
+                              "chars": "Ihr Backstage",
+                              "size": 13,
+                              "color": "#212124",
+                              "weight": "semibold"
+                            },
+                            {
+                              "t": "frame",
+                              "name": "Badge, CLUB",
+                              "dir": "H",
+                              "fill": "#fde162",
+                              "radius": 2,
+                              "pad": [6, 6, 3, 3],
+                              "children": [
+                                {
+                                  "t": "text",
+                                  "chars": "CLUB",
+                                  "size": 9,
+                                  "color": "#212124",
+                                  "weight": "semibold",
+                                  "tracking": 6
+                                }
+                              ]
+                            }
+                          ]
+                        },
+                        {
+                          "t": "text",
+                          "chars": "Tagebücher, Bonusfolgen, Events",
+                          "size": 11,
+                          "color": "#7a7a82",
+                          "w": 250
+                        }
+                      ]
+                    },
+                    {
+                      "t": "text",
+                      "chars": "›",
+                      "size": 13,
+                      "color": "#7a7a82"
+                    }
+                  ]
+                },
+                {
+                  "t": "space",
+                  "h": 12,
+                  "w": "fill"
+                },
+                {
+                  "t": "line",
+                  "w": "fill"
+                },
+                {
+                  "t": "space",
+                  "h": 12,
+                  "w": "fill"
+                },
+                {
+                  "t": "frame",
+                  "name": "NavCard, Gespeicherte Artikel",
+                  "dir": "H",
+                  "w": "fill",
+                  "gap": 12,
+                  "cross": "CENTER",
+                  "children": [
+                    {
+                      "t": "frame",
+                      "name": "Symbol",
+                      "dir": "H",
+                      "w": 20,
+                      "h": 20,
+                      "fill": "#f4f4f6",
+                      "radius": 3
+                    },
+                    {
+                      "t": "frame",
+                      "name": "Text",
+                      "dir": "V",
+                      "w": "fill",
+                      "gap": 3,
+                      "children": [
+                        {
+                          "t": "frame",
+                          "name": "Titel",
+                          "dir": "H",
+                          "gap": 8,
+                          "cross": "CENTER",
+                          "children": [
+                            {
+                              "t": "text",
+                              "chars": "Gespeicherte Artikel",
+                              "size": 13,
+                              "color": "#212124",
+                              "weight": "semibold"
+                            }
+                          ]
+                        },
+                        {
+                          "t": "text",
+                          "chars": "Noch nichts gespeichert",
+                          "size": 11,
+                          "color": "#7a7a82",
+                          "w": 250
+                        }
+                      ]
+                    },
+                    {
+                      "t": "text",
+                      "chars": "›",
+                      "size": 13,
+                      "color": "#7a7a82"
+                    }
+                  ]
+                },
+                {
+                  "t": "space",
+                  "h": 12,
+                  "w": "fill"
+                },
+                {
+                  "t": "line",
+                  "w": "fill"
+                },
+                {
+                  "t": "space",
+                  "h": 12,
+                  "w": "fill"
+                },
+                {
+                  "t": "frame",
+                  "name": "NavCard, App-Einstellungen",
+                  "dir": "H",
+                  "w": "fill",
+                  "gap": 12,
+                  "cross": "CENTER",
+                  "children": [
+                    {
+                      "t": "frame",
+                      "name": "Symbol",
+                      "dir": "H",
+                      "w": 20,
+                      "h": 20,
+                      "fill": "#f4f4f6",
+                      "radius": 3
+                    },
+                    {
+                      "t": "frame",
+                      "name": "Text",
+                      "dir": "V",
+                      "w": "fill",
+                      "gap": 3,
+                      "children": [
+                        {
+                          "t": "frame",
+                          "name": "Titel",
+                          "dir": "H",
+                          "gap": 8,
+                          "cross": "CENTER",
+                          "children": [
+                            {
+                              "t": "text",
+                              "chars": "App-Einstellungen",
+                              "size": 13,
+                              "color": "#212124",
+                              "weight": "semibold"
+                            }
+                          ]
+                        },
+                        {
+                          "t": "text",
+                          "chars": "Benachrichtigungen, Textgröße, Über CORRECTIV",
+                          "size": 11,
+                          "color": "#7a7a82",
+                          "w": 250
+                        }
+                      ]
+                    },
+                    {
+                      "t": "text",
+                      "chars": "›",
+                      "size": 13,
+                      "color": "#7a7a82"
+                    }
+                  ]
+                },
+                {
+                  "t": "space",
+                  "h": 24,
+                  "w": "fill"
+                },
+                {
+                  "t": "text",
+                  "chars": "NEWSLETTER",
+                  "size": 10,
+                  "color": "#7a7a82",
+                  "weight": "semibold",
+                  "w": 320,
+                  "tracking": 8
+                },
+                {
+                  "t": "space",
+                  "h": 10,
+                  "w": "fill"
+                },
+                {
+                  "t": "frame",
+                  "name": "Card, Newsletter",
+                  "dir": "V",
+                  "w": "fill",
+                  "fill": "#ffffff",
+                  "stroke": "#e2e2e5",
+                  "radius": 6,
+                  "pad": [16, 16, 16, 16],
+                  "children": [
+                    {
+                      "t": "frame",
+                      "name": "SettingRow, Spotlight",
+                      "dir": "H",
+                      "w": "fill",
+                      "gap": 12,
+                      "cross": "CENTER",
+                      "children": [
+                        {
+                          "t": "frame",
+                          "name": "Text",
+                          "dir": "V",
+                          "w": "fill",
+                          "gap": 3,
+                          "children": [
+                            {
+                              "t": "text",
+                              "chars": "Spotlight",
+                              "size": 12,
+                              "color": "#212124",
+                              "w": 220
+                            },
+                            {
+                              "t": "text",
+                              "chars": "Das Wichtigste, werktags am Morgen",
+                              "size": 11,
+                              "color": "#7a7a82",
+                              "w": 220
+                            }
+                          ]
+                        },
+                        {
+                          "t": "frame",
+                          "name": "Schalter",
+                          "dir": "H",
+                          "w": 34,
+                          "h": 18,
+                          "fill": "#e0e0e3",
+                          "radius": 9,
+                          "children": [
+                            {
+                              "t": "ellipse",
+                              "w": 14,
+                              "h": 14,
+                              "fill": "#ffffff"
+                            }
+                          ]
+                        }
+                      ]
+                    },
+                    {
+                      "t": "space",
+                      "h": 12,
+                      "w": "fill"
+                    },
+                    {
+                      "t": "line",
+                      "w": "fill"
+                    },
+                    {
+                      "t": "space",
+                      "h": 12,
+                      "w": "fill"
+                    },
+                    {
+                      "t": "frame",
+                      "name": "SettingRow, Spotlight Schweiz",
+                      "dir": "H",
+                      "w": "fill",
+                      "gap": 12,
+                      "cross": "CENTER",
+                      "children": [
+                        {
+                          "t": "frame",
+                          "name": "Text",
+                          "dir": "V",
+                          "w": "fill",
+                          "gap": 3,
+                          "children": [
+                            {
+                              "t": "text",
+                              "chars": "Spotlight Schweiz",
+                              "size": 12,
+                              "color": "#212124",
+                              "w": 220
+                            },
+                            {
+                              "t": "text",
+                              "chars": "Recherchen aus der Schweiz",
+                              "size": 11,
+                              "color": "#7a7a82",
+                              "w": 220
+                            }
+                          ]
+                        },
+                        {
+                          "t": "frame",
+                          "name": "Schalter",
+                          "dir": "H",
+                          "w": 34,
+                          "h": 18,
+                          "fill": "#e0e0e3",
+                          "radius": 9,
+                          "children": [
+                            {
+                              "t": "ellipse",
+                              "w": 14,
+                              "h": 14,
+                              "fill": "#ffffff"
+                            }
+                          ]
+                        }
+                      ]
+                    },
+                    {
+                      "t": "space",
+                      "h": 12,
+                      "w": "fill"
+                    },
+                    {
+                      "t": "line",
+                      "w": "fill"
+                    },
+                    {
+                      "t": "space",
+                      "h": 12,
+                      "w": "fill"
+                    },
+                    {
+                      "t": "frame",
+                      "name": "SettingRow, Klima",
+                      "dir": "H",
+                      "w": "fill",
+                      "gap": 12,
+                      "cross": "CENTER",
+                      "children": [
+                        {
+                          "t": "frame",
+                          "name": "Text",
+                          "dir": "V",
+                          "w": "fill",
+                          "gap": 3,
+                          "children": [
+                            {
+                              "t": "text",
+                              "chars": "Klima",
+                              "size": 12,
+                              "color": "#212124",
+                              "w": 220
+                            },
+                            {
+                              "t": "text",
+                              "chars": "Die Klima-Recherchen der Woche",
+                              "size": 11,
+                              "color": "#7a7a82",
+                              "w": 220
+                            }
+                          ]
+                        },
+                        {
+                          "t": "frame",
+                          "name": "Schalter",
+                          "dir": "H",
+                          "w": 34,
+                          "h": 18,
+                          "fill": "#e0e0e3",
+                          "radius": 9,
+                          "children": [
+                            {
+                              "t": "ellipse",
+                              "w": 14,
+                              "h": 14,
+                              "fill": "#ffffff"
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "t": "frame",
+          "name": "Tab bar",
+          "fill": "#ffffff",
+          "stroke": "#e2e2e5",
+          "clip": true,
+          "w": 360,
+          "h": 60,
+          "x": 0,
+          "y": 740,
+          "children": [
+            {
+              "t": "ellipse",
+              "w": 16,
+              "h": 16,
+              "stroke": "#7a7a82",
+              "x": 28,
+              "y": 13
+            },
+            {
+              "t": "text",
+              "chars": "Home",
+              "size": 8,
+              "color": "#7a7a82",
+              "w": 72,
+              "align": "center",
+              "x": 0,
+              "y": 38
+            },
+            {
+              "t": "ellipse",
+              "w": 16,
+              "h": 16,
+              "stroke": "#7a7a82",
+              "x": 100,
+              "y": 13
+            },
+            {
+              "t": "text",
+              "chars": "Entdecken",
+              "size": 8,
+              "color": "#7a7a82",
+              "w": 72,
+              "align": "center",
+              "x": 72,
+              "y": 38
+            },
+            {
+              "t": "ellipse",
+              "w": 16,
+              "h": 16,
+              "stroke": "#7a7a82",
+              "x": 172,
+              "y": 13
+            },
+            {
+              "t": "text",
+              "chars": "Mediathek",
+              "size": 8,
+              "color": "#7a7a82",
+              "w": 72,
+              "align": "center",
+              "x": 144,
+              "y": 38
+            },
+            {
+              "t": "ellipse",
+              "w": 16,
+              "h": 16,
+              "stroke": "#7a7a82",
+              "x": 244,
+              "y": 13
+            },
+            {
+              "t": "text",
+              "chars": "Mitmachen",
+              "size": 8,
+              "color": "#7a7a82",
+              "w": 72,
+              "align": "center",
+              "x": 216,
+              "y": 38
+            },
+            {
+              "t": "ellipse",
+              "w": 46,
+              "h": 26,
+              "fill": "#e8e8fa",
+              "x": 301,
+              "y": 8
+            },
+            {
+              "t": "ellipse",
+              "w": 16,
+              "h": 16,
+              "stroke": "#f9545f",
+              "x": 316,
+              "y": 13
+            },
+            {
+              "t": "text",
+              "chars": "Profil",
+              "size": 8,
+              "color": "#ff5064",
+              "weight": "semibold",
+              "w": 72,
+              "align": "center",
+              "x": 288,
+              "y": 38
             }
           ]
         }
