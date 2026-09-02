@@ -73,7 +73,23 @@
 
   onmessage = async (event) => {
     const m = event.data.pluginMessage;
-    if (!m || m.type !== 'done') return;
+    if (!m) return;
+
+    if (m.type === 'export') {
+      // A board read back out, on its way to becoming spec.json.
+      try {
+        await fetch(BASE + '/export', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ page: m.page, screens: m.screens }),
+        });
+      } catch (e) {
+        status('bad', 'Export nicht zustellbar');
+      }
+      return;
+    }
+
+    if (m.type !== 'done') return;
     drawing = false;
     status(m.error ? 'bad' : 'on', m.error ? m.error : m.summary);
     try {

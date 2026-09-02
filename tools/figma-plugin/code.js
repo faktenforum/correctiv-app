@@ -77,10 +77,22 @@ const MODES = {
       '#ffffff': '#ffffff',
       '#f4f4f6': '#f5f5f6',
       '#e2e2e5': null,
+      // Brand and accent become nothing but an outline: a wireframe must not be able
+      // to start an argument about the red.
       '#ff5064': null,
       '#fde162': null,
+      '#e8e8fa': null,
+      '#cc2121': null,
+      // Media placeholders keep a tint, because "a picture goes here" is structure.
+      '#dadadd': '#efeff1',
+      '#d9d9db': '#efeff1',
+      // Tracks and switches: visible, but quieter than the boxes around them.
+      '#e5e5e8': '#eaeaec',
+      '#e0e0e3': '#eaeaec',
+      // Dark surfaces invert rather than turn into ink blocks.
       '#141417': '#ededf0',
-      '#212124': null,
+      '#212124': '#ededf0',
+      '#333336': '#ededf0',
       '#7a7a82': null,
       '#a8a8b0': null,
     },
@@ -247,6 +259,15 @@ function addOutline(node, spec) {
   const w = node.width;
   const h = node.height;
   if (w < 2 || h < 1) return;
+
+  // A rectangle or an ellipse cannot hold children, so the wobble has nowhere to
+  // live. These are the small parts anyway — tab dots, toggle knobs, a progress bar
+  // — and at that size a drawn edge would read as noise. They get a plain stroke.
+  if (typeof node.appendChild !== 'function') {
+    node.strokes = [{ type: 'SOLID', color: rgb(PENCIL) }];
+    node.strokeWeight = 1;
+    return;
+  }
   const seed = seedOf((spec.name || spec.t || 'x') + ':' + Math.round(w) + 'x' + Math.round(h));
   const v = figma.createVector();
   v.name = 'Skizze';
@@ -500,6 +521,140 @@ async function drawPage(entry, screens) {
   return { name: entry.name, screens: screens.length, arrows: arrows, sketched: sketched };
 }
 
+// ---------------------------------------------------------------- reading back
+//
+// Screens drawn before the interpreter existed are Figma objects and nothing else:
+// the imperative code that produced them is gone. Rather than re-typing them from a
+// screenshot, the plugin reads them out — it sees auto-layout, sizing modes, fonts
+// and fills from the inside, which no amount of squinting at a PNG can match.
+//
+// This is a one-way door on purpose. The result is a STARTING POINT for spec.json,
+// not a format the board is kept in: once a screen is described, the description is
+// the source and the board is the output.
+
+function hexOf(paints) {
+  if (!paints || paints === figma.mixed || paints.length === 0) return undefined;
+  const p = paints[0];
+  if (p.type !== 'SOLID' || p.visible === false) return undefined;
+  const to = (v) =>
+    Math.round(v * 255)
+      .toString(16)
+      .padStart(2, '0');
+  return '#' + to(p.color.r) + to(p.color.g) + to(p.color.b);
+}
+
+function sizeOf(node, axis) {
+  const mode = axis === 'w' ? node.layoutSizingHorizontal : node.layoutSizingVertical;
+  if (mode === 'FILL') return 'fill';
+  if (mode === 'HUG') return undefined;
+  return Math.round(axis === 'w' ? node.width : node.height);
+}
+
+function readNode(node, parentIsAutoLayout) {
+  // The pencil overlays are output, never input.
+  if (node.name === 'Skizze') return null;
+
+  if (node.type === 'TEXT') {
+    const font =
+      node.fontName === figma.mixed ? { family: 'Inter', style: 'Regular' } : node.fontName;
+    const style = (font.style || '').toLowerCase();
+    const out = {
+      t: 'text',
+      chars: node.characters,
+      size: Math.round(node.fontSize === figma.mixed ? 12 : node.fontSize),
+      color: hexOf(node.fills) || '#212124',
+    };
+    if (font.family === 'Merriweather') out.font = 'serif';
+    if (style.indexOf('bold') !== -1 || style.indexOf('semi') !== -1) out.weight = 'semibold';
+    if (node.textAutoResize === 'HEIGHT') out.w = Math.round(node.width);
+    if (node.textAlignHorizontal && node.textAlignHorizontal !== 'LEFT') {
+      out.align = node.textAlignHorizontal.toLowerCase();
+    }
+    if (!parentIsAutoLayout) {
+      out.x = Math.round(node.x);
+      out.y = Math.round(node.y);
+    }
+    return out;
+  }
+
+  if (node.type === 'ELLIPSE' || node.type === 'RECTANGLE') {
+    const out = {
+      t: node.type === 'ELLIPSE' ? 'ellipse' : 'rect',
+      w: Math.round(node.width),
+      h: Math.round(node.height),
+    };
+    const fill = hexOf(node.fills);
+    if (fill) out.fill = fill;
+    const stroke = hexOf(node.strokes);
+    if (stroke) out.stroke = stroke;
+    if (node.cornerRadius && node.cornerRadius !== figma.mixed) out.radius = node.cornerRadius;
+    if (!parentIsAutoLayout) {
+      out.x = Math.round(node.x);
+      out.y = Math.round(node.y);
+    }
+    return out;
+  }
+
+  if (node.type !== 'FRAME' && node.type !== 'COMPONENT' && node.type !== 'INSTANCE') return null;
+
+  // The two shapes the builder used often enough to have earned a name of their own.
+  if (node.name === 'Abstand') return { t: 'space', h: Math.round(node.height), w: 'fill' };
+  if (node.name === 'Hairline') return { t: 'line', w: 'fill' };
+
+  const auto = node.layoutMode && node.layoutMode !== 'NONE';
+  const out = { t: 'frame', name: node.name };
+  if (auto) {
+    out.dir = node.layoutMode === 'HORIZONTAL' ? 'H' : 'V';
+    if (node.itemSpacing) out.gap = node.itemSpacing;
+    const pad = [node.paddingLeft, node.paddingRight, node.paddingTop, node.paddingBottom];
+    if (pad.some((v) => v)) out.pad = pad;
+    if (node.primaryAxisAlignItems && node.primaryAxisAlignItems !== 'MIN')
+      out.align = node.primaryAxisAlignItems;
+    if (node.counterAxisAlignItems && node.counterAxisAlignItems !== 'MIN')
+      out.cross = node.counterAxisAlignItems;
+    if (node.layoutWrap === 'WRAP') out.wrap = true;
+  }
+  const fill = hexOf(node.fills);
+  if (fill) out.fill = fill;
+  const stroke = hexOf(node.strokes);
+  if (stroke) out.stroke = stroke;
+  if (node.cornerRadius && node.cornerRadius !== figma.mixed) out.radius = node.cornerRadius;
+  if (node.clipsContent) out.clip = true;
+
+  const w = sizeOf(node, 'w');
+  const h = sizeOf(node, 'h');
+  if (w !== undefined) out.w = w;
+  // A fixed height must survive even on an auto-layout frame. Skipping it there
+  // silently flattened every image placeholder to the height of its own caption,
+  // and because the board is redrawn from this description, the original was then
+  // gone from Figma too.
+  if (h !== undefined) out.h = h;
+  if (!parentIsAutoLayout) {
+    out.x = Math.round(node.x);
+    out.y = Math.round(node.y);
+  }
+
+  const children = [];
+  for (const child of node.children || []) {
+    const read = readNode(child, auto);
+    if (read !== null) children.push(read);
+  }
+  if (children.length > 0) out.children = children;
+  return out;
+}
+
+function readPage(name) {
+  let page = null;
+  for (const p of figma.root.children) if (p.name === name) page = p;
+  if (page === null) return null;
+  const screens = [];
+  for (const node of page.children) {
+    const read = readNode(node, false);
+    if (read !== null) screens.push(read);
+  }
+  return screens;
+}
+
 async function draw(spec) {
   // One description, rendered once per page. `screens` may live on the page entry or,
   // when both pages show the same thing, once at the top for all of them.
@@ -524,12 +679,22 @@ figma.ui.onmessage = async (msg) => {
   if (msg === null || msg === undefined || msg.type !== 'spec') return;
   try {
     const summary = await draw(msg.spec);
+    // `readBack: "<page>"` in the spec asks for that page as a description. It runs
+    // after the draw so it can also read back what was just drawn.
+    if (msg.spec.readBack) {
+      const screens = readPage(msg.spec.readBack);
+      if (screens !== null) {
+        figma.ui.postMessage({ type: 'export', page: msg.spec.readBack, screens: screens });
+      }
+    }
     figma.ui.postMessage({ type: 'done', summary: summary, error: null });
   } catch (err) {
+    // The stack, not just the message: "not a function" on its own says nothing
+    // about WHICH node of several thousand was being drawn.
     figma.ui.postMessage({
       type: 'done',
       summary: null,
-      error: String((err && err.message) || err),
+      error: String((err && err.stack) || (err && err.message) || err),
     });
   }
 };
