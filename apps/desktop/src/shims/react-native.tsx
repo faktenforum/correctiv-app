@@ -53,6 +53,12 @@
 // announcement is wired from the state change that causes it, which is app code
 // rather than this file. Named here so it is a decision with a cost rather than a
 // prop that quietly went missing.
+//
+// It is coming back sooner than from here: `@gjsify/react-native` is growing an answer
+// on `Text`, through that same `Gtk.Accessible.announce()`. That is the right place for
+// it — the layer holds the widget and sees the text change, and this file sees neither.
+// When it lands, the row above becomes IMPLEMENTED and this paragraph goes with it.
+// Check the door when it does, because both uses are there.
 
 // Type-only: the values come from `gi://` at runtime, which resolves only inside a
 // GTK process. `@girs/*` is the same vocabulary as data, so `tsc` can read it here.
@@ -1083,7 +1089,10 @@ const TextInputPrimitive = wrap<TextInputProps>(BaseTextInput, 'TextInput');
  * no-op, which is the trade this whole file exists to refuse.
  *
  * Upstream this belongs in `@gjsify/react-native`: the layer knows the widget and the
- * type, and every app that moves focus between two fields will need it.
+ * type, and every app that moves focus between two fields will need it. It is being
+ * built there now — an instance type plus a handle carrying `focus`, `blur`, `clear`,
+ * `isFocused` and `setSelection`. When it arrives, DELETE this rather than grow it: the
+ * argument above is for keeping a local handle honest, not for keeping a local handle.
  */
 export interface TextInput {
   /** `Gtk.Widget.grab_focus()`. Returns nothing, where GTK returns whether it took. */

@@ -102,9 +102,12 @@ exactly that expressed as a typed array with `getItemType`. It would be a real
 restructuring of the app's most-read screen for a benefit nobody has measured, and it
 was deliberately not attempted here.
 
-**The desktop host is a reason, not a plan.** No gjsify target exists in this repo.
-If one is ever built, three things this app does today are not answered by
-`@gjsify/react-native`'s support table and would need their own decisions: `Animated`
-(planned, tier P3 — `artikel.tsx`'s reader-header fade), `hitSlop` (refused by name;
-used in four places), and remote-URL images (`Gtk.Picture` takes local paths, and the
-app is on `expo-image` rather than RN's `Image` in any case).
+**The desktop host is a reason, not a plan.** ~~No gjsify target exists in this
+repo.~~ One does, in `apps/desktop`, and
+[ADR 0020](0020-re-exported-screens-and-a-variant-where-the-host-refuses.md) records
+what became of the three decisions this paragraph asks for: all three were needed, and
+all three are made. If one is ever built, three things this app does today are not
+answered by `@gjsify/react-native`'s support table and would need their own decisions:
+`Animated` (planned, tier P3 — `artikel.tsx`'s reader-header fade), `hitSlop` (refused
+by name; used in four places), and remote-URL images (`Gtk.Picture` takes local paths,
+and the app is on `expo-image` rather than RN's `Image` in any case).

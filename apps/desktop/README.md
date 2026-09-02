@@ -195,6 +195,22 @@ Two things are known to be missing on the new targets, and neither is in this tr
 | **The reader's WebView** | `gi://WebKit` is in none of the shipped GTK runtime bundles. macOS has a separate WKWebView shim behind the same namespace, but it declares the node runtime unsupported and implements no `decide-policy`, which is what the navigation gate uses. Windows has no engine at all. |
 | **Live radio** | the bundles carry an audio-only GStreamer plugin set with no `souphttpsrc`, so an `https://` stream finds no source element. The bundled episode plays. |
 
+**Both are being answered upstream, and neither answer is in this tree.** The table above
+is the state of `@gjsify/*` `^0.45.0`, which is what `package.json` pins and what these
+bundles were built against; the sentences below are gjsify's own measurements, not this
+repo's, and nothing here has been re-run against them.
+
+- The reader **loads on macOS under Node** — `LoadEvent.FINISHED`, with the DOM read back
+  to check it was the reader document and not an error page. So "declares the node
+  runtime unsupported" is on its way to being false, for macOS.
+- **Windows still has no substrate.** Its runtime bundle carries 45 typelibs and `WebKit`
+  is not among them, which is a packaging gap rather than a shim gap, and it is open.
+- **Streaming is coming to both**, as `souphttpsrc` plus TLS in the darwin and win32
+  plugin sets.
+
+Re-measure here on the next version bump before changing the table: this host has three
+targets and a claim proven on one of them has never yet held on the others.
+
 And one defect is measured and open upstream: a GTK app on `@gjsify/node-gi` dies
 intermittently in the GI bridge (SIGSEGV or SIGABRT, roughly one run in three here),
 which is a known nondeterministic lifetime bug in the bridge rather than anything this
@@ -220,6 +236,14 @@ line. The three that differ — `_layout`, `(tabs)/_layout`, `artikel` — each 
 header saying why, and `test/route-tree.test.ts` fails if the phone grows a screen this
 host does not.
 
+[ADR 0020](../../adr/0020-re-exported-screens-and-a-variant-where-the-host-refuses.md)
+is the rule behind that, and the part worth reading before adding a fourth variant: a
+file may differ for the ports, for a platform idiom an ADR already argues for, or for an
+import the support table refuses — and **never for a refused prop**. A prop is answered
+on the phone if the phone's own idiom answers it, and otherwise once in the shim below.
+The profil crash is what that ordering is made of: the fix was a `Pressable` in the
+phone's screen, not a desktop copy of a whole tab.
+
 **The shims are the interesting part**, and every one is a real mapping or a named
 refusal — never a silent no-op, because GTK's failure mode is exit 0 and a prop nobody
 applied is indistinguishable from an application bug forever.
@@ -235,6 +259,19 @@ spells differently, gives `justify-between` the spacer child its refusal asks fo
 gives a `Pressable` an inner box because a `Gtk.Button` takes one child and cannot be an
 overlay.
 
+**Two of its answers are the door's, and both are on their way upstream.**
+`accessibilityLiveRegion` is dropped and is the honest loss: GTK4 has no live-region
+property, its counterpart `Gtk.Accessible.announce()` is an imperative call needing the
+moment and the text, and both uses are on the sign-in form — so a screen-reader user is
+told nothing there about a failed sign-in. `@gjsify/react-native` is growing an answer
+for it on `Text` through that same call, which is where it belongs. The other is not a
+prop at all: React Native declares `TextInput` as a *class*, so the phone's
+`useRef<TextInput>(null)` needs an instance type and its `focus()` needs a handle, and
+the shim declares both — **`focus` only**, deliberately, because a name this host cannot
+honour would turn a compile error into a silent no-op. The layer is growing the real one
+(`focus`/`blur`/`clear`/`isFocused`/`setSelection`); when it lands, delete the local
+handle rather than extend it.
+
 Four shims the brief expected are **absent on purpose**: `expo-linking`,
 `expo-web-browser`, `expo-constants` and `expo-system-ui` are declared in the app's
 `package.json` and imported nowhere, so shimming them would be dead code pretending to
@@ -243,14 +280,31 @@ be coverage.
 ## Checks
 
 `npm run check` at the repo root covers this workspace: the typecheck, the lint, and
-twelve tests. They are the guards a green build does not give you.
+five suites, thirty tests, in under a second. They are the guards a green build does not
+give you.
 
 - **`test/support-gate.test.ts`** reproduces the build-time support gate that
   `gjsify build --dialect react-native` would provide. This build does not use that flag
   (`gjsify.config.mjs` says why), so the gate is reproduced here against the same
   published support table — and it runs in a second, with no GTK, and reads the app's
   source, which is where the change will come from.
-- **`test/route-tree.test.ts`** fails when the two trees drift.
+  **It gates imports, not props**, and that is the hole the profil crash went through:
+  green here, green in the typecheck, green in the build, and then no tree at all. The
+  named next step is `@gjsify/react-native/prop-table` — the layer's per-prop answers
+  published as data with a generated `PROPS.md`, the way `support-table` already
+  publishes the per-import ones. This test already reads the app's source; with that
+  table beside it, a `<Typo onPress>` fails in a second instead of in a screenshot.
+- **`test/route-tree.test.ts`** fails when the two trees drift, in either direction
+  ([ADR 0020](../../adr/0020-re-exported-screens-and-a-variant-where-the-host-refuses.md)).
+- **`test/root-layout.test.ts`** fails if this host stops rendering `LoginGate` instead
+  of the navigator. It went ten commits with the navigator mounted unconditionally,
+  because a missing door has no symptom on the machine of whoever is already admitted —
+  which is every machine this host runs on. It checks the phone's file for the same
+  construct, so the comparison cannot rot into passing against two files that both
+  drifted.
+- **`test/webview-gate.test.ts`** covers the reader's navigation gate, including the
+  click interception that stands in where there is no `decide-policy` — which is macOS,
+  Windows and the web target.
 - **`test/tokens.test.ts`** regenerates and byte-compares, then restores the committed
   bytes — "drift is a failed PR, not a discovery"
   ([ADR 0010](../../adr/0010-design-tokens-as-a-shared-package.md)) — and asserts the two
@@ -277,4 +331,7 @@ reads the log — and it is how the three broken tab routes above were found.
   have to grow that seam.
 - **No performance measurement of any kind**, on any screen.
 - **The accessibility work is unverified.** Labels and states are applied through the
-  right API; nobody has listened to Orca read a screen.
+  right API; nobody has listened to Orca read a screen. Two things are known to be
+  missing rather than unverified, and both are named in the shim: `accessibilityRole`,
+  because GTK sets it at construction, and `accessibilityLiveRegion`, which is why the
+  door announces nothing when a sign-in fails.

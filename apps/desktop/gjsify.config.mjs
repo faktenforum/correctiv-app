@@ -27,8 +27,14 @@ const shim = (name) => here('src/shims', name);
  * render-time throws.
  *
  * The gate is not given up. `test/support-gate.test.ts` reproduces it against the same
- * published support table, and additionally reports refused PROPS — the half that
- * actually bites this application.
+ * published support table, over this application's own source.
+ *
+ * It reproduces the IMPORT half only. This comment claimed the props half too, and that
+ * was never true of either gate: a refused prop is a render-time throw per screen, and
+ * three `<Typo onPress>` in `(tabs)/profil.tsx` went through this build, the typecheck
+ * and that test green before ending the whole tree at startup. The test's own header
+ * says what it does not cover, and names `@gjsify/react-native/prop-table` as what
+ * closes it.
  */
 const EXACT = {
   'react-native': shim('react-native.tsx'),

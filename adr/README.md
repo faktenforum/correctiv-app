@@ -1,6 +1,6 @@
 # Architecture decisions
 
-Nineteen decisions shaped this repo. Read them when you want to know *why* something
+Twenty decisions shaped this repo. Read them when you want to know *why* something
 is the way it is; [`../ARCHITECTURE.md`](../ARCHITECTURE.md) describes *what* it is.
 
 | | Decision | Status |
@@ -16,7 +16,7 @@ is the way it is; [`../ARCHITECTURE.md`](../ARCHITECTURE.md) describes *what* it
 | [0009](0009-redux-toolkit-for-the-cores-state.md) | Redux Toolkit for the core's state | accepted |
 | [0010](0010-design-tokens-as-a-shared-package.md) | The design tokens as a shared package | accepted |
 | [0011](0011-naming-the-app-for-release.md) | Naming the app for release, and letting the old host go | accepted; retires two of 0007's |
-| [0012](0012-a-list-virtualizer-for-the-unbounded-lists.md) | A list virtualizer, for the two lists that need one | accepted |
+| [0012](0012-a-list-virtualizer-for-the-unbounded-lists.md) | A list virtualizer, for the two lists that need one | accepted; one claim retired by 0020 |
 | [0013](0013-native-tabs-and-a-web-tab-bar-of-its-own.md) | Native tabs on the phone, and a web tab bar of its own | accepted; verified on Android, iOS unrun |
 | [0014](0014-the-preview-shell-as-a-package.md) | The preview shell as a package that can reach the app | accepted |
 | [0015](0015-reading-correctiv-org-through-its-rest-api.md) | Reading correctiv.org through its REST API, not its RSS feeds | accepted; retires the CORS item in 0006, unopened in a browser |
@@ -24,6 +24,7 @@ is the way it is; [`../ARCHITECTURE.md`](../ARCHITECTURE.md) describes *what* it
 | [0017](0017-native-rendering-as-the-rule-a-webview-for-the-exception.md) | Native rendering as the rule, a webview for the exception | accepted; corrects a frame-header claim in `ReaderView.web.tsx`, one open question named |
 | [0018](0018-removing-the-guest.md) | Removing the guest | accepted; carries out what 0016 left standing, retires two of its statements and one of 0004's |
 | [0019](0019-identity-lives-in-the-session.md) | Identity lives in the session, the contribution in membership | accepted; retires two of 0018's, and the invented contribution with them |
+| [0020](0020-re-exported-screens-and-a-variant-where-the-host-refuses.md) | The desktop host re-exports the phone's screens, and varies one only where the host refuses | accepted; scoped to the experimental `apps/desktop`, retires one of 0012's |
 
 Six notes for readers of the older ones:
 

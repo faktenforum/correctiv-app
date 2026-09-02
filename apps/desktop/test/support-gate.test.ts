@@ -18,6 +18,25 @@
  *
  * What it does NOT cover: props. A refused prop is a render-time refusal per screen,
  * and `npm run route-sweep` is what opens every route and reads the log for one.
+ *
+ * ## The prop hole, and what closes it
+ *
+ * That gap is not theoretical, and it is the most expensive thing about this host.
+ * `(tabs)/profil.tsx` grew three `<Typo onPress>` rows; the layer refuses `onPress` on
+ * a `Gtk.Label`, correctly, and because the tab stack mounts all five tabs from `/` the
+ * uncaught `PrimitiveError` ended the whole tree — Home captured 12 848 bytes where it
+ * had captured 92 125. This test was green through all of it, so was the typecheck, and
+ * so was the build. The only thing that said anything was a screenshot.
+ *
+ * The named next step is `@gjsify/react-native/prop-table`: a published subpath with a
+ * generated `PROPS.md`, exposing the layer's per-prop answers as DATA, the way
+ * `support-table` already exposes the per-import ones. This file already reads the app's
+ * source and already parses what it takes from `react-native`; with that table beside
+ * it, `<Typo onPress>` becomes a failing assertion here, in a second, with no GTK —
+ * which is the same move this whole suite exists to make. Until it publishes,
+ * `npm run route-sweep` is the only oracle, and it needs a GTK session, a built bundle
+ * and an admitted profile.
+ * ([ADR 0020](../../../adr/0020-re-exported-screens-and-a-variant-where-the-host-refuses.md))
  */
 
 import { readdirSync, readFileSync, statSync } from 'node:fs';
