@@ -34,6 +34,8 @@ import Gtk from 'gi://Gtk?version=4.0';
 
 import { dumpTree } from '@gjsify/gtk-host/conformance';
 
+import { onDebugRouteApplied } from './route.js';
+
 /** One capture attempt, with the reason it failed rather than a bare null. */
 function capture(widget: Gtk.Widget, label: string): Uint8Array | null {
   const native = widget.get_native();
@@ -99,44 +101,54 @@ export function armScreenshot(): void {
   const delay = Number.isFinite(requested) && requested > 0 ? requested : 4000;
   const quit = GLib.getenv('CORRECTIV_DESKTOP_SCREENSHOT_QUIT') !== '0';
 
-  GLib.timeout_add(GLib.PRIORITY_DEFAULT, delay, () => {
-    // The first MAPPED toplevel, not item 0: `get_toplevels()` lists every toplevel GTK
-    // knows about, and an unmapped one has no renderer at all.
-    const toplevels = Gtk.Window.get_toplevels();
-    let window: Gtk.Window | null = null;
-    for (let index = 0; index < toplevels.get_n_items(); index++) {
-      const candidate = toplevels.get_item(index) as Gtk.Window;
-      if (candidate.get_mapped()) {
-        window = candidate;
-        break;
+  // Count from the moment a requested route has actually been applied, not from arming.
+  //
+  // The delay below is for letting a screen SETTLE. It was never a wait for the screen
+  // to be CHOSEN, and on a slow host it lost that race: the macOS VM mounted the app
+  // after the 4 s timer had already fired, so the capture photographed the start screen
+  // and the log recorded the two in that order. A good photograph of the wrong screen,
+  // with nothing in the file saying so. `onDebugRouteApplied` runs its callback
+  // immediately when no route was requested, so the ordinary path is unchanged.
+  onDebugRouteApplied(() => {
+    GLib.timeout_add(GLib.PRIORITY_DEFAULT, delay, () => {
+      // The first MAPPED toplevel, not item 0: `get_toplevels()` lists every toplevel GTK
+      // knows about, and an unmapped one has no renderer at all.
+      const toplevels = Gtk.Window.get_toplevels();
+      let window: Gtk.Window | null = null;
+      for (let index = 0; index < toplevels.get_n_items(); index++) {
+        const candidate = toplevels.get_item(index) as Gtk.Window;
+        if (candidate.get_mapped()) {
+          window = candidate;
+          break;
+        }
       }
-    }
-    if (window === null) {
-      console.error(
-        `[desktop] screenshot: none of the ${toplevels.get_n_items()} toplevel window(s) is mapped. ` +
-          'Raise CORRECTIV_DESKTOP_SCREENSHOT_DELAY_MS.',
-      );
-      return GLib.SOURCE_REMOVE;
-    }
+      if (window === null) {
+        console.error(
+          `[desktop] screenshot: none of the ${toplevels.get_n_items()} toplevel window(s) is mapped. ` +
+            'Raise CORRECTIV_DESKTOP_SCREENSHOT_DELAY_MS.',
+        );
+        return GLib.SOURCE_REMOVE;
+      }
 
-    // RAISE IT FIRST, then capture on a later frame.
-    //
-    // A complete widget tree, a live renderer, a sane size and an EMPTY snapshot is
-    // what an unfocused window looks like: on Wayland the compositor stops asking a
-    // surface it is not showing to draw, GTK's frame clock throttles with it, and
-    // `Gtk.WidgetPaintable` then has no recorded content to hand over. That is why the
-    // same code captures a freshly presented probe window and not this one.
-    //
-    // `present()` asks for focus; the second timeout gives the frame clock a chance to
-    // run before anything is measured. If this still comes back empty the log below
-    // says so with the tree attached, which distinguishes "nothing drew" from "nothing
-    // rendered".
-    window.present();
-    GLib.timeout_add(GLib.PRIORITY_DEFAULT, 1200, () => {
-      captureNow(window as Gtk.Window, path, quit);
+      // RAISE IT FIRST, then capture on a later frame.
+      //
+      // A complete widget tree, a live renderer, a sane size and an EMPTY snapshot is
+      // what an unfocused window looks like: on Wayland the compositor stops asking a
+      // surface it is not showing to draw, GTK's frame clock throttles with it, and
+      // `Gtk.WidgetPaintable` then has no recorded content to hand over. That is why the
+      // same code captures a freshly presented probe window and not this one.
+      //
+      // `present()` asks for focus; the second timeout gives the frame clock a chance to
+      // run before anything is measured. If this still comes back empty the log below
+      // says so with the tree attached, which distinguishes "nothing drew" from "nothing
+      // rendered".
+      window.present();
+      GLib.timeout_add(GLib.PRIORITY_DEFAULT, 1200, () => {
+        captureNow(window as Gtk.Window, path, quit);
+        return GLib.SOURCE_REMOVE;
+      });
       return GLib.SOURCE_REMOVE;
     });
-    return GLib.SOURCE_REMOVE;
   });
 }
 
