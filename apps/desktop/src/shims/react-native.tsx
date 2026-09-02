@@ -482,29 +482,38 @@ let accessibilityReported = false;
  * The handler disconnects itself. `autoFocus` means "when this appears", once — a
  * field that stole the focus back every time its window was re-shown would be a
  * different and worse behaviour.
+ *
+ * SYNCHRONOUS, and unlike `applyAccessibility` it imports nothing. That function needs
+ * `Gtk` as a VALUE — `Gtk.AccessibleProperty.LABEL` is an enum member — so it pays for
+ * a dynamic import. This one only calls methods on a widget it was handed, so the
+ * structural type below is the whole dependency. The first version copied the import
+ * anyway and bound a `Gtk` it used only in a type position, which the linter caught.
  */
 function applyAutoFocus(widget: unknown, autoFocus: boolean | undefined): void {
   if (widget === null || widget === undefined || autoFocus !== true) return;
 
-  void (async () => {
-    try {
-      const { default: Gtk } = await import('gi://Gtk?version=4.0');
-      const target = widget as Gtk.Widget;
-      if (target.get_mapped()) {
-        target.grab_focus();
-        return;
-      }
-      let handler = 0;
-      handler = target.connect('map', () => {
-        target.disconnect(handler);
-        target.grab_focus();
-      });
-    } catch (error) {
-      // Reported rather than swallowed: a field that silently does not take focus is
-      // the failure this layer refuses props to prevent.
-      console.warn('[desktop] autoFocus: could not focus the widget:', error);
+  const target = widget as {
+    get_mapped(): boolean;
+    grab_focus(): boolean;
+    connect(signal: string, handler: () => void): number;
+    disconnect(handler: number): void;
+  };
+
+  try {
+    if (target.get_mapped()) {
+      target.grab_focus();
+      return;
     }
-  })();
+    let handler = 0;
+    handler = target.connect('map', () => {
+      target.disconnect(handler);
+      target.grab_focus();
+    });
+  } catch (error) {
+    // Reported rather than swallowed: a field that silently does not take focus is
+    // the failure this layer refuses props to prevent.
+    console.warn('[desktop] autoFocus: could not focus the widget:', error);
+  }
 }
 
 function applyAccessibility(widget: unknown, props: NormalizedProps): void {

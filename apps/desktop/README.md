@@ -63,10 +63,25 @@ asserts the property rather than trusting the implementation.
 **Three tab routes cannot be deep-linked.** `router.replace('/mediathek')`,
 `'/mitmachen'` or `'/profil'` enters an infinite update loop — React error #185, with
 `gtk_widget_set_child_visible: assertion 'GTK_IS_WIDGET (widget)' failed` repeating
-about thirty times a second (432 occurrences in fifteen seconds). The screens themselves
-are fine: starting on Home mounts all five tabs with **zero** errors, and `/entdecken`
-deep-links cleanly. It is the router's `Adw.ViewStack` page selection, not the screens.
-Reported upstream.
+about thirty times a second. The screens themselves are fine: starting on Home mounts
+all five tabs with **zero** errors, and `/entdecken` deep-links cleanly.
+
+It is TWO defects that look like one, and separating them took a control run. Patching
+the host to hide a page before removing it takes the criticals from 296 and 131 down to
+**0, 0, 0** over three runs — while the React errors stay at 5, 5, 5. So:
+
+* the **criticals** are libadwaita's, reached through `@gjsify/gtk-host`:
+  `adw_view_stack`'s `stack_remove()` clears `visible_child` and leaves
+  `last_visible_child` pointing at a page whose widget it has just dropped, so every
+  later reader dereferences it. The host's `keyed` reorder removes all children and
+  re-adds them, which walks into that once per page per render. `Gtk.Stack` does not
+  have the bug.
+* the **loop** is the tab router's, in `@gjsify/react-native`: the effect that selects
+  the visible page has no dependency array and a guard that only terminates once the
+  selection has taken, so a name the stack does not carry yet never settles.
+
+Both are fixed upstream in gjsify; this app picks them up on the next version bump. The
+libadwaita half is being reported to GNOME.
 
 **Video is a placeholder**, and that is a decision rather than a limitation of the
 toolkit — the YouTube embed would in fact load inside WebKitGTK. `@gjsify/video` is
