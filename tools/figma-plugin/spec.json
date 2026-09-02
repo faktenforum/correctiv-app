@@ -1,0 +1,414 @@
+{
+  "pages": [
+    {
+      "name": "Wireframes",
+      "mode": "wireframe",
+      "owned": ["atlas"]
+    },
+    {
+      "name": "Screens, nach Screenshots",
+      "mode": "replica",
+      "owned": ["atlas"]
+    }
+  ],
+  "screens": [
+    {
+      "t": "frame",
+      "name": "atlas",
+      "x": 840,
+      "y": 3520,
+      "w": 360,
+      "h": 800,
+      "fill": "#ffffff",
+      "stroke": "#e2e2e5",
+      "radius": 10,
+      "clip": true,
+      "children": [
+        {
+          "t": "text",
+          "chars": "12:34",
+          "size": 9,
+          "weight": "semibold",
+          "color": "#212124",
+          "x": 12,
+          "y": 7
+        },
+        {
+          "t": "frame",
+          "name": "Inhalt",
+          "dir": "V",
+          "w": 360,
+          "x": 0,
+          "y": 24,
+          "children": [
+            {
+              "t": "frame",
+              "name": "ScreenHeader",
+              "dir": "H",
+              "gap": 6,
+              "pad": [16, 16, 14, 14],
+              "cross": "CENTER",
+              "w": "fill",
+              "children": [
+                {
+                  "t": "text",
+                  "chars": "‹",
+                  "size": 15,
+                  "color": "#212124"
+                },
+                {
+                  "t": "text",
+                  "chars": "Zurück",
+                  "size": 13,
+                  "color": "#212124"
+                }
+              ]
+            },
+            {
+              "t": "line",
+              "w": "fill"
+            },
+            {
+              "t": "frame",
+              "name": "Spalte",
+              "dir": "V",
+              "pad": [20, 20, 0, 0],
+              "w": "fill",
+              "children": [
+                {
+                  "t": "space",
+                  "h": 18,
+                  "w": "fill"
+                },
+                {
+                  "t": "text",
+                  "chars": "Abriss-Atlas",
+                  "size": 23,
+                  "weight": "semibold",
+                  "color": "#212124",
+                  "w": 320
+                },
+                {
+                  "t": "space",
+                  "h": 12,
+                  "w": "fill"
+                },
+                {
+                  "t": "frame",
+                  "name": "Kartenausschnitt",
+                  "dir": "V",
+                  "gap": 8,
+                  "pad": [0, 0, 27, 27],
+                  "align": "CENTER",
+                  "cross": "CENTER",
+                  "radius": 4,
+                  "fill": "#f4f4f6",
+                  "w": "fill",
+                  "children": [
+                    {
+                      "t": "text",
+                      "chars": "⌖",
+                      "size": 20,
+                      "color": "#a8a8b0"
+                    },
+                    {
+                      "t": "text",
+                      "chars": "Kartenausschnitt (statisch)",
+                      "size": 11,
+                      "color": "#a8a8b0"
+                    }
+                  ]
+                },
+                {
+                  "t": "space",
+                  "h": 12,
+                  "w": "fill"
+                },
+                {
+                  "t": "text",
+                  "chars": "4.812 gemeldete Abrisse in 312 Städten (DE/CH)",
+                  "size": 12,
+                  "color": "#212124",
+                  "w": 320
+                },
+                {
+                  "t": "space",
+                  "h": 16,
+                  "w": "fill"
+                },
+                {
+                  "t": "text",
+                  "chars": "Zuletzt gemeldet",
+                  "size": 16,
+                  "weight": "semibold",
+                  "color": "#212124",
+                  "w": 320
+                },
+                {
+                  "t": "space",
+                  "h": 12,
+                  "w": "fill"
+                },
+                {
+                  "t": "frame",
+                  "name": "Ort",
+                  "dir": "H",
+                  "gap": 10,
+                  "cross": "CENTER",
+                  "w": "fill",
+                  "children": [
+                    {
+                      "t": "text",
+                      "chars": "⌖",
+                      "size": 12,
+                      "color": "#a8a8b0"
+                    },
+                    {
+                      "t": "frame",
+                      "name": "Text",
+                      "dir": "V",
+                      "gap": 2,
+                      "w": "fill",
+                      "children": [
+                        {
+                          "t": "text",
+                          "chars": "Gründerzeit-Wohnhaus, Rüttenscheider Str.",
+                          "size": 12,
+                          "color": "#212124",
+                          "w": 210
+                        },
+                        {
+                          "t": "text",
+                          "chars": "Essen · 2026",
+                          "size": 11,
+                          "color": "#a8a8b0",
+                          "w": 210
+                        }
+                      ]
+                    },
+                    {
+                      "t": "text",
+                      "chars": "bestätigt",
+                      "size": 11,
+                      "color": "#a8a8b0"
+                    }
+                  ]
+                },
+                {
+                  "t": "space",
+                  "h": 12,
+                  "w": "fill"
+                },
+                {
+                  "t": "line",
+                  "w": "fill"
+                },
+                {
+                  "t": "space",
+                  "h": 12,
+                  "w": "fill"
+                },
+                {
+                  "t": "frame",
+                  "name": "Ort",
+                  "dir": "H",
+                  "gap": 10,
+                  "cross": "CENTER",
+                  "w": "fill",
+                  "children": [
+                    {
+                      "t": "text",
+                      "chars": "⌖",
+                      "size": 12,
+                      "color": "#a8a8b0"
+                    },
+                    {
+                      "t": "frame",
+                      "name": "Text",
+                      "dir": "V",
+                      "gap": 2,
+                      "w": "fill",
+                      "children": [
+                        {
+                          "t": "text",
+                          "chars": "Industriehalle Plagwitz",
+                          "size": 12,
+                          "color": "#212124",
+                          "w": 210
+                        },
+                        {
+                          "t": "text",
+                          "chars": "Leipzig · 2025",
+                          "size": 11,
+                          "color": "#a8a8b0",
+                          "w": 210
+                        }
+                      ]
+                    },
+                    {
+                      "t": "text",
+                      "chars": "bestätigt",
+                      "size": 11,
+                      "color": "#a8a8b0"
+                    }
+                  ]
+                },
+                {
+                  "t": "space",
+                  "h": 12,
+                  "w": "fill"
+                },
+                {
+                  "t": "line",
+                  "w": "fill"
+                },
+                {
+                  "t": "space",
+                  "h": 12,
+                  "w": "fill"
+                },
+                {
+                  "t": "frame",
+                  "name": "Ort",
+                  "dir": "H",
+                  "gap": 10,
+                  "cross": "CENTER",
+                  "w": "fill",
+                  "children": [
+                    {
+                      "t": "text",
+                      "chars": "⌖",
+                      "size": 12,
+                      "color": "#a8a8b0"
+                    },
+                    {
+                      "t": "frame",
+                      "name": "Text",
+                      "dir": "V",
+                      "gap": 2,
+                      "w": "fill",
+                      "children": [
+                        {
+                          "t": "text",
+                          "chars": "Genossenschaftssiedlung Hardau",
+                          "size": 12,
+                          "color": "#212124",
+                          "w": 210
+                        },
+                        {
+                          "t": "text",
+                          "chars": "Zürich · 2026",
+                          "size": 11,
+                          "color": "#a8a8b0",
+                          "w": 210
+                        }
+                      ]
+                    },
+                    {
+                      "t": "text",
+                      "chars": "gemeldet",
+                      "size": 11,
+                      "color": "#a8a8b0"
+                    }
+                  ]
+                },
+                {
+                  "t": "space",
+                  "h": 12,
+                  "w": "fill"
+                },
+                {
+                  "t": "line",
+                  "w": "fill"
+                },
+                {
+                  "t": "space",
+                  "h": 12,
+                  "w": "fill"
+                },
+                {
+                  "t": "frame",
+                  "name": "Ort",
+                  "dir": "H",
+                  "gap": 10,
+                  "cross": "CENTER",
+                  "w": "fill",
+                  "children": [
+                    {
+                      "t": "text",
+                      "chars": "⌖",
+                      "size": 12,
+                      "color": "#a8a8b0"
+                    },
+                    {
+                      "t": "frame",
+                      "name": "Text",
+                      "dir": "V",
+                      "gap": 2,
+                      "w": "fill",
+                      "children": [
+                        {
+                          "t": "text",
+                          "chars": "Zechenhaus Wattenscheid",
+                          "size": 12,
+                          "color": "#212124",
+                          "w": 210
+                        },
+                        {
+                          "t": "text",
+                          "chars": "Bochum · 2025",
+                          "size": 11,
+                          "color": "#a8a8b0",
+                          "w": 210
+                        }
+                      ]
+                    },
+                    {
+                      "t": "text",
+                      "chars": "bestätigt",
+                      "size": 11,
+                      "color": "#a8a8b0"
+                    }
+                  ]
+                },
+                {
+                  "t": "space",
+                  "h": 12,
+                  "w": "fill"
+                },
+                {
+                  "t": "line",
+                  "w": "fill"
+                },
+                {
+                  "t": "space",
+                  "h": 18,
+                  "w": "fill"
+                },
+                {
+                  "t": "frame",
+                  "name": "Button, Abriss melden auf abriss-atlas.de",
+                  "dir": "H",
+                  "pad": [0, 0, 14, 14],
+                  "align": "CENTER",
+                  "radius": 4,
+                  "fill": "#ff5064",
+                  "w": "fill",
+                  "children": [
+                    {
+                      "t": "text",
+                      "chars": "Abriss melden auf abriss-atlas.de",
+                      "size": 12,
+                      "weight": "semibold",
+                      "color": "#ffffff"
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

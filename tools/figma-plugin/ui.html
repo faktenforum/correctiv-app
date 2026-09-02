@@ -1,0 +1,92 @@
+<style>
+  body {
+    font:
+      11px -apple-system,
+      system-ui,
+      sans-serif;
+    margin: 0;
+    padding: 12px;
+    color: #222;
+  }
+  #dot {
+    display: inline-block;
+    width: 8px;
+    height: 8px;
+    border-radius: 4px;
+    background: #bbb;
+    margin-right: 6px;
+    vertical-align: middle;
+  }
+  .on {
+    background: #22a06b !important;
+  }
+  .busy {
+    background: #f2b53c !important;
+  }
+  .bad {
+    background: #e5484d !important;
+  }
+  #log {
+    color: #777;
+    margin-top: 8px;
+    line-height: 1.5;
+  }
+</style>
+<div><span id="dot"></span><b>CORRECTIV Wireframes</b></div>
+<div id="log">verbinde …</div>
+<script>
+  // Figma's plugin sandbox has the API but no network; this iframe has network but no
+  // API. So the iframe watches the spec server and hands new documents over
+  // postMessage. Nothing executable crosses: only the board description.
+  // 'localhost', not '127.0.0.1': Figma's manifest validator rejects the bare IP in
+  // devAllowedDomains, and the origin here has to match that entry exactly.
+  const BASE = 'http://localhost:8787';
+  const dot = document.getElementById('dot');
+  const log = document.getElementById('log');
+  let seen = -1;
+  let drawing = false;
+
+  function status(cls, text) {
+    dot.className = cls;
+    log.textContent = text;
+  }
+
+  async function tick() {
+    if (drawing) return;
+    try {
+      const r = await fetch(BASE + '/generation');
+      const { generation } = await r.json();
+      if (generation !== seen) {
+        seen = generation;
+        drawing = true;
+        status('busy', 'zeichnet …');
+        const s = await fetch(BASE + '/spec');
+        const payload = await s.json();
+        parent.postMessage({ pluginMessage: { type: 'spec', spec: payload.spec } }, '*');
+        return; // the result handler resumes polling
+      }
+      status('on', 'aktuell, Stand ' + seen);
+    } catch (e) {
+      status('bad', 'kein Server auf 8787 — node tools/figma-plugin/server.mjs');
+    }
+  }
+
+  onmessage = async (event) => {
+    const m = event.data.pluginMessage;
+    if (!m || m.type !== 'done') return;
+    drawing = false;
+    status(m.error ? 'bad' : 'on', m.error ? m.error : m.summary);
+    try {
+      await fetch(BASE + '/report', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(m),
+      });
+    } catch (e) {
+      // The server went away; the next tick reports it.
+    }
+  };
+
+  setInterval(tick, 700);
+  tick();
+</script>
