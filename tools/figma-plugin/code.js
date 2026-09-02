@@ -116,6 +116,9 @@ const MODES = {
 
 // Set per draw, from the page's `mode`.
 let MODE = MODES.replica;
+// Which of them, by name. Components are registered per mode, because a screen page
+// drawn as a sketch must instance the sketched kit and not the replica's.
+let MODE_NAME = 'replica';
 
 /** '#rrggbb' to Figma's 0–1 triple. Everything in the spec is written as hex. */
 function rgb(hex) {
@@ -302,6 +305,11 @@ let pending = [];
 // itself, or a variant set's default variant. `PROP_IDS` maps the property names a
 // spec writes ('Titel') to the keys `setProperties` wants ('Titel#12:3'), which
 // Figma only hands out once the property exists.
+//
+// Both are keyed 'mode/name'. The kit is drawn once per rendering, so `ui/Button`
+// exists twice — once in the app's own colours and once as a pencil drawing — and an
+// instance resolves against the mode of the page it lands on. Without that the
+// wireframe would fill with replica components and stop being a wireframe.
 let COMPONENTS = {};
 let PROP_IDS = {};
 let TEXT_STYLES = {};
@@ -390,8 +398,8 @@ function buildVariantSet(spec, parent) {
   set.paddingBottom = 16;
   set.primaryAxisSizingMode = 'AUTO';
   set.counterAxisSizingMode = 'AUTO';
-  COMPONENTS[spec.name] = set.defaultVariant;
-  recordProperties(spec.name, set);
+  COMPONENTS[MODE_NAME + '/' + spec.name] = set.defaultVariant;
+  recordProperties(MODE_NAME + '/' + spec.name, set);
   return set;
 }
 
@@ -456,6 +464,10 @@ function sketchLine(w, seed) {
 function wantsOutline(spec) {
   if (spec.t === 'line') return true;
   if (spec.t === 'text' || spec.t === 'space') return false;
+  // A row separated from the next by a single rule is not a box, and tracing it as
+  // one turns a list into a stack of crates. Its own 1px stroke, greyed by the mode,
+  // is already the right drawing.
+  if (spec.strokeSides) return false;
   if (spec.stroke) return true;
   return Boolean(spec.fill) && spec.fill.toLowerCase() !== '#ffffff';
 }
@@ -530,6 +542,11 @@ function build(spec, parent, parentIsAutoLayout) {
       // mode ignores the width and collapses the node to a thread.
       node.textAutoResize = 'HEIGHT';
       node.resize(spec.w, node.height);
+    } else if (spec.w === 'fill') {
+      // Same reason, other direction: a text node left on WIDTH_AND_HEIGHT grows
+      // sideways for ever and FILL cannot take hold, so a long label runs straight
+      // through whatever sits beside it instead of wrapping above it.
+      node.textAutoResize = 'HEIGHT';
     }
   } else if (spec.t === 'rect') {
     node = figma.createRectangle();
@@ -539,7 +556,7 @@ function build(spec, parent, parentIsAutoLayout) {
     node = figma.createEllipse();
     node.fills = paint(spec.fill);
   } else if (spec.t === 'instance') {
-    const main = COMPONENTS[spec.of];
+    const main = COMPONENTS[MODE_NAME + '/' + spec.of];
     if (main === undefined) {
       // Magenta, not nothing. An instance of a component that does not exist is a
       // typo in the spec, and a silently missing row is far harder to find than a
@@ -550,7 +567,7 @@ function build(spec, parent, parentIsAutoLayout) {
       node.fills = [{ type: 'SOLID', color: { r: 1, g: 0, b: 1 } }];
     } else {
       node = main.createInstance();
-      const ids = PROP_IDS[spec.of] || {};
+      const ids = PROP_IDS[MODE_NAME + '/' + spec.of] || {};
       const set = {};
       for (const key of Object.keys(spec.set || {})) {
         if (ids[key] !== undefined) set[ids[key]] = spec.set[key];
@@ -625,8 +642,8 @@ function build(spec, parent, parentIsAutoLayout) {
     defineProperties(node, spec, bindings.splice(bindMark));
     // A variant registers under its set's name, not its own `Variante=club`.
     if (spec.name && spec.name.indexOf('=') === -1) {
-      COMPONENTS[spec.name] = node;
-      recordProperties(spec.name, node);
+      COMPONENTS[MODE_NAME + '/' + spec.name] = node;
+      recordProperties(MODE_NAME + '/' + spec.name, node);
     }
   }
   if (spec.bind) bindings.push({ node: node, name: spec.bind });
@@ -776,7 +793,8 @@ async function syncTextStyles(list) {
 }
 
 async function drawPage(entry, screens) {
-  MODE = MODES[entry.mode] || MODES.replica;
+  MODE_NAME = MODES[entry.mode] === undefined ? 'replica' : entry.mode;
+  MODE = MODES[MODE_NAME];
 
   // Fonts resolve through MODE, so they can only be collected once it is set. A
   // family the environment lacks must not take the whole page down with it.
@@ -961,6 +979,13 @@ function readPage(name) {
   return screens;
 }
 
+/** How many components the kit has, counted once however many modes drew them. */
+function distinctComponents() {
+  const seen = {};
+  for (const key of Object.keys(COMPONENTS)) seen[key.slice(key.indexOf('/') + 1)] = true;
+  return Object.keys(seen).length;
+}
+
 function definesComponents(node) {
   if (node === null || typeof node !== 'object') return false;
   if (Array.isArray(node)) {
@@ -1015,7 +1040,7 @@ async function draw(spec) {
     ' Tokens · ' +
     styleCount +
     ' Textstile · ' +
-    Object.keys(COMPONENTS).length +
+    distinctComponents() +
     ' Komponenten'
   );
 }

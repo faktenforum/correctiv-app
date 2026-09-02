@@ -24,6 +24,7 @@ const HERE = dirname(fileURLToPath(import.meta.url));
 const ROOT = join(HERE, '../..');
 const SPEC = join(HERE, 'spec.json');
 const PAGE = 'Bausteine';
+const SKETCH_PAGE = 'Bausteine, Wireframe';
 
 // ---------------------------------------------------------------- the scales
 //
@@ -433,7 +434,8 @@ const KIT = [
           ty('text-m', { chars: 'Zurück', color: '@color-grey-700', bind: 'Zurück' }),
         ],
       },
-      { t: 'line', color: '@color-grey-300' },
+      // Without `w: 'fill'` a line keeps the 10px width a fresh frame is born at.
+      { t: 'line', color: '@color-grey-300', w: 'fill' },
     ],
   },
   {
@@ -476,6 +478,7 @@ const KIT = [
           ty('text-s', {
             chars: 'Was gerade in der Redaktion passiert',
             color: '@color-grey-600',
+            w: 'fill',
             bind: 'Untertitel',
           }),
         ],
@@ -484,58 +487,68 @@ const KIT = [
     ],
   },
   {
-    t: 'component',
+    // A variant set, not a BOOLEAN. Binding the switch's VISIBILITY to `An` made the
+    // whole control vanish when it was off, which is not what off looks like. Figma
+    // has no way to swap one node's fill from a property, so the two appearances have
+    // to be two variants.
+    t: 'variants',
     name: 'profile/SettingRow',
+    prop: 'An',
     props: {
       Label: { type: 'TEXT', default: 'Push-Mitteilungen' },
       Beschreibung: { type: 'TEXT', default: 'Neue Recherchen und Mitmach-Aufrufe' },
       'Beschreibung zeigen': { type: 'BOOLEAN', default: true },
-      An: { type: 'BOOLEAN', default: true },
     },
-    dir: 'H',
-    w: 320,
-    cross: 'CENTER',
-    gap: S.s,
-    pad: [0, 0, S['2xs'], S['2xs']],
-    fill: '@color-grey-100',
-    children: [
-      {
-        t: 'frame',
-        dir: 'V',
-        w: 'fill',
-        gap: S['4xs'],
-        children: [
-          ty('text-m', { chars: 'Push-Mitteilungen', bind: 'Label' }),
-          {
-            t: 'frame',
-            dir: 'V',
-            w: 'fill',
-            bind: 'Beschreibung zeigen',
-            children: [
-              ty('text-s', {
-                chars: 'Neue Recherchen und Mitmach-Aufrufe',
-                color: '@color-grey-600',
-                bind: 'Beschreibung',
-              }),
-            ],
-          },
-        ],
-      },
-      {
-        t: 'frame',
-        name: 'Schalter, an',
-        dir: 'H',
-        w: 44,
-        h: 26,
-        cross: 'CENTER',
-        align: 'MAX',
-        pad: [3, 3, 3, 3],
-        radius: 13,
-        fill: '@color-emphasis',
-        bind: 'An',
-        children: [{ t: 'ellipse', w: 20, h: 20, fill: '@color-always-light' }],
-      },
-    ],
+    options: [
+      ['ja', '@color-emphasis', 'MAX'],
+      ['nein', '@color-grey-300', 'MIN'],
+    ].map(([value, track, knob]) => ({
+      value: value,
+      dir: 'H',
+      w: 320,
+      cross: 'CENTER',
+      gap: S.s,
+      pad: [0, 0, S['2xs'], S['2xs']],
+      fill: '@color-grey-100',
+      children: [
+        {
+          t: 'frame',
+          dir: 'V',
+          w: 'fill',
+          gap: S['4xs'],
+          children: [
+            ty('text-m', { chars: 'Push-Mitteilungen', w: 'fill', bind: 'Label' }),
+            {
+              t: 'frame',
+              dir: 'V',
+              w: 'fill',
+              bind: 'Beschreibung zeigen',
+              children: [
+                ty('text-s', {
+                  chars: 'Neue Recherchen und Mitmach-Aufrufe',
+                  color: '@color-grey-600',
+                  w: 'fill',
+                  bind: 'Beschreibung',
+                }),
+              ],
+            },
+          ],
+        },
+        {
+          t: 'frame',
+          name: 'Schalter',
+          dir: 'H',
+          w: 44,
+          h: 26,
+          cross: 'CENTER',
+          align: knob,
+          pad: [3, 3, 3, 3],
+          radius: 13,
+          fill: track,
+          children: [{ t: 'ellipse', w: 20, h: 20, fill: '@color-always-light' }],
+        },
+      ],
+    })),
   },
   {
     t: 'component',
@@ -566,7 +579,7 @@ const KIT = [
           ty('text-s', {
             chars: 'Wie Polizeibehörden mit Technik gegen Kriminalität vorgehen',
             color: '@color-grey-600',
-            w: 230,
+            w: 'fill',
             bind: 'Teaser',
           }),
         ],
@@ -599,31 +612,53 @@ const KIT = [
     t: 'component',
     name: 'profile/ClubCard',
     props: {
-      Name: { type: 'TEXT', default: 'Pascal Garber' },
-      Stufe: { type: 'TEXT', default: 'Fördermitglied' },
-      Seit: { type: 'TEXT', default: 'Mitglied seit 12.03.2024' },
+      Name: { type: 'TEXT', default: 'Alex Beispiel' },
+      Stufe: { type: 'TEXT', default: 'Mitgliedschaft mit Beitrag · seit 12.03.2024' },
     },
     dir: 'V',
     w: 320,
-    gap: S['3xs'],
-    pad: [S.sm, S.sm, S.sm, S.sm],
+    pad: [S.m, S.m, S.m, S.m],
     radius: R.md,
-    // Yellow in both schemes, so everything on it takes the fixed dark role colour.
+    // Yellow in both schemes, so everything on it takes the fixed dark role colour
+    // rather than the page's text colour, which turns near-white in dark mode and
+    // would vanish on the yellow.
     fill: '@color-alternative',
     children: [
-      ty('text-s', {
-        chars: 'IHR CLUB',
-        weight: 'bold',
-        size: 12,
-        tracking: 10,
+      {
+        t: 'frame',
+        name: 'Kopf',
+        dir: 'H',
+        w: 'fill',
+        cross: 'CENTER',
+        align: 'SPACE_BETWEEN',
+        children: [
+          // Not a `ui/Overline` instance, though `ClubCard.tsx` does import Overline:
+          // it passes `color="always-dark"`, and an instance may override text and
+          // visibility but never a colour. A colour prop would have to become a
+          // variant, and one variant per colour is the worse trade.
+          ty('text-s', {
+            chars: 'CORRECTIV CLUB',
+            weight: 'bold',
+            size: 12,
+            tracking: 10,
+            color: '@color-always-dark',
+          }),
+          ty('text-m', { chars: '♥', size: 20, color: '@color-always-dark' }),
+        ],
+      },
+      { t: 'space', h: S.m },
+      ty('headline-l', {
+        chars: 'Alex Beispiel',
         color: '@color-always-dark',
+        w: 'fill',
+        bind: 'Name',
       }),
-      ty('headline-s', { chars: 'Pascal Garber', color: '@color-always-dark', bind: 'Name' }),
-      ty('text-m', { chars: 'Fördermitglied', color: '@color-always-dark', bind: 'Stufe' }),
       ty('text-s', {
-        chars: 'Mitglied seit 12.03.2024',
+        chars: 'Mitgliedschaft mit Beitrag · seit 12.03.2024',
         color: '@color-always-dark',
-        bind: 'Seit',
+        opacity: 0.7,
+        w: 'fill',
+        bind: 'Stufe',
       }),
     ],
   },
@@ -654,18 +689,30 @@ for (const entry of KIT) {
 
 const spec = JSON.parse(await readFile(SPEC, 'utf8'));
 spec.textStyles = TEXT_STYLES;
-spec.pages = (spec.pages || []).filter((p) => p.name !== PAGE);
-spec.pages.push({
-  name: PAGE,
-  mode: 'replica',
-  // The kit is the only thing on this page, so it sweeps the page rather than
-  // naming what it made: a component that loses its name would otherwise stay behind.
-  owned: '*',
-  screens: screens,
-});
+spec.pages = (spec.pages || []).filter((p) => p.name !== PAGE && p.name !== SKETCH_PAGE);
+
+// One kit per rendering, from one description — the same trade the screens make.
+// A screen page drawn as a sketch has to instance a sketched kit, or the wireframe
+// fills with the app's real colours and stops being a wireframe. The components
+// carry the same names in both, and an instance resolves against the mode of the
+// page it lands on.
+for (const [name, mode] of [
+  [PAGE, 'replica'],
+  [SKETCH_PAGE, 'wireframe'],
+]) {
+  spec.pages.push({
+    name: name,
+    mode: mode,
+    // The kit is the only thing on these pages, so they sweep themselves rather than
+    // naming what they made: a component that loses its name would otherwise stay.
+    owned: '*',
+    screens: JSON.parse(JSON.stringify(screens)),
+  });
+}
 await writeFile(SPEC, `${JSON.stringify(spec, null, 2)}\n`);
 
 const sets = screens.filter((s) => s.t === 'variants');
+console.log(`2 Bausatz-Seiten: "${PAGE}" und "${SKETCH_PAGE}"`);
 console.log(
   `${screens.length - 1} Komponenten auf "${PAGE}" (${sets.length} Variantensätze, ` +
     `${sets.reduce((n, s) => n + s.options.length, 0)} Varianten), ` +

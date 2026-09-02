@@ -134,8 +134,40 @@ fill. Both in one would make every coloured headline its own style.
 visibility; it can never be given children. So `ui/Card` is the container it is in
 the code, with a dashed placeholder where content goes, and a card that carries
 content has to be its own component — in Figma *and* in the app. Seventeen places
-still write `Overline` over a `Card` inline, which is why seventeen cards on the
-board are copies rather than instances.
+still write `Overline` over a `Card` inline, which is why sixteen cards on the board
+are copies rather than instances.
+
+A colour is the other thing an instance cannot override, and `ClubCard` shows it:
+`ClubCard.tsx` renders an `<Overline color="always-dark">`, but a Figma instance of
+`ui/Overline` would arrive in the default grey with no way to change it. A colour
+prop would have to become a variant, one per colour, so the kit draws those four
+lines itself and says so where it does.
+
+## Pointing the screens at the kit
+
+`use-kit.mjs` replaces each recognised subtree in the screens with an instance.
+
+    node tools/figma-plugin/use-kit.mjs
+
+Sixty-six of them: 26 buttons, 15 headers, 6 project rows, 5 setting rows, 5 badges,
+4 nav cards, 4 status tags, 1 club card. The eyeballed numbers go with them — a
+button label measured off a PNG came out at 13px semibold, and `text-button` is 16
+bold — so the screens move visibly, and towards the app.
+
+It is destructive on purpose. `spec.json` is committed, so the copies are one
+`git checkout` away; no second description is kept alongside.
+
+Two rules worth knowing. A matched node is never descended into, so the containers
+come first: `NavCard` and `ClaimStatusTag` both *hold* a badge, and matching the
+badge first would convert it out from under them. And a rule may declare `eats`, the
+node types to swallow after the instance — the board separates its rows with
+`space, line, space` while the component brings its own hairline and padding, so all
+three go or every row ends up underlined twice.
+
+**The kit is drawn once per rendering.** A screen page drawn as a sketch has to
+instance a *sketched* kit, or the wireframe fills with the app's real colours and
+stops being a wireframe. Hence `Bausteine` and `Bausteine, Wireframe` from one
+description, and a registry keyed by mode.
 
 ## Why a plugin and not the MCP server
 

@@ -1075,7 +1075,8 @@
             },
             {
               "t": "line",
-              "color": "@color-grey-300"
+              "color": "@color-grey-300",
+              "w": "fill"
             }
           ]
         },
@@ -1163,6 +1164,7 @@
                   "tracking": 1.43,
                   "color": "@color-grey-600",
                   "chars": "Was gerade in der Redaktion passiert",
+                  "w": "fill",
                   "bind": "Untertitel"
                 }
               ]
@@ -1180,10 +1182,11 @@
           ]
         },
         {
-          "t": "component",
+          "t": "variants",
           "name": "profile/SettingRow",
           "x": 920,
           "y": 210,
+          "prop": "An",
           "props": {
             "Label": {
               "type": "TEXT",
@@ -1196,77 +1199,152 @@
             "Beschreibung zeigen": {
               "type": "BOOLEAN",
               "default": true
-            },
-            "An": {
-              "type": "BOOLEAN",
-              "default": true
             }
           },
-          "dir": "H",
-          "w": 320,
-          "cross": "CENTER",
-          "gap": 12,
-          "pad": [0, 0, 6, 6],
-          "fill": "@color-grey-100",
-          "children": [
+          "options": [
             {
-              "t": "frame",
-              "dir": "V",
-              "w": "fill",
-              "gap": 2,
+              "value": "ja",
+              "dir": "H",
+              "w": 320,
+              "cross": "CENTER",
+              "gap": 12,
+              "pad": [0, 0, 6, 6],
+              "fill": "@color-grey-100",
               "children": [
-                {
-                  "t": "text",
-                  "style": "text-m",
-                  "font": "sans",
-                  "weight": "regular",
-                  "size": 15,
-                  "leading": 150,
-                  "tracking": 0.67,
-                  "color": "@color-grey-700",
-                  "chars": "Push-Mitteilungen",
-                  "bind": "Label"
-                },
                 {
                   "t": "frame",
                   "dir": "V",
                   "w": "fill",
-                  "bind": "Beschreibung zeigen",
+                  "gap": 2,
                   "children": [
                     {
                       "t": "text",
-                      "style": "text-s",
+                      "style": "text-m",
                       "font": "sans",
                       "weight": "regular",
-                      "size": 14,
+                      "size": 15,
                       "leading": 150,
-                      "tracking": 1.43,
-                      "color": "@color-grey-600",
-                      "chars": "Neue Recherchen und Mitmach-Aufrufe",
-                      "bind": "Beschreibung"
+                      "tracking": 0.67,
+                      "color": "@color-grey-700",
+                      "chars": "Push-Mitteilungen",
+                      "w": "fill",
+                      "bind": "Label"
+                    },
+                    {
+                      "t": "frame",
+                      "dir": "V",
+                      "w": "fill",
+                      "bind": "Beschreibung zeigen",
+                      "children": [
+                        {
+                          "t": "text",
+                          "style": "text-s",
+                          "font": "sans",
+                          "weight": "regular",
+                          "size": 14,
+                          "leading": 150,
+                          "tracking": 1.43,
+                          "color": "@color-grey-600",
+                          "chars": "Neue Recherchen und Mitmach-Aufrufe",
+                          "w": "fill",
+                          "bind": "Beschreibung"
+                        }
+                      ]
+                    }
+                  ]
+                },
+                {
+                  "t": "frame",
+                  "name": "Schalter",
+                  "dir": "H",
+                  "w": 44,
+                  "h": 26,
+                  "cross": "CENTER",
+                  "align": "MAX",
+                  "pad": [3, 3, 3, 3],
+                  "radius": 13,
+                  "fill": "@color-emphasis",
+                  "children": [
+                    {
+                      "t": "ellipse",
+                      "w": 20,
+                      "h": 20,
+                      "fill": "@color-always-light"
                     }
                   ]
                 }
               ]
             },
             {
-              "t": "frame",
-              "name": "Schalter, an",
+              "value": "nein",
               "dir": "H",
-              "w": 44,
-              "h": 26,
+              "w": 320,
               "cross": "CENTER",
-              "align": "MAX",
-              "pad": [3, 3, 3, 3],
-              "radius": 13,
-              "fill": "@color-emphasis",
-              "bind": "An",
+              "gap": 12,
+              "pad": [0, 0, 6, 6],
+              "fill": "@color-grey-100",
               "children": [
                 {
-                  "t": "ellipse",
-                  "w": 20,
-                  "h": 20,
-                  "fill": "@color-always-light"
+                  "t": "frame",
+                  "dir": "V",
+                  "w": "fill",
+                  "gap": 2,
+                  "children": [
+                    {
+                      "t": "text",
+                      "style": "text-m",
+                      "font": "sans",
+                      "weight": "regular",
+                      "size": 15,
+                      "leading": 150,
+                      "tracking": 0.67,
+                      "color": "@color-grey-700",
+                      "chars": "Push-Mitteilungen",
+                      "w": "fill",
+                      "bind": "Label"
+                    },
+                    {
+                      "t": "frame",
+                      "dir": "V",
+                      "w": "fill",
+                      "bind": "Beschreibung zeigen",
+                      "children": [
+                        {
+                          "t": "text",
+                          "style": "text-s",
+                          "font": "sans",
+                          "weight": "regular",
+                          "size": 14,
+                          "leading": 150,
+                          "tracking": 1.43,
+                          "color": "@color-grey-600",
+                          "chars": "Neue Recherchen und Mitmach-Aufrufe",
+                          "w": "fill",
+                          "bind": "Beschreibung"
+                        }
+                      ]
+                    }
+                  ]
+                },
+                {
+                  "t": "frame",
+                  "name": "Schalter",
+                  "dir": "H",
+                  "w": 44,
+                  "h": 26,
+                  "cross": "CENTER",
+                  "align": "MIN",
+                  "pad": [3, 3, 3, 3],
+                  "radius": 13,
+                  "fill": "@color-grey-300",
+                  "children": [
+                    {
+                      "t": "ellipse",
+                      "w": 20,
+                      "h": 20,
+                      "fill": "@color-always-light"
+                    }
+                  ]
                 }
               ]
             }
@@ -1276,7 +1354,7 @@
           "t": "component",
           "name": "discover/ProjectRow",
           "x": 920,
-          "y": 420,
+          "y": 510,
           "props": {
             "Name": {
               "type": "TEXT",
@@ -1324,7 +1402,7 @@
                   "tracking": 1.43,
                   "color": "@color-grey-600",
                   "chars": "Wie Polizeibehörden mit Technik gegen Kriminalität vorgehen",
-                  "w": 230,
+                  "w": "fill",
                   "bind": "Teaser"
                 }
               ]
@@ -1345,7 +1423,7 @@
           "t": "variants",
           "name": "participate/ClaimStatusTag",
           "x": 920,
-          "y": 630,
+          "y": 720,
           "prop": "Status",
           "props": {
             "Label": {
@@ -1444,61 +1522,69 @@
           "t": "component",
           "name": "profile/ClubCard",
           "x": 920,
-          "y": 1110,
+          "y": 1200,
           "props": {
             "Name": {
               "type": "TEXT",
-              "default": "Pascal Garber"
+              "default": "Alex Beispiel"
             },
             "Stufe": {
               "type": "TEXT",
-              "default": "Fördermitglied"
-            },
-            "Seit": {
-              "type": "TEXT",
-              "default": "Mitglied seit 12.03.2024"
+              "default": "Mitgliedschaft mit Beitrag · seit 12.03.2024"
             }
           },
           "dir": "V",
           "w": 320,
-          "gap": 4,
-          "pad": [16, 16, 16, 16],
+          "pad": [24, 24, 24, 24],
           "radius": 5,
           "fill": "@color-alternative",
           "children": [
             {
-              "t": "text",
-              "font": "sans",
-              "weight": "bold",
-              "size": 12,
-              "leading": 150,
-              "tracking": 10,
-              "color": "@color-always-dark",
-              "chars": "IHR CLUB"
+              "t": "frame",
+              "name": "Kopf",
+              "dir": "H",
+              "w": "fill",
+              "cross": "CENTER",
+              "align": "SPACE_BETWEEN",
+              "children": [
+                {
+                  "t": "text",
+                  "font": "sans",
+                  "weight": "bold",
+                  "size": 12,
+                  "leading": 150,
+                  "tracking": 10,
+                  "color": "@color-always-dark",
+                  "chars": "CORRECTIV CLUB"
+                },
+                {
+                  "t": "text",
+                  "font": "sans",
+                  "weight": "regular",
+                  "size": 20,
+                  "leading": 150,
+                  "tracking": 0.67,
+                  "color": "@color-always-dark",
+                  "chars": "♥"
+                }
+              ]
+            },
+            {
+              "t": "space",
+              "h": 24
             },
             {
               "t": "text",
-              "style": "headline-s",
+              "style": "headline-l",
               "font": "sans",
               "weight": "bold",
-              "size": 17,
-              "leading": 150,
-              "tracking": 1.18,
+              "size": 23,
+              "leading": 120,
+              "tracking": -0.43,
               "color": "@color-always-dark",
-              "chars": "Pascal Garber",
+              "chars": "Alex Beispiel",
+              "w": "fill",
               "bind": "Name"
-            },
-            {
-              "t": "text",
-              "style": "text-m",
-              "font": "sans",
-              "weight": "regular",
-              "size": 15,
-              "leading": 150,
-              "tracking": 0.67,
-              "color": "@color-always-dark",
-              "chars": "Fördermitglied",
-              "bind": "Stufe"
             },
             {
               "t": "text",
@@ -1509,8 +1595,1538 @@
               "leading": 150,
               "tracking": 1.43,
               "color": "@color-always-dark",
-              "chars": "Mitglied seit 12.03.2024",
-              "bind": "Seit"
+              "chars": "Mitgliedschaft mit Beitrag · seit 12.03.2024",
+              "opacity": 0.7,
+              "w": "fill",
+              "bind": "Stufe"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Bausteine, Wireframe",
+      "mode": "wireframe",
+      "owned": "*",
+      "screens": [
+        {
+          "t": "frame",
+          "name": "ui/Typo, Textstile",
+          "x": 0,
+          "y": 0,
+          "dir": "V",
+          "w": "hug",
+          "gap": 24,
+          "pad": [24, 24, 24, 24],
+          "fill": "@color-grey-100",
+          "children": [
+            {
+              "t": "frame",
+              "name": "text-article",
+              "dir": "V",
+              "w": "hug",
+              "gap": 2,
+              "children": [
+                {
+                  "t": "text",
+                  "font": "sans",
+                  "weight": "regular",
+                  "size": 11,
+                  "leading": 150,
+                  "tracking": 1.43,
+                  "color": "@color-grey-500",
+                  "chars": "text-article"
+                },
+                {
+                  "t": "text",
+                  "style": "text-article/undefined",
+                  "font": "serif",
+                  "size": 15.5,
+                  "leading": 180,
+                  "tracking": 1.29,
+                  "color": "@color-grey-700",
+                  "chars": "Recherchen, die etwas ändern"
+                }
+              ]
+            },
+            {
+              "t": "frame",
+              "name": "text-s",
+              "dir": "V",
+              "w": "hug",
+              "gap": 2,
+              "children": [
+                {
+                  "t": "text",
+                  "font": "sans",
+                  "weight": "regular",
+                  "size": 11,
+                  "leading": 150,
+                  "tracking": 1.43,
+                  "color": "@color-grey-500",
+                  "chars": "text-s"
+                },
+                {
+                  "t": "text",
+                  "style": "text-s/undefined",
+                  "font": "sans",
+                  "size": 14,
+                  "leading": 150,
+                  "tracking": 1.43,
+                  "color": "@color-grey-700",
+                  "chars": "Recherchen, die etwas ändern"
+                }
+              ]
+            },
+            {
+              "t": "frame",
+              "name": "text-m",
+              "dir": "V",
+              "w": "hug",
+              "gap": 2,
+              "children": [
+                {
+                  "t": "text",
+                  "font": "sans",
+                  "weight": "regular",
+                  "size": 11,
+                  "leading": 150,
+                  "tracking": 1.43,
+                  "color": "@color-grey-500",
+                  "chars": "text-m"
+                },
+                {
+                  "t": "text",
+                  "style": "text-m/undefined",
+                  "font": "sans",
+                  "size": 15,
+                  "leading": 150,
+                  "tracking": 0.67,
+                  "color": "@color-grey-700",
+                  "chars": "Recherchen, die etwas ändern"
+                }
+              ]
+            },
+            {
+              "t": "frame",
+              "name": "text-l",
+              "dir": "V",
+              "w": "hug",
+              "gap": 2,
+              "children": [
+                {
+                  "t": "text",
+                  "font": "sans",
+                  "weight": "regular",
+                  "size": 11,
+                  "leading": 150,
+                  "tracking": 1.43,
+                  "color": "@color-grey-500",
+                  "chars": "text-l"
+                },
+                {
+                  "t": "text",
+                  "style": "text-l/undefined",
+                  "font": "sans",
+                  "size": 18.5,
+                  "leading": 145,
+                  "tracking": 0.54,
+                  "color": "@color-grey-700",
+                  "chars": "Recherchen, die etwas ändern"
+                }
+              ]
+            },
+            {
+              "t": "frame",
+              "name": "headline-xs",
+              "dir": "V",
+              "w": "hug",
+              "gap": 2,
+              "children": [
+                {
+                  "t": "text",
+                  "font": "sans",
+                  "weight": "regular",
+                  "size": 11,
+                  "leading": 150,
+                  "tracking": 1.43,
+                  "color": "@color-grey-500",
+                  "chars": "headline-xs"
+                },
+                {
+                  "t": "text",
+                  "style": "headline-xs/undefined",
+                  "font": "sans",
+                  "size": 17,
+                  "leading": 150,
+                  "tracking": 1.18,
+                  "color": "@color-grey-700",
+                  "chars": "Recherchen, die etwas ändern"
+                }
+              ]
+            },
+            {
+              "t": "frame",
+              "name": "headline-s",
+              "dir": "V",
+              "w": "hug",
+              "gap": 2,
+              "children": [
+                {
+                  "t": "text",
+                  "font": "sans",
+                  "weight": "regular",
+                  "size": 11,
+                  "leading": 150,
+                  "tracking": 1.43,
+                  "color": "@color-grey-500",
+                  "chars": "headline-s"
+                },
+                {
+                  "t": "text",
+                  "style": "headline-s/undefined",
+                  "font": "sans",
+                  "size": 17,
+                  "leading": 150,
+                  "tracking": 1.18,
+                  "color": "@color-grey-700",
+                  "chars": "Recherchen, die etwas ändern"
+                }
+              ]
+            },
+            {
+              "t": "frame",
+              "name": "headline-m",
+              "dir": "V",
+              "w": "hug",
+              "gap": 2,
+              "children": [
+                {
+                  "t": "text",
+                  "font": "sans",
+                  "weight": "regular",
+                  "size": 11,
+                  "leading": 150,
+                  "tracking": 1.43,
+                  "color": "@color-grey-500",
+                  "chars": "headline-m"
+                },
+                {
+                  "t": "text",
+                  "style": "headline-m/undefined",
+                  "font": "sans",
+                  "size": 19,
+                  "leading": 130,
+                  "tracking": 0,
+                  "color": "@color-grey-700",
+                  "chars": "Recherchen, die etwas ändern"
+                }
+              ]
+            },
+            {
+              "t": "frame",
+              "name": "headline-l",
+              "dir": "V",
+              "w": "hug",
+              "gap": 2,
+              "children": [
+                {
+                  "t": "text",
+                  "font": "sans",
+                  "weight": "regular",
+                  "size": 11,
+                  "leading": 150,
+                  "tracking": 1.43,
+                  "color": "@color-grey-500",
+                  "chars": "headline-l"
+                },
+                {
+                  "t": "text",
+                  "style": "headline-l/undefined",
+                  "font": "sans",
+                  "size": 23,
+                  "leading": 120,
+                  "tracking": -0.43,
+                  "color": "@color-grey-700",
+                  "chars": "Recherchen, die etwas ändern"
+                }
+              ]
+            },
+            {
+              "t": "frame",
+              "name": "headline-xl",
+              "dir": "V",
+              "w": "hug",
+              "gap": 2,
+              "children": [
+                {
+                  "t": "text",
+                  "font": "sans",
+                  "weight": "regular",
+                  "size": 11,
+                  "leading": 150,
+                  "tracking": 1.43,
+                  "color": "@color-grey-500",
+                  "chars": "headline-xl"
+                },
+                {
+                  "t": "text",
+                  "style": "headline-xl/undefined",
+                  "font": "sans",
+                  "size": 28,
+                  "leading": 120,
+                  "tracking": -0.71,
+                  "color": "@color-grey-700",
+                  "chars": "Recherchen, die etwas ändern"
+                }
+              ]
+            },
+            {
+              "t": "frame",
+              "name": "headline-xxl",
+              "dir": "V",
+              "w": "hug",
+              "gap": 2,
+              "children": [
+                {
+                  "t": "text",
+                  "font": "sans",
+                  "weight": "regular",
+                  "size": 11,
+                  "leading": 150,
+                  "tracking": 1.43,
+                  "color": "@color-grey-500",
+                  "chars": "headline-xxl"
+                },
+                {
+                  "t": "text",
+                  "style": "headline-xxl/undefined",
+                  "font": "sans",
+                  "size": 32,
+                  "leading": 120,
+                  "tracking": -0.62,
+                  "color": "@color-grey-700",
+                  "chars": "Recherchen, die etwas ändern"
+                }
+              ]
+            },
+            {
+              "t": "frame",
+              "name": "button",
+              "dir": "V",
+              "w": "hug",
+              "gap": 2,
+              "children": [
+                {
+                  "t": "text",
+                  "font": "sans",
+                  "weight": "regular",
+                  "size": 11,
+                  "leading": 150,
+                  "tracking": 1.43,
+                  "color": "@color-grey-500",
+                  "chars": "button"
+                },
+                {
+                  "t": "text",
+                  "style": "button/undefined",
+                  "font": "sans",
+                  "size": 16,
+                  "leading": 150,
+                  "tracking": 1.25,
+                  "color": "@color-grey-700",
+                  "chars": "Recherchen, die etwas ändern"
+                }
+              ]
+            },
+            {
+              "t": "frame",
+              "name": "text-m/bold",
+              "dir": "V",
+              "w": "hug",
+              "gap": 2,
+              "children": [
+                {
+                  "t": "text",
+                  "font": "sans",
+                  "weight": "regular",
+                  "size": 11,
+                  "leading": 150,
+                  "tracking": 1.43,
+                  "color": "@color-grey-500",
+                  "chars": "text-m/bold"
+                },
+                {
+                  "t": "text",
+                  "style": "text-m/bold",
+                  "font": "sans",
+                  "weight": "bold",
+                  "size": 15,
+                  "leading": 150,
+                  "tracking": 0.67,
+                  "color": "@color-grey-700",
+                  "chars": "Recherchen, die etwas ändern"
+                }
+              ]
+            },
+            {
+              "t": "frame",
+              "name": "text-m/semibold",
+              "dir": "V",
+              "w": "hug",
+              "gap": 2,
+              "children": [
+                {
+                  "t": "text",
+                  "font": "sans",
+                  "weight": "regular",
+                  "size": 11,
+                  "leading": 150,
+                  "tracking": 1.43,
+                  "color": "@color-grey-500",
+                  "chars": "text-m/semibold"
+                },
+                {
+                  "t": "text",
+                  "style": "text-m/semibold",
+                  "font": "sans",
+                  "weight": "semibold",
+                  "size": 15,
+                  "leading": 150,
+                  "tracking": 0.67,
+                  "color": "@color-grey-700",
+                  "chars": "Recherchen, die etwas ändern"
+                }
+              ]
+            },
+            {
+              "t": "frame",
+              "name": "text-s/bold",
+              "dir": "V",
+              "w": "hug",
+              "gap": 2,
+              "children": [
+                {
+                  "t": "text",
+                  "font": "sans",
+                  "weight": "regular",
+                  "size": 11,
+                  "leading": 150,
+                  "tracking": 1.43,
+                  "color": "@color-grey-500",
+                  "chars": "text-s/bold"
+                },
+                {
+                  "t": "text",
+                  "style": "text-s/bold",
+                  "font": "sans",
+                  "weight": "bold",
+                  "size": 14,
+                  "leading": 150,
+                  "tracking": 1.43,
+                  "color": "@color-grey-700",
+                  "chars": "Recherchen, die etwas ändern"
+                }
+              ]
+            },
+            {
+              "t": "frame",
+              "name": "text-s/semibold",
+              "dir": "V",
+              "w": "hug",
+              "gap": 2,
+              "children": [
+                {
+                  "t": "text",
+                  "font": "sans",
+                  "weight": "regular",
+                  "size": 11,
+                  "leading": 150,
+                  "tracking": 1.43,
+                  "color": "@color-grey-500",
+                  "chars": "text-s/semibold"
+                },
+                {
+                  "t": "text",
+                  "style": "text-s/semibold",
+                  "font": "sans",
+                  "weight": "semibold",
+                  "size": 14,
+                  "leading": 150,
+                  "tracking": 1.43,
+                  "color": "@color-grey-700",
+                  "chars": "Recherchen, die etwas ändern"
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "t": "variants",
+          "name": "ui/Button",
+          "x": 460,
+          "y": 0,
+          "prop": "Variante",
+          "props": {
+            "Titel": {
+              "type": "TEXT",
+              "default": "Beitrag festlegen"
+            }
+          },
+          "options": [
+            {
+              "value": "primary",
+              "dir": "H",
+              "w": "hug",
+              "align": "CENTER",
+              "cross": "CENTER",
+              "pad": [24, 24, 12, 12],
+              "radius": 5,
+              "fill": "@color-emphasis",
+              "children": [
+                {
+                  "t": "text",
+                  "style": "button",
+                  "font": "sans",
+                  "weight": "bold",
+                  "size": 16,
+                  "leading": 150,
+                  "tracking": 1.25,
+                  "color": "@color-always-light",
+                  "chars": "Beitrag festlegen",
+                  "bind": "Titel"
+                }
+              ]
+            },
+            {
+              "value": "secondary",
+              "dir": "H",
+              "w": "hug",
+              "align": "CENTER",
+              "cross": "CENTER",
+              "pad": [24, 24, 12, 12],
+              "radius": 5,
+              "fill": "@color-grey-200",
+              "children": [
+                {
+                  "t": "text",
+                  "style": "button",
+                  "font": "sans",
+                  "weight": "bold",
+                  "size": 16,
+                  "leading": 150,
+                  "tracking": 1.25,
+                  "color": "@color-grey-700",
+                  "chars": "Beitrag festlegen",
+                  "bind": "Titel"
+                }
+              ]
+            },
+            {
+              "value": "outline",
+              "dir": "H",
+              "w": "hug",
+              "align": "CENTER",
+              "cross": "CENTER",
+              "pad": [24, 24, 12, 12],
+              "radius": 5,
+              "fill": "@color-grey-100",
+              "children": [
+                {
+                  "t": "text",
+                  "style": "button",
+                  "font": "sans",
+                  "weight": "bold",
+                  "size": 16,
+                  "leading": 150,
+                  "tracking": 1.25,
+                  "color": "@color-grey-700",
+                  "chars": "Beitrag festlegen",
+                  "bind": "Titel"
+                }
+              ],
+              "stroke": "@color-grey-300"
+            },
+            {
+              "value": "club",
+              "dir": "H",
+              "w": "hug",
+              "align": "CENTER",
+              "cross": "CENTER",
+              "pad": [24, 24, 12, 12],
+              "radius": 5,
+              "fill": "@color-alternative",
+              "children": [
+                {
+                  "t": "text",
+                  "style": "button",
+                  "font": "sans",
+                  "weight": "bold",
+                  "size": 16,
+                  "leading": 150,
+                  "tracking": 1.25,
+                  "color": "@color-always-dark",
+                  "chars": "Beitrag festlegen",
+                  "bind": "Titel"
+                }
+              ]
+            },
+            {
+              "value": "onEmphasis",
+              "dir": "H",
+              "w": "hug",
+              "align": "CENTER",
+              "cross": "CENTER",
+              "pad": [24, 24, 12, 12],
+              "radius": 5,
+              "fill": "@color-always-light",
+              "children": [
+                {
+                  "t": "text",
+                  "style": "button",
+                  "font": "sans",
+                  "weight": "bold",
+                  "size": 16,
+                  "leading": 150,
+                  "tracking": 1.25,
+                  "color": "@color-always-dark",
+                  "chars": "Beitrag festlegen",
+                  "bind": "Titel"
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "t": "variants",
+          "name": "ui/Badge",
+          "x": 460,
+          "y": 570,
+          "prop": "Ton",
+          "props": {
+            "Label": {
+              "type": "TEXT",
+              "default": "CLUB"
+            }
+          },
+          "options": [
+            {
+              "value": "emphasis",
+              "dir": "H",
+              "w": "hug",
+              "cross": "CENTER",
+              "gap": 4,
+              "pad": [6, 6, 2, 2],
+              "radius": 2,
+              "children": [
+                {
+                  "t": "text",
+                  "font": "sans",
+                  "weight": "bold",
+                  "size": 11,
+                  "leading": 150,
+                  "tracking": 3.64,
+                  "color": "@color-always-light",
+                  "chars": "CLUB",
+                  "bind": "Label"
+                }
+              ],
+              "fill": "@color-emphasis"
+            },
+            {
+              "value": "club",
+              "dir": "H",
+              "w": "hug",
+              "cross": "CENTER",
+              "gap": 4,
+              "pad": [6, 6, 2, 2],
+              "radius": 2,
+              "children": [
+                {
+                  "t": "text",
+                  "font": "sans",
+                  "weight": "bold",
+                  "size": 11,
+                  "leading": 150,
+                  "tracking": 3.64,
+                  "color": "@color-always-dark",
+                  "chars": "CLUB",
+                  "bind": "Label"
+                }
+              ],
+              "fill": "@color-alternative"
+            },
+            {
+              "value": "neutral",
+              "dir": "H",
+              "w": "hug",
+              "cross": "CENTER",
+              "gap": 4,
+              "pad": [6, 6, 2, 2],
+              "radius": 2,
+              "children": [
+                {
+                  "t": "text",
+                  "font": "sans",
+                  "weight": "bold",
+                  "size": 11,
+                  "leading": 150,
+                  "tracking": 3.64,
+                  "color": "@color-grey-600",
+                  "chars": "CLUB",
+                  "bind": "Label"
+                }
+              ],
+              "fill": "@color-grey-250"
+            },
+            {
+              "value": "live",
+              "dir": "H",
+              "w": "hug",
+              "cross": "CENTER",
+              "gap": 4,
+              "pad": [6, 6, 2, 2],
+              "radius": 2,
+              "children": [
+                {
+                  "t": "ellipse",
+                  "w": 7,
+                  "h": 7,
+                  "fill": "@color-emphasis"
+                },
+                {
+                  "t": "text",
+                  "font": "sans",
+                  "weight": "bold",
+                  "size": 11,
+                  "leading": 150,
+                  "tracking": 3.64,
+                  "color": "@color-emphasis",
+                  "chars": "CLUB",
+                  "bind": "Label"
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "t": "variants",
+          "name": "ui/Chip",
+          "x": 460,
+          "y": 1050,
+          "prop": "Gewählt",
+          "props": {
+            "Label": {
+              "type": "TEXT",
+              "default": "Klima"
+            }
+          },
+          "options": [
+            {
+              "value": "ja",
+              "dir": "H",
+              "w": "hug",
+              "cross": "CENTER",
+              "pad": [12, 12, 6, 6],
+              "radius": 5,
+              "fill": "@color-emphasis",
+              "children": [
+                {
+                  "t": "text",
+                  "style": "text-s/semibold",
+                  "font": "sans",
+                  "weight": "semibold",
+                  "size": 14,
+                  "leading": 150,
+                  "tracking": 1.43,
+                  "color": "@color-always-light",
+                  "chars": "Klima",
+                  "bind": "Label"
+                }
+              ]
+            },
+            {
+              "value": "nein",
+              "dir": "H",
+              "w": "hug",
+              "cross": "CENTER",
+              "pad": [12, 12, 6, 6],
+              "radius": 5,
+              "fill": "@color-grey-200",
+              "children": [
+                {
+                  "t": "text",
+                  "style": "text-s/semibold",
+                  "font": "sans",
+                  "weight": "semibold",
+                  "size": 14,
+                  "leading": 150,
+                  "tracking": 1.43,
+                  "color": "@color-grey-700",
+                  "chars": "Klima",
+                  "bind": "Label"
+                }
+              ],
+              "stroke": "@color-grey-300"
+            }
+          ]
+        },
+        {
+          "t": "variants",
+          "name": "ui/Card",
+          "x": 460,
+          "y": 1350,
+          "prop": "Ton",
+          "props": {},
+          "options": [
+            {
+              "value": "surface",
+              "dir": "V",
+              "w": 280,
+              "pad": [16, 16, 16, 16],
+              "radius": 5,
+              "fill": "@color-grey-200",
+              "children": [
+                {
+                  "t": "frame",
+                  "name": "Inhalt",
+                  "dir": "V",
+                  "w": "fill",
+                  "h": 56,
+                  "cross": "CENTER",
+                  "align": "CENTER",
+                  "stroke": "@color-grey-400",
+                  "dash": [4, 4],
+                  "children": [
+                    {
+                      "t": "text",
+                      "style": "text-s",
+                      "font": "sans",
+                      "weight": "regular",
+                      "size": 14,
+                      "leading": 150,
+                      "tracking": 1.43,
+                      "color": "@color-grey-500",
+                      "chars": "Inhalt"
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "value": "outline",
+              "dir": "V",
+              "w": 280,
+              "pad": [16, 16, 16, 16],
+              "radius": 5,
+              "fill": "@color-grey-100",
+              "children": [
+                {
+                  "t": "frame",
+                  "name": "Inhalt",
+                  "dir": "V",
+                  "w": "fill",
+                  "h": 56,
+                  "cross": "CENTER",
+                  "align": "CENTER",
+                  "stroke": "@color-grey-400",
+                  "dash": [4, 4],
+                  "children": [
+                    {
+                      "t": "text",
+                      "style": "text-s",
+                      "font": "sans",
+                      "weight": "regular",
+                      "size": 14,
+                      "leading": 150,
+                      "tracking": 1.43,
+                      "color": "@color-grey-500",
+                      "chars": "Inhalt"
+                    }
+                  ]
+                }
+              ],
+              "stroke": "@color-grey-300"
+            }
+          ]
+        },
+        {
+          "t": "component",
+          "name": "ui/Overline",
+          "x": 460,
+          "y": 1650,
+          "props": {
+            "Label": {
+              "type": "TEXT",
+              "default": "IHRE MITGLIEDSCHAFT"
+            }
+          },
+          "dir": "V",
+          "w": "hug",
+          "fill": "@color-grey-100",
+          "children": [
+            {
+              "t": "text",
+              "font": "sans",
+              "weight": "bold",
+              "size": 12,
+              "leading": 150,
+              "tracking": 10,
+              "color": "@color-grey-600",
+              "chars": "IHRE MITGLIEDSCHAFT",
+              "bind": "Label"
+            }
+          ]
+        },
+        {
+          "t": "component",
+          "name": "ui/Hairline",
+          "x": 460,
+          "y": 1860,
+          "props": {},
+          "dir": "V",
+          "w": 280,
+          "fill": "@color-grey-100",
+          "children": [
+            {
+              "t": "line",
+              "color": "@color-grey-300"
+            }
+          ]
+        },
+        {
+          "t": "component",
+          "name": "ui/SectionHeader",
+          "x": 460,
+          "y": 2070,
+          "props": {
+            "Titel": {
+              "type": "TEXT",
+              "default": "Aus dem Backstage"
+            },
+            "Aktion": {
+              "type": "TEXT",
+              "default": "Alles ansehen"
+            },
+            "Aktion zeigen": {
+              "type": "BOOLEAN",
+              "default": true
+            }
+          },
+          "dir": "H",
+          "w": 320,
+          "cross": "MAX",
+          "align": "SPACE_BETWEEN",
+          "fill": "@color-grey-100",
+          "children": [
+            {
+              "t": "text",
+              "style": "headline-m",
+              "font": "sans",
+              "weight": "bold",
+              "size": 19,
+              "leading": 130,
+              "tracking": 0,
+              "color": "@color-grey-700",
+              "chars": "Aus dem Backstage",
+              "bind": "Titel"
+            },
+            {
+              "t": "frame",
+              "name": "Aktion",
+              "dir": "H",
+              "w": "hug",
+              "bind": "Aktion zeigen",
+              "children": [
+                {
+                  "t": "text",
+                  "style": "text-s",
+                  "font": "sans",
+                  "weight": "regular",
+                  "size": 14,
+                  "leading": 150,
+                  "tracking": 1.43,
+                  "color": "@color-emphasis",
+                  "chars": "Alles ansehen",
+                  "bind": "Aktion"
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "t": "component",
+          "name": "ui/ScreenHeader",
+          "x": 460,
+          "y": 2280,
+          "props": {
+            "Zurück": {
+              "type": "TEXT",
+              "default": "Zurück"
+            }
+          },
+          "dir": "V",
+          "w": 320,
+          "fill": "@color-grey-100",
+          "children": [
+            {
+              "t": "frame",
+              "dir": "H",
+              "w": "fill",
+              "cross": "CENTER",
+              "gap": 4,
+              "pad": [16, 16, 12, 12],
+              "children": [
+                {
+                  "t": "text",
+                  "font": "sans",
+                  "weight": "regular",
+                  "size": 20,
+                  "leading": 150,
+                  "tracking": 0.67,
+                  "color": "@color-grey-700",
+                  "chars": "‹"
+                },
+                {
+                  "t": "text",
+                  "style": "text-m",
+                  "font": "sans",
+                  "weight": "regular",
+                  "size": 15,
+                  "leading": 150,
+                  "tracking": 0.67,
+                  "color": "@color-grey-700",
+                  "chars": "Zurück",
+                  "bind": "Zurück"
+                }
+              ]
+            },
+            {
+              "t": "line",
+              "color": "@color-grey-300",
+              "w": "fill"
+            }
+          ]
+        },
+        {
+          "t": "component",
+          "name": "profile/NavCard",
+          "x": 920,
+          "y": 0,
+          "props": {
+            "Titel": {
+              "type": "TEXT",
+              "default": "Backstage"
+            },
+            "Untertitel": {
+              "type": "TEXT",
+              "default": "Was gerade in der Redaktion passiert"
+            },
+            "Club": {
+              "type": "BOOLEAN",
+              "default": true
+            }
+          },
+          "dir": "H",
+          "w": 320,
+          "cross": "CENTER",
+          "pad": [0, 0, 12, 12],
+          "stroke": "@color-grey-300",
+          "strokeSides": "bottom",
+          "fill": "@color-grey-100",
+          "children": [
+            {
+              "t": "text",
+              "font": "sans",
+              "weight": "regular",
+              "size": 20,
+              "leading": 150,
+              "tracking": 0.67,
+              "color": "@color-grey-600",
+              "chars": "◎"
+            },
+            {
+              "t": "frame",
+              "dir": "V",
+              "w": "fill",
+              "gap": 2,
+              "pad": [12, 0, 0, 0],
+              "children": [
+                {
+                  "t": "frame",
+                  "dir": "H",
+                  "w": "hug",
+                  "cross": "CENTER",
+                  "gap": 6,
+                  "children": [
+                    {
+                      "t": "text",
+                      "style": "text-m/bold",
+                      "font": "sans",
+                      "weight": "bold",
+                      "size": 15,
+                      "leading": 150,
+                      "tracking": 0.67,
+                      "color": "@color-grey-700",
+                      "chars": "Backstage",
+                      "bind": "Titel"
+                    },
+                    {
+                      "t": "instance",
+                      "of": "ui/Badge",
+                      "set": {
+                        "Ton": "club",
+                        "Label": "CLUB"
+                      },
+                      "bind": "Club"
+                    }
+                  ]
+                },
+                {
+                  "t": "text",
+                  "style": "text-s",
+                  "font": "sans",
+                  "weight": "regular",
+                  "size": 14,
+                  "leading": 150,
+                  "tracking": 1.43,
+                  "color": "@color-grey-600",
+                  "chars": "Was gerade in der Redaktion passiert",
+                  "w": "fill",
+                  "bind": "Untertitel"
+                }
+              ]
+            },
+            {
+              "t": "text",
+              "font": "sans",
+              "weight": "regular",
+              "size": 16,
+              "leading": 150,
+              "tracking": 0.67,
+              "color": "@color-grey-500",
+              "chars": "›"
+            }
+          ]
+        },
+        {
+          "t": "variants",
+          "name": "profile/SettingRow",
+          "x": 920,
+          "y": 210,
+          "prop": "An",
+          "props": {
+            "Label": {
+              "type": "TEXT",
+              "default": "Push-Mitteilungen"
+            },
+            "Beschreibung": {
+              "type": "TEXT",
+              "default": "Neue Recherchen und Mitmach-Aufrufe"
+            },
+            "Beschreibung zeigen": {
+              "type": "BOOLEAN",
+              "default": true
+            }
+          },
+          "options": [
+            {
+              "value": "ja",
+              "dir": "H",
+              "w": 320,
+              "cross": "CENTER",
+              "gap": 12,
+              "pad": [0, 0, 6, 6],
+              "fill": "@color-grey-100",
+              "children": [
+                {
+                  "t": "frame",
+                  "dir": "V",
+                  "w": "fill",
+                  "gap": 2,
+                  "children": [
+                    {
+                      "t": "text",
+                      "style": "text-m",
+                      "font": "sans",
+                      "weight": "regular",
+                      "size": 15,
+                      "leading": 150,
+                      "tracking": 0.67,
+                      "color": "@color-grey-700",
+                      "chars": "Push-Mitteilungen",
+                      "w": "fill",
+                      "bind": "Label"
+                    },
+                    {
+                      "t": "frame",
+                      "dir": "V",
+                      "w": "fill",
+                      "bind": "Beschreibung zeigen",
+                      "children": [
+                        {
+                          "t": "text",
+                          "style": "text-s",
+                          "font": "sans",
+                          "weight": "regular",
+                          "size": 14,
+                          "leading": 150,
+                          "tracking": 1.43,
+                          "color": "@color-grey-600",
+                          "chars": "Neue Recherchen und Mitmach-Aufrufe",
+                          "w": "fill",
+                          "bind": "Beschreibung"
+                        }
+                      ]
+                    }
+                  ]
+                },
+                {
+                  "t": "frame",
+                  "name": "Schalter",
+                  "dir": "H",
+                  "w": 44,
+                  "h": 26,
+                  "cross": "CENTER",
+                  "align": "MAX",
+                  "pad": [3, 3, 3, 3],
+                  "radius": 13,
+                  "fill": "@color-emphasis",
+                  "children": [
+                    {
+                      "t": "ellipse",
+                      "w": 20,
+                      "h": 20,
+                      "fill": "@color-always-light"
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "value": "nein",
+              "dir": "H",
+              "w": 320,
+              "cross": "CENTER",
+              "gap": 12,
+              "pad": [0, 0, 6, 6],
+              "fill": "@color-grey-100",
+              "children": [
+                {
+                  "t": "frame",
+                  "dir": "V",
+                  "w": "fill",
+                  "gap": 2,
+                  "children": [
+                    {
+                      "t": "text",
+                      "style": "text-m",
+                      "font": "sans",
+                      "weight": "regular",
+                      "size": 15,
+                      "leading": 150,
+                      "tracking": 0.67,
+                      "color": "@color-grey-700",
+                      "chars": "Push-Mitteilungen",
+                      "w": "fill",
+                      "bind": "Label"
+                    },
+                    {
+                      "t": "frame",
+                      "dir": "V",
+                      "w": "fill",
+                      "bind": "Beschreibung zeigen",
+                      "children": [
+                        {
+                          "t": "text",
+                          "style": "text-s",
+                          "font": "sans",
+                          "weight": "regular",
+                          "size": 14,
+                          "leading": 150,
+                          "tracking": 1.43,
+                          "color": "@color-grey-600",
+                          "chars": "Neue Recherchen und Mitmach-Aufrufe",
+                          "w": "fill",
+                          "bind": "Beschreibung"
+                        }
+                      ]
+                    }
+                  ]
+                },
+                {
+                  "t": "frame",
+                  "name": "Schalter",
+                  "dir": "H",
+                  "w": 44,
+                  "h": 26,
+                  "cross": "CENTER",
+                  "align": "MIN",
+                  "pad": [3, 3, 3, 3],
+                  "radius": 13,
+                  "fill": "@color-grey-300",
+                  "children": [
+                    {
+                      "t": "ellipse",
+                      "w": 20,
+                      "h": 20,
+                      "fill": "@color-always-light"
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "t": "component",
+          "name": "discover/ProjectRow",
+          "x": 920,
+          "y": 510,
+          "props": {
+            "Name": {
+              "type": "TEXT",
+              "default": "CrimeTech"
+            },
+            "Teaser": {
+              "type": "TEXT",
+              "default": "Wie Polizeibehörden mit Technik gegen Kriminalität vorgehen"
+            }
+          },
+          "dir": "H",
+          "w": 320,
+          "cross": "CENTER",
+          "pad": [0, 0, 12, 12],
+          "stroke": "@color-grey-300",
+          "strokeSides": "bottom",
+          "fill": "@color-grey-100",
+          "children": [
+            {
+              "t": "frame",
+              "dir": "V",
+              "w": "fill",
+              "gap": 2,
+              "pad": [0, 12, 0, 0],
+              "children": [
+                {
+                  "t": "text",
+                  "style": "text-m/bold",
+                  "font": "sans",
+                  "weight": "bold",
+                  "size": 15,
+                  "leading": 150,
+                  "tracking": 0.67,
+                  "color": "@color-grey-700",
+                  "chars": "CrimeTech",
+                  "bind": "Name"
+                },
+                {
+                  "t": "text",
+                  "style": "text-s",
+                  "font": "sans",
+                  "weight": "regular",
+                  "size": 14,
+                  "leading": 150,
+                  "tracking": 1.43,
+                  "color": "@color-grey-600",
+                  "chars": "Wie Polizeibehörden mit Technik gegen Kriminalität vorgehen",
+                  "w": "fill",
+                  "bind": "Teaser"
+                }
+              ]
+            },
+            {
+              "t": "text",
+              "font": "sans",
+              "weight": "regular",
+              "size": 16,
+              "leading": 150,
+              "tracking": 0.67,
+              "color": "@color-grey-500",
+              "chars": "›"
+            }
+          ]
+        },
+        {
+          "t": "variants",
+          "name": "participate/ClaimStatusTag",
+          "x": 920,
+          "y": 720,
+          "prop": "Status",
+          "props": {
+            "Label": {
+              "type": "TEXT"
+            }
+          },
+          "options": [
+            {
+              "value": "richtig",
+              "dir": "H",
+              "w": "hug",
+              "pad": [6, 6, 2, 2],
+              "radius": 1,
+              "fill": "#2e7d4f",
+              "children": [
+                {
+                  "t": "text",
+                  "font": "sans",
+                  "weight": "bold",
+                  "size": 11,
+                  "leading": 150,
+                  "tracking": 1.43,
+                  "color": "@color-always-light",
+                  "chars": "RICHTIG",
+                  "bind": "Label"
+                }
+              ]
+            },
+            {
+              "value": "falsch",
+              "dir": "H",
+              "w": "hug",
+              "pad": [6, 6, 2, 2],
+              "radius": 1,
+              "fill": "@color-emphasis",
+              "children": [
+                {
+                  "t": "text",
+                  "font": "sans",
+                  "weight": "bold",
+                  "size": 11,
+                  "leading": 150,
+                  "tracking": 1.43,
+                  "color": "@color-always-light",
+                  "chars": "FALSCH",
+                  "bind": "Label"
+                }
+              ]
+            },
+            {
+              "value": "inArbeit",
+              "dir": "H",
+              "w": "hug",
+              "pad": [6, 6, 2, 2],
+              "radius": 1,
+              "fill": "@color-grey-100",
+              "children": [
+                {
+                  "t": "text",
+                  "font": "sans",
+                  "weight": "bold",
+                  "size": 11,
+                  "leading": 150,
+                  "tracking": 1.43,
+                  "color": "@color-grey-700",
+                  "chars": "IN ARBEIT",
+                  "bind": "Label"
+                }
+              ],
+              "stroke": "@color-grey-400"
+            },
+            {
+              "value": "offen",
+              "dir": "H",
+              "w": "hug",
+              "pad": [6, 6, 2, 2],
+              "radius": 1,
+              "fill": "@color-grey-250",
+              "children": [
+                {
+                  "t": "text",
+                  "font": "sans",
+                  "weight": "bold",
+                  "size": 11,
+                  "leading": 150,
+                  "tracking": 1.43,
+                  "color": "@color-grey-600",
+                  "chars": "OFFEN",
+                  "bind": "Label"
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "t": "component",
+          "name": "profile/ClubCard",
+          "x": 920,
+          "y": 1200,
+          "props": {
+            "Name": {
+              "type": "TEXT",
+              "default": "Alex Beispiel"
+            },
+            "Stufe": {
+              "type": "TEXT",
+              "default": "Mitgliedschaft mit Beitrag · seit 12.03.2024"
+            }
+          },
+          "dir": "V",
+          "w": 320,
+          "pad": [24, 24, 24, 24],
+          "radius": 5,
+          "fill": "@color-alternative",
+          "children": [
+            {
+              "t": "frame",
+              "name": "Kopf",
+              "dir": "H",
+              "w": "fill",
+              "cross": "CENTER",
+              "align": "SPACE_BETWEEN",
+              "children": [
+                {
+                  "t": "text",
+                  "font": "sans",
+                  "weight": "bold",
+                  "size": 12,
+                  "leading": 150,
+                  "tracking": 10,
+                  "color": "@color-always-dark",
+                  "chars": "CORRECTIV CLUB"
+                },
+                {
+                  "t": "text",
+                  "font": "sans",
+                  "weight": "regular",
+                  "size": 20,
+                  "leading": 150,
+                  "tracking": 0.67,
+                  "color": "@color-always-dark",
+                  "chars": "♥"
+                }
+              ]
+            },
+            {
+              "t": "space",
+              "h": 24
+            },
+            {
+              "t": "text",
+              "style": "headline-l",
+              "font": "sans",
+              "weight": "bold",
+              "size": 23,
+              "leading": 120,
+              "tracking": -0.43,
+              "color": "@color-always-dark",
+              "chars": "Alex Beispiel",
+              "w": "fill",
+              "bind": "Name"
+            },
+            {
+              "t": "text",
+              "style": "text-s",
+              "font": "sans",
+              "weight": "regular",
+              "size": 14,
+              "leading": 150,
+              "tracking": 1.43,
+              "color": "@color-always-dark",
+              "chars": "Mitgliedschaft mit Beitrag · seit 12.03.2024",
+              "opacity": 0.7,
+              "w": "fill",
+              "bind": "Stufe"
             }
           ]
         }
@@ -1696,24 +3312,15 @@
                   "w": "fill"
                 },
                 {
-                  "t": "frame",
+                  "t": "instance",
+                  "of": "ui/Button",
                   "name": "Button, Anmelden",
-                  "dir": "H",
+                  "set": {
+                    "Variante": "primary",
+                    "Titel": "Anmelden"
+                  },
                   "w": "fill",
-                  "h": 48,
-                  "fill": "#ffc0c8",
-                  "radius": 5,
-                  "align": "CENTER",
-                  "cross": "CENTER",
-                  "children": [
-                    {
-                      "t": "text",
-                      "chars": "Anmelden",
-                      "size": 14,
-                      "color": "@color-grey-100",
-                      "weight": "semibold"
-                    }
-                  ]
+                  "opacity": 0.4
                 },
                 {
                   "t": "space",
@@ -1996,24 +3603,14 @@
                   "w": "fill"
                 },
                 {
-                  "t": "frame",
+                  "t": "instance",
+                  "of": "ui/Button",
                   "name": "Button, Anmelden",
-                  "dir": "H",
-                  "w": "fill",
-                  "h": 48,
-                  "fill": "@color-emphasis",
-                  "radius": 5,
-                  "align": "CENTER",
-                  "cross": "CENTER",
-                  "children": [
-                    {
-                      "t": "text",
-                      "chars": "Anmelden",
-                      "size": 14,
-                      "color": "@color-grey-100",
-                      "weight": "semibold"
-                    }
-                  ]
+                  "set": {
+                    "Variante": "primary",
+                    "Titel": "Anmelden"
+                  },
+                  "w": "fill"
                 },
                 {
                   "t": "space",
@@ -2305,24 +3902,14 @@
                   "w": "fill"
                 },
                 {
-                  "t": "frame",
+                  "t": "instance",
+                  "of": "ui/Button",
                   "name": "Button, Mitgliedschaft erweitern",
-                  "dir": "H",
-                  "w": "fill",
-                  "h": 48,
-                  "fill": "@color-emphasis",
-                  "radius": 5,
-                  "align": "CENTER",
-                  "cross": "CENTER",
-                  "children": [
-                    {
-                      "t": "text",
-                      "chars": "Mitgliedschaft erweitern",
-                      "size": 14,
-                      "color": "@color-grey-100",
-                      "weight": "semibold"
-                    }
-                  ]
+                  "set": {
+                    "Variante": "primary",
+                    "Titel": "Mitgliedschaft erweitern"
+                  },
+                  "w": "fill"
                 },
                 {
                   "t": "space",
@@ -2330,25 +3917,14 @@
                   "w": "fill"
                 },
                 {
-                  "t": "frame",
+                  "t": "instance",
+                  "of": "ui/Button",
                   "name": "Button, Erneut prüfen",
-                  "dir": "H",
-                  "w": "fill",
-                  "h": 48,
-                  "fill": "@color-grey-100",
-                  "radius": 5,
-                  "stroke": "@color-grey-300",
-                  "align": "CENTER",
-                  "cross": "CENTER",
-                  "children": [
-                    {
-                      "t": "text",
-                      "chars": "Erneut prüfen",
-                      "size": 14,
-                      "color": "@color-grey-700",
-                      "weight": "semibold"
-                    }
-                  ]
+                  "set": {
+                    "Variante": "outline",
+                    "Titel": "Erneut prüfen"
+                  },
+                  "w": "fill"
                 },
                 {
                   "t": "space",
@@ -3042,326 +4618,64 @@
                   "w": "fill"
                 },
                 {
-                  "t": "frame",
+                  "t": "instance",
+                  "of": "discover/ProjectRow",
                   "name": "ProjectRow",
-                  "dir": "H",
-                  "gap": 10,
-                  "cross": "CENTER",
-                  "clip": true,
-                  "w": "fill",
-                  "children": [
-                    {
-                      "t": "frame",
-                      "name": "Text",
-                      "dir": "V",
-                      "gap": 3,
-                      "clip": true,
-                      "w": "fill",
-                      "children": [
-                        {
-                          "t": "text",
-                          "chars": "Recherchen",
-                          "size": 13,
-                          "color": "@color-grey-700",
-                          "weight": "semibold",
-                          "w": 280
-                        },
-                        {
-                          "t": "text",
-                          "chars": "Investigative Recherchen für die Gesellschaft.",
-                          "size": 11,
-                          "color": "@color-grey-600",
-                          "w": 280
-                        }
-                      ]
-                    },
-                    {
-                      "t": "text",
-                      "chars": "›",
-                      "size": 14,
-                      "color": "@color-grey-600"
-                    }
-                  ]
-                },
-                {
-                  "t": "space",
-                  "h": 12,
+                  "set": {
+                    "Name": "Recherchen",
+                    "Teaser": "Investigative Recherchen für die Gesellschaft."
+                  },
                   "w": "fill"
                 },
                 {
-                  "t": "line",
-                  "w": "fill"
-                },
-                {
-                  "t": "space",
-                  "h": 12,
-                  "w": "fill"
-                },
-                {
-                  "t": "frame",
+                  "t": "instance",
+                  "of": "discover/ProjectRow",
                   "name": "ProjectRow",
-                  "dir": "H",
-                  "gap": 10,
-                  "cross": "CENTER",
-                  "clip": true,
-                  "w": "fill",
-                  "children": [
-                    {
-                      "t": "frame",
-                      "name": "Text",
-                      "dir": "V",
-                      "gap": 3,
-                      "clip": true,
-                      "w": "fill",
-                      "children": [
-                        {
-                          "t": "text",
-                          "chars": "CORRECTIV.Faktencheck",
-                          "size": 13,
-                          "color": "@color-grey-700",
-                          "weight": "semibold",
-                          "w": 280
-                        },
-                        {
-                          "t": "text",
-                          "chars": "Desinformation aufdecken, Behauptungen prüfen.",
-                          "size": 11,
-                          "color": "@color-grey-600",
-                          "w": 280
-                        }
-                      ]
-                    },
-                    {
-                      "t": "text",
-                      "chars": "›",
-                      "size": 14,
-                      "color": "@color-grey-600"
-                    }
-                  ]
-                },
-                {
-                  "t": "space",
-                  "h": 12,
+                  "set": {
+                    "Name": "CORRECTIV.Faktencheck",
+                    "Teaser": "Desinformation aufdecken, Behauptungen prüfen."
+                  },
                   "w": "fill"
                 },
                 {
-                  "t": "line",
-                  "w": "fill"
-                },
-                {
-                  "t": "space",
-                  "h": 12,
-                  "w": "fill"
-                },
-                {
-                  "t": "frame",
+                  "t": "instance",
+                  "of": "discover/ProjectRow",
                   "name": "ProjectRow",
-                  "dir": "H",
-                  "gap": 10,
-                  "cross": "CENTER",
-                  "clip": true,
-                  "w": "fill",
-                  "children": [
-                    {
-                      "t": "frame",
-                      "name": "Text",
-                      "dir": "V",
-                      "gap": 3,
-                      "clip": true,
-                      "w": "fill",
-                      "children": [
-                        {
-                          "t": "text",
-                          "chars": "CORRECTIV.Schweiz",
-                          "size": 13,
-                          "color": "@color-grey-700",
-                          "weight": "semibold",
-                          "w": 280
-                        },
-                        {
-                          "t": "text",
-                          "chars": "Recherchen aus und für die Schweiz.",
-                          "size": 11,
-                          "color": "@color-grey-600",
-                          "w": 280
-                        }
-                      ]
-                    },
-                    {
-                      "t": "text",
-                      "chars": "›",
-                      "size": 14,
-                      "color": "@color-grey-600"
-                    }
-                  ]
-                },
-                {
-                  "t": "space",
-                  "h": 12,
+                  "set": {
+                    "Name": "CORRECTIV.Schweiz",
+                    "Teaser": "Recherchen aus und für die Schweiz."
+                  },
                   "w": "fill"
                 },
                 {
-                  "t": "line",
-                  "w": "fill"
-                },
-                {
-                  "t": "space",
-                  "h": 12,
-                  "w": "fill"
-                },
-                {
-                  "t": "frame",
+                  "t": "instance",
+                  "of": "discover/ProjectRow",
                   "name": "ProjectRow",
-                  "dir": "H",
-                  "gap": 10,
-                  "cross": "CENTER",
-                  "clip": true,
-                  "w": "fill",
-                  "children": [
-                    {
-                      "t": "frame",
-                      "name": "Text",
-                      "dir": "V",
-                      "gap": 3,
-                      "clip": true,
-                      "w": "fill",
-                      "children": [
-                        {
-                          "t": "text",
-                          "chars": "CORRECTIV.Lokal",
-                          "size": 13,
-                          "color": "@color-grey-700",
-                          "weight": "semibold",
-                          "w": 280
-                        },
-                        {
-                          "t": "text",
-                          "chars": "Netzwerk für Lokaljournalismus in ganz Deutschland.",
-                          "size": 11,
-                          "color": "@color-grey-600",
-                          "w": 280
-                        }
-                      ]
-                    },
-                    {
-                      "t": "text",
-                      "chars": "›",
-                      "size": 14,
-                      "color": "@color-grey-600"
-                    }
-                  ]
-                },
-                {
-                  "t": "space",
-                  "h": 12,
+                  "set": {
+                    "Name": "CORRECTIV.Lokal",
+                    "Teaser": "Netzwerk für Lokaljournalismus in ganz Deutschland."
+                  },
                   "w": "fill"
                 },
                 {
-                  "t": "line",
-                  "w": "fill"
-                },
-                {
-                  "t": "space",
-                  "h": 12,
-                  "w": "fill"
-                },
-                {
-                  "t": "frame",
+                  "t": "instance",
+                  "of": "discover/ProjectRow",
                   "name": "ProjectRow",
-                  "dir": "H",
-                  "gap": 10,
-                  "cross": "CENTER",
-                  "clip": true,
-                  "w": "fill",
-                  "children": [
-                    {
-                      "t": "frame",
-                      "name": "Text",
-                      "dir": "V",
-                      "gap": 3,
-                      "clip": true,
-                      "w": "fill",
-                      "children": [
-                        {
-                          "t": "text",
-                          "chars": "Klima",
-                          "size": 13,
-                          "color": "@color-grey-700",
-                          "weight": "semibold",
-                          "w": 280
-                        },
-                        {
-                          "t": "text",
-                          "chars": "Die Klimakrise und ihre Folgen, datenbasiert recherchiert.",
-                          "size": 11,
-                          "color": "@color-grey-600",
-                          "w": 280
-                        }
-                      ]
-                    },
-                    {
-                      "t": "text",
-                      "chars": "›",
-                      "size": 14,
-                      "color": "@color-grey-600"
-                    }
-                  ]
-                },
-                {
-                  "t": "space",
-                  "h": 12,
+                  "set": {
+                    "Name": "Klima",
+                    "Teaser": "Die Klimakrise und ihre Folgen, datenbasiert recherchiert."
+                  },
                   "w": "fill"
                 },
                 {
-                  "t": "line",
-                  "w": "fill"
-                },
-                {
-                  "t": "space",
-                  "h": 12,
-                  "w": "fill"
-                },
-                {
-                  "t": "frame",
+                  "t": "instance",
+                  "of": "discover/ProjectRow",
                   "name": "ProjectRow",
-                  "dir": "H",
-                  "gap": 10,
-                  "cross": "CENTER",
-                  "clip": true,
-                  "w": "fill",
-                  "children": [
-                    {
-                      "t": "frame",
-                      "name": "Text",
-                      "dir": "V",
-                      "gap": 3,
-                      "clip": true,
-                      "w": "fill",
-                      "children": [
-                        {
-                          "t": "text",
-                          "chars": "CORRECTIV.Europe",
-                          "size": 13,
-                          "color": "@color-grey-700",
-                          "weight": "semibold",
-                          "w": 280
-                        },
-                        {
-                          "t": "text",
-                          "chars": "Grenzüberschreitende Recherchen in Europa, bald mit eigenem Feed.",
-                          "size": 11,
-                          "color": "@color-grey-600",
-                          "w": 280
-                        }
-                      ]
-                    },
-                    {
-                      "t": "text",
-                      "chars": "›",
-                      "size": 14,
-                      "color": "@color-grey-600"
-                    }
-                  ]
+                  "set": {
+                    "Name": "CORRECTIV.Europe",
+                    "Teaser": "Grenzüberschreitende Recherchen in Europa, bald mit eigenem Feed."
+                  },
+                  "w": "fill"
                 }
               ]
             }
@@ -4365,25 +5679,13 @@
                       "w": "fill"
                     },
                     {
-                      "t": "frame",
+                      "t": "instance",
+                      "of": "ui/Button",
                       "name": "Button, Teilnehmen",
-                      "dir": "H",
-                      "pad": [20, 20, 12, 12],
-                      "align": "CENTER",
-                      "cross": "CENTER",
-                      "fill": "@color-grey-100",
-                      "stroke": "#bfbfc7",
-                      "radius": 4,
-                      "clip": true,
-                      "children": [
-                        {
-                          "t": "text",
-                          "chars": "Teilnehmen",
-                          "size": 12,
-                          "color": "@color-grey-700",
-                          "weight": "semibold"
-                        }
-                      ]
+                      "set": {
+                        "Variante": "outline",
+                        "Titel": "Teilnehmen"
+                      }
                     }
                   ]
                 },
@@ -4481,24 +5783,13 @@
                       "w": "fill"
                     },
                     {
-                      "t": "frame",
+                      "t": "instance",
+                      "of": "ui/Button",
                       "name": "Button, Mitmachen",
-                      "dir": "H",
-                      "pad": [20, 20, 12, 12],
-                      "align": "CENTER",
-                      "cross": "CENTER",
-                      "fill": "@color-emphasis",
-                      "radius": 4,
-                      "clip": true,
-                      "children": [
-                        {
-                          "t": "text",
-                          "chars": "Mitmachen",
-                          "size": 12,
-                          "color": "@color-grey-100",
-                          "weight": "semibold"
-                        }
-                      ]
+                      "set": {
+                        "Variante": "primary",
+                        "Titel": "Mitmachen"
+                      }
                     }
                   ]
                 }
@@ -4806,27 +6097,16 @@
           ]
         },
         {
-          "t": "frame",
+          "t": "instance",
+          "of": "ui/Button",
           "name": "Button, Los geht’s",
-          "dir": "H",
-          "pad": [0, 0, 15, 15],
-          "align": "CENTER",
-          "cross": "CENTER",
-          "fill": "@color-grey-100",
-          "radius": 4,
-          "clip": true,
+          "set": {
+            "Variante": "onEmphasis",
+            "Titel": "Los geht’s"
+          },
           "w": 320,
           "x": 20,
-          "y": 715,
-          "children": [
-            {
-              "t": "text",
-              "chars": "Los geht’s",
-              "size": 13,
-              "color": "@color-grey-700",
-              "weight": "semibold"
-            }
-          ]
+          "y": 715
         }
       ]
     },
@@ -5099,27 +6379,16 @@
           ]
         },
         {
-          "t": "frame",
+          "t": "instance",
+          "of": "ui/Button",
           "name": "Button, Weiter",
-          "dir": "H",
-          "pad": [0, 0, 15, 15],
-          "align": "CENTER",
-          "cross": "CENTER",
-          "fill": "@color-emphasis",
-          "radius": 4,
-          "clip": true,
+          "set": {
+            "Variante": "primary",
+            "Titel": "Weiter"
+          },
           "w": 320,
           "x": 20,
-          "y": 715,
-          "children": [
-            {
-              "t": "text",
-              "chars": "Weiter",
-              "size": 13,
-              "color": "@color-grey-100",
-              "weight": "semibold"
-            }
-          ]
+          "y": 715
         }
       ]
     },
@@ -5288,27 +6557,16 @@
           ]
         },
         {
-          "t": "frame",
+          "t": "instance",
+          "of": "ui/Button",
           "name": "Button, Weiter",
-          "dir": "H",
-          "pad": [0, 0, 15, 15],
-          "align": "CENTER",
-          "cross": "CENTER",
-          "fill": "@color-emphasis",
-          "radius": 4,
-          "clip": true,
+          "set": {
+            "Variante": "primary",
+            "Titel": "Weiter"
+          },
           "w": 320,
           "x": 20,
-          "y": 715,
-          "children": [
-            {
-              "t": "text",
-              "chars": "Weiter",
-              "size": 13,
-              "color": "@color-grey-100",
-              "weight": "semibold"
-            }
-          ]
+          "y": 715
         }
       ]
     },
@@ -5411,50 +6669,28 @@
           ]
         },
         {
-          "t": "frame",
+          "t": "instance",
+          "of": "ui/Button",
           "name": "Button, Unterstützer:in werden",
-          "dir": "H",
-          "pad": [0, 0, 15, 15],
-          "align": "CENTER",
-          "cross": "CENTER",
-          "fill": "@color-emphasis",
-          "radius": 4,
-          "clip": true,
+          "set": {
+            "Variante": "primary",
+            "Titel": "Unterstützer:in werden"
+          },
           "w": 320,
           "x": 20,
-          "y": 662,
-          "children": [
-            {
-              "t": "text",
-              "chars": "Unterstützer:in werden",
-              "size": 13,
-              "color": "@color-grey-100",
-              "weight": "semibold"
-            }
-          ]
+          "y": 662
         },
         {
-          "t": "frame",
+          "t": "instance",
+          "of": "ui/Button",
           "name": "Button, Erstmal umsehen",
-          "dir": "H",
-          "pad": [0, 0, 15, 15],
-          "align": "CENTER",
-          "cross": "CENTER",
-          "fill": "@color-grey-200",
-          "radius": 4,
-          "clip": true,
+          "set": {
+            "Variante": "secondary",
+            "Titel": "Erstmal umsehen"
+          },
           "w": 320,
           "x": 20,
-          "y": 715,
-          "children": [
-            {
-              "t": "text",
-              "chars": "Erstmal umsehen",
-              "size": 13,
-              "color": "@color-grey-700",
-              "weight": "semibold"
-            }
-          ]
+          "y": 715
         }
       ]
     },
@@ -5522,27 +6758,16 @@
           ]
         },
         {
-          "t": "frame",
+          "t": "instance",
+          "of": "ui/Button",
           "name": "Button, Zur Startseite",
-          "dir": "H",
-          "pad": [0, 0, 15, 15],
-          "align": "CENTER",
-          "cross": "CENTER",
-          "fill": "@color-emphasis",
-          "radius": 4,
-          "clip": true,
+          "set": {
+            "Variante": "primary",
+            "Titel": "Zur Startseite"
+          },
           "w": 320,
           "x": 20,
-          "y": 420,
-          "children": [
-            {
-              "t": "text",
-              "chars": "Zur Startseite",
-              "size": 13,
-              "color": "@color-grey-100",
-              "weight": "semibold"
-            }
-          ]
+          "y": 420
         }
       ]
     },
@@ -5576,31 +6801,12 @@
           "y": 24,
           "children": [
             {
-              "t": "frame",
+              "t": "instance",
+              "of": "ui/ScreenHeader",
               "name": "ScreenHeader",
-              "dir": "H",
-              "gap": 6,
-              "pad": [16, 16, 14, 14],
-              "cross": "CENTER",
-              "clip": true,
-              "w": "fill",
-              "children": [
-                {
-                  "t": "text",
-                  "chars": "‹",
-                  "size": 15,
-                  "color": "@color-grey-700"
-                },
-                {
-                  "t": "text",
-                  "chars": "Zurück",
-                  "size": 13,
-                  "color": "@color-grey-700"
-                }
-              ]
-            },
-            {
-              "t": "line",
+              "set": {
+                "Zurück": "Zurück"
+              },
               "w": "fill"
             },
             {
@@ -5962,22 +7168,13 @@
                   "clip": true,
                   "children": [
                     {
-                      "t": "frame",
+                      "t": "instance",
+                      "of": "ui/Badge",
                       "name": "Badge, FAKTENCHECK",
-                      "dir": "H",
-                      "pad": [8, 8, 4, 4],
-                      "fill": "@color-emphasis",
-                      "radius": 3,
-                      "clip": true,
-                      "children": [
-                        {
-                          "t": "text",
-                          "chars": "FAKTENCHECK",
-                          "size": 9,
-                          "color": "@color-grey-100",
-                          "weight": "semibold"
-                        }
-                      ]
+                      "set": {
+                        "Ton": "emphasis",
+                        "Label": "FAKTENCHECK"
+                      }
                     }
                   ]
                 },
@@ -6008,22 +7205,13 @@
                   "clip": true,
                   "children": [
                     {
-                      "t": "frame",
+                      "t": "instance",
+                      "of": "ui/Badge",
                       "name": "Badge, FALSCH",
-                      "dir": "H",
-                      "pad": [8, 8, 4, 4],
-                      "fill": "@color-emphasis",
-                      "radius": 3,
-                      "clip": true,
-                      "children": [
-                        {
-                          "t": "text",
-                          "chars": "FALSCH",
-                          "size": 9,
-                          "color": "@color-grey-100",
-                          "weight": "semibold"
-                        }
-                      ]
+                      "set": {
+                        "Ton": "emphasis",
+                        "Label": "FALSCH"
+                      }
                     }
                   ]
                 },
@@ -6111,31 +7299,12 @@
           "y": 24,
           "children": [
             {
-              "t": "frame",
+              "t": "instance",
+              "of": "ui/ScreenHeader",
               "name": "ScreenHeader",
-              "dir": "H",
-              "gap": 6,
-              "pad": [16, 16, 14, 14],
-              "cross": "CENTER",
-              "clip": true,
-              "w": "fill",
-              "children": [
-                {
-                  "t": "text",
-                  "chars": "‹",
-                  "size": 15,
-                  "color": "@color-grey-700"
-                },
-                {
-                  "t": "text",
-                  "chars": "Zurück",
-                  "size": 13,
-                  "color": "@color-grey-700"
-                }
-              ]
-            },
-            {
-              "t": "line",
+              "set": {
+                "Zurück": "Zurück"
+              },
               "w": "fill"
             },
             {
@@ -6158,22 +7327,13 @@
                   "clip": true,
                   "children": [
                     {
-                      "t": "frame",
+                      "t": "instance",
+                      "of": "ui/Badge",
                       "name": "Badge, CLUB",
-                      "dir": "H",
-                      "pad": [8, 8, 4, 4],
-                      "fill": "@color-alternative",
-                      "radius": 3,
-                      "clip": true,
-                      "children": [
-                        {
-                          "t": "text",
-                          "chars": "CLUB",
-                          "size": 9,
-                          "color": "@color-grey-700",
-                          "weight": "semibold"
-                        }
-                      ]
+                      "set": {
+                        "Ton": "club",
+                        "Label": "CLUB"
+                      }
                     }
                   ]
                 },
@@ -6270,24 +7430,13 @@
                       "w": "fill"
                     },
                     {
-                      "t": "frame",
+                      "t": "instance",
+                      "of": "ui/Button",
                       "name": "Button, Mit dem Club jetzt lesen",
-                      "dir": "H",
-                      "pad": [18, 18, 12, 12],
-                      "align": "CENTER",
-                      "fill": "@color-grey-100",
-                      "stroke": "#bfbfc7",
-                      "radius": 4,
-                      "clip": true,
-                      "children": [
-                        {
-                          "t": "text",
-                          "chars": "Mit dem Club jetzt lesen",
-                          "size": 12,
-                          "color": "@color-grey-700",
-                          "weight": "semibold"
-                        }
-                      ]
+                      "set": {
+                        "Variante": "outline",
+                        "Titel": "Mit dem Club jetzt lesen"
+                      }
                     }
                   ]
                 },
@@ -6481,30 +7630,12 @@
           "y": 24,
           "children": [
             {
-              "t": "frame",
+              "t": "instance",
+              "of": "ui/ScreenHeader",
               "name": "ScreenHeader",
-              "dir": "H",
-              "gap": 6,
-              "pad": [16, 16, 14, 14],
-              "cross": "CENTER",
-              "w": "fill",
-              "children": [
-                {
-                  "t": "text",
-                  "chars": "‹",
-                  "size": 15,
-                  "color": "@color-grey-700"
-                },
-                {
-                  "t": "text",
-                  "chars": "Zurück",
-                  "size": 13,
-                  "color": "@color-grey-700"
-                }
-              ]
-            },
-            {
-              "t": "line",
+              "set": {
+                "Zurück": "Zurück"
+              },
               "w": "fill"
             },
             {
@@ -6674,23 +7805,14 @@
                   "w": "fill"
                 },
                 {
-                  "t": "frame",
+                  "t": "instance",
+                  "of": "ui/Button",
                   "name": "Button, Zum Formular",
-                  "dir": "H",
-                  "pad": [0, 0, 14, 14],
-                  "align": "CENTER",
-                  "fill": "@color-emphasis",
-                  "radius": 4,
-                  "w": "fill",
-                  "children": [
-                    {
-                      "t": "text",
-                      "chars": "Zum Formular",
-                      "size": 12,
-                      "color": "@color-grey-100",
-                      "weight": "semibold"
-                    }
-                  ]
+                  "set": {
+                    "Variante": "primary",
+                    "Titel": "Zum Formular"
+                  },
+                  "w": "fill"
                 }
               ]
             }
@@ -6728,30 +7850,12 @@
           "y": 24,
           "children": [
             {
-              "t": "frame",
+              "t": "instance",
+              "of": "ui/ScreenHeader",
               "name": "ScreenHeader",
-              "dir": "H",
-              "gap": 6,
-              "pad": [16, 16, 14, 14],
-              "cross": "CENTER",
-              "w": "fill",
-              "children": [
-                {
-                  "t": "text",
-                  "chars": "‹",
-                  "size": 15,
-                  "color": "@color-grey-700"
-                },
-                {
-                  "t": "text",
-                  "chars": "Zurück",
-                  "size": 13,
-                  "color": "@color-grey-700"
-                }
-              ]
-            },
-            {
-              "t": "line",
+              "set": {
+                "Zurück": "Zurück"
+              },
               "w": "fill"
             },
             {
@@ -6847,42 +7951,12 @@
           "y": 24,
           "children": [
             {
-              "t": "frame",
+              "t": "instance",
+              "of": "ui/ScreenHeader",
               "name": "ScreenHeader mit Suchfeld",
-              "dir": "H",
-              "gap": 10,
-              "pad": [16, 16, 12, 12],
-              "cross": "CENTER",
-              "w": "fill",
-              "children": [
-                {
-                  "t": "text",
-                  "chars": "‹",
-                  "size": 15,
-                  "color": "@color-grey-700"
-                },
-                {
-                  "t": "frame",
-                  "name": "TextInput",
-                  "dir": "H",
-                  "pad": [14, 14, 10, 10],
-                  "cross": "CENTER",
-                  "fill": "@color-grey-200",
-                  "radius": 6,
-                  "w": "fill",
-                  "children": [
-                    {
-                      "t": "text",
-                      "chars": "Suchen …",
-                      "size": 12,
-                      "color": "@color-grey-500"
-                    }
-                  ]
-                }
-              ]
-            },
-            {
-              "t": "line",
+              "set": {
+                "Zurück": "Suchen …"
+              },
               "w": "fill"
             },
             {
@@ -7110,30 +8184,12 @@
           "y": 24,
           "children": [
             {
-              "t": "frame",
+              "t": "instance",
+              "of": "ui/ScreenHeader",
               "name": "ScreenHeader",
-              "dir": "H",
-              "gap": 6,
-              "pad": [16, 16, 14, 14],
-              "cross": "CENTER",
-              "w": "fill",
-              "children": [
-                {
-                  "t": "text",
-                  "chars": "‹",
-                  "size": 15,
-                  "color": "@color-grey-700"
-                },
-                {
-                  "t": "text",
-                  "chars": "Zurück",
-                  "size": 13,
-                  "color": "@color-grey-700"
-                }
-              ]
-            },
-            {
-              "t": "line",
+              "set": {
+                "Zurück": "Zurück"
+              },
               "w": "fill"
             },
             {
@@ -7174,23 +8230,13 @@
                   "w": "fill"
                 },
                 {
-                  "t": "frame",
+                  "t": "instance",
+                  "of": "ui/Button",
                   "name": "Button, Aktion aus projectTarget",
-                  "dir": "H",
-                  "pad": [18, 18, 13, 13],
-                  "align": "CENTER",
-                  "fill": "@color-grey-100",
-                  "stroke": "#c7c7cf",
-                  "radius": 4,
-                  "children": [
-                    {
-                      "t": "text",
-                      "chars": "Aktion aus projectTarget",
-                      "size": 12,
-                      "color": "@color-grey-700",
-                      "weight": "semibold"
-                    }
-                  ]
+                  "set": {
+                    "Variante": "outline",
+                    "Titel": "Aktion aus projectTarget"
+                  }
                 },
                 {
                   "t": "space",
@@ -7418,30 +8464,12 @@
           "y": 24,
           "children": [
             {
-              "t": "frame",
+              "t": "instance",
+              "of": "ui/ScreenHeader",
               "name": "ScreenHeader",
-              "dir": "H",
-              "gap": 6,
-              "pad": [16, 16, 14, 14],
-              "cross": "CENTER",
-              "w": "fill",
-              "children": [
-                {
-                  "t": "text",
-                  "chars": "‹",
-                  "size": 15,
-                  "color": "@color-grey-700"
-                },
-                {
-                  "t": "text",
-                  "chars": "Zurück",
-                  "size": 13,
-                  "color": "@color-grey-700"
-                }
-              ]
-            },
-            {
-              "t": "line",
+              "set": {
+                "Zurück": "Zurück"
+              },
               "w": "fill"
             },
             {
@@ -7569,23 +8597,13 @@
                   "w": "fill"
                 },
                 {
-                  "t": "frame",
+                  "t": "instance",
+                  "of": "ui/Button",
                   "name": "Button, Auf www.youtube.com ansehen",
-                  "dir": "H",
-                  "pad": [18, 18, 13, 13],
-                  "align": "CENTER",
-                  "fill": "@color-grey-100",
-                  "stroke": "#c7c7cf",
-                  "radius": 4,
-                  "children": [
-                    {
-                      "t": "text",
-                      "chars": "Auf www.youtube.com ansehen",
-                      "size": 12,
-                      "color": "@color-grey-700",
-                      "weight": "semibold"
-                    }
-                  ]
+                  "set": {
+                    "Variante": "outline",
+                    "Titel": "Auf www.youtube.com ansehen"
+                  }
                 }
               ]
             }
@@ -7623,30 +8641,12 @@
           "y": 24,
           "children": [
             {
-              "t": "frame",
+              "t": "instance",
+              "of": "ui/ScreenHeader",
               "name": "ScreenHeader",
-              "dir": "H",
-              "gap": 6,
-              "pad": [16, 16, 14, 14],
-              "cross": "CENTER",
-              "w": "fill",
-              "children": [
-                {
-                  "t": "text",
-                  "chars": "‹",
-                  "size": 15,
-                  "color": "@color-grey-700"
-                },
-                {
-                  "t": "text",
-                  "chars": "Zurück",
-                  "size": 13,
-                  "color": "@color-grey-700"
-                }
-              ]
-            },
-            {
-              "t": "line",
+              "set": {
+                "Zurück": "Zurück"
+              },
               "w": "fill"
             },
             {
@@ -8089,30 +9089,12 @@
           "y": 24,
           "children": [
             {
-              "t": "frame",
+              "t": "instance",
+              "of": "ui/ScreenHeader",
               "name": "ScreenHeader",
-              "dir": "H",
-              "gap": 6,
-              "pad": [16, 16, 14, 14],
-              "cross": "CENTER",
-              "w": "fill",
-              "children": [
-                {
-                  "t": "text",
-                  "chars": "‹",
-                  "size": 15,
-                  "color": "@color-grey-700"
-                },
-                {
-                  "t": "text",
-                  "chars": "Zurück",
-                  "size": 13,
-                  "color": "@color-grey-700"
-                }
-              ]
-            },
-            {
-              "t": "line",
+              "set": {
+                "Zurück": "Zurück"
+              },
               "w": "fill"
             },
             {
@@ -8163,29 +9145,13 @@
                   "w": "fill",
                   "children": [
                     {
-                      "t": "frame",
+                      "t": "instance",
+                      "of": "participate/ClaimStatusTag",
                       "name": "ClaimStatusTag",
-                      "dir": "H",
-                      "gap": 8,
-                      "children": [
-                        {
-                          "t": "frame",
-                          "name": "Badge, Geprüft: Falsch",
-                          "dir": "H",
-                          "pad": [8, 8, 4, 4],
-                          "fill": "@color-emphasis",
-                          "radius": 2,
-                          "children": [
-                            {
-                              "t": "text",
-                              "chars": "Geprüft: Falsch",
-                              "size": 9,
-                              "color": "@color-grey-100",
-                              "weight": "semibold"
-                            }
-                          ]
-                        }
-                      ]
+                      "set": {
+                        "Status": "falsch",
+                        "Label": "Geprüft: Falsch"
+                      }
                     },
                     {
                       "t": "space",
@@ -8230,29 +9196,13 @@
                   "w": "fill",
                   "children": [
                     {
-                      "t": "frame",
+                      "t": "instance",
+                      "of": "participate/ClaimStatusTag",
                       "name": "ClaimStatusTag",
-                      "dir": "H",
-                      "gap": 8,
-                      "children": [
-                        {
-                          "t": "frame",
-                          "name": "Badge, Geprüft: Falsch",
-                          "dir": "H",
-                          "pad": [8, 8, 4, 4],
-                          "fill": "@color-emphasis",
-                          "radius": 2,
-                          "children": [
-                            {
-                              "t": "text",
-                              "chars": "Geprüft: Falsch",
-                              "size": 9,
-                              "color": "@color-grey-100",
-                              "weight": "semibold"
-                            }
-                          ]
-                        }
-                      ]
+                      "set": {
+                        "Status": "falsch",
+                        "Label": "Geprüft: Falsch"
+                      }
                     },
                     {
                       "t": "space",
@@ -8297,30 +9247,13 @@
                   "w": "fill",
                   "children": [
                     {
-                      "t": "frame",
+                      "t": "instance",
+                      "of": "participate/ClaimStatusTag",
                       "name": "ClaimStatusTag",
-                      "dir": "H",
-                      "gap": 8,
-                      "children": [
-                        {
-                          "t": "frame",
-                          "name": "Badge, In Prüfung",
-                          "dir": "H",
-                          "pad": [8, 8, 4, 4],
-                          "fill": "@color-grey-100",
-                          "stroke": "@color-grey-300",
-                          "radius": 2,
-                          "children": [
-                            {
-                              "t": "text",
-                              "chars": "In Prüfung",
-                              "size": 9,
-                              "color": "@color-grey-700",
-                              "weight": "semibold"
-                            }
-                          ]
-                        }
-                      ]
+                      "set": {
+                        "Status": "inArbeit",
+                        "Label": "In Prüfung"
+                      }
                     },
                     {
                       "t": "space",
@@ -8365,29 +9298,13 @@
                   "w": "fill",
                   "children": [
                     {
-                      "t": "frame",
+                      "t": "instance",
+                      "of": "participate/ClaimStatusTag",
                       "name": "ClaimStatusTag",
-                      "dir": "H",
-                      "gap": 8,
-                      "children": [
-                        {
-                          "t": "frame",
-                          "name": "Badge, Eingereicht",
-                          "dir": "H",
-                          "pad": [8, 8, 4, 4],
-                          "fill": "@color-grey-200",
-                          "radius": 2,
-                          "children": [
-                            {
-                              "t": "text",
-                              "chars": "Eingereicht",
-                              "size": 9,
-                              "color": "@color-grey-600",
-                              "weight": "semibold"
-                            }
-                          ]
-                        }
-                      ]
+                      "set": {
+                        "Status": "offen",
+                        "Label": "Eingereicht"
+                      }
                     },
                     {
                       "t": "space",
@@ -8452,30 +9369,12 @@
           "y": 24,
           "children": [
             {
-              "t": "frame",
+              "t": "instance",
+              "of": "ui/ScreenHeader",
               "name": "ScreenHeader",
-              "dir": "H",
-              "gap": 6,
-              "pad": [16, 16, 14, 14],
-              "cross": "CENTER",
-              "w": "fill",
-              "children": [
-                {
-                  "t": "text",
-                  "chars": "‹",
-                  "size": 15,
-                  "color": "@color-grey-700"
-                },
-                {
-                  "t": "text",
-                  "chars": "Zurück",
-                  "size": 13,
-                  "color": "@color-grey-700"
-                }
-              ]
-            },
-            {
-              "t": "line",
+              "set": {
+                "Zurück": "Zurück"
+              },
               "w": "fill"
             },
             {
@@ -8510,21 +9409,13 @@
                   "gap": 8,
                   "children": [
                     {
-                      "t": "frame",
+                      "t": "instance",
+                      "of": "ui/Badge",
                       "name": "Badge, Geprüft: Falsch",
-                      "dir": "H",
-                      "pad": [8, 8, 4, 4],
-                      "fill": "@color-emphasis",
-                      "radius": 2,
-                      "children": [
-                        {
-                          "t": "text",
-                          "chars": "Geprüft: Falsch",
-                          "size": 9,
-                          "color": "@color-grey-100",
-                          "weight": "semibold"
-                        }
-                      ]
+                      "set": {
+                        "Ton": "emphasis",
+                        "Label": "Geprüft: Falsch"
+                      }
                     }
                   ]
                 },
@@ -8620,24 +9511,14 @@
                       "w": "fill"
                     },
                     {
-                      "t": "frame",
+                      "t": "instance",
+                      "of": "ui/Button",
                       "name": "Button, Quelle öffnen",
-                      "dir": "H",
-                      "pad": [18, 18, 13, 13],
-                      "align": "CENTER",
-                      "fill": "@color-grey-100",
-                      "stroke": "#c7c7cf",
-                      "radius": 4,
-                      "w": "fill",
-                      "children": [
-                        {
-                          "t": "text",
-                          "chars": "Quelle öffnen",
-                          "size": 12,
-                          "color": "@color-grey-700",
-                          "weight": "semibold"
-                        }
-                      ]
+                      "set": {
+                        "Variante": "outline",
+                        "Titel": "Quelle öffnen"
+                      },
+                      "w": "fill"
                     }
                   ]
                 },
@@ -8714,30 +9595,12 @@
           "y": 24,
           "children": [
             {
-              "t": "frame",
+              "t": "instance",
+              "of": "ui/ScreenHeader",
               "name": "ScreenHeader",
-              "dir": "H",
-              "gap": 6,
-              "pad": [16, 16, 14, 14],
-              "cross": "CENTER",
-              "w": "fill",
-              "children": [
-                {
-                  "t": "text",
-                  "chars": "‹",
-                  "size": 15,
-                  "color": "@color-grey-700"
-                },
-                {
-                  "t": "text",
-                  "chars": "Zurück",
-                  "size": 13,
-                  "color": "@color-grey-700"
-                }
-              ]
-            },
-            {
-              "t": "line",
+              "set": {
+                "Zurück": "Zurück"
+              },
               "w": "fill"
             },
             {
@@ -8883,42 +9746,23 @@
                   "w": "fill",
                   "children": [
                     {
-                      "t": "frame",
+                      "t": "instance",
+                      "of": "ui/Button",
                       "name": "Button, Zurück",
-                      "dir": "H",
-                      "pad": [18, 18, 13, 13],
-                      "align": "CENTER",
-                      "fill": "@color-grey-100",
-                      "stroke": "#c7c7cf",
-                      "radius": 4,
-                      "children": [
-                        {
-                          "t": "text",
-                          "chars": "Zurück",
-                          "size": 12,
-                          "color": "@color-grey-700",
-                          "weight": "semibold"
-                        }
-                      ]
+                      "set": {
+                        "Variante": "outline",
+                        "Titel": "Zurück"
+                      }
                     },
                     {
-                      "t": "frame",
+                      "t": "instance",
+                      "of": "ui/Button",
                       "name": "Button, Absenden",
-                      "dir": "H",
-                      "pad": [0, 0, 13, 13],
-                      "align": "CENTER",
-                      "fill": "@color-emphasis",
-                      "radius": 4,
-                      "w": "fill",
-                      "children": [
-                        {
-                          "t": "text",
-                          "chars": "Absenden",
-                          "size": 12,
-                          "color": "@color-grey-100",
-                          "weight": "semibold"
-                        }
-                      ]
+                      "set": {
+                        "Variante": "primary",
+                        "Titel": "Absenden"
+                      },
+                      "w": "fill"
                     }
                   ]
                 },
@@ -8982,30 +9826,12 @@
           "y": 24,
           "children": [
             {
-              "t": "frame",
+              "t": "instance",
+              "of": "ui/ScreenHeader",
               "name": "ScreenHeader",
-              "dir": "H",
-              "gap": 6,
-              "pad": [16, 16, 14, 14],
-              "cross": "CENTER",
-              "w": "fill",
-              "children": [
-                {
-                  "t": "text",
-                  "chars": "‹",
-                  "size": 15,
-                  "color": "@color-grey-700"
-                },
-                {
-                  "t": "text",
-                  "chars": "Zurück",
-                  "size": 13,
-                  "color": "@color-grey-700"
-                }
-              ]
-            },
-            {
-              "t": "line",
+              "set": {
+                "Zurück": "Zurück"
+              },
               "w": "fill"
             },
             {
@@ -9027,21 +9853,13 @@
                   "gap": 8,
                   "children": [
                     {
-                      "t": "frame",
+                      "t": "instance",
+                      "of": "ui/Badge",
                       "name": "Badge, CLUB",
-                      "dir": "H",
-                      "pad": [8, 8, 4, 4],
-                      "fill": "@color-alternative",
-                      "radius": 2,
-                      "children": [
-                        {
-                          "t": "text",
-                          "chars": "CLUB",
-                          "size": 9,
-                          "color": "@color-grey-700",
-                          "weight": "semibold"
-                        }
-                      ]
+                      "set": {
+                        "Ton": "club",
+                        "Label": "CLUB"
+                      }
                     }
                   ]
                 },
@@ -9365,30 +10183,12 @@
           "y": 24,
           "children": [
             {
-              "t": "frame",
+              "t": "instance",
+              "of": "ui/ScreenHeader",
               "name": "ScreenHeader",
-              "dir": "H",
-              "gap": 6,
-              "pad": [16, 16, 14, 14],
-              "cross": "CENTER",
-              "w": "fill",
-              "children": [
-                {
-                  "t": "text",
-                  "chars": "‹",
-                  "size": 15,
-                  "color": "@color-grey-700"
-                },
-                {
-                  "t": "text",
-                  "chars": "Zurück",
-                  "size": 13,
-                  "color": "@color-grey-700"
-                }
-              ]
-            },
-            {
-              "t": "line",
+              "set": {
+                "Zurück": "Zurück"
+              },
               "w": "fill"
             },
             {
@@ -9459,30 +10259,12 @@
           "y": 24,
           "children": [
             {
-              "t": "frame",
+              "t": "instance",
+              "of": "ui/ScreenHeader",
               "name": "ScreenHeader",
-              "dir": "H",
-              "gap": 6,
-              "pad": [16, 16, 14, 14],
-              "cross": "CENTER",
-              "w": "fill",
-              "children": [
-                {
-                  "t": "text",
-                  "chars": "‹",
-                  "size": 15,
-                  "color": "@color-grey-700"
-                },
-                {
-                  "t": "text",
-                  "chars": "Zurück",
-                  "size": 13,
-                  "color": "@color-grey-700"
-                }
-              ]
-            },
-            {
-              "t": "line",
+              "set": {
+                "Zurück": "Zurück"
+              },
               "w": "fill"
             },
             {
@@ -9534,56 +10316,16 @@
                   "w": "fill",
                   "children": [
                     {
-                      "t": "frame",
+                      "t": "instance",
+                      "of": "profile/SettingRow",
                       "name": "SettingRow",
-                      "dir": "H",
-                      "gap": 12,
-                      "cross": "CENTER",
-                      "w": "fill",
-                      "children": [
-                        {
-                          "t": "frame",
-                          "name": "Text",
-                          "dir": "V",
-                          "gap": 4,
-                          "w": "fill",
-                          "children": [
-                            {
-                              "t": "text",
-                              "chars": "Push-Mitteilungen",
-                              "size": 13,
-                              "color": "@color-grey-700",
-                              "w": 210
-                            },
-                            {
-                              "t": "text",
-                              "chars": "Neue Recherchen und Mitmach-Aufrufe (simuliert)",
-                              "size": 11,
-                              "color": "@color-grey-500",
-                              "w": 210
-                            }
-                          ]
-                        },
-                        {
-                          "t": "frame",
-                          "name": "Schalter",
-                          "fill": "#e0e0e3",
-                          "radius": 9,
-                          "clip": true,
-                          "w": 34,
-                          "h": 18,
-                          "children": [
-                            {
-                              "t": "ellipse",
-                              "w": 14,
-                              "h": 14,
-                              "fill": "@color-grey-100",
-                              "x": 2,
-                              "y": 2
-                            }
-                          ]
-                        }
-                      ]
+                      "set": {
+                        "Label": "Push-Mitteilungen",
+                        "Beschreibung": "Neue Recherchen und Mitmach-Aufrufe (simuliert)",
+                        "Beschreibung zeigen": true,
+                        "An": "nein"
+                      },
+                      "w": "fill"
                     }
                   ]
                 },
@@ -9616,40 +10358,16 @@
                   "w": "fill",
                   "children": [
                     {
-                      "t": "frame",
+                      "t": "instance",
+                      "of": "profile/SettingRow",
                       "name": "SettingRow",
-                      "dir": "H",
-                      "gap": 12,
-                      "cross": "CENTER",
-                      "w": "fill",
-                      "children": [
-                        {
-                          "t": "text",
-                          "chars": "An Systemeinstellung orientieren",
-                          "size": 13,
-                          "color": "@color-grey-700",
-                          "w": 230
-                        },
-                        {
-                          "t": "frame",
-                          "name": "Schalter",
-                          "fill": "@color-emphasis",
-                          "radius": 9,
-                          "clip": true,
-                          "w": 34,
-                          "h": 18,
-                          "children": [
-                            {
-                              "t": "ellipse",
-                              "w": 14,
-                              "h": 14,
-                              "fill": "@color-grey-100",
-                              "x": 18,
-                              "y": 2
-                            }
-                          ]
-                        }
-                      ]
+                      "set": {
+                        "Label": "An Systemeinstellung orientieren",
+                        "Beschreibung": "",
+                        "Beschreibung zeigen": false,
+                        "An": "ja"
+                      },
+                      "w": "fill"
                     }
                   ]
                 },
@@ -9803,24 +10521,14 @@
                       "w": "fill"
                     },
                     {
-                      "t": "frame",
+                      "t": "instance",
+                      "of": "ui/Button",
                       "name": "Button, correctiv.org öffnen",
-                      "dir": "H",
-                      "pad": [18, 18, 13, 13],
-                      "align": "CENTER",
-                      "fill": "@color-grey-100",
-                      "stroke": "#c7c7cf",
-                      "radius": 4,
-                      "w": "fill",
-                      "children": [
-                        {
-                          "t": "text",
-                          "chars": "correctiv.org öffnen",
-                          "size": 12,
-                          "color": "@color-grey-700",
-                          "weight": "semibold"
-                        }
-                      ]
+                      "set": {
+                        "Variante": "outline",
+                        "Titel": "correctiv.org öffnen"
+                      },
+                      "w": "fill"
                     },
                     {
                       "t": "space",
@@ -9828,24 +10536,14 @@
                       "w": "fill"
                     },
                     {
-                      "t": "frame",
+                      "t": "instance",
+                      "of": "ui/Button",
                       "name": "Button, Impressum",
-                      "dir": "H",
-                      "pad": [18, 18, 13, 13],
-                      "align": "CENTER",
-                      "fill": "@color-grey-100",
-                      "stroke": "#c7c7cf",
-                      "radius": 4,
-                      "w": "fill",
-                      "children": [
-                        {
-                          "t": "text",
-                          "chars": "Impressum",
-                          "size": 12,
-                          "color": "@color-grey-700",
-                          "weight": "semibold"
-                        }
-                      ]
+                      "set": {
+                        "Variante": "outline",
+                        "Titel": "Impressum"
+                      },
+                      "w": "fill"
                     }
                   ]
                 }
@@ -10059,47 +10757,28 @@
           "w": "fill"
         },
         {
-          "t": "frame",
+          "t": "instance",
+          "of": "ui/Button",
           "name": "Button, Weiter",
-          "dir": "H",
-          "pad": [0, 0, 15, 15],
-          "align": "CENTER",
-          "fill": "@color-emphasis",
-          "radius": 4,
+          "set": {
+            "Variante": "primary",
+            "Titel": "Weiter"
+          },
           "w": 320,
           "x": 20,
-          "y": 682,
-          "children": [
-            {
-              "t": "text",
-              "chars": "Weiter",
-              "size": 13,
-              "color": "@color-grey-100",
-              "weight": "semibold"
-            }
-          ]
+          "y": 682
         },
         {
-          "t": "frame",
+          "t": "instance",
+          "of": "ui/Button",
           "name": "Button, Erstmal umsehen",
-          "dir": "H",
-          "pad": [0, 0, 15, 15],
-          "align": "CENTER",
-          "fill": "@color-grey-100",
-          "stroke": "@color-grey-300",
-          "radius": 4,
+          "set": {
+            "Variante": "outline",
+            "Titel": "Erstmal umsehen"
+          },
           "w": 320,
           "x": 20,
-          "y": 734,
-          "children": [
-            {
-              "t": "text",
-              "chars": "Erstmal umsehen",
-              "size": 13,
-              "color": "@color-grey-700",
-              "weight": "semibold"
-            }
-          ]
+          "y": 734
         }
       ]
     },
@@ -10133,30 +10812,12 @@
           "y": 24,
           "children": [
             {
-              "t": "frame",
+              "t": "instance",
+              "of": "ui/ScreenHeader",
               "name": "ScreenHeader",
-              "dir": "H",
-              "gap": 6,
-              "pad": [16, 16, 14, 14],
-              "cross": "CENTER",
-              "w": "fill",
-              "children": [
-                {
-                  "t": "text",
-                  "chars": "‹",
-                  "size": 15,
-                  "color": "@color-grey-700"
-                },
-                {
-                  "t": "text",
-                  "chars": "Zurück",
-                  "size": 13,
-                  "color": "@color-grey-700"
-                }
-              ]
-            },
-            {
-              "t": "line",
+              "set": {
+                "Zurück": "Zurück"
+              },
               "w": "fill"
             },
             {
@@ -10477,23 +11138,14 @@
                   "w": "fill"
                 },
                 {
-                  "t": "frame",
+                  "t": "instance",
+                  "of": "ui/Button",
                   "name": "Button, Abriss melden auf abriss-atlas.de",
-                  "dir": "H",
-                  "pad": [0, 0, 14, 14],
-                  "align": "CENTER",
-                  "fill": "@color-emphasis",
-                  "radius": 4,
-                  "w": "fill",
-                  "children": [
-                    {
-                      "t": "text",
-                      "chars": "Abriss melden auf abriss-atlas.de",
-                      "size": 12,
-                      "color": "@color-grey-100",
-                      "weight": "semibold"
-                    }
-                  ]
+                  "set": {
+                    "Variante": "primary",
+                    "Titel": "Abriss melden auf abriss-atlas.de"
+                  },
+                  "w": "fill"
                 }
               ]
             }
@@ -10576,69 +11228,14 @@
                   "w": "fill"
                 },
                 {
-                  "t": "frame",
+                  "t": "instance",
+                  "of": "profile/ClubCard",
                   "name": "ClubCard",
-                  "dir": "V",
-                  "w": "fill",
-                  "fill": "@color-alternative",
-                  "radius": 6,
-                  "pad": [20, 20, 20, 20],
-                  "children": [
-                    {
-                      "t": "frame",
-                      "name": "Kopf",
-                      "dir": "H",
-                      "w": "fill",
-                      "cross": "CENTER",
-                      "children": [
-                        {
-                          "t": "text",
-                          "chars": "CORRECTIV CLUB",
-                          "size": 10,
-                          "color": "@color-grey-700",
-                          "weight": "semibold",
-                          "tracking": 8
-                        },
-                        {
-                          "t": "frame",
-                          "name": "Dehnung",
-                          "dir": "H",
-                          "w": "fill"
-                        },
-                        {
-                          "t": "text",
-                          "chars": "♡",
-                          "size": 14,
-                          "color": "@color-grey-700"
-                        }
-                      ]
-                    },
-                    {
-                      "t": "space",
-                      "h": 16,
-                      "w": "fill"
-                    },
-                    {
-                      "t": "text",
-                      "chars": "Alex Beispiel",
-                      "size": 20,
-                      "color": "@color-grey-700",
-                      "weight": "semibold",
-                      "w": 280
-                    },
-                    {
-                      "t": "space",
-                      "h": 4,
-                      "w": "fill"
-                    },
-                    {
-                      "t": "text",
-                      "chars": "Mitgliedschaft mit Beitrag",
-                      "size": 13,
-                      "color": "#5a4f14",
-                      "w": 280
-                    }
-                  ]
+                  "set": {
+                    "Name": "Alex Beispiel",
+                    "Stufe": "Mitgliedschaft mit Beitrag"
+                  },
+                  "w": "fill"
                 },
                 {
                   "t": "space",
@@ -10709,44 +11306,24 @@
                       "gap": 10,
                       "children": [
                         {
-                          "t": "frame",
+                          "t": "instance",
+                          "of": "ui/Button",
                           "name": "Button, Beitrag ändern",
-                          "dir": "H",
-                          "w": "fill",
-                          "h": 44,
-                          "fill": "@color-grey-200",
-                          "radius": 4,
-                          "align": "CENTER",
-                          "cross": "CENTER",
-                          "children": [
-                            {
-                              "t": "text",
-                              "chars": "Beitrag ändern",
-                              "size": 13,
-                              "color": "@color-grey-700",
-                              "weight": "semibold"
-                            }
-                          ]
+                          "set": {
+                            "Variante": "secondary",
+                            "Titel": "Beitrag ändern"
+                          },
+                          "w": "fill"
                         },
                         {
-                          "t": "frame",
+                          "t": "instance",
+                          "of": "ui/Button",
                           "name": "Button, Pausieren",
-                          "dir": "H",
-                          "w": "fill",
-                          "h": 44,
-                          "fill": "@color-grey-200",
-                          "radius": 4,
-                          "align": "CENTER",
-                          "cross": "CENTER",
-                          "children": [
-                            {
-                              "t": "text",
-                              "chars": "Pausieren",
-                              "size": 13,
-                              "color": "@color-grey-700",
-                              "weight": "semibold"
-                            }
-                          ]
+                          "set": {
+                            "Variante": "secondary",
+                            "Titel": "Pausieren"
+                          },
+                          "w": "fill"
                         }
                       ]
                     }
@@ -10848,314 +11425,47 @@
                   "w": "fill"
                 },
                 {
-                  "t": "frame",
+                  "t": "instance",
+                  "of": "profile/NavCard",
                   "name": "NavCard, Quartalsbericht 1/2026",
-                  "dir": "H",
-                  "w": "fill",
-                  "gap": 12,
-                  "cross": "CENTER",
-                  "children": [
-                    {
-                      "t": "frame",
-                      "name": "Symbol",
-                      "dir": "H",
-                      "w": 20,
-                      "h": 20,
-                      "fill": "@color-grey-200",
-                      "radius": 3
-                    },
-                    {
-                      "t": "frame",
-                      "name": "Text",
-                      "dir": "V",
-                      "w": "fill",
-                      "gap": 3,
-                      "children": [
-                        {
-                          "t": "frame",
-                          "name": "Titel",
-                          "dir": "H",
-                          "gap": 8,
-                          "cross": "CENTER",
-                          "children": [
-                            {
-                              "t": "text",
-                              "chars": "Quartalsbericht 1/2026",
-                              "size": 13,
-                              "color": "@color-grey-700",
-                              "weight": "semibold"
-                            },
-                            {
-                              "t": "frame",
-                              "name": "Badge, CLUB",
-                              "dir": "H",
-                              "fill": "@color-alternative",
-                              "radius": 2,
-                              "pad": [6, 6, 3, 3],
-                              "children": [
-                                {
-                                  "t": "text",
-                                  "chars": "CLUB",
-                                  "size": 9,
-                                  "color": "@color-grey-700",
-                                  "weight": "semibold",
-                                  "tracking": 6
-                                }
-                              ]
-                            }
-                          ]
-                        },
-                        {
-                          "t": "text",
-                          "chars": "Wohin Ihr Beitrag fließt, transparent aufgeschlüsselt.",
-                          "size": 11,
-                          "color": "@color-grey-600",
-                          "w": 250
-                        }
-                      ]
-                    },
-                    {
-                      "t": "text",
-                      "chars": "›",
-                      "size": 13,
-                      "color": "@color-grey-600"
-                    }
-                  ]
-                },
-                {
-                  "t": "space",
-                  "h": 12,
+                  "set": {
+                    "Titel": "Quartalsbericht 1/2026",
+                    "Untertitel": "›",
+                    "Club": true
+                  },
                   "w": "fill"
                 },
                 {
-                  "t": "line",
-                  "w": "fill"
-                },
-                {
-                  "t": "space",
-                  "h": 12,
-                  "w": "fill"
-                },
-                {
-                  "t": "frame",
+                  "t": "instance",
+                  "of": "profile/NavCard",
                   "name": "NavCard, Ihr Backstage",
-                  "dir": "H",
-                  "w": "fill",
-                  "gap": 12,
-                  "cross": "CENTER",
-                  "children": [
-                    {
-                      "t": "frame",
-                      "name": "Symbol",
-                      "dir": "H",
-                      "w": 20,
-                      "h": 20,
-                      "fill": "@color-grey-200",
-                      "radius": 3
-                    },
-                    {
-                      "t": "frame",
-                      "name": "Text",
-                      "dir": "V",
-                      "w": "fill",
-                      "gap": 3,
-                      "children": [
-                        {
-                          "t": "frame",
-                          "name": "Titel",
-                          "dir": "H",
-                          "gap": 8,
-                          "cross": "CENTER",
-                          "children": [
-                            {
-                              "t": "text",
-                              "chars": "Ihr Backstage",
-                              "size": 13,
-                              "color": "@color-grey-700",
-                              "weight": "semibold"
-                            },
-                            {
-                              "t": "frame",
-                              "name": "Badge, CLUB",
-                              "dir": "H",
-                              "fill": "@color-alternative",
-                              "radius": 2,
-                              "pad": [6, 6, 3, 3],
-                              "children": [
-                                {
-                                  "t": "text",
-                                  "chars": "CLUB",
-                                  "size": 9,
-                                  "color": "@color-grey-700",
-                                  "weight": "semibold",
-                                  "tracking": 6
-                                }
-                              ]
-                            }
-                          ]
-                        },
-                        {
-                          "t": "text",
-                          "chars": "Tagebücher, Bonusfolgen, Events",
-                          "size": 11,
-                          "color": "@color-grey-600",
-                          "w": 250
-                        }
-                      ]
-                    },
-                    {
-                      "t": "text",
-                      "chars": "›",
-                      "size": 13,
-                      "color": "@color-grey-600"
-                    }
-                  ]
-                },
-                {
-                  "t": "space",
-                  "h": 12,
+                  "set": {
+                    "Titel": "Ihr Backstage",
+                    "Untertitel": "›",
+                    "Club": true
+                  },
                   "w": "fill"
                 },
                 {
-                  "t": "line",
-                  "w": "fill"
-                },
-                {
-                  "t": "space",
-                  "h": 12,
-                  "w": "fill"
-                },
-                {
-                  "t": "frame",
+                  "t": "instance",
+                  "of": "profile/NavCard",
                   "name": "NavCard, Gespeicherte Artikel",
-                  "dir": "H",
-                  "w": "fill",
-                  "gap": 12,
-                  "cross": "CENTER",
-                  "children": [
-                    {
-                      "t": "frame",
-                      "name": "Symbol",
-                      "dir": "H",
-                      "w": 20,
-                      "h": 20,
-                      "fill": "@color-grey-200",
-                      "radius": 3
-                    },
-                    {
-                      "t": "frame",
-                      "name": "Text",
-                      "dir": "V",
-                      "w": "fill",
-                      "gap": 3,
-                      "children": [
-                        {
-                          "t": "frame",
-                          "name": "Titel",
-                          "dir": "H",
-                          "gap": 8,
-                          "cross": "CENTER",
-                          "children": [
-                            {
-                              "t": "text",
-                              "chars": "Gespeicherte Artikel",
-                              "size": 13,
-                              "color": "@color-grey-700",
-                              "weight": "semibold"
-                            }
-                          ]
-                        },
-                        {
-                          "t": "text",
-                          "chars": "Noch nichts gespeichert",
-                          "size": 11,
-                          "color": "@color-grey-600",
-                          "w": 250
-                        }
-                      ]
-                    },
-                    {
-                      "t": "text",
-                      "chars": "›",
-                      "size": 13,
-                      "color": "@color-grey-600"
-                    }
-                  ]
-                },
-                {
-                  "t": "space",
-                  "h": 12,
+                  "set": {
+                    "Titel": "Gespeicherte Artikel",
+                    "Untertitel": "›",
+                    "Club": false
+                  },
                   "w": "fill"
                 },
                 {
-                  "t": "line",
-                  "w": "fill"
-                },
-                {
-                  "t": "space",
-                  "h": 12,
-                  "w": "fill"
-                },
-                {
-                  "t": "frame",
+                  "t": "instance",
+                  "of": "profile/NavCard",
                   "name": "NavCard, App-Einstellungen",
-                  "dir": "H",
-                  "w": "fill",
-                  "gap": 12,
-                  "cross": "CENTER",
-                  "children": [
-                    {
-                      "t": "frame",
-                      "name": "Symbol",
-                      "dir": "H",
-                      "w": 20,
-                      "h": 20,
-                      "fill": "@color-grey-200",
-                      "radius": 3
-                    },
-                    {
-                      "t": "frame",
-                      "name": "Text",
-                      "dir": "V",
-                      "w": "fill",
-                      "gap": 3,
-                      "children": [
-                        {
-                          "t": "frame",
-                          "name": "Titel",
-                          "dir": "H",
-                          "gap": 8,
-                          "cross": "CENTER",
-                          "children": [
-                            {
-                              "t": "text",
-                              "chars": "App-Einstellungen",
-                              "size": 13,
-                              "color": "@color-grey-700",
-                              "weight": "semibold"
-                            }
-                          ]
-                        },
-                        {
-                          "t": "text",
-                          "chars": "Benachrichtigungen, Textgröße, Über CORRECTIV",
-                          "size": 11,
-                          "color": "@color-grey-600",
-                          "w": 250
-                        }
-                      ]
-                    },
-                    {
-                      "t": "text",
-                      "chars": "›",
-                      "size": 13,
-                      "color": "@color-grey-600"
-                    }
-                  ]
-                },
-                {
-                  "t": "space",
-                  "h": 24,
+                  "set": {
+                    "Titel": "App-Einstellungen",
+                    "Untertitel": "›",
+                    "Club": false
+                  },
                   "w": "fill"
                 },
                 {
@@ -11183,54 +11493,16 @@
                   "pad": [16, 16, 16, 16],
                   "children": [
                     {
-                      "t": "frame",
+                      "t": "instance",
+                      "of": "profile/SettingRow",
                       "name": "SettingRow, Spotlight",
-                      "dir": "H",
-                      "w": "fill",
-                      "gap": 12,
-                      "cross": "CENTER",
-                      "children": [
-                        {
-                          "t": "frame",
-                          "name": "Text",
-                          "dir": "V",
-                          "w": "fill",
-                          "gap": 3,
-                          "children": [
-                            {
-                              "t": "text",
-                              "chars": "Spotlight",
-                              "size": 12,
-                              "color": "@color-grey-700",
-                              "w": 220
-                            },
-                            {
-                              "t": "text",
-                              "chars": "Das Wichtigste, werktags am Morgen",
-                              "size": 11,
-                              "color": "@color-grey-600",
-                              "w": 220
-                            }
-                          ]
-                        },
-                        {
-                          "t": "frame",
-                          "name": "Schalter",
-                          "dir": "H",
-                          "w": 34,
-                          "h": 18,
-                          "fill": "#e0e0e3",
-                          "radius": 9,
-                          "children": [
-                            {
-                              "t": "ellipse",
-                              "w": 14,
-                              "h": 14,
-                              "fill": "@color-grey-100"
-                            }
-                          ]
-                        }
-                      ]
+                      "set": {
+                        "Label": "Spotlight",
+                        "Beschreibung": "Das Wichtigste, werktags am Morgen",
+                        "Beschreibung zeigen": true,
+                        "An": "nein"
+                      },
+                      "w": "fill"
                     },
                     {
                       "t": "space",
@@ -11247,54 +11519,16 @@
                       "w": "fill"
                     },
                     {
-                      "t": "frame",
+                      "t": "instance",
+                      "of": "profile/SettingRow",
                       "name": "SettingRow, Spotlight Schweiz",
-                      "dir": "H",
-                      "w": "fill",
-                      "gap": 12,
-                      "cross": "CENTER",
-                      "children": [
-                        {
-                          "t": "frame",
-                          "name": "Text",
-                          "dir": "V",
-                          "w": "fill",
-                          "gap": 3,
-                          "children": [
-                            {
-                              "t": "text",
-                              "chars": "Spotlight Schweiz",
-                              "size": 12,
-                              "color": "@color-grey-700",
-                              "w": 220
-                            },
-                            {
-                              "t": "text",
-                              "chars": "Recherchen aus der Schweiz",
-                              "size": 11,
-                              "color": "@color-grey-600",
-                              "w": 220
-                            }
-                          ]
-                        },
-                        {
-                          "t": "frame",
-                          "name": "Schalter",
-                          "dir": "H",
-                          "w": 34,
-                          "h": 18,
-                          "fill": "#e0e0e3",
-                          "radius": 9,
-                          "children": [
-                            {
-                              "t": "ellipse",
-                              "w": 14,
-                              "h": 14,
-                              "fill": "@color-grey-100"
-                            }
-                          ]
-                        }
-                      ]
+                      "set": {
+                        "Label": "Spotlight Schweiz",
+                        "Beschreibung": "Recherchen aus der Schweiz",
+                        "Beschreibung zeigen": true,
+                        "An": "nein"
+                      },
+                      "w": "fill"
                     },
                     {
                       "t": "space",
@@ -11311,54 +11545,16 @@
                       "w": "fill"
                     },
                     {
-                      "t": "frame",
+                      "t": "instance",
+                      "of": "profile/SettingRow",
                       "name": "SettingRow, Klima",
-                      "dir": "H",
-                      "w": "fill",
-                      "gap": 12,
-                      "cross": "CENTER",
-                      "children": [
-                        {
-                          "t": "frame",
-                          "name": "Text",
-                          "dir": "V",
-                          "w": "fill",
-                          "gap": 3,
-                          "children": [
-                            {
-                              "t": "text",
-                              "chars": "Klima",
-                              "size": 12,
-                              "color": "@color-grey-700",
-                              "w": 220
-                            },
-                            {
-                              "t": "text",
-                              "chars": "Die Klima-Recherchen der Woche",
-                              "size": 11,
-                              "color": "@color-grey-600",
-                              "w": 220
-                            }
-                          ]
-                        },
-                        {
-                          "t": "frame",
-                          "name": "Schalter",
-                          "dir": "H",
-                          "w": 34,
-                          "h": 18,
-                          "fill": "#e0e0e3",
-                          "radius": 9,
-                          "children": [
-                            {
-                              "t": "ellipse",
-                              "w": 14,
-                              "h": 14,
-                              "fill": "@color-grey-100"
-                            }
-                          ]
-                        }
-                      ]
+                      "set": {
+                        "Label": "Klima",
+                        "Beschreibung": "Die Klima-Recherchen der Woche",
+                        "Beschreibung zeigen": true,
+                        "An": "nein"
+                      },
+                      "w": "fill"
                     }
                   ]
                 }
@@ -11558,7 +11754,7 @@
       "dark": "#333333"
     }
   },
-  "focus": "Bausteine",
+  "focus": "Screens, nach Screenshots",
   "textStyles": [
     {
       "name": "text-article",
