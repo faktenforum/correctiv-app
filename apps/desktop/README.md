@@ -19,7 +19,7 @@ this host as a reason for two decisions; this is that host, built.
 
 | | |
 | --- | --- |
-| **Routes** | 27 route files (25 openable hrefs + 2 layouts). **22 of 25 rendered** when that was last swept; the three exceptions are below, and so is the newer defect that stops the sweep from being re-run at all. |
+| **Routes** | 27 route files (25 openable hrefs + 2 layouts). **22 of 25 rendered** when that was last swept; the three exceptions are below. A newer defect briefly stopped the sweep from being re-run at all — see [*The profil crash, fixed*](#the-profil-crash-fixed) — and is now resolved. |
 | **The vertical slice** | Start → Artikel → Reader, working, over WebKitGTK. |
 | **Audio** | Working, on GStreamer. Position advances, live streams are detected, and the port's re-entrancy contract holds. |
 | **Chrome** | Adwaita's own. `Stack` is an `Adw.NavigationView`, `Tabs` an `Adw.ViewStack` + `Adw.ViewSwitcher`. Nothing restyles a header bar or a button. |
@@ -58,28 +58,33 @@ call the status listener synchronously, because a backend that emitted from insi
 minute into an episode ([ADR 0006](../../adr/0006-one-core-two-hosts.md)). The probe
 asserts the property rather than trusting the implementation.
 
-## What does not work
+### The profil crash, fixed
 
-**Home does not render at all**, and it takes every route with it, because the tab
-stack mounts all five tabs from `/`. `(tabs)/profil.tsx` renders three `<Typo onPress>`
-under "Ihr Impact", the layer refuses `onPress` on a `Gtk.Label` — correctly, a label
-emits no `clicked` — and the uncaught `PrimitiveError` ends the tree before anything
-else runs, `CORRECTIV_DESKTOP_ROUTE` included.
+Home did not render at all for one merge, and it took every route with it, because
+the tab stack mounts all five tabs from `/`. `(tabs)/profil.tsx` rendered three
+`<Typo onPress>` under "Ihr Impact"; the layer refuses `onPress` on a `Gtk.Label` —
+correctly, a label emits no `clicked` — and the uncaught `PrimitiveError` ended the
+tree before anything else ran, `CORRECTIV_DESKTOP_ROUTE` included.
 
 It arrived with [ADR 0018](../../adr/0018-removing-the-guest.md): those rows were inside
-`{membership.isMember && …}` and were reached by nobody, and removing the guest branch
+`{membership.isMember && …}` and were reached by nobody, so removing the guest branch
 made them unconditional. Measured on one profile against two bundles of the same host:
-the tree from before the merge captures Home at 92 125 bytes, the tree after it throws
-and captures 12 848. The remedy is the one the refusal names — wrap them in a
-`Pressable`, which is what the rest of this app does for a tappable line of text — and
-it belongs in the phone's screen, where it is correct on both hosts.
+the tree from before the merge captured Home at 92 125 bytes, the tree after it threw
+and captured 12 848.
+
+The remedy is the one the refusal names — wrap the three rows in a `Pressable`, which
+is what the rest of this app already does for a tappable line of text — done in the
+phone's screen, so it is correct on both hosts. A clean run now captures Home again,
+at 93 470 bytes, with no `PrimitiveError` in the log.
+
+## What does not work
 
 **Three tab routes cannot be deep-linked.** `router.replace('/mediathek')`,
 `'/mitmachen'` or `'/profil'` enters an infinite update loop — React error #185, with
 `gtk_widget_set_child_visible: assertion 'GTK_IS_WIDGET (widget)' failed` repeating
-about thirty times a second. ~~The screens themselves are fine: starting on Home mounts
-all five tabs with **zero** errors~~ — that was measured before the paragraph above,
-and `/entdecken` deep-links cleanly.
+about thirty times a second. The screens themselves are fine: starting on Home mounts
+all five tabs with **zero** errors, now that [the profil crash](#the-profil-crash-fixed)
+above is fixed, and `/entdecken` deep-links cleanly.
 
 It is TWO defects that look like one, and separating them took a control run. Patching
 the host to hide a page before removing it takes the criticals from 296 and 131 down to

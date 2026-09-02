@@ -1,5 +1,5 @@
 import { router } from 'expo-router';
-import { View } from 'react-native';
+import { Pressable, View } from 'react-native';
 
 import { ClubCard } from '@/components/profile/ClubCard';
 import { NavCard } from '@/components/profile/NavCard';
@@ -127,16 +127,17 @@ export default function ProfilScreen() {
         <Card tone="surface" className="mt-2xs">
           <Typo variant="text-m">{impactLine(membership.memberSince)}</Typo>
           {IMPACT_ARTICLES.map((article) => (
-            <Typo
+            <Pressable
               key={article.url}
-              variant="text-m"
-              weight="semibold"
-              numberOfLines={2}
-              className="mt-s"
               onPress={() => openArticle(article)}
+              accessibilityRole="link"
+              accessibilityLabel={article.title}
+              className="mt-s active:opacity-70"
             >
-              {article.title}
-            </Typo>
+              <Typo variant="text-m" weight="semibold" numberOfLines={2}>
+                {article.title}
+              </Typo>
+            </Pressable>
           ))}
         </Card>
       </View>
