@@ -1,6 +1,6 @@
 {
   "name": "@correctiv/desktop",
-  "description": "EXPERIMENTAL desktop host for the CORRECTIV app \u2014 GTK4/Adwaita via gjsify's React-Native layer. A feasibility demonstration, not a release target.",
+  "description": "EXPERIMENTAL desktop host for the CORRECTIV app — GTK4/Adwaita via gjsify's React-Native layer. A feasibility demonstration, not a release target.",
   "version": "0.0.0",
   "private": true,
   "license": "AGPL-3.0-or-later",
@@ -19,7 +19,8 @@
     "test": "vitest run",
     "screenshot": "node scripts/start.mjs --screenshot dist/screenshot.png",
     "audio-probe": "gjsify build src/debug/audio-probe.ts --app gjs --outfile dist/audio-probe.gjs.mjs --exclude-globals navigator && node scripts/start.mjs --bundle dist/audio-probe.gjs.mjs",
-    "route-sweep": "node scripts/route-sweep.mjs"
+    "route-sweep": "node scripts/route-sweep.mjs",
+    "capture-diff": "node scripts/capture-diff.mjs"
   },
   "dependencies": {
     "@correctiv/app-core": "*",
