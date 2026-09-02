@@ -19,6 +19,9 @@
 // | `hitSlop` | 13 | GTK hit-tests the allocation and cannot grow it | DROPPED, and correctly |
 // | `pointerEvents="box-none"` | 4 | `can-target` is one boolean for a widget AND its subtree | mapped to `auto` |
 // | `trackColor`/`thumbColor` | 2 | Adwaita paints a switch from the theme accent | DROPPED |
+// | `placeholderTextColor` | 4 | the placeholder is a CSS SUBNODE, not a widget property | DROPPED — Adwaita already dims it |
+// | `contentContainerClassName` | 10 | `<ScrollView>` has a content box; `<FlatList>` has none | merged into the list's own `className` |
+// | `autoFocus` | 2 | `grab_focus()` only works once the widget is MAPPED | IMPLEMENTED, from the ref on `map` |
 //
 // `hitSlop` is the one worth being explicit about, because dropping a prop is
 // normally the failure mode this whole layer exists to prevent. It is an 8 px
@@ -263,6 +266,9 @@ interface NormalizedProps {
   trackColor?: unknown;
   thumbColor?: unknown;
   onLayout?: (event: LayoutChangeEvent) => void;
+  placeholderTextColor?: unknown;
+  contentContainerClassName?: string;
+  autoFocus?: boolean;
   ref?: Ref<unknown>;
   children?: ReactNode;
   [key: string]: unknown;
@@ -460,6 +466,47 @@ let accessibilityReported = false;
  * during commit and take down the whole tree, for a label. So it is caught, reported
  * ONCE with the reason, and the widget renders without it.
  */
+/**
+ * `autoFocus` — `Gtk.Widget.grab_focus()`, at the moment it actually works.
+ *
+ * L2 refuses the prop and says why: focus is an imperative call, and it only takes
+ * once the widget is MAPPED, which is a moment a declarative layer does not own. The
+ * refusal also names the remedy — "call it from a ref in an effect" — and a ref is
+ * exactly what this file already has for `accessibilityLabel`, so the answer costs one
+ * helper rather than a change one layer down.
+ *
+ * Both cases are needed, not just the deferred one: a widget can already be mapped by
+ * the time the ref fires (a search field on a screen that is being re-entered), and
+ * connecting to `map` there would wait for a signal that has already passed.
+ *
+ * The handler disconnects itself. `autoFocus` means "when this appears", once — a
+ * field that stole the focus back every time its window was re-shown would be a
+ * different and worse behaviour.
+ */
+function applyAutoFocus(widget: unknown, autoFocus: boolean | undefined): void {
+  if (widget === null || widget === undefined || autoFocus !== true) return;
+
+  void (async () => {
+    try {
+      const { default: Gtk } = await import('gi://Gtk?version=4.0');
+      const target = widget as Gtk.Widget;
+      if (target.get_mapped()) {
+        target.grab_focus();
+        return;
+      }
+      let handler = 0;
+      handler = target.connect('map', () => {
+        target.disconnect(handler);
+        target.grab_focus();
+      });
+    } catch (error) {
+      // Reported rather than swallowed: a field that silently does not take focus is
+      // the failure this layer refuses props to prevent.
+      console.warn('[desktop] autoFocus: could not focus the widget:', error);
+    }
+  })();
+}
+
 function applyAccessibility(widget: unknown, props: NormalizedProps): void {
   if (widget === null || widget === undefined) return;
   const { accessibilityLabel, accessibilityState } = props;
@@ -593,7 +640,10 @@ function bridgeClassName(className: unknown): { className?: string; between: boo
  * Returns the props L2 may see. The accessibility values are handed back separately
  * because they are applied to the WIDGET rather than passed as props.
  */
-function normalize(props: NormalizedProps): {
+function normalize(
+  props: NormalizedProps,
+  displayName: string,
+): {
   passthrough: Record<string, unknown>;
   accessibility: NormalizedProps;
 } {
@@ -607,6 +657,14 @@ function normalize(props: NormalizedProps): {
     trackColor: _trackColor,
     thumbColor: _thumbColor,
     onLayout: _onLayout,
+    // The placeholder's colour lives on a CSS SUBNODE (`entry > text > placeholder`),
+    // not on a widget property, so there is nothing for L2 to route it to and it
+    // refuses by name. Dropping it is the right answer here rather than a concession:
+    // every use passes `grey-500`, which is what Adwaita already paints a placeholder,
+    // so the widget without the prop looks like the design with it.
+    placeholderTextColor: _placeholderTextColor,
+    autoFocus,
+    contentContainerClassName,
     pointerEvents,
     ...rest
   } = props;
@@ -635,7 +693,30 @@ function normalize(props: NormalizedProps): {
     passthrough.pointerEvents = pointerEvents === 'none' ? 'none' : 'auto';
   }
 
-  return { passthrough, accessibility: { accessibilityLabel, accessibilityState } };
+  // `contentContainerClassName` is answered by L2 on a `ScrollView`, whose content box
+  // is a real `Gtk.Box`, and refused on a `FlatList`, whose rows are built by a
+  // `Gtk.ListView` that owns the space between them — there is no such box to style.
+  //
+  // Dropping it would lose visible layout: every use in this app is padding
+  // (`px-m pt-m pb-2xl`), and a list whose last row sits under the window edge looks
+  // broken rather than unstyled. So it is merged into the list's OWN class list, which
+  // is the closest true thing: React Native's content container holds the header, the
+  // rows and the footer, and so does the box this lands on. The one difference is worth
+  // stating — padding there does not scroll with the content, it frames it — and for
+  // the four sides this app asks for, that is the same picture.
+  if (contentContainerClassName !== undefined) {
+    if (displayName === 'FlatList') {
+      const own = passthrough.className;
+      passthrough.className =
+        typeof own === 'string' && own.length > 0
+          ? `${own} ${contentContainerClassName}`
+          : contentContainerClassName;
+    } else {
+      passthrough.contentContainerClassName = contentContainerClassName;
+    }
+  }
+
+  return { passthrough, accessibility: { accessibilityLabel, accessibilityState, autoFocus } };
 }
 
 /**
@@ -809,7 +890,7 @@ function wrap<P extends object>(
   // components "not a valid JSX element type" the moment anything else renders it —
   // `VideoView` in `app/video.tsx` was where that surfaced.
   const Wrapped = (props: P): ReactElement => {
-    const { passthrough, accessibility } = normalize(props as NormalizedProps);
+    const { passthrough, accessibility } = normalize(props as NormalizedProps, displayName);
 
     if ('children' in passthrough) {
       passthrough.children = flattenFragments(passthrough.children as ReactNode);
@@ -866,12 +947,13 @@ function wrap<P extends object>(
     // the two VALUES rather than the object that carries them. `normalize` builds that
     // object fresh on every render, so depending on it would rebuild the ref callback
     // every time — which makes React detach and re-attach the ref on every commit.
-    const { accessibilityLabel, accessibilityState } = accessibility;
+    const { accessibilityLabel, accessibilityState, autoFocus } = accessibility;
 
     const mergedRef = useCallback(
       (instance: unknown) => {
         widget.current = instance;
         applyAccessibility(instance, { accessibilityLabel, accessibilityState });
+        applyAutoFocus(instance, autoFocus as boolean | undefined);
         if (typeof userRef === 'function') userRef(instance as never);
         else if (userRef && typeof userRef === 'object') {
           (userRef as { current: unknown }).current = instance;
@@ -879,7 +961,7 @@ function wrap<P extends object>(
       },
       // Re-run when the label changes, so a bookmark button that switches from
       // "Artikel speichern" to "Gespeichert, entfernen" re-announces.
-      [userRef, accessibilityLabel, accessibilityState],
+      [userRef, accessibilityLabel, accessibilityState, autoFocus],
     );
 
     return createElement(Base as never, { ...passthrough, ref: mergedRef } as never);
