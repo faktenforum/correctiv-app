@@ -75,6 +75,979 @@
         "(tabs)/profil",
         "(tabs)/profil, Gast"
       ]
+    },
+    {
+      "name": "Bausteine",
+      "mode": "replica",
+      "owned": [
+        "ui/ScreenHeader",
+        "ui/Button, gefüllt",
+        "ui/Button, umrandet",
+        "ui/Badge, Club",
+        "ui/Card",
+        "profile/ClubCard",
+        "profile/NavCard",
+        "profile/SettingRow",
+        "participate/CalloutCard",
+        "participate/ClaimRow",
+        "media/LiveBanner",
+        "media/SeriesTile",
+        "discover/ProjectRow",
+        "discover/SearchEntry",
+        "navigation/TabBar"
+      ],
+      "screens": [
+        {
+          "t": "component",
+          "name": "ui/ScreenHeader",
+          "x": 0,
+          "y": 0,
+          "dir": "V",
+          "w": "hug",
+          "pad": [16, 16, 16, 16],
+          "fill": "@color-grey-100",
+          "children": [
+            {
+              "t": "frame",
+              "name": "Inhalt",
+              "dir": "H",
+              "gap": 6,
+              "pad": [16, 16, 14, 14],
+              "cross": "CENTER",
+              "clip": true,
+              "w": 320,
+              "children": [
+                {
+                  "t": "text",
+                  "chars": "‹",
+                  "size": 15,
+                  "color": "@color-grey-700"
+                },
+                {
+                  "t": "text",
+                  "chars": "Zurück",
+                  "size": 13,
+                  "color": "@color-grey-700"
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "t": "component",
+          "name": "ui/Button, gefüllt",
+          "x": 380,
+          "y": 0,
+          "dir": "V",
+          "w": "hug",
+          "pad": [16, 16, 16, 16],
+          "fill": "@color-grey-100",
+          "children": [
+            {
+              "t": "frame",
+              "name": "Inhalt",
+              "dir": "H",
+              "w": 320,
+              "h": 48,
+              "fill": "@color-emphasis",
+              "radius": 5,
+              "align": "CENTER",
+              "cross": "CENTER",
+              "children": [
+                {
+                  "t": "text",
+                  "chars": "Mitgliedschaft erweitern",
+                  "size": 14,
+                  "color": "@color-grey-100",
+                  "weight": "semibold"
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "t": "component",
+          "name": "ui/Button, umrandet",
+          "x": 760,
+          "y": 0,
+          "dir": "V",
+          "w": "hug",
+          "pad": [16, 16, 16, 16],
+          "fill": "@color-grey-100",
+          "children": [
+            {
+              "t": "frame",
+              "name": "Inhalt",
+              "dir": "H",
+              "w": 320,
+              "h": 48,
+              "fill": "@color-grey-100",
+              "radius": 5,
+              "stroke": "@color-grey-300",
+              "align": "CENTER",
+              "cross": "CENTER",
+              "children": [
+                {
+                  "t": "text",
+                  "chars": "Erneut prüfen",
+                  "size": 14,
+                  "color": "@color-grey-700",
+                  "weight": "semibold"
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "t": "component",
+          "name": "ui/Badge, Club",
+          "x": 1140,
+          "y": 0,
+          "dir": "V",
+          "w": "hug",
+          "pad": [16, 16, 16, 16],
+          "fill": "@color-grey-100",
+          "children": [
+            {
+              "t": "frame",
+              "name": "Inhalt",
+              "dir": "H",
+              "pad": [8, 8, 4, 4],
+              "fill": "@color-alternative",
+              "radius": 3,
+              "clip": true,
+              "children": [
+                {
+                  "t": "text",
+                  "chars": "CLUB",
+                  "size": 9,
+                  "color": "@color-grey-700",
+                  "weight": "semibold"
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "t": "component",
+          "name": "ui/Card",
+          "x": 0,
+          "y": 220,
+          "dir": "V",
+          "w": "hug",
+          "pad": [16, 16, 16, 16],
+          "fill": "@color-grey-100",
+          "children": [
+            {
+              "t": "frame",
+              "name": "Inhalt",
+              "dir": "V",
+              "w": 320,
+              "fill": "@color-grey-100",
+              "stroke": "@color-grey-300",
+              "radius": 6,
+              "pad": [16, 16, 4, 4],
+              "children": [
+                {
+                  "t": "frame",
+                  "name": "Zeile, Ihre Stufe",
+                  "dir": "H",
+                  "w": "fill",
+                  "cross": "CENTER",
+                  "pad": [0, 0, 14, 14],
+                  "children": [
+                    {
+                      "t": "text",
+                      "chars": "Ihre Stufe",
+                      "size": 13,
+                      "color": "@color-grey-600"
+                    },
+                    {
+                      "t": "frame",
+                      "name": "Dehnung",
+                      "dir": "H",
+                      "w": "fill"
+                    },
+                    {
+                      "t": "text",
+                      "chars": "Kostenlose Mitgliedschaft",
+                      "size": 13,
+                      "color": "@color-grey-700",
+                      "weight": "semibold"
+                    }
+                  ]
+                },
+                {
+                  "t": "line",
+                  "w": "fill"
+                },
+                {
+                  "t": "frame",
+                  "name": "Zeile, App-Zugang",
+                  "dir": "H",
+                  "w": "fill",
+                  "cross": "CENTER",
+                  "pad": [0, 0, 14, 14],
+                  "children": [
+                    {
+                      "t": "text",
+                      "chars": "App-Zugang",
+                      "size": 13,
+                      "color": "@color-grey-600"
+                    },
+                    {
+                      "t": "frame",
+                      "name": "Dehnung",
+                      "dir": "H",
+                      "w": "fill"
+                    },
+                    {
+                      "t": "text",
+                      "chars": "Nicht enthalten",
+                      "size": 13,
+                      "color": "@color-grey-700",
+                      "weight": "semibold"
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "t": "component",
+          "name": "profile/ClubCard",
+          "x": 380,
+          "y": 220,
+          "dir": "V",
+          "w": "hug",
+          "pad": [16, 16, 16, 16],
+          "fill": "@color-grey-100",
+          "children": [
+            {
+              "t": "frame",
+              "name": "Inhalt",
+              "dir": "V",
+              "w": 320,
+              "fill": "@color-alternative",
+              "radius": 6,
+              "pad": [20, 20, 20, 20],
+              "children": [
+                {
+                  "t": "frame",
+                  "name": "Kopf",
+                  "dir": "H",
+                  "w": "fill",
+                  "cross": "CENTER",
+                  "children": [
+                    {
+                      "t": "text",
+                      "chars": "CORRECTIV CLUB",
+                      "size": 10,
+                      "color": "@color-grey-700",
+                      "weight": "semibold",
+                      "tracking": 8
+                    },
+                    {
+                      "t": "frame",
+                      "name": "Dehnung",
+                      "dir": "H",
+                      "w": "fill"
+                    },
+                    {
+                      "t": "text",
+                      "chars": "♡",
+                      "size": 14,
+                      "color": "@color-grey-700"
+                    }
+                  ]
+                },
+                {
+                  "t": "space",
+                  "h": 16,
+                  "w": "fill"
+                },
+                {
+                  "t": "text",
+                  "chars": "Alex Beispiel",
+                  "size": 20,
+                  "color": "@color-grey-700",
+                  "weight": "semibold",
+                  "w": 280
+                },
+                {
+                  "t": "space",
+                  "h": 4,
+                  "w": "fill"
+                },
+                {
+                  "t": "text",
+                  "chars": "Mitgliedschaft mit Beitrag",
+                  "size": 13,
+                  "color": "#5a4f14",
+                  "w": 280
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "t": "component",
+          "name": "profile/NavCard",
+          "x": 760,
+          "y": 220,
+          "dir": "V",
+          "w": "hug",
+          "pad": [16, 16, 16, 16],
+          "fill": "@color-grey-100",
+          "children": [
+            {
+              "t": "frame",
+              "name": "Inhalt",
+              "dir": "H",
+              "w": 320,
+              "gap": 12,
+              "cross": "CENTER",
+              "children": [
+                {
+                  "t": "frame",
+                  "name": "Symbol",
+                  "dir": "H",
+                  "w": 20,
+                  "h": 20,
+                  "fill": "@color-grey-200",
+                  "radius": 3
+                },
+                {
+                  "t": "frame",
+                  "name": "Text",
+                  "dir": "V",
+                  "w": "fill",
+                  "gap": 3,
+                  "children": [
+                    {
+                      "t": "frame",
+                      "name": "Titel",
+                      "dir": "H",
+                      "gap": 8,
+                      "cross": "CENTER",
+                      "children": [
+                        {
+                          "t": "text",
+                          "chars": "Quartalsbericht 1/2026",
+                          "size": 13,
+                          "color": "@color-grey-700",
+                          "weight": "semibold"
+                        },
+                        {
+                          "t": "frame",
+                          "name": "Badge, CLUB",
+                          "dir": "H",
+                          "fill": "@color-alternative",
+                          "radius": 2,
+                          "pad": [6, 6, 3, 3],
+                          "children": [
+                            {
+                              "t": "text",
+                              "chars": "CLUB",
+                              "size": 9,
+                              "color": "@color-grey-700",
+                              "weight": "semibold",
+                              "tracking": 6
+                            }
+                          ]
+                        }
+                      ]
+                    },
+                    {
+                      "t": "text",
+                      "chars": "Wohin Ihr Beitrag fließt, transparent aufgeschlüsselt.",
+                      "size": 11,
+                      "color": "@color-grey-600",
+                      "w": 250
+                    }
+                  ]
+                },
+                {
+                  "t": "text",
+                  "chars": "›",
+                  "size": 13,
+                  "color": "@color-grey-600"
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "t": "component",
+          "name": "profile/SettingRow",
+          "x": 1140,
+          "y": 220,
+          "dir": "V",
+          "w": "hug",
+          "pad": [16, 16, 16, 16],
+          "fill": "@color-grey-100",
+          "children": [
+            {
+              "t": "frame",
+              "name": "Inhalt",
+              "dir": "H",
+              "w": 320,
+              "gap": 12,
+              "cross": "CENTER",
+              "children": [
+                {
+                  "t": "frame",
+                  "name": "Text",
+                  "dir": "V",
+                  "w": "fill",
+                  "gap": 3,
+                  "children": [
+                    {
+                      "t": "text",
+                      "chars": "Spotlight",
+                      "size": 12,
+                      "color": "@color-grey-700",
+                      "w": 220
+                    },
+                    {
+                      "t": "text",
+                      "chars": "Das Wichtigste, werktags am Morgen",
+                      "size": 11,
+                      "color": "@color-grey-600",
+                      "w": 220
+                    }
+                  ]
+                },
+                {
+                  "t": "frame",
+                  "name": "Schalter",
+                  "dir": "H",
+                  "w": 34,
+                  "h": 18,
+                  "fill": "#e0e0e3",
+                  "radius": 9,
+                  "children": [
+                    {
+                      "t": "ellipse",
+                      "w": 14,
+                      "h": 14,
+                      "fill": "@color-grey-100"
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "t": "component",
+          "name": "participate/CalloutCard",
+          "x": 0,
+          "y": 440,
+          "dir": "V",
+          "w": "hug",
+          "pad": [16, 16, 16, 16],
+          "fill": "@color-grey-100",
+          "children": [
+            {
+              "t": "frame",
+              "name": "Inhalt",
+              "dir": "V",
+              "pad": [16, 16, 16, 16],
+              "fill": "@color-grey-100",
+              "stroke": "@color-grey-300",
+              "radius": 6,
+              "clip": true,
+              "w": 320,
+              "children": [
+                {
+                  "t": "text",
+                  "chars": "UMFRAGE",
+                  "size": 9,
+                  "color": "@color-emphasis",
+                  "weight": "semibold",
+                  "w": 288
+                },
+                {
+                  "t": "space",
+                  "h": 8,
+                  "w": "fill"
+                },
+                {
+                  "t": "text",
+                  "chars": "Die Zukunft von CORRECTIV: Wir fragen Sie",
+                  "size": 15,
+                  "color": "@color-grey-700",
+                  "weight": "semibold",
+                  "w": 288
+                },
+                {
+                  "t": "space",
+                  "h": 8,
+                  "w": "fill"
+                },
+                {
+                  "t": "text",
+                  "chars": "CORRECTIV verändert sich, und Sie gestalten mit. Was sollen wir recherchieren, welche Formate fehl…",
+                  "size": 12,
+                  "color": "@color-grey-600",
+                  "w": 288
+                },
+                {
+                  "t": "space",
+                  "h": 14,
+                  "w": "fill"
+                },
+                {
+                  "t": "frame",
+                  "name": "Fortschritt",
+                  "fill": "#e5e5e8",
+                  "radius": 2,
+                  "clip": true,
+                  "w": "fill",
+                  "h": 4,
+                  "children": [
+                    {
+                      "t": "frame",
+                      "name": "Anteil",
+                      "fill": "@color-grey-700",
+                      "radius": 2,
+                      "clip": true,
+                      "w": 202,
+                      "h": 4,
+                      "x": 0,
+                      "y": 0
+                    }
+                  ]
+                },
+                {
+                  "t": "space",
+                  "h": 8,
+                  "w": "fill"
+                },
+                {
+                  "t": "text",
+                  "chars": "2.143 Teilnahmen",
+                  "size": 11,
+                  "color": "@color-grey-600",
+                  "w": 288
+                },
+                {
+                  "t": "space",
+                  "h": 14,
+                  "w": "fill"
+                },
+                {
+                  "t": "frame",
+                  "name": "Button, Teilnehmen",
+                  "dir": "H",
+                  "pad": [20, 20, 12, 12],
+                  "align": "CENTER",
+                  "cross": "CENTER",
+                  "fill": "@color-grey-100",
+                  "stroke": "#bfbfc7",
+                  "radius": 4,
+                  "clip": true,
+                  "children": [
+                    {
+                      "t": "text",
+                      "chars": "Teilnehmen",
+                      "size": 12,
+                      "color": "@color-grey-700",
+                      "weight": "semibold"
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "t": "component",
+          "name": "participate/ClaimRow",
+          "x": 380,
+          "y": 440,
+          "dir": "V",
+          "w": "hug",
+          "pad": [16, 16, 16, 16],
+          "fill": "@color-grey-100",
+          "children": [
+            {
+              "t": "frame",
+              "name": "Inhalt",
+              "dir": "V",
+              "pad": [16, 16, 16, 16],
+              "fill": "@color-grey-100",
+              "stroke": "@color-grey-300",
+              "radius": 6,
+              "w": 320,
+              "children": [
+                {
+                  "t": "frame",
+                  "name": "ClaimStatusTag",
+                  "dir": "H",
+                  "gap": 8,
+                  "children": [
+                    {
+                      "t": "frame",
+                      "name": "Badge, Geprüft: Falsch",
+                      "dir": "H",
+                      "pad": [8, 8, 4, 4],
+                      "fill": "@color-emphasis",
+                      "radius": 2,
+                      "children": [
+                        {
+                          "t": "text",
+                          "chars": "Geprüft: Falsch",
+                          "size": 9,
+                          "color": "@color-grey-100",
+                          "weight": "semibold"
+                        }
+                      ]
+                    }
+                  ]
+                },
+                {
+                  "t": "space",
+                  "h": 10,
+                  "w": "fill"
+                },
+                {
+                  "t": "text",
+                  "chars": "„Ein Video zeigt, wie die US-Botschaft in Kiew im Mai 2026 evakuiert wird.“",
+                  "size": 13,
+                  "color": "@color-grey-700",
+                  "weight": "semibold",
+                  "w": 288
+                },
+                {
+                  "t": "space",
+                  "h": 8,
+                  "w": "fill"
+                },
+                {
+                  "t": "text",
+                  "chars": "FF-2418 · eingereicht 10. Juni",
+                  "size": 11,
+                  "color": "@color-grey-500",
+                  "w": 288
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "t": "component",
+          "name": "media/LiveBanner",
+          "x": 760,
+          "y": 440,
+          "dir": "V",
+          "w": "hug",
+          "pad": [16, 16, 16, 16],
+          "fill": "@color-grey-100",
+          "children": [
+            {
+              "t": "frame",
+              "name": "Inhalt",
+              "dir": "H",
+              "gap": 14,
+              "pad": [16, 16, 16, 16],
+              "cross": "CENTER",
+              "fill": "#333336",
+              "radius": 6,
+              "clip": true,
+              "w": 320,
+              "children": [
+                {
+                  "t": "ellipse",
+                  "w": 44,
+                  "h": 44,
+                  "fill": "@color-emphasis"
+                },
+                {
+                  "t": "frame",
+                  "name": "Text",
+                  "dir": "V",
+                  "gap": 4,
+                  "clip": true,
+                  "w": "fill",
+                  "children": [
+                    {
+                      "t": "text",
+                      "chars": "● LIVE",
+                      "size": 9,
+                      "color": "@color-emphasis",
+                      "weight": "semibold"
+                    },
+                    {
+                      "t": "text",
+                      "chars": "Salon5 Radio",
+                      "size": 15,
+                      "color": "@color-grey-100",
+                      "weight": "semibold",
+                      "w": 210
+                    },
+                    {
+                      "t": "text",
+                      "chars": "24/7 aus Bottrop, von Jugendlichen für Jugendliche",
+                      "size": 11,
+                      "color": "#b8b8bf",
+                      "w": 210
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "t": "component",
+          "name": "media/SeriesTile",
+          "x": 1140,
+          "y": 440,
+          "dir": "V",
+          "w": "hug",
+          "pad": [16, 16, 16, 16],
+          "fill": "@color-grey-100",
+          "children": [
+            {
+              "t": "frame",
+              "name": "Inhalt",
+              "dir": "H",
+              "align": "CENTER",
+              "cross": "CENTER",
+              "fill": "#dadadd",
+              "radius": 4,
+              "clip": true,
+              "w": 112,
+              "children": [
+                {
+                  "t": "text",
+                  "chars": "Cover",
+                  "size": 8,
+                  "color": "#6b6b73"
+                }
+              ],
+              "h": 112
+            }
+          ]
+        },
+        {
+          "t": "component",
+          "name": "discover/ProjectRow",
+          "x": 0,
+          "y": 660,
+          "dir": "V",
+          "w": "hug",
+          "pad": [16, 16, 16, 16],
+          "fill": "@color-grey-100",
+          "children": [
+            {
+              "t": "frame",
+              "name": "Inhalt",
+              "dir": "H",
+              "gap": 10,
+              "cross": "CENTER",
+              "clip": true,
+              "w": 320,
+              "children": [
+                {
+                  "t": "frame",
+                  "name": "Text",
+                  "dir": "V",
+                  "gap": 3,
+                  "clip": true,
+                  "w": "fill",
+                  "children": [
+                    {
+                      "t": "text",
+                      "chars": "Recherchen",
+                      "size": 13,
+                      "color": "@color-grey-700",
+                      "weight": "semibold",
+                      "w": 280
+                    },
+                    {
+                      "t": "text",
+                      "chars": "Investigative Recherchen für die Gesellschaft.",
+                      "size": 11,
+                      "color": "@color-grey-600",
+                      "w": 280
+                    }
+                  ]
+                },
+                {
+                  "t": "text",
+                  "chars": "›",
+                  "size": 14,
+                  "color": "@color-grey-600"
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "t": "component",
+          "name": "discover/SearchEntry",
+          "x": 380,
+          "y": 660,
+          "dir": "V",
+          "w": "hug",
+          "pad": [16, 16, 16, 16],
+          "fill": "@color-grey-100",
+          "children": [
+            {
+              "t": "frame",
+              "name": "Inhalt",
+              "dir": "H",
+              "gap": 10,
+              "pad": [14, 14, 12, 12],
+              "cross": "CENTER",
+              "fill": "@color-grey-200",
+              "radius": 6,
+              "clip": true,
+              "w": 320,
+              "children": [
+                {
+                  "t": "ellipse",
+                  "w": 12,
+                  "h": 12,
+                  "stroke": "@color-grey-600"
+                },
+                {
+                  "t": "text",
+                  "chars": "Recherchen, Faktenchecks, Projekte …",
+                  "size": 12,
+                  "color": "@color-grey-600"
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "t": "component",
+          "name": "navigation/TabBar",
+          "x": 760,
+          "y": 660,
+          "dir": "V",
+          "w": "hug",
+          "pad": [16, 16, 16, 16],
+          "fill": "@color-grey-100",
+          "children": [
+            {
+              "t": "frame",
+              "name": "Inhalt",
+              "fill": "@color-grey-100",
+              "stroke": "@color-grey-300",
+              "clip": true,
+              "w": 360,
+              "h": 60,
+              "children": [
+                {
+                  "t": "ellipse",
+                  "w": 46,
+                  "h": 26,
+                  "fill": "#e8e8fa",
+                  "x": 13,
+                  "y": 8
+                },
+                {
+                  "t": "ellipse",
+                  "w": 16,
+                  "h": 16,
+                  "stroke": "#f9545f",
+                  "x": 28,
+                  "y": 13
+                },
+                {
+                  "t": "text",
+                  "chars": "Home",
+                  "size": 8,
+                  "color": "@color-emphasis",
+                  "weight": "semibold",
+                  "w": 72,
+                  "align": "center",
+                  "x": 0,
+                  "y": 38
+                },
+                {
+                  "t": "ellipse",
+                  "w": 16,
+                  "h": 16,
+                  "stroke": "@color-grey-600",
+                  "x": 100,
+                  "y": 13
+                },
+                {
+                  "t": "text",
+                  "chars": "Entdecken",
+                  "size": 8,
+                  "color": "@color-grey-600",
+                  "w": 72,
+                  "align": "center",
+                  "x": 72,
+                  "y": 38
+                },
+                {
+                  "t": "ellipse",
+                  "w": 16,
+                  "h": 16,
+                  "stroke": "@color-grey-600",
+                  "x": 172,
+                  "y": 13
+                },
+                {
+                  "t": "text",
+                  "chars": "Mediathek",
+                  "size": 8,
+                  "color": "@color-grey-600",
+                  "w": 72,
+                  "align": "center",
+                  "x": 144,
+                  "y": 38
+                },
+                {
+                  "t": "ellipse",
+                  "w": 16,
+                  "h": 16,
+                  "stroke": "@color-grey-600",
+                  "x": 244,
+                  "y": 13
+                },
+                {
+                  "t": "text",
+                  "chars": "Mitmachen",
+                  "size": 8,
+                  "color": "@color-grey-600",
+                  "w": 72,
+                  "align": "center",
+                  "x": 216,
+                  "y": 38
+                },
+                {
+                  "t": "ellipse",
+                  "w": 16,
+                  "h": 16,
+                  "stroke": "@color-grey-600",
+                  "x": 316,
+                  "y": 13
+                },
+                {
+                  "t": "text",
+                  "chars": "Profil",
+                  "size": 8,
+                  "color": "@color-grey-600",
+                  "w": 72,
+                  "align": "center",
+                  "x": 288,
+                  "y": 38
+                }
+              ]
+            }
+          ]
+        }
+      ]
     }
   ],
   "screens": [

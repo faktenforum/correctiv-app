@@ -434,7 +434,10 @@ function build(spec, parent, parentIsAutoLayout) {
     node.resize(10, spec.t === 'line' ? 1 : spec.h || 8);
     node.fills = spec.t === 'line' ? paint(spec.color || '#e2e2e5') : [];
   } else {
-    node = figma.createFrame();
+    // A component is a frame that other frames can point at. Everything below it —
+    // auto-layout, sizing, fills — behaves identically, so the only difference is
+    // which constructor runs.
+    node = spec.t === 'component' ? figma.createComponent() : figma.createFrame();
     node.fills = paint(spec.fill);
     node.clipsContent = spec.clip === true;
     if (spec.dir) {
