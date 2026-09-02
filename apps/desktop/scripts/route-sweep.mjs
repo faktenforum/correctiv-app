@@ -26,7 +26,7 @@
  */
 
 import { execFileSync } from 'node:child_process';
-import { readdirSync, statSync } from 'node:fs';
+import { mkdirSync, readdirSync, rmSync, statSync } from 'node:fs';
 import { dirname, join, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
@@ -115,6 +115,16 @@ console.log(
   `route sweep [--host ${HOST_NAME}]: ${keys.length} route files, ${targets.length} openable hrefs\n`,
 );
 
+// EMPTY THE CAPTURE DIRECTORY FIRST, because a route that stops producing one must
+// LOOK like it stopped. Left alone, `dist/sweep/` keeps the PNG from the last run that
+// managed one, so a screen that broke since then still has a picture — and
+// `capture-diff` compares it happily, reporting a screen as unchanged that no longer
+// renders at all. Measured: a baseline saved after a failing run carried three captures
+// from the previous, working one.
+const CAPTURES = join(APP, 'dist', 'sweep');
+rmSync(CAPTURES, { recursive: true, force: true });
+mkdirSync(CAPTURES, { recursive: true });
+
 let failed = 0;
 for (const [key, href] of targets) {
   let log = '';
@@ -131,7 +141,7 @@ for (const [key, href] of targets) {
         CORRECTIV_DESKTOP_ROUTE: href,
         // A PNG per route — the visual half this sweep does not check, but a human
         // can then flip through.
-        CORRECTIV_DESKTOP_SCREENSHOT: join(APP, 'dist', 'sweep', `${key.replaceAll('/', '_')}.png`),
+        CORRECTIV_DESKTOP_SCREENSHOT: join(CAPTURES, `${key.replaceAll('/', '_')}.png`),
         CORRECTIV_DESKTOP_SCREENSHOT_DELAY_MS: String(DWELL),
         // THE CAPTURE MUST NOT END THE OBSERVATION, and this line is the whole
         // difference between a sweep and a screenshot session. Closing the window on

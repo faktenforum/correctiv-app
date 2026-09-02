@@ -29,6 +29,31 @@
  * screen is zero. Neither number transfers to a feed-backed screen — those differ
  * between runs on their own, and for them a mismatch says nothing at all.
  *
+ * WHICH SCREENS THE PROCEDURE CAN ANSWER FOR, measured across four baselines taken
+ * around a GTK-host change (two before it, two after), because "stable" turned out to
+ * mean two different things. Repeating the sweep WITHOUT rebuilding leaves almost
+ * everything identical; repeating it across a BUILD CYCLE does not, and the difference
+ * reached 7.5 % on one screen with no code change at all.
+ *
+ *   byte-identical in all four   13 of 22   atlas, backstage, behauptung, bericht,
+ *                                           einstellungen, gespeichert, onboarding,
+ *                                           player, projekt, serie, suche, tagebuch,
+ *                                           video
+ *   moved between runs of the     9 of 22   (tabs)/entdecken, (tabs)/index, +not-found,
+ *   SAME build                              artikel, aufruf, beitreten, faktenforum,
+ *                                           formular, spotlight
+ *
+ * A verdict from this tool therefore covers the first group. On the second the noise
+ * exceeds anything worth looking for, and the honest reading of a mismatch there is "no
+ * answer" rather than "a change". Making them answerable needs a network-free fixture,
+ * not a tighter threshold.
+ *
+ * The trap this measurement walked into first, recorded because it was convincing:
+ * repeating a sweep three times on ONE build showed the same three screens moving every
+ * time, which reads as a stable noise set — and the six screens that did not move looked
+ * like a real effect. They were not. Stability within one build's series is not
+ * stability; the caches have simply settled.
+ *
  *   node scripts/capture-diff.mjs --save before     # after a sweep, keep the captures
  *   …make the change, run the sweep again…
  *   node scripts/capture-diff.mjs --against before  # what moved
