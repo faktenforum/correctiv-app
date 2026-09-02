@@ -36,6 +36,10 @@
 // full of lorem ipsum is one nobody can argue with.
 const MODES = {
   replica: {
+    // Only the replica binds Figma variables. The wireframe deliberately ignores the
+    // brand, so binding it too would mean a change to the emphasis token repainted a
+    // pencil drawing — the one page that exists in order not to be about colour.
+    bindVariables: true,
     fonts: {
       sans: {
         regular: { family: 'Source Sans 3', style: 'Regular' },
@@ -123,6 +127,90 @@ function rgb(hex) {
   };
 }
 
+// ---------------------------------------------------------------- tokens
+//
+// The app's design tokens, mirrored into Figma as variables with a Hell and a Dunkel
+// mode. A colour in the spec written as "@color-emphasis" is BOUND to its variable
+// rather than copied, so changing the value in Figma repaints every screen that uses
+// it — which is the whole point of having tokens at all.
+//
+// The values come from packages/design-tokens/theme.css by way of the spec, so Figma
+// never becomes a second source of truth for what the token IS. It is a place to try
+// a different value out.
+
+let TOKENS = {};
+let VARS = {};
+
+function isToken(value) {
+  return typeof value === 'string' && value.charAt(0) === '@';
+}
+
+function tokenValue(value) {
+  if (!isToken(value)) return value;
+  const t = TOKENS[value.slice(1)];
+  if (t === undefined) return '#ff00ff'; // loud on purpose: a typo must be visible
+  return typeof t === 'object' ? t.light : t;
+}
+
+async function syncVariables(tokens) {
+  TOKENS = tokens || {};
+  VARS = {};
+  const names = Object.keys(TOKENS);
+  if (names.length === 0) return 0;
+
+  const collections = await figma.variables.getLocalVariableCollectionsAsync();
+  let collection = null;
+  for (const c of collections) if (c.name === 'CORRECTIV') collection = c;
+  if (collection === null) collection = figma.variables.createVariableCollection('CORRECTIV');
+
+  // One mode per appearance — where the plan allows it. A second variable mode is a
+  // paid Figma feature, and on Starter `addMode` throws. That must not cost the whole
+  // token set: without it the board is light-only, which is what it was anyway.
+  const light = collection.modes[0].modeId;
+  let dark = null;
+  for (const m of collection.modes) if (m.name === 'Dunkel') dark = m.modeId;
+  if (dark === null) {
+    try {
+      dark = collection.addMode('Dunkel');
+    } catch {
+      dark = null;
+    }
+  }
+  try {
+    collection.renameMode(light, 'Hell');
+  } catch {
+    // A single unnamed mode is fine; the name is a convenience, not a requirement.
+  }
+
+  const existing = await figma.variables.getLocalVariablesAsync();
+  const byName = {};
+  for (const v of existing) if (v.variableCollectionId === collection.id) byName[v.name] = v;
+
+  for (const name of names) {
+    const token = TOKENS[name];
+    const colour = typeof token === 'object';
+    const type = colour ? 'COLOR' : 'FLOAT';
+    let v = byName[name];
+    if (v === undefined || v.resolvedType !== type) {
+      v = figma.variables.createVariable(name, collection, type);
+    }
+    // Without explicit scopes a variable turns up in every property picker in Figma,
+    // which makes the panel useless.
+    v.scopes = colour
+      ? ['FRAME_FILL', 'SHAPE_FILL', 'TEXT_FILL', 'STROKE_COLOR']
+      : ['WIDTH_HEIGHT', 'GAP', 'CORNER_RADIUS', 'FONT_SIZE'];
+    if (colour) {
+      v.setValueForMode(light, rgb(token.light));
+      if (dark !== null) v.setValueForMode(dark, rgb(token.dark));
+    } else {
+      v.setValueForMode(light, token);
+      if (dark !== null) v.setValueForMode(dark, token);
+    }
+    VARS[name] = v;
+  }
+  return names.length + (dark === null ? ' (nur Hell, zweiter Modus ist kostenpflichtig)' : '');
+}
+
 /**
  * In wireframe mode every colour is pulled onto the grey ramp before it is used.
  * A mapping to null means "no fill at all" — that is how a brand-red button becomes
@@ -148,13 +236,24 @@ function greyOf(hex) {
   return '#' + h + h + h;
 }
 
-function paint(hex) {
-  const c = toned(hex);
-  return c ? [{ type: 'SOLID', color: rgb(c) }] : [];
+/** Binds rather than copies, when the spec names a token and the mode allows it. */
+function bind(hex, value) {
+  const paintValue = { type: 'SOLID', color: rgb(hex) };
+  if (!MODE.bindVariables || !isToken(value)) return paintValue;
+  const variable = VARS[value.slice(1)];
+  if (variable === undefined) return paintValue;
+  // setBoundVariableForPaint returns a NEW paint; the original stays unbound.
+  return figma.variables.setBoundVariableForPaint(paintValue, 'color', variable);
 }
 
-function paintText(hex) {
-  if (MODE.textGreys === undefined) return paint(hex);
+function paint(value) {
+  const c = toned(tokenValue(value));
+  return c ? [bind(c, value)] : [];
+}
+
+function paintText(value) {
+  if (MODE.textGreys === undefined) return paint(value);
+  const hex = tokenValue(value);
   const c = MODE.textGreys[(hex || '').toLowerCase()] || MODE.textFallback;
   return [{ type: 'SOLID', color: rgb(c) }];
 }
@@ -488,7 +587,7 @@ async function drawPage(entry, screens) {
   for (const key of Object.keys(wanted)) {
     try {
       await figma.loadFontAsync(wanted[key]);
-    } catch (err) {
+    } catch {
       missing.push(key);
     }
   }
@@ -662,15 +761,21 @@ async function draw(spec) {
     { name: spec.page, mode: spec.mode, owned: spec.owned, arrows: spec.arrows },
   ];
 
+  // Variables first: a fill can only bind to a variable that already exists.
+  const tokenCount = await syncVariables(spec.tokens);
+
   const done = [];
   for (const entry of pages) {
     const screens = entry.screens || spec.screens || [];
     done.push(await drawPage(entry, screens));
   }
 
-  return done
-    .map((d) => d.name + ': ' + d.screens + ' Screens, ' + d.arrows + ' Pfeile')
-    .join(' · ');
+  return (
+    done.map((d) => d.name + ': ' + d.screens + ' Screens, ' + d.arrows + ' Pfeile').join(' · ') +
+    ' · ' +
+    tokenCount +
+    ' Tokens'
+  );
 }
 
 figma.showUI(__html__, { width: 300, height: 110, title: 'CORRECTIV Wireframes' });
@@ -694,7 +799,7 @@ figma.ui.onmessage = async (msg) => {
     figma.ui.postMessage({
       type: 'done',
       summary: null,
-      error: String((err && err.stack) || (err && err.message) || err),
+      error: String((err && err.message) || err) + ' | ' + String((err && err.stack) || ''),
     });
   }
 };

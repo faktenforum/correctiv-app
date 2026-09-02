@@ -46,6 +46,34 @@ becomes impossible to spot.
 The copy stays real in both, because a wireframe full of lorem ipsum is one nobody
 can argue with. What a wireframe drops is surface: colour, typeface, image content.
 
+## The app's tokens, as Figma variables
+
+`sync-tokens.mjs` reads `packages/design-tokens/theme.css` — the generated file the
+app itself uses — and writes the values into `spec.json` under `tokens`. The plugin
+turns those into a Figma variable collection called **CORRECTIV** and **binds** the
+replica's fills to them, so changing a value in Figma repaints every screen that uses
+it.
+
+    node tools/figma-plugin/sync-tokens.mjs      # after npm run tokens
+
+Run it whenever the tokens change, and the board follows the app. Figma is a place to
+try a value out; it is never where a value is decided. The next sync overwrites
+anything edited there, which is the intended direction of travel.
+
+A colour in the spec written as `"@color-emphasis"` is bound; a literal `"#ff5064"`
+is copied. The mapping from the board's palette to token names lives in `AS_TOKEN`
+and is deliberately **not** exhaustive: the media-placeholder greys, the YouTube red
+and the disabled tint stay literal, because giving them a token name would put a
+label on a decision nobody made.
+
+**Only the replica binds.** The wireframe exists in order not to be about colour, so
+binding it too would mean a change to the emphasis token repainted a pencil drawing.
+
+**A second variable mode is a paid Figma feature.** The tokens carry a light and a
+dark value, but on a Starter plan `addMode` throws and the collection stays
+light-only. The plugin catches that and says so in its summary rather than losing the
+whole token set over it.
+
 ## The vocabulary
 
     t: 'frame'    dir V|H, pad, gap, fill, stroke, radius, w, h, align, cross, clip,
