@@ -11,10 +11,8 @@ looking at a picture.
 ## The set
 
 [`android/`](android/) holds 31 shots, one per step, from `apps/mobile`. Shot on
-2026-09-02 from a release APK built out of the working tree on top of `4c3cdee`, on
-`Medium_Phone_API_36` at 1080x2400, night mode off. Both tours ran clean, with no
-`MISS`. (The APK is not a commit because the door is not committed yet; replace the
-hash when it lands.)
+2026-09-02 from the release APK of `8fc8d01` on `Medium_Phone_API_36` at 1080x2400,
+night mode off. Both tours ran clean, with no `MISS`.
 
 **This is the first set that opens at the door.** Since
 [ADR 0016](../adr/0016-a-door-at-the-root-and-an-entitlement-not-an-amount.md) a
@@ -27,12 +25,12 @@ door's waiting state lasts 1.5 s and is not in the tour; the browser check cover
 `04-onboarding-club` is **gone**, not missing: the onboarding's fourth step was the
 club pitch, and [ADR 0018](../adr/0018-removing-the-guest.md) removed it along with
 every other branch that addressed someone who had not paid. The walk now ends that
-sequence on „Fertig“.
+sequence on "Fertig".
 
 The rest were re-shot in the same round rather than carried over, and two of them are
-the reason ADR 0018 exists. The first round after the door still showed „Sie sind als
-Gast unterwegs“ on the profile of an account that had just signed in, and offered
-„Erstmal umsehen“ two screens after a door that could not be looked past. Neither was
+the reason ADR 0018 exists. The first round after the door still showed "Sie sind als
+Gast unterwegs" on the profile of an account that had just signed in, and offered
+"Erstmal umsehen" two screens after a door that could not be looked past. Neither was
 visible in a test. Both were visible in a picture.
 
 The **native tab bar** ([ADR 0013](../adr/0013-native-tabs-and-a-web-tab-bar-of-its-own.md))
@@ -43,7 +41,7 @@ Ionicons, and Material 3's pill behind the selected item.
 fact check, from the static export, shot at a 540x1200 viewport. The reader is there
 because it is where the verdict plaque shows, and the plaque is what
 [ADR 0015](../adr/0015-reading-correctiv-org-through-its-rest-api.md) corrected: this
-article was labelled „Falsch“ until it read „Teilweise falsch“. It exists because the tab bar
+article was labelled "Falsch" until it read "Teilweise falsch". It exists because the tab bar
 is now the one part of the app that is deliberately **not** the same on both, and a
 claim like that should be checkable by looking rather than by reading the ADR. It is
 five shots, not 29: the rest of the web build differs from Android only in the ways
@@ -137,10 +135,12 @@ Each of these cost a wrong conclusion or a worthless committed picture.
   them. Read the tour's log, then look at what it produced.
 - **A shot of a colour scheme has to carry its own proof.** A dark page and a light
   one are told apart by eye, and an eye has been wrong here once already: a shot that
-  measured `rgb(32,32,32)` at three points was reported as light. So a browser tour
-  fixes the scheme where it cannot drift, on the browser context at creation rather
-  than with `emulateMedia` on a page, keeps one page per walk, and next to every
-  shot logs `matchMedia('(prefers-color-scheme: dark)')`, the class on `<html>` and
+  measured `rgb(32,32,32)` at three points was reported as light. There is no browser
+  tour in `screens/tools/` — the sets here are Android, and appearance is checked by
+  hand — so this is the rule for whoever drives a browser next: fix the scheme where it
+  cannot drift, on the browser context at creation rather than with `emulateMedia` on a
+  page, keep one page per walk, and next to every shot log
+  `matchMedia('(prefers-color-scheme: dark)')`, the class on `<html>` and
   the computed background of the element that paints the page. Then measure the file
   (`magick shot.png -format '%[pixel:p{5,5}]' info:`) before saying what it shows.
   Chromium's PNG stores the app's `#1a1a1a` as `32,32,32` behind an embedded ICC

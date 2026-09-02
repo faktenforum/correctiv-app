@@ -71,9 +71,12 @@ dropping a host meant dropping that file plus its screens.
    root re-export. The root entry exposes only the ports, because that is the one
    thing every host must touch.
 
-`membership.isMember` is the demo's central lever. Every club touchpoint reads it in
-the render path, so never snapshot it into a local ref. The door below does not read
-it.
+`membership.isMember` was the demo's central lever, read in the render path by every
+club touchpoint. Since [ADR 0018](adr/0018-removing-the-guest.md) **no screen reads it
+at all**: behind the door everyone has an entitlement that includes the app, so a
+branch on it asks a question with one answer. The slice stays because the join flow
+still writes it and still feeds "Beitrag ändern". For "may this person be here", read
+`useIsAdmitted`.
 
 ## The door
 

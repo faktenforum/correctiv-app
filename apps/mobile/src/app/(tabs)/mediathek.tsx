@@ -93,8 +93,10 @@ function VideoRail({ title, channel }: { title: string; channel: YoutubeKey }) {
 }
 
 /**
- * The club's bonus audio. Members hear the whole episode, everyone else 60 seconds —
- * the preview is the invitation, not the lock.
+ * The club's bonus audio, played in full. The 60-second preview this comment used to
+ * describe was dropped on 2026-08-06 (ADR 0006), and the note that named the
+ * distinction went with ADR 0018, since behind the door there is nobody on the other
+ * side of it. The CLUB badge stays as a label.
  */
 function BonusRow({ bonus }: { bonus: BonusMedia }) {
   const status = useEpisodeStatus(bonus.id);

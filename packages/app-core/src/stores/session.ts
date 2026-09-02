@@ -164,11 +164,18 @@ export const signIn =
 export const refreshEntitlement =
   (options: AuthOptions = {}): AppThunk<Promise<void>> =>
   async (dispatch, getState) => {
-    const { account, upgradeStarted: upgraded } = getState().session;
+    const { account, entitlement, upgradeStarted: upgraded } = getState().session;
     if (!account) return;
-    dispatch(
-      slice.actions.entitlementChecked(
-        simulatedEntitlement(account.email, { now: options.now, upgraded }),
-      ),
-    );
+    /**
+     * Without an upgrade the answer is the one already held, and it is re-dispatched
+     * rather than re-derived. Deriving it again looks equivalent and is not: the
+     * simulation dates a trial from the `now` it is given, so every re-check handed a
+     * lapsed trial another 30 days and "Erneut prüfen" became a renew button. The
+     * entitlement is the membership system's answer, so the app keeps it until that
+     * system answers differently.
+     */
+    const next = upgraded
+      ? simulatedEntitlement(account.email, { now: options.now, upgraded })
+      : (entitlement ?? simulatedEntitlement(account.email, { now: options.now }));
+    dispatch(slice.actions.entitlementChecked(next));
   };

@@ -61,29 +61,29 @@ export function simulatedEntitlement(
   { now = Date.now(), upgraded = false }: { now?: number; upgraded?: boolean } = {},
 ): Entitlement {
   const address = email.toLowerCase();
-  const none: Entitlement = {
+  const fullAccess: Entitlement = {
     tier: 'paid',
     appAccess: true,
     source: 'paid',
     validUntil: null,
     localAreas: [],
   };
-  if (upgraded) return none;
+  if (upgraded) return fullAccess;
   if (address.includes('frei')) {
     return { tier: 'free', appAccess: false, source: null, validUntil: null, localAreas: [] };
   }
   if (address.includes('test')) {
     return {
-      ...none,
+      ...fullAccess,
       source: 'trial',
       validUntil: new Date(now + TRIAL_DAYS * 864e5).toISOString(),
     };
   }
   if (address.includes('lokal')) {
-    return { ...none, source: 'local-bundle', localAreas: ['gelsenkirchen'] };
+    return { ...fullAccess, source: 'local-bundle', localAreas: ['gelsenkirchen'] };
   }
-  if (address.includes('soli')) return { ...none, tier: 'soli' };
-  return none;
+  if (address.includes('soli')) return { ...fullAccess, tier: 'soli' };
+  return fullAccess;
 }
 
 function wait(ms: number): Promise<void> {

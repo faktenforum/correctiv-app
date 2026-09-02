@@ -91,6 +91,34 @@ describe('signing in (simulated)', () => {
     expect(accessShortfall(session(), later)).toBe('lapsed');
   });
 
+  /**
+   * "Erneut prüfen" once renewed the trial it was meant to re-check. The simulation
+   * dates a trial from the `now` it is handed, so re-deriving the entitlement gave a
+   * lapsed one another 30 days, and the door opened again for someone whose trial had
+   * ended. Without an upgrade the re-check must answer with what it already holds.
+   */
+  it('does not renew a lapsed trial when the entitlement is re-checked', async () => {
+    await store.dispatch(signIn('test@example.org', 'geheim', fast));
+    const lapsed = Date.parse(session().entitlement!.validUntil!) + 1;
+    expect(isAdmitted(session(), lapsed)).toBe(false);
+
+    await store.dispatch(refreshEntitlement({ now: lapsed }));
+
+    expect(session().entitlement!.validUntil).toBe('2026-10-02T12:00:00.000Z');
+    expect(isAdmitted(session(), lapsed)).toBe(false);
+  });
+
+  /** The upgrade is the one thing a re-check may change. */
+  it('grants the paid tier when the upgrade page was opened first', async () => {
+    await store.dispatch(signIn('frei@example.org', 'geheim', fast));
+    expect(isAdmitted(session(), NOW)).toBe(false);
+
+    store.dispatch(sessionActions.upgradeStarted());
+    await store.dispatch(refreshEntitlement({ now: NOW }));
+
+    expect(isAdmitted(session(), NOW)).toBe(true);
+  });
+
   it('opens the app through a local bundle', async () => {
     await store.dispatch(signIn('lokal@example.org', 'geheim', fast));
     expect(session().entitlement).toMatchObject({

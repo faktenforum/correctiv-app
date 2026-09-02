@@ -82,9 +82,10 @@ checked on a device.
   are new. The published demo opens on the door; any address signs in.
 - `useIsAdmitted()` re-evaluates on every dispatch, so a trial ending while the app is
   open closes it on the next state change, not on a timer.
-- The copy that the door contradicts is left as it is. How CORRECTIV tells the
-  reversal is an editorial decision that comes before this screen's final words, so
-  it is listed rather than rewritten:
+- ~~The copy that the door contradicts is left as it is.~~ Retired by
+  [ADR 0018](0018-removing-the-guest.md), which removed it. How CORRECTIV tells the
+  reversal is still an editorial decision, but the sentences that had become false
+  did not wait for it. The list stands as the record of what was found:
   - `apps/mobile/src/app/onboarding.tsx`: "Ohne Paywall: Journalismus für alle" and
     "Der Club ist Nähe, keine Paywall"
   - `apps/mobile/src/app/beitreten.tsx`: "alle frei zugänglich", "0 Artikel hinter
@@ -112,8 +113,11 @@ checked on a device.
   copy on this screen.
 - The secure-storage port and the `Authorization` header in `http.ts`, when there is
   a token. Until then the session is two JSON fields in the `KeyValueStore`.
-- `isMember` and the entitlement are two things. A signed-in paying member still sees
-  the guest card on the profile until the club touchpoints migrate.
+- ~~`isMember` and the entitlement are two things. A signed-in paying member still
+  sees the guest card on the profile until the club touchpoints migrate.~~ The first
+  sentence still holds; the second was carried out by
+  [ADR 0018](0018-removing-the-guest.md) rather than left standing, because the guest
+  card greeted an account that had just signed in.
 - The password-reset address. The door links the support page until the membership
   system names its own.
 - The second access level, local areas, is carried in the entitlement and read by

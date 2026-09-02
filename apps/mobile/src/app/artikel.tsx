@@ -37,8 +37,8 @@ export default function ArtikelScreen() {
   // Subscribes to just this one article's saved flag, so bookmarking another
   // article does not re-render the reader.
   const saved = useIsSaved(url ?? '');
-  // Both are read per render, never snapshotted: the membership flip has to reach
-  // the reader's support footer, and the text-size setting its root font size.
+  // Both are read per render, never snapshotted: the appearance has to reach the
+  // reader's colour block, and the text-size setting its root font size.
   const textScale = useTextScale();
   const isDark = useIsDark();
 

@@ -48,9 +48,11 @@ early rather than kept as a fallback.**
   appended variable block because every colour in `READER_LAYOUT_CSS` comes from a
   token, and the text scale is an inline root font size. In a webview both belong to
   the website.
-- **One session instead of two.** The app authenticates against the API with a token
-  ([ADR 0016](0016-a-door-at-the-root-and-an-entitlement-not-an-amount.md)); a webview
-  onto a logged-in correctiv.org needs the WordPress cookie. That is a second sign-in
+- **One session instead of two.** The app will authenticate against the API with a
+  token — it has none yet, the sign-in is simulated
+  ([ADR 0016](0016-a-door-at-the-root-and-an-entitlement-not-an-amount.md)) — while a
+  webview onto a logged-in correctiv.org needs the WordPress cookie. That is a second
+  sign-in
   or a token exchange, and on the web target it runs into third-party cookies rather
   than into frame headers.
 
