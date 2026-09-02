@@ -22,6 +22,15 @@
 // | `placeholderTextColor` | 4 | the placeholder is a CSS SUBNODE, not a widget property | DROPPED — Adwaita already dims it |
 // | `contentContainerClassName` | 10 | `<ScrollView>` has a content box; `<FlatList>` has none | merged into the list's own `className` |
 // | `autoFocus` | 2 | `grab_focus()` only works once the widget is MAPPED | IMPLEMENTED, from the ref on `map` |
+// | `autoComplete`/`textContentType` | 4 | autofill hints; a GTK app has no autofill service to hint AT | DROPPED — `keyboardType` and `secureTextEntry` already carry the purpose |
+// | `submitBehavior` | 1 | it asks a soft keyboard to stay up, and there is none | DROPPED — Enter fires `onSubmitEditing` here either way |
+// | `accessibilityLiveRegion` | 2 | GTK4 has no live-region property; its counterpart is imperative | DROPPED — see below |
+//
+// One entry is not a prop at all: `TextInput` is a CLASS in React Native, so it names
+// a type as well as a value, and its ref carries `focus()`. The layer declares it as a
+// function and hands over the bare widget, so `useRef<TextInput>(null)` does not
+// compile and `ref.current.focus()` is `undefined is not a function`. Both are
+// answered at the export near the bottom of this file, which says why only `focus` is.
 //
 // `hitSlop` is the one worth being explicit about, because dropping a prop is
 // normally the failure mode this whole layer exists to prevent. It is an 8 px
@@ -35,6 +44,15 @@
 // `Pressable` is announced as a button (which it is: a real `Gtk.Button`) but a
 // `View` carrying `accessibilityRole="header"` is announced as a generic container.
 // The label still lands, which is the part a screen-reader user needs most.
+//
+// `accessibilityLiveRegion` is the second loss, and the one to come back to. GTK4 has
+// no property for it: the counterpart is `Gtk.Accessible.announce()` (4.14+), an
+// imperative call that needs the MOMENT and the TEXT, and a declarative prop on a
+// container carries neither. Both uses are on the door — the sign-in failure and the
+// "we are checking" line — so a screen-reader user there is told nothing until the
+// announcement is wired from the state change that causes it, which is app code
+// rather than this file. Named here so it is a decision with a cost rather than a
+// prop that quietly went missing.
 
 // Type-only: the values come from `gi://` at runtime, which resolves only inside a
 // GTK process. `@girs/*` is the same vocabulary as data, so `tsc` can read it here.
@@ -672,6 +690,24 @@ function normalize(
     // every use passes `grey-500`, which is what Adwaita already paints a placeholder,
     // so the widget without the prop looks like the design with it.
     placeholderTextColor: _placeholderTextColor,
+    // The two autofill hints, and they are the same hint twice: `autoComplete` is
+    // React Native's cross-platform spelling, `textContentType` the iOS one. Both name
+    // a field to a CREDENTIAL STORE, and a GTK application has none to name it to —
+    // there is no autofill service on this platform, so there is nothing to route them
+    // to and nothing lost by dropping them. What they also carry, the purpose of the
+    // field, is carried again by props L2 does answer: the door passes
+    // `keyboardType="email-address"` beside `autoComplete="email"`, and
+    // `secureTextEntry` beside `autoComplete="password"`.
+    autoComplete: _autoComplete,
+    textContentType: _textContentType,
+    // `submitBehavior="submit"` means "fire onSubmitEditing and leave the keyboard
+    // up". There is no soft keyboard to leave up, and Enter in a `Gtk.Entry` already
+    // emits `activate` without taking focus anywhere — so the behaviour it asks for is
+    // what this host does anyway.
+    submitBehavior: _submitBehavior,
+    // No GTK property expresses it; see the note in this file's header for what the
+    // counterpart is and what dropping it costs on the door.
+    accessibilityLiveRegion: _accessibilityLiveRegion,
     autoFocus,
     contentContainerClassName,
     pointerEvents,
@@ -874,6 +910,18 @@ function interleaveSpacers(children: unknown): ReactNode {
 }
 
 /**
+ * Set a caller's ref, whichever of the two shapes it has.
+ *
+ * Both appear in this app — `expo-image` passes a callback, `LoginGate` passes the
+ * object from `useRef` — and a wrapper that handled only one would drop the other
+ * silently, which reads as a widget that never mounted.
+ */
+function assignRef<T>(ref: Ref<T> | undefined, value: T): void {
+  if (typeof ref === 'function') ref(value);
+  else if (ref !== null && ref !== undefined) (ref as { current: T }).current = value;
+}
+
+/**
  * One wrapper shape for every primitive that can receive these props.
  *
  * The ref is merged rather than replaced: `WebView` and `expo-image` both take a ref
@@ -963,10 +1011,7 @@ function wrap<P extends object>(
         widget.current = instance;
         applyAccessibility(instance, { accessibilityLabel, accessibilityState });
         applyAutoFocus(instance, autoFocus as boolean | undefined);
-        if (typeof userRef === 'function') userRef(instance as never);
-        else if (userRef && typeof userRef === 'object') {
-          (userRef as { current: unknown }).current = instance;
-        }
+        assignRef(userRef, instance);
       },
       // Re-run when the label changes, so a bookmark button that switches from
       // "Artikel speichern" to "Gespeichert, entfernen" re-announces.
@@ -1011,6 +1056,75 @@ export const ActivityIndicator = wrap<ActivityIndicatorProps>(
   BaseActivityIndicator,
   'ActivityIndicator',
 );
-export const TextInput = wrap<TextInputProps>(BaseTextInput, 'TextInput');
+const TextInputPrimitive = wrap<TextInputProps>(BaseTextInput, 'TextInput');
+
+/**
+ * What a `TextInput` ref carries here, and the one answer in this file that is about
+ * an INSTANCE rather than a prop.
+ *
+ * React Native declares `TextInput` as a class, so `TextInput` names a value AND a
+ * type, and `useRef<TextInput>(null)` is how every app moves focus between two fields.
+ * `@gjsify/react-native` declares it as a function, which has no instance type at all,
+ * and hands the raw `Gtk` widget to whatever ref it is given. The phone's `LoginGate`
+ * does both things at once: `useRef<TextInput>(null)` on the password field, then
+ * `passwordRef.current?.focus()` from the email field's `onSubmitEditing`.
+ *
+ * Both halves therefore fail here, and they fail differently: the type is a build
+ * error, which is loud, while `focus()` on a `Gtk.Text` is `undefined is not a
+ * function` at the moment somebody presses Enter on the door — inside a `try`-less
+ * event handler, on the one screen nobody can get past. So the interface below is
+ * declared beside the value, and the ref is translated rather than forwarded.
+ *
+ * ONLY `focus`, deliberately. It is what the app calls and what GTK answers exactly
+ * (`grab_focus()`); `blur()` has no widget-level counterpart (focus belongs to the
+ * root, so the nearest thing is `root.set_focus(null)`, which is a different
+ * statement), and `clear()`/`isFocused()`/`setNativeProps()` have no caller. Adding a
+ * name here that this host cannot honour would turn a compile error into a silent
+ * no-op, which is the trade this whole file exists to refuse.
+ *
+ * Upstream this belongs in `@gjsify/react-native`: the layer knows the widget and the
+ * type, and every app that moves focus between two fields will need it.
+ */
+export interface TextInput {
+  /** `Gtk.Widget.grab_focus()`. Returns nothing, where GTK returns whether it took. */
+  focus(): void;
+}
+
+export const TextInput = (props: TextInputProps): ReactElement => {
+  // Read off the props rather than declared, for the reason `wrap` gives at its own
+  // ref: the exported props types here do not carry `ref`, and they still forward one.
+  const userRef = (props as { ref?: Ref<TextInput | null> }).ref;
+  const attach = useCallback(
+    (widget: unknown) => {
+      assignRef(userRef, widget === null || widget === undefined ? null : focusHandle(widget));
+    },
+    [userRef],
+  );
+  return createElement(TextInputPrimitive as never, { ...props, ref: attach } as never);
+};
+
+/**
+ * The handle a `TextInput` ref receives, over the widget the layer handed us.
+ *
+ * A fresh object per attach rather than a cached one: the ref fires again when the
+ * widget is replaced, and a handle that closed over the old one would focus a widget
+ * that is no longer in the tree — which looks exactly like focus not working.
+ */
+function focusHandle(widget: unknown): TextInput {
+  const target = widget as { grab_focus?: () => boolean };
+  return {
+    focus() {
+      // Guarded because the caller is an event handler with nothing above it: on the
+      // door, this runs from `onSubmitEditing`, and a throw there takes the tree down
+      // rather than leaving the person in the field they were already in.
+      try {
+        target.grab_focus?.();
+      } catch (error) {
+        console.warn('[desktop] TextInput.focus(): grab_focus failed:', error);
+      }
+    },
+  };
+}
+
 export const Switch = wrap<SwitchProps>(BaseSwitch, 'Switch');
 export const FlatList = wrap<FlatListProps>(BaseFlatList, 'FlatList');

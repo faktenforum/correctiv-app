@@ -118,10 +118,24 @@ npm run build     -w @correctiv/desktop     # dist/app.gjs.mjs   (Linux)
 npm run start     -w @correctiv/desktop
 ```
 
+**The app opens on the door.** Since [ADR 0016](../../adr/0016-a-door-at-the-root-and-an-entitlement-not-an-amount.md)
+the root layout renders `LoginGate` instead of the navigator while the session is not
+admitted, on this host as on the phone. Sign-in is simulated: any address gets in, with
+any password of four characters or more. What that means for the two aids below is that
+**they are behind the door too** — no route is mounted until a session is admitted, so
+`CORRECTIV_DESKTOP_ROUTE` cannot land, and the log says
+`CORRECTIV_DESKTOP_ROUTE was never applied within 15000 ms` rather than pretending. The
+route sweep reads that as a failure, on purpose: a run that never left the door has
+nothing to say about the route it was asked for.
+
+So sign in once. The session persists to
+`$XDG_CONFIG_HOME/correctiv-desktop/settings.ini`, where every later run finds it.
+
 Three development aids, all environment-gated and all no-ops otherwise:
 
 ```bash
 # Start on a particular route — there is no way to drive the UI from outside yet.
+# Needs an admitted session in the profile; see above.
 CORRECTIV_DESKTOP_ROUTE=/spotlight npm run start -w @correctiv/desktop
 
 # Capture the window to a PNG and exit. In-process, because GNOME 45+ refuses

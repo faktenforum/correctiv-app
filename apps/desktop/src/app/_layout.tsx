@@ -3,26 +3,25 @@
 // A variant of `apps/mobile/src/app/_layout.tsx`, and the diff against it is the
 // honest measure of what a third host costs: this file hands the core a different
 // platform object and drops one CSS import. Everything else — the extractor choice,
-// the exclusive-playback wiring, the persistence descriptors, the onboarding gate,
-// the modal presentations — is the phone's, unchanged, because none of it is
+// the exclusive-playback wiring, the persistence descriptors, the door, the onboarding
+// gate, the modal presentations — is the phone's, unchanged, because none of it is
 // platform-specific. That is ADR 0006's split paying out for the third time.
 //
-// THE THREE DIFFERENCES, all of them here rather than spread out:
+// THE TWO DIFFERENCES, both of them here rather than spread out:
 //
 //   1. No `import '@/global.css'`. That import is the CSS entry Uniwind's Metro
 //      transform reads, and there is no Metro here. The class vocabulary reaches GTK
 //      through `configureStyle` in `../entry.tsx` instead (ADR 0032 section 3).
 //   2. `gtkPlatform` + `gstAudio` instead of `expoPlatform` + `expoAudio`.
-//   3. No door. The phone renders `components/gate/LoginGate` instead of the
-//      navigator while the session is not admitted (ADR 0016); this host still
-//      mounts the navigator unconditionally. That is the one difference here which
-//      is NOT platform-specific, and it is a gap rather than a decision — nothing
-//      blocks it: the gate imports only names this host already answers, and the
-//      session slice is hydrated below, so the door has its state waiting for it.
-//      Until it lands, this host shows the app to a session that has not been
-//      admitted, which is exactly what the phone stopped doing.
-//   4. Nothing else. Kept in the same order as the phone's file on purpose, so a
+//   3. Nothing else. Kept in the same order as the phone's file on purpose, so a
 //      `diff` between the two is short enough to read.
+//
+// The door used to be a third difference, and it was the one that was NOT
+// platform-specific: this host mounted the navigator unconditionally and so showed
+// the app to a session the phone stops. It is gone as of the render branch below.
+// `test/root-layout.test.ts` is what keeps it from coming back, because a missing
+// branch here looks exactly like a working app on the machine of whoever is already
+// admitted.
 
 import { router, Stack, usePathname } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
@@ -63,8 +62,9 @@ import {
 } from '@correctiv/app-core/stores/participation';
 import { close as closeVideo } from '@correctiv/app-core/stores/video';
 
+import { LoginGate } from '@/components/gate/LoginGate';
 import { stop as stopAudio } from '@/lib/audio/player';
-import { coreStore, useAppStore } from '@/lib/store/core';
+import { coreStore, useAppStore, useIsAdmitted } from '@/lib/store/core';
 import { fontAssets, useAppearance, useIsDark } from '@/lib/theme';
 
 import { applyDebugRoute, debugRouteRequested, noteCurrentPath } from '../debug/route.js';
@@ -97,10 +97,9 @@ SplashScreen.preventAutoHideAsync();
 function registerPersistence(): Promise<void> {
   return persist(coreStore, [
     persisted<SettingsState>('settings', PERSISTED_KEYS, settingsActions.hydrate),
-    // Hydrated here even though this host has no door to read it yet, because the
-    // list is the phone's and a slice missing from it fails silently: whoever ports
-    // the gate would get a returning member shown the sign-in form, which is the
-    // exact fault the phone's copy of this line exists to prevent.
+    // What the door reads. Hydrated before the first render like everything else, and
+    // for the reason the phone's copy of this line gives: late, a returning member is
+    // shown the sign-in form for a frame.
     persisted<SessionState>('session', SESSION_KEYS, sessionActions.hydrate),
     persisted<SavedArticlesState>('savedArticles', ['items'], savedArticlesActions.hydrate),
     persisted<MembershipState>('membership', MEMBERSHIP_KEYS, membershipActions.hydrate),
@@ -151,6 +150,19 @@ function AppShell() {
     if (fontsLoaded && storeReady) SplashScreen.hideAsync();
   }, [fontsLoaded, storeReady]);
 
+  /**
+   * The door, and the phone's own words for it: the whole route tree hangs on this
+   * one value, so while the session is not admitted there is no route to reach by
+   * deep link or by back. A redirect could not do that, and on this host it could do
+   * even less — `CORRECTIV_DESKTOP_ROUTE` below replaces the initial route, so a
+   * redirect-shaped door would be one the development aid walks straight through.
+   *
+   * A selector rather than `getState()`, because unlike the onboarding decision this
+   * one is a value the shell renders: signing in has to open the app in the same
+   * tick. It reads the entitlement and never the contribution (ADR 0016).
+   */
+  const admitted = useIsAdmitted();
+
   const pathname = usePathname();
   const store = useAppStore();
   // So the capture can name the screen it photographed. Without it a screenshot is a
@@ -159,10 +171,17 @@ function AppShell() {
   useEffect(() => noteCurrentPath(pathname), [pathname]);
   const gated = useRef(false);
   useEffect(() => {
-    if (!storeReady || gated.current) return;
+    if (!storeReady || !admitted || gated.current) return;
     gated.current = true;
-    // A development aid. See src/debug/route.ts; a no-op unless CORRECTIV_DESKTOP_ROUTE
-    // is set.
+    // BOTH DECISIONS WAIT FOR ADMISSION, and the debug aid for the same reason as the
+    // onboarding jump: each of them replaces a route, and there is no navigator to
+    // replace one in until the door opens. On a profile that is not admitted the aid
+    // therefore never fires, `onDebugRouteApplied` reaches its deadline, and the log
+    // says `was never applied within` — which `route-sweep` reads as a failure. That
+    // is the intended answer: a sweep run behind the door has nothing to say about
+    // the route it was asked for. README, "How to run it", says how to get past it.
+    //
+    // See src/debug/route.ts; a no-op unless CORRECTIV_DESKTOP_ROUTE is set.
     applyDebugRoute((href) => router.replace(href));
     // The aid has chosen a screen, so the gate below must not overrule it. Ordering
     // alone did NOT achieve that, which is what the comment here used to claim:
@@ -174,46 +193,58 @@ function AppShell() {
     if (debugRouteRequested()) return;
     if (pathname !== '/') return;
     if (!store.getState().settings.onboardingDone) router.replace('/onboarding');
-  }, [pathname, store, storeReady]);
+  }, [admitted, pathname, store, storeReady]);
 
   if (!fontsLoaded || !storeReady) return null;
 
   return (
     <GestureHandlerRootView style={{ flex: 1 }}>
       <StatusBar style={isDark ? 'light' : 'dark'} />
-      {/*
-        `screenOptions` is deliberately absent, where the phone passes
-        `headerShown: false` and a `contentStyle` background.
+      {admitted ? (
+        /*
+          `screenOptions` is deliberately absent, where the phone passes
+          `headerShown: false` and a `contentStyle` background.
 
-        Both are answers to problems this host does not have. There is no header to
-        hide: `Stack` renders an `Adw.NavigationView`, whose chrome is the
-        application window's own header bar, and the brief for this port is to leave
-        Adwaita's chrome alone. And `contentStyle` existed to stop a white flash
-        during a push animation — an `Adw.NavigationView` transition paints the
-        pages themselves, so there is no stack surface behind them to see.
-      */}
-      <Stack>
-        <Stack.Screen name="(tabs)" />
-        {/*
-          `presentation: 'modal'` is dropped on all three, and this is the one
-          route-level divergence worth knowing about.
+          Both are answers to problems this host does not have. There is no header to
+          hide: `Stack` renders an `Adw.NavigationView`, whose chrome is the
+          application window's own header bar, and the brief for this port is to leave
+          Adwaita's chrome alone. And `contentStyle` existed to stop a white flash
+          during a push animation — an `Adw.NavigationView` transition paints the
+          pages themselves, so there is no stack surface behind them to see.
+        */
+        <Stack>
+          <Stack.Screen name="(tabs)" />
+          {/*
+            `presentation: 'modal'` is dropped on all three, and this is the one
+            route-level divergence worth knowing about.
 
-          On the phone these are flows over the app rather than places in it. GTK's
-          counterpart is `Adw.Dialog`, which is PRESENTED against a parent and never
-          parented by it — `box.append(dialog)` calls `g_error()`, which is SIGABRT
-          and a core dump rather than a catchable exception (measured on libadwaita
-          1.9.3, and the reason `Modal` is still a refusing export in
-          @gjsify/react-native). Presenting one needs a portal seam in the host that
-          does not exist yet.
+            On the phone these are flows over the app rather than places in it. GTK's
+            counterpart is `Adw.Dialog`, which is PRESENTED against a parent and never
+            parented by it — `box.append(dialog)` calls `g_error()`, which is SIGABRT
+            and a core dump rather than a catchable exception (measured on libadwaita
+            1.9.3, and the reason `Modal` is still a refusing export in
+            @gjsify/react-native). Presenting one needs a portal seam in the host that
+            does not exist yet.
 
-          So player, onboarding and beitreten are ordinary pushed pages here. They
-          work — the player is reachable, the onboarding runs, joining runs — and
-          they arrive as a page rather than as a sheet. Named, not silent.
-        */}
-        <Stack.Screen name="player" />
-        <Stack.Screen name="onboarding" />
-        <Stack.Screen name="beitreten" />
-      </Stack>
+            So player, onboarding and beitreten are ordinary pushed pages here. They
+            work — the player is reachable, the onboarding runs, joining runs — and
+            they arrive as a page rather than as a sheet. Named, not silent.
+          */}
+          <Stack.Screen name="player" />
+          <Stack.Screen name="onboarding" />
+          <Stack.Screen name="beitreten" />
+        </Stack>
+      ) : (
+        /*
+          The phone's own gate component, imported rather than varied. It reaches
+          this host through the `@/*` alias, the same way every other re-exported
+          screen does, and it needs nothing this host does not already answer:
+          `ActivityIndicator`, `Pressable`, `ScrollView`, `TextInput` and `View` are
+          all importable per @gjsify/react-native's support table, which
+          `test/support-gate.test.ts` checks against the phone's whole source tree.
+        */
+        <LoginGate />
+      )}
     </GestureHandlerRootView>
   );
 }
