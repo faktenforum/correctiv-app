@@ -28,22 +28,37 @@ export function debugRouteRequested(): boolean {
   return route !== null && route !== '';
 }
 
+/** The screen the router is on, for whoever needs to say what they are looking at. */
+let currentPath = '(unknown)';
+
+/** Record the live pathname. Called from the root layout on every navigation. */
+export function noteCurrentPath(path: string): void {
+  currentPath = path;
+}
+
+/** The last pathname the router reported, or `(unknown)` before the first render. */
+export function debugCurrentPath(): string {
+  return currentPath;
+}
+
+/**
+ * How long to wait for a requested route before giving up on it and running the parked
+ * callbacks anyway. Generous, because it is a backstop and not a schedule.
+ */
+const ROUTE_DEADLINE_MS = 15_000;
+
 /**
  * Run `callback` once the requested route has been applied — immediately when none was
  * requested, or when it has already happened.
  *
- * This exists because the screenshot hook counted from a wall clock and the route is
- * applied from a component body, so the two were racing. On this Linux host the app
- * mounted first and every capture showed the requested screen; on the slower macOS VM
- * the 4 s timer won, and the log put the capture BEFORE the navigation:
+ * The route is applied from a component body while the capture counts from a wall
+ * clock, so without this the two race and the capture can photograph whatever screen
+ * happened to be up.
  *
- *   [desktop] screenshot: wrote 53386 bytes … (the window).
- *   [desktop] CORRECTIV_DESKTOP_ROUTE: replacing the initial route with "/artikel".
- *
- * The file was a perfectly good photograph of the wrong screen, with nothing in it
- * saying so — the failure mode a development aid can least afford, because the
- * screenshots in README.md are what it exists to produce. Raising the delay would have
- * hidden it on that host and left the race.
+ * The deadline is the important half. Whether `applyDebugRoute` is ever reached is
+ * decided in another module, and a park with no deadline turns "the route never
+ * arrived" into a process that hangs producing nothing at all — strictly worse than
+ * capturing early, which at least leaves a file and a log line to look at.
  */
 export function onDebugRouteApplied(callback: () => void): void {
   if (!debugRouteRequested() || navigated) {
@@ -51,6 +66,25 @@ export function onDebugRouteApplied(callback: () => void): void {
     return;
   }
   waiting.push(callback);
+  if (deadlineArmed) return;
+  deadlineArmed = true;
+  GLib.timeout_add(GLib.PRIORITY_DEFAULT, ROUTE_DEADLINE_MS, () => {
+    if (!navigated && waiting.length > 0) {
+      console.error(
+        `[desktop] CORRECTIV_DESKTOP_ROUTE was never applied within ${ROUTE_DEADLINE_MS} ms. ` +
+          'Continuing anyway; whatever is captured is NOT the route that was asked for.',
+      );
+      release();
+    }
+    return GLib.SOURCE_REMOVE;
+  });
+}
+
+let deadlineArmed = false;
+
+/** Run every parked callback exactly once. */
+function release(): void {
+  for (const callback of waiting.splice(0)) callback();
 }
 
 /**
@@ -69,9 +103,13 @@ export function applyDebugRoute(replace: (href: string) => void): void {
   if (route === null || route === '') return;
   navigated = true;
   console.log(`[desktop] CORRECTIV_DESKTOP_ROUTE: replacing the initial route with "${route}".`);
-  replace(route);
-  // Release the capture only after the router has been told. The screen still has to
-  // render, which is what the capture's own delay is for; what this removes is the
-  // possibility of photographing a screen the run never asked for.
-  for (const callback of waiting.splice(0)) callback();
+  try {
+    replace(route);
+  } finally {
+    // In `finally`, because a throw from the router would otherwise strand every parked
+    // callback forever while `navigated` stays true — so the run hangs, and any LATER
+    // registration fires immediately while the first one never does. The router does
+    // throw: `RouterError` is one of the failures route-sweep watches for.
+    release();
+  }
 }

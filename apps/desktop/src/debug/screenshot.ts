@@ -34,7 +34,7 @@ import Gtk from 'gi://Gtk?version=4.0';
 
 import { dumpTree } from '@gjsify/gtk-host/conformance';
 
-import { onDebugRouteApplied } from './route.js';
+import { debugCurrentPath, onDebugRouteApplied } from './route.js';
 
 /** One capture attempt, with the reason it failed rather than a bare null. */
 function capture(widget: Gtk.Widget, label: string): Uint8Array | null {
@@ -101,14 +101,9 @@ export function armScreenshot(): void {
   const delay = Number.isFinite(requested) && requested > 0 ? requested : 4000;
   const quit = GLib.getenv('CORRECTIV_DESKTOP_SCREENSHOT_QUIT') !== '0';
 
-  // Count from the moment a requested route has actually been applied, not from arming.
-  //
-  // The delay below is for letting a screen SETTLE. It was never a wait for the screen
-  // to be CHOSEN, and on a slow host it lost that race: the macOS VM mounted the app
-  // after the 4 s timer had already fired, so the capture photographed the start screen
-  // and the log recorded the two in that order. A good photograph of the wrong screen,
-  // with nothing in the file saying so. `onDebugRouteApplied` runs its callback
-  // immediately when no route was requested, so the ordinary path is unchanged.
+  // The delay below lets a screen SETTLE; it was never a wait for the screen to be
+  // CHOSEN. `onDebugRouteApplied` supplies the second half, and runs its callback
+  // immediately when no route was requested, so the ordinary path keeps its timing.
   onDebugRouteApplied(() => {
     GLib.timeout_add(GLib.PRIORITY_DEFAULT, delay, () => {
       // The first MAPPED toplevel, not item 0: `get_toplevels()` lists every toplevel GTK
@@ -178,7 +173,14 @@ function writePng(path: string, png: Uint8Array, label: string): boolean {
     console.error(`[desktop] screenshot: could not write ${path} (the ${label}): ${error}`);
     return false;
   }
-  console.log(`[desktop] screenshot: wrote ${png.length} bytes to ${path} (the ${label}).`);
+  // THE PATHNAME IS THE CLAIM. A PNG on its own cannot say which screen it is, so a
+  // picture of the WRONG screen reads exactly like a picture of the right one — which
+  // is how every capture taken on a profile that had not finished onboarding came out
+  // as the onboarding screen, under four different route names, unnoticed.
+  console.log(
+    `[desktop] screenshot: wrote ${png.length} bytes to ${path} ` +
+      `(the ${label}, at "${debugCurrentPath()}").`,
+  );
   return true;
 }
 
