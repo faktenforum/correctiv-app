@@ -173,8 +173,24 @@ naming, because they are the feedback upstream needs before it drops the v1 tier
 | Use | Token | Why nothing fits |
 |---|---|---|
 | `Badge` neutral fill, `ClaimStatusTag` | `grey-250` #f0f0f0 | upstream dropped it from the ramp with "no replacement" |
-| `Thumbnail` placeholder, the reader's neutral verdict plaque | `grey-300` #e6e6e6 | `neutral-200` as a **fill**; the semantic tier has no surface there |
+| `Thumbnail` placeholder, the reader's neutral verdict plaque, `SettingRow`'s switch track | `grey-300` #e6e6e6 | `neutral-200` as a **fill**; the semantic tier has no surface there |
 | faint text: placeholders, chevrons, inactive tabs (45 uses) | `grey-500` #b3b3b3 | no foreground token that faint; `stroke-strong` shares the value but names a line |
+
+**And one that is not an alias at all, which is the bigger gap.**
+`ClaimStatusTag.CHECKED_TRUE_GREEN` is a raw `#2e7d4f`, carried since the first
+implementation and never declared a token. The other three rows are a neutral the
+semantic tier dropped; this one is a **hue the palette does not have**. Measured across
+all 35 tokens, the only non-neutral names are `red-500`, `yellow-400` and the four
+aliases of them — there is no green anywhere in the design system.
+
+That is a real hole rather than a naming one, and the app has been quietly filling it
+with a hex: a *confirmed* fact check must not wear the same red as a refuted one, and a
+fact-checking organisation needs a colour for "true" the way it needs one for "false".
+Upstream should hear this before it hears about `grey-250`.
+
+It is the app's only raw colour value. The two other hexes in the source are in
+comments — react-native-web's Material teal default, named to explain why `thumbColor`
+is set at all, and a contrast figure in the reader's CSS.
 
 The last is the real gap, and it is not a counting one: the semantic tier has three
 neutral foregrounds (`on-canvas` #333333, `on-background` #4a4a4a, `on-canvas-muted`
