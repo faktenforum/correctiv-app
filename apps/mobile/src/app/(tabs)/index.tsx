@@ -13,6 +13,7 @@ import { MediathekReihe } from '@/components/home/MediathekReihe';
 import { SpotlightBriefing } from '@/components/home/SpotlightBriefing';
 import { Hairline, Screen, SectionHeader, Typo } from '@/components/ui';
 import { callouts } from '@correctiv/app-core/data/callouts';
+import { timedModuleAt } from '@correctiv/app-core/lib/daypart';
 import { useFeed } from '@/lib/feeds/useFeed';
 import { openArticle } from '@/lib/openArticle';
 import { useColors } from '@/lib/theme';
@@ -25,7 +26,17 @@ import { useColors } from '@/lib/theme';
  * LIVE from the feeds: hero, "Neueste Recherchen", the fact-check rail and the
  * FunFacts tile. Sample data: briefing, early access, callout, backstage — each
  * one exists to show a flow the feeds cannot supply.
+ *
+ * One block moves with the clock. The requirements want time-based modules lifted to
+ * the top "after they drop into the chronological feed", so the callout is rendered
+ * once, in one of two places, and `timedModuleAt` decides which. Two more slots are
+ * specified and stay empty because nothing in the app can fill them yet; the reasons
+ * are in `lib/daypart.ts` beside the table.
  */
+function openCallout(entry: { slug: string }): void {
+  router.push({ pathname: '/aufruf/[slug]', params: { slug: entry.slug } });
+}
+
 export default function HomeScreen() {
   const colors = useColors();
   const recherchen = useFeed('recherchen');
@@ -34,6 +45,12 @@ export default function HomeScreen() {
   const hero = recherchen.data?.[0];
   const neueste = recherchen.data?.slice(1, 6) ?? [];
   const callout = callouts.find((entry) => entry.status === 'open');
+  /**
+   * Read per render rather than held in state. Home re-renders often enough that the
+   * block moves within a minute or two of the hour, and a timer to make it exact would
+   * be a subscription nobody cancels for a change nobody is watching for.
+   */
+  const liftCallout = timedModuleAt(Date.now()) === 'participate';
 
   return (
     <Screen>
@@ -48,6 +65,12 @@ export default function HomeScreen() {
       {recherchen.loading && !recherchen.data && (
         <View className="py-2xl">
           <ActivityIndicator color={colors.emphasis} />
+        </View>
+      )}
+
+      {callout && liftCallout && (
+        <View className="mt-s">
+          <CalloutTeaser callout={callout} onPress={openCallout} />
         </View>
       )}
 
@@ -87,14 +110,9 @@ export default function HomeScreen() {
         </View>
       )}
 
-      {callout && (
+      {callout && !liftCallout && (
         <View className="mt-l">
-          <CalloutTeaser
-            callout={callout}
-            onPress={(entry) =>
-              router.push({ pathname: '/aufruf/[slug]', params: { slug: entry.slug } })
-            }
-          />
+          <CalloutTeaser callout={callout} onPress={openCallout} />
         </View>
       )}
 
