@@ -67,9 +67,9 @@ export default function TabsLayout() {
    */
   const tabs = (
     <NativeTabs
-      tintColor={colors.emphasis}
-      backgroundColor={colors['grey-100']}
-      iconColor={{ default: colors['grey-500'], selected: colors.emphasis }}
+      tintColor={colors.accent}
+      backgroundColor={colors['canvas']}
+      iconColor={{ default: colors['grey-500'], selected: colors.accent }}
       labelStyle={{ fontFamily: 'SourceSans3_600SemiBold', fontSize: 11 }}
       /*
        * Every destination keeps its label. Material's `auto` — the default — drops

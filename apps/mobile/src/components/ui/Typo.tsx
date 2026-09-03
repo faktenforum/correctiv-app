@@ -16,12 +16,14 @@ export type TypoProps = TextProps & {
   /** Composite variant from typography.css: typeface, size, tracking, line height. */
   variant?: TypoVariant;
   /**
-   * Colour token; defaults to grey-700, the brand's body-text colour — which is
-   * near-white in dark mode, because grey-700 is the *strong text* role.
+   * Colour token; defaults to `on-canvas`, the brand's body-text colour — which is
+   * near-white in dark mode, because `on-canvas` names the role and not the value.
    *
-   * On a fixed-colour surface (the brand red, club yellow, a photo,
-   * `bg-surface-inverse`) that flip is wrong, and the role tokens are the answer:
-   * `on-emphasis` and `on-alternative` mean the same thing in both schemes.
+   * On a surface whose colour does NOT follow the scheme — the brand red, club
+   * yellow, a photograph — that flip is wrong, and a primitive is the answer:
+   * `white` and `neutral-700` are the same colour in both schemes, because a
+   * primitive names a value. (`always-light` and `always-dark` are the older names
+   * for those two and still resolve; ADR 0022 retires them.)
    */
   color?: ColorToken;
   /**
@@ -48,7 +50,7 @@ export type TypoProps = TextProps & {
  */
 export function Typo({
   variant = 'text-m',
-  color = 'grey-700',
+  color = 'on-canvas',
   weight,
   family,
   style,

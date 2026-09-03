@@ -124,7 +124,7 @@ describe('signing in (simulated)', () => {
     expect(session().entitlement).toMatchObject({
       appAccess: true,
       source: 'local-bundle',
-      localAreas: ['gelsenkirchen'],
+      localAreas: ['Gelsenkirchen'],
     });
     expect(isAdmitted(session(), NOW)).toBe(true);
   });
@@ -167,6 +167,7 @@ describe('the entitlement, read on its own', () => {
     source: 'paid',
     validUntil: null,
     localAreas: [],
+    memberSince: '2026-03-04T09:12:00.000Z',
   };
 
   it('never reads an amount: the tier and the flag decide', () => {

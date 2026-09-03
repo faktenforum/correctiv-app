@@ -10,11 +10,34 @@ looking at a picture.
 
 ## The set
 
-[`android/`](android/) holds 31 shots, one per step, from `apps/mobile`. Shot on
-2026-09-02 from the release APK of the review round on `Medium_Phone_API_36` at
+[`android/`](android/) holds 30 shots, one per step, from `apps/mobile`. Shot on
+2026-09-03 from the release APK of the colour-tier round on `Medium_Phone_API_36` at
 1080x2400, night mode off. Both tours ran clean, with no `MISS`.
 
-**This is the first set that opens at the door.** Since
+**Re-shot for [ADR 0022](../adr/0022-three-tiers-of-colour-and-a-dark-scheme-that-names-roles.md).**
+The app is on the semantic colour tier now, and `stroke` is one step stronger than the
+`grey-300` its hairlines used to be, so every border, divider, input outline, progress
+track and `<Hairline>` here is a shade darker than in the set before. No step name
+changed. Leaving them would have made this directory stale in exactly the pixels that
+round was about.
+
+Diffing against the previous set, most frames move about 0.4–1.4%, which is the borders
+and nothing else. **Seven move much more, and none of that is the colour change:**
+`10-home-top` 47%, `83-video` 33%, `11-home-mid` 33%, `41-mediathek-mid` 26%,
+`40-mediathek` 23%, `23-reader-mid` 16%. Those are the live feeds
+([ADR 0015](../adr/0015-reading-correctiv-org-through-its-rest-api.md)) showing
+different articles and videos than they did in September. A big diff on those six is
+expected and says nothing; a big diff anywhere else is worth opening.
+
+The seventh was `95-suche`, and it is the reason the paragraph above is worded
+carefully. Its first take came back 79% changed because an Android stylus-handwriting
+sheet had opened over the search screen, with the app greyed out behind it. The tour
+reported no `MISS` — the tap had succeeded — so nothing flagged it, and it took someone
+opening the image. That is `83-video` again in a different costume: **a step can be
+wrong without being missing.** `lib.sh` now turns those features off before a tour
+starts, and the shot was re-taken.
+
+**This is the second set that opens at the door.** Since
 [ADR 0016](../adr/0016-a-door-at-the-root-and-an-entitlement-not-an-amount.md) a
 cleared app starts at the login gate, so `tour-android.sh` opens with three steps that
 did not exist before, `00-gate`, `00-gate-failed` and `00-gate-no-access`, and signs
@@ -26,6 +49,18 @@ door's waiting state lasts 1.5 s and is not in the tour; the browser check cover
 club pitch, and [ADR 0018](../adr/0018-removing-the-guest.md) removed it along with
 every other branch that addressed someone who had not paid. The walk now ends that
 sequence on "Fertig".
+
+`70-join-1` is gone for the same kind of reason: the screen it shot was the
+contribution flow, and the app has none. Requirement WP2.6 says it offers no payment
+functions, so `beitreten` left with
+[ADR 0020](../adr/0020-no-contribution-in-the-app.md) and `60-profil` now shows a
+membership card that reads the entitlement instead of setting an amount.
+
+`83-video` is shot by tapping **"Video: "** rather than a video's title. The tour
+pinned "Demokratie oder Doomsday" until FunFacts published enough new videos to push
+it out of the rail; the run then reported `MISS` and photographed whatever was
+underneath, which is the failure this whole directory exists to catch. `MediaCard`
+carries the prefix now, which a screen reader wants anyway.
 
 The rest were re-shot rather than carried over, and three of them are the reason two
 ADRs exist. The first round after the door still showed "Sie sind als Gast unterwegs"

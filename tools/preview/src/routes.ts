@@ -20,7 +20,6 @@ export const ROUTES = [
   '/backstage',
   '/atlas',
   '/bericht',
-  '/beitreten',
   '/einstellungen',
   '/faktenforum',
   '/formular',

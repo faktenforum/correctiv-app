@@ -45,8 +45,8 @@ export function sampleTarget(kind: SearchSample['kind']): TabPath | null {
 export function SampleHitRow({ hit, onPress }: { hit: SearchSample; onPress?: () => void }) {
   const colors = useColors();
   const row = (
-    <View className="flex-row items-center border-b border-grey-300 py-s">
-      <Ionicons name={ICON[hit.kind]} size={20} color={colors['grey-600']} />
+    <View className="flex-row items-center border-b border-stroke py-s">
+      <Ionicons name={ICON[hit.kind]} size={20} color={colors['on-canvas-muted']} />
       <View className="ml-s flex-1">
         <Typo variant="text-m" weight="bold" numberOfLines={2}>
           {hit.title}

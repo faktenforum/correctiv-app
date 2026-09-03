@@ -36,7 +36,7 @@ export function FormField({
     <View className="mt-m">
       <Typo variant="headline-xs">{component.label}</Typo>
       {component.description ? (
-        <Typo variant="text-s" color="grey-600" className="mt-2xs">
+        <Typo variant="text-s" color="on-canvas-muted" className="mt-2xs">
           {component.description}
         </Typo>
       ) : null}
@@ -54,13 +54,13 @@ export function FormField({
                 onPress={() => onSelect(value.value)}
                 className={[
                   'mb-2xs flex-row items-center rounded-md border px-s py-s active:opacity-80',
-                  selected ? 'border-emphasis bg-grey-200' : 'border-grey-300 bg-grey-100',
+                  selected ? 'border-accent bg-surface' : 'border-stroke bg-canvas',
                 ].join(' ')}
               >
                 <Ionicons
                   name={selected ? 'checkmark-circle' : 'ellipse-outline'}
                   size={20}
-                  color={selected ? colors.emphasis : colors['grey-400']}
+                  color={selected ? colors.accent : colors['stroke']}
                 />
                 <Typo variant="text-m" className="ml-s flex-1">
                   {value.label}
@@ -79,11 +79,11 @@ export function FormField({
           placeholderTextColor={colors['grey-500']}
           accessibilityLabel={component.label}
           multiline={component.type === 'textarea'}
-          className="mt-s rounded-md border border-grey-300 bg-grey-100 px-s py-s"
+          className="mt-s rounded-md border border-stroke bg-canvas px-s py-s"
           style={[
             typography['text-m'],
             {
-              color: colors['grey-700'],
+              color: colors['on-canvas'],
               minHeight: component.type === 'textarea' ? 96 : undefined,
               textAlignVertical: component.type === 'textarea' ? 'top' : 'center',
             },
@@ -96,10 +96,10 @@ export function FormField({
           accessibilityRole="button"
           accessibilityLabel={component.label}
           onPress={onToggleFile}
-          className="mt-s flex-row items-center rounded-md border border-grey-300 bg-grey-200 px-s py-s active:opacity-80"
+          className="mt-s flex-row items-center rounded-md border border-stroke bg-surface px-s py-s active:opacity-80"
         >
-          <Ionicons name="camera-outline" size={20} color={colors['grey-600']} />
-          <Typo variant="text-s" color="grey-600" className="ml-s flex-1">
+          <Ionicons name="camera-outline" size={20} color={colors['on-canvas-muted']} />
+          <Typo variant="text-s" color="on-canvas-muted" className="ml-s flex-1">
             {fileAttached
               ? 'foto_2026-06-12.jpg angehängt ✓'
               : 'Foto oder Dokument auswählen (simuliert)'}

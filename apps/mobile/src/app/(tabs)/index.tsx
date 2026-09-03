@@ -16,6 +16,7 @@ import { callouts } from '@correctiv/app-core/data/callouts';
 import { useFeed } from '@/lib/feeds/useFeed';
 import { openArticle } from '@/lib/openArticle';
 import { useColors } from '@/lib/theme';
+import { useTimedModule } from '@/lib/useTimedModule';
 
 /**
  * Home — a curated cross-section of the ecosystem, in the draft's order: lead
@@ -25,7 +26,17 @@ import { useColors } from '@/lib/theme';
  * LIVE from the feeds: hero, "Neueste Recherchen", the fact-check rail and the
  * FunFacts tile. Sample data: briefing, early access, callout, backstage — each
  * one exists to show a flow the feeds cannot supply.
+ *
+ * One block moves with the clock. The requirements want time-based modules lifted to
+ * the top "after they drop into the chronological feed", so the callout is rendered
+ * once, in one of two places, and `useTimedModule` decides which. Two more slots are
+ * specified and stay empty because nothing in the app can fill them yet; the reasons
+ * are in `lib/daypart.ts` beside the table.
  */
+function openCallout(entry: { slug: string }): void {
+  router.push({ pathname: '/aufruf/[slug]', params: { slug: entry.slug } });
+}
+
 export default function HomeScreen() {
   const colors = useColors();
   const recherchen = useFeed('recherchen');
@@ -34,22 +45,32 @@ export default function HomeScreen() {
   const hero = recherchen.data?.[0];
   const neueste = recherchen.data?.slice(1, 6) ?? [];
   const callout = callouts.find((entry) => entry.status === 'open');
+  const liftCallout = useTimedModule() === 'participate';
 
   return (
     <Screen>
       <HomeHeader />
 
       {(recherchen.offline || faktenchecks.offline) && (
-        <Typo variant="text-s" color="grey-600" className="mt-2xs">
+        <Typo variant="text-s" color="on-canvas-muted" className="mt-2xs">
           Ohne Verbindung. Sie sehen gespeicherte Artikel.
         </Typo>
       )}
 
       {recherchen.loading && !recherchen.data && (
         <View className="py-2xl">
-          <ActivityIndicator color={colors.emphasis} />
+          <ActivityIndicator color={colors.accent} />
         </View>
       )}
+
+      {callout &&
+        liftCallout && (
+          // mb-m, because the hero underneath runs edge to edge and has no top margin
+          // of its own. Without it the card's bottom edge and the photograph touch.
+          <View className="mt-s mb-m">
+            <CalloutTeaser callout={callout} onPress={openCallout} />
+          </View>
+        )}
 
       {hero && <ArticleHero item={hero} onPress={openArticle} />}
 
@@ -87,14 +108,9 @@ export default function HomeScreen() {
         </View>
       )}
 
-      {callout && (
+      {callout && !liftCallout && (
         <View className="mt-l">
-          <CalloutTeaser
-            callout={callout}
-            onPress={(entry) =>
-              router.push({ pathname: '/aufruf/[slug]', params: { slug: entry.slug } })
-            }
-          />
+          <CalloutTeaser callout={callout} onPress={openCallout} />
         </View>
       )}
 

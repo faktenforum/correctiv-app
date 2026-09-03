@@ -21,7 +21,13 @@ export function MediaCard({ video, onPress }: { video: Video; onPress: (video: V
     <Pressable
       onPress={() => onPress(video)}
       accessibilityRole="link"
-      accessibilityLabel={video.title}
+      // Prefixed, and not the bare title. For a screen reader it says what the card
+      // is before it says what it is about, which a rail of images otherwise leaves
+      // to guesswork. For the screenshot tour it is the only stable handle on a video
+      // card: the tour used to tap one by name, and the name scrolled out of the rail
+      // the next time FunFacts published, which is a MISS and a shot of the wrong
+      // screen.
+      accessibilityLabel={`Video: ${video.title}`}
       className="active:opacity-80"
       style={{ width: sizes.railCardMedia }}
     >

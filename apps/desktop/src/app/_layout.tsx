@@ -42,11 +42,6 @@ import {
   type SettingsState,
 } from '@correctiv/app-core/stores/settings';
 import {
-  PERSISTED_KEYS as MEMBERSHIP_KEYS,
-  membershipActions,
-  type MembershipState,
-} from '@correctiv/app-core/stores/membership';
-import {
   savedArticlesActions,
   type SavedArticlesState,
 } from '@correctiv/app-core/stores/savedArticles';
@@ -102,7 +97,6 @@ function registerPersistence(): Promise<void> {
     // shown the sign-in form for a frame.
     persisted<SessionState>('session', SESSION_KEYS, sessionActions.hydrate),
     persisted<SavedArticlesState>('savedArticles', ['items'], savedArticlesActions.hydrate),
-    persisted<MembershipState>('membership', MEMBERSHIP_KEYS, membershipActions.hydrate),
     persisted<InterestsState>('interests', ['selected'], interestsActions.hydrate),
     persisted<ParticipationState>('participation', ['submissions'], participationActions.hydrate),
   ]);
@@ -226,13 +220,16 @@ function AppShell() {
             @gjsify/react-native). Presenting one needs a portal seam in the host that
             does not exist yet.
 
-            So player, onboarding and beitreten are ordinary pushed pages here. They
-            work — the player is reachable, the onboarding runs, joining runs — and
-            they arrive as a page rather than as a sheet. Named, not silent.
+            So player and onboarding are ordinary pushed pages here. They work — the
+            player is reachable, the onboarding runs — and they arrive as a page rather
+            than as a sheet. Named, not silent.
+
+            `beitreten` was the third of these until ADR 0020 took the contribution out
+            of the app entirely; the route is gone from the phone and therefore from
+            here, which is what re-exporting the screens is for.
           */}
           <Stack.Screen name="player" />
           <Stack.Screen name="onboarding" />
-          <Stack.Screen name="beitreten" />
         </Stack>
       ) : (
         /*

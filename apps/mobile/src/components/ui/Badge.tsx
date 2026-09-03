@@ -12,8 +12,8 @@ export type BadgeProps = {
 };
 
 const SURFACE: Record<Tone, string> = {
-  emphasis: 'bg-emphasis',
-  club: 'bg-alternative',
+  emphasis: 'bg-accent',
+  club: 'bg-accent-alternative',
   neutral: 'bg-grey-250',
   live: 'bg-transparent',
 };
@@ -22,8 +22,8 @@ const SURFACE: Record<Tone, string> = {
 const TEXT_COLOR: Record<Tone, ColorToken> = {
   emphasis: 'always-light',
   club: 'always-dark',
-  neutral: 'grey-600',
-  live: 'emphasis',
+  neutral: 'on-canvas-muted',
+  live: 'accent',
 };
 
 /** A small label (project / fact check / backstage). Radius s, no shadows. */
@@ -38,7 +38,7 @@ export function Badge({ label, tone = 'emphasis', className }: BadgeProps) {
       ].join(' ')}
     >
       {tone === 'live' && (
-        <View className="mr-3xs rounded-full bg-emphasis" style={{ width: 7, height: 7 }} />
+        <View className="mr-3xs rounded-full bg-accent" style={{ width: 7, height: 7 }} />
       )}
       <Text
         style={[

@@ -113,36 +113,50 @@ ${footer}
  * replaced was derived from the same tokens once, then drifted from them one
  * rounded rem at a time.
  *
- * The three `.rating--*` tones and the plain-CSS colour fallbacks are the only
- * places a literal appears, because the design tokens carry no semantic colour
- * for "verdict".
+ * There are no colour literals left here. There used to be three `#fff`s — on the
+ * badge and on two of the `.rating--*` tones — on the grounds that the tokens carried
+ * no semantic colour for a "verdict", and the tiers ended that. All three were a label
+ * on the brand red, which is the primitive `white`; the label on club yellow is
+ * `neutral-700`. Both say "does not follow the scheme" in the token itself, which is
+ * what a literal was standing in for.
+ * (ADR 0022. The `.rating` background is the one colour still on a v1 alias, because
+ * `grey-300` as a FILL has no successor.)
  */
 export const READER_LAYOUT_CSS = `
 *{margin:0;padding:0;box-sizing:border-box}
 html{-webkit-text-size-adjust:100%}
-body{background:var(--var-color-grey-100);color:var(--var-color-grey-700);
+body{background:var(--var-color-canvas);color:var(--var-color-on-canvas);
   font-family:'Merriweather',Georgia,serif}
 article{max-width:38.75rem;margin:0 auto;padding-bottom:var(--var-spacing-3xl)}
 .hero{display:block;margin:0 0 var(--var-spacing-m)}
 .hero img{display:block;width:100%;height:auto;aspect-ratio:16/9;object-fit:cover;
-  background:var(--var-color-grey-200)}
+  background:var(--var-color-surface)}
 .reader-header{padding:0 var(--var-spacing-m)}
 .badge{display:inline-block;font-family:'SourceSans3',sans-serif;font-weight:700;font-size:11px;
-  letter-spacing:.4px;text-transform:uppercase;color:#fff;background:var(--var-color-emphasis);
+  letter-spacing:.4px;text-transform:uppercase;color:var(--var-color-white);
+  background:var(--var-color-accent);
   padding:3px 8px;border-radius:var(--var-radius-s);margin-bottom:var(--var-spacing-xs)}
 h1{font-family:'Merriweather',Georgia,serif;font-weight:700;font-size:var(--var-font-size-headline-xl);
   line-height:var(--var-leading-tight);letter-spacing:var(--var-letter-spacing-tighter);
   margin-bottom:var(--var-spacing-s)}
 .rating{display:inline-block;font-family:'SourceSans3',sans-serif;font-weight:700;font-size:13px;
   letter-spacing:.3px;text-transform:uppercase;padding:6px 12px;border-radius:var(--var-radius-md);
-  margin-bottom:var(--var-spacing-s);background:var(--var-color-grey-300);color:var(--var-color-grey-700)}
-.rating--refuted{background:var(--var-color-emphasis);color:#fff}
-.rating--qualified{background:var(--var-color-alternative);color:var(--var-color-grey-700)}
-.rating--confirmed{background:var(--var-color-grey-600);color:#fff}
+  margin-bottom:var(--var-spacing-s);background:var(--var-color-grey-300);
+  color:var(--var-color-on-canvas)}
+.rating--refuted{background:var(--var-color-accent);color:var(--var-color-white)}
+.rating--qualified{background:var(--var-color-accent-alternative);
+  color:var(--var-color-neutral-700)}
+/* A foreground token as a FILL, deliberately: the plaque is a foreground element on
+   the canvas, which is what the -on- prefix names. Same shape as bg-on-surface on the
+   callout bar in the app. Values are unchanged from grey-600; the white-on-#a8a8a8
+   contrast in dark mode is 2.38:1 and predates the tiers, so it is a design question
+   and not a migration one. */
+.rating--confirmed{background:var(--var-color-on-canvas-muted);color:var(--var-color-white)}
 .meta{font-family:'SourceSans3',sans-serif;font-size:var(--var-font-size-text-s);
-  color:var(--var-color-grey-600);margin-bottom:var(--var-spacing-m);
-  padding-bottom:var(--var-spacing-m);border-bottom:1px solid var(--var-color-grey-300)}
-.excerpt{font-family:'Merriweather',Georgia,serif;font-style:italic;color:var(--var-color-grey-600);
+  color:var(--var-color-on-canvas-muted);margin-bottom:var(--var-spacing-m);
+  padding-bottom:var(--var-spacing-m);border-bottom:1px solid var(--var-color-stroke)}
+.excerpt{font-family:'Merriweather',Georgia,serif;font-style:italic;
+  color:var(--var-color-on-canvas-muted);
   font-size:var(--var-font-size-text-l);line-height:var(--var-leading-relaxed);
   padding:0 var(--var-spacing-m) var(--var-spacing-m)}
 .reader-body{padding:0 var(--var-spacing-m);font-size:var(--var-font-size-text-article);
@@ -153,21 +167,22 @@ h1{font-family:'Merriweather',Georgia,serif;font-weight:700;font-size:var(--var-
   margin:var(--var-spacing-l) 0 var(--var-spacing-xs)}
 .reader-body h3{font-family:'SourceSans3',sans-serif;font-weight:700;
   font-size:var(--var-font-size-headline-s);margin:var(--var-spacing-m) 0 var(--var-spacing-2xs)}
-.reader-body a{color:var(--var-color-emphasis);text-decoration:none}
+.reader-body a{color:var(--var-color-on-canvas-accent);text-decoration:none}
 .reader-body img{max-width:100%;height:auto;border-radius:var(--var-radius-md);
   margin:var(--var-spacing-xs) 0}
 .reader-body figure{margin:var(--var-spacing-m) 0}
 .reader-body figcaption{font-family:'SourceSans3',sans-serif;
-  font-size:var(--var-font-size-text-s);color:var(--var-color-grey-600);
+  font-size:var(--var-font-size-text-s);color:var(--var-color-on-canvas-muted);
   margin-top:var(--var-spacing-2xs)}
 .reader-body ul,.reader-body ol{margin:0 0 var(--var-spacing-m) var(--var-spacing-m)}
 .reader-body li{margin-bottom:var(--var-spacing-2xs)}
-.reader-body blockquote{border-left:3px solid var(--var-color-emphasis);
-  padding-left:var(--var-spacing-s);margin:var(--var-spacing-m) 0;color:var(--var-color-grey-600)}
+.reader-body blockquote{border-left:3px solid var(--var-color-accent);
+  padding-left:var(--var-spacing-s);margin:var(--var-spacing-m) 0;
+  color:var(--var-color-on-canvas-muted)}
 .reader-footer{margin:var(--var-spacing-xl) var(--var-spacing-m) 0;
-  background:var(--var-color-grey-200);border-radius:var(--var-radius-md);
+  background:var(--var-color-surface);border-radius:var(--var-radius-md);
   padding:var(--var-spacing-l);text-align:center}
-.support-line{font-family:'Merriweather',Georgia,serif;color:var(--var-color-grey-700);
+.support-line{font-family:'Merriweather',Georgia,serif;color:var(--var-color-on-canvas);
   font-size:var(--var-font-size-text-m);line-height:var(--var-leading-loose);
   margin-bottom:var(--var-spacing-s)}
 `;

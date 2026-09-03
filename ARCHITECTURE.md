@@ -57,7 +57,7 @@ dropping a host meant dropping that file plus its screens.
 
 ## Three conventions in the core
 
-1. **State is framework-neutral.** `stores/` is one Redux Toolkit store with fourteen
+1. **State is framework-neutral.** `stores/` is one Redux Toolkit store with twelve
    slices. `stores/store.ts` explains why the core owns the instance rather than the
    host. The host adds only the reactivity binding, `apps/mobile/src/lib/store/core.ts`
    over react-redux. A second host once bound the state this replaced to Vue's
@@ -67,18 +67,19 @@ dropping a host meant dropping that file plus its screens.
    React a method is merely awkward. The rule comes from the Vue binding, where a
    method read past the dependency tracking and the template silently stopped
    updating, invisible until a demo.
-3. **Subpath imports, no barrel.** `@correctiv/app-core/stores/membership`, not a
+3. **Subpath imports, no barrel.** `@correctiv/app-core/stores/session`, not a
    root re-export. The root entry exposes only the ports, because that is the one
    thing every host must touch.
 
 `membership.isMember` was the demo's central lever, read in the render path by every
-club touchpoint. It is gone. Behind the door everyone has an entitlement that includes
-the app, so a branch on it asks a question with one answer
-([ADR 0018](adr/0018-removing-the-guest.md)), and the flag itself was a second stored
+club touchpoint. The whole slice is gone. Behind the door everyone has an entitlement
+that includes the app, so a branch on it asks a question with one answer
+([ADR 0018](adr/0018-removing-the-guest.md)); the flag itself was a second stored
 answer to what `memberSince` already said
-([ADR 0019](adr/0019-identity-lives-in-the-session.md)). What is left in `membership`
-is the simulated contribution. Who is signed in is `stores/session`, and for "may this
-person be here" the answer is `useIsAdmitted`.
+([ADR 0019](adr/0019-identity-lives-in-the-session.md)); and the contribution it was
+left holding went with the join flow, because the app offers no payment functions
+([ADR 0020](adr/0020-no-contribution-in-the-app.md)). Who is signed in is
+`stores/session`, and for "may this person be here" the answer is `useIsAdmitted`.
 
 ## The door
 
@@ -91,8 +92,9 @@ the door, taken at the moment of admission.
 
 What the door reads is `stores/session`: an account and an `Entitlement` (the tier,
 whether the app is included, why, until when), as the membership system answered it.
-It never reads `membership.amountEur`, because a trial month pays 0 € and has the app,
-and a local-newsletter bundle has the app without being an app membership. Sign-in is
+It never reads an amount, because a trial month pays 0 € and has the app, and a
+local-newsletter bundle has the app without being an app membership. There is no
+amount in the app to read. Sign-in is
 simulated in `services/auth.service.ts` against a directory of rules the screen
 prints, and that file is the seam to beabee.
 [ADR 0016](adr/0016-a-door-at-the-root-and-an-entitlement-not-an-amount.md).
@@ -193,27 +195,47 @@ Colours reach components as CSS variables, not as hex values. The generator emit
 each palette into an `@variant light` / `@variant dark` block in
 `packages/design-tokens/theme.css`. Uniwind scans those, registers the names as
 Tailwind theme keys, and generates the values under both a `.light`/`.dark` class on
-the element or an ancestor and a `prefers-color-scheme` fallback. So `bg-grey-100`
-and `border-grey-300` follow the appearance setting **without a single `dark:`
+the element or an ancestor and a `prefers-color-scheme` fallback. So `bg-canvas`
+and `border-stroke` follow the appearance setting **without a single `dark:`
 variant in the app**, and neither half can be left waiting on the other.
+
+**The names come in three tiers**, since wp-design-tokens `8ed7a28`
+([ADR 0022](adr/0022-three-tiers-of-colour-and-a-dark-scheme-that-names-roles.md)):
+
+| Tier | Examples | Follows the scheme |
+|---|---|---|
+| semantic | `canvas`, `surface`, `on-canvas`, `on-canvas-muted`, `stroke`, `accent` | yes — reach for these |
+| primitive | `white`, `black`, `neutral-100…700`, `red-500`, `yellow-400` | **no** — they name values |
+| deprecated v1 | `grey-100…700`, `emphasis`, `alternative` | yes — aliases, nothing new should use one |
 
 Two things do not follow it, on purpose.
 
-- **The role colours.** `always-light` and `always-dark` are identical in both
-  schemes, for everything sitting on a surface that does not switch either: text on
-  the brand red, the label on club yellow, the scrim over a photograph, the video
-  stage. The grey scale cannot answer for those, because it is not semantic.
-  `grey-100` is both a page surface and white text on a button.
+- **The primitives, and the role colours that predate them.** A primitive names a
+  value, so it is the same colour in both schemes — right for anything sitting on a
+  surface that does not switch either: text on the brand red, the label on club
+  yellow, the scrim over a photograph, the video stage. In `apps/mobile` that case is
+  still written `always-light` / `always-dark`, which are exactly `white` and
+  `neutral-700`; ADR 0022 retires them. `packages/app-core` must use the primitives,
+  because the role names are this app's invention and never reach the reader's WebView.
+  This is the tier that answers what the flat grey scale could not: `grey-100` was a
+  page surface *and* white text on a button, and those are `canvas` and `white` now.
 - **Colours read in TypeScript.** An `<Ionicons color>` or a `Switch`'s `trackColor`
   takes a plain string, and a string cannot change with the scheme. Those call
   `useColors()` from `lib/theme`. Importing `colors` directly still works and is
   still right for a role colour.
 
 The dark values live in `packages/design-tokens/palette.js`, hand-written, because
-`tokens/theme.css` ships a dark block that is a placeholder holding the light values.
-That file explains how each grey was assigned by role. `__tests__/tokens.test.ts`
-fails if the role colours ever start following the scheme, or if the dark palette
-silently becomes the light one again.
+~~`tokens/theme.css` ships a dark block that is a placeholder holding the light
+values.~~ ~~That file explains how each grey was assigned by role.~~
+`__tests__/tokens.test.ts` fails if the role colours ever start following the scheme,
+or if the dark palette silently becomes the light one again.
+
+> Both struck claims are voided by
+> [ADR 0022](adr/0022-three-tiers-of-colour-and-a-dark-scheme-that-names-roles.md).
+> Upstream deleted the placeholder block, so `theme.css` now ships no dark values at
+> all; and `palette.js` assigns a value per semantic **role** rather than per grey.
+> That the dark values are this repo's to write is unchanged, which is why the
+> sentence around them still stands.
 
 ## The web target
 

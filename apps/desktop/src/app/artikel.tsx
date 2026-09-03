@@ -1,39 +1,50 @@
 // The article reader, on the desktop.
 //
-// One of three routes that differ from the phone, and the ONLY reason it differs is
-// `Animated`. Everything else in this file is `apps/mobile/src/app/artikel.tsx`
-// verbatim, deliberately kept line-for-line so a `diff` between the two is short
-// enough to read in a review.
+// One of three routes that differ from the phone, and the only reason it differs is
+// still the reader header's fade — but the reason for THAT changed on 2026-09-03 and
+// is worth reading before anyone deletes this file. Everything else here is
+// `apps/mobile/src/app/artikel.tsx` verbatim, kept line-for-line so a `diff` between
+// the two is short enough to read in a review.
 //
-// ## Why a whole variant for one prop
+// ## It is no longer that `Animated` is missing
 //
-// `@gjsify/react-native` exports `Animated` as a refusing value: ADR 0032 puts it at
-// tier P3 with the reason "genuinely mappable, but it is a subsystem rather than a
-// component — doing it badly is worse than not doing it" (the GTK counterparts are
-// `Adw.TimedAnimation` and `Adw.SpringAnimation`). There is no prop-level shim that
-// helps, because the import itself is what has no implementation, and this app's whole
-// use of the subsystem is one value driving one opacity:
+// It was, until @gjsify/react-native 0.46. `Animated` was a refusing export at tier
+// P3, and `test/support-gate.test.ts` went red on the upgrade to say the variant could
+// go — which is exactly what that assertion is for. 0.46 implements the three names
+// this app uses: `new Animated.Value(n)`, `Animated.timing(…).start()` and
+// `<Animated.View style={{ opacity }}>`.
 //
-//   const headerOpacity = useRef(new Animated.Value(1)).current;
-//   Animated.timing(headerOpacity, { toValue: headerHidden ? 0 : 1, duration: 160 })
-//   <Animated.View style={{ opacity: headerOpacity }} …>
+// ## What stops it is `absolute` on an `Animated.View`
+//
+// The phone's overlay header is `<Animated.View className="absolute left-0 right-0
+// top-0">` inside a `<View className="flex-1">`. On this host that throws:
+//
+//   <View> absolute — positions this element on top of its parent, so the PARENT has
+//   to be a `Gtk.Overlay` — and it is not.
+//
+// A `View` becomes a `Gtk.Overlay` as soon as one of its children is absolutely
+// positioned; that is `overlayOnAbsoluteChild` in the layer's primitive table, and
+// four primitives declare it. `Animated` is not in that table at all, so an
+// `Animated.View` child does not make its parent an overlay the way a `View` child
+// does — MEASURED: swapping this file's plain `<View className="absolute …">` for the
+// phone's `<Animated.View>` is the only change needed to reproduce it.
+//
+// So the two features are individually supported and do not compose, which is a
+// narrower gap than the one this file was written for and a real one. It belongs
+// upstream, in the primitive table, not open-coded here.
 //
 // ## What is different, exactly
 //
-// THE HEADER STILL HIDES AND COMES BACK. That behaviour lives in
-// `nextHeaderState()` in the core-adjacent `lib/articles/readerChrome.ts`, which is
-// pure logic and unchanged — the overlay header still gets out of the text's way when
-// the article scrolls down, which is the fault it exists to fix (a headline reading
-// "zeniert" because the back chevron sat on "insz").
+// THE HEADER STILL HIDES AND COMES BACK. That behaviour lives in `nextHeaderState()`
+// in `lib/articles/readerChrome.ts`, which is pure logic and unchanged — the overlay
+// header still gets out of the text's way when the article scrolls down, which is the
+// fault it exists to fix (a headline reading "zeniert" because the back chevron sat on
+// "insz").
 //
-// WHAT IS MISSING IS THE 160 ms FADE. It cuts instead. `pointerEvents` still follows
-// the state, so a hidden header does not swallow taps meant for the article — that was
-// never the animation's job, and dropping it would have been the silent half of this
-// change.
-//
-// An `Adw.TimedAnimation` on the widget's `opacity` would be the faithful mapping and
-// it belongs upstream, in the subsystem, not open-coded here: a per-screen animation
-// helper in an application is how a framework gap becomes permanent.
+// WHAT IS MISSING IS THE 160 ms FADE. It cuts instead: the header is not rendered
+// while hidden, rather than rendered at `opacity-0`, so an invisible header cannot
+// swallow taps meant for the article — which is what `pointerEvents` does on the
+// phone.
 
 import { Ionicons } from '@expo/vector-icons';
 import { router, useLocalSearchParams } from 'expo-router';
@@ -134,7 +145,7 @@ export default function ArtikelScreen() {
   };
 
   return (
-    <View className="flex-1 bg-grey-100">
+    <View className="flex-1 bg-canvas">
       {article ? (
         <ReaderView
           html={readerHtml(article, { textScale, isDark })}
@@ -148,7 +159,7 @@ export default function ArtikelScreen() {
               <Typo variant="headline-s" className="text-center">
                 Artikel konnte nicht geladen werden
               </Typo>
-              <Typo variant="text-m" color="grey-600" className="mt-2xs text-center">
+              <Typo variant="text-m" color="on-canvas-muted" className="mt-2xs text-center">
                 {title ?? 'Vielleicht hilft ein zweiter Versuch.'}
               </Typo>
               <View className="mt-m flex-row gap-s">
@@ -163,7 +174,7 @@ export default function ArtikelScreen() {
               </View>
             </>
           ) : (
-            <ActivityIndicator color={colors.emphasis} />
+            <ActivityIndicator color={colors.accent} />
           )}
         </View>
       )}
@@ -182,7 +193,7 @@ export default function ArtikelScreen() {
         <View className="absolute left-0 right-0 top-0">
           <SafeAreaView
             edges={['top']}
-            className={header === 'onSurface' ? 'bg-grey-100 border-b border-grey-300' : ''}
+            className={header === 'onSurface' ? 'bg-canvas border-b border-stroke' : ''}
           >
             <View className="flex-row items-center justify-between px-s py-2xs">
               <HeaderButton icon="chevron-back" label="Zurück" onPress={goBack} />
@@ -242,10 +253,10 @@ function HeaderButton({
       onPress={onPress}
       accessibilityRole="button"
       accessibilityLabel={label}
-      className="items-center justify-center rounded-full border border-grey-300 bg-grey-100 active:opacity-70"
+      className="items-center justify-center rounded-full border border-stroke bg-canvas active:opacity-70"
       style={{ width: sizes.iconButton, height: sizes.iconButton }}
     >
-      <Ionicons name={icon} size={22} color={colors['grey-700']} />
+      <Ionicons name={icon} size={22} color={colors['on-canvas']} />
     </Pressable>
   );
 }

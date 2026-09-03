@@ -28,6 +28,11 @@
     // because their names are the import paths a consumer writes.
     "packages/design-tokens/theme.css",
     "packages/design-tokens/theme.standalone.css",
+    // Written by kit.mjs, sync-tokens.mjs and use-kit.mjs, all three of which emit
+    // `JSON.stringify(spec, null, 2)`. oxfmt puts short arrays on one line, so the
+    // two disagree permanently and every generator run would otherwise break
+    // `npm run check` until somebody remembered to reformat.
+    "tools/figma-plugin/spec.json",
     // Vendored design tokens — must stay byte-identical to upstream so a plain diff
     // against a fresh checkout is meaningful, and because theme.css is embedded
     // verbatim into the reader WebView. See tokens/README.md.

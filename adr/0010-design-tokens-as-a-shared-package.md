@@ -10,12 +10,19 @@ three artefacts into the app. That was correct while the app was the only consum
 It is not the only prospective one. CORRECTIV's WordPress CMS renders the same brand,
 and `tokens/theme.css` is a vendored copy of *its* `wp-design-tokens`. So the values
 already come from the CMS side — but one thing does not, and it is the thing that
-matters: **the dark palette.** `theme.css` ships a `prefers-color-scheme: dark` block
-marked `@TODO Set this to the actual values` whose values are the light ones. Reading
-it would produce a "dark mode" identical to light. `palette.js` in this repo assigns
-every grey by the role it plays in the majority of its uses, and records why an
-inverted scale would be wrong. That file is what a second consumer would come here
-for.
+matters: **the dark palette.** ~~`theme.css` ships a `prefers-color-scheme: dark`
+block marked `@TODO Set this to the actual values` whose values are the light ones.~~
+Reading it would produce a "dark mode" identical to light. ~~`palette.js` in this repo
+assigns every grey by the role it plays in the majority of its uses, and records why
+an inverted scale would be wrong.~~ That file is what a second consumer would come
+here for.
+
+> Both struck claims are voided by
+> [ADR 0022](0022-three-tiers-of-colour-and-a-dark-scheme-that-names-roles.md).
+> wp-design-tokens `8ed7a28` deleted the placeholder block, and `palette.js` now
+> assigns a value per semantic **role** rather than per grey. The conclusion the
+> paragraph draws — that the dark palette is this repo's to decide, and that it is
+> what a second consumer comes here for — is unchanged.
 
 ## Decision
 

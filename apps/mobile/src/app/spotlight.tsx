@@ -22,7 +22,7 @@ export default function SpotlightScreen() {
   const { issues, status } = useSpotlight();
 
   return (
-    <View className="flex-1 bg-grey-100">
+    <View className="flex-1 bg-canvas">
       <ScreenHeader />
       <ScrollView
         className="flex-1"
@@ -30,7 +30,7 @@ export default function SpotlightScreen() {
         showsVerticalScrollIndicator={false}
       >
         <Typo variant="headline-l">Spotlight</Typo>
-        <Typo variant="text-m" color="grey-600" className="mt-2xs">
+        <Typo variant="text-m" color="on-canvas-muted" className="mt-2xs">
           Das Wichtigste des Tages, jeden Morgen im Newsletter.
         </Typo>
 
@@ -42,7 +42,7 @@ export default function SpotlightScreen() {
 
         {status === 'loading' && issues.length === 0 && (
           <View className="py-2xl">
-            <ActivityIndicator color={colors.emphasis} />
+            <ActivityIndicator color={colors.accent} />
           </View>
         )}
 
@@ -66,14 +66,14 @@ function IssueBlock({ issue }: { issue: SpotlightIssue }) {
         accessibilityLabel={issue.subject}
         className="pt-m active:opacity-70"
       >
-        <Typo variant="text-s" weight="bold" color="emphasis">
+        <Typo variant="text-s" weight="bold" color="accent">
           {formatDateWeekdayDe(issue.date)}
         </Typo>
         <Typo variant="headline-xs" className="mt-4xs">
           {issue.subject}
         </Typo>
         {issue.teaser ? (
-          <Typo variant="text-m" color="grey-600" className="mt-4xs">
+          <Typo variant="text-m" color="on-canvas-muted" className="mt-4xs">
             {issue.teaser}
           </Typo>
         ) : null}

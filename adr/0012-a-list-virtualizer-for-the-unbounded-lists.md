@@ -25,7 +25,7 @@ lot is cheaper than virtualizing it:
 | `(tabs)/index.tsx`, "Neueste Recherchen" | 5 | `recherchen.data?.slice(1, 6)` |
 | `(tabs)/index.tsx`, fact-check rail | ≤ 8 | `.slice(0, 8)` |
 | `(tabs)/mediathek.tsx`, videos | ≤ 6 | `videos.slice(0, 6)` |
-| `einstellungen`, `onboarding`, `beitreten`, `bericht`, `atlas`, `faktenforum`, `backstage` | fixed | sample data in the core |
+| `einstellungen`, `onboarding`, ~~`beitreten`~~ (gone with [ADR 0020](0020-no-contribution-in-the-app.md)), `bericht`, `atlas`, `faktenforum`, `backstage` | fixed | sample data in the core |
 | `spotlight` | ≤ 12 | ~~sample data in the core~~ the archive's page size, since [ADR 0015](0015-reading-correctiv-org-through-its-rest-api.md) made these issues live. The conclusion is unchanged: still bounded, still not worth virtualizing |
 | **`gespeichert.tsx`** | **unbounded** | **the user's bookmarks, and it only grows** |
 | **`serie/[id].tsx`** | **unbounded** | **an RSS podcast feed** |
@@ -104,7 +104,7 @@ was deliberately not attempted here.
 
 **The desktop host is a reason, not a plan.** ~~No gjsify target exists in this
 repo.~~ One does, in `apps/desktop`, and
-[ADR 0020](0020-re-exported-screens-and-a-variant-where-the-host-refuses.md) records
+[ADR 0023](0023-re-exported-screens-and-a-variant-where-the-host-refuses.md) records
 what became of the three decisions this paragraph asks for: all three were needed, and
 all three are made. If one is ever built, three things this app does today are not
 answered by `@gjsify/react-native`'s support table and would need their own decisions:

@@ -53,7 +53,7 @@ Every control writes to the hash, and reading it back is how a finding is handed
 as a link rather than as a set of instructions.
 
 ```
-preview.html#/artikel?d=ipad-mini&o=l&z=1&t=dark&s=member&tools=1&check=1&kd=grey-100:102a54
+preview.html#/artikel?d=ipad-mini&o=l&z=1&t=dark&s=signed-in&tools=1&check=1&kd=grey-100:102a54
 ```
 
 | | |

@@ -1,6 +1,6 @@
 # Architecture decisions
 
-Twenty decisions shaped this repo. Read them when you want to know *why* something
+Twenty-three decisions shaped this repo. Read them when you want to know *why* something
 is the way it is; [`../ARCHITECTURE.md`](../ARCHITECTURE.md) describes *what* it is.
 
 | | Decision | Status |
@@ -23,10 +23,13 @@ is the way it is; [`../ARCHITECTURE.md`](../ARCHITECTURE.md) describes *what* it
 | [0016](0016-a-door-at-the-root-and-an-entitlement-not-an-amount.md) | A door at the root, and an entitlement rather than an amount | accepted; simulated sign-in, two of its statements retired by 0018 |
 | [0017](0017-native-rendering-as-the-rule-a-webview-for-the-exception.md) | Native rendering as the rule, a webview for the exception | accepted; corrects a frame-header claim in `ReaderView.web.tsx`, one open question named |
 | [0018](0018-removing-the-guest.md) | Removing the guest | accepted; carries out what 0016 left standing, retires two of its statements and one of 0004's |
-| [0019](0019-identity-lives-in-the-session.md) | Identity lives in the session, the contribution in membership | accepted; retires two of 0018's, and the invented contribution with them |
-| [0020](0020-re-exported-screens-and-a-variant-where-the-host-refuses.md) | The desktop host re-exports the phone's screens, and varies one only where the host refuses | accepted; scoped to the experimental `apps/desktop`, retires one of 0012's |
+| [0019](0019-identity-lives-in-the-session.md) | Identity lives in the session, the contribution in membership | accepted; retires two of 0018's, and the invented contribution with them. Its open question and five claims retired by 0020 |
+| [0020](0020-no-contribution-in-the-app.md) | No contribution in the app, and one link out | accepted; answers 0016's join-flow question, deletes the membership slice, retires five of 0019's and one row of 0012's |
+| [0021](0021-the-board-is-a-plugin-and-the-screens-are-data.md) | The design board is a plugin, and the screens are data | accepted; records two measured-and-rejected routes to Figma |
+| [0022](0022-three-tiers-of-colour-and-a-dark-scheme-that-names-roles.md) | Three tiers of colour, and a dark scheme that names roles | accepted; adopts wp-design-tokens `8ed7a28`, retires two of 0010's |
+| [0023](0023-re-exported-screens-and-a-variant-where-the-host-refuses.md) | The desktop host re-exports the phone's screens, and varies one only where the host refuses | accepted; scoped to the experimental `apps/desktop`, retires one of 0012's. **Lives on the `desktop` branch only**, and was 0020 until main took that number |
 
-Six notes for readers of the older ones:
+Seven notes for readers of the older ones:
 
 - ADRs 0001–0004 were written in German and translated on 2026-08-11, so the repo
   reads in one language ([AGENTS.md](../AGENTS.md#language)). Only the wording
@@ -55,6 +58,13 @@ Six notes for readers of the older ones:
   Redux Toolkit ([0009](0009-redux-toolkit-for-the-cores-state.md)) and the styling
   engine to Uniwind ([0008](0008-uniwind-over-nativewind.md)); those passages are what
   was true when they were written.
+
+[ADR 0022](0022-three-tiers-of-colour-and-a-dark-scheme-that-names-roles.md) retires
+two claims in 0010 about the dark palette. Both were true when written: upstream's
+dark block really did hold the light values, and `palette.js` really did assign every
+grey by role. wp-design-tokens `8ed7a28` deleted the first and made the second
+unnecessary. 0010's decision — the package is the shared one, the app writes nothing —
+is untouched.
 
 [ADR 0015](0015-reading-correctiv-org-through-its-rest-api.md) retires the CORS item
 in 0006 and four claims in the top-level docs. Read its last section for the list; the

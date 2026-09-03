@@ -1,4 +1,10 @@
-# ADR 0020 — The desktop host re-exports the phone's screens, and varies one only where the host refuses
+# ADR 0023 — The desktop host re-exports the phone's screens, and varies one only where the host refuses
+
+> Renumbered from 0020 on 2026-09-03. This was written on the `desktop` branch while
+> main was still at 0019, and main took 0020 for
+> [No contribution in the app](0020-no-contribution-in-the-app.md) before this branch
+> merged. Nothing about the decision changed; only the number, and every reference to
+> it.
 
 Status: accepted, 2026-09-02. Scoped to `apps/desktop`, which ships nothing and says so
 in its first sentence. The rule recorded here is the one thing about that host no file
@@ -139,6 +145,61 @@ that names itself, moved as early as it can be moved.
 **Nothing here decides whether the desktop host ships.** It is a feasibility
 demonstration, it is not built by CI, and the rule above is about keeping it cheap enough
 that the question stays open.
+
+## Addendum, 2026-09-03: what the merge from main and gjsify 0.46 changed
+
+The branch caught up with `main` at `2a88713` and with `@gjsify/*` `^0.46.0` on the same
+day. Four things about this decision moved, and the shape of the arrangement held.
+
+**The one variant survived, for a narrower reason.** `Animated` was a refusing export at
+tier P3, which is why `artikel.tsx` is a variant. 0.46 implements the three names this
+app uses, and `test/support-gate.test.ts`'s third assertion — the one that walks the
+variant list backwards — went red on the upgrade and named the file. That is the
+assertion working exactly as intended, and the variant was duly deleted for a
+one-line re-export.
+
+It came straight back, because the route then failed to render. The phone's overlay
+header is `<Animated.View className="absolute …">`, and an `Animated.View` child does
+not make its parent a `Gtk.Overlay` the way a `View` child does: `overlayOnAbsoluteChild`
+is declared by four primitives in the layer's table, and `Animated` is not in that table
+at all. Both features work alone and do not compose. So the variant is back, its header
+says this instead of the old reason, and the list entry now carries an
+`importableAnyway` sentence — because a name that has become importable must be
+re-argued rather than silently kept, and the argument has to be written down somewhere a
+reader will find it.
+
+**The variant list's assertion changed shape rather than being deleted.** It used to
+fail whenever a listed name became importable, which was right while "importable" and
+"usable" were the same question. They are not any more, so it now fails when a listed
+name is importable and carries no explicit justification. The first failure still forces
+a human to look; what changed is that the answer can be "yes, and here is why it stays".
+
+**One prop answer had gone silently wrong, and the merge is what surfaced it.** Since
+0.46 a ref does not always carry a widget: a `TextInput` receives a `TextInputHandle`.
+`applyAccessibility` kept calling `Gtk.Accessible.update_property()` on it, so the
+door's two fields — the only `TextInput`s in the app — lost their screen-reader labels
+behind a warning naming the symptom. `widgetOf()` unwraps `.widget` now. Worth recording
+because the failure mode is the one this host's whole shim layer exists to prevent, and
+it still got in: the app rendered, the sweep was green, and only a probe that printed
+what the ref actually held found it.
+
+**And one local answer was deleted, on its own instruction.** The hand-written
+`TextInput` focus handle carried a note saying it belonged upstream and to delete rather
+than grow it when the layer shipped one. 0.46 shipped `TextInputHandle`; the local one
+is gone. Two of the layer's answers are better than what was deleted — `blur()` guards
+that this widget holds the focus before clearing the root's, and `isFocused()` reads
+`is_focus()` rather than `has-focus` — which is the argument for putting it upstream,
+made concrete.
+
+Two smaller ones, both in the className bridge. `flex-wrap` was stripped here with a
+note to remove the branch on the next bump; 0.46 maps it to a wrapping widget, so the
+branch is gone and the chip rows flow onto a second line. And `shrink` arrived from main
+with [ADR 0020](0020-no-contribution-in-the-app.md)'s profile changes and is refused by
+name — GTK expresses main-axis growth as a boolean, so there is no shrink factor — so it
+is stripped loudly. It is **not** translated to `flex-1`, which is the tempting move and
+would be wrong: `flex-1` is `hexpand`, which changes where a short value sits.
+
+The route sweep is 24 of 24 after all of it.
 
 ## What this retires
 

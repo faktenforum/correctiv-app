@@ -5,7 +5,8 @@ import { Provider } from 'react-redux';
 import { resetPlatform } from '@correctiv/app-core';
 import { clearMemoryCache } from '@correctiv/app-core/services/cache.service';
 import { patch as mediaPatch } from '@correctiv/app-core/stores/media';
-import { join, setPaused } from '@correctiv/app-core/stores/membership';
+import { setPushOptIn, setTheme } from '@correctiv/app-core/stores/settings';
+import { signIn } from '@correctiv/app-core/stores/session';
 import { toggle as toggleInterest } from '@correctiv/app-core/stores/interests';
 import { toggle as toggleSaved } from '@correctiv/app-core/stores/savedArticles';
 import {
@@ -19,7 +20,7 @@ import {
   coreStore,
   useCoreActions,
   useExtraFeeds,
-  useHasSimulatedJoin,
+  useIsAdmitted,
   useIsSaved,
   useLazyLoad,
   useSelectedInterests,
@@ -126,29 +127,30 @@ function renderHook<T>(
 
 describe('useSelector over the core store', () => {
   it('reads the current value', () => {
-    const { value } = renderHook(() => useHasSimulatedJoin());
+    const { value } = renderHook(() => useIsAdmitted());
     expect(value()).toBe(false);
   });
 
-  it('re-renders when the store changes', () => {
-    const { value } = renderHook(() => useHasSimulatedJoin());
+  it('re-renders when the store changes', async () => {
+    const { value } = renderHook(() => useIsAdmitted());
 
-    act(() => {
-      coreStore.dispatch(join(10, 'monatlich'));
+    await act(async () => {
+      await coreStore.dispatch(signIn('alex@example.org', 'geheim', { delayMs: 0 }));
     });
 
     expect(value()).toBe(true);
   });
 
-  it('does not re-render for an unrelated field in the same slice', () => {
-    const { renders } = renderHook(() => useHasSimulatedJoin());
+  it('does not re-render for an unrelated field in another slice', () => {
+    const { renders } = renderHook(() => useIsAdmitted());
     const before = renders();
 
     act(() => {
-      coreStore.dispatch(setPaused(true));
+      coreStore.dispatch(setPushOptIn(true));
     });
 
-    // The selector narrows to one derived boolean, so a pause costs no render.
+    // The selector narrows to one derived boolean over `session`, so a settings
+    // change costs no render here.
     expect(renders()).toBe(before);
   });
 
@@ -185,7 +187,7 @@ describe('selectors that build new arrays', () => {
 
     act(() => {
       // A change in a different slice must not produce a new array here.
-      coreStore.dispatch(setPaused(true));
+      coreStore.dispatch(setTheme('dark'));
     });
     expect(value()).toBe(afterToggle);
   });

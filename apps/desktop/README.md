@@ -8,7 +8,7 @@ It can. The core did not move. What follows is what runs, what does not, and wha
 does not prove.
 
 The host is [gjsify](https://github.com/gjsify/gjsify)'s React-Native-on-GTK4 layer
-(`@gjsify/react-native` 0.45.0), which renders React Native's view vocabulary onto GTK4
+(`@gjsify/react-native` 0.46.0), which renders React Native's view vocabulary onto GTK4
 and Adwaita. [ADR 0012](../../adr/0012-a-list-virtualizer-for-the-unbounded-lists.md)
 and [ADR 0013](../../adr/0013-native-tabs-and-a-web-tab-bar-of-its-own.md) already named
 this host as a reason for two decisions; this is that host, built.
@@ -109,10 +109,21 @@ GJS-only while ADR 0032's ship path puts macOS and Windows on Node + node-gi, so
 video here would work on one of the three desktop targets. Both video paths render an
 honest notice in the app's own voice instead.
 
-**The reader loses its fade.** `Animated` is not implemented in the layer (tier P3: "a
-subsystem rather than a component — doing it badly is worse than not doing it"), so
-`src/app/artikel.tsx` is a variant of the phone's screen with the 160 ms header fade
-removed. The header still hides and returns; it cuts instead of fading.
+**The reader loses its fade**, and the reason narrowed on 2026-09-03. It used to be
+that `Animated` was not implemented at all (tier P3: "a subsystem rather than a
+component — doing it badly is worse than not doing it"). @gjsify/react-native 0.46
+implements the three names this app uses, and `test/support-gate.test.ts` went red on
+the upgrade to say so — which is what that assertion is for.
+
+What stops it now is one composition: the phone's overlay header is an
+`<Animated.View className="absolute …">`, and an `Animated.View` child does not make
+its parent a `Gtk.Overlay` the way a `View` child does. `overlayOnAbsoluteChild` is
+declared by four primitives in the layer's table and `Animated` is not in that table,
+so the parent stays a `Gtk.Box` and the `absolute` child throws. Both features work
+alone; they do not compose yet.
+
+So `src/app/artikel.tsx` is still a variant of the phone's screen with the 160 ms
+header fade removed. The header still hides and returns; it cuts instead of fading.
 
 **A colour-scheme change needs a restart.** Adwaita's chrome follows the setting
 immediately, but the app's own token colours are resolved when their CSS class is
@@ -196,7 +207,7 @@ Two things are known to be missing on the new targets, and neither is in this tr
 | **Live radio** | the bundles carry an audio-only GStreamer plugin set with no `souphttpsrc`, so an `https://` stream finds no source element. The bundled episode plays. |
 
 **Both are being answered upstream, and neither answer is in this tree.** The table above
-is the state of `@gjsify/*` `^0.45.0`, which is what `package.json` pins and what these
+is the state of `@gjsify/*` `^0.46.0`, which is what `package.json` pins and what these
 bundles were built against; the sentences below are gjsify's own measurements, not this
 repo's, and nothing here has been re-run against them.
 
@@ -236,7 +247,7 @@ line. The three that differ — `_layout`, `(tabs)/_layout`, `artikel` — each 
 header saying why, and `test/route-tree.test.ts` fails if the phone grows a screen this
 host does not.
 
-[ADR 0020](../../adr/0020-re-exported-screens-and-a-variant-where-the-host-refuses.md)
+[ADR 0023](../../adr/0023-re-exported-screens-and-a-variant-where-the-host-refuses.md)
 is the rule behind that, and the part worth reading before adding a fourth variant: a
 file may differ for the ports, for a platform idiom an ADR already argues for, or for an
 import the support table refuses — and **never for a refused prop**. A prop is answered
@@ -252,7 +263,12 @@ applied is indistinguishable from an application bug forever.
 GTK layer refuses BY NAME in about 110 places, and every one of those refusals is
 correct; this is where each gets one deliberate answer instead of 110 render-time
 throws. `accessibilityLabel` and `accessibilityState` are **implemented** through
-`Gtk.Accessible.update_property()`, which is what the refusal message points at.
+`Gtk.Accessible.update_property()`, which is what the refusal message points at. That
+call is made on the WIDGET, and since 0.46 a ref does not always carry one — a
+`TextInput` receives a `TextInputHandle` with the widget on `.widget`. `widgetOf()`
+unwraps it. Without that the door's two fields, the only `TextInput`s in the app, lost
+their screen-reader labels behind a warning that named the symptom and not the cause;
+everything else on screen kept working, which is why nothing else caught it.
 `hitSlop` is dropped, correctly — it is a concession to a fingertip on a platform whose
 pointer is a mouse. It also flattens `style` arrays, translates six style properties GTK
 spells differently, gives `justify-between` the spacer child its refusal asks for, and
@@ -264,13 +280,20 @@ overlay.
 property, its counterpart `Gtk.Accessible.announce()` is an imperative call needing the
 moment and the text, and both uses are on the sign-in form — so a screen-reader user is
 told nothing there about a failed sign-in. `@gjsify/react-native` is growing an answer
-for it on `Text` through that same call, which is where it belongs. The other is not a
-prop at all: React Native declares `TextInput` as a *class*, so the phone's
-`useRef<TextInput>(null)` needs an instance type and its `focus()` needs a handle, and
-the shim declares both — **`focus` only**, deliberately, because a name this host cannot
-honour would turn a compile error into a silent no-op. The layer is growing the real one
-(`focus`/`blur`/`clear`/`isFocused`/`setSelection`); when it lands, delete the local
-handle rather than extend it.
+for it on `Text` through that same call, which is where it belongs. The other **has landed and the local
+answer is gone.** React Native declares `TextInput` as a *class*, so the phone's
+`useRef<TextInput>(null)` needs an instance type and its `focus()` needs a handle; the
+shim declared both, with `focus` only, because a name this host could not honour would
+turn a compile error into a silent no-op. The note said: when the layer grows the real
+one, delete the local handle rather than extend it.
+
+0.46 grew it. `TextInputHandle` answers all five members React Native documents,
+refuses the four it cannot over GTK by name, and keeps the widget on `.widget`. Two of
+its answers are better than the deleted code's: `blur()` checks that this widget
+actually holds the focus before clearing the root's, and `isFocused()` reads
+`is_focus()` rather than `has-focus`, which is false whenever the window is not the
+compositor's active one. Neither distinction was in the local handle, and both are the
+kind a port gets wrong.
 
 Four shims the brief expected are **absent on purpose**: `expo-linking`,
 `expo-web-browser`, `expo-constants` and `expo-system-ui` are declared in the app's
@@ -295,7 +318,7 @@ give you.
   publishes the per-import ones. This test already reads the app's source; with that
   table beside it, a `<Typo onPress>` fails in a second instead of in a screenshot.
 - **`test/route-tree.test.ts`** fails when the two trees drift, in either direction
-  ([ADR 0020](../../adr/0020-re-exported-screens-and-a-variant-where-the-host-refuses.md)).
+  ([ADR 0023](../../adr/0023-re-exported-screens-and-a-variant-where-the-host-refuses.md)).
 - **`test/root-layout.test.ts`** fails if this host stops rendering `LoginGate` instead
   of the navigator. It went ten commits with the navigator mounted unconditionally,
   because a missing door has no symptom on the machine of whoever is already admitted —

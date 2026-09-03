@@ -4,7 +4,7 @@ import { Typo } from '@/components/ui';
 import { formatDateDe } from '@correctiv/app-core/lib/format';
 import type { FeedItem } from '@correctiv/app-core/types/models';
 
-/** Compact list row for "Neueste Recherchen" — serif title plus meta, no image. */
+/** Compact list row for "Neueste Recherchen": title plus meta, no image. */
 export function ArticleRow({
   item,
   onPress,
@@ -24,7 +24,7 @@ export function ArticleRow({
           Row gap only, and a space either side inside the text. */}
       <View className="mt-3xs flex-row flex-wrap items-center gap-y-2xs">
         {item.author ? (
-          <Typo variant="text-s" color="grey-600">
+          <Typo variant="text-s" color="on-canvas-muted">
             {item.author}
           </Typo>
         ) : null}

@@ -36,7 +36,11 @@
     "android": "readonly",
     "androidx": "readonly",
     "NSObject": "readonly",
-    "UIApplication": "readonly"
+    "UIApplication": "readonly",
+    // `figma` is the Plugin API object, injected by Figma into a plugin's sandbox.
+    // Only tools/figma-plugin sees it, and it can never be imported: there is no
+    // module to import it from.
+    "figma": "readonly"
   },
   "ignorePatterns": [
     "media/**",

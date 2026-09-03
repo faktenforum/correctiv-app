@@ -6,8 +6,10 @@
 // those refusals is correct. This is where each of them gets a deliberate answer,
 // once, instead of 110 times.
 //
-// Everything else is re-exported untouched, including the refusing exports — so
-// `Animated` is still a loud throw naming its tier rather than an undefined import.
+// Everything else is re-exported untouched, including the refusing exports — so a
+// name the GTK layer does not implement is a loud throw naming its tier rather than an
+// undefined import. `Animated` used to be the example here; 0.46 implements the subset
+// this app uses, and it now arrives through this file as the real thing.
 //
 // ## The six, what each one is, and what happens to it here
 //
@@ -77,6 +79,7 @@ import {
   type Ref,
 } from 'react';
 
+import type { TextInputHandle } from '@gjsify/react-native';
 import {
   ActivityIndicator as BaseActivityIndicator,
   FlatList as BaseFlatList,
@@ -89,9 +92,8 @@ import {
   View as BaseView,
 } from '@gjsify/react-native';
 
-// Everything this file does not touch — including every refusing export, which is
-// what keeps `import { Animated } from 'react-native'` a named error rather than
-// `undefined`.
+// Everything this file does not touch — including every refusing export, which is what
+// keeps an unimplemented name a named error rather than `undefined`.
 export * from '@gjsify/react-native';
 
 // ---------------------------------------------------------------------------
@@ -540,6 +542,21 @@ function applyAutoFocus(widget: unknown, autoFocus: boolean | undefined): void {
   }
 }
 
+/**
+ * The widget behind a ref, whatever the layer chose to hand back.
+ *
+ * `createHandle` in @gjsify/react-native gives an imperative handle to the primitives
+ * React Native documents one for and the bare `Gtk.Widget` to everything else, so a
+ * ref is one of two shapes. `.widget` is the layer's own way back out — its comment
+ * calls it "the way out of every refusal" — and reading it is how this file stays
+ * indifferent to which primitives grow handles next.
+ */
+function widgetOf(instance: unknown): unknown {
+  if (instance === null || instance === undefined) return instance;
+  const handle = instance as { widget?: unknown };
+  return typeof handle === 'object' && 'widget' in handle ? handle.widget : instance;
+}
+
 function applyAccessibility(widget: unknown, props: NormalizedProps): void {
   if (widget === null || widget === undefined) return;
   const { accessibilityLabel, accessibilityState } = props;
@@ -606,7 +623,7 @@ function applyAccessibility(widget: unknown, props: NormalizedProps): void {
 }
 
 // ---------------------------------------------------------------------------
-// The className bridge: two utilities GTK refuses, answered structurally
+// The className bridge: the utilities GTK refuses, answered structurally
 // ---------------------------------------------------------------------------
 
 /**
@@ -629,19 +646,27 @@ function applyAccessibility(widget: unknown, props: NormalizedProps): void {
 const SPACER_KEY = '__gjsify_between_spacer__';
 
 /**
- * `flex-wrap` -> stripped, loudly.
+ * `shrink` -> stripped, loudly.
  *
- * A genuine GTK refusal rather than a gap in the vocabulary: `Gtk.Box` lays its
- * children on one line and cannot wrap. The widget that wraps is `Gtk.FlowBox`, which
- * is a different container with a different child model — so, like `justify-between`,
- * it is a widget question rather than a property one.
+ * A genuine GTK refusal rather than a gap in the vocabulary, and the layer's message
+ * says why: GTK expresses main-axis growth as the boolean `hexpand`/`vexpand`, so
+ * there is no growth factor, no shrink factor and no flex basis to carry. `flex-1` is
+ * the only spelling with a GTK meaning.
  *
- * Three call sites, all of them chip rows (`beitreten`, `onboarding`,
- * `ArticleRow`'s metadata line). The visible consequence is that a long row of chips
- * runs off the edge instead of flowing onto a second line.
+ * One call site: the label/value `Row` in the profile's membership card, where the
+ * value carries `shrink text-right` so a long value wraps instead of pushing the
+ * label out. The visible consequence here is that it does not wrap — a long value
+ * takes its natural width and the row grows.
  *
- * fixed upstream in gjsify: flex-wrap becomes a FlowBox intent — remove this branch
- * on the next bump, and the spacer branch above stays.
+ * Stripped rather than translated to `flex-1`, which is the tempting move and would
+ * be wrong: `flex-1` is hexpand, which makes the value take the REMAINING space, and
+ * on a short value that changes where the text sits. Doing nothing leaves the row as
+ * GTK would lay it out; guessing would leave it subtly different on every row.
+ *
+ * `flex-wrap` was stripped here too until @gjsify/react-native 0.46, which maps it to
+ * a wrapping widget — the note said to remove the branch on the next bump, and this is
+ * it. The chip rows on `onboarding` and `ArticleRow`'s metadata line flow onto a
+ * second line now instead of running off the edge.
  */
 function bridgeClassName(className: unknown): { className?: string; between: boolean } {
   if (typeof className !== 'string' || className === '') {
@@ -655,10 +680,10 @@ function bridgeClassName(className: unknown): { className?: string; between: boo
       between = true;
       continue;
     }
-    if (token === 'flex-wrap') {
+    if (token === 'shrink') {
       reportStyle(
-        'flex-wrap',
-        'Gtk.Box cannot wrap — Gtk.FlowBox is the widget that does, which is a different container. Stripped: a long row runs off the edge instead of flowing onto a second line.',
+        'shrink',
+        'GTK expresses main-axis growth as the boolean hexpand/vexpand, so there is no shrink factor to carry. Stripped: a long value takes its natural width instead of wrapping.',
       );
       continue;
     }
@@ -1015,8 +1040,20 @@ function wrap<P extends object>(
     const mergedRef = useCallback(
       (instance: unknown) => {
         widget.current = instance;
-        applyAccessibility(instance, { accessibilityLabel, accessibilityState });
-        applyAutoFocus(instance, autoFocus as boolean | undefined);
+        // Since @gjsify/react-native 0.46 a ref does not always carry the widget: a
+        // `TextInput` receives a `TextInputHandle`, which answers focus/blur/clear and
+        // keeps the widget on `.widget`. Everything else still hands the widget
+        // itself. Both answers below are about the WIDGET, so unwrap first.
+        //
+        // This is not hypothetical tidiness. It is the bug that shipped: the handle
+        // arrived in 0.46, `applyAccessibility` kept calling `update_property` on it,
+        // and the door's two fields — the only TextInputs in the app — lost their
+        // screen-reader labels behind a warning that names the symptom and not the
+        // cause. Everything else on screen kept working, which is why nothing else
+        // caught it.
+        const target = widgetOf(instance);
+        applyAccessibility(target, { accessibilityLabel, accessibilityState });
+        applyAutoFocus(target, autoFocus as boolean | undefined);
         assignRef(userRef, instance);
       },
       // Re-run when the label changes, so a bookmark button that switches from
@@ -1055,6 +1092,7 @@ export const Platform = BasePlatform as Omit<typeof BasePlatform, 'OS'> & {
 // in `components/player/ProgressBar.tsx` was an implicit `any`, so `event.nativeEvent`
 // typechecked clean and would have accepted any misspelling of it.
 export const View = wrap<ViewProps>(BaseView, 'View');
+
 export const Text = wrap<TextProps>(BaseText, 'Text', false, true);
 export const Pressable = wrap<PressableProps>(BasePressable, 'Pressable', true);
 export const ScrollView = wrap<ScrollViewProps>(BaseScrollView, 'ScrollView');
@@ -1062,78 +1100,36 @@ export const ActivityIndicator = wrap<ActivityIndicatorProps>(
   BaseActivityIndicator,
   'ActivityIndicator',
 );
-const TextInputPrimitive = wrap<TextInputProps>(BaseTextInput, 'TextInput');
-
 /**
- * What a `TextInput` ref carries here, and the one answer in this file that is about
- * an INSTANCE rather than a prop.
+ * `TextInput`, and the local translation that used to live here.
  *
- * React Native declares `TextInput` as a class, so `TextInput` names a value AND a
- * type, and `useRef<TextInput>(null)` is how every app moves focus between two fields.
- * `@gjsify/react-native` declares it as a function, which has no instance type at all,
- * and hands the raw `Gtk` widget to whatever ref it is given. The phone's `LoginGate`
- * does both things at once: `useRef<TextInput>(null)` on the password field, then
+ * React Native declares `TextInput` as a class, so the name is a value AND a type, and
+ * `useRef<TextInput>(null)` is how an app moves focus between two fields. The phone's
+ * `LoginGate` does exactly that: a ref on the password field, then
  * `passwordRef.current?.focus()` from the email field's `onSubmitEditing`.
  *
- * Both halves therefore fail here, and they fail differently: the type is a build
- * error, which is loud, while `focus()` on a `Gtk.Text` is `undefined is not a
- * function` at the moment somebody presses Enter on the door — inside a `try`-less
- * event handler, on the one screen nobody can get past. So the interface below is
- * declared beside the value, and the ref is translated rather than forwarded.
+ * Until @gjsify/react-native 0.46 the layer handed a ref the raw `Gtk` widget, which
+ * has no `focus()` — so this file carried a hand-written handle wrapping
+ * `grab_focus()`, plus an interface declaring the one member it could honour. The note
+ * on it said: it belongs upstream, it is being built there, and **when it arrives,
+ * DELETE this rather than grow it.**
  *
- * ONLY `focus`, deliberately. It is what the app calls and what GTK answers exactly
- * (`grab_focus()`); `blur()` has no widget-level counterpart (focus belongs to the
- * root, so the nearest thing is `root.set_focus(null)`, which is a different
- * statement), and `clear()`/`isFocused()`/`setNativeProps()` have no caller. Adding a
- * name here that this host cannot honour would turn a compile error into a silent
- * no-op, which is the trade this whole file exists to refuse.
+ * It arrived. `TextInputHandle` answers all five members React Native documents —
+ * `focus`, `blur`, `clear`, `isFocused`, `setSelection` — refuses the four it cannot
+ * over GTK by name, and keeps the widget on `.widget`. Every one of those is a better
+ * answer than the local handle had: `blur()` guards that this widget actually holds
+ * the focus before clearing the root's, and `isFocused()` reads `is_focus()` rather
+ * than `has-focus`, which is false whenever the window is not the compositor's active
+ * one. Neither distinction was in the deleted code, and both are the kind a port gets
+ * wrong.
  *
- * Upstream this belongs in `@gjsify/react-native`: the layer knows the widget and the
- * type, and every app that moves focus between two fields will need it. It is being
- * built there now — an instance type plus a handle carrying `focus`, `blur`, `clear`,
- * `isFocused` and `setSelection`. When it arrives, DELETE this rather than grow it: the
- * argument above is for keeping a local handle honest, not for keeping a local handle.
+ * So the value is `wrap`ped like every other primitive and the type is the layer's.
+ * `wrap`'s ref unwraps `.widget` — see `widgetOf` — so the props this file answers
+ * still reach the widget.
  */
-export interface TextInput {
-  /** `Gtk.Widget.grab_focus()`. Returns nothing, where GTK returns whether it took. */
-  focus(): void;
-}
+export type TextInput = TextInputHandle;
 
-export const TextInput = (props: TextInputProps): ReactElement => {
-  // Read off the props rather than declared, for the reason `wrap` gives at its own
-  // ref: the exported props types here do not carry `ref`, and they still forward one.
-  const userRef = (props as { ref?: Ref<TextInput | null> }).ref;
-  const attach = useCallback(
-    (widget: unknown) => {
-      assignRef(userRef, widget === null || widget === undefined ? null : focusHandle(widget));
-    },
-    [userRef],
-  );
-  return createElement(TextInputPrimitive as never, { ...props, ref: attach } as never);
-};
-
-/**
- * The handle a `TextInput` ref receives, over the widget the layer handed us.
- *
- * A fresh object per attach rather than a cached one: the ref fires again when the
- * widget is replaced, and a handle that closed over the old one would focus a widget
- * that is no longer in the tree — which looks exactly like focus not working.
- */
-function focusHandle(widget: unknown): TextInput {
-  const target = widget as { grab_focus?: () => boolean };
-  return {
-    focus() {
-      // Guarded because the caller is an event handler with nothing above it: on the
-      // door, this runs from `onSubmitEditing`, and a throw there takes the tree down
-      // rather than leaving the person in the field they were already in.
-      try {
-        target.grab_focus?.();
-      } catch (error) {
-        console.warn('[desktop] TextInput.focus(): grab_focus failed:', error);
-      }
-    },
-  };
-}
+export const TextInput = wrap<TextInputProps>(BaseTextInput, 'TextInput');
 
 export const Switch = wrap<SwitchProps>(BaseSwitch, 'Switch');
 export const FlatList = wrap<FlatListProps>(BaseFlatList, 'FlatList');

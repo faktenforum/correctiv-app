@@ -47,13 +47,27 @@ const ONBOARDED = {
  */
 const SIGNED_IN = {
   account: { email: 'alex.beispiel@example.org', name: 'Alex Beispiel' },
-  entitlement: { tier: 'paid', appAccess: true, source: 'paid', validUntil: null, localAreas: [] },
+  entitlement: {
+    tier: 'paid',
+    appAccess: true,
+    source: 'paid',
+    validUntil: null,
+    localAreas: [],
+    memberSince: '2026-03-04T09:12:00.000Z',
+  },
 };
 
 /** A member of the 0 € tier: signed in, and the app is not part of it. */
 const NO_ACCESS = {
   account: { email: 'frei@example.org', name: 'Frei' },
-  entitlement: { tier: 'free', appAccess: false, source: null, validUntil: null, localAreas: [] },
+  entitlement: {
+    tier: 'free',
+    appAccess: false,
+    source: null,
+    validUntil: null,
+    localAreas: [],
+    memberSince: '2026-03-04T09:12:00.000Z',
+  },
 };
 
 export interface Fixture {
@@ -100,24 +114,6 @@ export const FIXTURES: Fixture[] = [
     write: (s) => {
       kv(s, 'session', SIGNED_IN);
       kv(s, 'settings', ONBOARDED);
-    },
-  },
-  {
-    id: 'member',
-    label: 'Member',
-    // It used to be "the demo's central lever, visible on nearly every screen".
-    // Since ADR 0019 the slice holds only the contribution, and the name on the card
-    // comes from the session, so what this fixture adds is the date and the amount.
-    hint: 'A simulated join on top: the contribution row gets an amount and a date.',
-    write: (s) => {
-      kv(s, 'session', SIGNED_IN);
-      kv(s, 'settings', ONBOARDED);
-      kv(s, 'membership', {
-        memberSince: '2026-03-04T09:12:00.000Z',
-        amountEur: 10,
-        interval: 'monatlich',
-        paused: false,
-      });
     },
   },
   {

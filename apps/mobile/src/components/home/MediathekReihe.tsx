@@ -28,7 +28,7 @@ export function MediathekReihe({ onOpenMediathek }: { onOpenMediathek: () => voi
         onPress={onOpenMediathek}
         accessibilityRole="link"
         accessibilityLabel={video?.title ?? 'Video des Tages'}
-        className="flex-1 overflow-hidden rounded-md bg-grey-200 active:opacity-80"
+        className="flex-1 overflow-hidden rounded-md bg-surface active:opacity-80"
       >
         <Thumbnail
           uri={video?.thumbnailUrl}
@@ -55,16 +55,16 @@ export function MediathekReihe({ onOpenMediathek }: { onOpenMediathek: () => voi
         onPress={onOpenMediathek}
         accessibilityRole="link"
         accessibilityLabel="Salon5 Radio läuft"
-        className="flex-1 justify-between rounded-md bg-grey-200 p-s active:opacity-80"
+        className="flex-1 justify-between rounded-md bg-surface p-s active:opacity-80"
       >
         {/* The badge draws the dot itself — a literal ● in the label doubles it. */}
         <Badge label="Live" tone="live" />
         <View>
-          <Ionicons name="radio-outline" size={24} color={colors['grey-600']} />
+          <Ionicons name="radio-outline" size={24} color={colors['on-canvas-muted']} />
           <Typo variant="text-s" weight="semibold" className="mt-2xs">
             Salon5 Radio läuft
           </Typo>
-          <Typo variant="text-s" color="grey-600">
+          <Typo variant="text-s" color="on-canvas-muted">
             24/7 aus Bottrop · Tippen zum Hören
           </Typo>
         </View>

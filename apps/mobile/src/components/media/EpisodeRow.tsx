@@ -35,19 +35,19 @@ export function EpisodeRow({
       onPress={onPress}
       accessibilityRole="button"
       accessibilityLabel={playing ? `${title} pausieren` : `${title} abspielen`}
-      className="flex-row items-center border-b border-grey-300 py-s active:opacity-70"
+      className="flex-row items-center border-b border-stroke py-s active:opacity-70"
     >
       <View
-        className="mr-s items-center justify-center rounded-full bg-grey-200"
+        className="mr-s items-center justify-center rounded-full bg-surface"
         style={{ width: sizes.iconButtonSmall, height: sizes.iconButtonSmall }}
       >
         {loading ? (
-          <ActivityIndicator color={colors.emphasis} />
+          <ActivityIndicator color={colors.accent} />
         ) : (
           <Ionicons
             name={playing ? 'pause' : 'play'}
             size={16}
-            color={status === 'off' ? colors['grey-700'] : colors.emphasis}
+            color={status === 'off' ? colors['on-canvas'] : colors.accent}
           />
         )}
       </View>

@@ -94,6 +94,7 @@ const PAID: Entitlement = {
   source: 'paid',
   validUntil: null,
   localAreas: [],
+  memberSince: '2026-03-04T09:12:00.000Z',
 };
 
 /** Through the door, the way a sign-in leaves the store. */
@@ -241,7 +242,14 @@ describe('the door', () => {
   });
 
   it('does not admit a member whose membership has no app in it', async () => {
-    admit({ tier: 'free', appAccess: false, source: null, validUntil: null, localAreas: [] });
+    admit({
+      tier: 'free',
+      appAccess: false,
+      source: null,
+      validUntil: null,
+      localAreas: [],
+      memberSince: '2026-03-04T09:12:00.000Z',
+    });
     await mount();
     expect(replace).not.toHaveBeenCalled();
   });

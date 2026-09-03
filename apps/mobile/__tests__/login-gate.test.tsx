@@ -49,6 +49,7 @@ const free: Entitlement = {
   source: null,
   validUntil: null,
   localAreas: [],
+  memberSince: '2026-03-04T09:12:00.000Z',
 };
 
 const session = () => coreStore.getState().session;
@@ -176,6 +177,7 @@ describe('signed in without the app', () => {
             source: 'trial',
             validUntil: '2026-08-15T10:00:00.000Z',
             localAreas: [],
+            memberSince: '2026-03-04T09:12:00.000Z',
           },
         }),
       );

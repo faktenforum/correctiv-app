@@ -15,7 +15,7 @@ import { useColors } from '@/lib/theme';
 export default function AtlasScreen() {
   const colors = useColors();
   return (
-    <View className="flex-1 bg-grey-100">
+    <View className="flex-1 bg-canvas">
       <ScreenHeader />
       <ScrollView
         className="flex-1"
@@ -27,7 +27,7 @@ export default function AtlasScreen() {
         {/* A placeholder rather than a map. A real one would be another native
             module for a feature the concept does not ask for. */}
         <View
-          className="mt-s items-center justify-center rounded-md bg-grey-200"
+          className="mt-s items-center justify-center rounded-md bg-surface"
           style={{ height: 130 }}
         >
           <Ionicons name="location-outline" size={28} color={colors['grey-500']} />

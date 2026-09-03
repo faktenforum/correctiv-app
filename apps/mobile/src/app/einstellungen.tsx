@@ -39,7 +39,7 @@ export default function EinstellungenScreen() {
     : 'Ohne App-Zugang';
 
   return (
-    <View className="flex-1 bg-grey-100">
+    <View className="flex-1 bg-canvas">
       <ScreenHeader />
       <ScrollView
         className="flex-1"
@@ -56,7 +56,7 @@ export default function EinstellungenScreen() {
             <Typo variant="text-m" weight="semibold">
               {session.account?.email ?? 'Nicht angemeldet'}
             </Typo>
-            <Typo variant="text-s" color="grey-600" className="mt-3xs">
+            <Typo variant="text-s" color="on-canvas-muted" className="mt-3xs">
               {accessLine}
             </Typo>
             <Button
@@ -117,7 +117,7 @@ export default function EinstellungenScreen() {
                     onPress={() => actions.settings.setTextScale(scale.value)}
                     className={[
                       'flex-1 items-center rounded-md border py-s active:opacity-80',
-                      active ? 'border-emphasis bg-grey-200' : 'border-grey-300',
+                      active ? 'border-accent bg-surface' : 'border-stroke',
                     ].join(' ')}
                   >
                     <Typo variant="text-m" weight={active ? 'bold' : 'normal'}>
@@ -156,9 +156,8 @@ export default function EinstellungenScreen() {
         <View className="mt-m">
           <Overline label="Demo" />
           <Card tone="surface" className="mt-2xs">
-            <Typo variant="text-s" color="grey-600">
-              Für Vorführungen: setzt Beitrag, Interessen und Onboarding zurück. Ihr Konto bleibt
-              angemeldet.
+            <Typo variant="text-s" color="on-canvas-muted">
+              Für Vorführungen: setzt Interessen und Onboarding zurück. Ihr Konto bleibt angemeldet.
             </Typo>
             <Button
               title="Demo-Zustand zurücksetzen"
@@ -166,15 +165,15 @@ export default function EinstellungenScreen() {
               className="mt-s"
               fullWidth
               onPress={() => {
-                // Three stores, because each owns its own keys — see resetForDemo.
+                // Two stores, because each owns its own keys — see resetForDemo. It
+                // was three until the membership slice went (ADR 0020).
                 actions.settings.resetForDemo();
-                actions.membership.reset();
                 actions.interests.clear();
                 setResetDone(true);
               }}
             />
             {resetDone && (
-              <Typo variant="text-s" color="emphasis" className="mt-s">
+              <Typo variant="text-s" color="accent" className="mt-s">
                 ✓ Zurückgesetzt. App neu starten für das Onboarding.
               </Typo>
             )}

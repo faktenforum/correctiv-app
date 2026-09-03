@@ -29,13 +29,13 @@ export function ProjectRow({
       onPress={() => onPress(project)}
       accessibilityRole="link"
       accessibilityLabel={project.name}
-      className="flex-row items-center border-b border-grey-300 py-s active:opacity-70"
+      className="flex-row items-center border-b border-stroke py-s active:opacity-70"
     >
       <View className="flex-1 pr-s">
         <Typo variant="text-m" weight="bold">
           {project.name}
         </Typo>
-        <Typo variant="text-s" color="grey-600" numberOfLines={2} className="mt-4xs">
+        <Typo variant="text-s" color="on-canvas-muted" numberOfLines={2} className="mt-4xs">
           {project.description}
         </Typo>
       </View>

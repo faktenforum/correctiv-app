@@ -39,7 +39,7 @@ export type ScreenHeaderProps = {
 export function ScreenHeader({ onBack, backLabel = 'Zurück', children }: ScreenHeaderProps) {
   const colors = useColors();
   return (
-    <SafeAreaView edges={['top']} className="bg-grey-100">
+    <SafeAreaView edges={['top']} className="bg-canvas">
       <View className="flex-row items-center px-s py-2xs">
         <Pressable
           onPress={onBack ?? goBack}
@@ -48,7 +48,7 @@ export function ScreenHeader({ onBack, backLabel = 'Zurück', children }: Screen
           accessibilityLabel={backLabel}
           className="flex-row items-center py-2xs active:opacity-60"
         >
-          <Ionicons name="chevron-back" size={20} color={colors['grey-700']} />
+          <Ionicons name="chevron-back" size={20} color={colors['on-canvas']} />
           {!children && (
             <Typo variant="text-m" weight="semibold" className="ml-4xs">
               {backLabel}

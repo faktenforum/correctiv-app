@@ -28,7 +28,7 @@ export default function AufrufScreen() {
   const submitted = useHasSubmitted(slug ?? '');
 
   return (
-    <View className="flex-1 bg-grey-100">
+    <View className="flex-1 bg-canvas">
       <ScreenHeader />
 
       {!callout ? (
@@ -36,7 +36,7 @@ export default function AufrufScreen() {
           <Typo variant="headline-s" className="text-center">
             Diesen Aufruf gibt es nicht
           </Typo>
-          <Typo variant="text-m" color="grey-600" className="mt-2xs text-center">
+          <Typo variant="text-m" color="on-canvas-muted" className="mt-2xs text-center">
             {slug ? `Unbekannte Kennung „${slug}“.` : 'Es wurde keine Kennung übergeben.'}
           </Typo>
         </View>
@@ -47,7 +47,7 @@ export default function AufrufScreen() {
             contentContainerClassName="px-m pt-m pb-l"
             showsVerticalScrollIndicator={false}
           >
-            <Overline label="CrowdNewsroom" color="emphasis" />
+            <Overline label="CrowdNewsroom" color="accent" />
             <Typo variant="headline-l" className="mt-2xs">
               {callout.title}
             </Typo>
@@ -67,25 +67,25 @@ export default function AufrufScreen() {
 
             <Card tone="surface" className="mt-m">
               <Typo variant="headline-xs">Wer fragt?</Typo>
-              <Typo variant="text-s" color="grey-600" className="mt-2xs">
+              <Typo variant="text-s" color="on-canvas-muted" className="mt-2xs">
                 {callout.whoAsks}
               </Typo>
               <Typo variant="headline-xs" className="mt-s">
                 Was passiert mit Ihren Daten?
               </Typo>
-              <Typo variant="text-s" color="grey-600" className="mt-2xs">
+              <Typo variant="text-s" color="on-canvas-muted" className="mt-2xs">
                 {callout.dataUse}
               </Typo>
             </Card>
 
             {submitted && (
-              <Typo variant="text-s" color="emphasis" className="mt-s">
+              <Typo variant="text-s" color="accent" className="mt-s">
                 ✓ Sie haben bereits beigetragen, danke! Weitere Hinweise sind willkommen.
               </Typo>
             )}
           </ScrollView>
 
-          <View className="bg-grey-100">
+          <View className="bg-canvas">
             <Hairline />
             <View className="px-m py-s">
               <Button

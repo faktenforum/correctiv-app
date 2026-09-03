@@ -22,7 +22,7 @@ export function Chip({ label, selected = false, onPress, className }: ChipProps)
       onPress={onPress}
       className={[
         'rounded-md px-s py-2xs active:opacity-80',
-        selected ? 'bg-emphasis' : 'bg-grey-200 border border-grey-300',
+        selected ? 'bg-accent' : 'bg-surface border border-stroke',
         className ?? '',
       ].join(' ')}
     >
@@ -31,7 +31,7 @@ export function Chip({ label, selected = false, onPress, className }: ChipProps)
           typography['text-s'],
           {
             // Selected, the label sits on the brand surface; otherwise on the page.
-            color: selected ? colors['always-light'] : colors['grey-700'],
+            color: selected ? colors['always-light'] : colors['on-canvas'],
             fontFamily: 'SourceSans3_600SemiBold',
           },
         ]}

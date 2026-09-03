@@ -33,14 +33,14 @@ export function MiniPlayer() {
   };
 
   return (
-    <View className="bg-grey-100">
+    <View className="bg-canvas">
       <Hairline />
       <View className="flex-row items-center px-s py-2xs">
         <Pressable
           accessibilityRole="button"
           accessibilityLabel={playing ? 'Pausieren' : 'Abspielen'}
           onPress={togglePlay}
-          className="items-center justify-center rounded-full bg-emphasis active:opacity-80"
+          className="items-center justify-center rounded-full bg-accent active:opacity-80"
           style={{ width: sizes.iconButton, height: sizes.iconButton }}
         >
           {/* On the button's brand surface, so fixed white rather than the page's. */}
@@ -60,7 +60,7 @@ export function MiniPlayer() {
           <Typo variant="text-m" weight="semibold" numberOfLines={1}>
             {track.title}
           </Typo>
-          <Typo variant="text-s" color={status === 'error' || live ? 'emphasis' : 'grey-500'}>
+          <Typo variant="text-s" color={status === 'error' || live ? 'accent' : 'grey-500'}>
             {subtitle()}
           </Typo>
         </Pressable>
@@ -73,7 +73,7 @@ export function MiniPlayer() {
           className="ml-2xs items-center justify-center active:opacity-70"
           style={{ width: sizes.iconButton, height: sizes.iconButton }}
         >
-          <Ionicons name="close" size={20} color={colors['grey-600']} />
+          <Ionicons name="close" size={20} color={colors['on-canvas-muted']} />
         </Pressable>
       </View>
     </View>

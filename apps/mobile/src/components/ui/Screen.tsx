@@ -16,7 +16,7 @@ export function Screen({ children, scroll = true, noPadding = false, className }
   const pad = noPadding ? '' : 'px-m';
   if (scroll) {
     return (
-      <SafeAreaView edges={['top']} className="flex-1 bg-grey-100">
+      <SafeAreaView edges={['top']} className="flex-1 bg-canvas">
         <ScrollView
           className="flex-1"
           contentContainerClassName={[pad, 'pt-m pb-2xl', className ?? ''].join(' ')}
@@ -28,7 +28,7 @@ export function Screen({ children, scroll = true, noPadding = false, className }
     );
   }
   return (
-    <SafeAreaView edges={['top']} className="flex-1 bg-grey-100">
+    <SafeAreaView edges={['top']} className="flex-1 bg-canvas">
       <View className={['flex-1', pad, className ?? ''].join(' ')}>{children}</View>
     </SafeAreaView>
   );

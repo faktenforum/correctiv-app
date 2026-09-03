@@ -7,7 +7,8 @@ import { quarterlyReport } from '@correctiv/app-core/data/quartalsbericht';
  * guest, and these tests pinned both. Since the door (ADR 0016) there is no guest to
  * render for, so the guest cases became assertions that its copy is gone (ADR 0018).
  * The membership sections are now unconditional, which is what the remaining cases
- * check.
+ * check. The contribution flow behind them went with ADR 0020: the app offers no
+ * payment functions, so the card reads the entitlement and links out.
  */
 
 jest.mock('expo-router', () => ({
@@ -25,6 +26,7 @@ jest.mock('@expo/vector-icons', () => {
 });
 
 import { router } from 'expo-router';
+import { openExternal } from '@/lib/openExternal';
 
 import { findAllPressable, press, render, renderedText } from './support/rendering';
 
@@ -33,7 +35,7 @@ import GespeichertScreen from '@/app/gespeichert';
 import ProfilScreen from '@/app/(tabs)/profil';
 import { sessionActions } from '@correctiv/app-core/stores/session';
 import { resetStore } from '@correctiv/app-core/stores/store';
-import type { MembershipTier } from '@correctiv/app-core/types/models';
+import type { Entitlement, MembershipTier } from '@correctiv/app-core/types/models';
 
 import { coreActions, coreStore } from '@/lib/store/core';
 
@@ -63,19 +65,20 @@ function signIn(tier: MembershipTier = 'paid'): void {
     coreStore.dispatch(
       sessionActions.succeeded({
         account: { email: 'alex@example.org', name: 'Alex Beispiel' },
-        entitlement: { tier, appAccess: true, source: 'paid', validUntil: null, localAreas: [] },
+        entitlement: {
+          tier,
+          appAccess: true,
+          source: 'paid',
+          validUntil: null,
+          localAreas: [],
+          memberSince: '2026-03-04T09:12:00.000Z',
+        },
       }),
     );
   });
 }
 
-function join(): void {
-  act(() => {
-    coreActions.membership.join(25, 'jährlich');
-  });
-}
-
-describe('Profil without a simulated join', () => {
+describe('Profil before the session has answered', () => {
   it('has no guest copy left anywhere', () => {
     const text = renderedText(render(<ProfilScreen />));
     expect(text).not.toContain('Sie sind als Gast unterwegs');
@@ -83,24 +86,16 @@ describe('Profil without a simulated join', () => {
     expect(text).not.toContain('Unterstützer:in werden');
   });
 
-  it('shows the membership sections even before the join flow has run', () => {
+  it('renders its sections with no entitlement to read yet', () => {
     const tree = render(<ProfilScreen />);
     const text = renderedText(tree);
-    // These were member-only and are now unconditional: whoever renders this screen
-    // came through the door, whether or not the simulated join stamped a date.
-    expect(text).toContain('Ihr Beitrag');
+    // The overline renders uppercase.
+    expect(text).toContain('IHRE MITGLIEDSCHAFT');
     expect(text).toContain(quarterlyReport.quarter);
     expect(text).toContain('Ihr Backstage');
-    // …and no invented amount. The slice defaults to 10; printing it here told a
-    // trial paying 0 € that it pays 10 € a month.
-    expect(text).toContain('Noch nicht festgelegt');
-    expect(text).not.toContain('10 € / Monat');
-    // …and nothing to pause until something is set.
-    expect(text).toContain('Beitrag festlegen');
-    expect(text).not.toContain('Pausieren');
-    // …and it is still marked as the club's. Asserted on the row's accessibility
-    // label rather than on the badge text, because "Club" also occurs in the
-    // subtitle — and this way a screen reader is covered too.
+    // It is still marked as the club's. Asserted on the row's accessibility label
+    // rather than on the badge text, because "Club" also occurs in the subtitle —
+    // and this way a screen reader is covered too.
     expect(findAllPressable(tree, 'Ihr Backstage, Club')).toHaveLength(1);
   });
 });
@@ -108,7 +103,6 @@ describe('Profil without a simulated join', () => {
 describe('Profil as a member', () => {
   it('takes the name from the session and the tier from the entitlement', () => {
     signIn();
-    join();
     const text = renderedText(render(<ProfilScreen />));
     expect(text).toContain('CORRECTIV CLUB');
     expect(text).toContain('Alex Beispiel');
@@ -122,28 +116,89 @@ describe('Profil as a member', () => {
     expect(renderedText(render(<ProfilScreen />))).toContain('Soli-Mitgliedschaft');
   });
 
-  it('shows the contribution and the quarterly report', () => {
+  /**
+   * The card reads the answer and sets nothing. ADR 0020: the app offers no payment
+   * functions, so an amount, an interval and a pause switch have no place here.
+   */
+  it('reads the entitlement and offers no way to set a contribution', () => {
     signIn();
-    join();
     const text = renderedText(render(<ProfilScreen />));
-    expect(text).toContain('25 € / Jahr');
+
+    expect(text).toContain('Mitgliedschaft mit Beitrag');
+    expect(text).toContain('Zugang über');
+    expect(text).toContain('Ihren Beitrag');
     expect(text).toContain(quarterlyReport.quarter);
-    expect(text).toContain('Ihr Backstage');
+
+    expect(text).not.toContain('Beitrag festlegen');
+    expect(text).not.toContain('Beitrag ändern');
+    expect(text).not.toContain('Pausieren');
+    expect(text).not.toContain('€ / Monat');
   });
 
-  it('pauses without clearing the contribution', () => {
+  /** The one outbound link, and the label the store rules allow it to carry. */
+  it('sends account management outside, and never names a price', () => {
     signIn();
-    join();
     const tree = render(<ProfilScreen />);
 
-    press(tree, 'Pausieren');
+    press(tree, 'Konto verwalten');
 
-    const state = coreStore.getState().membership;
-    expect(state.paused).toBe(true);
-    expect(state.memberSince).not.toBeNull();
-    const text = renderedText(tree);
-    expect(text).toContain('ist pausiert');
-    expect(text).toContain('Fortsetzen');
+    expect(openExternal).toHaveBeenCalledWith('https://correctiv.org/unterstuetzen/');
+    expect(push).not.toHaveBeenCalled();
+  });
+
+  /** A trial is the case where the app has an end date to print. */
+  it('prints the end date of a trial', () => {
+    act(() => {
+      coreStore.dispatch(
+        sessionActions.succeeded({
+          account: { email: 'test@example.org', name: 'Test' },
+          entitlement: {
+            tier: 'paid',
+            appAccess: true,
+            source: 'trial',
+            // Noon, so the local date is the same in every timezone a test runs in.
+            validUntil: '2026-10-02T12:00:00.000Z',
+            localAreas: [],
+            memberSince: '2026-03-04T09:12:00.000Z',
+          },
+        }),
+      );
+    });
+
+    const text = renderedText(render(<ProfilScreen />));
+    expect(text).toContain('Ihre Testphase');
+    expect(text).toContain('Läuft bis');
+    expect(text).toContain('2. Oktober');
+  });
+
+  /**
+   * An entitlement stored by a build before `memberSince` existed hydrates without
+   * it, and `refreshEntitlement` keeps the held answer, so this state is on devices
+   * and in browsers that saw the demo before the field. The card degrades to the tier
+   * alone rather than to "seit undefined".
+   */
+  it('prints the tier without a date for an entitlement stored before the field existed', () => {
+    const stored = {
+      tier: 'paid',
+      appAccess: true,
+      source: 'paid',
+      validUntil: null,
+      localAreas: [],
+    } as unknown as Entitlement;
+    act(() => {
+      coreStore.dispatch(
+        sessionActions.hydrate({
+          account: { email: 'alex@example.org', name: 'Alex Beispiel' },
+          entitlement: stored,
+        }),
+      );
+    });
+
+    const text = renderedText(render(<ProfilScreen />));
+    expect(text).toContain('Mitgliedschaft mit Beitrag');
+    expect(text).not.toContain('· seit');
+    expect(text).not.toContain('undefined');
+    expect(text).toContain('Ihr Beitrag ermöglicht diese Recherchen');
   });
 
   it('opens the report, the saved list and the settings', () => {
@@ -227,8 +282,7 @@ describe('settings', () => {
     expect(coreStore.getState().settings.textScale).toBe(1.15);
   });
 
-  it('resets the demo state across all three stores', () => {
-    join();
+  it('resets the demo state across the stores that hold it', () => {
     act(() => {
       coreActions.interests.toggle('klima');
       coreActions.settings.completeOnboarding();
@@ -238,7 +292,6 @@ describe('settings', () => {
     const tree = render(<EinstellungenScreen />);
     press(tree, 'Demo-Zustand zurücksetzen');
 
-    expect(coreStore.getState().membership.memberSince).toBeNull();
     expect(coreStore.getState().interests.selected).toEqual([]);
     expect(coreStore.getState().settings).toMatchObject({
       onboardingDone: false,

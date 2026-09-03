@@ -36,7 +36,7 @@
  * which is the same move this whole suite exists to make. Until it publishes,
  * `npm run route-sweep` is the only oracle, and it needs a GTK session, a built bundle
  * and an admitted profile.
- * ([ADR 0020](../../../adr/0020-re-exported-screens-and-a-variant-where-the-host-refuses.md))
+ * ([ADR 0023](../../../adr/0023-re-exported-screens-and-a-variant-where-the-host-refuses.md))
  */
 
 import { readdirSync, readFileSync, statSync } from 'node:fs';
@@ -57,9 +57,29 @@ const DESKTOP_SRC = resolve(__dirname, '..', 'src');
  * A second entry here should be argued for, not added: the alternative to a variant
  * is usually a shim, and a shim that fakes a subsystem is worse than a screen that
  * does without it.
+ *
+ * The REASON for this one changed on 2026-09-03 even though the name did not, and the
+ * assertion at the bottom of this file is what forced the re-check. `Animated` was a
+ * refusing export until @gjsify/react-native 0.46; 0.46 implements the three names
+ * this app uses, that assertion went red, and the variant was deleted for a re-export
+ * — which then failed to render, because an `Animated.View` child does not make its
+ * parent a `Gtk.Overlay` the way a `View` child does, and the phone's overlay header
+ * is `absolute`. So the variant came back for a narrower reason. See its header.
+ *
+ * That is the shape this list is meant to have: a name here means "the host cannot do
+ * this yet", and the check below asks the layer rather than trusting the note.
  */
-const ANSWERED_BY_A_DESKTOP_VARIANT: Readonly<Record<string, string>> = {
-  Animated: 'src/app/artikel.tsx renders the reader header without the fade',
+const ANSWERED_BY_A_DESKTOP_VARIANT: Readonly<
+  Record<string, { readonly where: string; readonly importableAnyway?: string }>
+> = {
+  Animated: {
+    where: 'src/app/artikel.tsx renders the reader header without the fade',
+    importableAnyway:
+      'the three names this app uses landed in 0.46, but an Animated.View child does ' +
+      'not make its parent a Gtk.Overlay the way a View child does — four primitives ' +
+      'declare overlayOnAbsoluteChild and Animated is not in the table — so the ' +
+      "phone's `absolute` overlay header throws. Individually supported, not composable.",
+  },
 };
 
 function sourceFiles(dir: string): string[] {
@@ -125,17 +145,22 @@ describe('the react-native import surface', () => {
   });
 
   it('still needs every name on the variant list', () => {
-    // The other direction, and the one that keeps this list honest: when `Animated`
-    // lands in @gjsify/react-native, this fails and says so — rather than leaving a
-    // hand-written variant in place for ever because nobody re-checked.
-    const nowSupported = Object.keys(ANSWERED_BY_A_DESKTOP_VARIANT).filter((name) =>
-      isImportable(name),
-    );
+    // The other direction, and the one that keeps this list honest. It has already
+    // paid for itself once: `Animated` landed in @gjsify/react-native 0.46 and this
+    // went red on the upgrade, naming the variant that could go — rather than leaving
+    // a hand-written workaround in place for ever because nobody re-checked. The list
+    // is empty now, so this passes trivially; it is here for the next entry.
+    // A name that has become importable and carries NO `importableAnyway` note is the
+    // failure: the layer now exports it, so the variant has to be re-argued or deleted.
+    // Writing the note is that re-argument, and it is deliberately a sentence rather
+    // than a boolean — `Animated` came back after being deleted, and the sentence is
+    // the only place the narrower reason is written down.
+    const unargued = Object.entries(ANSWERED_BY_A_DESKTOP_VARIANT)
+      .filter(([name]) => isImportable(name))
+      .filter(([, entry]) => entry.importableAnyway === undefined);
     // The reason travels in the compared value: vitest takes a message argument and
     // oxlint's jest rule does not, and a bare empty-array failure would name neither
     // the export nor the variant that can now be deleted.
-    expect(nowSupported.map((name) => `${name} — ${ANSWERED_BY_A_DESKTOP_VARIANT[name]}`)).toEqual(
-      [],
-    );
+    expect(unargued.map(([name, entry]) => `${name} — ${entry.where}`)).toEqual([]);
   });
 });

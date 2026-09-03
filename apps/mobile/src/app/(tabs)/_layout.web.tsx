@@ -68,12 +68,12 @@ export default function TabsLayout() {
            * other in the direction of the tab order, so a switch looks like one.
            */
           animation: 'shift',
-          tabBarActiveTintColor: colors.emphasis,
+          tabBarActiveTintColor: colors.accent,
           tabBarInactiveTintColor: colors['grey-500'],
           // Page surface, hairline on top, no shadow — as the design draft has it.
           tabBarStyle: {
-            backgroundColor: colors['grey-100'],
-            borderTopColor: colors['grey-300'],
+            backgroundColor: colors['canvas'],
+            borderTopColor: colors['stroke'],
             borderTopWidth: 1,
             elevation: 0,
             height: barHeight,
