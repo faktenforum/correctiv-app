@@ -16,7 +16,7 @@ describe('the hash contract', () => {
       landscape: true,
       zoom: 0.5,
       theme: 'dark',
-      seed: 'member',
+      seed: 'signed-in',
       tools: true,
       check: true,
       overrides: { 'grey-100': { dark: '#102a54' }, emphasis: { light: '#00b0ff' } },

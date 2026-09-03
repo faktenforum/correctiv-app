@@ -12,20 +12,12 @@ import {
   type InterestsState,
 } from '../src/stores/interests';
 import {
-  hasSimulatedJoin,
-  join,
-  membershipActions,
-  reset,
-  setPaused,
-} from '../src/stores/membership';
-import {
   extraCount,
   hasSubmitted,
   participationActions,
   submit,
 } from '../src/stores/participation';
 import { persist, persisted } from '../src/stores/persist';
-import { sessionActions } from '../src/stores/session';
 import {
   isSaved,
   remove,
@@ -85,54 +77,6 @@ describe('settings slice', () => {
     store.dispatch(setTheme('dark'));
     expect(store.getState().settings.onboardingDone).toBe(true);
     expect(store.getState().settings.theme).toBe('dark');
-  });
-});
-
-describe('membership slice', () => {
-  it('pausing keeps the contribution', () => {
-    store.dispatch(join(10, 'monatlich'));
-    store.dispatch(setPaused(true));
-
-    // A pause is not a cancellation, so the join survives it. Rejoining clears it.
-    expect(hasSimulatedJoin(store.getState().membership)).toBe(true);
-    expect(store.getState().membership.paused).toBe(true);
-    store.dispatch(join(20, 'monatlich'));
-    expect(store.getState().membership.paused).toBe(false);
-  });
-
-  it('joining records the contribution and keeps the first memberSince', () => {
-    store.dispatch(join(25, 'jährlich'));
-    const first = store.getState().membership.memberSince;
-    expect(hasSimulatedJoin(store.getState().membership)).toBe(true);
-    expect(store.getState().membership.amountEur).toBe(25);
-    expect(first).not.toBeNull();
-
-    store.dispatch(join(50, 'monatlich'));
-    expect(store.getState().membership.memberSince).toBe(first);
-    expect(store.getState().membership.amountEur).toBe(50);
-  });
-
-  /**
-   * The contribution belongs to the account that set it. It used to survive a sign-out
-   * and greet the next person on the device with someone else's amount and date.
-   */
-  it('is cleared when the account signs out', () => {
-    store.dispatch(join(25, 'jährlich'));
-    store.dispatch(sessionActions.signOut());
-
-    expect(hasSimulatedJoin(store.getState().membership)).toBe(false);
-    expect(store.getState().membership.amountEur).toBe(10);
-  });
-
-  it('reset returns every field to its initial value', () => {
-    store.dispatch(join(99, 'jährlich'));
-    store.dispatch(reset());
-    expect(store.getState().membership).toMatchObject({
-      memberSince: null,
-      amountEur: 10,
-      interval: 'monatlich',
-      paused: false,
-    });
   });
 });
 
@@ -391,14 +335,12 @@ describe('resetStore', () => {
    */
   it('returns every touched slice to its initial value', () => {
     store.dispatch(setTheme('dark'));
-    store.dispatch(join(99, 'jährlich'));
     store.dispatch(toggleInterest('klima'));
     store.dispatch(submit('pflege', { a: 1 }));
 
     store.dispatch(resetStore());
 
     expect(store.getState().settings.theme).toBe('system');
-    expect(hasSimulatedJoin(store.getState().membership)).toBe(false);
     expect(store.getState().interests.selected).toEqual([]);
     expect(store.getState().participation.submissions).toEqual([]);
   });
@@ -411,12 +353,6 @@ describe('hydrate', () => {
    * needs its own proof that a partial payload merges rather than replaces.
    */
   it('merges a partial payload into each persisted slice', () => {
-    store.dispatch(membershipActions.hydrate({ memberSince: '2026-03-04T09:12:00.000Z' }));
-    expect(store.getState().membership).toMatchObject({
-      memberSince: '2026-03-04T09:12:00.000Z',
-      amountEur: 10, // untouched by the payload, still the initial value
-    });
-
     store.dispatch(
       savedArticlesActions.hydrate({
         items: [

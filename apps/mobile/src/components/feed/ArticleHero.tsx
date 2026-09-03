@@ -8,8 +8,8 @@ import type { FeedItem } from '@correctiv/app-core/types/models';
 import { useArticleMeta } from '@/lib/articles/useArticleMeta';
 
 /**
- * The lead research item on Home: edge-to-edge image, kicker, serif headline,
- * teaser, byline.
+ * The lead research item on Home: edge-to-edge image, kicker, headline, teaser,
+ * byline.
  *
  * Three details come from the design draft, which reads as an article opening
  * where this one read as a card. The image runs to the screen edge, the kicker is

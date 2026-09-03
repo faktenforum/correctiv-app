@@ -10,8 +10,8 @@ looking at a picture.
 
 ## The set
 
-[`android/`](android/) holds 31 shots, one per step, from `apps/mobile`. Shot on
-2026-09-02 from the release APK of the review round on `Medium_Phone_API_36` at
+[`android/`](android/) holds 30 shots, one per step, from `apps/mobile`. Shot on
+2026-09-03 from the release APK of the scope round on `Medium_Phone_API_36` at
 1080x2400, night mode off. Both tours ran clean, with no `MISS`.
 
 **This is the first set that opens at the door.** Since
@@ -26,6 +26,18 @@ door's waiting state lasts 1.5 s and is not in the tour; the browser check cover
 club pitch, and [ADR 0018](../adr/0018-removing-the-guest.md) removed it along with
 every other branch that addressed someone who had not paid. The walk now ends that
 sequence on "Fertig".
+
+`70-join-1` is gone for the same kind of reason: the screen it shot was the
+contribution flow, and the app has none. Requirement WP2.6 says it offers no payment
+functions, so `beitreten` left with
+[ADR 0020](../adr/0020-no-contribution-in-the-app.md) and `60-profil` now shows a
+membership card that reads the entitlement instead of setting an amount.
+
+`83-video` is shot by tapping **"Video: "** rather than a video's title. The tour
+pinned "Demokratie oder Doomsday" until FunFacts published enough new videos to push
+it out of the rail; the run then reported `MISS` and photographed whatever was
+underneath, which is the failure this whole directory exists to catch. `MediaCard`
+carries the prefix now, which a screen reader wants anyway.
 
 The rest were re-shot rather than carried over, and three of them are the reason two
 ADRs exist. The first round after the door still showed "Sie sind als Gast unterwegs"

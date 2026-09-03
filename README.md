@@ -16,11 +16,7 @@ snapshot bundled into the build as the floor when a request fails. See
 [the web target](TROUBLESHOOTING.md#the-web-target) and
 [ADR 0015](adr/0015-reading-correctiv-org-through-its-rest-api.md).
 
-<p align="center">
-  <img src="media/demo.gif" alt="Walkthrough of the CORRECTIV app on Android: live home feed, article reader, media library and the persistent Salon5 live-radio mini player" width="270">
-</p>
-
-<p align="center"><sub>The same journey on Android. Every screen:
+<p align="center"><sub>Every screen, shot on Android and kept current:
 <a href="screens/">screens/</a></sub></p>
 
 > **Status.** The full journey works end to end: the door, onboarding, home, reader,
@@ -101,7 +97,7 @@ http://localhost:8099/preview.html          # a static export
 ```
 
 Device, route, appearance and app state travel in the URL
-(`preview.html#/artikel?d=ipad-pro-11&t=dark&s=member`), so a finding can be handed
+(`preview.html#/artikel?d=ipad-pro-11&t=dark&s=signed-in`), so a finding can be handed
 over as a link. The frame is the app untouched: inside it, `useWindowDimensions` and
 the reader's `48rem` breakpoint see the simulated size. `Tools` adds the app's
 appearance and state, its console, a live palette, layout checks and an
@@ -117,6 +113,7 @@ the *device's* colour scheme is the browser's to emulate; those stay DevTools' j
 | **The traps this toolchain sets**, one row per real incident, and why a green check is not evidence | [TROUBLESHOOTING.md](TROUBLESHOOTING.md) |
 | **Why** it is built this way | [`adr/`](adr/README.md) |
 | Every screen, and what looking at them found | [`screens/`](screens/) |
+| **What the app reads**, measured, and what the scope wants that has no source | [SOURCES.md](SOURCES.md) |
 | Design tokens, vendored from CORRECTIV's `wp-design-tokens` | [`tokens/`](tokens/README.md) |
 | Releases, signing, and the three CI workflows | [RELEASE.md](RELEASE.md) |
 | Rules for AI agents working in this repo | [AGENTS.md](AGENTS.md) |
