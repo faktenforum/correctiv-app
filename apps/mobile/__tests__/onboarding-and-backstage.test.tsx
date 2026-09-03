@@ -3,12 +3,13 @@ import { act } from 'react-test-renderer';
 import { diaries, earlyAccess } from '@correctiv/app-core/data/backstage';
 
 /**
- * The two flows that change what the app is: onboarding decides whether it asks
- * again, and the join flow records the simulated contribution.
+ * Onboarding and Backstage, the two places a screen once addressed someone who had
+ * not paid. Onboarding decides whether it asks again; Backstage opens everything to
+ * whoever is inside.
  *
- * Both are also where a dark pattern would be easiest to introduce, so the tests
- * assert the escape hatches too: skipping still counts as done, and every step
- * before the last offers an equal-weight "Erstmal umsehen".
+ * Onboarding is also where a dark pattern would be easiest to introduce, so the tests
+ * assert the one escape hatch that is left: skipping still counts as done. "Erstmal
+ * umsehen" went with ADR 0018, and the join flow this file used to cover with ADR 0020.
  */
 
 jest.mock('expo-router', () => ({

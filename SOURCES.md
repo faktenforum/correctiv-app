@@ -86,7 +86,7 @@ Every item here is in the feature scope. None of them has anything to read.
 | Time-based modules: morning podcast, evening Spotlight + "Was zählt" | yes | The mechanism exists (`packages/app-core/src/lib/daypart.ts`); both MVP slots resolve to nothing because of the row above. |
 | Vertical video | yes | No source named. CORRECTIV's PeerTube is running and the player exists. |
 | All events | yes | Nothing in the repo and no source named. One sample event sits in the Backstage screen. |
-| Local newsletter posts for subscribers | yes | The entitlement carries `localAreas` and no code reads it. The five local Castopod shows are one candidate, the local Spotlight newsletters another; the requirements themselves ask "differences between local Spotlights and Lokal Redaktion?" |
+| Local newsletter posts for subscribers | yes | The entitlement carries `localAreas`; the profile prints them, and nothing selects content by them. The five local Castopod shows are one candidate, the local Spotlight newsletters another; the requirements themselves ask "differences between local Spotlights and Lokal Redaktion?" |
 | Topic and series directory on the new taxonomy | yes | A directory exists on today's ordering. The new taxonomy is "tbd". |
 | Sections by Ressort or Beat, weighted ordering | yes | "tbd, either Ressorts or Beats". |
 | Audio versions of articles, summaries, quizzes | no | Named as the app's exclusive formats. None exists. correctiv.org announced a Spotlight podcast with an AI voice on 2025-06-30; whether it still runs, and whether it is the "Morgen-Podcast", is a question for the newsroom. |

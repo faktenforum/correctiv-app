@@ -124,7 +124,7 @@ describe('signing in (simulated)', () => {
     expect(session().entitlement).toMatchObject({
       appAccess: true,
       source: 'local-bundle',
-      localAreas: ['gelsenkirchen'],
+      localAreas: ['Gelsenkirchen'],
     });
     expect(isAdmitted(session(), NOW)).toBe(true);
   });

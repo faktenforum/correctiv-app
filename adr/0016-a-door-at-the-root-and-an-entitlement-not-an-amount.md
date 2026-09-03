@@ -112,7 +112,8 @@ checked on a device.
   link out~~, and the store rules on external purchases. All three precede the final
   copy on this screen. The join flow left the app with
   [ADR 0020](0020-no-contribution-in-the-app.md); the store rules for the link that
-  replaced it are still open, and that ADR narrows them to the link's wording.
+  replaced it are still open, and that ADR narrows them to the link's wording and
+  form.
 - The secure-storage port and the `Authorization` header in `http.ts`, when there is
   a token. Until then the session is two JSON fields in the `KeyValueStore`.
 - ~~`isMember` and the entitlement are two things. A signed-in paying member still
@@ -122,5 +123,7 @@ checked on a device.
   card greeted an account that had just signed in.
 - The password-reset address. The door links the support page until the membership
   system names its own.
-- The second access level, local areas, is carried in the entitlement and read by
-  nothing yet.
+- The second access level, local areas, is carried in the entitlement ~~and read by
+  nothing yet~~. The profile prints the areas since
+  [ADR 0020](0020-no-contribution-in-the-app.md); nothing selects content by them, so
+  the level itself is as open as it was.

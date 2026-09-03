@@ -52,27 +52,28 @@ and tier over somebody else's contribution and join date.
   device to clear or to print. The reasoning stands and is why that removal was one
   file rather than a redesign.
 
-~~**And the join flow is written for the person who reaches it.** It is entered from
+**And the join flow is written for the person who reaches it.** It is entered from
 "Beitrag ändern" by somebody already inside, so the opening argument for joining and
 the form asking for a name and an email are gone: the case has no audience, and
 `session.account` already holds both fields the form asked for. It threw the email
-away regardless. Two steps remain, the amount and the confirmation.~~ The flow itself
-left the app with [ADR 0020](0020-no-contribution-in-the-app.md).
+away regardless. ~~Two steps remain, the amount and the confirmation.~~ None remain:
+the flow itself left the app with [ADR 0020](0020-no-contribution-in-the-app.md).
 
 ## What this does not decide
 
 ~~Whether a contribution is set inside the app at all. ADR 0016 named it as a product and
-app-store question and it is still open. If the answer is no, this flow leaves and the
-profile links out; nothing above depends on which way that goes.~~
+app-store question and it is still open.~~ If the answer is no, this flow leaves and the
+profile links out; nothing above depends on which way that goes. Answered by
+[ADR 0020](0020-no-contribution-in-the-app.md): the answer was no, and it cost exactly
+what that sentence predicted.
 
-~~Nor does it move the contribution into `session`. That becomes right the moment the
+Nor does it move the contribution into `session`. That becomes right the moment the
 contribution is a server answer rather than a local simulation, which is the C1
-dependency in the scope. Until then it would break the one invariant `session` has.~~
-
-Both answered by [ADR 0020](0020-no-contribution-in-the-app.md). The answer to the
-first was no, and it cost exactly what this section predicted: the flow left, the
-profile links out. The second named a condition, and a join date always met it, so
-`memberSince` moved to the entitlement while the contribution simply went away.
+dependency in the scope. Until then it would break the one invariant `session` has.
+Still true, and still not done: ADR 0020 deleted the contribution rather than moving
+it. Only `memberSince` went onto the entitlement, and it went as an answer of the auth
+seam rather than as something the app sets, which is the invariant this paragraph
+protects.
 
 ## What this retires
 

@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 
-import { DAYPART_HOURS, daypartAt, timedModuleAt } from '../src/lib/daypart';
+import { DAYPART_HOURS, daypartAt, nextDaypartChange, timedModuleAt } from '../src/lib/daypart';
 
 /** Local time, because the function reads local hours and so does a reader's day. */
 const at = (hour: number, minute = 0) => new Date(2026, 8, 3, hour, minute, 0, 0);
@@ -24,10 +24,12 @@ describe('daypartAt', () => {
    * thing an editor will want to move. Read from the table so the test moves with it.
    */
   it('includes the opening hour and excludes the closing one', () => {
-    for (const [from, to] of Object.values(DAYPART_HOURS)) {
-      expect(daypartAt(at(from))).not.toBe('off-hours');
-      expect(daypartAt(at(from, 59))).not.toBe('off-hours');
-      expect(daypartAt(at(to))).toBe('off-hours');
+    for (const [part, [from, to]] of Object.entries(DAYPART_HOURS)) {
+      expect(daypartAt(at(from))).toBe(part);
+      expect(daypartAt(at(from, 59))).toBe(part);
+      // Not "off-hours": the table may let one part begin where another ends, and
+      // the overlap check below deliberately allows that. Only the same part is wrong.
+      expect(daypartAt(at(to))).not.toBe(part);
     }
   });
 
@@ -75,5 +77,37 @@ describe('timedModuleAt', () => {
   it('lifts nothing outside the named hours', () => {
     expect(timedModuleAt(at(3))).toBeNull();
     expect(timedModuleAt(at(15))).toBeNull();
+  });
+});
+
+describe('nextDaypartChange', () => {
+  it('names the next boundary, whether it opens a part or closes one', () => {
+    expect(nextDaypartChange(at(7))).toBe(at(10).getTime());
+    expect(nextDaypartChange(at(10, 30))).toBe(at(11).getTime());
+    expect(nextDaypartChange(at(12))).toBe(at(14).getTime());
+  });
+
+  it('is strictly after now, so a boundary hour itself points at the next one', () => {
+    expect(nextDaypartChange(at(11))).toBe(at(14).getTime());
+  });
+
+  it('rolls over to the first boundary of the next day after the last one', () => {
+    const tomorrow = new Date(2026, 8, 4, 5, 0, 0, 0).getTime();
+    expect(nextDaypartChange(at(22))).toBe(tomorrow);
+    expect(nextDaypartChange(at(23, 59))).toBe(tomorrow);
+  });
+
+  /**
+   * What a timer set to this moment relies on: the answer holds until then and is
+   * different from then. Walked over every hour so the table can move without this
+   * test needing to.
+   */
+  it('agrees with daypartAt across the day', () => {
+    for (let hour = 0; hour < 24; hour++) {
+      const now = at(hour, 17);
+      const next = nextDaypartChange(now);
+      expect(daypartAt(next - 1)).toBe(daypartAt(now));
+      expect(daypartAt(next)).not.toBe(daypartAt(now));
+    }
   });
 });

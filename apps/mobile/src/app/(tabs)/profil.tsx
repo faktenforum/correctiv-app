@@ -15,19 +15,18 @@ import { openExternal } from '@/lib/openExternal';
 import { useCoreActions, useSavedArticles, useSession, useSettings } from '@/lib/store/core';
 
 /**
- * The three newsletters from the concept. State lives in the core store, so a
- * choice survives a restart.
- */
-/**
  * Where "Konto verwalten" goes, and why it is a constant rather than a literal.
  *
  * The address is provisional. beabee will own the account page and does not have one
- * yet, so this points at the only page the app knows. What the link may SAY is the
- * part with a rule behind it: outside the US a link to one's own site needs Apple's
- * External Link Account Entitlement, which permits managing an account and forbids
- * naming a price. So the label is "Konto verwalten" and never "Beitrag erhöhen".
- * Separate from the door's own link, which is an upgrade offer to somebody who has
- * no access, so that the two can be decided apart. See ADR 0020.
+ * yet, so this points at the only page the app knows. What the link may SAY, and how
+ * it may LOOK, is the part with rules behind it: outside the US a link to one's own
+ * site needs Apple's External Link Account Entitlement, which permits managing an
+ * account, forbids naming a price, and wants the link formatted as a plain text link
+ * that names the domain, shown behind Apple's own interstitial sheet. So the label is
+ * "Konto verwalten" and never "Beitrag erhöhen"; the button form and the missing sheet
+ * are open together with the address, and ADR 0020 records all three. Separate from
+ * the door's own link, which is an upgrade offer to somebody who has no access, so
+ * that the two can be decided apart.
  */
 const ACCOUNT_URL = 'https://correctiv.org/unterstuetzen/';
 
@@ -38,6 +37,10 @@ const SOURCE_LABELS: Record<NonNullable<Entitlement['source']>, string> = {
   trial: 'Ihre Testphase',
 };
 
+/**
+ * The three newsletters from the concept. State lives in the core store, so a
+ * choice survives a restart.
+ */
 const NEWSLETTERS = [
   {
     key: 'spotlight',
@@ -207,9 +210,10 @@ export default function ProfilScreen() {
 /**
  * How long they have been aboard — rough, but never "for 0 months".
  *
- * Still tolerates a missing date. Every entitlement now carries one, but the session
- * can be read one render before the door has answered, and an empty card is worse
- * than a sentence that does not count months.
+ * Tolerates a missing date, because one is reachable: an entitlement persisted by a
+ * build before `memberSince` existed hydrates without it and is kept until the next
+ * sign-in (see `Entitlement.memberSince`). An empty card is worse than a sentence
+ * that does not count months.
  */
 function impactLine(memberSince: string | null): string {
   if (!memberSince) return 'Ihr Beitrag ermöglicht diese Recherchen. Unter anderem diese hier:';

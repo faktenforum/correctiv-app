@@ -12,8 +12,9 @@
  *
  * There is no state here, only the clock, and the clock is a parameter. A slice would
  * have to be told the time by something, and that something would be a timer nobody
- * cancels. A host asks on render and gets an answer; a test hands it 07:30 and gets
- * the morning without waiting for one.
+ * cancels. A host asks on render and gets an answer, and `nextDaypartChange` tells it
+ * when to ask again; a test hands it 07:30 and gets the morning without waiting for
+ * one.
  *
  * Local hours on purpose. The reader's morning is the morning where the reader is, and
  * `Date.prototype.getHours` is the only thing in the platform that knows that.
@@ -46,7 +47,7 @@ export const DAYPART_HOURS: Record<Exclude<Daypart, 'off-hours'>, readonly [numb
  * these numbers should be told, not left to find out from a screenshot.
  */
 export function daypartAt(now: number | Date): Daypart {
-  const hour = (now instanceof Date ? now : new Date(now)).getHours();
+  const hour = new Date(now).getHours();
   for (const [part, [from, to]] of Object.entries(DAYPART_HOURS)) {
     if (hour >= from && hour < to) return part as Daypart;
   }
@@ -76,7 +77,7 @@ const WANTED: Record<Daypart, TimedModule | null> = {
 };
 
 /** The modules a host can actually render. The rest resolve to nothing. */
-const AVAILABLE: readonly TimedModule[] = ['participate'];
+const AVAILABLE: ReadonlySet<TimedModule> = new Set(['participate']);
 
 /**
  * The module to lift right now, or null to leave Home in its ordinary order.
@@ -86,5 +87,26 @@ const AVAILABLE: readonly TimedModule[] = ['participate'];
  */
 export function timedModuleAt(now: number | Date): TimedModule | null {
   const wanted = WANTED[daypartAt(now)];
-  return wanted !== null && AVAILABLE.includes(wanted) ? wanted : null;
+  return wanted !== null && AVAILABLE.has(wanted) ? wanted : null;
+}
+
+/**
+ * The next moment at which `daypartAt` changes its answer, as a timestamp.
+ *
+ * For a host that reads the clock on render. Home computes `timedModuleAt` when it
+ * renders, and nothing re-renders a mounted tab on the hour, so without this the
+ * block moved on the next feed load or cold start rather than at the boundary. One
+ * timer to this moment, cancelled with the screen, is what makes the screen agree
+ * with the table. Local hours, like everything else here: `Date`'s local constructor
+ * absorbs a daylight-saving shift on the day it happens.
+ */
+export function nextDaypartChange(now: number | Date): number {
+  const at = new Date(now);
+  const boundaries = [...new Set(Object.values(DAYPART_HOURS).flat())].sort((a, b) => a - b);
+  for (const hour of boundaries) {
+    const candidate = new Date(at.getFullYear(), at.getMonth(), at.getDate(), hour).getTime();
+    if (candidate > at.getTime()) return candidate;
+  }
+  // Past today's last boundary: the first one tomorrow.
+  return new Date(at.getFullYear(), at.getMonth(), at.getDate() + 1, boundaries[0]!).getTime();
 }

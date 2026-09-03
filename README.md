@@ -97,7 +97,7 @@ http://localhost:8099/preview.html          # a static export
 ```
 
 Device, route, appearance and app state travel in the URL
-(`preview.html#/artikel?d=ipad-pro-11&t=dark&s=member`), so a finding can be handed
+(`preview.html#/artikel?d=ipad-pro-11&t=dark&s=signed-in`), so a finding can be handed
 over as a link. The frame is the app untouched: inside it, `useWindowDimensions` and
 the reader's `48rem` breakpoint see the simulated size. `Tools` adds the app's
 appearance and state, its console, a live palette, layout checks and an

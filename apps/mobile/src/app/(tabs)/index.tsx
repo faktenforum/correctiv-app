@@ -13,10 +13,10 @@ import { MediathekReihe } from '@/components/home/MediathekReihe';
 import { SpotlightBriefing } from '@/components/home/SpotlightBriefing';
 import { Hairline, Screen, SectionHeader, Typo } from '@/components/ui';
 import { callouts } from '@correctiv/app-core/data/callouts';
-import { timedModuleAt } from '@correctiv/app-core/lib/daypart';
 import { useFeed } from '@/lib/feeds/useFeed';
 import { openArticle } from '@/lib/openArticle';
 import { useColors } from '@/lib/theme';
+import { useTimedModule } from '@/lib/useTimedModule';
 
 /**
  * Home — a curated cross-section of the ecosystem, in the draft's order: lead
@@ -29,7 +29,7 @@ import { useColors } from '@/lib/theme';
  *
  * One block moves with the clock. The requirements want time-based modules lifted to
  * the top "after they drop into the chronological feed", so the callout is rendered
- * once, in one of two places, and `timedModuleAt` decides which. Two more slots are
+ * once, in one of two places, and `useTimedModule` decides which. Two more slots are
  * specified and stay empty because nothing in the app can fill them yet; the reasons
  * are in `lib/daypart.ts` beside the table.
  */
@@ -45,12 +45,7 @@ export default function HomeScreen() {
   const hero = recherchen.data?.[0];
   const neueste = recherchen.data?.slice(1, 6) ?? [];
   const callout = callouts.find((entry) => entry.status === 'open');
-  /**
-   * Read per render rather than held in state. Home re-renders often enough that the
-   * block moves within a minute or two of the hour, and a timer to make it exact would
-   * be a subscription nobody cancels for a change nobody is watching for.
-   */
-  const liftCallout = timedModuleAt(Date.now()) === 'participate';
+  const liftCallout = useTimedModule() === 'participate';
 
   return (
     <Screen>

@@ -114,17 +114,29 @@ export interface Entitlement {
   source: EntitlementSource | null;
   /** ISO timestamp after which the entitlement lapses; null for open-ended. */
   validUntil: string | null;
-  /** The local newsletters this account pays for, the second access level. */
+  /**
+   * The local newsletters this account pays for, the second access level. Printed
+   * verbatim on the profile, so these are the areas' names as the membership system
+   * labels them, not ids. Nothing selects content by them yet.
+   */
   localAreas: string[];
   /**
-   * When the membership started, ISO-8601.
+   * When the membership started, ISO-8601, or null when the membership system did
+   * not say.
    *
    * Here rather than in a slice of its own because it is an answer, not a setting:
    * beabee knows the date, the app only prints it. It used to live in `membership`
    * beside a contribution the app simulated, and that slice is gone with
    * [ADR 0020](../../../../adr/0020-no-contribution-in-the-app.md).
+   *
+   * Nullable for a reason that is already on devices: `session` persists the
+   * entitlement as it was answered, and every entitlement stored before this field
+   * existed has none. `refreshEntitlement` re-dispatches the held answer rather than
+   * rebuilding it, so such an entitlement stays as it is until the next sign-in. The
+   * profile prints the tier without a date in that case, and the type says so rather
+   * than promising a string that hydration cannot keep.
    */
-  memberSince: string;
+  memberSince: string | null;
 }
 
 /** Who is signed in. The same account as on correctiv.org. */

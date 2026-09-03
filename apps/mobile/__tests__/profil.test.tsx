@@ -35,7 +35,7 @@ import GespeichertScreen from '@/app/gespeichert';
 import ProfilScreen from '@/app/(tabs)/profil';
 import { sessionActions } from '@correctiv/app-core/stores/session';
 import { resetStore } from '@correctiv/app-core/stores/store';
-import type { MembershipTier } from '@correctiv/app-core/types/models';
+import type { Entitlement, MembershipTier } from '@correctiv/app-core/types/models';
 
 import { coreActions, coreStore } from '@/lib/store/core';
 
@@ -156,7 +156,8 @@ describe('Profil as a member', () => {
             tier: 'paid',
             appAccess: true,
             source: 'trial',
-            validUntil: '2026-10-02T00:00:00.000Z',
+            // Noon, so the local date is the same in every timezone a test runs in.
+            validUntil: '2026-10-02T12:00:00.000Z',
             localAreas: [],
             memberSince: '2026-03-04T09:12:00.000Z',
           },
@@ -168,6 +169,36 @@ describe('Profil as a member', () => {
     expect(text).toContain('Ihre Testphase');
     expect(text).toContain('Läuft bis');
     expect(text).toContain('2. Oktober');
+  });
+
+  /**
+   * An entitlement stored by a build before `memberSince` existed hydrates without
+   * it, and `refreshEntitlement` keeps the held answer, so this state is on devices
+   * and in browsers that saw the demo before the field. The card degrades to the tier
+   * alone rather than to "seit undefined".
+   */
+  it('prints the tier without a date for an entitlement stored before the field existed', () => {
+    const stored = {
+      tier: 'paid',
+      appAccess: true,
+      source: 'paid',
+      validUntil: null,
+      localAreas: [],
+    } as unknown as Entitlement;
+    act(() => {
+      coreStore.dispatch(
+        sessionActions.hydrate({
+          account: { email: 'alex@example.org', name: 'Alex Beispiel' },
+          entitlement: stored,
+        }),
+      );
+    });
+
+    const text = renderedText(render(<ProfilScreen />));
+    expect(text).toContain('Mitgliedschaft mit Beitrag');
+    expect(text).not.toContain('· seit');
+    expect(text).not.toContain('undefined');
+    expect(text).toContain('Ihr Beitrag ermöglicht diese Recherchen');
   });
 
   it('opens the report, the saved list and the settings', () => {

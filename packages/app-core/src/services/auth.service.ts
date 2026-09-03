@@ -98,7 +98,7 @@ export function simulatedEntitlement(
     };
   }
   if (address.includes('lokal')) {
-    return { ...fullAccess, source: 'local-bundle', localAreas: ['gelsenkirchen'] };
+    return { ...fullAccess, source: 'local-bundle', localAreas: ['Gelsenkirchen'] };
   }
   if (address.includes('soli')) return { ...fullAccess, tier: 'soli' };
   return fullAccess;

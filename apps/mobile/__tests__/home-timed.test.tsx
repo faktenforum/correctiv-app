@@ -25,9 +25,19 @@ jest.mock('@expo/vector-icons', () => {
   return { Ionicons };
 });
 
-/** No network on Home: the feeds are not what this file is about. */
+/**
+ * No network on Home: the feeds are not what this file is about. The Spotlight and
+ * video hooks are stubbed for the same reason, and for one more: both lazy-load on
+ * first use, and a thunk that lands after the test body is an update outside `act`,
+ * fifty of them per run. That much console noise is where a real warning goes to hide.
+ */
 jest.mock('@/lib/feeds/useFeed', () => ({
   useFeed: () => ({ data: undefined, loading: false, offline: false, reload: jest.fn() }),
+}));
+jest.mock('@/lib/store/core', () => ({
+  ...jest.requireActual<typeof import('@/lib/store/core')>('@/lib/store/core'),
+  useSpotlight: () => ({ issues: [], status: 'idle', recent: [] }),
+  useVideoChannel: () => ({ videos: [], status: 'idle', error: null }),
 }));
 
 import { callouts } from '@correctiv/app-core/data/callouts';
@@ -76,17 +86,38 @@ describe('the callout on Home', () => {
    * unconditionally and sits between the two positions, rather than on a feed section
    * that is absent when the feeds are: an anchor that never renders makes both indexOf
    * calls agree on -1 and the test pass for the wrong reason. It did, before this
-   * comment.
+   * comment. Both indexes are asserted found for the same reason.
    */
-  it('sits above the rest of the page at lunchtime and below it otherwise', () => {
-    const order = (hour: number) => {
-      const text = JSON.stringify(renderAt(hour).toJSON());
-      const anchor = text.indexOf('exklusiv vorab');
-      expect(anchor).toBeGreaterThan(-1);
-      return text.indexOf(OPEN.title) < anchor ? 'top' : 'in-place';
-    };
+  const position = (tree: ReturnType<typeof render>) => {
+    const text = JSON.stringify(tree.toJSON());
+    const anchor = text.indexOf('exklusiv vorab');
+    const teaser = text.indexOf(OPEN.title);
+    expect(anchor).toBeGreaterThan(-1);
+    expect(teaser).toBeGreaterThan(-1);
+    return teaser < anchor ? 'top' : 'in-place';
+  };
 
-    expect(order(12)).toBe('top');
-    expect(order(20)).toBe('in-place');
+  it('sits above the rest of the page at lunchtime and below it otherwise', () => {
+    expect(position(renderAt(12))).toBe('top');
+    expect(position(renderAt(20))).toBe('in-place');
+  });
+
+  /**
+   * Nothing else re-renders Home on the hour: a tab screen stays mounted, and a feed
+   * landing or a pull to refresh is not a clock. So the screen owns one timer to the
+   * next boundary (`useTimedModule`), and this is the test that it fires. Rendered a
+   * minute before lunchtime, then the clock moves and nothing else does.
+   */
+  it('moves when the clock crosses a boundary, with nothing else happening', () => {
+    jest.useFakeTimers().setSystemTime(new Date(2026, 8, 3, 10, 59, 0, 0));
+    const tree = render(<HomeScreen />);
+    expect(position(tree)).toBe('in-place');
+
+    act(() => {
+      jest.advanceTimersByTime(60_000);
+    });
+
+    expect(position(tree)).toBe('top');
+    expect(teasers(tree)).toHaveLength(1);
   });
 });

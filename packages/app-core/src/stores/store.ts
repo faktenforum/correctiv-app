@@ -52,7 +52,7 @@ const rootReducer: typeof combined = (state, action) =>
 /**
  * One Redux store for the whole core.
  *
- * What used to be ten independent observable stores is thirteen slices of one state
+ * What used to be ten independent observable stores is twelve slices of one state
  * tree. The slice files kept their names and their public shape — the state
  * interfaces, the pure selectors and the German copy are unchanged — so the only
  * thing that moved is who owns the transition: a reducer now, not a closure over

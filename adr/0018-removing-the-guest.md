@@ -58,10 +58,10 @@ has no audience.
   beside every step. The door is at the entrance, not between the screens.
 - **The club's vocabulary.** The yellow, the `CLUB` badge, the `club` button variant.
   They mark what the membership brings, and they never gated anything.
-- **~~The `membership` slice and the join flow.~~ The slice still holds the simulated
-  contribution and still feeds "Beitrag ändern". Whether a contribution is set inside
+- **~~The `membership` slice and the join flow.~~** ~~The slice still holds the simulated
+  contribution and still feeds "Beitrag ändern".~~ Whether a contribution is set inside
   the app at all is a product and app-store decision that is not this repo's to take;
-  ADR 0016 named it and it is still open.** Both are gone with
+  ~~ADR 0016 named it and it is still open.~~ Both are gone with
   [ADR 0020](0020-no-contribution-in-the-app.md): the requirements answered the
   question, and the slice went with the flow it existed for. ~~`useIsMember` therefore stays as a binding,
   with a comment saying no screen reads it and none should read it as a gate again.~~

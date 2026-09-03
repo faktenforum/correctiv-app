@@ -57,7 +57,7 @@ dropping a host meant dropping that file plus its screens.
 
 ## Three conventions in the core
 
-1. **State is framework-neutral.** `stores/` is one Redux Toolkit store with fourteen
+1. **State is framework-neutral.** `stores/` is one Redux Toolkit store with twelve
    slices. `stores/store.ts` explains why the core owns the instance rather than the
    host. The host adds only the reactivity binding, `apps/mobile/src/lib/store/core.ts`
    over react-redux. A second host once bound the state this replaced to Vue's
