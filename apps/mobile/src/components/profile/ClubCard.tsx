@@ -27,7 +27,7 @@ export function ClubCard({
   memberSince: string | null;
 }) {
   return (
-    <View className="mt-s rounded-md bg-alternative p-m">
+    <View className="mt-s rounded-md bg-accent-alternative p-m">
       <View className="flex-row items-center justify-between">
         <Overline label="CORRECTIV Club" color="always-dark" />
         <Ionicons name="heart" size={20} color={colors['always-dark']} />

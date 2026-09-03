@@ -32,7 +32,7 @@
  *   1. parse      tokens/theme.css → a flat map of every --var-* value
  *   2. convert    the unit helpers the two consumers need (rem · px · s)
  *   3. group      that flat map → the token scales, by prefix
- *   4. palette    the second colour layer, and the two checks that must be LOUD
+ *   4. palette    the second colour scheme, and the checks that must be LOUD
  *   5. render     one function per artefact, each returning a complete string
  *   6. write      the only side effects in the file
  *
@@ -49,9 +49,10 @@ import { dirname, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
 import { themeCssPath, typographyCssPath } from '../../../scripts/tokens-source.mjs';
-// The dark palette and the fixed role colours — the one part of the colour system
-// that is a decision rather than a design token. The reasoning is in palette.js.
-import { dark, roles } from '../palette.js';
+// The dark scheme, the primitives that deliberately have none, and the two fixed
+// role colours — the one part of the colour system that is a decision rather than a
+// design token. The reasoning is in palette.js.
+import { dark, roles, schemeIndependent } from '../palette.js';
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const PKG = resolve(__dirname, '..');
@@ -67,10 +68,17 @@ const REM_BASE = 16; // wp-design-tokens assumes a 16px base, and so does Uniwin
 // ---------------------------------------------------------------------------
 
 /**
- * The FIRST `:root` block, and deliberately only that one: theme.css carries a
- * second inside its `@media (prefers-color-scheme: dark)` section, and that one is
- * the placeholder holding the LIGHT values. Reading it would produce a dark mode
- * that compiles, ships and changes nothing on screen.
+ * The FIRST `:root` block, and deliberately only that one.
+ *
+ * Until wp-design-tokens 8ed7a28 there was a second, inside
+ * `@media (prefers-color-scheme: dark)`, holding the LIGHT values under a
+ * `@TODO Set this to the actual values`. Reading it would have produced a dark mode
+ * that compiled, shipped and changed nothing on screen. Upstream has since deleted
+ * that block down to a bare `@TODO`, so today there is only one `:root` and this
+ * function would find it either way — but the restriction stays, because what comes
+ * back when upstream fills the block in is a SECOND SCHEME, and phase 4 is where a
+ * second scheme is assembled. Picking it up here would put dark values into the
+ * light palette.
  */
 function firstRootBlock(css) {
   const start = css.indexOf(':root');
@@ -180,7 +188,12 @@ function groupScales(vars) {
   }
 
   return {
-    tokenColors: byPrefix('--var-color-'), // emphasis, alternative, grey-100..700
+    // Three tiers, flat here because a Tailwind colour name has no tiers: the
+    // primitives (white, neutral-100..700, red-500, yellow-400), the semantic roles
+    // (canvas, on-canvas, stroke, accent, …) and the deprecated v1 aliases
+    // (emphasis, alternative, grey-100..700). `var()` references are already
+    // resolved by parseVars, so every value here is a hex.
+    tokenColors: byPrefix('--var-color-'),
     radius: byPrefix('--var-radius-', toPx), // xs, s, md
     durationsMs: byPrefix('--var-duration-', toMs), // fast, slow
     leading: byPrefix('--var-leading-', (v) => parseFloat(v)), // unitless
@@ -192,41 +205,82 @@ function groupScales(vars) {
 }
 
 // ---------------------------------------------------------------------------
-// 4. Palette — the second colour layer, and the two checks that must be loud
+// 4. Palette — the second colour scheme, and the checks that must be loud
 // ---------------------------------------------------------------------------
-// `roles` and `dark` come from palette.js (imported at the top), not from theme.css,
-// whose dark block is a placeholder carrying the light values.
+// `dark`, `schemeIndependent` and `roles` come from palette.js (imported at the
+// top). theme.css has no dark values to read: upstream's dark block is a bare
+// `@TODO`, and before that it was a placeholder holding the light values.
 
 /**
- * Both directions of one promise: every token colour has a dark value, and every
- * dark value belongs to a token colour.
+ * Both directions of one promise: every token colour is accounted for in exactly
+ * one of the two lists palette.js exports, and neither list names a colour that is
+ * not there.
  *
- * Neither failure has a symptom of its own — the colour simply stays on its light
- * value in dark mode, in a build that is otherwise green — so both THROW rather
- * than warn, and the message names the colour and which side is missing. Uniwind
- * needs the same guarantee: it refuses a pair of `@variant` blocks that do not
- * declare the same set of variables.
+ * The middle case is the one worth the code. A colour with no dark value has NO
+ * symptom of its own: it stays on its light value in dark mode, in a build that is
+ * otherwise green, and is noticed when someone opens the app on a dark phone and
+ * finds one card the wrong colour. So a colour in neither list THROWS rather than
+ * defaulting either way, and the message says what the choice is — because that
+ * choice, "is this a value or a role", is the only thing the generator cannot make
+ * for itself.
+ *
+ * `schemeIndependent` is what makes throwing affordable. Without it the check could
+ * only demand a dark value for every colour, and eleven primitives that genuinely
+ * must not move would each need a redundant entry restating its light value — at
+ * which point the entries stop being decisions and the check stops being read.
+ *
+ * Uniwind needs the same guarantee from the other end: it refuses a pair of
+ * `@variant` blocks that do not declare the same set of variables. Since both blocks
+ * are built from these lists, satisfying this satisfies that.
  */
 function assertPaletteAgrees(tokenColors) {
-  // A dark value for a token that does not (or no longer) exist would be invisible:
-  // the colour would simply stay on its light value in dark mode.
-  for (const name of Object.keys(dark)) {
-    if (tokenColors[name] == null) {
+  const independent = new Set(schemeIndependent);
+
+  // A name in both lists is a contradiction, not a duplicate: one says the colour
+  // moves and the other says it does not. Caught first, because the two loops below
+  // would each be satisfied and the `dark` value would silently win.
+  for (const name of schemeIndependent) {
+    if (dark[name] != null) {
       throw new Error(
-        `palette.js sets a dark value for "${name}", but theme.css has no such colour.`,
+        `palette.js lists "${name}" as scheme-independent AND gives it a dark value. ` +
+          'Pick one: a primitive names a value and does not move, a semantic token ' +
+          'names a role and does.',
       );
     }
   }
-  // And the other way round: a token without a dark value stays light and is only
-  // noticed in a finished build. Role colours are scheme-independent on purpose.
+
+  // Either list may name a colour that has gone from theme.css. Both are invisible:
+  // an unused dark value changes nothing, and a stale primitive protects nothing.
+  for (const [name, claim] of [
+    ...Object.keys(dark).map((n) => [n, 'has a dark value in palette.js']),
+    ...schemeIndependent.map((n) => [n, 'is listed as scheme-independent in palette.js']),
+  ]) {
+    if (tokenColors[name] == null) {
+      throw new Error(`"${name}" ${claim}, but theme.css has no such colour.`);
+    }
+  }
+
+  // The one that catches an upstream addition. Every colour must be classified.
   for (const name of Object.keys(tokenColors)) {
-    if (dark[name] == null) {
-      throw new Error(`theme.css has the colour "${name}", palette.js gives it no dark value.`);
+    if (dark[name] == null && !independent.has(name)) {
+      throw new Error(
+        `theme.css has the colour "${name}", and palette.js says nothing about it.\n\n` +
+          'Add it to one of the two exports there:\n' +
+          `  dark['${name}']         if it names a ROLE and needs a dark value\n` +
+          `  schemeIndependent       if it names a VALUE and must not move\n\n` +
+          'There is no default, because a colour left out stays on its light value ' +
+          'in dark mode and nothing goes red.',
+      );
     }
   }
 }
 
-/** The complete palette per scheme: tokens plus roles. */
+/**
+ * The complete palette per scheme: tokens, plus the two role colours.
+ *
+ * `colorsDark` starts from the light values so that the scheme-independent
+ * primitives carry over untouched, and `dark` overwrites the rest.
+ */
 function buildPalettes(tokenColors) {
   assertPaletteAgrees(tokenColors);
   return {
@@ -260,7 +314,7 @@ const TYPO_PROPERTIES = {
  * generation rather than as a difference nobody notices between the CSS and the
  * app.
  */
-const TYPO_IGNORED = ['word-spacing'];
+const TYPO_IGNORED = new Set(['word-spacing']);
 
 /** The body of `{ … }` starting at `open`, brace-matched so nested rules survive. */
 function balancedBody(css, open) {
@@ -278,7 +332,7 @@ function balancedBody(css, open) {
 function readDeclarations(body, variant, where) {
   const spec = {};
   for (const [, property, value] of body.matchAll(/^\s*([a-z-]+)\s*:\s*([^;]+);/gm)) {
-    if (TYPO_IGNORED.includes(property)) continue;
+    if (TYPO_IGNORED.has(property)) continue;
     const mapping = TYPO_PROPERTIES[property];
     if (!mapping) {
       throw new Error(

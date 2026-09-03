@@ -53,7 +53,7 @@ export function SettingRow({
         accessibilityLabel={label}
         // The track is a page surface and follows the scheme; the thumb stays white —
         // in both states it sits on a coloured or light track.
-        trackColor={{ false: palette['grey-300'], true: palette.emphasis }}
+        trackColor={{ false: palette['stroke'], true: palette.accent }}
         thumbColor={colors['always-light']}
         {...WEB_THUMB}
       />

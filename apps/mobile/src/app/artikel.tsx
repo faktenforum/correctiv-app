@@ -114,7 +114,7 @@ export default function ArtikelScreen() {
   };
 
   return (
-    <View className="flex-1 bg-grey-100">
+    <View className="flex-1 bg-canvas">
       {article ? (
         <ReaderView
           html={readerHtml(article, { textScale, isDark })}
@@ -128,7 +128,7 @@ export default function ArtikelScreen() {
               <Typo variant="headline-s" className="text-center">
                 Artikel konnte nicht geladen werden
               </Typo>
-              <Typo variant="text-m" color="grey-600" className="mt-2xs text-center">
+              <Typo variant="text-m" color="on-canvas-muted" className="mt-2xs text-center">
                 {title ?? 'Vielleicht hilft ein zweiter Versuch.'}
               </Typo>
               <View className="mt-m flex-row gap-s">
@@ -143,7 +143,7 @@ export default function ArtikelScreen() {
               </View>
             </>
           ) : (
-            <ActivityIndicator color={colors.emphasis} />
+            <ActivityIndicator color={colors.accent} />
           )}
         </View>
       )}
@@ -161,7 +161,7 @@ export default function ArtikelScreen() {
       >
         <SafeAreaView
           edges={['top']}
-          className={header === 'onSurface' ? 'bg-grey-100 border-b border-grey-300' : ''}
+          className={header === 'onSurface' ? 'bg-canvas border-b border-stroke' : ''}
         >
           <View className="flex-row items-center justify-between px-s py-2xs">
             <HeaderButton icon="chevron-back" label="Zurück" onPress={goBack} />
@@ -224,10 +224,10 @@ function HeaderButton({
       hitSlop={8}
       accessibilityRole="button"
       accessibilityLabel={label}
-      className="items-center justify-center rounded-full border border-grey-300 bg-grey-100 active:opacity-70"
+      className="items-center justify-center rounded-full border border-stroke bg-canvas active:opacity-70"
       style={{ width: sizes.iconButton, height: sizes.iconButton }}
     >
-      <Ionicons name={icon} size={22} color={colors['grey-700']} />
+      <Ionicons name={icon} size={22} color={colors['on-canvas']} />
     </Pressable>
   );
 }

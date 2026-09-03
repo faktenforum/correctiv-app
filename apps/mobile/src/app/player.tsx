@@ -21,7 +21,7 @@ export default function PlayerScreen() {
   const live = track?.kind === 'radio';
 
   return (
-    <SafeAreaView edges={['top', 'bottom']} className="flex-1 bg-grey-100">
+    <SafeAreaView edges={['top', 'bottom']} className="flex-1 bg-canvas">
       <View className="flex-row px-s py-2xs">
         <Pressable
           accessibilityRole="button"
@@ -31,13 +31,13 @@ export default function PlayerScreen() {
           className="items-center justify-center active:opacity-70"
           style={{ width: sizes.iconButton, height: sizes.iconButton }}
         >
-          <Ionicons name="close" size={24} color={colors['grey-700']} />
+          <Ionicons name="close" size={24} color={colors['on-canvas']} />
         </Pressable>
       </View>
 
       {!track ? (
         <View className="flex-1 items-center justify-center px-m">
-          <Typo variant="text-m" color="grey-600">
+          <Typo variant="text-m" color="on-canvas-muted">
             Es läuft gerade nichts.
           </Typo>
         </View>
@@ -45,23 +45,23 @@ export default function PlayerScreen() {
         <>
           <View className="flex-1 justify-center px-m">
             <View
-              className="items-center justify-center self-center rounded-md bg-grey-200"
+              className="items-center justify-center self-center rounded-md bg-surface"
               style={{ width: 180, height: 180 }}
             >
               <Ionicons
                 name={live ? 'radio' : 'headset'}
                 size={56}
-                color={live ? colors.emphasis : colors['grey-500']}
+                color={live ? colors.accent : colors['grey-500']}
               />
             </View>
             <Typo variant="headline-l" className="mt-m">
               {track.title}
             </Typo>
-            <Typo variant="text-s" color={live ? 'emphasis' : 'grey-600'} className="mt-2xs">
+            <Typo variant="text-s" color={live ? 'accent' : 'on-canvas-muted'} className="mt-2xs">
               {live ? '● LIVE · 24/7 aus Bottrop' : (track.subtitle ?? '')}
             </Typo>
             {status === 'error' && (
-              <Typo variant="text-s" color="emphasis" className="mt-s">
+              <Typo variant="text-s" color="accent" className="mt-s">
                 {errorMessage}
               </Typo>
             )}
@@ -69,7 +69,7 @@ export default function PlayerScreen() {
 
           <View className="px-m pb-m">
             {live ? (
-              <Typo variant="text-s" color="grey-600" className="mb-s">
+              <Typo variant="text-s" color="on-canvas-muted" className="mb-s">
                 Livestream. Salon5 sendet rund um die Uhr.
               </Typo>
             ) : (
@@ -99,7 +99,7 @@ export default function PlayerScreen() {
                   hitSlop={8}
                   className="absolute left-0 active:opacity-70"
                 >
-                  <Typo variant="text-m" weight="semibold" color="grey-600">
+                  <Typo variant="text-m" weight="semibold" color="on-canvas-muted">
                     {speed}×
                   </Typo>
                 </Pressable>
@@ -108,7 +108,7 @@ export default function PlayerScreen() {
                 accessibilityRole="button"
                 accessibilityLabel={status === 'playing' ? 'Pausieren' : 'Abspielen'}
                 onPress={togglePlay}
-                className="items-center justify-center rounded-full bg-emphasis active:opacity-80"
+                className="items-center justify-center rounded-full bg-accent active:opacity-80"
                 style={{ width: sizes.playButtonLarge, height: sizes.playButtonLarge }}
               >
                 {status === 'loading' ? (

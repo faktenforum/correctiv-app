@@ -39,11 +39,11 @@ export function CalloutCard({
 
   return (
     <Card className="mb-s">
-      <Overline label={style.kicker} color="emphasis" />
+      <Overline label={style.kicker} color="accent" />
       <Typo variant="headline-xs" className="mt-2xs">
         {callout.title}
       </Typo>
-      <Typo variant="text-s" color="grey-600" numberOfLines={2} className="mt-2xs">
+      <Typo variant="text-s" color="on-canvas-muted" numberOfLines={2} className="mt-2xs">
         {callout.excerpt}
       </Typo>
 
@@ -51,14 +51,14 @@ export function CalloutCard({
         className="mt-s overflow-hidden rounded-s bg-grey-250"
         style={{ height: sizes.progressBar }}
       >
-        <View className="h-full bg-grey-700" style={{ width: `${percent}%` }} />
+        <View className="h-full bg-on-surface" style={{ width: `${percent}%` }} />
       </View>
       <Typo variant="text-s" color="grey-500" className="mt-3xs">
         {formatNumberDe(total)} {style.unit}
       </Typo>
 
       {submitted && (
-        <Typo variant="text-s" color="emphasis" className="mt-2xs">
+        <Typo variant="text-s" color="accent" className="mt-2xs">
           ✓ Sie haben beigetragen
         </Typo>
       )}

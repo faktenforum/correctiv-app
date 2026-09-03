@@ -18,18 +18,18 @@ export type ButtonProps = Omit<PressableProps, 'children' | 'style'> & {
 // club's colour and carries meaning there; on red it is also loud and low-contrast.
 // The design draft uses white here.
 const SURFACE: Record<Variant, string> = {
-  primary: 'bg-emphasis',
-  secondary: 'bg-grey-200',
-  outline: 'bg-grey-100 border border-grey-300',
-  club: 'bg-alternative',
+  primary: 'bg-accent',
+  secondary: 'bg-surface',
+  outline: 'bg-canvas border border-stroke',
+  club: 'bg-accent-alternative',
   // White, not the page surface: this button sits on the red mission screen,
   // which is red in both schemes.
   onEmphasis: 'bg-always-light',
 };
 const LABEL_COLOR: Record<Variant, ColorToken> = {
   primary: 'always-light',
-  secondary: 'grey-700',
-  outline: 'grey-700',
+  secondary: 'on-canvas',
+  outline: 'on-canvas',
   club: 'always-dark',
   onEmphasis: 'always-dark',
 };

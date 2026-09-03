@@ -35,13 +35,13 @@ export default function FormularScreen() {
 
   if (!callout) {
     return (
-      <View className="flex-1 bg-grey-100">
+      <View className="flex-1 bg-canvas">
         <ScreenHeader />
         <View className="flex-1 items-center justify-center px-m">
           <Typo variant="headline-s" className="text-center">
             Dieses Formular gibt es nicht
           </Typo>
-          <Typo variant="text-m" color="grey-600" className="mt-2xs text-center">
+          <Typo variant="text-m" color="on-canvas-muted" className="mt-2xs text-center">
             {slug ? `Unbekannter Aufruf „${slug}“.` : 'Es wurde kein Aufruf übergeben.'}
           </Typo>
         </View>
@@ -90,7 +90,7 @@ export default function FormularScreen() {
   };
 
   return (
-    <View className="flex-1 bg-grey-100">
+    <View className="flex-1 bg-canvas">
       <ScreenHeader backLabel="Abbrechen" />
 
       {/* Step indicator: one bar per slide, filled up to the current one. */}
@@ -98,7 +98,7 @@ export default function FormularScreen() {
         {slides.map((s, i) => (
           <View
             key={s.id}
-            className={['flex-1 rounded-s', i <= step ? 'bg-emphasis' : 'bg-grey-300'].join(' ')}
+            className={['flex-1 rounded-s', i <= step ? 'bg-accent' : 'bg-stroke'].join(' ')}
             style={{ height: sizes.progressBar }}
           />
         ))}
@@ -134,7 +134,7 @@ export default function FormularScreen() {
         ))}
       </ScrollView>
 
-      <View className="bg-grey-100">
+      <View className="bg-canvas">
         <Hairline />
         <View className="flex-row gap-s px-m py-s">
           {step > 0 && (
@@ -163,13 +163,13 @@ function ThankYou({ callout }: { callout: Callout }) {
   const extra = useExtraCount(callout.slug);
 
   return (
-    <View className="flex-1 bg-grey-100">
+    <View className="flex-1 bg-canvas">
       <View className="flex-1 items-center justify-center px-m">
-        <Ionicons name="checkmark-circle" size={64} color={colors.emphasis} />
+        <Ionicons name="checkmark-circle" size={64} color={colors.accent} />
         <Typo variant="headline-xl" className="mt-m text-center">
           Danke für Ihren Beitrag!
         </Typo>
-        <Typo variant="text-m" color="grey-600" className="mt-s text-center">
+        <Typo variant="text-m" color="on-canvas-muted" className="mt-s text-center">
           Ihr Beitrag fließt in die Recherche ein. Die Redaktion prüft alle Hinweise. Bei Rückfragen
           melden wir uns.
         </Typo>

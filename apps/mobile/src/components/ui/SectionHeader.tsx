@@ -17,7 +17,7 @@ export function SectionHeader({ title, actionLabel, onAction, className }: Secti
       <Typo variant="headline-m">{title}</Typo>
       {actionLabel ? (
         <Pressable onPress={onAction} hitSlop={8} className="active:opacity-60">
-          <Typo variant="text-s" color="emphasis">
+          <Typo variant="text-s" color="accent">
             {actionLabel}
           </Typo>
         </Pressable>

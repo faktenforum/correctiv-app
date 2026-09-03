@@ -204,7 +204,7 @@ function AppShell() {
             headerShown: false,
             // The stack's own surface, visible for the length of a push animation.
             // Left at its default white it flashed on every navigation in dark mode.
-            contentStyle: { backgroundColor: palette['grey-100'] },
+            contentStyle: { backgroundColor: palette['canvas'] },
           }}
         >
           <Stack.Screen name="(tabs)" />

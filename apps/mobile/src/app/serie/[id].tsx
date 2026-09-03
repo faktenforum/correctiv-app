@@ -38,19 +38,19 @@ export default function SerieScreen() {
   const { series, status } = usePodcastSeries(id ?? '');
 
   return (
-    <View className="flex-1 bg-grey-100">
+    <View className="flex-1 bg-canvas">
       <ScreenHeader />
 
       {!series ? (
         <View className="flex-1 items-center justify-center px-m">
           {status === 'loading' || status === 'idle' ? (
-            <ActivityIndicator color={colors.emphasis} />
+            <ActivityIndicator color={colors.accent} />
           ) : (
             <>
               <Typo variant="headline-s" className="text-center">
                 Diese Serie gibt es nicht
               </Typo>
-              <Typo variant="text-m" color="grey-600" className="mt-2xs text-center">
+              <Typo variant="text-m" color="on-canvas-muted" className="mt-2xs text-center">
                 {id ? `Unbekannte Kennung „${id}“.` : 'Es wurde keine Kennung übergeben.'}
               </Typo>
             </>
@@ -70,10 +70,10 @@ export default function SerieScreen() {
           ListHeaderComponent={
             <View>
               <Typo variant="headline-l">{series.title}</Typo>
-              <Typo variant="text-s" color="emphasis" className="mt-4xs">
+              <Typo variant="text-s" color="accent" className="mt-4xs">
                 {series.publisher}
               </Typo>
-              <Typo variant="text-m" color="grey-600" className="mt-s">
+              <Typo variant="text-m" color="on-canvas-muted" className="mt-s">
                 {series.description}
               </Typo>
 
@@ -83,7 +83,7 @@ export default function SerieScreen() {
                   REST API since ADR 0015), so on the web target
                   this is the normal case, not an edge one. */}
               {status === 'offline' && (
-                <Typo variant="text-s" color="grey-600" className="mt-s">
+                <Typo variant="text-s" color="on-canvas-muted" className="mt-s">
                   Ohne Verbindung. Sie sehen Beispielfolgen.
                 </Typo>
               )}

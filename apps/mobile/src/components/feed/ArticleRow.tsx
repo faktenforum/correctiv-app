@@ -24,7 +24,7 @@ export function ArticleRow({
           Row gap only, and a space either side inside the text. */}
       <View className="mt-3xs flex-row flex-wrap items-center gap-y-2xs">
         {item.author ? (
-          <Typo variant="text-s" color="grey-600">
+          <Typo variant="text-s" color="on-canvas-muted">
             {item.author}
           </Typo>
         ) : null}

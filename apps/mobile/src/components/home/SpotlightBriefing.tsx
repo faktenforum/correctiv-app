@@ -31,7 +31,7 @@ export function SpotlightBriefing({ onOpenArchive }: { onOpenArchive: () => void
   return (
     <Card tone="surface">
       <View className="flex-row items-center justify-between">
-        <Overline label="Spotlight" color="grey-700" />
+        <Overline label="Spotlight" color="on-canvas" />
         <Pressable
           onPress={onOpenArchive}
           hitSlop={8}
@@ -39,7 +39,7 @@ export function SpotlightBriefing({ onOpenArchive }: { onOpenArchive: () => void
           accessibilityLabel="Alle Spotlight-Ausgaben"
           className="active:opacity-60"
         >
-          <Typo variant="text-s" weight="bold" color="emphasis">
+          <Typo variant="text-s" weight="bold" color="accent">
             Alle Ausgaben →
           </Typo>
         </Pressable>
@@ -70,7 +70,7 @@ function IssueRow({ issue }: { issue: SpotlightIssue }) {
         accessibilityLabel={issue.subject}
         className="flex-row gap-s pt-s active:opacity-70"
       >
-        <Typo variant="text-s" weight="bold" color="grey-600">
+        <Typo variant="text-s" weight="bold" color="on-canvas-muted">
           {formatDateShortDe(issue.date)}
         </Typo>
         <Typo variant="text-m" numberOfLines={2} className="flex-1">

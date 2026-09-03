@@ -54,12 +54,12 @@ export function ArticleHero({
       <Bleed>
         <Thumbnail uri={imageUrl} aspectRatio={16 / 9} icon="image-outline" />
       </Bleed>
-      <Overline label={kicker} color="emphasis" className="mt-s" />
+      <Overline label={kicker} color="accent" className="mt-s" />
       <Typo variant="headline-l" className="mt-2xs">
         {item.title}
       </Typo>
       {item.teaser.length > 0 && (
-        <Typo variant="text-m" color="grey-600" className="mt-2xs" numberOfLines={3}>
+        <Typo variant="text-m" color="on-canvas-muted" className="mt-2xs" numberOfLines={3}>
           {item.teaser}
         </Typo>
       )}

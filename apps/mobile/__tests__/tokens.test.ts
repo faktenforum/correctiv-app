@@ -24,7 +24,12 @@ import { execFileSync } from 'node:child_process';
 import { readFileSync, writeFileSync } from 'node:fs';
 import { resolve } from 'node:path';
 
-import { colors, colorsDark, spacingPx } from '@correctiv/design-tokens/tokens.generated';
+import {
+  colors,
+  colorsDark,
+  spacingPx,
+  type ColorToken,
+} from '@correctiv/design-tokens/tokens.generated';
 import { typographySpecs } from '@correctiv/design-tokens/typography.generated';
 import { fontSizePx, leading, letterSpacingPx } from '@correctiv/design-tokens/tokens.generated';
 // Resolves the vendored tokens/ and nothing else — see scripts/tokens-source.mjs.
@@ -158,12 +163,6 @@ describe('token bridge', () => {
   });
 });
 
-/**
- * Dark mode rests on two promises that are easy to break while editing
- * packages/design-tokens/palette.js — and both break silently: the app compiles,
- * the build is green, and only on a device is there white text on a white
- * background.
- */
 describe('typography specs', () => {
   it('carries every ty-* utility the source defines', () => {
     // Eleven, and the count is the point: these were transcribed by hand, so a
@@ -205,6 +204,12 @@ describe('typography specs', () => {
   });
 });
 
+/**
+ * Dark mode rests on promises that are easy to break while editing
+ * packages/design-tokens/palette.js — and every one of them breaks silently: the
+ * app compiles, the build is green, and only on a device is there white text on a
+ * white background.
+ */
 describe('two-scheme palette', () => {
   it('keeps the role colours identical in both schemes', () => {
     // Otherwise their name is a lie: they sit on surfaces that do not switch
@@ -222,6 +227,89 @@ describe('two-scheme palette', () => {
     expect(colorsDark.emphasis).not.toBe(colors.emphasis);
   });
 
+  it('holds the primitives still, which is what makes them primitives', () => {
+    // The tier contract, and the reason `schemeIndependent` is a list in palette.js
+    // rather than something inferred. `white` names a VALUE: the white button on the
+    // red onboarding screen is white on a dark phone too, because the red underneath
+    // it did not change. A primitive that starts following the scheme takes every
+    // such surface with it, and nothing else here would notice.
+    for (const name of PRIMITIVES) {
+      expect(colorsDark[name]).toBe(colors[name]);
+    }
+  });
+
+  it('moves every semantic token, which is what makes them semantic', () => {
+    // The inverse, and the one that catches an upstream addition slipping through as
+    // a primitive. `canvas` names a ROLE; a role that holds still in dark mode is a
+    // white page on a dark phone.
+    //
+    // `accent-alternative` is the exception and has to be named: club yellow reads on
+    // both schemes and carries meaning, so it is deliberately the same colour twice.
+    for (const name of SEMANTIC) {
+      if (name === 'accent-alternative') continue;
+      expect(colorsDark[name]).not.toBe(colors[name]);
+    }
+    expect(colorsDark['accent-alternative']).toBe(colors['accent-alternative']);
+  });
+
+  it('gives each semantic token the same value as the v1 alias it replaces', () => {
+    /**
+     * The claim ADR 0022 rests on: adopting the semantic tier did not restyle the
+     * app. Every migration it licenses — `bg-grey-100` to `bg-canvas`,
+     * `text-grey-600` to `text-on-canvas-muted` — is a rename and not a repaint,
+     * and this is what says so, in BOTH schemes.
+     *
+     * Assert it here and the migration is checkable; leave it to review and the
+     * only way to see a wrong pairing is to open the app and recognise the colour.
+     *
+     * `stroke` is deliberately absent, and it is the one mapping that is NOT a
+     * rename: its light value is `neutral-300` #cecece, one step stronger than the
+     * `grey-300` #e6e6e6 the app used for hairlines. That change was taken on
+     * purpose, so it does not belong in a table of things that did not change.
+     * `on-background` is absent for the opposite reason: `neutral-600` arrived with
+     * the semantic tier and no v1 grey ever pointed at it.
+     */
+    // Typed both sides, so a token name that stops existing fails here as a type
+    // error rather than as an undefined compared against an undefined — which is
+    // what a Record<string, string> would have given, and it would have passed.
+    const REPLACES: [ColorToken, ColorToken][] = [
+      ['canvas', 'grey-100'],
+      ['background', 'grey-200'],
+      ['surface', 'grey-200'],
+      ['on-canvas', 'grey-700'],
+      ['on-surface', 'grey-700'],
+      ['on-canvas-muted', 'grey-600'],
+      ['stroke-strong', 'grey-500'],
+      ['accent', 'emphasis'],
+      ['on-canvas-accent', 'emphasis'],
+      ['accent-alternative', 'alternative'],
+    ];
+    for (const [semantic, v1] of REPLACES) {
+      expect([semantic, colors[semantic]]).toEqual([semantic, colors[v1]]);
+      expect([semantic, colorsDark[semantic]]).toEqual([semantic, colorsDark[v1]]);
+    }
+  });
+
+  it('keeps each foreground clear of the background it is named for', () => {
+    // What the `-on-` prefix promises, checked rather than trusted. The pairing is
+    // in the name, so a foreground assigned the brightness of its own background —
+    // the mistake a flat scale invites and this tier exists to prevent — is caught
+    // in both schemes at once.
+    for (const [fg, bg] of [
+      ['on-canvas', 'canvas'],
+      ['on-surface', 'surface'],
+      ['on-background', 'background'],
+      ['on-canvas-muted', 'canvas'],
+    ] as const) {
+      for (const scheme of [colors, colorsDark]) {
+        expect([fg, Math.abs(brightness(scheme[fg]) - brightness(scheme[bg])) > 0.4]).toEqual([
+          fg,
+          true,
+        ]);
+      }
+    }
+  });
+
   it('keeps body text clear of the page surface in both schemes', () => {
     // The mix-up a non-semantic scale invites: grey-100 is a surface, grey-700 is
     // text. Assign the dark values the same way round and the text ends up at
@@ -233,6 +321,44 @@ describe('two-scheme palette', () => {
     }
   });
 });
+
+/**
+ * The two tiers, spelled out here rather than imported from palette.js.
+ *
+ * palette.js is the thing under test: reading its own `schemeIndependent` back would
+ * make the primitive check agree with whatever that file currently says, including
+ * after someone moves `canvas` into it. A second copy is the point — when upstream
+ * adds a colour, the generator throws until palette.js classifies it and these fail
+ * until a human classifies it here too.
+ */
+const PRIMITIVES: ColorToken[] = [
+  'black',
+  'white',
+  'neutral-100',
+  'neutral-200',
+  'neutral-300',
+  'neutral-400',
+  'neutral-500',
+  'neutral-600',
+  'neutral-700',
+  'red-500',
+  'yellow-400',
+];
+
+const SEMANTIC: ColorToken[] = [
+  'accent',
+  'accent-alternative',
+  'background',
+  'canvas',
+  'surface',
+  'on-background',
+  'on-canvas',
+  'on-surface',
+  'on-canvas-muted',
+  'on-canvas-accent',
+  'stroke',
+  'stroke-strong',
+];
 
 /** Perceived brightness, 0…1, roughly per ITU-R BT.601. */
 function brightness(hex: string): number {

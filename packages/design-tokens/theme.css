@@ -58,6 +58,29 @@
   --container-wide: 62.5rem;
 
   /* Light values, so a consumer that never switches themes is already right. */
+  --color-black: #000000;
+  --color-white: #ffffff;
+  --color-neutral-100: #f8f8f8;
+  --color-neutral-200: #e6e6e6;
+  --color-neutral-300: #cecece;
+  --color-neutral-400: #b3b3b3;
+  --color-neutral-500: #707070;
+  --color-neutral-600: #4a4a4a;
+  --color-neutral-700: #333333;
+  --color-red-500: #ff5064;
+  --color-yellow-400: #fde162;
+  --color-accent: #ff5064;
+  --color-accent-alternative: #fde162;
+  --color-background: #f8f8f8;
+  --color-canvas: #ffffff;
+  --color-surface: #f8f8f8;
+  --color-on-background: #4a4a4a;
+  --color-on-canvas: #333333;
+  --color-on-surface: #333333;
+  --color-on-canvas-muted: #707070;
+  --color-on-canvas-accent: #ff5064;
+  --color-stroke: #cecece;
+  --color-stroke-strong: #b3b3b3;
   --color-emphasis: #ff5064;
   --color-alternative: #fde162;
   --color-grey-100: #ffffff;
@@ -73,6 +96,29 @@
 }
 
 @variant light {
+  --color-black: #000000;
+  --color-white: #ffffff;
+  --color-neutral-100: #f8f8f8;
+  --color-neutral-200: #e6e6e6;
+  --color-neutral-300: #cecece;
+  --color-neutral-400: #b3b3b3;
+  --color-neutral-500: #707070;
+  --color-neutral-600: #4a4a4a;
+  --color-neutral-700: #333333;
+  --color-red-500: #ff5064;
+  --color-yellow-400: #fde162;
+  --color-accent: #ff5064;
+  --color-accent-alternative: #fde162;
+  --color-background: #f8f8f8;
+  --color-canvas: #ffffff;
+  --color-surface: #f8f8f8;
+  --color-on-background: #4a4a4a;
+  --color-on-canvas: #333333;
+  --color-on-surface: #333333;
+  --color-on-canvas-muted: #707070;
+  --color-on-canvas-accent: #ff5064;
+  --color-stroke: #cecece;
+  --color-stroke-strong: #b3b3b3;
   --color-emphasis: #ff5064;
   --color-alternative: #fde162;
   --color-grey-100: #ffffff;
@@ -88,6 +134,29 @@
 }
 
 @variant dark {
+  --color-black: #000000;
+  --color-white: #ffffff;
+  --color-neutral-100: #f8f8f8;
+  --color-neutral-200: #e6e6e6;
+  --color-neutral-300: #cecece;
+  --color-neutral-400: #b3b3b3;
+  --color-neutral-500: #707070;
+  --color-neutral-600: #4a4a4a;
+  --color-neutral-700: #333333;
+  --color-red-500: #ff5064;
+  --color-yellow-400: #fde162;
+  --color-accent: #ff6173;
+  --color-accent-alternative: #fde162;
+  --color-background: #242424;
+  --color-canvas: #1a1a1a;
+  --color-surface: #242424;
+  --color-on-background: #cfcfcf;
+  --color-on-canvas: #f2f2f2;
+  --color-on-surface: #f2f2f2;
+  --color-on-canvas-muted: #a8a8a8;
+  --color-on-canvas-accent: #ff6173;
+  --color-stroke: #4a4a4a;
+  --color-stroke-strong: #7c7c7c;
   --color-emphasis: #ff6173;
   --color-alternative: #fde162;
   --color-grey-100: #1a1a1a;

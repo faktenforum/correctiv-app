@@ -68,7 +68,7 @@ export default function ProjektScreen() {
   const action = project?.action ? ACTIONS[project.action] : null;
 
   return (
-    <View className="flex-1 bg-grey-100">
+    <View className="flex-1 bg-canvas">
       <ScreenHeader />
 
       {!project ? (
@@ -76,7 +76,7 @@ export default function ProjektScreen() {
           <Typo variant="headline-s" className="text-center">
             Dieses Projekt gibt es nicht
           </Typo>
-          <Typo variant="text-m" color="grey-600" className="mt-2xs text-center">
+          <Typo variant="text-m" color="on-canvas-muted" className="mt-2xs text-center">
             {id ? `Unbekannte Kennung „${id}“.` : 'Es wurde keine Kennung übergeben.'}
           </Typo>
         </View>
@@ -87,7 +87,7 @@ export default function ProjektScreen() {
           showsVerticalScrollIndicator={false}
         >
           <Typo variant="headline-l">{project.name}</Typo>
-          <Typo variant="text-m" color="grey-600" className="mt-2xs">
+          <Typo variant="text-m" color="on-canvas-muted" className="mt-2xs">
             {project.description}
           </Typo>
 
@@ -100,7 +100,7 @@ export default function ProjektScreen() {
           {project.teaserOnly && (
             <Card tone="surface" className="mt-m">
               <Typo variant="headline-xs">Bald verfügbar</Typo>
-              <Typo variant="text-s" color="grey-600" className="mt-4xs">
+              <Typo variant="text-s" color="on-canvas-muted" className="mt-4xs">
                 {project.name} startet gerade. Die ersten Inhalte erscheinen hier, sobald sie
                 veröffentlicht sind.
               </Typo>
@@ -127,7 +127,7 @@ function ProjectFeed({ feed }: { feed: FeedKey }) {
 
       {loading && items.length === 0 && (
         <View className="py-l">
-          <ActivityIndicator color={colors.emphasis} />
+          <ActivityIndicator color={colors.accent} />
         </View>
       )}
 
@@ -135,7 +135,7 @@ function ProjectFeed({ feed }: { feed: FeedKey }) {
           nothing could be loaded. It stopped being the web target's normal case with
           ADR 0015: the REST API sends a CORS header, so a browser has a live path. */}
       {error && items.length === 0 && !loading && (
-        <Typo variant="text-s" color="grey-600" className="mt-2xs">
+        <Typo variant="text-s" color="on-canvas-muted" className="mt-2xs">
           Beiträge konnten nicht geladen werden.
         </Typo>
       )}

@@ -87,17 +87,44 @@
 
   /* Colors */
 
-  /* Bright mode colors */
-  --var-color-emphasis: #ff5064;
-  --var-color-alternative: #fde162;
-  --var-color-grey-100: #ffffff;
-  --var-color-grey-200: #f8f8f8;
-  --var-color-grey-250: #f0f0f0;
-  --var-color-grey-300: #e6e6e6;
-  --var-color-grey-400: #cecece;
-  --var-color-grey-500: #b3b3b3;
-  --var-color-grey-600: #707070;
-  --var-color-grey-700: #333333;
+  /* Primitives */
+  --var-color-black: #000000;
+  --var-color-white: #ffffff;
+  --var-color-neutral-100: #f8f8f8;
+  --var-color-neutral-200: #e6e6e6;
+  --var-color-neutral-300: #cecece;
+  --var-color-neutral-400: #b3b3b3;
+  --var-color-neutral-500: #707070;
+  --var-color-neutral-600: #4a4a4a;
+  --var-color-neutral-700: #333333;
+  --var-color-red-500: #ff5064;
+  --var-color-yellow-400: #fde162;
+
+  /* Semantic */
+  --var-color-accent: var(--var-color-red-500);
+  --var-color-accent-alternative: var(--var-color-yellow-400);
+  --var-color-background: var(--var-color-neutral-100);
+  --var-color-canvas: var(--var-color-white);
+  --var-color-surface: var(--var-color-neutral-100);
+  --var-color-on-background: var(--var-color-neutral-600);
+  --var-color-on-canvas: var(--var-color-neutral-700);
+  --var-color-on-surface: var(--var-color-neutral-700);
+  --var-color-on-canvas-muted: var(--var-color-neutral-500);
+  --var-color-on-canvas-accent: var(--var-color-accent);
+  --var-color-stroke: var(--var-color-neutral-300);
+  --var-color-stroke-strong: var(--var-color-neutral-400);
+
+  /* Deprecated v1 */
+  --var-color-emphasis: var(--var-color-accent);
+  --var-color-alternative: var(--var-color-accent-alternative);
+  --var-color-grey-100: var(--var-color-white);
+  --var-color-grey-200: var(--var-color-neutral-100);
+  --var-color-grey-250: #f0f0f0; /* dropped from the new ramp, no replacement */
+  --var-color-grey-300: var(--var-color-neutral-200);
+  --var-color-grey-400: var(--var-color-neutral-300);
+  --var-color-grey-500: var(--var-color-neutral-400);
+  --var-color-grey-600: var(--var-color-neutral-500);
+  --var-color-grey-700: var(--var-color-neutral-700);
 
   /* Radius */
   --var-radius-xs: 0.0625rem; /* = 1px */
@@ -137,19 +164,7 @@
 /* Dark mode */
 /* :root[class~='dark'] { */
 @media (prefers-color-scheme: dark) {
-  /* @TODO Set this to the actual values */
-  :root {
-    --var-color-emphasis: #ff5064;
-    --var-color-alternative: #fde162;
-    --var-color-grey-100: #ffffff;
-    --var-color-grey-200: #f8f8f8;
-    --var-color-grey-250: #f0f0f0;
-    --var-color-grey-300: #e6e6e6;
-    --var-color-grey-400: #cecece;
-    --var-color-grey-500: #b3b3b3;
-    --var-color-grey-600: #707070;
-    --var-color-grey-700: #333333;
-  }
+  /* @TODO define dark mode theme */
 }
 
 /* Potentially we can have even more modes that set or override styles */
@@ -235,6 +250,35 @@
   --spacing-4xl: var(--var-spacing-4xl);
 
   /* Colors */
+
+  /* Primitives – only use sparingly or not at all. */
+  --color-black: var(--var-color-black);
+  --color-white: var(--var-color-white);
+  --color-neutral-100: var(--var-color-neutral-100);
+  --color-neutral-200: var(--var-color-neutral-200);
+  --color-neutral-300: var(--var-color-neutral-300);
+  --color-neutral-400: var(--var-color-neutral-400);
+  --color-neutral-500: var(--var-color-neutral-500);
+  --color-neutral-600: var(--var-color-neutral-600);
+  --color-neutral-700: var(--var-color-neutral-700);
+  --color-red-500: var(--var-color-red-500);
+  --color-yellow-400: var(--var-color-yellow-400);
+
+  /* Semantic */
+  --color-accent: var(--var-color-accent);
+  --color-accent-alternative: var(--var-color-accent-alternative);
+  --color-background: var(--var-color-background);
+  --color-canvas: var(--var-color-canvas);
+  --color-surface: var(--var-color-surface);
+  --color-on-background: var(--var-color-on-background);
+  --color-on-canvas: var(--var-color-on-canvas);
+  --color-on-surface: var(--var-color-on-surface);
+  --color-on-canvas-muted: var(--var-color-on-canvas-muted);
+  --color-on-canvas-accent: var(--var-color-on-canvas-accent);
+  --color-stroke: var(--var-color-stroke);
+  --color-stroke-strong: var(--var-color-stroke-strong);
+
+  /* Deprecated v1 - remove once all submodules migrate */
   --color-emphasis: var(--var-color-emphasis);
   --color-alternative: var(--var-color-alternative);
   --color-grey-100: var(--var-color-grey-100);

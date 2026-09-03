@@ -52,14 +52,14 @@ export default function HomeScreen() {
       <HomeHeader />
 
       {(recherchen.offline || faktenchecks.offline) && (
-        <Typo variant="text-s" color="grey-600" className="mt-2xs">
+        <Typo variant="text-s" color="on-canvas-muted" className="mt-2xs">
           Ohne Verbindung. Sie sehen gespeicherte Artikel.
         </Typo>
       )}
 
       {recherchen.loading && !recherchen.data && (
         <View className="py-2xl">
-          <ActivityIndicator color={colors.emphasis} />
+          <ActivityIndicator color={colors.accent} />
         </View>
       )}
 

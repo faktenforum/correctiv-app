@@ -1,8 +1,14 @@
 # @correctiv/design-tokens
 
 The CORRECTIV design tokens, resolved into shapes a program can use: a Tailwind v4
-theme carrying two complete colour palettes, the same values as typed constants in
+theme carrying two complete colour schemes, the same values as typed constants in
 px, and `theme.css` as a string for embedding in the article reader.
+
+Colours come in three tiers — primitives, semantic roles, and the deprecated v1
+aliases upstream keeps until its consumers migrate. Product code wants the semantic
+ones (`bg-canvas`, `text-on-canvas-muted`, `border-stroke`); primitives exist to back
+them, and are the right answer only where a colour must NOT follow the scheme. See
+[ADR 0022](../../adr/0022-three-tiers-of-colour-and-a-dark-scheme-that-names-roles.md).
 
 The source of truth is `tokens/theme.css` at the repo root, vendored from
 [correctiv/wp-design-tokens](https://github.com/correctiv/wp-design-tokens), see
@@ -80,9 +86,12 @@ src/reader.generated.ts   theme.css as a string, plus the dark override block
 src/index.ts              the barrel, and the boundary explained
 ```
 
-`palette.js` exists because `theme.css` ships a dark block that is a placeholder
-holding the light values. It records how each grey was assigned by role, and why an
-inverted scale would be wrong. Read it before adding a colour.
+`palette.js` exists because `theme.css` ships no dark values at all — upstream's dark
+block is a bare `@TODO`. It holds two lists: a dark value for every colour that names
+a **role**, and the primitives that deliberately have none, because `white` names a
+value and a value does not change with the scheme. The generator throws on a colour
+that is in neither, which is how a token added upstream reaches a human instead of
+silently staying light. Read it before adding a colour.
 
 ## Regenerating
 

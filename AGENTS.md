@@ -27,9 +27,15 @@ around the web build. It must keep building into `apps/mobile/public/`, because 
 capability it has comes from sharing the app's origin.
 ([ADR 0014](adr/0014-the-preview-shell-as-a-package.md))
 
-Colours come from classes (`bg-grey-100`), which follow the appearance setting on
-their own. Reading a colour in TypeScript needs `useColors()`, or it is pinned to
-light. `always-light` and `always-dark` are the exceptions and mean it.
+Colours come from classes (`bg-canvas`), which follow the appearance setting on their
+own. Reading a colour in TypeScript needs `useColors()`, or it is pinned to light.
+
+Reach for a **semantic** token: `canvas`, `surface`, `on-canvas`, `on-canvas-muted`,
+`stroke`, `accent`. The primitives behind them (`white`, `neutral-400`, `red-500`)
+do NOT follow the scheme, which makes them right only where a colour must not — text
+on the brand red, a fill on a photograph. `grey-100…700`, `emphasis` and `alternative`
+still resolve; they are upstream's deprecated tier and nothing new should use one.
+([ADR 0022](adr/0022-three-tiers-of-colour-and-a-dark-scheme-that-names-roles.md))
 
 ## Decisions
 

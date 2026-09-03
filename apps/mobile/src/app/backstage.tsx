@@ -27,7 +27,7 @@ import { useColors } from '@/lib/theme';
  */
 export default function BackstageScreen() {
   return (
-    <View className="flex-1 bg-grey-100">
+    <View className="flex-1 bg-canvas">
       <ScreenHeader />
       <ScrollView
         className="flex-1"
@@ -40,10 +40,10 @@ export default function BackstageScreen() {
         </Typo>
 
         <View className="mt-l">
-          <Overline label="Früher lesen" color="emphasis" />
+          <Overline label="Früher lesen" color="accent" />
           <Card className="mt-2xs">
             <Typo variant="headline-xs">{earlyAccess.title}</Typo>
-            <Typo variant="text-s" color="grey-600" className="mt-2xs">
+            <Typo variant="text-s" color="on-canvas-muted" className="mt-2xs">
               {earlyAccess.teaser}
             </Typo>
             <Typo variant="text-s" color="grey-500" className="mt-s">
@@ -85,10 +85,10 @@ export default function BackstageScreen() {
           <Overline label="Fragerunde" />
           <Card className="mt-2xs">
             <Typo variant="headline-xs">{qa.title}</Typo>
-            <Typo variant="text-s" color="grey-600" className="mt-2xs">
+            <Typo variant="text-s" color="on-canvas-muted" className="mt-2xs">
               {qa.description}
             </Typo>
-            <Typo variant="text-s" color="emphasis" className="mt-s">
+            <Typo variant="text-s" color="accent" className="mt-s">
               {qa.deadlineLabel}
             </Typo>
           </Card>
@@ -102,7 +102,7 @@ export default function BackstageScreen() {
               <Typo variant="text-s" color="grey-500" className="mt-4xs">
                 {formatDateShortDe(event.date)} · {event.location}
               </Typo>
-              <Typo variant="text-s" color="grey-600" className="mt-2xs">
+              <Typo variant="text-s" color="on-canvas-muted" className="mt-2xs">
                 {event.description}
               </Typo>
             </Card>
@@ -113,7 +113,7 @@ export default function BackstageScreen() {
           <Overline label="Verlag" />
           <Card tone="surface" className="mt-2xs">
             <Typo variant="headline-xs">{verlagPerk.title}</Typo>
-            <Typo variant="text-s" color="grey-600" className="mt-2xs">
+            <Typo variant="text-s" color="on-canvas-muted" className="mt-2xs">
               {verlagPerk.description}
             </Typo>
             <Button
@@ -136,14 +136,14 @@ function DiaryRow({ entry }: { entry: DiaryEntry }) {
       accessibilityRole="link"
       accessibilityLabel={entry.title}
       onPress={() => router.push({ pathname: '/tagebuch/[id]', params: { id: entry.id } })}
-      className="flex-row items-center border-b border-grey-300 py-s active:opacity-70"
+      className="flex-row items-center border-b border-stroke py-s active:opacity-70"
     >
       <View className="flex-1 pr-s">
         <Overline label={entry.series} />
         <Typo variant="text-m" weight="bold" className="mt-4xs">
           {entry.title}
         </Typo>
-        <Typo variant="text-s" color="grey-600" numberOfLines={2} className="mt-4xs">
+        <Typo variant="text-s" color="on-canvas-muted" numberOfLines={2} className="mt-4xs">
           {entry.teaser}
         </Typo>
       </View>

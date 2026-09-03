@@ -16,10 +16,10 @@ export function SearchEntry({ onPress }: { onPress: () => void }) {
       onPress={onPress}
       accessibilityRole="button"
       accessibilityLabel="Suche öffnen"
-      className="flex-row items-center rounded-md bg-grey-200 px-s active:opacity-80"
+      className="flex-row items-center rounded-md bg-surface px-s active:opacity-80"
       style={{ height: 44 }}
     >
-      <Ionicons name="search" size={18} color={colors['grey-600']} />
+      <Ionicons name="search" size={18} color={colors['on-canvas-muted']} />
       <Typo variant="text-m" color="grey-500" className="ml-xs">
         Recherchen, Faktenchecks, Projekte …
       </Typo>

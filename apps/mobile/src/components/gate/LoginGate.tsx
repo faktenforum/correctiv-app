@@ -93,7 +93,7 @@ export function LoginGate() {
   const shortfall = accessShortfall(session, Date.now());
 
   return (
-    <SafeAreaView edges={['top', 'bottom']} className="flex-1 bg-grey-100">
+    <SafeAreaView edges={['top', 'bottom']} className="flex-1 bg-canvas">
       <ScrollView
         className="flex-1"
         contentContainerClassName="grow px-m pt-l pb-m"
@@ -111,7 +111,7 @@ export function LoginGate() {
         <View className="grow" />
         <Card tone="surface" className="mt-l">
           <Overline label={COPY.simulatedHeading} />
-          <Typo variant="text-s" color="grey-600" className="mt-2xs">
+          <Typo variant="text-s" color="on-canvas-muted" className="mt-2xs">
             {shortfall
               ? COPY.noAccess.simulated(
                   shortfall === 'lapsed' ? COPY.noAccess.resume : COPY.noAccess.upgrade,
@@ -148,9 +148,9 @@ function SignInForm() {
   // A failed attempt marks both fields, not one: the answer does not say which.
   const field = [
     'mt-2xs rounded-md border px-s py-s',
-    failed ? 'border-emphasis' : 'border-grey-300',
+    failed ? 'border-accent' : 'border-stroke',
   ].join(' ');
-  const fieldText = [typography['text-m'], { color: colors['grey-700'] }];
+  const fieldText = [typography['text-m'], { color: colors['on-canvas'] }];
 
   return (
     <>
@@ -210,8 +210,8 @@ function SignInForm() {
               Measured against the tokens, `emphasis` on `grey-100` is 3.19:1 in the
               light scheme, below AA for 14 px text, and 5.98:1 in the dark one. The
               colour is not what makes this readable, the words are. */}
-          <Ionicons name="alert-circle" size={18} color={colors.emphasis} />
-          <Typo variant="text-s" color="grey-700" className="ml-2xs flex-1">
+          <Ionicons name="alert-circle" size={18} color={colors.accent} />
+          <Typo variant="text-s" color="on-canvas" className="ml-2xs flex-1">
             {COPY.form.failure[session.failure]}
           </Typo>
         </View>
@@ -220,10 +220,10 @@ function SignInForm() {
       <View className="mt-m">
         {busy ? (
           <View
-            className="flex-row items-center justify-center rounded-md bg-grey-200 px-m py-s"
+            className="flex-row items-center justify-center rounded-md bg-surface px-m py-s"
             accessibilityLiveRegion="polite"
           >
-            <ActivityIndicator color={colors.emphasis} />
+            <ActivityIndicator color={colors.accent} />
             <Typo variant="text-m" weight="semibold" className="ml-s">
               {COPY.form.checking}
             </Typo>
@@ -251,7 +251,7 @@ function NoAccess({ shortfall }: { shortfall: AccessShortfall }) {
 
   return (
     <>
-      <Typo variant="text-s" color="grey-600" className="mt-l">
+      <Typo variant="text-s" color="on-canvas-muted" className="mt-l">
         {COPY.noAccess.signedInAs(session.account?.email ?? '')}
       </Typo>
       <Typo variant="headline-xxl" family="serif" className="mt-2xs">
@@ -260,7 +260,7 @@ function NoAccess({ shortfall }: { shortfall: AccessShortfall }) {
       <Typo variant="text-l" className="mt-s">
         {COPY.noAccess.lead}
       </Typo>
-      <Typo variant="text-m" color="grey-600" className="mt-s">
+      <Typo variant="text-m" color="on-canvas-muted" className="mt-s">
         {lapsedOn ? COPY.noAccess.lapsed(lapsedOn) : COPY.noAccess.tier}
       </Typo>
 
@@ -312,7 +312,7 @@ function NoAccess({ shortfall }: { shortfall: AccessShortfall }) {
 function Row({ label, value }: { label: string; value: string }) {
   return (
     <View className="flex-row items-baseline justify-between gap-s">
-      <Typo variant="text-m" color="grey-600">
+      <Typo variant="text-m" color="on-canvas-muted">
         {label}
       </Typo>
       <Typo variant="text-m" weight="semibold" className="flex-1 text-right">
@@ -342,7 +342,7 @@ function TextLink({
       <Typo
         variant="text-s"
         weight={strong ? 'semibold' : 'normal'}
-        color={strong ? 'emphasis' : 'grey-600'}
+        color={strong ? 'accent' : 'on-canvas-muted'}
       >
         {label}
       </Typo>

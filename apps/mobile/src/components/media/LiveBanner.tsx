@@ -65,7 +65,7 @@ export function LiveBanner({ subtitle = '24/7 aus Bottrop' }: { subtitle?: strin
         accessibilityRole="button"
         accessibilityLabel={playing ? 'Radio pausieren' : 'Radio abspielen'}
         onPress={onPlay}
-        className="mr-s items-center justify-center rounded-full bg-emphasis active:opacity-80"
+        className="mr-s items-center justify-center rounded-full bg-accent active:opacity-80"
         style={{ width: sizes.playButton, height: sizes.playButton }}
       >
         {busy ? (
