@@ -21,21 +21,25 @@ const SPEC = join(HERE, 'spec.json');
 /**
  * Which of the board's colours is which token.
  *
- * Deliberately not exhaustive. A hex earns an entry only where the mapping is
- * unambiguous; the media-placeholder greys, the YouTube red and the disabled tint
+ * Deliberately not exhaustive, and it names the DOMINANT role for each hex, because a
+ * hex on its own does not say whether it is a surface, a border or a text colour. The
+ * semantic tier does, so a re-transcription may need a hand afterwards: white is
+ * `canvas` here, but white TEXT on a brand surface is `always-light`.
+ *
+ * A hex earns an entry only where the mapping is unambiguous; the media-placeholder greys, the YouTube red and the disabled tint
  * stay literal, because pretending they are tokens would put a name on a decision
  * nobody made.
  */
 const AS_TOKEN = {
-  '#ff5064': 'color-emphasis',
-  '#fde162': 'color-alternative',
-  '#ffffff': 'color-grey-100',
-  '#f4f4f6': 'color-grey-200',
-  '#f5f5f6': 'color-grey-200',
-  '#e2e2e5': 'color-grey-300',
+  '#ff5064': 'color-accent',
+  '#fde162': 'color-accent-alternative',
+  '#ffffff': 'color-canvas',
+  '#f4f4f6': 'color-surface',
+  '#f5f5f6': 'color-surface',
+  '#e2e2e5': 'color-stroke',
   '#a8a8b0': 'color-grey-500',
-  '#7a7a82': 'color-grey-600',
-  '#212124': 'color-grey-700',
+  '#7a7a82': 'color-on-canvas-muted',
+  '#212124': 'color-on-canvas',
 };
 
 const css = await readFile(THEME, 'utf8');
