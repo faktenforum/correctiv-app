@@ -5,6 +5,8 @@ Only what you cannot read off the code. Follow the links; do not restate them he
 - [ARCHITECTURE.md](ARCHITECTURE.md), core, ports, colour, where things live
 - [TROUBLESHOOTING.md](TROUBLESHOOTING.md), the traps, and **why a green check is not evidence**
 - [adr/](adr/README.md), the decisions, and which of their claims have expired
+- [SOURCES.md](SOURCES.md), every source the app reads, measured, beside the ones the
+  scope asks for and nobody has named yet
 
 ## Where code goes
 

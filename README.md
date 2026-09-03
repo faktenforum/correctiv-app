@@ -113,6 +113,7 @@ the *device's* colour scheme is the browser's to emulate; those stay DevTools' j
 | **The traps this toolchain sets**, one row per real incident, and why a green check is not evidence | [TROUBLESHOOTING.md](TROUBLESHOOTING.md) |
 | **Why** it is built this way | [`adr/`](adr/README.md) |
 | Every screen, and what looking at them found | [`screens/`](screens/) |
+| **What the app reads**, measured, and what the scope wants that has no source | [SOURCES.md](SOURCES.md) |
 | Design tokens, vendored from CORRECTIV's `wp-design-tokens` | [`tokens/`](tokens/README.md) |
 | Releases, signing, and the three CI workflows | [RELEASE.md](RELEASE.md) |
 | Rules for AI agents working in this repo | [AGENTS.md](AGENTS.md) |
