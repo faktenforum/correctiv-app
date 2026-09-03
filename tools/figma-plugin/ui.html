@@ -1,0 +1,118 @@
+<style>
+  body {
+    font:
+      11px -apple-system,
+      system-ui,
+      sans-serif;
+    margin: 0;
+    padding: 12px;
+    color: #222;
+  }
+  #dot {
+    display: inline-block;
+    width: 8px;
+    height: 8px;
+    border-radius: 4px;
+    background: #bbb;
+    margin-right: 6px;
+    vertical-align: middle;
+  }
+  .on {
+    background: #22a06b !important;
+  }
+  .busy {
+    background: #f2b53c !important;
+  }
+  .bad {
+    background: #e5484d !important;
+  }
+  #log {
+    color: #777;
+    margin-top: 8px;
+    line-height: 1.5;
+  }
+</style>
+<div><span id="dot"></span><b>CORRECTIV Wireframes</b></div>
+<div id="log">connecting …</div>
+<script>
+  // Figma's plugin sandbox has the API but no network; this iframe has network but no
+  // API. So the iframe watches the spec server and hands new documents over
+  // postMessage. Nothing executable crosses: only the board description.
+  // 'localhost', not '127.0.0.1': Figma's manifest validator rejects the bare IP in
+  // devAllowedDomains, and the origin here has to match that entry exactly.
+  const BASE = 'http://localhost:8787';
+  const dot = document.getElementById('dot');
+  const log = document.getElementById('log');
+  let seen = -1;
+  let drawing = false;
+
+  /** An answer from the server, as opposed to never having reached it. */
+  function fromServer(message) {
+    const e = new Error(message);
+    e.fromServer = true;
+    return e;
+  }
+
+  function status(cls, text) {
+    dot.className = cls;
+    log.textContent = text;
+  }
+
+  async function tick() {
+    if (drawing) return;
+    try {
+      const r = await fetch(BASE + '/generation');
+      // `fetch` does not reject on a 500, and a broken spec.json is exactly what the
+      // server answers 500 to. Without this the plugin forwarded `undefined` and the
+      // JSON syntax error surfaced as "cannot read properties of undefined".
+      if (!r.ok) throw fromServer('generation ' + r.status);
+      const { generation } = await r.json();
+      if (generation !== seen) {
+        drawing = true;
+        status('busy', 'drawing …');
+        const s = await fetch(BASE + '/spec');
+        if (!s.ok) throw fromServer('spec ' + s.status + ': ' + (await s.text()).slice(0, 120));
+        const payload = await s.json();
+        parent.postMessage({ pluginMessage: { type: 'spec', spec: payload.spec } }, '*');
+        // Only once the document is on its way. Marking it seen before the fetch left
+        // the panel reporting "up to date" for ever after a 500, having posted
+        // nothing, while the board stayed on the last good draw.
+        seen = generation;
+        return; // the result handler resumes polling
+      }
+      status('on', 'up to date, generation ' + seen);
+    } catch (e) {
+      // Reset, or a server that restarts mid-fetch leaves `drawing` true for ever and
+      // the plugin never polls again, red dot and all, even once it is back.
+      drawing = false;
+      // The server's own words only when they ARE the server's. Every rejection has a
+      // message — a dead port gives "Failed to fetch" — so preferring `e.message`
+      // outright replaced the one hint that actually helps with a browser string.
+      status(
+        'bad',
+        e && e.fromServer ? e.message : 'no server on 8787: node tools/figma-plugin/server.mjs',
+      );
+    }
+  }
+
+  onmessage = async (event) => {
+    const m = event.data.pluginMessage;
+    if (!m) return;
+
+    if (m.type !== 'done') return;
+    drawing = false;
+    status(m.error ? 'bad' : 'on', m.error ? m.error : m.summary);
+    try {
+      await fetch(BASE + '/report', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(m),
+      });
+    } catch (e) {
+      // The server went away; the next tick reports it.
+    }
+  };
+
+  setInterval(tick, 700);
+  tick();
+</script>
