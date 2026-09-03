@@ -35,9 +35,9 @@ export function NavCard({
       onPress={onPress}
       accessibilityRole="link"
       accessibilityLabel={club ? `${title}, Club` : title}
-      className="flex-row items-center border-b border-grey-300 py-s active:opacity-70"
+      className="flex-row items-center border-b border-stroke py-s active:opacity-70"
     >
-      <Ionicons name={icon} size={20} color={colors['grey-600']} />
+      <Ionicons name={icon} size={20} color={colors['on-canvas-muted']} />
       <View className="ml-s flex-1">
         <View className="flex-row items-center">
           <Typo variant="text-m" weight="bold">
@@ -45,7 +45,7 @@ export function NavCard({
           </Typo>
           {club && <Badge label="Club" tone="club" className="ml-2xs" />}
         </View>
-        <Typo variant="text-s" color="grey-600" className="mt-4xs">
+        <Typo variant="text-s" color="on-canvas-muted" className="mt-4xs">
           {subtitle}
         </Typo>
       </View>

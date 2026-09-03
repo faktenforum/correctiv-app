@@ -11,6 +11,20 @@ PKG=org.correctiv.app
 OUT="${OUT:-out/android}"
 mkdir -p "$OUT"
 
+# Emulator images volunteer things. A round of this set came back with an Android
+# stylus-handwriting sheet covering the search screen: the tap had succeeded, so the
+# tour reported no MISS, and the shot documented a system dialog with the app greyed
+# out behind it. That is the 83-video failure in a new costume — a step can be wrong
+# without being missing — so the features that pop unasked are turned off before a
+# tour starts rather than dismissed after one goes wrong.
+quiet_system_ui() {
+  $A shell settings put secure stylus_handwriting_enabled 0 >/dev/null 2>&1
+  $A shell settings put secure stylus_handwriting_default_value 0 >/dev/null 2>&1
+  # Whatever is already on screen, before the first step.
+  $A shell input keyevent 4 >/dev/null 2>&1
+}
+quiet_system_ui
+
 shot() { $A exec-out screencap -p > "$OUT/$1.png"; echo "shot $1"; }
 back() { $A shell input keyevent 4; sleep 1.4; }
 scroll() { for _ in $(seq 1 "${1:-1}"); do $A shell input swipe 540 1900 540 700 260; sleep 0.7; done; sleep 0.6; }

@@ -18,7 +18,7 @@ export function HomeHeader() {
         <Typo variant="text-m" weight="bold" style={{ letterSpacing: 1.5 }}>
           CORRECTIV
         </Typo>
-        <Typo variant="text-s" color="grey-600">
+        <Typo variant="text-s" color="on-canvas-muted">
           {formatDateWeekdayDe(new Date())}
         </Typo>
       </View>

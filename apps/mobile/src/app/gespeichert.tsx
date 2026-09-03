@@ -13,7 +13,7 @@ const keyExtractor = (article: SavedArticle) => article.url;
 const renderSavedRow = ({ item }: ListRenderItemInfo<SavedArticle>) => <SavedRow article={item} />;
 
 const EMPTY = (
-  <Typo variant="text-m" color="grey-600" className="mt-m">
+  <Typo variant="text-m" color="on-canvas-muted" className="mt-m">
     Noch nichts gespeichert. Tippen Sie im Artikel auf das Lesezeichen, um ihn hier abzulegen.
   </Typo>
 );
@@ -33,7 +33,7 @@ export default function GespeichertScreen() {
   const items = useSavedArticles();
 
   return (
-    <View className="flex-1 bg-grey-100">
+    <View className="flex-1 bg-canvas">
       <ScreenHeader />
       <FlatList
         className="flex-1"
@@ -61,14 +61,14 @@ function SavedRow({ article }: { article: SavedArticle }) {
   const actions = useCoreActions();
   const colors = useColors();
   return (
-    <View className="flex-row items-start border-b border-grey-300 py-s">
+    <View className="flex-row items-start border-b border-stroke py-s">
       <Pressable
         accessibilityRole="link"
         accessibilityLabel={article.title}
         onPress={() => openArticle(article)}
         className="flex-1 pr-s active:opacity-70"
       >
-        {article.kicker ? <Overline label={article.kicker} color="emphasis" /> : null}
+        {article.kicker ? <Overline label={article.kicker} color="accent" /> : null}
         <Typo variant="text-m" weight="bold" numberOfLines={2} className="mt-4xs">
           {article.title}
         </Typo>

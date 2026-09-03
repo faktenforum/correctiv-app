@@ -10,7 +10,7 @@ import { quarterlyReport } from '@correctiv/app-core/data/quartalsbericht';
  */
 export default function BerichtScreen() {
   return (
-    <View className="flex-1 bg-grey-100">
+    <View className="flex-1 bg-canvas">
       <ScreenHeader />
       <ScrollView
         className="flex-1"
@@ -21,7 +21,7 @@ export default function BerichtScreen() {
         <Typo variant="headline-xl" className="mt-s">
           {quarterlyReport.quarter}
         </Typo>
-        <Typo variant="text-m" color="grey-600" className="mt-s">
+        <Typo variant="text-m" color="on-canvas-muted" className="mt-s">
           {quarterlyReport.intro}
         </Typo>
 
@@ -33,10 +33,10 @@ export default function BerichtScreen() {
             </Typo>
             {(section.figures ?? []).map((figure) => (
               <View key={figure.label} className="mt-s flex-row items-baseline">
-                <Typo variant="headline-s" color="emphasis" style={{ minWidth: 64 }}>
+                <Typo variant="headline-s" color="accent" style={{ minWidth: 64 }}>
                   {figure.value}
                 </Typo>
-                <Typo variant="text-s" color="grey-600" className="flex-1">
+                <Typo variant="text-s" color="on-canvas-muted" className="flex-1">
                   {figure.label}
                 </Typo>
               </View>

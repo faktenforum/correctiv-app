@@ -30,7 +30,7 @@ export default function BehauptungScreen() {
   const claim = (claims.find((c) => c.id === id) ?? null) as Claim | null;
 
   return (
-    <View className="flex-1 bg-grey-100">
+    <View className="flex-1 bg-canvas">
       <ScreenHeader />
 
       {!claim ? (
@@ -38,7 +38,7 @@ export default function BehauptungScreen() {
           <Typo variant="headline-s" className="text-center">
             Diese Behauptung gibt es nicht
           </Typo>
-          <Typo variant="text-m" color="grey-600" className="mt-2xs text-center">
+          <Typo variant="text-m" color="on-canvas-muted" className="mt-2xs text-center">
             {id ? `Unbekannte Kennung „${id}“.` : 'Es wurde keine Kennung übergeben.'}
           </Typo>
         </View>
@@ -52,7 +52,7 @@ export default function BehauptungScreen() {
           <Typo variant="headline-m" className="mt-s">
             „{claim.quote}“
           </Typo>
-          <Typo variant="text-m" color="grey-600" className="mt-s">
+          <Typo variant="text-m" color="on-canvas-muted" className="mt-s">
             {claim.synopsis}
           </Typo>
 
@@ -63,7 +63,7 @@ export default function BehauptungScreen() {
           </Typo>
           {claim.sources.length === 0 ? (
             <Card tone="surface" className="mt-s">
-              <Typo variant="text-s" color="grey-600">
+              <Typo variant="text-s" color="on-canvas-muted">
                 Noch keine Quellen. Die Community sammelt.
               </Typo>
             </Card>
@@ -109,9 +109,7 @@ function ReviewProgress({ stage }: { stage: number }) {
         <View key={label} className="flex-1 flex-row items-start">
           {i > 0 && (
             <View
-              className={['flex-1 self-start', i <= stage ? 'bg-emphasis' : 'bg-grey-300'].join(
-                ' ',
-              )}
+              className={['flex-1 self-start', i <= stage ? 'bg-accent' : 'bg-stroke'].join(' ')}
               style={{ height: 2, marginTop: 5 }}
             />
           )}
@@ -119,13 +117,13 @@ function ReviewProgress({ stage }: { stage: number }) {
             <View
               className={[
                 'rounded-full',
-                i <= stage ? 'bg-emphasis' : 'border border-grey-400 bg-grey-100',
+                i <= stage ? 'bg-accent' : 'border border-stroke bg-canvas',
               ].join(' ')}
               style={{ width: 12, height: 12 }}
             />
             <Typo
               variant="text-s"
-              color={i <= stage ? 'grey-700' : 'grey-500'}
+              color={i <= stage ? 'on-canvas' : 'grey-500'}
               className="mt-3xs text-center"
               style={{ fontSize: 11 }}
             >

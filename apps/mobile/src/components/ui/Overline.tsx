@@ -16,7 +16,7 @@ export type OverlineProps = {
  * uppercases the label itself, because the capitals are part of the design and the
  * data arrives in title case ("Junge Formate").
  */
-export function Overline({ label, color = 'grey-600', className }: OverlineProps) {
+export function Overline({ label, color = 'on-canvas-muted', className }: OverlineProps) {
   return (
     <Typo
       variant="text-s"

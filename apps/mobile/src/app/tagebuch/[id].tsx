@@ -16,7 +16,7 @@ export default function TagebuchScreen() {
   const entry = diaries.find((d) => d.id === id) ?? null;
 
   return (
-    <View className="flex-1 bg-grey-100">
+    <View className="flex-1 bg-canvas">
       <ScreenHeader />
 
       {!entry ? (
@@ -24,7 +24,7 @@ export default function TagebuchScreen() {
           <Typo variant="headline-s" className="text-center">
             Diesen Eintrag gibt es nicht
           </Typo>
-          <Typo variant="text-m" color="grey-600" className="mt-2xs text-center">
+          <Typo variant="text-m" color="on-canvas-muted" className="mt-2xs text-center">
             {id ? `Unbekannte Kennung „${id}“.` : 'Es wurde keine Kennung übergeben.'}
           </Typo>
         </View>
@@ -34,7 +34,7 @@ export default function TagebuchScreen() {
           contentContainerClassName="px-m pt-m pb-2xl"
           showsVerticalScrollIndicator={false}
         >
-          <Overline label={entry.series} color="emphasis" />
+          <Overline label={entry.series} color="accent" />
           <Typo variant="headline-l" className="mt-2xs">
             {entry.title}
           </Typo>

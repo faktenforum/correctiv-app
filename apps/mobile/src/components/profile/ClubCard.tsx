@@ -27,7 +27,7 @@ export function ClubCard({
   memberSince: string | null;
 }) {
   return (
-    <View className="mt-s rounded-md bg-alternative p-m">
+    <View className="mt-s rounded-md bg-accent-alternative p-m">
       <View className="flex-row items-center justify-between">
         <Overline label="CORRECTIV Club" color="always-dark" />
         <Ionicons name="heart" size={20} color={colors['always-dark']} />
@@ -35,8 +35,9 @@ export function ClubCard({
       <Typo variant="headline-l" color="always-dark" className="mt-m">
         {name || 'Mitglied'}
       </Typo>
-      {/* Not grey-600: on the yellow the secondary line is dimmed rather than
-          recoloured, or every fixed surface would need a grey scale of its own. */}
+      {/* Not `on-canvas-muted`: club yellow does not follow the scheme, so the
+          secondary line is dimmed rather than recoloured — otherwise every fixed
+          surface would need a foreground scale of its own. */}
       <Typo variant="text-s" color="always-dark" className="opacity-70">
         {memberSince ? `${tierLabel} · seit ${formatDateShortDe(memberSince)}` : tierLabel}
       </Typo>

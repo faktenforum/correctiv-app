@@ -25,16 +25,16 @@ function toneFor(
   if (claim.status === 'checked') {
     return claim.rating === 'richtig'
       ? { background: CHECKED_TRUE_GREEN, color: colors['always-light'] }
-      : { background: colors.emphasis, color: colors['always-light'] };
+      : { background: colors.accent, color: colors['always-light'] };
   }
   if (claim.status === 'checking') {
     return {
-      background: colors['grey-100'],
-      color: colors['grey-700'],
-      border: colors['grey-400'],
+      background: colors['canvas'],
+      color: colors['on-canvas'],
+      border: colors['stroke'],
     };
   }
-  return { background: colors['grey-250'], color: colors['grey-600'] };
+  return { background: colors['grey-250'], color: colors['on-canvas-muted'] };
 }
 
 export function ClaimStatusTag({ claim, className }: { claim: Claim; className?: string }) {

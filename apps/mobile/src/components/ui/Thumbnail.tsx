@@ -73,7 +73,7 @@ export function Thumbnail({
         />
       ) : (
         <View className="flex-1 items-center justify-center">
-          <Ionicons name={icon} size={26} color={colors['grey-400']} />
+          <Ionicons name={icon} size={26} color={colors['stroke']} />
         </View>
       )}
       {overlay ? (

@@ -12,11 +12,11 @@ import { Typo } from '@/components/ui';
  */
 export function ImpactFooter() {
   return (
-    <View className="mt-m items-center rounded-md bg-grey-200 p-l">
+    <View className="mt-m items-center rounded-md bg-surface p-l">
       <Typo variant="headline-s" className="text-center">
         Ermöglicht durch Unterstützer:innen wie Sie
       </Typo>
-      <Typo variant="text-m" color="grey-600" className="mt-2xs text-center">
+      <Typo variant="text-m" color="on-canvas-muted" className="mt-2xs text-center">
         CORRECTIV ist gemeinnützig. Ihr Beitrag finanziert die Recherchen, die hier stehen.
       </Typo>
     </View>

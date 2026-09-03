@@ -18,11 +18,11 @@ export default function NotFoundScreen() {
   return (
     <Screen scroll={false}>
       <View className="flex-1 items-center justify-center">
-        <Overline label="Fehler 404" color="emphasis" />
+        <Overline label="Fehler 404" color="accent" />
         <Typo variant="headline-l" className="mt-2xs text-center">
           Diese Seite gibt es nicht
         </Typo>
-        <Typo variant="text-m" color="grey-600" className="mt-s text-center">
+        <Typo variant="text-m" color="on-canvas-muted" className="mt-s text-center">
           Der Link führt ins Leere. Möglicherweise wurde der Beitrag verschoben oder die Adresse ist
           unvollständig.
         </Typo>

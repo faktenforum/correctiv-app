@@ -14,17 +14,17 @@ export function EarlyAccessCard({ onPress }: { onPress?: () => void }) {
   return (
     <Pressable
       onPress={onPress}
-      className="overflow-hidden rounded-md border border-grey-300 active:opacity-90"
+      className="overflow-hidden rounded-md border border-stroke active:opacity-90"
     >
-      <View className="bg-alternative px-m py-s">
+      <View className="bg-accent-alternative px-m py-s">
         <Badge label="Backstage · Früher lesen" tone="club" />
       </View>
       <View className="p-m">
         <Typo variant="headline-s">Die Pensionskassen-Recherche, exklusiv vorab</Typo>
-        <Typo variant="text-m" color="grey-600" className="mt-2xs">
+        <Typo variant="text-m" color="on-canvas-muted" className="mt-2xs">
           Sie lesen jetzt, drei Tage vor allen anderen.
         </Typo>
-        <Typo variant="button" color="emphasis" className="mt-s">
+        <Typo variant="button" color="accent" className="mt-s">
           Jetzt lesen →
         </Typo>
       </View>

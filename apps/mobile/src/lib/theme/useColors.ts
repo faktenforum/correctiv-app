@@ -7,7 +7,7 @@ export type Palette = Record<ColorToken, string>;
 /**
  * The active palette, for the colours a class cannot carry.
  *
- * Most of the app never needs this: `bg-grey-100` and `border-grey-300` resolve
+ * Most of the app never needs this: `bg-canvas` and `border-stroke` resolve
  * through CSS variables, and Uniwind swaps those underneath — so surfaces and
  * borders follow the scheme without a single `dark:` variant. What stays behind are
  * the values that leave the class system: an `<Ionicons color>`, an
@@ -15,8 +15,9 @@ export type Palette = Record<ColorToken, string>;
  * Those read a plain string, and a plain string cannot change with the scheme.
  *
  * Hence the hook. Importing `colors` directly still works and is still right for a
- * colour that must NOT follow the scheme — `on-emphasis` on a red button stays
- * white in both — but for anything else it silently pins the light value.
+ * colour that must NOT follow the scheme — a primitive, such as `white` on a red
+ * button, which is white in both — but for anything else it silently pins the light
+ * value.
  *
  * `useUniwind()` reports the resolved theme, never `'system'`: that setting means
  * "follow the device", and Uniwind has already asked the device by the time this

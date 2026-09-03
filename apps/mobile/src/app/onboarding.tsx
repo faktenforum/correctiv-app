@@ -50,7 +50,7 @@ export default function OnboardingScreen() {
   return (
     <SafeAreaView
       edges={['top', 'bottom']}
-      className={mission ? 'flex-1 bg-emphasis' : 'flex-1 bg-grey-100'}
+      className={mission ? 'flex-1 bg-accent' : 'flex-1 bg-canvas'}
     >
       <View className="flex-row items-center justify-between px-m py-s">
         <View className="flex-row gap-2xs">
@@ -66,8 +66,8 @@ export default function OnboardingScreen() {
                     ? colors['always-light']
                     : 'rgba(255,255,255,0.45)'
                   : i === step
-                    ? colors.emphasis
-                    : colors['grey-300'],
+                    ? colors.accent
+                    : colors['stroke'],
               }}
             />
           ))}
@@ -80,7 +80,7 @@ export default function OnboardingScreen() {
             hitSlop={8}
             className="active:opacity-70"
           >
-            <Typo variant="text-s" color="grey-600">
+            <Typo variant="text-s" color="on-canvas-muted">
               Überspringen
             </Typo>
           </Pressable>
@@ -127,7 +127,7 @@ export default function OnboardingScreen() {
         {step === 1 && (
           <>
             <Typo variant="headline-xl">Was interessiert Sie?</Typo>
-            <Typo variant="text-m" color="grey-600" className="mt-2xs">
+            <Typo variant="text-m" color="on-canvas-muted" className="mt-2xs">
               Ihre Auswahl ordnet die Startseite.
             </Typo>
             <View className="mt-m flex-row flex-wrap gap-2xs">
@@ -146,7 +146,7 @@ export default function OnboardingScreen() {
         {step === 2 && (
           <>
             <Typo variant="headline-xl">Recherchen, bei denen Sie mitmachen</Typo>
-            <Typo variant="text-m" color="grey-600" className="mt-s">
+            <Typo variant="text-m" color="on-canvas-muted" className="mt-s">
               Im CrowdNewsroom tragen tausende Menschen zu Recherchen bei. Im Faktenforum prüft die
               Community Behauptungen. Beides finden Sie im Tab „Mitmachen“.
             </Typo>

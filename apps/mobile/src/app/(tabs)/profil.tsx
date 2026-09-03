@@ -130,7 +130,7 @@ export default function ProfilScreen() {
             onPress={() => openExternal(ACCOUNT_URL)}
             className="mt-s"
           />
-          <Typo variant="text-s" color="grey-600" className="mt-s">
+          <Typo variant="text-s" color="on-canvas-muted" className="mt-s">
             Beitrag, Zahlungsweise und Ihre Daten verwalten Sie in Ihrem Konto auf correctiv.org.
           </Typo>
         </Card>
@@ -229,7 +229,7 @@ function impactLine(memberSince: string | null): string {
 function Row({ label, value }: { label: string; value: string }) {
   return (
     <View className="flex-row items-center justify-between gap-s">
-      <Typo variant="text-m" color="grey-600">
+      <Typo variant="text-m" color="on-canvas-muted">
         {label}
       </Typo>
       <Typo variant="text-m" weight="semibold" className="shrink text-right">

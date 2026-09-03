@@ -276,8 +276,16 @@ equivalents for focus, liveness and errors.
   body text *and* the video stage. Assign dark values by shade and half of those uses
   break: a white video stage, invisible text on the coral button. → Each grey takes
   the dark value of its majority role, and the minority uses move to `always-light` /
-  `always-dark`. `packages/design-tokens/palette.js` records which is which;
+  `always-dark`. ~~`packages/design-tokens/palette.js` records which is which;~~
   `__tests__/tokens.test.ts` fails if the role colours ever start switching.
+
+  > The struck clause is voided by
+  > [ADR 0022](adr/0022-three-tiers-of-colour-and-a-dark-scheme-that-names-roles.md):
+  > upstream's semantic tier answers this now, so `palette.js` no longer carries the
+  > grey-by-grey record. The trap above is exactly why that tier is worth adopting —
+  > the page surface is `canvas` and the white on the red is the primitive `white`,
+  > and those can move independently. Reach for a semantic token and the mistake is
+  > not available.
 - **The appearance setting and the styles can disagree about which scheme is
   active, and nothing warns.** Under NativeWind this was a shipped bug: with
   `darkMode: 'class'`, `setColorScheme('system')` left the JavaScript side following
@@ -304,12 +312,29 @@ equivalents for focus, liveness and errors.
   trusting the prebuild log, and remember that the Android project regenerates
   byte-identically either way, so an Android screenshot is not evidence about this.
 
-- **The design tokens' dark block is a placeholder.** `tokens/theme.css` carries a
+- **`t=dark` in a preview URL does nothing on a static export, and says nothing while
+  it does nothing.** `expo export` sets `__DEV__` false, so the export carries no dev
+  handle: `/preview.html`'s appearance panel disables itself, and the shell accepts
+  `t=dark` in the hash and ignores it. A screenshot round driven that way produces
+  "dark" images that are all light. → Drive the scheme from the browser instead —
+  `emulateMedia({colorScheme:'dark'})`, or DevTools — with the app's own setting left
+  on `system`. That is combination 4 above, which is the app's default anyway. The
+  tell, if it has already happened: every dark diff count equals its light one
+  exactly.
+
+- **The design tokens ship no dark values.** ~~`tokens/theme.css` carries a
   `@media (prefers-color-scheme: dark)` section marked `@TODO Set this to the actual
-  values`, holding the *light* values. Generating from it produces a dark mode that
-  compiles, ships and changes nothing on screen. → The palette is hand-written in
-  `packages/design-tokens/palette.js` until upstream fills that block in; a test asserts the
-  two schemes actually differ.
+  values`, holding the *light* values.~~ Generating from it would produce a dark mode
+  that compiles, ships and changes nothing on screen. → The palette is hand-written in
+  `packages/design-tokens/palette.js` until upstream fills that block in; a test
+  asserts the two schemes actually differ.
+
+  > Struck by
+  > [ADR 0022](adr/0022-three-tiers-of-colour-and-a-dark-scheme-that-names-roles.md):
+  > wp-design-tokens `8ed7a28` deleted that block down to a bare `@TODO`, so the
+  > light-values-as-dark hazard is gone from the source. Everything after the arrow
+  > still holds, and the generator still refuses to read the dark block — see the note
+  > on `firstRootBlock()` for why that restriction outlives the placeholder.
 
 ## Data sources
 

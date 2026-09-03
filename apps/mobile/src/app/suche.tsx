@@ -88,7 +88,7 @@ export default function SucheScreen() {
   const nothingFound = !tooShort && !searching && articles.length === 0 && sampleHits.length === 0;
 
   return (
-    <View className="flex-1 bg-grey-100">
+    <View className="flex-1 bg-canvas">
       <ScreenHeader>
         <TextInput
           value={query}
@@ -99,8 +99,8 @@ export default function SucheScreen() {
           autoFocus
           autoCorrect={false}
           returnKeyType="search"
-          className="rounded-s bg-grey-200 px-s py-xs"
-          style={[typography['text-m'], { color: colors['grey-700'] }]}
+          className="rounded-s bg-surface px-s py-xs"
+          style={[typography['text-m'], { color: colors['on-canvas'] }]}
         />
       </ScreenHeader>
 
@@ -114,14 +114,14 @@ export default function SucheScreen() {
         keyboardDismissMode="on-drag"
       >
         {tooShort && (
-          <Typo variant="text-m" color="grey-600">
+          <Typo variant="text-m" color="on-canvas-muted">
             Suchen Sie über Recherchen, Faktenchecks, Projekte, Podcasts und Mitmach-Aktionen.
           </Typo>
         )}
 
         {searching && articles.length === 0 && (
           <View className="py-l">
-            <ActivityIndicator color={colors.emphasis} />
+            <ActivityIndicator color={colors.accent} />
           </View>
         )}
 
@@ -158,7 +158,7 @@ export default function SucheScreen() {
         )}
 
         {nothingFound && (
-          <Typo variant="text-m" color="grey-600">
+          <Typo variant="text-m" color="on-canvas-muted">
             Keine Treffer für „{debounced}“.
           </Typo>
         )}

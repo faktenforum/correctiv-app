@@ -35,7 +35,7 @@ export default function MediathekScreen() {
       <View className="mt-l">
         <SectionHeader title="Podcasts" className="mb-s" />
         {podcasts.status === 'offline' && (
-          <Typo variant="text-s" color="grey-600" className="mb-2xs">
+          <Typo variant="text-s" color="on-canvas-muted" className="mb-2xs">
             Ohne Verbindung. Sie sehen Beispielfolgen.
           </Typo>
         )}
@@ -78,7 +78,7 @@ function VideoRail({ title, channel }: { title: string; channel: YoutubeKey }) {
     <View className="mt-l">
       <SectionHeader title={title} className="mb-s" />
       {status === 'error' && videos.length === 0 ? (
-        <Typo variant="text-s" color="grey-600">
+        <Typo variant="text-s" color="on-canvas-muted">
           Videos derzeit nicht erreichbar.
         </Typo>
       ) : (

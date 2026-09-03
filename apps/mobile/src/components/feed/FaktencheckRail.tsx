@@ -21,7 +21,7 @@ export function FaktencheckRail({
           onPress={() => onPress(item)}
           accessibilityRole="link"
           accessibilityLabel={item.title}
-          className="rounded-md border border-grey-300 bg-grey-100 p-s active:opacity-80"
+          className="rounded-md border border-stroke bg-canvas p-s active:opacity-80"
           style={{ width: sizes.railCard }}
         >
           <Badge label="Faktencheck" tone="emphasis" className="mb-2xs" />

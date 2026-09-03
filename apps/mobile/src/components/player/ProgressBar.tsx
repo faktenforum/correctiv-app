@@ -45,9 +45,9 @@ export function ProgressBar({
           so that is a layout pass per tick for a purely visual change. `scaleX` is a
           transform, which the compositor applies without measuring anything. The
           origin has to be named, or the bar would grow from its centre outwards. */}
-      <View className="overflow-hidden rounded-s bg-grey-300" style={{ height: 4 }}>
+      <View className="overflow-hidden rounded-s bg-stroke" style={{ height: 4 }}>
         <View
-          className="h-full w-full bg-emphasis"
+          className="h-full w-full bg-accent"
           style={{ transform: [{ scaleX: ratio }], transformOrigin: 'left' }}
         />
       </View>

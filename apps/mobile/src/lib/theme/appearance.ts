@@ -15,7 +15,7 @@ export type ThemeSetting = 'system' | 'light' | 'dark';
  * There, `'system'` had to be resolved here first: handing it through left the
  * app's JavaScript following the device while `darkMode: 'class'` waited for a
  * class nothing added, so `useColors()` returned the dark palette while
- * `bg-grey-100` stayed white — near-white text on a white page, on a build where
+ * `bg-canvas` stayed white — near-white text on a white page, on a build where
  * typecheck, lint, the tests, the Android build and the web export were all green.
  * It even survived a browser walk, which flipped the setting to `'dark'` and
  * pinned the emulated `prefers-color-scheme` to light: both paths that work,

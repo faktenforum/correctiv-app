@@ -24,7 +24,7 @@ export default function MitmachenScreen() {
   return (
     <Screen>
       <Typo variant="headline-xl">Mitmachen</Typo>
-      <Typo variant="text-m" color="grey-600" className="mt-2xs">
+      <Typo variant="text-m" color="on-canvas-muted" className="mt-2xs">
         Recherchen entstehen mit Ihnen. Ihre Hinweise, Beobachtungen und Prüfungen machen sie erst
         möglich.
       </Typo>
@@ -42,7 +42,7 @@ export default function MitmachenScreen() {
         <Overline label="Faktenforum" />
         <Card tone="surface" className="mt-2xs">
           <Typo variant="headline-xs">Behauptungen gemeinsam prüfen</Typo>
-          <Typo variant="text-s" color="grey-600" className="mt-2xs">
+          <Typo variant="text-s" color="on-canvas-muted" className="mt-2xs">
             Die Community prüft Behauptungen aus dem Netz, angeleitet von der Redaktion. Gerade sind{' '}
             {claims.length} Behauptungen in Arbeit.
           </Typo>
@@ -59,7 +59,7 @@ export default function MitmachenScreen() {
         <Overline label="Abriss-Atlas" />
         <Card className="mt-2xs">
           <Typo variant="headline-xs">Abrisse dokumentieren</Typo>
-          <Typo variant="text-s" color="grey-600" className="mt-2xs">
+          <Typo variant="text-s" color="on-canvas-muted" className="mt-2xs">
             Welche Gebäude verschwinden? {formatNumberDe(atlasStats.totalReports)} Meldungen aus{' '}
             {atlasStats.citiesCovered} Städten in Deutschland und der Schweiz.
           </Typo>
@@ -76,7 +76,7 @@ export default function MitmachenScreen() {
         <Overline label="Tipp geben" />
         <Card tone="surface" className="mt-2xs">
           <Typo variant="headline-xs">Faktencheck-Tipp per WhatsApp</Typo>
-          <Typo variant="text-s" color="grey-600" className="mt-2xs">
+          <Typo variant="text-s" color="on-canvas-muted" className="mt-2xs">
             Verdächtige Behauptung gesehen? Schicken Sie sie direkt der Faktencheck-Redaktion.
           </Typo>
           <Button

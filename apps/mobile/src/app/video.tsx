@@ -33,11 +33,11 @@ export default function VideoScreen() {
   const { current, hlsUrl, status } = useVideo();
 
   return (
-    <View className="flex-1 bg-grey-100">
+    <View className="flex-1 bg-canvas">
       <ScreenHeader />
       {!current ? (
         <View className="flex-1 items-center justify-center px-m">
-          <Typo variant="text-m" color="grey-600">
+          <Typo variant="text-m" color="on-canvas-muted">
             Kein Video ausgewählt.
           </Typo>
         </View>
@@ -118,7 +118,7 @@ function VideoMeta({ video }: { video: Video }) {
   return (
     <View className="px-m pb-2xl pt-m">
       <View className="flex-row items-center">
-        <Overline label={days <= 7 ? 'Neue Folge' : 'Video'} color="emphasis" />
+        <Overline label={days <= 7 ? 'Neue Folge' : 'Video'} color="accent" />
         <Typo variant="text-s" color="grey-500" className="ml-s">
           {[when, duration].filter(Boolean).join(' · ')}
         </Typo>
@@ -127,12 +127,12 @@ function VideoMeta({ video }: { video: Video }) {
       <Typo variant="headline-l" className="mt-2xs">
         {video.title}
       </Typo>
-      <Typo variant="text-s" color="grey-600" className="mt-2xs">
+      <Typo variant="text-s" color="on-canvas-muted" className="mt-2xs">
         {[channel, views].filter(Boolean).join(' · ')}
       </Typo>
 
       {video.description ? (
-        <Typo variant="text-m" color="grey-600" className="mt-s">
+        <Typo variant="text-m" color="on-canvas-muted" className="mt-s">
           {video.description}
         </Typo>
       ) : null}
