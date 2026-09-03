@@ -40,6 +40,17 @@ A colour the ramp does not list is converted by its own luminance rather than
 dropped, so the table stays a list of deliberate exceptions instead of something that
 must be kept exhaustive.
 
+The pencil outline is an absolutely-positioned vector inside the frame it traces, and
+it **stretches**: an instance takes no children, so it shows the outline drawn inside
+its component, at the width the component had. `ui/Button` hugs its label, so without
+that every button stretched to fill a column wore a box stopping short of its own
+edge.
+
+A glyph that has an emoji form is a trap here. Kalam has no heart, so `♥` falls back
+to an emoji font and arrives in colour on the one page that exists in order not to be
+about colour; the text-presentation selector does not persuade Figma otherwise. The
+outline heart `♡` has no emoji form and is used instead, filled Ionicon or not.
+
 The wobble is seeded from each node's name and size, so it is the *same* wobble on
 every redraw. Without that the whole board shimmers on each save and a real change
 becomes impossible to spot.

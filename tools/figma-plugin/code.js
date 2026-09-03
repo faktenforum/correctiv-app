@@ -506,6 +506,12 @@ function addOutline(node, spec) {
   if (node.layoutMode && node.layoutMode !== 'NONE') v.layoutPositioning = 'ABSOLUTE';
   v.x = 0;
   v.y = 0;
+  // And it has to follow its frame. An instance gets no outline of its own — an
+  // instance takes no children — so it shows the one drawn inside the component, at
+  // the width the COMPONENT had. `ui/Button` hugs its label, so every button stretched
+  // to fill a column wore a pencil box that stopped short of its own right edge.
+  // Stretching scales the wobble a little, which is cheaper than the alternative.
+  v.constraints = { horizontal: 'STRETCH', vertical: 'STRETCH' };
 }
 
 function applySizing(node, spec, parentIsAutoLayout) {

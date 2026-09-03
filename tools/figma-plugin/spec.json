@@ -1721,7 +1721,7 @@
                   "leading": 150,
                   "tracking": 0.67,
                   "color": "@color-always-dark",
-                  "chars": "♥"
+                  "chars": "♡"
                 }
               ]
             },
@@ -3407,7 +3407,7 @@
                   "leading": 150,
                   "tracking": 0.67,
                   "color": "@color-always-dark",
-                  "chars": "♥"
+                  "chars": "♡"
                 }
               ]
             },

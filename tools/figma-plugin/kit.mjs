@@ -651,7 +651,12 @@ const KIT = [
             tracking: 10,
             color: '@color-always-dark',
           }),
-          ty('text-m', { chars: '♥', size: 20, color: '@color-always-dark' }),
+          // The OUTLINE heart, U+2661, though the app's Ionicon is filled. Kalam has
+          // no heart at all, so the wireframe falls back to an emoji font; U+2665
+          // comes back as a red picture, straight through the grey ramp and into the
+          // one page that exists in order not to be about colour. The text-presentation
+          // selector does not persuade Figma otherwise. U+2661 has no emoji form.
+          ty('text-m', { chars: '♡', size: 20, color: '@color-always-dark' }),
         ],
       },
       { t: 'space', h: S.m },
