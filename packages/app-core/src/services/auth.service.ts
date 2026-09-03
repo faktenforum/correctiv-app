@@ -40,6 +40,16 @@ export const MIN_PASSWORD_LENGTH = 4;
 
 const TRIAL_DAYS = 30;
 
+/**
+ * The join date every simulated account carries.
+ *
+ * Fixed rather than derived from the clock, because `refreshEntitlement` may build an
+ * entitlement a second time and a date read from `now` would then move: the profile
+ * would print a membership that got younger while the app was open. The real date
+ * comes from beabee with everything else in this answer.
+ */
+export const SIMULATED_MEMBER_SINCE = '2026-03-04T09:12:00.000Z';
+
 /** "alex.beispiel@…" → "Alex Beispiel". A demo needs a name to greet with. */
 export function nameFromEmail(email: string): string {
   const local = email.split('@')[0] ?? '';
@@ -67,10 +77,18 @@ export function simulatedEntitlement(
     source: 'paid',
     validUntil: null,
     localAreas: [],
+    memberSince: SIMULATED_MEMBER_SINCE,
   };
   if (upgraded) return fullAccess;
   if (address.includes('frei')) {
-    return { tier: 'free', appAccess: false, source: null, validUntil: null, localAreas: [] };
+    return {
+      tier: 'free',
+      appAccess: false,
+      source: null,
+      validUntil: null,
+      localAreas: [],
+      memberSince: SIMULATED_MEMBER_SINCE,
+    };
   }
   if (address.includes('test')) {
     return {
@@ -80,7 +98,7 @@ export function simulatedEntitlement(
     };
   }
   if (address.includes('lokal')) {
-    return { ...fullAccess, source: 'local-bundle', localAreas: ['gelsenkirchen'] };
+    return { ...fullAccess, source: 'local-bundle', localAreas: ['Gelsenkirchen'] };
   }
   if (address.includes('soli')) return { ...fullAccess, tier: 'soli' };
   return fullAccess;

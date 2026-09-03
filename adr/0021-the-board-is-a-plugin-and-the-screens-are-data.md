@@ -1,4 +1,4 @@
-# ADR 0020 — The design board is a plugin, and the screens are data
+# ADR 0021 — The design board is a plugin, and the screens are data
 
 **Status:** accepted · **Date:** 2026-09-03 · **Affects:** `tools/figma-plugin`, nothing
 that ships

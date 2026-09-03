@@ -80,8 +80,8 @@ const slice = createSlice({
 
     /**
      * The demo reset has to leave the app as if it were freshly installed: onboarding,
-     * push, text size and the appearance setting. Membership and interests live in
-     * their own slices — the caller resets those; this one owns only its own keys.
+     * push, text size and the appearance setting. Interests live in their own slice —
+     * the caller resets that one; this owns only its own keys.
      */
     resetForDemo(state) {
       state.onboardingDone = false;

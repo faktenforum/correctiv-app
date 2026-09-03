@@ -57,7 +57,7 @@ dropping a host meant dropping that file plus its screens.
 
 ## Three conventions in the core
 
-1. **State is framework-neutral.** `stores/` is one Redux Toolkit store with fourteen
+1. **State is framework-neutral.** `stores/` is one Redux Toolkit store with twelve
    slices. `stores/store.ts` explains why the core owns the instance rather than the
    host. The host adds only the reactivity binding, `apps/mobile/src/lib/store/core.ts`
    over react-redux. A second host once bound the state this replaced to Vue's
@@ -67,18 +67,19 @@ dropping a host meant dropping that file plus its screens.
    React a method is merely awkward. The rule comes from the Vue binding, where a
    method read past the dependency tracking and the template silently stopped
    updating, invisible until a demo.
-3. **Subpath imports, no barrel.** `@correctiv/app-core/stores/membership`, not a
+3. **Subpath imports, no barrel.** `@correctiv/app-core/stores/session`, not a
    root re-export. The root entry exposes only the ports, because that is the one
    thing every host must touch.
 
 `membership.isMember` was the demo's central lever, read in the render path by every
-club touchpoint. It is gone. Behind the door everyone has an entitlement that includes
-the app, so a branch on it asks a question with one answer
-([ADR 0018](adr/0018-removing-the-guest.md)), and the flag itself was a second stored
+club touchpoint. The whole slice is gone. Behind the door everyone has an entitlement
+that includes the app, so a branch on it asks a question with one answer
+([ADR 0018](adr/0018-removing-the-guest.md)); the flag itself was a second stored
 answer to what `memberSince` already said
-([ADR 0019](adr/0019-identity-lives-in-the-session.md)). What is left in `membership`
-is the simulated contribution. Who is signed in is `stores/session`, and for "may this
-person be here" the answer is `useIsAdmitted`.
+([ADR 0019](adr/0019-identity-lives-in-the-session.md)); and the contribution it was
+left holding went with the join flow, because the app offers no payment functions
+([ADR 0020](adr/0020-no-contribution-in-the-app.md)). Who is signed in is
+`stores/session`, and for "may this person be here" the answer is `useIsAdmitted`.
 
 ## The door
 
@@ -91,8 +92,9 @@ the door, taken at the moment of admission.
 
 What the door reads is `stores/session`: an account and an `Entitlement` (the tier,
 whether the app is included, why, until when), as the membership system answered it.
-It never reads `membership.amountEur`, because a trial month pays 0 € and has the app,
-and a local-newsletter bundle has the app without being an app membership. Sign-in is
+It never reads an amount, because a trial month pays 0 € and has the app, and a
+local-newsletter bundle has the app without being an app membership. There is no
+amount in the app to read. Sign-in is
 simulated in `services/auth.service.ts` against a directory of rules the screen
 prints, and that file is the seam to beabee.
 [ADR 0016](adr/0016-a-door-at-the-root-and-an-entitlement-not-an-amount.md).

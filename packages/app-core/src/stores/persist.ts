@@ -104,7 +104,7 @@ export async function persist(store: AppStore, slices: PersistedSlice[]): Promis
    * - **Nothing persisted changed → do nothing.** Immer gives a slice a new
    *   identity only when it actually changed, so the comparison is exact and
    *   costs one pointer per slice. Without it, an audio position tick — twice a
-   *   second — would re-serialise the saved articles and the membership.
+   *   second — would re-serialise the saved articles and the session.
    *
    * - **An armed timer is never postponed.** This is a trailing-edge throttle,
    *   not a debounce, and the difference is the whole point: a debounce resets on

@@ -11,7 +11,6 @@ import { audioMiddleware, audioReducer } from './audio';
 import { feedsReducer } from './feeds';
 import { interestsReducer } from './interests';
 import { mediaReducer } from './media';
-import { membershipReducer } from './membership';
 import { participationReducer } from './participation';
 import { podcastsReducer } from './podcasts';
 import { radioReducer } from './radio';
@@ -35,7 +34,6 @@ export const resetStore = createAction('app/reset');
 const combined = combineReducers({
   settings: settingsReducer,
   session: sessionReducer,
-  membership: membershipReducer,
   savedArticles: savedArticlesReducer,
   interests: interestsReducer,
   participation: participationReducer,
@@ -54,7 +52,7 @@ const rootReducer: typeof combined = (state, action) =>
 /**
  * One Redux store for the whole core.
  *
- * What used to be ten independent observable stores is thirteen slices of one state
+ * What used to be ten independent observable stores is twelve slices of one state
  * tree. The slice files kept their names and their public shape — the state
  * interfaces, the pure selectors and the German copy are unchanged — so the only
  * thing that moved is who owns the transition: a reducer now, not a closure over
