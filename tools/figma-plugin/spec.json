@@ -32,7 +32,6 @@
         "bericht",
         "gespeichert",
         "einstellungen",
-        "beitreten",
         "atlas",
         "(tabs)/profil",
         "(tabs)/profil, Gast"
@@ -70,7 +69,6 @@
         "bericht",
         "gespeichert",
         "einstellungen",
-        "beitreten",
         "atlas",
         "(tabs)/profil",
         "(tabs)/profil, Gast"
@@ -10995,6 +10993,76 @@
                 },
                 {
                   "t": "text",
+                  "chars": "KONTO",
+                  "size": 12,
+                  "color": "@color-grey-600",
+                  "weight": "bold",
+                  "tracking": 10
+                },
+                {
+                  "t": "space",
+                  "h": 6,
+                  "w": "fill"
+                },
+                {
+                  "t": "frame",
+                  "name": "Card, Konto",
+                  "dir": "V",
+                  "w": "fill",
+                  "fill": "@color-grey-100",
+                  "stroke": "@color-grey-300",
+                  "radius": 6,
+                  "pad": [
+                    16,
+                    16,
+                    16,
+                    16
+                  ],
+                  "children": [
+                    {
+                      "t": "text",
+                      "chars": "alex.beispiel@example.org",
+                      "size": 15,
+                      "color": "@color-grey-700",
+                      "weight": "semibold",
+                      "w": 288
+                    },
+                    {
+                      "t": "space",
+                      "h": 4,
+                      "w": "fill"
+                    },
+                    {
+                      "t": "text",
+                      "chars": "Mitgliedschaft mit Beitrag",
+                      "size": 14,
+                      "color": "@color-grey-600",
+                      "w": 288
+                    },
+                    {
+                      "t": "space",
+                      "h": 12,
+                      "w": "fill"
+                    },
+                    {
+                      "t": "instance",
+                      "of": "ui/Button",
+                      "name": "Button, Abmelden",
+                      "set": {
+                        "Variante": "outline",
+                        "Titel": "Abmelden"
+                      },
+                      "w": "fill"
+                    }
+                  ]
+                },
+                {
+                  "t": "space",
+                  "h": 18,
+                  "w": "fill"
+                },
+                {
+                  "t": "text",
                   "chars": "BENACHRICHTIGUNGEN",
                   "size": 9,
                   "color": "@color-grey-600",
@@ -11286,237 +11354,6 @@
               ]
             }
           ]
-        }
-      ]
-    },
-    {
-      "t": "frame",
-      "name": "beitreten",
-      "fill": "@color-grey-100",
-      "stroke": "@color-grey-300",
-      "radius": 10,
-      "clip": true,
-      "w": 360,
-      "h": 800,
-      "x": 1260,
-      "y": 4400,
-      "children": [
-        {
-          "t": "text",
-          "chars": "12:34",
-          "size": 9,
-          "color": "@color-grey-700",
-          "weight": "semibold",
-          "x": 12,
-          "y": 7
-        },
-        {
-          "t": "frame",
-          "name": "Inhalt",
-          "dir": "V",
-          "w": 360,
-          "x": 0,
-          "y": 24
-        },
-        {
-          "t": "text",
-          "chars": "✕",
-          "size": 14,
-          "color": "@color-grey-700",
-          "x": 322,
-          "y": 40
-        },
-        {
-          "t": "frame",
-          "name": "Fortschritt 1",
-          "fill": "@color-emphasis",
-          "clip": true,
-          "w": 76,
-          "h": 3,
-          "x": 20,
-          "y": 76
-        },
-        {
-          "t": "frame",
-          "name": "Fortschritt 2",
-          "fill": "#e5e5e8",
-          "clip": true,
-          "w": 76,
-          "h": 3,
-          "x": 101,
-          "y": 76
-        },
-        {
-          "t": "frame",
-          "name": "Fortschritt 3",
-          "fill": "#e5e5e8",
-          "clip": true,
-          "w": 76,
-          "h": 3,
-          "x": 182,
-          "y": 76
-        },
-        {
-          "t": "frame",
-          "name": "Fortschritt 4",
-          "fill": "#e5e5e8",
-          "clip": true,
-          "w": 76,
-          "h": 3,
-          "x": 263,
-          "y": 76
-        },
-        {
-          "t": "frame",
-          "name": "Inhalt",
-          "dir": "V",
-          "w": 320,
-          "x": 20,
-          "y": 100,
-          "children": [
-            {
-              "t": "text",
-              "chars": "CORRECTIV gehört niemandem. Außer allen.",
-              "size": 28,
-              "color": "@color-grey-700",
-              "weight": "semibold",
-              "w": 320
-            },
-            {
-              "t": "space",
-              "h": 12,
-              "w": "fill"
-            },
-            {
-              "t": "text",
-              "chars": "Unser Journalismus bleibt frei. Für alle. Ihr Beitrag macht genau das möglich.",
-              "size": 13,
-              "color": "@color-grey-700",
-              "w": 320
-            },
-            {
-              "t": "space",
-              "h": 20,
-              "w": "fill"
-            },
-            {
-              "t": "frame",
-              "name": "Kennzahl",
-              "dir": "H",
-              "gap": 16,
-              "w": "fill",
-              "children": [
-                {
-                  "t": "text",
-                  "chars": "247",
-                  "size": 17,
-                  "color": "@color-emphasis",
-                  "weight": "semibold",
-                  "w": 84
-                },
-                {
-                  "t": "text",
-                  "chars": "Recherchen im letzten Jahr, alle frei zugänglich",
-                  "size": 12,
-                  "color": "@color-grey-600",
-                  "w": 220
-                }
-              ]
-            },
-            {
-              "t": "space",
-              "h": 14,
-              "w": "fill"
-            },
-            {
-              "t": "frame",
-              "name": "Kennzahl",
-              "dir": "H",
-              "gap": 16,
-              "w": "fill",
-              "children": [
-                {
-                  "t": "text",
-                  "chars": "31.000+",
-                  "size": 17,
-                  "color": "@color-emphasis",
-                  "weight": "semibold",
-                  "w": 84
-                },
-                {
-                  "t": "text",
-                  "chars": "Menschen tragen CORRECTIV bereits",
-                  "size": 12,
-                  "color": "@color-grey-600",
-                  "w": 220
-                }
-              ]
-            },
-            {
-              "t": "space",
-              "h": 14,
-              "w": "fill"
-            },
-            {
-              "t": "frame",
-              "name": "Kennzahl",
-              "dir": "H",
-              "gap": 16,
-              "w": "fill",
-              "children": [
-                {
-                  "t": "text",
-                  "chars": "0",
-                  "size": 17,
-                  "color": "@color-emphasis",
-                  "weight": "semibold",
-                  "w": 84
-                },
-                {
-                  "t": "text",
-                  "chars": "Artikel hinter einer Paywall, heute und in Zukunft",
-                  "size": 12,
-                  "color": "@color-grey-600",
-                  "w": 220
-                }
-              ]
-            },
-            {
-              "t": "space",
-              "h": 14,
-              "w": "fill"
-            }
-          ]
-        },
-        {
-          "t": "line",
-          "w": "fill",
-          "x": 0,
-          "y": 669
-        },
-        {
-          "t": "instance",
-          "of": "ui/Button",
-          "name": "Button, Weiter",
-          "set": {
-            "Variante": "primary",
-            "Titel": "Weiter"
-          },
-          "w": 320,
-          "x": 20,
-          "y": 682
-        },
-        {
-          "t": "instance",
-          "of": "ui/Button",
-          "name": "Button, Erstmal umsehen",
-          "set": {
-            "Variante": "outline",
-            "Titel": "Erstmal umsehen"
-          },
-          "w": 320,
-          "x": 20,
-          "y": 734
         }
       ]
     },
@@ -11986,7 +11823,7 @@
                   "name": "ClubCard",
                   "set": {
                     "Name": "Alex Beispiel",
-                    "Stufe": "Mitgliedschaft mit Beitrag"
+                    "Stufe": "Mitgliedschaft mit Beitrag · seit 4. März"
                   },
                   "w": "fill"
                 },
@@ -12033,9 +11870,9 @@
                       "children": [
                         {
                           "t": "text",
-                          "chars": "Ihr Beitrag",
-                          "size": 13,
-                          "color": "@color-grey-700"
+                          "chars": "Stufe",
+                          "size": 15,
+                          "color": "@color-grey-600"
                         },
                         {
                           "t": "frame",
@@ -12045,45 +11882,82 @@
                         },
                         {
                           "t": "text",
-                          "chars": "Noch nicht festgelegt",
-                          "size": 13,
-                          "color": "@color-grey-600"
+                          "chars": "Mitgliedschaft mit Beitrag",
+                          "size": 15,
+                          "color": "@color-grey-700",
+                          "weight": "semibold"
                         }
                       ]
                     },
                     {
                       "t": "space",
-                      "h": 14,
+                      "h": 6,
+                      "w": "fill"
+                    },
+                    {
+                      "t": "line",
+                      "w": "fill",
+                      "color": "@color-grey-300"
+                    },
+                    {
+                      "t": "space",
+                      "h": 6,
                       "w": "fill"
                     },
                     {
                       "t": "frame",
-                      "name": "Aktionen",
+                      "name": "Zeile",
                       "dir": "H",
                       "w": "fill",
-                      "gap": 10,
+                      "cross": "CENTER",
                       "children": [
                         {
-                          "t": "instance",
-                          "of": "ui/Button",
-                          "name": "Button, Beitrag ändern",
-                          "set": {
-                            "Variante": "secondary",
-                            "Titel": "Beitrag ändern"
-                          },
+                          "t": "text",
+                          "chars": "Zugang über",
+                          "size": 15,
+                          "color": "@color-grey-600"
+                        },
+                        {
+                          "t": "frame",
+                          "name": "Dehnung",
+                          "dir": "H",
                           "w": "fill"
                         },
                         {
-                          "t": "instance",
-                          "of": "ui/Button",
-                          "name": "Button, Pausieren",
-                          "set": {
-                            "Variante": "secondary",
-                            "Titel": "Pausieren"
-                          },
-                          "w": "fill"
+                          "t": "text",
+                          "chars": "Ihren Beitrag",
+                          "size": 15,
+                          "color": "@color-grey-700",
+                          "weight": "semibold"
                         }
                       ]
+                    },
+                    {
+                      "t": "space",
+                      "h": 12,
+                      "w": "fill"
+                    },
+                    {
+                      "t": "instance",
+                      "of": "ui/Button",
+                      "name": "Button, Konto verwalten",
+                      "set": {
+                        "Variante": "secondary",
+                        "Titel": "Konto verwalten"
+                      },
+                      "w": "fill"
+                    },
+                    {
+                      "t": "space",
+                      "h": 12,
+                      "w": "fill"
+                    },
+                    {
+                      "t": "text",
+                      "chars": "Beitrag, Zahlungsweise und Ihre Daten verwalten Sie in Ihrem Konto auf correctiv.org.",
+                      "size": 14,
+                      "color": "@color-grey-600",
+                      "w": 288
                     }
                   ]
                 },
@@ -12122,7 +11996,7 @@
                   "children": [
                     {
                       "t": "text",
-                      "chars": "Ihr Beitrag ermöglicht diese Recherchen. Unter anderem diese hier:",
+                      "chars": "Sie unterstützen CORRECTIV seit 6 Monaten. Unter anderem diese Recherchen wurden mit ermöglicht:",
                       "size": 13,
                       "color": "@color-grey-700",
                       "w": 288

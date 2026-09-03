@@ -295,6 +295,10 @@ The screen list and the route names come from `apps/mobile/src/app/**`. The **co
 the screenshots in `screens/android/`, and that is the part that rots: change a
 headline in the app and nothing here notices.
 
+Thirty screens, one fewer than before: `beitreten` was deleted with the contribution
+flow ([ADR 0020](../../adr/0020-no-contribution-in-the-app.md)), and the profile's
+membership card reads the entitlement instead of setting an amount.
+
 Six screens have no screenshot at all — `projekt/[id]`, `serie/[id]`,
 `aufruf/[slug]`, `tagebuch/[id]`, `behauptung/[id]` and `formular`. Their layout is
 inferred from the source, and they say so in their frame names, in the file, where

@@ -670,6 +670,23 @@ function build(spec, parent, parentIsAutoLayout) {
   // Re-assert after children, because a hugging parent resizes as they arrive.
   if (parentIsAutoLayout && spec.w === 'fill') node.layoutSizingHorizontal = 'FILL';
 
+  // A childless auto-layout frame keeps the 100x100 a fresh frame is born at: with
+  // nothing inside, AUTO on the counter axis has nothing to hug. The board uses such
+  // frames as flexible spacers in a row — `Dehnung` — and every one of them was
+  // pushing its row to 100px tall, which is why several cards had a hand's width of
+  // air in them. Zero on the counter axis, unless a height was asked for.
+  const empty = spec.dir !== undefined && (spec.children || []).length === 0;
+  if (empty && spec.h === undefined) {
+    if (spec.dir === 'H') {
+      if (parentIsAutoLayout) node.layoutSizingVertical = 'FIXED';
+      node.resize(Math.max(node.width, 0.01), 0.01);
+    } else {
+      if (parentIsAutoLayout) node.layoutSizingHorizontal = 'FIXED';
+      node.resize(0.01, Math.max(node.height, 0.01));
+    }
+    if (parentIsAutoLayout && spec.w === 'fill') node.layoutSizingHorizontal = 'FILL';
+  }
+
   // Outlines are drawn in a second pass: a node's final size is only known once its
   // parents have finished laying out, and the pencil has to trace that size.
   if (MODE.sketch && wantsOutline(spec)) pending.push({ node: node, spec: spec });
