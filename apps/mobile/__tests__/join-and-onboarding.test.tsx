@@ -31,7 +31,6 @@ import { router } from 'expo-router';
 import { press, render, renderedText } from './support/rendering';
 
 import BackstageScreen from '@/app/backstage';
-import BeitretenScreen from '@/app/beitreten';
 import OnboardingScreen from '@/app/onboarding';
 import { resetStore } from '@correctiv/app-core/stores/store';
 
@@ -44,54 +43,6 @@ beforeEach(() => {
   jest.clearAllMocks();
   act(() => {
     coreStore.dispatch(resetStore());
-  });
-});
-
-describe('the contribution flow', () => {
-  /**
-   * It opened with a case for joining and then asked for a name and an email. Behind
-   * the door it is reached from „Beitrag ändern“ by somebody who has already paid to
-   * be here, so ADR 0019 dropped both steps: the case has no audience, and the app
-   * already knows the two fields the form asked for.
-   */
-  it('opens on the amount, with no case to make and no form to fill', () => {
-    const text = renderedText(render(<BeitretenScreen />));
-    expect(text).toContain('Ihr Beitrag');
-    expect(text).toContain('10 €');
-    expect(text).not.toContain('CORRECTIV gehört niemandem');
-    expect(text).not.toContain('Paywall');
-    expect(text).not.toContain('Erstmal umsehen');
-  });
-
-  it('lets the amount and the interval be chosen', () => {
-    const tree = render(<BeitretenScreen />);
-
-    expect(renderedText(tree)).toContain('10 €');
-    press(tree, '30 €');
-    press(tree, 'Jährlich');
-
-    const text = renderedText(tree);
-    expect(text).toContain('30 €');
-    expect(text).toContain('im Jahr');
-    // The perk lines light up rather than gating anything.
-    expect(text).toContain('✓ ');
-  });
-
-  it('records the contribution and confirms with the chosen amount', () => {
-    const tree = render(<BeitretenScreen />);
-    press(tree, '20 €');
-    press(tree, 'Beitrag auf 20 € setzen');
-
-    expect(coreStore.getState().membership).toMatchObject({
-      amountEur: 20,
-      interval: 'monatlich',
-    });
-    expect(coreStore.getState().membership.memberSince).not.toBeNull();
-    const text = renderedText(tree);
-    expect(text).toContain('Ihr Beitrag ist gesetzt.');
-    expect(text).toContain('20 €');
-    // Nobody is welcomed into something they are already inside.
-    expect(text).not.toContain('Willkommen im Club');
   });
 });
 
@@ -140,7 +91,6 @@ describe('onboarding', () => {
 
     press(tree, 'Fertig');
     expect(coreStore.getState().settings.onboardingDone).toBe(true);
-    expect(push).not.toHaveBeenCalledWith('/beitreten');
   });
 });
 

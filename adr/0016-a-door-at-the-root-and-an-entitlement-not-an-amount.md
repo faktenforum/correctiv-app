@@ -108,9 +108,11 @@ checked on a device.
 
 ## What this leaves open
 
-- The wording of the reversal, whether the join flow stays in the app or becomes a
-  link out, and the store rules on external purchases. All three precede the final
-  copy on this screen.
+- The wording of the reversal, ~~whether the join flow stays in the app or becomes a
+  link out~~, and the store rules on external purchases. All three precede the final
+  copy on this screen. The join flow left the app with
+  [ADR 0020](0020-no-contribution-in-the-app.md); the store rules for the link that
+  replaced it are still open, and that ADR narrows them to the link's wording.
 - The secure-storage port and the `Authorization` header in `http.ts`, when there is
   a token. Until then the session is two JSON fields in the `KeyValueStore`.
 - ~~`isMember` and the entitlement are two things. A signed-in paying member still

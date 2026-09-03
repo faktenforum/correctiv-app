@@ -11,7 +11,6 @@ import { audioMiddleware, audioReducer } from './audio';
 import { feedsReducer } from './feeds';
 import { interestsReducer } from './interests';
 import { mediaReducer } from './media';
-import { membershipReducer } from './membership';
 import { participationReducer } from './participation';
 import { podcastsReducer } from './podcasts';
 import { radioReducer } from './radio';
@@ -35,7 +34,6 @@ export const resetStore = createAction('app/reset');
 const combined = combineReducers({
   settings: settingsReducer,
   session: sessionReducer,
-  membership: membershipReducer,
   savedArticles: savedArticlesReducer,
   interests: interestsReducer,
   participation: participationReducer,

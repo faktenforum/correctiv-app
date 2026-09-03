@@ -19,11 +19,6 @@ import {
   type SettingsState,
 } from '@correctiv/app-core/stores/settings';
 import {
-  PERSISTED_KEYS as MEMBERSHIP_KEYS,
-  membershipActions,
-  type MembershipState,
-} from '@correctiv/app-core/stores/membership';
-import {
   savedArticlesActions,
   type SavedArticlesState,
 } from '@correctiv/app-core/stores/savedArticles';
@@ -89,7 +84,6 @@ function registerPersistence(): Promise<void> {
     // `onboardingDone`: hydrated late, a returning member would see the form.
     persisted<SessionState>('session', SESSION_KEYS, sessionActions.hydrate),
     persisted<SavedArticlesState>('savedArticles', ['items'], savedArticlesActions.hydrate),
-    persisted<MembershipState>('membership', MEMBERSHIP_KEYS, membershipActions.hydrate),
     persisted<InterestsState>('interests', ['selected'], interestsActions.hydrate),
     persisted<ParticipationState>('participation', ['submissions'], participationActions.hydrate),
   ]);
@@ -219,7 +213,6 @@ function AppShell() {
           <Stack.Screen name="player" options={{ presentation: 'modal' }} />
           {/* Both are flows over the app, not places in it. */}
           <Stack.Screen name="onboarding" options={{ presentation: 'modal' }} />
-          <Stack.Screen name="beitreten" options={{ presentation: 'modal' }} />
         </Stack>
       ) : (
         <LoginGate />

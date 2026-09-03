@@ -168,7 +168,6 @@ export default function EinstellungenScreen() {
               onPress={() => {
                 // Three stores, because each owns its own keys — see resetForDemo.
                 actions.settings.resetForDemo();
-                actions.membership.reset();
                 actions.interests.clear();
                 setResetDone(true);
               }}

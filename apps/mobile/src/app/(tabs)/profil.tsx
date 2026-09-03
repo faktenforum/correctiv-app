@@ -5,23 +5,39 @@ import { ClubCard } from '@/components/profile/ClubCard';
 import { NavCard } from '@/components/profile/NavCard';
 import { SettingRow } from '@/components/profile/SettingRow';
 import { Button, Card, Hairline, Overline, Screen, Typo } from '@/components/ui';
+import { formatDateShortDe } from '@correctiv/app-core/lib/format';
+import type { Entitlement } from '@correctiv/app-core/types/models';
 import { quarterlyReport } from '@correctiv/app-core/data/quartalsbericht';
 import { OFFLINE_ARTICLES } from '@/lib/articles/offlineBundle.generated';
 import { TIER_LABELS } from '@/lib/membership/tierLabel';
 import { openArticle } from '@/lib/openArticle';
-import {
-  useCoreActions,
-  useHasSimulatedJoin,
-  useMembership,
-  useSavedArticles,
-  useSession,
-  useSettings,
-} from '@/lib/store/core';
+import { openExternal } from '@/lib/openExternal';
+import { useCoreActions, useSavedArticles, useSession, useSettings } from '@/lib/store/core';
 
 /**
  * The three newsletters from the concept. State lives in the core store, so a
  * choice survives a restart.
  */
+/**
+ * Where "Konto verwalten" goes, and why it is a constant rather than a literal.
+ *
+ * The address is provisional. beabee will own the account page and does not have one
+ * yet, so this points at the only page the app knows. What the link may SAY is the
+ * part with a rule behind it: outside the US a link to one's own site needs Apple's
+ * External Link Account Entitlement, which permits managing an account and forbids
+ * naming a price. So the label is "Konto verwalten" and never "Beitrag erhöhen".
+ * Separate from the door's own link, which is an upgrade offer to somebody who has
+ * no access, so that the two can be decided apart. See ADR 0020.
+ */
+const ACCOUNT_URL = 'https://correctiv.org/unterstuetzen/';
+
+/** Why the app is open, in the reader's words. Mirrors `EntitlementSource`. */
+const SOURCE_LABELS: Record<NonNullable<Entitlement['source']>, string> = {
+  paid: 'Ihren Beitrag',
+  'local-bundle': 'Ihr Lokal-Abo',
+  trial: 'Ihre Testphase',
+};
+
 const NEWSLETTERS = [
   {
     key: 'spotlight',
@@ -53,14 +69,17 @@ const IMPACT_ARTICLES = Object.entries(OFFLINE_ARTICLES)
  * with an entitlement that includes the app. The branches are gone with ADR 0018,
  * and what identifies the reader now comes from the session rather than from the
  * simulated club lever.
+ *
+ * The membership section used to set a contribution: an amount, an interval, and a
+ * pause switch. It is a reading of the answer now, with one link out, because the app
+ * offers no payment functions (ADR 0020).
  */
 export default function ProfilScreen() {
   const actions = useCoreActions();
   const session = useSession();
-  const membership = useMembership();
-  const joined = useHasSimulatedJoin();
   const settings = useSettings();
   const saved = useSavedArticles();
+  const entitlement = session.entitlement;
 
   const savedLabel =
     saved.length === 0
@@ -75,57 +94,48 @@ export default function ProfilScreen() {
 
       <ClubCard
         name={session.account?.name ?? ''}
-        tierLabel={TIER_LABELS[session.entitlement?.tier ?? 'paid']}
-        memberSince={membership.memberSince}
+        tierLabel={TIER_LABELS[entitlement?.tier ?? 'paid']}
+        memberSince={entitlement?.memberSince ?? null}
       />
 
       <View className="mt-l">
         <Overline label="Ihre Mitgliedschaft" />
         <Card className="mt-2xs">
-          <View className="flex-row items-center justify-between">
-            <Typo variant="text-m">Ihr Beitrag</Typo>
-            {/* Only an amount somebody set. The slice defaults to 10, so printing it
-                unconditionally invented a contribution for every account that never
-                ran the join flow, a trial paying 0 € included. */}
-            {joined ? (
-              <Typo variant="headline-xs">
-                {membership.amountEur} € / {membership.interval === 'monatlich' ? 'Monat' : 'Jahr'}
-              </Typo>
-            ) : (
-              <Typo variant="text-m" color="grey-600">
-                Noch nicht festgelegt
-              </Typo>
-            )}
-          </View>
-          <View className="mt-s flex-row gap-s">
-            <Button
-              title={joined ? 'Beitrag ändern' : 'Beitrag festlegen'}
-              variant="secondary"
-              onPress={openJoinFlow}
-              className="flex-1"
-            />
-            {/* Nothing to pause until something is set. */}
-            {joined && (
-              <Button
-                title={membership.paused ? 'Fortsetzen' : 'Pausieren'}
-                variant="secondary"
-                onPress={() => actions.membership.setPaused(!membership.paused)}
-                className="flex-1"
-              />
-            )}
-          </View>
-          {membership.paused && (
-            <Typo variant="text-s" color="grey-600" className="mt-s">
-              Ihre Mitgliedschaft ist pausiert (simuliert).
-            </Typo>
+          <Row label="Stufe" value={TIER_LABELS[entitlement?.tier ?? 'paid']} />
+          {entitlement?.source && (
+            <>
+              <Hairline className="my-2xs" />
+              <Row label="Zugang über" value={SOURCE_LABELS[entitlement.source]} />
+            </>
           )}
+          {entitlement?.validUntil && (
+            <>
+              <Hairline className="my-2xs" />
+              <Row label="Läuft bis" value={formatDateShortDe(entitlement.validUntil)} />
+            </>
+          )}
+          {entitlement && entitlement.localAreas.length > 0 && (
+            <>
+              <Hairline className="my-2xs" />
+              <Row label="Lokale Newsletter" value={entitlement.localAreas.join(', ')} />
+            </>
+          )}
+          <Button
+            title="Konto verwalten"
+            variant="secondary"
+            onPress={() => openExternal(ACCOUNT_URL)}
+            className="mt-s"
+          />
+          <Typo variant="text-s" color="grey-600" className="mt-s">
+            Beitrag, Zahlungsweise und Ihre Daten verwalten Sie in Ihrem Konto auf correctiv.org.
+          </Typo>
         </Card>
       </View>
 
       <View className="mt-m">
         <Overline label="Ihr Impact" />
         <Card tone="surface" className="mt-2xs">
-          <Typo variant="text-m">{impactLine(membership.memberSince)}</Typo>
+          <Typo variant="text-m">{impactLine(entitlement?.memberSince ?? null)}</Typo>
           {IMPACT_ARTICLES.map((article) => (
             <Typo
               key={article.url}
@@ -196,10 +206,9 @@ export default function ProfilScreen() {
 /**
  * How long they have been aboard — rough, but never "for 0 months".
  *
- * `memberSince` is stamped by the simulated join, so an account that signed in at
- * the door has none. That used to be unreachable, because the section only rendered
- * for a member the join had created. It is reachable now, hence the second sentence
- * rather than an empty card.
+ * Still tolerates a missing date. Every entitlement now carries one, but the session
+ * can be read one render before the door has answered, and an empty card is worse
+ * than a sentence that does not count months.
  */
 function impactLine(memberSince: string | null): string {
   if (!memberSince) return 'Ihr Beitrag ermöglicht diese Recherchen. Unter anderem diese hier:';
@@ -211,6 +220,16 @@ function impactLine(memberSince: string | null): string {
   return `Sie unterstützen CORRECTIV ${time}. Unter anderem diese Recherchen wurden mit ermöglicht:`;
 }
 
-function openJoinFlow(): void {
-  router.push('/beitreten');
+/** One label/value line in the membership card. */
+function Row({ label, value }: { label: string; value: string }) {
+  return (
+    <View className="flex-row items-center justify-between gap-s">
+      <Typo variant="text-m" color="grey-600">
+        {label}
+      </Typo>
+      <Typo variant="text-m" weight="semibold" className="shrink text-right">
+        {value}
+      </Typo>
+    </View>
+  );
 }

@@ -116,6 +116,15 @@ export interface Entitlement {
   validUntil: string | null;
   /** The local newsletters this account pays for, the second access level. */
   localAreas: string[];
+  /**
+   * When the membership started, ISO-8601.
+   *
+   * Here rather than in a slice of its own because it is an answer, not a setting:
+   * beabee knows the date, the app only prints it. It used to live in `membership`
+   * beside a contribution the app simulated, and that slice is gone with
+   * [ADR 0020](../../../../adr/0020-no-contribution-in-the-app.md).
+   */
+  memberSince: string;
 }
 
 /** Who is signed in. The same account as on correctiv.org. */

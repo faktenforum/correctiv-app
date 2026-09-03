@@ -35,7 +35,7 @@ src/articles/    the Article model, the fact-check vocabulary, page meta,
   extract/       string.ts (no dependencies) and dom.ts (htmlparser2)
 src/services/    http · cache (network-first / cache-first) · rss · search ·
                  podcast · peertube
-src/stores/      feeds · audio · podcasts · media · video · membership · interests ·
+src/stores/      feeds · audio · podcasts · media · video · session · interests ·
                  savedArticles · participation · settings · store · persist
 src/data/        feeds.config and the typed sample data
 src/lib/         html · rss-parse · format

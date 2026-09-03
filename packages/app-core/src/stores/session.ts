@@ -12,13 +12,14 @@ import type { AppThunk } from './store';
 /**
  * Who is signed in, and whether the app is open to them.
  *
- * This is what the door in the host's root layout reads, and it is a slice of its
- * own rather than a field on `membership` for one reason: `membership` is the
- * simulated contribution the in-app join flow sets, and the door must not depend
- * on it. The scope makes the point concrete. A
- * member in a trial month pays 0 € and has the app; a 0 € member outside a trial
- * does not. Nothing about that is readable off an amount, so the door reads the
- * entitlement the membership system answered with, and only that.
+ * This is what the door in the host's root layout reads. It was once a slice beside
+ * `membership`, which held the contribution the in-app join flow simulated, and the
+ * point of the split was that the door must never depend on an amount: a member in a
+ * trial month pays 0 € and has the app, a 0 € member outside a trial does not.
+ * Nothing about that is readable off an amount. The join flow is gone
+ * ([ADR 0020](../../../../adr/0020-no-contribution-in-the-app.md)) and this is now
+ * the only place an app-store answer lands, which is the same rule with nothing left
+ * to contradict it.
  *
  * The four states the door renders are the four values of `status`, with
  * `signed-in` splitting once more on the entitlement (see `accessShortfall`).
