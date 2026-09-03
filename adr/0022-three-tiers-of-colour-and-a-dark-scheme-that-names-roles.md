@@ -55,11 +55,21 @@ now and can move independently, which is exactly what the essay wished for.
 - `schemeIndependent` — the eleven primitives, which deliberately do **not** follow
   the scheme. `white` is #ffffff on a dark phone too, because "white" names a value.
 
-The generator's palette check is what holds the split up. Every colour in `theme.css`
-must appear in exactly one of the two lists; a colour in neither throws, and the
-message says what the choice is. That is the only decision the generator cannot make
-for itself, and a colour left out has no symptom of its own — it stays on its light
-value in dark mode, in a build that is otherwise green.
+The generator's palette check is what holds the split up, and it needs both halves.
+Every colour in `theme.css` must appear in one of the two lists, and a colour in
+neither throws — that is the only decision the generator cannot make for itself. But
+being in *a* list is not enough: a name in `schemeIndependent` must also be a
+**literal** in `theme.css`, because that is how upstream spells a primitive, while a
+`var()` reference is how it spells a role.
+
+The second half exists because the first alone was not sufficient, and the way it
+failed is the point. Adding a semantic token upstream and classifying it as
+scheme-independent passed the generator, passed all sixteen token tests and passed
+`npm run check` — leaving a role pinned to its light value in dark mode with nothing
+red. Which is verbatim the failure the check's own error message describes, so the
+check now covers it. Only that direction is inferable: the converse, "a literal is a
+primitive", is false for `grey-250`, a literal upstream dropped from the ramp that is
+nonetheless a surface with a dark value.
 
 **The dark theme did not move.** Each semantic token took the dark value of the
 deprecated alias that shares its light value: `canvas` is `grey-100`'s #1a1a1a,
@@ -86,17 +96,50 @@ This was checked before it was taken, not after: both schemes were screenshotted
 across eleven routes on the web export before and after, and diffed pixel for pixel.
 The changed pixels are borders and nothing else. See the PR for the images.
 
+One route in that set proves less than it appears to, and is worth naming because it is
+the trap `TROUBLESHOOTING.md` warns about. `/onboarding` came back 0.00%, which is
+**not** evidence that the onboarding is unaffected: only step 0 is the brand-red screen,
+and a per-route screenshot renders step 0. Steps 1 and 2 use `bg-canvas`, `bg-surface`,
+`border-stroke` and `colors['stroke']` for the inactive step dots, and did move.
+`screens/android/02-onboarding-interests.webp` is the state that changed.
+
 `<Hairline>` moved with the borders rather than separately. It draws the same line as
 a `border-b` and had to keep agreeing with it; a divider component and a border
 utility disagreeing about the divider colour is worse than either value.
 
+**The article reader moved for the same reason**, and it is the case that made the
+rule concrete. `READER_LAYOUT_CSS` in the core is a second stylesheet for the same
+screen: on `/artikel` the app draws the header's `border-b` and the WebView draws the
+byline's `border-bottom` a few hundred pixels below it. Migrating one and not the
+other would have put two different hairline greys on the app's primary reading
+surface. All seventeen of its `--var-color-*` uses moved, except the neutral verdict
+plaque, which is the `grey-300`-as-a-fill gap in the table below.
+
+That migration also **deleted a hand-written exception.** The generator used to append
+`.rating--qualified{color:#333333}` to the reader's dark CSS, because the "partly
+false" plaque sits on club yellow — which stays yellow in the dark, so its label must
+stay dark, while every colour the reader had followed the scheme. The plaque's label is
+`--var-color-neutral-700` now: a primitive, which says the same thing in the token
+rather than in a rule that overrides it, and so cannot fall out of step with the plaque
+it is about. `READER_DARK_CSS` is now nothing but the variable block.
+
 **`always-light` and `always-dark` are now redundant, and are kept anyway.** Since
 primitives no longer follow the scheme, `always-light` is exactly `white` and
-`always-dark` is exactly `neutral-700`, in both schemes. Removing them is a 37-call
-change, and `tools/figma-plugin` (PR #72) binds both by name with a `bind()` that
-fails **silently** on a token that has gone — the board would keep drawing with the
-last synced hex and quietly stop following the tokens. So they survive one release by
-agreement with that PR, which retires them in the same pass as the other ten aliases.
+`always-dark` is exactly `neutral-700`, in both schemes.
+
+They are kept because removing them is 45 call sites in `apps/mobile/src` and 14 more
+in `tools/figma-plugin`, which is a rename pass and not this decision — and #72 is
+already doing that pass over the other ten aliases, so it takes these two with it
+rather than two PRs editing the same lines.
+
+An earlier draft gave a different reason: that `tools/figma-plugin`'s `bind()` fails
+silently on a token that has gone, so the board would keep drawing with the last synced
+hex. **That was true when this work started and is not true now.** #72 landed
+`checkTokens()` (`tools/figma-plugin/code.js:846`), which walks the whole description
+before a single frame exists and throws with every unknown name at once; `bind()`'s
+fallback carries a comment saying it is unreachable for anything the description wrote.
+Removing the tokens would fail loudly, before drawing. The reason above is the one that
+survives, and it is a scheduling reason rather than a safety one.
 
 **Three app uses have no semantic successor, and stay on deprecated aliases.** Worth
 naming, because they are the feedback upstream needs before it drops the v1 tier:
@@ -104,14 +147,32 @@ naming, because they are the feedback upstream needs before it drops the v1 tier
 | Use | Token | Why nothing fits |
 |---|---|---|
 | `Badge` neutral fill, `ClaimStatusTag` | `grey-250` #f0f0f0 | upstream dropped it from the ramp with "no replacement" |
-| `Thumbnail` image placeholder | `grey-300` #e6e6e6 | `neutral-200` as a **fill**; the semantic tier has no surface there |
+| `Thumbnail` placeholder, the reader's neutral verdict plaque | `grey-300` #e6e6e6 | `neutral-200` as a **fill**; the semantic tier has no surface there |
 | faint text: placeholders, chevrons, inactive tabs (45 uses) | `grey-500` #b3b3b3 | no foreground token that faint; `stroke-strong` shares the value but names a line |
 
-The last is the real gap: the app has three levels of foreground text and the semantic
-tier has two.
+The last is the real gap, and it is not a counting one: the semantic tier has three
+neutral foregrounds (`on-canvas` #333333, `on-background` #4a4a4a, `on-canvas-muted`
+#707070). What it has none of is anything as faint as #b3b3b3, which is what those 45
+call sites use for placeholders, chevrons and inactive tabs.
 
-**The `@variant dark` block grew from 10 colours to 33**, which `tools/figma-plugin`'s
-`sync-tokens.mjs` reads with no allow-list. The new names reach Figma on their own.
+**Two semantic tokens are not used yet, and one holds the only invented value.**
+Nothing in the app reads `background` or `on-background`. `on-background`'s dark
+#cfcfcf is the single hand-picked value in this change, so it is also the only one the
+screenshots cannot have covered: it has never been rendered. And `background` and
+`surface` are the same colour in both schemes (#f8f8f8 / #242424), so the distinction
+upstream draws between the page frame and a raised surface is not expressible in this
+palette yet. Both are deliberate, and both are worth knowing before the first
+`bg-background` lands.
+
+**The `@variant dark` block grew from 12 colours to 35** — the generated block, which
+carries `always-light` and `always-dark` on top of upstream's tokens.
+`tools/figma-plugin`'s `sync-tokens.mjs` reads it with no allow-list, so the new names
+reach Figma the next time it runs. It is deliberately **not** run here: `spec.json`'s
+93 `@color-grey-300` references and the twelve hardcoded names are #72's migration
+pass, and splitting that across two PRs would leave the board half-moved. Until it
+runs, the committed `spec.json` still binds the board's hairlines to `grey-300`, which
+this PR moves the app off — so the board is one step behind the app in the meantime,
+and knowingly.
 
 ## What this retires
 
@@ -128,3 +189,18 @@ tier has two.
 
 Both are struck through in place. The decision 0010 records — that the package is the
 shared one and the app writes nothing — is untouched.
+
+The same two claims had been restated in the top-level docs, where they are also now
+false and also struck:
+
+- `ARCHITECTURE.md` — "`tokens/theme.css` ships a dark block that is a placeholder
+  holding the light values", and "that file explains how each grey was assigned by
+  role".
+- `TROUBLESHOOTING.md` — "**The design tokens' dark block is a placeholder** … holding
+  the *light* values", and "`packages/design-tokens/palette.js` records which is which"
+  of the grey roles.
+
+Naming them here rather than only striking them is the rule from `AGENTS.md`: the
+newer ADR carries a section listing every statement it retires, so the two ends cannot
+drift apart. [ADR 0015](0015-reading-correctiv-org-through-its-rest-api.md) set the
+precedent for a retirement reaching past the ADRs into the top-level docs.

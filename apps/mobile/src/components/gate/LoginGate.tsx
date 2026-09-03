@@ -207,7 +207,7 @@ function SignInForm() {
       {failed && session.failure && (
         <View className="mt-s flex-row items-start" accessibilityLiveRegion="polite">
           {/* The icon and the field borders carry the coral; the sentence does not.
-              Measured against the tokens, `emphasis` on `grey-100` is 3.19:1 in the
+              Measured against the tokens, `accent` on `canvas` is 3.19:1 in the
               light scheme, below AA for 14 px text, and 5.98:1 in the dark one. The
               colour is not what makes this readable, the words are. */}
           <Ionicons name="alert-circle" size={18} color={colors.accent} />

@@ -227,6 +227,47 @@ describe('two-scheme palette', () => {
     expect(colorsDark.emphasis).not.toBe(colors.emphasis);
   });
 
+  it('accounts for every colour in the palette, so a new one cannot arrive unnoticed', () => {
+    /**
+     * The lists above are hand-maintained, and without this they are decoration: a
+     * colour upstream adds is simply absent from all four, and every other test here
+     * iterates a list rather than the palette, so nothing fails. The generator makes
+     * the same colour reach a human in palette.js; this makes it reach one here.
+     *
+     * Compared as sorted arrays rather than by count, so a name moved between two
+     * tiers — the mistake that would otherwise keep the total right — still fails.
+     */
+    expect([...PRIMITIVES, ...SEMANTIC, ...DEPRECATED_V1, ...APP_ROLES].sort()).toEqual(
+      (Object.keys(colors) as ColorToken[]).sort(),
+    );
+  });
+
+  it('keeps a stroke distinguishable from the surfaces it divides', () => {
+    /**
+     * `stroke` carries every border, divider, input outline, progress track and
+     * `<Hairline>` in the app since ADR 0022, and nothing else here constrains it: a
+     * dark value equal to `canvas` passes the primitive check, the semantic check,
+     * the alias table and the foreground check, and makes every line in dark mode
+     * invisible behind a green run. That was verified, not imagined.
+     *
+     * The bound is deliberately loose. A hairline is *meant* to be quiet, so this
+     * asserts only that it is not the surface — an eighth of the brightness range,
+     * which #cecece on #ffffff (0.19) and #4a4a4a on #1a1a1a (0.19) clear, and
+     * which a stroke that has collapsed into its background cannot.
+     */
+    for (const scheme of [colors, colorsDark]) {
+      for (const line of ['stroke', 'stroke-strong'] as const) {
+        for (const ground of ['canvas', 'surface'] as const) {
+          expect([
+            line,
+            ground,
+            Math.abs(brightness(scheme[line]) - brightness(scheme[ground])) > 0.125,
+          ]).toEqual([line, ground, true]);
+        }
+      }
+    }
+  });
+
   it('holds the primitives still, which is what makes them primitives', () => {
     // The tier contract, and the reason `schemeIndependent` is a list in palette.js
     // rather than something inferred. `white` names a VALUE: the white button on the
@@ -262,12 +303,12 @@ describe('two-scheme palette', () => {
      * Assert it here and the migration is checkable; leave it to review and the
      * only way to see a wrong pairing is to open the app and recognise the colour.
      *
-     * `stroke` is deliberately absent, and it is the one mapping that is NOT a
-     * rename: its light value is `neutral-300` #cecece, one step stronger than the
-     * `grey-300` #e6e6e6 the app used for hairlines. That change was taken on
-     * purpose, so it does not belong in a table of things that did not change.
-     * `on-background` is absent for the opposite reason: `neutral-600` arrived with
-     * the semantic tier and no v1 grey ever pointed at it.
+     * `stroke ↔ grey-300` is deliberately absent, and it is the one mapping that is
+     * NOT a rename: `stroke`'s light value is `neutral-300` #cecece, one step
+     * stronger than the `grey-300` #e6e6e6 the app used for hairlines. That change
+     * was taken on purpose, so it does not belong in a table of things that did not
+     * change. `on-background` is absent for the opposite reason: `neutral-600`
+     * arrived with the semantic tier and no v1 grey ever pointed at it.
      */
     // Typed both sides, so a token name that stops existing fails here as a type
     // error rather than as an undefined compared against an undefined — which is
@@ -279,6 +320,11 @@ describe('two-scheme palette', () => {
       ['on-canvas', 'grey-700'],
       ['on-surface', 'grey-700'],
       ['on-canvas-muted', 'grey-600'],
+      // `stroke` has TWO v1 aliases and only one of them is a rename. Against
+      // `grey-400` it is value-identical in both schemes and belongs here; against
+      // `grey-300`, the alias the app's borders actually used, it is the one
+      // deliberate repaint in ADR 0022 and is excluded below.
+      ['stroke', 'grey-400'],
       ['stroke-strong', 'grey-500'],
       ['accent', 'emphasis'],
       ['on-canvas-accent', 'emphasis'],
@@ -323,13 +369,13 @@ describe('two-scheme palette', () => {
 });
 
 /**
- * The two tiers, spelled out here rather than imported from palette.js.
+ * The tiers, spelled out here rather than imported from palette.js.
  *
  * palette.js is the thing under test: reading its own `schemeIndependent` back would
  * make the primitive check agree with whatever that file currently says, including
  * after someone moves `canvas` into it. A second copy is the point — when upstream
- * adds a colour, the generator throws until palette.js classifies it and these fail
- * until a human classifies it here too.
+ * adds a colour, the generator throws until palette.js classifies it, and the
+ * partition test below fails until a human classifies it here too.
  */
 const PRIMITIVES: ColorToken[] = [
   'black',
@@ -344,6 +390,22 @@ const PRIMITIVES: ColorToken[] = [
   'red-500',
   'yellow-400',
 ];
+
+const DEPRECATED_V1: ColorToken[] = [
+  'emphasis',
+  'alternative',
+  'grey-100',
+  'grey-200',
+  'grey-250',
+  'grey-300',
+  'grey-400',
+  'grey-500',
+  'grey-600',
+  'grey-700',
+];
+
+/** App-invented, scheme-independent, and retired by ADR 0022 once #72's pass lands. */
+const APP_ROLES: ColorToken[] = ['always-light', 'always-dark'];
 
 const SEMANTIC: ColorToken[] = [
   'accent',

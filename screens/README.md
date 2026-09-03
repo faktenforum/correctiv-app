@@ -11,10 +11,18 @@ looking at a picture.
 ## The set
 
 [`android/`](android/) holds 30 shots, one per step, from `apps/mobile`. Shot on
-2026-09-03 from the release APK of the scope round on `Medium_Phone_API_36` at
+2026-09-03 from the release APK of the colour-tier round on `Medium_Phone_API_36` at
 1080x2400, night mode off. Both tours ran clean, with no `MISS`.
 
-**This is the first set that opens at the door.** Since
+**Re-shot for [ADR 0022](../adr/0022-three-tiers-of-colour-and-a-dark-scheme-that-names-roles.md),
+and every one of them moved.** The app is on the semantic colour tier now, and `stroke`
+is one step stronger than the `grey-300` its hairlines used to be — so every border,
+divider, input outline, progress track and `<Hairline>` in these 30 shots is a shade
+darker than in the set before. No step name changed and no screen changed shape; if you
+are diffing against the previous set, that is the whole of it. Leaving them would have
+made this directory stale in exactly the pixels that round was about.
+
+**This is the second set that opens at the door.** Since
 [ADR 0016](../adr/0016-a-door-at-the-root-and-an-entitlement-not-an-amount.md) a
 cleared app starts at the login gate, so `tour-android.sh` opens with three steps that
 did not exist before, `00-gate`, `00-gate-failed` and `00-gate-no-access`, and signs

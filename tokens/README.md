@@ -78,11 +78,22 @@ what still sits on an alias, and why, is listed there.
 git ls-remote https://github.com/correctiv/wp-design-tokens.git HEAD
 
 # 2. Copy the files in (from any checkout of the token repo), then:
-npm run tokens                     # regenerates the three artefacts
+npm run tokens                     # regenerates the five artefacts
 
 # 3. Update the commit in the table above, and commit source + generated
 #    files together.
 ```
+
+The Figma board follows the generated theme rather than this file, and it does not
+follow it by itself:
+
+```bash
+node tools/figma-plugin/sync-tokens.mjs   # then run the plugin from Figma
+```
+
+Skip that and the board keeps painting the last values it was given, which is how it
+comes to disagree with the app about a colour while still looking finished.
+See [`tools/figma-plugin/README.md`](../tools/figma-plugin/README.md).
 
 Step 2 is not optional: `apps/mobile/__tests__/tokens.test.ts` regenerates
 and byte-compares, so a token change without regeneration fails CI. That is the

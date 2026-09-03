@@ -23,12 +23,19 @@
  *   deprecated   `grey-100…700`, `emphasis`, `alternative`. Aliases upstream keeps
  *                until its consumers migrate. Their dark values are here unchanged.
  *
- * The generator enforces the split rather than trusting this comment: every colour
- * in theme.css must appear in EITHER `dark` or `schemeIndependent` below, and a
- * colour in neither throws. So a token upstream adds cannot arrive without someone
- * deciding which of the two it is — which is the whole failure this file guards
- * against, because a colour with no dark value has no symptom of its own. It just
- * stays light, in a build that is green.
+ * The generator enforces the split rather than trusting this comment, in two ways.
+ * Every colour in theme.css must appear in EITHER `dark` or `schemeIndependent`
+ * below, and a colour in neither throws — so a token upstream adds cannot arrive
+ * without someone deciding which of the two it is. And a name in `schemeIndependent`
+ * must be a LITERAL in theme.css, because that is how upstream spells a primitive;
+ * a `var()` reference is how it spells a role, and a role in that list would be a
+ * semantic token pinned to its light value.
+ *
+ * The second check exists because the first was not enough on its own, and the way it
+ * failed is worth keeping: classify a new semantic token as scheme-independent and
+ * everything went green — generator, tests, build — with the colour stuck light in
+ * dark mode. Which is exactly the failure this file guards against, so the guard had
+ * better cover it.
  *
  * ## Why the old essay is gone
  *
@@ -84,16 +91,18 @@
 /**
  * The primitives, which deliberately do not follow the scheme.
  *
- * A list rather than a rule, because the rule that suggests itself — "a literal hex
- * in theme.css is a primitive, a `var()` reference is themed" — is wrong for exactly
- * one token. `grey-250` is a literal (upstream dropped it from the ramp and left the
- * hex in place) but it is a surface and it does have a dark value. Under the rule it
- * would have been the one colour allowed to go missing without a word, which is the
- * failure this whole file is arranged to make loud.
+ * A list rather than something inferred, because the obvious rule only holds one way
+ * round. "A `var()` reference in theme.css is a role" is true, and the generator
+ * checks this list against it. The converse — "a literal is a primitive" — is false
+ * for exactly one token: `grey-250` is a literal, because upstream dropped it from
+ * the ramp and left the hex in place, but it is a surface and it has a dark value.
+ * Inferring membership would have made it the one colour allowed to go missing
+ * without a word.
  *
- * So membership is stated, not inferred. Adding a name here is a claim: *this colour
- * means the same thing on a dark screen as on a light one.* True of `white`, which
- * is a value. False of `canvas`, which is a role.
+ * So membership is stated, and the generator refuses a name theme.css contradicts.
+ * Adding one here is a claim: *this colour means the same thing on a dark screen as
+ * on a light one.* True of `white`, which is a value. False of `canvas`, which is a
+ * role.
  */
 export const schemeIndependent = [
   'black',
@@ -135,9 +144,10 @@ export const roles = {
  * Dark values, keyed by token name as theme.css spells it.
  *
  * Every key must name a colour that exists in theme.css, and every colour that is a
- * `var()` reference there must have a key here. The generator throws on either,
- * because neither failure has a symptom of its own: the colour simply stays on its
- * light value in dark mode, in a build that is otherwise green.
+ * `var()` reference there ends up here, because the generator refuses to let one sit
+ * in `schemeIndependent` instead. Both failures are silent on their own — the colour
+ * simply stays on its light value in dark mode, in a build that is otherwise green —
+ * so both throw.
  */
 export const dark = {
   // -- Semantic. The dark theme, in the vocabulary the design system now uses. ---

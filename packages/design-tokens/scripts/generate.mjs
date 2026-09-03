@@ -124,7 +124,26 @@ function parseVars(css) {
 
   const vars = {};
   for (const [k, v] of Object.entries(rawVars)) vars[k] = resolveVar(rawVars, v);
-  return vars;
+
+  /**
+   * Which colours were written as a LITERAL, before resolution flattened that away.
+   *
+   * This is the tier, as theme.css states it. Upstream's primitives are the hexes
+   * (`--var-color-white: #ffffff`); every semantic role and every deprecated alias is
+   * a reference (`--var-color-canvas: var(--var-color-white)`). Phase 4 needs it and
+   * cannot recover it, because `vars` above has already followed every reference to
+   * its endpoint — which is why the first version of assertPaletteAgrees could not
+   * tell a role from a value, and would pass a semantic token pinned to its light
+   * value in dark mode.
+   */
+  const colorIsLiteral = {};
+  for (const [k, v] of Object.entries(rawVars)) {
+    if (k.startsWith('--var-color-')) {
+      colorIsLiteral[k.slice('--var-color-'.length)] = !/^var\(/i.test(v);
+    }
+  }
+
+  return { vars, colorIsLiteral };
 }
 
 // ---------------------------------------------------------------------------
@@ -233,7 +252,7 @@ function groupScales(vars) {
  * `@variant` blocks that do not declare the same set of variables. Since both blocks
  * are built from these lists, satisfying this satisfies that.
  */
-function assertPaletteAgrees(tokenColors) {
+function assertPaletteAgrees(tokenColors, colorIsLiteral) {
   const independent = new Set(schemeIndependent);
 
   // A name in both lists is a contradiction, not a duplicate: one says the colour
@@ -260,6 +279,33 @@ function assertPaletteAgrees(tokenColors) {
     }
   }
 
+  // Classified, but classified WRONG. Being in one of the two lists is not enough:
+  // `schemeIndependent` is a claim that the colour names a value, and theme.css
+  // already says which colours do — the primitives are literals there, every semantic
+  // role and every deprecated alias is a `var()` reference.
+  //
+  // Without this, adding `--var-color-on-accent: var(--var-color-white)` upstream and
+  // dropping it into `schemeIndependent` produced a semantic role stuck on its light
+  // value in dark mode, past a green generator and a green test run. Which is the
+  // exact failure the message below describes, so the check that describes it had
+  // better catch it.
+  //
+  // Only this direction is checkable. The reverse — "a literal must be a primitive" —
+  // is false: `grey-250` is a literal upstream dropped from the ramp, and it is a
+  // surface with a dark value.
+  for (const name of schemeIndependent) {
+    if (colorIsLiteral[name] === false) {
+      throw new Error(
+        `palette.js lists "${name}" as scheme-independent, but theme.css defines it as ` +
+          'a reference to another colour, which is how it spells a ROLE. Roles follow ' +
+          'the scheme.\n\n' +
+          `Give it a dark value in dark['${name}'] instead. If upstream really has ` +
+          'made a primitive out of a reference, this check is the thing to change, ' +
+          'deliberately.',
+      );
+    }
+  }
+
   // The one that catches an upstream addition. Every colour must be classified.
   for (const name of Object.keys(tokenColors)) {
     if (dark[name] == null && !independent.has(name)) {
@@ -281,8 +327,8 @@ function assertPaletteAgrees(tokenColors) {
  * `colorsDark` starts from the light values so that the scheme-independent
  * primitives carry over untouched, and `dark` overwrites the rest.
  */
-function buildPalettes(tokenColors) {
-  assertPaletteAgrees(tokenColors);
+function buildPalettes(tokenColors, colorIsLiteral) {
+  assertPaletteAgrees(tokenColors, colorIsLiteral);
   return {
     colors: { ...tokenColors, ...roles },
     colorsDark: { ...tokenColors, ...dark, ...roles },
@@ -598,10 +644,16 @@ function renderReaderTs(themeCss, colorsDark) {
   const darkVarBlock = Object.entries(colorsDark)
     .map(([k, v]) => `--var-color-${k}:${v}`)
     .join(';');
-  // The one rule the variables do not reach: the "partly false" verdict plaque sits
-  // on the club yellow, which stays yellow in the dark — and its text is grey-700,
-  // which would turn near-white there.
-  const readerDarkCss = `:root{${darkVarBlock}}.rating--qualified{color:${roles['always-dark']}}`;
+  // Nothing but the variables, and that is new. The "partly false" verdict plaque sits
+  // on the club yellow, which stays yellow in the dark, so its label has to stay dark
+  // too — and this used to append a hand-written `.rating--qualified{color:…}` rule to
+  // say so, because every colour the reader had was scheme-dependent.
+  //
+  // READER_LAYOUT_CSS gives that label `--var-color-neutral-700` now: a primitive, and
+  // primitives do not follow the scheme. The exception is expressed in the token the
+  // rule uses rather than in a rule that overrides it, so it cannot fall out of step
+  // with the plaque it is about.
+  const readerDarkCss = `:root{${darkVarBlock}}`;
 
   return `${HEADER}
 /* eslint-disable */
@@ -620,9 +672,9 @@ export const READER_DARK_CSS = ${JSON.stringify(readerDarkCss)};
 function main() {
   const themeCss = readFileSync(THEME_CSS_PATH, 'utf8');
   const typographySpecs = parseTypography(readFileSync(typographyCssPath(), 'utf8'));
-  const vars = parseVars(themeCss);
+  const { vars, colorIsLiteral } = parseVars(themeCss);
   const scales = groupScales(vars);
-  const { colors, colorsDark } = buildPalettes(scales.tokenColors);
+  const { colors, colorsDark } = buildPalettes(scales.tokenColors, colorIsLiteral);
 
   writeFileSync(resolve(PKG, 'theme.css'), renderThemeCss(vars, scales, colors, colorsDark));
   writeFileSync(resolve(PKG, 'theme.standalone.css'), renderStandaloneCss());

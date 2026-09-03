@@ -11,8 +11,8 @@ export type ButtonProps = Omit<PressableProps, 'children' | 'style'> & {
   className?: string;
 };
 
-// Brand logic: red (emphasis) for the journalism CTA, yellow (alternative) for the
-// club. No shadows — shape comes from surfaces plus radius md (5px).
+// Brand logic: red (`accent`) for the journalism CTA, yellow (`accent-alternative`)
+// for the club. No shadows — shape comes from surfaces plus radius md (5px).
 //
 // `onEmphasis` is the CTA on a brand surface: white, not yellow. Yellow is the
 // club's colour and carries meaning there; on red it is also loud and low-contrast.

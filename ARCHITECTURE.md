@@ -212,10 +212,17 @@ Two things do not follow it, on purpose.
   still right for a role colour.
 
 The dark values live in `packages/design-tokens/palette.js`, hand-written, because
-`tokens/theme.css` ships a dark block that is a placeholder holding the light values.
-That file explains how each grey was assigned by role. `__tests__/tokens.test.ts`
-fails if the role colours ever start following the scheme, or if the dark palette
-silently becomes the light one again.
+~~`tokens/theme.css` ships a dark block that is a placeholder holding the light
+values.~~ ~~That file explains how each grey was assigned by role.~~
+`__tests__/tokens.test.ts` fails if the role colours ever start following the scheme,
+or if the dark palette silently becomes the light one again.
+
+> Both struck claims are voided by
+> [ADR 0022](adr/0022-three-tiers-of-colour-and-a-dark-scheme-that-names-roles.md).
+> Upstream deleted the placeholder block, so `theme.css` now ships no dark values at
+> all; and `palette.js` assigns a value per semantic **role** rather than per grey.
+> That the dark values are this repo's to write is unchanged, which is why the
+> sentence around them still stands.
 
 ## The web target
 
