@@ -68,11 +68,14 @@ export default function HomeScreen() {
         </View>
       )}
 
-      {callout && liftCallout && (
-        <View className="mt-s">
-          <CalloutTeaser callout={callout} onPress={openCallout} />
-        </View>
-      )}
+      {callout &&
+        liftCallout && (
+          // mb-m, because the hero underneath runs edge to edge and has no top margin
+          // of its own. Without it the card's bottom edge and the photograph touch.
+          <View className="mt-s mb-m">
+            <CalloutTeaser callout={callout} onPress={openCallout} />
+          </View>
+        )}
 
       {hero && <ArticleHero item={hero} onPress={openArticle} />}
 

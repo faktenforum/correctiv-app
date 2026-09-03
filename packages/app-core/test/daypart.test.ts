@@ -31,6 +31,27 @@ describe('daypartAt', () => {
     }
   });
 
+  /**
+   * The function returns the first match, so an overlap in the table would make the
+   * earlier key win and the later one never happen, with nothing to say so. Found by
+   * moving the numbers by hand to look at the lifted layout, which quietly stayed in
+   * the morning.
+   */
+  it('has no overlapping ranges', () => {
+    const ranges = Object.entries(DAYPART_HOURS);
+    const faults: string[] = [];
+    for (const [aName, [aFrom, aTo]] of ranges) {
+      if (aFrom >= aTo) faults.push(`${aName} does not open before it closes`);
+      for (const [bName, [bFrom, bTo]] of ranges) {
+        if (aName < bName && aFrom < bTo && bFrom < aTo) {
+          faults.push(`${aName} overlaps ${bName}`);
+        }
+      }
+    }
+    // Collected rather than asserted one by one, so a failure names every clash.
+    expect(faults).toEqual([]);
+  });
+
   it('takes a timestamp as readily as a Date', () => {
     expect(daypartAt(at(12).getTime())).toBe('midday');
   });

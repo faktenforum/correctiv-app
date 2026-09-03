@@ -36,7 +36,15 @@ export const DAYPART_HOURS: Record<Exclude<Daypart, 'off-hours'>, readonly [numb
   evening: [17, 22],
 };
 
-/** Which part of the day a moment falls in. */
+/**
+ * Which part of the day a moment falls in.
+ *
+ * The ranges above must not overlap. This returns the FIRST match, so an overlap makes
+ * the earlier key win silently and the later one simply never happen. Nothing in the
+ * types prevents it and nothing at runtime complains, which is why there is a test
+ * (`daypart.test.ts`) that reads the table and fails on an overlap: an editor moving
+ * these numbers should be told, not left to find out from a screenshot.
+ */
 export function daypartAt(now: number | Date): Daypart {
   const hour = (now instanceof Date ? now : new Date(now)).getHours();
   for (const [part, [from, to]] of Object.entries(DAYPART_HOURS)) {
