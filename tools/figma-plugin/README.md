@@ -89,7 +89,7 @@ whole token set over it.
                    style
     t: 'rect'      w, h, fill, stroke, radius
     t: 'ellipse'   w, h, fill, stroke
-    t: 'space'     h
+    t: 'space'     h, w
     t: 'line'      a 1px hairline; `w: 'fill'` to span the parent
     t: 'component' a frame instances can point at; props, and `bind` on a descendant
     t: 'variants'  prop, options[{ value, ... }] — one component set
@@ -205,6 +205,15 @@ three go or every row ends up underlined twice.
 instance a *sketched* kit, or the wireframe fills with the app's real colours and
 stops being a wireframe. Hence `Bausteine` and `Bausteine, Wireframe` from one
 description, and a registry keyed by mode.
+
+## What the plugin does not do any more
+
+It used to read a board back out into a description, which is how these screens were
+recovered from an earlier, imperative version of this plugin that no longer existed.
+That job is done: `spec.json` is the source and the board is the output, so the
+importer was dead code — and it was the only thing that made the spec server accept a
+write. It is gone, along with the `/export` endpoint. `git log` has it if a board is
+ever edited by hand faster than the spec can follow.
 
 ## Why a plugin and not the MCP server
 

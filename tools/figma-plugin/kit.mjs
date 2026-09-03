@@ -786,7 +786,17 @@ function topLevel(text) {
  * and the first `}: {` in the file would otherwise be that one.
  */
 function sourceProps(source, component) {
-  const clean = source.replace(/\/\*[\s\S]*?\*\//g, '').replace(/\/\/[^\n]*/g, '');
+  // Strings first, then comments. A `'https://…'` default makes the comment stripper
+  // eat the rest of the line, and a `'}'` or `')'` default makes the bracket matchers
+  // close early — `{ a = '}', b }` silently lost `b`, which is the one failure the
+  // audit exists to catch. Blanking the contents keeps every offset intact.
+  const clean = source
+    .replace(
+      /'(?:[^'\\\n]|\\.)*'|"(?:[^"\\\n]|\\.)*"|`(?:[^`\\]|\\.)*`/g,
+      (m) => m[0] + ' '.repeat(m.length - 2) + m[m.length - 1],
+    )
+    .replace(/\/\*[\s\S]*?\*\//g, (m) => ' '.repeat(m.length))
+    .replace(/\/\/[^\n]*/g, (m) => ' '.repeat(m.length));
 
   // Anchored on the component's OWN function, by name. Anchoring on the first
   // `export function` was not enough: a file may declare a private subcomponent
@@ -824,8 +834,10 @@ function sourceProps(source, component) {
 
   // And the declared type, which carries props the destructuring passes through.
   // Bounded the same way: the inline form has to sit inside this function's parens,
-  // or a private subcomponent further down the file supplies it instead.
-  const named = clean.match(/export type \w*Props\s*=/);
+  // or a private subcomponent further down the file supplies it instead. The named
+  // form has to be THIS component's — `\w*Props` took the first such type anywhere in
+  // the file, so a helper's `FooProps` above the export would have been read instead.
+  const named = clean.match(new RegExp('export type ' + escaped + 'Props\\s*='));
   const inline = params === null ? -1 : params.search(/\}\s*:\s*\{/);
   const body = named
     ? literal(clean, named.index)

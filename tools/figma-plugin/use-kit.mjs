@@ -85,8 +85,19 @@ function badgeTone(node) {
   return null;
 }
 
-/** The only fills a switch track can carry, and which state each one means. */
-const SWITCH = { '@color-emphasis': 'ja', '#e0e0e3': 'nein', '@color-grey-300': 'nein' };
+/**
+ * Which state a switch track's fill means, or null.
+ *
+ * A plain object literal would read through `Object.prototype`, so a fill of
+ * "constructor" or "toString" would come back truthy and be written into the
+ * instance. Unreachable with hex fills, and still the wrong shape for a guard whose
+ * whole job is to refuse what it does not recognise.
+ */
+function switchState(fill) {
+  if (fill === '@color-emphasis') return 'ja';
+  if (fill === '#e0e0e3' || fill === '@color-grey-300') return 'nein';
+  return null;
+}
 
 /**
  * `claimStatusTag` picks the words; the surface says which of the four states.
@@ -168,8 +179,8 @@ const RULES = [
       // unrecognised fill as off — which is what an untokenised spec has throughout,
       // and the switch would have stayed the one row still silently wrong while its
       // neighbours failed loudly.
-      const on = knob === null ? undefined : SWITCH[knob.fill];
-      if (lines[0] === undefined || on === undefined) return null;
+      const on = knob === null ? null : switchState(knob.fill);
+      if (lines[0] === undefined || on === null) return null;
       return {
         Label: lines[0].chars,
         Beschreibung: lines[1] === undefined ? '' : lines[1].chars,
@@ -190,22 +201,23 @@ const RULES = [
   },
   {
     of: 'ui/ScreenHeader',
-    // A header that is not just a chevron and one word is a different object. On
-    // `/suche` the second child is a `TextInput` frame, not a label, and
-    // `ScreenHeader.children` is a slot an instance cannot take. Reading the text
-    // depth-first found the field's placeholder and the header came out saying
-    // "Suchen …", so the test is on the DIRECT children: two texts, or nothing doing.
-    // Declining in `when` rather than in `read`, because this is not a node that
-    // failed to be read. It is one the kit does not cover, so it stays a copy and
-    // keeps the hairline the board draws for it.
-    when: (n) =>
-      (n.name || '').startsWith('ScreenHeader') &&
-      (n.children || []).every((c) => c.t === 'text') &&
-      (n.children || []).filter((c) => c.chars !== '‹').length === 1,
+    when: (n) => (n.name || '').startsWith('ScreenHeader'),
     // The kit's header carries its own hairline, and the board draws one as the next
     // sibling. `eats` says so, and the walk drops it.
     eats: ['line'],
-    read: (n) => ({ Zurück: texts(n, []).filter((t) => t.chars !== '‹')[0].chars }),
+    read: (n) => {
+      const children = n.children || [];
+      // On `/suche` the second child is a `TextInput` frame, not a label, and
+      // `ScreenHeader.children` is a slot an instance cannot take. Reading the text
+      // depth-first found the field's placeholder and the header came out saying
+      // "Suchen …". DECLINE rather than null: this is not a node that failed to be
+      // read, it is one the kit does not cover, so it stays a copy without a
+      // complaint and keeps the hairline the board draws for it.
+      if (children.some((c) => c.t !== 'text')) return DECLINE;
+      const label = children.find((c) => c.chars !== '‹');
+      if (label === undefined) return null;
+      return { Zurück: label.chars };
+    },
   },
   {
     of: 'ui/Button',
@@ -228,6 +240,16 @@ const RULES = [
     },
   },
 ];
+
+/**
+ * A rule saying "not mine", as distinct from "I could not read this".
+ *
+ * Two outcomes were not enough. A rule that returns null is a failure and stops the
+ * script; a rule that quietly declines in `when` hides every future mismatch as well
+ * as the one it meant to. This is the third: deliberate, silent, and only where a
+ * reason is written down.
+ */
+const DECLINE = Symbol('decline');
 
 const counts = {};
 const skipped = [];
@@ -252,6 +274,7 @@ function convert(children) {
       if (node.t === 'instance') break;
       if (!rule.when(node)) continue;
       const set = rule.read(node);
+      if (set === DECLINE) break;
       if (set === null) {
         skipped.push(rule.of + ': ' + (node.name || '?'));
         break;

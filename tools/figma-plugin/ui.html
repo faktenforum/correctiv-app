@@ -46,6 +46,13 @@
   let seen = -1;
   let drawing = false;
 
+  /** An answer from the server, as opposed to never having reached it. */
+  function fromServer(message) {
+    const e = new Error(message);
+    e.fromServer = true;
+    return e;
+  }
+
   function status(cls, text) {
     dot.className = cls;
     log.textContent = text;
@@ -58,13 +65,13 @@
       // `fetch` does not reject on a 500, and a broken spec.json is exactly what the
       // server answers 500 to. Without this the plugin forwarded `undefined` and the
       // JSON syntax error surfaced as "cannot read properties of undefined".
-      if (!r.ok) throw new Error('generation ' + r.status);
+      if (!r.ok) throw fromServer('generation ' + r.status);
       const { generation } = await r.json();
       if (generation !== seen) {
         drawing = true;
         status('busy', 'drawing …');
         const s = await fetch(BASE + '/spec');
-        if (!s.ok) throw new Error('spec ' + s.status + ': ' + (await s.text()).slice(0, 120));
+        if (!s.ok) throw fromServer('spec ' + s.status + ': ' + (await s.text()).slice(0, 120));
         const payload = await s.json();
         parent.postMessage({ pluginMessage: { type: 'spec', spec: payload.spec } }, '*');
         // Only once the document is on its way. Marking it seen before the fetch left
@@ -78,12 +85,12 @@
       // Reset, or a server that restarts mid-fetch leaves `drawing` true for ever and
       // the plugin never polls again, red dot and all, even once it is back.
       drawing = false;
-      // The server's own words when it has them. It answers 500 with the JSON syntax
-      // error for a broken spec.json, and reporting "no server" for a server that is
-      // plainly running and telling you the cause was worse than saying nothing.
+      // The server's own words only when they ARE the server's. Every rejection has a
+      // message — a dead port gives "Failed to fetch" — so preferring `e.message`
+      // outright replaced the one hint that actually helps with a browser string.
       status(
         'bad',
-        e && e.message ? e.message : 'no server on 8787: node tools/figma-plugin/server.mjs',
+        e && e.fromServer ? e.message : 'no server on 8787: node tools/figma-plugin/server.mjs',
       );
     }
   }
@@ -91,20 +98,6 @@
   onmessage = async (event) => {
     const m = event.data.pluginMessage;
     if (!m) return;
-
-    if (m.type === 'export') {
-      // A board read back out, on its way to becoming spec.json.
-      try {
-        await fetch(BASE + '/export', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ page: m.page, screens: m.screens }),
-        });
-      } catch (e) {
-        status('bad', 'export could not be delivered');
-      }
-      return;
-    }
 
     if (m.type !== 'done') return;
     drawing = false;

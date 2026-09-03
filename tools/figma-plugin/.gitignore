@@ -1,3 +1,0 @@
-# Written by the plugin when it reads a board back out. A snapshot of Figma's state,
-# not a source: `spec.json` is the source.
-exported.json

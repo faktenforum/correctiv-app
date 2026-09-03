@@ -12,7 +12,7 @@
 // The manifest allows `http://localhost:8787`; Figma rejects a bare IP there.
 
 import { createServer } from 'node:http';
-import { readFile, stat, writeFile } from 'node:fs/promises';
+import { readFile, stat } from 'node:fs/promises';
 import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
@@ -54,20 +54,6 @@ const server = createServer(async (req, res) => {
       const text = await readFile(SPEC, 'utf8');
       JSON.parse(text); // fail here rather than in the plugin
       send(res, 200, JSON.stringify({ generation: await generation(), spec: JSON.parse(text) }));
-      return;
-    }
-
-    if (req.url === '/export' && req.method === 'POST') {
-      // The plugin reading the board back out. This is how screens built before the
-      // interpreter existed become spec entries: it serialises what it can see,
-      // rather than anyone re-typing it from a screenshot.
-      const chunks = [];
-      for await (const chunk of req) chunks.push(chunk);
-      const text = Buffer.concat(chunks).toString('utf8');
-      const out = join(HERE, 'exported.json');
-      await writeFile(out, `${JSON.stringify(JSON.parse(text), null, 2)}\n`);
-      console.log(`exported ${text.length} bytes to ${out}`);
-      send(res, 200, '{"ok":true}');
       return;
     }
 
