@@ -94,7 +94,14 @@ in light mode, and lightens by one in dark (#3a3a3a → #4a4a4a).
 
 This was checked before it was taken, not after: both schemes were screenshotted
 across eleven routes on the web export before and after, and diffed pixel for pixel.
-The changed pixels are borders and nothing else. See the PR for the images.
+The changed pixels are borders and the small fills that go with them — progress
+tracks, the segmented step bars, the onboarding's inactive dots, the switch's off
+track — and nothing else. See the PR for the images.
+
+Those fills are `stroke` on purpose rather than by accident: upstream defines it as
+the colour of "linear elements — borders, dividers, line iconography — that provide
+structure without competing with content", and a 4px progress track is one of those
+whatever CSS property draws it.
 
 One route in that set proves less than it appears to, and is worth naming because it is
 the trap `TROUBLESHOOTING.md` warns about. `/onboarding` came back 0.00%, which is
@@ -112,11 +119,14 @@ rule concrete. `READER_LAYOUT_CSS` in the core is a second stylesheet for the sa
 screen: on `/artikel` the app draws the header's `border-b` and the WebView draws the
 byline's `border-bottom` a few hundred pixels below it. Migrating one and not the
 other would have put two different hairline greys on the app's primary reading
-surface. Eighteen of its nineteen `--var-color-*` uses moved; the one that
-stayed is the neutral verdict plaque's background, which is the `grey-300`-as-a-fill
-gap in the table below. Sixteen went to the semantic tier and two to primitives —
-`white` for the labels on the brand red, `neutral-700` for the label on club yellow —
-because those two must not follow the scheme.
+surface. Eighteen of its nineteen `--var-color-*` uses moved: seventeen to
+the semantic tier and one to a primitive, `neutral-700` for the label on club yellow,
+which must not follow the scheme. The one that stayed is the neutral verdict plaque's
+background, the `grey-300`-as-a-fill gap in the table below.
+
+It also had three `#fff` literals — on the Faktencheck badge and two verdict plaques,
+all of them labels on the brand red. Those are the primitive `white` now. There are no
+colour literals left in the file.
 
 That migration also **fixed a shipped dark-mode bug**, which is worth stating plainly
 because it was found by reviewing the code and not by anyone looking at the app.

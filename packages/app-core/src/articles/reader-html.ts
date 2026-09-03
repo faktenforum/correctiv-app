@@ -113,11 +113,12 @@ ${footer}
  * replaced was derived from the same tokens once, then drifted from them one
  * rounded rem at a time.
  *
- * There are no colour literals left here. There used to be three, all in the
- * `.rating--*` tones, on the grounds that the tokens carried no semantic colour for a
- * "verdict" — and the tiers ended that. A label on the brand red is the primitive
- * `white`; the label on club yellow is `neutral-700`. Both say "does not follow the
- * scheme" in the token itself, which is what a literal was standing in for.
+ * There are no colour literals left here. There used to be three `#fff`s — on the
+ * badge and on two of the `.rating--*` tones — on the grounds that the tokens carried
+ * no semantic colour for a "verdict", and the tiers ended that. All three were a label
+ * on the brand red, which is the primitive `white`; the label on club yellow is
+ * `neutral-700`. Both say "does not follow the scheme" in the token itself, which is
+ * what a literal was standing in for.
  * (ADR 0022. The `.rating` background is the one colour still on a v1 alias, because
  * `grey-300` as a FILL has no successor.)
  */
