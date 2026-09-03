@@ -46,10 +46,14 @@ its component, at the width the component had. `ui/Button` hugs its label, so wi
 that every button stretched to fill a column wore a box stopping short of its own
 edge.
 
-A glyph that has an emoji form is a trap here. Kalam has no heart, so `♥` falls back
-to an emoji font and arrives in colour on the one page that exists in order not to be
-about colour; the text-presentation selector does not persuade Figma otherwise. The
-outline heart `♡` has no emoji form and is used instead, filled Ionicon or not.
+**A glyph that Unicode lists as an emoji is a trap here.** Kalam has almost no
+symbols, so the wireframe falls back to an emoji font — and any codepoint in
+`emoji-data.txt` comes back as a colour picture on the one page that exists in order
+not to be about colour. `♥` U+2665 arrived red and `▶` U+25B6 as a blue play button;
+both have `Emoji_Presentation=No`, so nothing warns you, and U+FE0E does not persuade
+Figma otherwise. The board uses their non-emoji twins instead, `♡` U+2661 and `►`
+U+25BA, filled Ionicon or not. Before adding a symbol, check it against
+`emoji-data.txt` rather than against how it looks in your editor.
 
 The wobble is seeded from each node's name and size, so it is the *same* wobble on
 every redraw. Without that the whole board shimmers on each save and a real change
@@ -152,7 +156,7 @@ fill. Both in one would make every coloured headline its own style.
 visibility; it can never be given children. So `ui/Card` is the container it is in
 the code, with a dashed placeholder where content goes, and a card that carries
 content has to be its own component — in Figma *and* in the app. Seventeen places
-still write `Overline` over a `Card` inline, which is why sixteen cards on the board
+still write `Overline` over a `Card` inline, which is why seventeen cards on the board
 are copies rather than instances.
 
 A colour is the other thing an instance cannot override, and `ClubCard` shows it:
@@ -187,8 +191,8 @@ is merely absent is a bug waiting to be found by eye.
     node tools/figma-plugin/sync-tokens.mjs      # first, always
     node tools/figma-plugin/use-kit.mjs
 
-Sixty-five of them: 26 buttons, 14 headers, 6 project rows, 5 setting rows, 5 badges,
-4 nav cards, 4 status tags, 1 club card. The fifteenth header is `/suche`'s, which
+Sixty-three of them: 24 buttons, 14 headers, 6 project rows, 5 badges, 5 setting rows,
+4 status tags, 4 nav cards, 1 club card. The fifteenth header is `/suche`'s, which
 holds a search field where the back label goes; a slot is not something an instance
 takes, so that one stays a copy. The eyeballed numbers go with them — a
 button label measured off a PNG came out at 13px semibold, and `text-button` is 16
@@ -292,17 +296,27 @@ navigation flow belongs in a FigJam board, where connectors are real.
 
 Every `headline-*` variant in `packages/design-tokens/src/typography.generated.ts` is
 `"family": "sans"`. **`text-article` is the only serif variant**, and `family="serif"`
-is set explicitly in exactly one place, `apps/mobile/src/app/onboarding.tsx`.
+is set explicitly in three places: `components/gate/LoginGate.tsx` twice and
+`app/onboarding.tsx` once. Ten text nodes on the board are serif — the gate's three
+states, onboarding's four, and the reader's three paragraphs of body text — and that
+is all of them.
 
-An earlier version set every screen title in Merriweather, because two comments say so
-and neither matches its own code: `components/feed/ArticleHero.tsx` opens with
-"kicker, serif headline" and `components/feed/ArticleRow.tsx` with "serif title plus
-meta", while both render `headline-l` / `headline-s`, which are sans. If you are about
-to trust a comment about typography here, read the token instead.
+An earlier version set every screen title in Merriweather, because two comments in
+`components/feed/` said "serif headline" and "serif title" over JSX rendering
+`headline-l` and `headline-s`, which are sans. Those comments are corrected upstream
+now, so the example no longer reproduces; the lesson is why this section is still
+here. If you are about to trust a comment about typography, read the token instead.
 
 ## What is derived and what is transcribed
 
-The screen list and the route names come from `apps/mobile/src/app/**`. The **content inside each screen is hand-transcribed** from
+The screen list and the route names come from `apps/mobile/src/app/**`.
+
+**The transcribed text sizes are eyeballed and consistently small.** A group heading
+is 9px on the board where `ui/Overline` is 12; a body line is 13 where `text-m` is 15.
+Every node the kit draws carries the real number, so the board is a mix, and a heading
+written at its correct size next to four measured ones reads as a hierarchy the app
+does not have. New copy therefore matches its neighbours rather than the token, and
+lifting them all is one job for one day. The **content inside each screen is hand-transcribed** from
 the screenshots in `screens/android/`, and that is the part that rots: change a
 headline in the app and nothing here notices.
 

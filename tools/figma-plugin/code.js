@@ -600,7 +600,8 @@ function build(spec, parent, parentIsAutoLayout) {
     // A frame is born 10px wide and `applySizing` only fixes that inside auto-layout.
     // In a plain frame FILL means nothing to Figma, so the width is taken from the
     // parent by hand — otherwise a hairline that says it spans the screen draws 10px
-    // of it, which is what `beitreten` did.
+    // of it. No node does that today; `beitreten` was the one, and it went with the
+    // contribution flow.
     if (spec.w === 'fill' && !parentIsAutoLayout && typeof parent.width === 'number') {
       node.resize(parent.width, node.height);
     }
@@ -681,16 +682,21 @@ function build(spec, parent, parentIsAutoLayout) {
   // frames as flexible spacers in a row — `Dehnung` — and every one of them was
   // pushing its row to 100px tall, which is why several cards had a hand's width of
   // air in them. Zero on the counter axis, unless a height was asked for.
+  // The guard is on the axis being collapsed, which is the COUNTER axis: height for a
+  // row, width for a column. Guarding both branches on `h` threw away the declared
+  // width of every childless column that had one — `player/Inhalt` says `w: 360` and
+  // was resized to a hundredth of a pixel, silently.
   const empty = spec.dir !== undefined && (spec.children || []).length === 0;
-  if (empty && spec.h === undefined) {
-    if (spec.dir === 'H') {
+  if (empty) {
+    if (spec.dir === 'H' && spec.h === undefined) {
       if (parentIsAutoLayout) node.layoutSizingVertical = 'FIXED';
       node.resize(Math.max(node.width, 0.01), 0.01);
-    } else {
+      if (parentIsAutoLayout && spec.w === 'fill') node.layoutSizingHorizontal = 'FILL';
+    } else if (spec.dir === 'V' && spec.w === undefined) {
       if (parentIsAutoLayout) node.layoutSizingHorizontal = 'FIXED';
       node.resize(0.01, Math.max(node.height, 0.01));
+      if (parentIsAutoLayout && spec.h === 'fill') node.layoutSizingVertical = 'FILL';
     }
-    if (parentIsAutoLayout && spec.w === 'fill') node.layoutSizingHorizontal = 'FILL';
   }
 
   // Outlines are drawn in a second pass: a node's final size is only known once its

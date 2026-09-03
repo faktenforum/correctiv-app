@@ -4,74 +4,76 @@
       "name": "Wireframes",
       "mode": "wireframe",
       "owned": [
+        "(tabs)/entdecken",
+        "(tabs)/index, Start",
+        "(tabs)/mediathek",
+        "(tabs)/mitmachen",
+        "(tabs)/profil",
+        "(tabs)/profil, Gast",
+        "+not-found",
+        "artikel, Reader über WebView",
+        "atlas",
+        "aufruf/[slug] (ohne Screenshot, aus dem Code)",
+        "backstage",
+        "behauptung/[id] (ohne Screenshot, aus dem Code)",
+        "beitreten",
+        "bericht",
+        "einstellungen",
+        "faktenforum",
+        "formular (ohne Screenshot, aus dem Code)",
         "gate, Anmeldung",
         "gate, Fehler",
         "gate, kein Zugang",
-        "(tabs)/index, Start",
-        "(tabs)/entdecken",
-        "(tabs)/mediathek",
-        "(tabs)/mitmachen",
+        "gespeichert",
         "onboarding, 1 Willkommen",
         "onboarding, 2 Interessen",
         "onboarding, 3 Push",
         "onboarding, 4 Club",
-        "+not-found",
-        "spotlight",
-        "artikel, Reader über WebView",
-        "backstage",
-        "aufruf/[slug] (ohne Screenshot, aus dem Code)",
-        "tagebuch/[id] (ohne Screenshot, aus dem Code)",
-        "suche",
-        "projekt/[id] (ohne Screenshot, aus dem Code)",
-        "video",
-        "serie/[id] (ohne Screenshot, aus dem Code)",
         "player",
-        "faktenforum",
-        "behauptung/[id] (ohne Screenshot, aus dem Code)",
-        "formular (ohne Screenshot, aus dem Code)",
-        "bericht",
-        "gespeichert",
-        "einstellungen",
-        "atlas",
-        "(tabs)/profil",
-        "(tabs)/profil, Gast"
+        "projekt/[id] (ohne Screenshot, aus dem Code)",
+        "serie/[id] (ohne Screenshot, aus dem Code)",
+        "spotlight",
+        "suche",
+        "tagebuch/[id] (ohne Screenshot, aus dem Code)",
+        "video"
       ]
     },
     {
       "name": "Screens, nach Screenshots",
       "mode": "replica",
       "owned": [
+        "(tabs)/entdecken",
+        "(tabs)/index, Start",
+        "(tabs)/mediathek",
+        "(tabs)/mitmachen",
+        "(tabs)/profil",
+        "(tabs)/profil, Gast",
+        "+not-found",
+        "artikel, Reader über WebView",
+        "atlas",
+        "aufruf/[slug] (ohne Screenshot, aus dem Code)",
+        "backstage",
+        "behauptung/[id] (ohne Screenshot, aus dem Code)",
+        "beitreten",
+        "bericht",
+        "einstellungen",
+        "faktenforum",
+        "formular (ohne Screenshot, aus dem Code)",
         "gate, Anmeldung",
         "gate, Fehler",
         "gate, kein Zugang",
-        "(tabs)/index, Start",
-        "(tabs)/entdecken",
-        "(tabs)/mediathek",
-        "(tabs)/mitmachen",
+        "gespeichert",
         "onboarding, 1 Willkommen",
         "onboarding, 2 Interessen",
         "onboarding, 3 Push",
         "onboarding, 4 Club",
-        "+not-found",
-        "spotlight",
-        "artikel, Reader über WebView",
-        "backstage",
-        "aufruf/[slug] (ohne Screenshot, aus dem Code)",
-        "tagebuch/[id] (ohne Screenshot, aus dem Code)",
-        "suche",
-        "projekt/[id] (ohne Screenshot, aus dem Code)",
-        "video",
-        "serie/[id] (ohne Screenshot, aus dem Code)",
         "player",
-        "faktenforum",
-        "behauptung/[id] (ohne Screenshot, aus dem Code)",
-        "formular (ohne Screenshot, aus dem Code)",
-        "bericht",
-        "gespeichert",
-        "einstellungen",
-        "atlas",
-        "(tabs)/profil",
-        "(tabs)/profil, Gast"
+        "projekt/[id] (ohne Screenshot, aus dem Code)",
+        "serie/[id] (ohne Screenshot, aus dem Code)",
+        "spotlight",
+        "suche",
+        "tagebuch/[id] (ohne Screenshot, aus dem Code)",
+        "video"
       ]
     },
     {
@@ -4507,7 +4509,6 @@
                   "chars": "Videos zeigen Bauernproteste 2025 in Brüssel – Keine aktuellen Aufnahmen",
                   "size": 18,
                   "color": "@color-grey-700",
-                  "font": "serif",
                   "weight": "semibold",
                   "w": 320
                 },
@@ -7273,7 +7274,6 @@
               "chars": "Diese Seite gibt es nicht.",
               "size": 20,
               "color": "@color-grey-700",
-              "font": "serif",
               "weight": "semibold",
               "w": 320
             },
@@ -7360,7 +7360,6 @@
                   "chars": "Spotlight",
                   "size": 24,
                   "color": "@color-grey-700",
-                  "font": "serif",
                   "weight": "semibold",
                   "w": 320
                 },
@@ -7891,7 +7890,6 @@
                   "chars": "Backstage",
                   "size": 24,
                   "color": "@color-grey-700",
-                  "font": "serif",
                   "weight": "semibold",
                   "w": 320
                 },
@@ -9376,7 +9374,7 @@
                     },
                     {
                       "t": "text",
-                      "chars": "▶",
+                      "chars": "►",
                       "size": 13,
                       "color": "@color-grey-600"
                     }
@@ -9430,7 +9428,7 @@
                     },
                     {
                       "t": "text",
-                      "chars": "▶",
+                      "chars": "►",
                       "size": 13,
                       "color": "@color-grey-600"
                     }
@@ -9484,7 +9482,7 @@
                     },
                     {
                       "t": "text",
-                      "chars": "▶",
+                      "chars": "►",
                       "size": 13,
                       "color": "@color-grey-600"
                     }
@@ -9538,7 +9536,7 @@
                     },
                     {
                       "t": "text",
-                      "chars": "▶",
+                      "chars": "►",
                       "size": 13,
                       "color": "@color-grey-600"
                     }
@@ -10994,14 +10992,14 @@
                 {
                   "t": "text",
                   "chars": "KONTO",
-                  "size": 12,
+                  "size": 9,
                   "color": "@color-grey-600",
-                  "weight": "bold",
-                  "tracking": 10
+                  "weight": "semibold",
+                  "w": 320
                 },
                 {
                   "t": "space",
-                  "h": 6,
+                  "h": 8,
                   "w": "fill"
                 },
                 {

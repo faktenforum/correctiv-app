@@ -946,7 +946,7 @@ for (const entry of KIT) {
 }
 
 // Refuse BEFORE writing, for the same reason `use-kit.mjs` does: throwing after the
-// file is on disk stops the script and not the damage, and ADR 0020 claims this fails
+// file is on disk stops the script and not the damage, and ADR 0021 claims this fails
 // rather than emitting a kit that is quietly incomplete.
 for (const gap of gaps) console.log(`  gap: ${gap}`);
 if (problems.length > 0) {
