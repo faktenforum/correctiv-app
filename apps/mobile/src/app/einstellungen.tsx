@@ -157,8 +157,7 @@ export default function EinstellungenScreen() {
           <Overline label="Demo" />
           <Card tone="surface" className="mt-2xs">
             <Typo variant="text-s" color="grey-600">
-              Für Vorführungen: setzt Beitrag, Interessen und Onboarding zurück. Ihr Konto bleibt
-              angemeldet.
+              Für Vorführungen: setzt Interessen und Onboarding zurück. Ihr Konto bleibt angemeldet.
             </Typo>
             <Button
               title="Demo-Zustand zurücksetzen"
@@ -166,7 +165,8 @@ export default function EinstellungenScreen() {
               className="mt-s"
               fullWidth
               onPress={() => {
-                // Three stores, because each owns its own keys — see resetForDemo.
+                // Two stores, because each owns its own keys — see resetForDemo. It
+                // was three until the membership slice went (ADR 0020).
                 actions.settings.resetForDemo();
                 actions.interests.clear();
                 setResetDone(true);

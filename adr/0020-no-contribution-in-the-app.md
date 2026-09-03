@@ -105,6 +105,8 @@ to move apart.
 - In [ADR 0019](0019-identity-lives-in-the-session.md): the whole of "What this does
   not decide", both paragraphs. The first is decided here; the second named the
   condition under which `memberSince` could move, and that condition is met.
+- In [ADR 0018](0018-removing-the-guest.md), under what the decision did NOT touch:
+  "The `membership` slice and the join flow." Both are touched now.
 - In [ADR 0019](0019-identity-lives-in-the-session.md): "`MembershipState` is
   `memberSince`, `amountEur`, `interval`, `paused`", "`join(amountEur, interval)` no
   longer takes a name", "The profile prints an amount only when somebody set one", the

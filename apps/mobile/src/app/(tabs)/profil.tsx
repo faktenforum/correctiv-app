@@ -123,6 +123,7 @@ export default function ProfilScreen() {
           <Button
             title="Konto verwalten"
             variant="secondary"
+            fullWidth
             onPress={() => openExternal(ACCOUNT_URL)}
             className="mt-s"
           />

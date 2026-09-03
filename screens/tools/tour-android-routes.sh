@@ -35,9 +35,14 @@ open_route player 4;        shot 82-player
 # The video screen takes its video from the core store, not from a path parameter,
 # so a bare `correctiv://video` has nothing to show: that step documented the
 # "Kein Video ausgewählt." empty state for a week. Tap one instead.
+#
+# By prefix and not by title. This tapped "Demokratie oder Doomsday" until FunFacts
+# published enough new videos to push it out of the rail, and then reported MISS and
+# shot whatever was underneath. Which video is immaterial here; that there IS one is
+# the point.
 open_route mediathek 4
 scroll 1
-tap "Demokratie oder Doomsday" && sleep 8
+tap "Video: " && sleep 8
 shot 83-video
 open_route backstage 4;     shot 90-backstage
 open_route einstellungen 4; shot 91-einstellungen
