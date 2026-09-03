@@ -33,8 +33,8 @@ A page picks its `mode`. The description is identical; only the rendering differ
 | Boxes | clean rectangles | drawn with a wobble, pencil-style |
 | Copy | real | real |
 
-**Nothing is overwritten.** `spec.json` names the real tokens (`@color-emphasis`,
-`@color-alternative`) and the `tokens` block carries their values; the grey ramp is
+**Nothing is overwritten.** `spec.json` names the real tokens (`@color-accent`,
+`@color-accent-alternative`) and the `tokens` block carries their values; the grey ramp is
 applied at draw time and only by a mode that has one.
 A colour the ramp does not list is converted by its own luminance rather than
 dropped, so the table stays a list of deliberate exceptions instead of something that
@@ -70,8 +70,9 @@ turns those into a Figma variable collection called **CORRECTIV** and **binds** 
 replica's fills to them, so changing a value in Figma repaints every screen that uses
 it.
 
-**The colours bind, the rest do not.** Twelve of the thirty-nine tokens are colours
-and reach the board through `fill`, `stroke` and `color`. The other twenty-seven are
+**The colours bind, the rest do not.** Thirty-five of the sixty-two tokens are
+colours and reach the board through `fill`, `stroke` and `color`. The other
+twenty-seven are
 the `spacing-*`, `radius-*` and `text-*` scales, and no property in the vocabulary
 accepts a token there: a `gap` or a `radius` is a plain number. They are synced so
 that a designer can read the scale in Figma, not so that editing one moves anything.
@@ -82,7 +83,7 @@ Run it whenever the tokens change, and the board follows the app. Figma is a pla
 try a value out; it is never where a value is decided. The next sync overwrites
 anything edited there, which is the intended direction of travel.
 
-A colour in the spec written as `"@color-emphasis"` is bound; a literal `"#ff5064"`
+A colour in the spec written as `"@color-accent"` is bound; a literal `"#ff5064"`
 is copied. The mapping from the board's palette to token names lives in `AS_TOKEN`
 and is deliberately **not** exhaustive: the media-placeholder greys, the YouTube red
 and the disabled tint stay literal, because giving them a token name would put a
@@ -107,6 +108,35 @@ so the board kept drawing with the last-synced hex baked in and quietly stopped
 following the tokens. Nothing errored, and a stale board looks exactly like a current
 one. Checking up front names every bad token rather than the first, the way the font
 check does, and leaves nothing half-drawn, the way `kit.mjs` refuses before it writes.
+
+## Which token, and in which role
+
+The board speaks the semantic tier, and the mapping is the app's rather than one of
+its own. `Card` writes `bg-canvas` / `bg-surface` / `border-stroke`, `Hairline`
+`bg-stroke`, `CalloutCard`'s progress fill `bg-on-surface`, `LiveBanner`'s white text
+`color="always-light"` — so the board writes the same, and it depends on the ROLE, not
+only on the old name:
+
+| was | as | is now |
+| --- | --- | --- |
+| `grey-100` | a fill | `canvas` |
+| `grey-100` | a text colour | `always-light` — white text never sits on white |
+| `grey-200` | a fill | `surface` |
+| `grey-300` | a border or rule | `stroke`, which is **darker**: #cecece, not #e6e6e6 |
+| `grey-300` | a fill | unchanged — no semantic surface at that value |
+| `grey-600` | text or an icon | `on-canvas-muted` |
+| `grey-700` | a text colour | `on-canvas` |
+| `grey-700` | a fill | `on-surface` — the progress bar, and only that |
+| `emphasis` | anything | `accent` |
+| `alternative` | anything | `accent-alternative` |
+
+Four names stay where they are, each because the app kept them too: `grey-250`,
+`grey-300`-as-a-fill, `grey-500`-as-text and the two `always-*` primitives. ADR 0022
+lists the first three as the feedback upstream needs before it drops the old tier.
+
+The border darkening is the one visible change. It was measured rather than judged —
+eleven routes diffed in both appearance settings — and #cecece reads as a hairline
+where #e6e6e6 was nearly not there.
 
 ## The vocabulary
 
@@ -218,7 +248,7 @@ It is destructive on purpose. `spec.json` is committed, so the copies are one
 no-op, because a node that is already an instance matches no rule.
 
 **`sync-tokens.mjs` has to have run first.** The matchers classify a button, a badge
-and a status tag by their fill, and they compare against `@color-emphasis` and
+and a status tag by their fill, and they compare against `@color-accent` and
 friends, because the board's transcribed hexes are eyeballed approximations that only
 the token map resolves. On an untokenised spec every one of those rules comes up
 empty. That is a hard failure now rather than a board full of grey badges: a node
