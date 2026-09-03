@@ -90,7 +90,7 @@ whole token set over it.
     t: 'rect'      w, h, fill, stroke, radius
     t: 'ellipse'   w, h, fill, stroke
     t: 'space'     h
-    t: 'line'      a hairline that fills its parent
+    t: 'line'      a 1px hairline; `w: 'fill'` to span the parent
     t: 'component' a frame instances can point at; props, and `bind` on a descendant
     t: 'variants'  prop, options[{ value, ... }] — one component set
     t: 'instance'  of, set { property: value }
@@ -162,10 +162,11 @@ every prop to be one of three things.
   every `on*` handler, `fullWidth`)
 - **a declared gap**, visual but beyond what Figma can express, printed on every run
 
-Anything else fails the script. The three gaps today are `Overline.color` (an
-instance cannot override a colour, it would need a variant per colour),
-`ScreenHeader.children` (a slot) and `NavCard.icon` (an Ionicon, drawn as a glyph
-until the spec learns vectors). A gap that is written down is a decision; a gap that
+Anything else fails the script, before it writes anything. The four gaps today are
+`Button.disabled` (four tenths opacity, put on the instance instead of doubling every
+variant), `Overline.color` (an instance cannot override a colour, it would need a
+variant per colour), `ScreenHeader.children` (a slot) and `NavCard.icon` (an Ionicon,
+drawn as a glyph until the spec learns vectors). A gap that is written down is a decision; a gap that
 is merely absent is a bug waiting to be found by eye.
 
 ## Pointing the screens at the kit
@@ -175,8 +176,10 @@ is merely absent is a bug waiting to be found by eye.
     node tools/figma-plugin/sync-tokens.mjs      # first, always
     node tools/figma-plugin/use-kit.mjs
 
-Sixty-six of them: 26 buttons, 15 headers, 6 project rows, 5 setting rows, 5 badges,
-4 nav cards, 4 status tags, 1 club card. The eyeballed numbers go with them — a
+Sixty-five of them: 26 buttons, 14 headers, 6 project rows, 5 setting rows, 5 badges,
+4 nav cards, 4 status tags, 1 club card. The fifteenth header is `/suche`'s, which
+holds a search field where the back label goes; a slot is not something an instance
+takes, so that one stays a copy. The eyeballed numbers go with them — a
 button label measured off a PNG came out at 13px semibold, and `text-button` is 16
 bold — so the screens move visibly, and towards the app.
 
@@ -279,8 +282,7 @@ to trust a comment about typography here, read the token instead.
 
 ## What is derived and what is transcribed
 
-The screen list, the route names and the navigation edges come from
-`apps/mobile/src/app/**`. The **content inside each screen is hand-transcribed** from
+The screen list and the route names come from `apps/mobile/src/app/**`. The **content inside each screen is hand-transcribed** from
 the screenshots in `screens/android/`, and that is the part that rots: change a
 headline in the app and nothing here notices.
 

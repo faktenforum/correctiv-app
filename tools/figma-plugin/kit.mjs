@@ -745,6 +745,38 @@ function literal(source, from) {
   return null;
 }
 
+/** The text between a bracket at `from` and its match, exclusive. */
+function between(source, from, opener, closer) {
+  if (from === -1 || source[from] !== opener) return null;
+  let depth = 0;
+  for (let i = from; i < source.length; i++) {
+    if (source[i] === opener) depth++;
+    if (source[i] === closer) {
+      depth--;
+      if (depth === 0) return source.slice(from + 1, i);
+    }
+  }
+  return null;
+}
+
+/** Split on commas that are not inside a bracket of any kind. */
+function topLevel(text) {
+  const parts = [];
+  let depth = 0;
+  let start = 0;
+  for (let i = 0; i < text.length; i++) {
+    const ch = text[i];
+    if ('({['.indexOf(ch) !== -1) depth++;
+    else if (')}]'.indexOf(ch) !== -1) depth--;
+    else if (ch === ',' && depth === 0) {
+      parts.push(text.slice(start, i));
+      start = i + 1;
+    }
+  }
+  parts.push(text.slice(start));
+  return parts.filter((p) => p.trim() !== '');
+}
+
 /**
  * The props a component file declares, from `export type XProps` or from the inline
  * type on the function's own parameter.
@@ -760,29 +792,46 @@ function sourceProps(source, component) {
   // `export function` was not enough: a file may declare a private subcomponent
   // BELOW the exported one — `LoginGate.tsx` has `NoAccess({ shortfall })` — and the
   // audit would then check the helper's props and pass, having verified nothing.
-  const fn = clean.search(new RegExp('export function ' + component + '\\s*\\('));
+  // The name is escaped and a generic is allowed, so `Foo<T>({ … })` reports the
+  // real problem rather than "no such function".
+  const escaped = component.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+  const fn = clean.search(new RegExp('export function ' + escaped + '\\s*[<(]'));
   if (fn === -1) throw new Error('no `export function ' + component + '` to read props from');
 
-  // Whatever the parameter destructures is what the component actually USES, which
-  // is the set that matters here — and it is the only way to see a prop inherited
-  // through an intersection. `ButtonProps` is `Omit<PressableProps, …> & { … }`, so
-  // the type literal alone never mentions `disabled`, while the body dims the button
-  // by four tenths when it is set.
-  const params = literal(clean, clean.indexOf('(', fn));
+  // The parameter list, bounded by its own parentheses. Reaching for the first `{`
+  // after `(` walked into the function BODY whenever the component destructures
+  // nothing — `LoginGate()` came back with `const`, `Date` and a word out of a German
+  // string — so the brace has to be found inside the parens or not at all.
+  const open = clean.indexOf('(', fn);
+  const params = between(clean, open, '(', ')');
+  const brace = params === null ? -1 : params.indexOf('{');
   const used = [];
-  for (const part of (params || '').split(',')) {
-    const m = part.match(/^\s*(\w+)/);
-    if (m && part.indexOf('...') === -1) used.push(m[1]);
+  if (brace !== -1) {
+    // Split at depth zero. `{ a = pick(1, 2), b }` and `{ item: { id } }` both broke a
+    // plain `split(',')`, one inventing a prop called "2" and the other losing `id`.
+    for (const part of topLevel(literal(params, brace) || '')) {
+      if (part.indexOf('...') !== -1) continue;
+      const m = part.match(/^\s*(\w+)\s*:\s*\{/);
+      if (m) {
+        // A nested destructure names no prop of its own beyond the outer key.
+        used.push(m[1]);
+        continue;
+      }
+      const plain = part.match(/^\s*(\w+)/);
+      if (plain) used.push(plain[1]);
+    }
   }
 
   // And the declared type, which carries props the destructuring passes through.
+  // Bounded the same way: the inline form has to sit inside this function's parens,
+  // or a private subcomponent further down the file supplies it instead.
   const named = clean.match(/export type \w*Props\s*=/);
-  const inline = clean.slice(fn).search(/\}\s*:\s*\{/);
+  const inline = params === null ? -1 : params.search(/\}\s*:\s*\{/);
   const body = named
     ? literal(clean, named.index)
     : inline === -1
       ? null
-      : literal(clean, fn + inline + 1);
+      : literal(params, inline + 1);
   if (body === null) return [...new Set(used)];
 
   const out = used.slice();
@@ -879,6 +928,15 @@ for (const entry of KIT) {
   columnY[at] += 120 + options * 90;
 }
 
+// Refuse BEFORE writing, for the same reason `use-kit.mjs` does: throwing after the
+// file is on disk stops the script and not the damage, and ADR 0020 claims this fails
+// rather than emitting a kit that is quietly incomplete.
+for (const gap of gaps) console.log(`  gap: ${gap}`);
+if (problems.length > 0) {
+  for (const problem of problems) console.error(`  MISSING: ${problem}`);
+  throw new Error(`${problems.length} prop(s) the kit does not account for`);
+}
+
 const spec = JSON.parse(await readFile(SPEC, 'utf8'));
 spec.textStyles = TEXT_STYLES;
 spec.pages = (spec.pages || []).filter((p) => p.name !== PAGE && p.name !== SKETCH_PAGE);
@@ -902,12 +960,6 @@ for (const [name, mode] of [
   });
 }
 await writeFile(SPEC, `${JSON.stringify(spec, null, 2)}\n`);
-
-for (const gap of gaps) console.log(`  gap: ${gap}`);
-if (problems.length > 0) {
-  for (const problem of problems) console.error(`  MISSING: ${problem}`);
-  throw new Error(`${problems.length} prop(s) the kit does not account for`);
-}
 
 const sets = screens.filter((s) => s.t === 'variants');
 console.log(`two kit pages: "${PAGE}" and "${SKETCH_PAGE}"`);

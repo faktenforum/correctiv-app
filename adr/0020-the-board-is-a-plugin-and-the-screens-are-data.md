@@ -50,9 +50,11 @@ for the split:
 
 **Generated from the app, not transcribed from it.** The component kit, the design
 tokens and the type scale are read out of `packages/design-tokens` and
-`apps/mobile/src/components` by three scripts. The board is therefore a second place
-where a token change shows up, and `kit.mjs` fails rather than emitting a component
-that quietly lacks a prop its source has.
+`apps/mobile/src/components` by `kit.mjs` and `sync-tokens.mjs`. The board is
+therefore a second place where a token change shows up, and `kit.mjs` refuses to
+write at all rather than emitting a component that quietly lacks a prop its source
+has. A third script, `use-kit.mjs`, reads neither package: it only rewrites the
+board's own description, turning copies into instances of what the other two made.
 
 ## What is deliberately not solved
 

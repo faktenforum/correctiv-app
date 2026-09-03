@@ -85,6 +85,9 @@ function badgeTone(node) {
   return null;
 }
 
+/** The only fills a switch track can carry, and which state each one means. */
+const SWITCH = { '@color-emphasis': 'ja', '#e0e0e3': 'nein', '@color-grey-300': 'nein' };
+
 /**
  * `claimStatusTag` picks the words; the surface says which of the four states.
  *
@@ -160,14 +163,18 @@ const RULES = [
       const label = named(n, 'Text');
       const lines = label === null ? texts(n, []) : texts(label, []);
       const knob = named(n, 'Schalter');
-      // The knob's own fill is the only thing that says on or off, so a row without
-      // one cannot be read. Defaulting to 'nein' would have drawn every switch off.
-      if (lines[0] === undefined || knob === null || knob.fill === undefined) return null;
+      // The track's fill is the only thing that says on or off, and it has to be one
+      // of the two the app can produce. An `else 'nein'` would read every
+      // unrecognised fill as off — which is what an untokenised spec has throughout,
+      // and the switch would have stayed the one row still silently wrong while its
+      // neighbours failed loudly.
+      const on = knob === null ? undefined : SWITCH[knob.fill];
+      if (lines[0] === undefined || on === undefined) return null;
       return {
         Label: lines[0].chars,
         Beschreibung: lines[1] === undefined ? '' : lines[1].chars,
         'Beschreibung zeigen': lines[1] !== undefined,
-        An: knob.fill === '@color-emphasis' ? 'ja' : 'nein',
+        An: on,
       };
     },
   },
@@ -183,14 +190,22 @@ const RULES = [
   },
   {
     of: 'ui/ScreenHeader',
-    when: (n) => (n.name || '').startsWith('ScreenHeader'),
+    // A header that is not just a chevron and one word is a different object. On
+    // `/suche` the second child is a `TextInput` frame, not a label, and
+    // `ScreenHeader.children` is a slot an instance cannot take. Reading the text
+    // depth-first found the field's placeholder and the header came out saying
+    // "Suchen …", so the test is on the DIRECT children: two texts, or nothing doing.
+    // Declining in `when` rather than in `read`, because this is not a node that
+    // failed to be read. It is one the kit does not cover, so it stays a copy and
+    // keeps the hairline the board draws for it.
+    when: (n) =>
+      (n.name || '').startsWith('ScreenHeader') &&
+      (n.children || []).every((c) => c.t === 'text') &&
+      (n.children || []).filter((c) => c.chars !== '‹').length === 1,
     // The kit's header carries its own hairline, and the board draws one as the next
     // sibling. `eats` says so, and the walk drops it.
     eats: ['line'],
-    read: (n) => {
-      const lines = texts(n, []).filter((t) => t.chars !== '‹');
-      return { Zurück: lines.length > 0 ? lines[0].chars : 'Zurück' };
-    },
+    read: (n) => ({ Zurück: texts(n, []).filter((t) => t.chars !== '‹')[0].chars }),
   },
   {
     of: 'ui/Button',
@@ -267,24 +282,28 @@ function convert(children) {
 }
 
 const spec = JSON.parse(await readFile(SPEC, 'utf8'));
-spec.screens = convert(spec.screens || []);
-await writeFile(SPEC, `${JSON.stringify(spec, null, 2)}\n`);
+const converted = convert(spec.screens || []);
 
-const total = Object.values(counts).reduce((a, b) => a + b, 0);
-console.log(`${total} copies are now instances`);
-for (const of of Object.keys(counts).sort())
-  console.log(`  ${String(counts[of]).padStart(3)}  ${of}`);
-// A skip is a node that matched a rule by name and then could not be read. That is
-// never fine: it leaves one row on the board a copy while its neighbours became
-// instances, which looks like a rendering bug and is a silent hole in the kit.
+// Refuse BEFORE writing. Throwing after `writeFile` stopped the script and not the
+// damage: a run against an untokenised spec left half the rows converted and the rest
+// copies, and the documented recovery could not undo it, because a converted row no
+// longer matches any rule.
 //
-// The usual cause is running this before `sync-tokens.mjs`. The tone functions read
+// A skip is a node that matched a rule by name and then could not be read. The usual
+// cause is running this before `sync-tokens.mjs`: the tone functions read
 // `@color-emphasis` and friends, because the board's transcribed hexes are eyeballed
-// approximations that only the token map resolves — so on an untokenised spec
-// twenty-five of twenty-six buttons match by name and then classify as nothing.
+// approximations that only the token map resolves.
 if (skipped.length > 0) {
   for (const s of skipped) console.error(`  UNREADABLE: ${s}`);
   throw new Error(
     `${skipped.length} node(s) matched a rule and could not be read, run sync-tokens.mjs first`,
   );
 }
+
+spec.screens = converted;
+await writeFile(SPEC, `${JSON.stringify(spec, null, 2)}\n`);
+
+const total = Object.values(counts).reduce((a, b) => a + b, 0);
+console.log(`${total} copies are now instances`);
+for (const of of Object.keys(counts).sort())
+  console.log(`  ${String(counts[of]).padStart(3)}  ${of}`);

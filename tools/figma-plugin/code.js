@@ -10,8 +10,8 @@
 // hands it here; this file is the only thing that ever touches the Plugin API.
 //
 // The vocabulary is deliberately small, and covers exactly what the local MCP
-// server's write tools cannot: auto-layout with FILL children, vectors with
-// arrowheads, ellipses, dash patterns.
+// server's write tools cannot: auto-layout with FILL children, ellipses, dash
+// patterns, components and instances, and vectors for the pencil outlines.
 //
 //   t: 'frame'    dir V|H, pad, gap, fill, stroke, radius, w, h, align, cross, clip,
 //                 dash, children
@@ -20,7 +20,7 @@
 //   t: 'rect'     w, h, fill, stroke, radius
 //   t: 'ellipse'  w, h, fill, stroke
 //   t: 'space'    h            a fixed gap inside a column
-//   t: 'line'     colour       a 1px hairline that fills its parent
+//   t: 'line'     colour, w    a 1px hairline; `w: 'fill'` to span the parent
 //
 // `w` and `h` take a number, 'fill' or 'hug'. Any node may carry x/y, which Figma
 // honours when the parent is a plain frame and ignores inside auto-layout — the same
@@ -472,9 +472,10 @@ function wantsOutline(spec) {
   // Any fill earns an edge. This used to exempt `#ffffff`, on the reasoning that a
   // page-coloured surface needs no outline — but `sync-tokens.mjs` rewrote every
   // white to `@color-grey-100`, so the exemption stopped firing and nobody noticed
-  // for two commits. Restoring it would be the wrong repair: eleven of the shapes it
-  // covers are white ellipses, the tab-bar dots and the switch knobs, and the outline
-  // is the only reason they are visible on a white page at all.
+  // for two commits. Restoring it would be the wrong repair: of the 29 nodes it
+  // covered, eleven are white ellipses — the onboarding progress dots, one switch
+  // knob and the reader's floating buttons — and the outline is the only reason any
+  // of them is visible on a white page.
   return Boolean(spec.fill);
 }
 
@@ -590,6 +591,13 @@ function build(spec, parent, parentIsAutoLayout) {
     node.name = spec.t === 'line' ? 'Hairline' : 'Abstand';
     node.resize(10, spec.t === 'line' ? 1 : spec.h || 8);
     node.fills = spec.t === 'line' ? paint(spec.color || '#e2e2e5') : [];
+    // A frame is born 10px wide and `applySizing` only fixes that inside auto-layout.
+    // In a plain frame FILL means nothing to Figma, so the width is taken from the
+    // parent by hand — otherwise a hairline that says it spans the screen draws 10px
+    // of it, which is what `beitreten` did.
+    if (spec.w === 'fill' && !parentIsAutoLayout && typeof parent.width === 'number') {
+      node.resize(parent.width, node.height);
+    }
   } else {
     // A component is a frame that other frames can point at. Everything below it —
     // auto-layout, sizing, fills — behaves identically, so the only difference is
@@ -766,10 +774,9 @@ async function drawPage(entry, screens) {
   pending = [];
   for (const screen of screens) build(screen, page, false);
   for (const item of pending) addOutline(item.node, item.spec);
-  const sketched = pending.length;
   pending = [];
 
-  return { name: entry.name, screens: screens.length, sketched: sketched };
+  return { name: entry.name, screens: screens.length };
 }
 
 // ---------------------------------------------------------------- reading back
@@ -783,7 +790,8 @@ async function drawPage(entry, screens) {
 // not a format the board is kept in: once a screen is described, the description is
 // the source and the board is the output.
 //
-// Nothing triggers it today. No page in the spec carries `readBack`, and it is kept
+// Nothing triggers it today. The spec has no `readBack` key at its top level, and it
+// is kept
 // only for the next time a board is edited by hand faster than the spec can follow.
 // If that stops being plausible, delete this and the `/export` endpoint together.
 

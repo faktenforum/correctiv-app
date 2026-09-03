@@ -8517,12 +8517,52 @@
           "y": 24,
           "children": [
             {
-              "t": "instance",
-              "of": "ui/ScreenHeader",
+              "t": "frame",
               "name": "ScreenHeader mit Suchfeld",
-              "set": {
-                "Zurück": "Suchen …"
-              },
+              "dir": "H",
+              "gap": 10,
+              "pad": [
+                16,
+                16,
+                12,
+                12
+              ],
+              "cross": "CENTER",
+              "w": "fill",
+              "children": [
+                {
+                  "t": "text",
+                  "chars": "‹",
+                  "size": 15,
+                  "color": "@color-grey-700"
+                },
+                {
+                  "t": "frame",
+                  "name": "TextInput",
+                  "dir": "H",
+                  "pad": [
+                    14,
+                    14,
+                    10,
+                    10
+                  ],
+                  "cross": "CENTER",
+                  "fill": "@color-grey-200",
+                  "radius": 6,
+                  "w": "fill",
+                  "children": [
+                    {
+                      "t": "text",
+                      "chars": "Suchen …",
+                      "size": 12,
+                      "color": "@color-grey-500"
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "t": "line",
               "w": "fill"
             },
             {

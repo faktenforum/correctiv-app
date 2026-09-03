@@ -61,13 +61,16 @@
       if (!r.ok) throw new Error('generation ' + r.status);
       const { generation } = await r.json();
       if (generation !== seen) {
-        seen = generation;
         drawing = true;
         status('busy', 'drawing …');
         const s = await fetch(BASE + '/spec');
         if (!s.ok) throw new Error('spec ' + s.status + ': ' + (await s.text()).slice(0, 120));
         const payload = await s.json();
         parent.postMessage({ pluginMessage: { type: 'spec', spec: payload.spec } }, '*');
+        // Only once the document is on its way. Marking it seen before the fetch left
+        // the panel reporting "up to date" for ever after a 500, having posted
+        // nothing, while the board stayed on the last good draw.
+        seen = generation;
         return; // the result handler resumes polling
       }
       status('on', 'up to date, generation ' + seen);
@@ -75,7 +78,13 @@
       // Reset, or a server that restarts mid-fetch leaves `drawing` true for ever and
       // the plugin never polls again, red dot and all, even once it is back.
       drawing = false;
-      status('bad', 'no server on 8787: node tools/figma-plugin/server.mjs');
+      // The server's own words when it has them. It answers 500 with the JSON syntax
+      // error for a broken spec.json, and reporting "no server" for a server that is
+      // plainly running and telling you the cause was worse than saying nothing.
+      status(
+        'bad',
+        e && e.message ? e.message : 'no server on 8787: node tools/figma-plugin/server.mjs',
+      );
     }
   }
 
