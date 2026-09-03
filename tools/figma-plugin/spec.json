@@ -8475,7 +8475,8 @@
                   "chars": "Ein anonymer Hinweis, ein Aktenordner und eine Adresse in der Bundesstadt. Wie wir den Verbindungen zwischen zwei Pensionskassen und einem Rüstungszulieferer nachgegangen sind, und warum uns eine einzige Fußnote drei Tage gekostet hat.",
                   "size": 14,
                   "color": "@color-grey-700",
-                  "w": 320
+                  "w": 320,
+                  "font": "serif"
                 }
               ]
             }

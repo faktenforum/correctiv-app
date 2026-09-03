@@ -96,6 +96,18 @@ dark value, but on a Starter plan `addMode` throws and the collection stays
 light-only. The plugin catches that and says so in its summary rather than losing the
 whole token set over it.
 
+## A token the table does not have
+
+`draw()` walks the description against its own `tokens` block before it creates a
+single frame, and throws with every unresolved `@name` at once.
+
+That check exists because `bind()` cannot make it. It runs per paint, deep inside the
+draw, and its only option on a name it cannot resolve is to return an unbound colour —
+so the board kept drawing with the last-synced hex baked in and quietly stopped
+following the tokens. Nothing errored, and a stale board looks exactly like a current
+one. Checking up front names every bad token rather than the first, the way the font
+check does, and leaves nothing half-drawn, the way `kit.mjs` refuses before it writes.
+
 ## The vocabulary
 
     t: 'frame'     dir V|H, pad, gap, fill, stroke, strokeSides, radius, w, h, align,
@@ -120,8 +132,9 @@ that is whichever page was drawn last, and the kit has to be drawn first.
 
 ## The kit, from the app
 
-`kit.mjs` writes the `Bausteine` page: one Figma component per component file in
-`apps/mobile/src/components`, carrying the props its React counterpart carries.
+`kit.mjs` writes the `Bausteine` page: thirteen Figma components, one per component
+file in `apps/mobile/src/components` that the screens repeat, each carrying the props
+its React counterpart carries.
 
     node tools/figma-plugin/kit.mjs
 
@@ -155,9 +168,11 @@ fill. Both in one would make every coloured headline its own style.
 **What Figma cannot express is a slot.** An instance may override text and
 visibility; it can never be given children. So `ui/Card` is the container it is in
 the code, with a dashed placeholder where content goes, and a card that carries
-content has to be its own component — in Figma *and* in the app. Seventeen places
-still write `Overline` over a `Card` inline, which is why seventeen cards on the board
-are copies rather than instances.
+content has to be its own component — in Figma *and* in the app. Seventeen cards on
+the board are copies rather than instances, and the app has the same shape unnamed in
+seventeen places that write `Overline` over a `Card` inline. The two counts match by
+coincidence, not correspondence: the gate contributes three board copies and no app
+site, backstage five app sites and one copy.
 
 A colour is the other thing an instance cannot override, and `ClubCard` shows it:
 `ClubCard.tsx` renders an `<Overline color="always-dark">`, but a Figma instance of
@@ -287,6 +302,12 @@ are never touched. A fully generated page says `owned: '*'` and sweeps itself
 instead: a name list only removes what the document still mentions, so a component
 that gets renamed would otherwise stay behind for good.
 
+**A deleted screen has to STAY in `owned`.** Same rule, and it catches everyone once.
+Drop the name and the plugin stops mentioning the frame, so every board already drawn
+keeps it for ever and no later run can reach it. `beitreten` and `(tabs)/profil, Gast`
+are in both lists for that reason and no other: they are tombstones, not screens, and
+tidying them away would strand exactly what they exist to sweep.
+
 **No arrows.** Figma design files have no Connector node, so navigation had to be
 drawn: vectors with `strokeCap: 'ARROW_LINES'` in one locked overlay. Move a screen
 and its arrow stayed behind, which is why it was dropped and the code with it. The
@@ -295,11 +316,12 @@ navigation flow belongs in a FigJam board, where connectors are real.
 ## The typeface trap
 
 Every `headline-*` variant in `packages/design-tokens/src/typography.generated.ts` is
-`"family": "sans"`. **`text-article` is the only serif variant**, and `family="serif"`
-is set explicitly in three places: `components/gate/LoginGate.tsx` twice and
-`app/onboarding.tsx` once. Ten text nodes on the board are serif — the gate's three
-states, onboarding's four, and the reader's three paragraphs of body text — and that
-is all of them.
+`"family": "sans"`. **`text-article` is the only serif variant**, and it has exactly
+one call site, `app/tagebuch/[id].tsx`. Everything else serif comes from an explicit
+`family="serif"`: `components/gate/LoginGate.tsx` twice and `app/onboarding.tsx` once.
+On the board that is the gate's three states, onboarding's four, the reader's
+paragraphs, the diary entry and the kit's own `text-article` specimen. Serif anywhere
+else is a mistake — four headings were, until a review pass counted them.
 
 An earlier version set every screen title in Merriweather, because two comments in
 `components/feed/` said "serif headline" and "serif title" over JSX rendering

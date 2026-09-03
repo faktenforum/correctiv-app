@@ -244,6 +244,10 @@ function bind(hex, value) {
   const paintValue = { type: 'SOLID', color: rgb(hex) };
   if (!MODE.bindVariables || !isToken(value)) return paintValue;
   const variable = VARS[value.slice(1)];
+  // Unreachable for anything the description wrote: `checkTokens` has already refused
+  // a name the token table does not have. What is left is a variable that failed to
+  // be CREATED, which no description can prevent — and an unbound paint is then the
+  // only thing that still draws.
   if (variable === undefined) return paintValue;
   // setBoundVariableForPaint returns a NEW paint; the original stays unbound.
   return figma.variables.setBoundVariableForPaint(paintValue, 'color', variable);
@@ -826,10 +830,50 @@ function definesComponents(node) {
   return false;
 }
 
+/**
+ * Every `@token` the description names has to exist in its token table.
+ *
+ * `bind()` cannot enforce this. It is called per paint, deep in the draw, and its only
+ * option on a name it cannot resolve is to return an unbound colour — so the board
+ * kept drawing with the last-synced hex baked in and quietly stopped following the
+ * tokens. Nothing errored. That is the failure this repo keeps relearning: a drawing
+ * that looks finished and is wrong.
+ *
+ * Checked here, before a single frame exists, for two reasons. It reports EVERY bad
+ * name rather than the first, the way the font check does; and nothing half-drawn
+ * survives a failure, the way `kit.mjs` refuses before it writes.
+ */
+function checkTokens(spec) {
+  const known = spec.tokens || {};
+  const missing = {};
+  const walk = (node) => {
+    if (Array.isArray(node)) {
+      for (const child of node) walk(child);
+      return;
+    }
+    if (node === null || typeof node !== 'object') return;
+    for (const key of ['fill', 'stroke', 'color']) {
+      const value = node[key];
+      if (isToken(value) && known[value.slice(1)] === undefined) missing[value] = true;
+    }
+    for (const value of Object.keys(node)) walk(node[value]);
+  };
+  walk(spec.pages);
+  walk(spec.screens);
+  const names = Object.keys(missing).sort();
+  if (names.length > 0) {
+    throw new Error('no such token: ' + names.join(', '));
+  }
+}
+
 async function draw(spec) {
   // One description, rendered once per page. `screens` may live on the page entry or,
   // when both pages show the same thing, once at the top for all of them.
   const pages = spec.pages || [{ name: spec.page, mode: spec.mode, owned: spec.owned }];
+
+  // Before anything is drawn: a name the token table does not have would otherwise
+  // slip through as a plain colour and the board would look right while being stale.
+  checkTokens(spec);
 
   // Variables first: a fill can only bind to a variable that already exists.
   const tokenCount = await syncVariables(spec.tokens);

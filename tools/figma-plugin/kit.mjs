@@ -160,8 +160,9 @@ async function usedWeightOverrides() {
   const pairs = {};
   for (const file of files) {
     const source = await readFile(file, 'utf8');
-    // The whole opening tag, newlines included: three call sites break the
-    // attributes across lines and a single-line regex would miss them.
+    // The whole opening tag, newlines included: four call sites break the attributes
+    // across lines, three of them carrying both a variant and a weight, and a
+    // single-line regex would miss them.
     for (const tag of source.match(/<Typo\b[^>]*>/g) || []) {
       const variant = tag.match(/variant="([a-z0-9-]+)"/);
       const weight = tag.match(/weight="([a-z]+)"/);
@@ -329,10 +330,10 @@ const KIT = [
   },
   {
     // The container, and nothing else. What used to stand here was one filled-in
-    // card off the profile screen; `Card.tsx` is thirteen lines and holds no copy.
+    // card off the profile screen; `Card.tsx` is twelve lines and holds no copy.
     // The dashed slot is what a Figma component cannot express: an instance may
     // override text and visibility, never add children. Cards that DO carry content
-    // are their own components in the app, or should be — see the four still inline.
+    // are their own components in the app, or should be — seventeen are still inline.
     t: 'variants',
     name: 'ui/Card',
     prop: 'Ton',

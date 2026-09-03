@@ -17,7 +17,7 @@
 // Destructive and deliberately so. `spec.json` is committed, so the copies are one
 // `git checkout` away; there is no second description kept alongside.
 //
-// What it does NOT convert is as interesting as what it does. `Card` appears sixteen
+// What it does NOT convert is as interesting as what it does. `Card` appears seventeen
 // times and stays a copy every time, because a Figma instance may override text and
 // visibility but can never be given children, and every one of those cards carries
 // content. That is the same wall the app hits: the content-bearing card has no name
@@ -162,7 +162,7 @@ const RULES = [
     read: (n) => {
       const all = texts(n, []);
       // Kicker, heart, name, tier line. The heart is a glyph, so it counts as text.
-      const words = all.filter((t) => t.chars !== '♡' && t.chars !== '♥');
+      const words = all.filter((t) => t.chars !== '♡');
       if (words[1] === undefined) return null;
       return { Name: words[1].chars, Stufe: words[2] === undefined ? '' : words[2].chars };
     },
