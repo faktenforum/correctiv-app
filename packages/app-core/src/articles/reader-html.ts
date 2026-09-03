@@ -113,9 +113,13 @@ ${footer}
  * replaced was derived from the same tokens once, then drifted from them one
  * rounded rem at a time.
  *
- * The three `.rating--*` tones and the plain-CSS colour fallbacks are the only
- * places a literal appears, because the design tokens carry no semantic colour
- * for "verdict".
+ * There are no colour literals left here. There used to be three, all in the
+ * `.rating--*` tones, on the grounds that the tokens carried no semantic colour for a
+ * "verdict" — and the tiers ended that. A label on the brand red is the primitive
+ * `white`; the label on club yellow is `neutral-700`. Both say "does not follow the
+ * scheme" in the token itself, which is what a literal was standing in for.
+ * (ADR 0022. The `.rating` background is the one colour still on a v1 alias, because
+ * `grey-300` as a FILL has no successor.)
  */
 export const READER_LAYOUT_CSS = `
 *{margin:0;padding:0;box-sizing:border-box}
@@ -141,6 +145,11 @@ h1{font-family:'Merriweather',Georgia,serif;font-weight:700;font-size:var(--var-
 .rating--refuted{background:var(--var-color-accent);color:var(--var-color-white)}
 .rating--qualified{background:var(--var-color-accent-alternative);
   color:var(--var-color-neutral-700)}
+/* A foreground token as a FILL, deliberately: the plaque is a foreground element on
+   the canvas, which is what the -on- prefix names. Same shape as bg-on-surface on the
+   callout bar in the app. Values are unchanged from grey-600; the white-on-#a8a8a8
+   contrast in dark mode is 2.38:1 and predates the tiers, so it is a design question
+   and not a migration one. */
 .rating--confirmed{background:var(--var-color-on-canvas-muted);color:var(--var-color-white)}
 .meta{font-family:'SourceSans3',sans-serif;font-size:var(--var-font-size-text-s);
   color:var(--var-color-on-canvas-muted);margin-bottom:var(--var-spacing-m);

@@ -255,6 +255,22 @@ function groupScales(vars) {
 function assertPaletteAgrees(tokenColors, colorIsLiteral) {
   const independent = new Set(schemeIndependent);
 
+  // `roles` is the app's own pair, not upstream's, and it is spread over both schemes
+  // in buildPalettes — so a token of the same name arriving in theme.css would be
+  // silently overridden in light AND dark, and the palette would stop matching the
+  // source with nothing said. The two lists below account for every colour theme.css
+  // has; this accounts for the two it does not.
+  for (const name of Object.keys(roles)) {
+    if (tokenColors[name] != null) {
+      throw new Error(
+        `theme.css now defines "${name}", which palette.js also supplies as a role ` +
+          'colour. The role would silently win in both schemes.\n\n' +
+          'Upstream owning this name is the good outcome: delete it from `roles` and ' +
+          'classify it like any other colour.',
+      );
+    }
+  }
+
   // A name in both lists is a contradiction, not a duplicate: one says the colour
   // moves and the other says it does not. Caught first, because the two loops below
   // would each be satisfied and the `dark` value would silently win.
@@ -644,15 +660,19 @@ function renderReaderTs(themeCss, colorsDark) {
   const darkVarBlock = Object.entries(colorsDark)
     .map(([k, v]) => `--var-color-${k}:${v}`)
     .join(';');
-  // Nothing but the variables, and that is new. The "partly false" verdict plaque sits
-  // on the club yellow, which stays yellow in the dark, so its label has to stay dark
-  // too — and this used to append a hand-written `.rating--qualified{color:…}` rule to
-  // say so, because every colour the reader had was scheme-dependent.
+  // Nothing but the variables, and that is new — and it removed a rule that had never
+  // worked. This used to append `.rating--qualified{color:#333333}` so the "partly
+  // false" plaque, which sits on club yellow and therefore stays yellow in the dark,
+  // would keep a dark label. But the host joins these into ONE stylesheet as
+  // [FONTS, THEME_CSS, DARK, LAYOUT], and READER_LAYOUT_CSS carries its own
+  // `.rating--qualified` rule — same selector, same specificity, later. It won. The
+  // plaque had been near-white on yellow in dark mode, at 1.16:1, for as long as the
+  // override existed.
   //
   // READER_LAYOUT_CSS gives that label `--var-color-neutral-700` now: a primitive, and
-  // primitives do not follow the scheme. The exception is expressed in the token the
-  // rule uses rather than in a rule that overrides it, so it cannot fall out of step
-  // with the plaque it is about.
+  // primitives do not follow the scheme. Which is the point. An override that restates
+  // a value can be out-ranked silently; a token that MEANS the value cannot, because
+  // there is no second rule left to disagree with it. See ADR 0022.
   const readerDarkCss = `:root{${darkVarBlock}}`;
 
   return `${HEADER}

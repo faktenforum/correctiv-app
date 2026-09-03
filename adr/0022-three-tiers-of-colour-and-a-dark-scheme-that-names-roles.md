@@ -112,16 +112,32 @@ rule concrete. `READER_LAYOUT_CSS` in the core is a second stylesheet for the sa
 screen: on `/artikel` the app draws the header's `border-b` and the WebView draws the
 byline's `border-bottom` a few hundred pixels below it. Migrating one and not the
 other would have put two different hairline greys on the app's primary reading
-surface. All seventeen of its `--var-color-*` uses moved, except the neutral verdict
-plaque, which is the `grey-300`-as-a-fill gap in the table below.
+surface. Eighteen of its nineteen `--var-color-*` uses moved; the one that
+stayed is the neutral verdict plaque's background, which is the `grey-300`-as-a-fill
+gap in the table below. Sixteen went to the semantic tier and two to primitives —
+`white` for the labels on the brand red, `neutral-700` for the label on club yellow —
+because those two must not follow the scheme.
 
-That migration also **deleted a hand-written exception.** The generator used to append
-`.rating--qualified{color:#333333}` to the reader's dark CSS, because the "partly
-false" plaque sits on club yellow — which stays yellow in the dark, so its label must
-stay dark, while every colour the reader had followed the scheme. The plaque's label is
-`--var-color-neutral-700` now: a primitive, which says the same thing in the token
-rather than in a rule that overrides it, and so cannot fall out of step with the plaque
-it is about. `READER_DARK_CSS` is now nothing but the variable block.
+That migration also **fixed a shipped dark-mode bug**, which is worth stating plainly
+because it was found by reviewing the code and not by anyone looking at the app.
+
+The generator used to append `.rating--qualified{color:#333333}` to the reader's dark
+CSS, so the "partly false" plaque — which sits on club yellow, and yellow stays yellow
+in the dark — would keep a dark label. **That override never applied.**
+`buildReaderHtml` joins the stylesheets into one `<style>` in the order
+`[FONTS, THEME_CSS, DARK, LAYOUT]`, and `READER_LAYOUT_CSS` carried its own
+`.rating--qualified` rule: same selector, same specificity, later in the document, so
+it won. In dark mode the plaque resolved to `grey-700` #f2f2f2 on #fde162 — a contrast
+ratio of **1.16:1**, effectively unreadable — and had done since the override was
+written. Confirmed by resolving `main`'s three stylesheets in a browser, in that order.
+
+The label is `--var-color-neutral-700` now: a primitive, which says "dark in both
+schemes" in the token rather than in a rule that has to out-rank another rule. The
+override is gone and `READER_DARK_CSS` is nothing but the variable block.
+
+The general lesson is the one this ADR keeps running into. An override that restates a
+value can be beaten silently; a token that *means* the value cannot, because there is
+nothing left to disagree with it.
 
 **`always-light` and `always-dark` are now redundant, and are kept anyway.** Since
 primitives no longer follow the scheme, `always-light` is exactly `white` and

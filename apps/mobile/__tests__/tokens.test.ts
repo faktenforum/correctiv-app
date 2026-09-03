@@ -236,6 +236,13 @@ describe('two-scheme palette', () => {
      *
      * Compared as sorted arrays rather than by count, so a name moved between two
      * tiers — the mistake that would otherwise keep the total right — still fails.
+     *
+     * When this fails on a colour upstream added, the question to answer is the same
+     * one palette.js asks: does the name mean a VALUE or a ROLE? theme.css usually
+     * answers it — a `var()` reference is a role, and the generator already refuses
+     * to let one be called a primitive. A literal is usually a primitive, but not
+     * always: `grey-250` is a literal and it is a surface with a dark value. So for a
+     * literal, decide by what the name means rather than by how it is written.
      */
     expect([...PRIMITIVES, ...SEMANTIC, ...DEPRECATED_V1, ...APP_ROLES].sort()).toEqual(
       (Object.keys(colors) as ColorToken[]).sort(),
@@ -250,10 +257,21 @@ describe('two-scheme palette', () => {
      * the alias table and the foreground check, and makes every line in dark mode
      * invisible behind a green run. That was verified, not imagined.
      *
-     * The bound is deliberately loose. A hairline is *meant* to be quiet, so this
-     * asserts only that it is not the surface — an eighth of the brightness range,
-     * which #cecece on #ffffff (0.19) and #4a4a4a on #1a1a1a (0.19) clear, and
-     * which a stroke that has collapsed into its background cannot.
+     * The bound is 0.06 and that number was measured, not chosen. At the eighth of
+     * the range this first used, `#e6e6e6` on `#ffffff` FAILED — which is the value
+     * the app's hairlines carried until this ADR, and which `grey-300` still holds.
+     * A test that goes red on a colour the app shipped last week is not asserting
+     * "invisible", it is asserting "at least as strong as ADR 0022's repaint", and
+     * it would fire as an invisibility failure if that repaint were ever argued
+     * back. 0.06 keeps both the old hairline and the new one, and still catches the
+     * collapse: `#1a1a1a` fails on `canvas` at 0.000, `#2e2e2e` on `surface` at
+     * 0.039. All four pairs are required, so one is enough.
+     *
+     * Only the quiet direction is bounded. A stroke *brighter* than its foreground
+     * passes here and always will — `stroke: '#f2f2f2'` in dark would be a glaring
+     * white hairline and this says nothing about it. That is left to the eye,
+     * because there is no value at which a strong line becomes wrong the way there
+     * is one at which a line stops existing.
      */
     for (const scheme of [colors, colorsDark]) {
       for (const line of ['stroke', 'stroke-strong'] as const) {
@@ -261,7 +279,7 @@ describe('two-scheme palette', () => {
           expect([
             line,
             ground,
-            Math.abs(brightness(scheme[line]) - brightness(scheme[ground])) > 0.125,
+            Math.abs(brightness(scheme[line]) - brightness(scheme[ground])) > 0.06,
           ]).toEqual([line, ground, true]);
         }
       }

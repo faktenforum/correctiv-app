@@ -37,10 +37,17 @@ The primitives behind them — `white`, `black`, `neutral-100…700`, `red-500`,
 `yellow-400` — do **not**, and nothing stops you writing `bg-white` where you meant
 `bg-canvas`. That is a white page on a dark phone, and no check catches it. Use one
 only where a colour must not follow the scheme: text on the brand red, a label on club
-yellow, a fill on a photograph. In the app that case is still spelled `always-light` /
-`always-dark`, which is what all 45 existing call sites use; they are the older names
-for `white` and `neutral-700` and ADR 0022 retires them, so prefer them until it does
-rather than mixing both spellings.
+yellow, a fill on a photograph. In `apps/mobile` that case is still spelled
+`always-light` / `always-dark`, which is what all 45 existing call sites use; they are
+the older names for `white` and `neutral-700` and ADR 0022 retires them, so prefer them
+there until it does rather than mixing both spellings.
+
+**Not in the core.** `always-light` and `always-dark` are this app's invention, so they
+are absent from `tokens/theme.css` and therefore from the `--var-color-*` block the
+article reader's WebView gets. `packages/app-core` has to use the primitives —
+`var(--var-color-white)`, `var(--var-color-neutral-700)` — and a rule written with
+`var(--var-color-always-light)` there is simply undefined in light mode. Both spellings
+in the repo is that boundary, not an inconsistency to tidy.
 
 `grey-100…700`, `emphasis` and `alternative` still resolve; they are upstream's
 deprecated tier and nothing new should use one. Three app uses have no successor yet

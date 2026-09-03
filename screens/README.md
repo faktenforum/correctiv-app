@@ -14,13 +14,28 @@ looking at a picture.
 2026-09-03 from the release APK of the colour-tier round on `Medium_Phone_API_36` at
 1080x2400, night mode off. Both tours ran clean, with no `MISS`.
 
-**Re-shot for [ADR 0022](../adr/0022-three-tiers-of-colour-and-a-dark-scheme-that-names-roles.md),
-and every one of them moved.** The app is on the semantic colour tier now, and `stroke`
-is one step stronger than the `grey-300` its hairlines used to be — so every border,
-divider, input outline, progress track and `<Hairline>` in these 30 shots is a shade
-darker than in the set before. No step name changed and no screen changed shape; if you
-are diffing against the previous set, that is the whole of it. Leaving them would have
-made this directory stale in exactly the pixels that round was about.
+**Re-shot for [ADR 0022](../adr/0022-three-tiers-of-colour-and-a-dark-scheme-that-names-roles.md).**
+The app is on the semantic colour tier now, and `stroke` is one step stronger than the
+`grey-300` its hairlines used to be, so every border, divider, input outline, progress
+track and `<Hairline>` here is a shade darker than in the set before. No step name
+changed. Leaving them would have made this directory stale in exactly the pixels that
+round was about.
+
+Diffing against the previous set, most frames move about 0.4–1.4%, which is the borders
+and nothing else. **Seven move much more, and none of that is the colour change:**
+`10-home-top` 47%, `83-video` 33%, `11-home-mid` 33%, `41-mediathek-mid` 26%,
+`40-mediathek` 23%, `23-reader-mid` 16%. Those are the live feeds
+([ADR 0015](../adr/0015-reading-correctiv-org-through-its-rest-api.md)) showing
+different articles and videos than they did in September. A big diff on those six is
+expected and says nothing; a big diff anywhere else is worth opening.
+
+The seventh was `95-suche`, and it is the reason the paragraph above is worded
+carefully. Its first take came back 79% changed because an Android stylus-handwriting
+sheet had opened over the search screen, with the app greyed out behind it. The tour
+reported no `MISS` — the tap had succeeded — so nothing flagged it, and it took someone
+opening the image. That is `83-video` again in a different costume: **a step can be
+wrong without being missing.** `lib.sh` now turns those features off before a tour
+starts, and the shot was re-taken.
 
 **This is the second set that opens at the door.** Since
 [ADR 0016](../adr/0016-a-door-at-the-root-and-an-entitlement-not-an-amount.md) a
