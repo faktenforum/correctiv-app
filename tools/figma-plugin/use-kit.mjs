@@ -9,7 +9,7 @@
 //   node tools/figma-plugin/sync-tokens.mjs      # FIRST, always
 //   node tools/figma-plugin/use-kit.mjs
 //
-// That order is load-bearing. The matchers below read `@color-emphasis` and friends,
+// That order is load-bearing. The matchers below read `@color-accent` and friends,
 // because the board's transcribed hexes are eyeballed approximations that only the
 // token map resolves. Run this first and every rule that classifies by colour comes
 // up empty — which is now a hard failure rather than a wrong-coloured board.
@@ -56,10 +56,10 @@ function named(node, prefix) {
 function buttonTone(node) {
   const fill = node.fill;
   if (fill === '#ffc0c8') return { value: 'primary', opacity: 0.4 };
-  if (fill === '@color-emphasis') return { value: 'primary' };
-  if (fill === '@color-grey-200') return { value: 'secondary' };
-  if (fill === '@color-alternative') return { value: 'club' };
-  if (fill === '@color-grey-100') {
+  if (fill === '@color-accent') return { value: 'primary' };
+  if (fill === '@color-surface') return { value: 'secondary' };
+  if (fill === '@color-accent-alternative') return { value: 'club' };
+  if (fill === '@color-canvas') {
     // A white button with a hairline is the outline variant; without one it is the
     // CTA that sits on the red mission screen, where white IS the surface.
     return { value: node.stroke === undefined ? 'onEmphasis' : 'outline' };
@@ -77,9 +77,9 @@ function buttonTone(node) {
  */
 function badgeTone(node) {
   if (node.fill === undefined) return 'live';
-  if (node.fill === '@color-emphasis') return 'emphasis';
-  if (node.fill === '@color-alternative') return 'club';
-  if (['@color-grey-100', '@color-grey-200', '@color-grey-250'].indexOf(node.fill) !== -1) {
+  if (node.fill === '@color-accent') return 'emphasis';
+  if (node.fill === '@color-accent-alternative') return 'club';
+  if (['@color-canvas', '@color-surface', '@color-grey-250'].indexOf(node.fill) !== -1) {
     return 'neutral';
   }
   return null;
@@ -94,7 +94,7 @@ function badgeTone(node) {
  * whole job is to refuse what it does not recognise.
  */
 function switchState(fill) {
-  if (fill === '@color-emphasis') return 'ja';
+  if (fill === '@color-accent') return 'ja';
   if (fill === '#e0e0e3' || fill === '@color-grey-300') return 'nein';
   return null;
 }
@@ -107,9 +107,9 @@ function switchState(fill) {
  */
 function claimTone(badge) {
   if (badge.fill === '#2e7d4f') return 'richtig';
-  if (badge.fill === '@color-emphasis') return 'falsch';
+  if (badge.fill === '@color-accent') return 'falsch';
   if (badge.stroke !== undefined) return 'inArbeit';
-  if (['@color-grey-200', '@color-grey-250'].indexOf(badge.fill) !== -1) return 'offen';
+  if (['@color-surface', '@color-grey-250'].indexOf(badge.fill) !== -1) return 'offen';
   return null;
 }
 
@@ -314,7 +314,7 @@ const converted = convert(spec.screens || []);
 //
 // A skip is a node that matched a rule by name and then could not be read. The usual
 // cause is running this before `sync-tokens.mjs`: the tone functions read
-// `@color-emphasis` and friends, because the board's transcribed hexes are eyeballed
+// `@color-accent` and friends, because the board's transcribed hexes are eyeballed
 // approximations that only the token map resolves.
 if (skipped.length > 0) {
   for (const s of skipped) console.error(`  UNREADABLE: ${s}`);

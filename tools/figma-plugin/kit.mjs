@@ -93,7 +93,7 @@ function ty(variant, extra) {
     size: size,
     leading: Math.round(px('leading-' + spec.leading) * 100),
     tracking: Math.round((px('tracking-' + spec.tracking) / size) * 10000) / 100,
-    color: '@color-grey-700',
+    color: '@color-on-canvas',
   };
   // `Object.keys` does not skip an explicit `undefined`, and the specimen sheet
   // passes `weight: undefined` for the eleven variants that take their own weight.
@@ -193,26 +193,26 @@ const TEXT_STYLES = VARIANTS.map((v) => styleOf(v, v)).concat(
 
 /** `text-button` is the label of every button; only the two colours differ. */
 const BUTTON_TONES = [
-  ['primary', '@color-emphasis', '@color-always-light', null],
-  ['secondary', '@color-grey-200', '@color-grey-700', null],
-  ['outline', '@color-grey-100', '@color-grey-700', '@color-grey-300'],
-  ['club', '@color-alternative', '@color-always-dark', null],
+  ['primary', '@color-accent', '@color-always-light', null],
+  ['secondary', '@color-surface', '@color-on-canvas', null],
+  ['outline', '@color-canvas', '@color-on-canvas', '@color-stroke'],
+  ['club', '@color-accent-alternative', '@color-always-dark', null],
   ['onEmphasis', '@color-always-light', '@color-always-dark', null],
 ];
 
 const BADGE_TONES = [
-  ['emphasis', '@color-emphasis', '@color-always-light'],
-  ['club', '@color-alternative', '@color-always-dark'],
-  ['neutral', '@color-grey-250', '@color-grey-600'],
-  ['live', null, '@color-emphasis'],
+  ['emphasis', '@color-accent', '@color-always-light'],
+  ['club', '@color-accent-alternative', '@color-always-dark'],
+  ['neutral', '@color-grey-250', '@color-on-canvas-muted'],
+  ['live', null, '@color-accent'],
 ];
 
 /** `claimStatusTag` decides the words; this file only carries the four surfaces. */
 const CLAIM_TONES = [
   ['richtig', '#2e7d4f', '@color-always-light', null, 'RICHTIG'],
-  ['falsch', '@color-emphasis', '@color-always-light', null, 'FALSCH'],
-  ['inArbeit', '@color-grey-100', '@color-grey-700', '@color-grey-400', 'IN ARBEIT'],
-  ['offen', '@color-grey-250', '@color-grey-600', null, 'OFFEN'],
+  ['falsch', '@color-accent', '@color-always-light', null, 'FALSCH'],
+  ['inArbeit', '@color-canvas', '@color-on-canvas', '@color-stroke', 'IN ARBEIT'],
+  ['offen', '@color-grey-250', '@color-on-canvas-muted', null, 'OFFEN'],
 ];
 
 /** A chevron, a switch, an icon: glyphs until the spec learns to carry vectors. */
@@ -239,7 +239,7 @@ const KIT = [
     w: 'hug',
     gap: S.m,
     pad: [S.m, S.m, S.m, S.m],
-    fill: '@color-grey-100',
+    fill: '@color-canvas',
     children: VARIANTS.map((v) => [v, v, undefined])
       .concat(
         Object.keys(overrides)
@@ -287,7 +287,7 @@ const KIT = [
     options: BADGE_TONES.map(([value, surface, label]) => {
       const children = [];
       // The live tone is a red dot plus a label on no fill at all.
-      if (value === 'live') children.push({ t: 'ellipse', w: 7, h: 7, fill: '@color-emphasis' });
+      if (value === 'live') children.push({ t: 'ellipse', w: 7, h: 7, fill: '@color-accent' });
       children.push(badgeLabel(label));
       const option = {
         value: value,
@@ -309,8 +309,8 @@ const KIT = [
     prop: 'Gewählt',
     props: { Label: { type: 'TEXT', default: 'Klima' } },
     options: [
-      ['ja', '@color-emphasis', '@color-always-light', null],
-      ['nein', '@color-grey-200', '@color-grey-700', '@color-grey-300'],
+      ['ja', '@color-accent', '@color-always-light', null],
+      ['nein', '@color-surface', '@color-on-canvas', '@color-stroke'],
     ].map(([value, surface, label, border]) => {
       const option = {
         value: value,
@@ -339,8 +339,8 @@ const KIT = [
     prop: 'Ton',
     props: {},
     options: [
-      ['surface', '@color-grey-200', null],
-      ['outline', '@color-grey-100', '@color-grey-300'],
+      ['surface', '@color-surface', null],
+      ['outline', '@color-canvas', '@color-stroke'],
     ].map(([value, surface, border]) => {
       const option = {
         value: value,
@@ -358,7 +358,7 @@ const KIT = [
             h: 56,
             cross: 'CENTER',
             align: 'CENTER',
-            stroke: '@color-grey-400',
+            stroke: '@color-stroke',
             dash: [4, 4],
             children: [ty('text-s', { chars: 'Inhalt', color: '@color-grey-500' })],
           },
@@ -374,14 +374,14 @@ const KIT = [
     props: { Label: { type: 'TEXT', default: 'IHRE MITGLIEDSCHAFT' } },
     dir: 'V',
     w: 'hug',
-    fill: '@color-grey-100',
+    fill: '@color-canvas',
     children: [
       ty('text-s', {
         chars: 'IHRE MITGLIEDSCHAFT',
         weight: 'bold',
         size: 12,
         tracking: 10,
-        color: '@color-grey-600',
+        color: '@color-on-canvas-muted',
         bind: 'Label',
       }),
     ],
@@ -392,9 +392,9 @@ const KIT = [
     props: {},
     dir: 'V',
     w: 280,
-    fill: '@color-grey-100',
+    fill: '@color-canvas',
     // `w: 'fill'` for the same reason as in ui/ScreenHeader: a line is born 10px wide.
-    children: [{ t: 'line', color: '@color-grey-300', w: 'fill' }],
+    children: [{ t: 'line', color: '@color-stroke', w: 'fill' }],
   },
   {
     t: 'component',
@@ -408,7 +408,7 @@ const KIT = [
     w: 320,
     cross: 'MAX',
     align: 'SPACE_BETWEEN',
-    fill: '@color-grey-100',
+    fill: '@color-canvas',
     children: [
       ty('headline-m', { chars: 'Aus dem Backstage', bind: 'Titel' }),
       {
@@ -418,7 +418,7 @@ const KIT = [
         w: 'hug',
         bind: 'Aktion zeigen',
         children: [
-          ty('text-s', { chars: 'Alles ansehen', color: '@color-emphasis', bind: 'Aktion' }),
+          ty('text-s', { chars: 'Alles ansehen', color: '@color-accent', bind: 'Aktion' }),
         ],
       },
     ],
@@ -429,7 +429,7 @@ const KIT = [
     props: { Zurück: { type: 'TEXT', default: 'Zurück' } },
     dir: 'V',
     w: 320,
-    fill: '@color-grey-100',
+    fill: '@color-canvas',
     children: [
       {
         t: 'frame',
@@ -439,12 +439,12 @@ const KIT = [
         gap: S['3xs'],
         pad: [S.sm, S.sm, S.s, S.s],
         children: [
-          ty('text-m', { chars: '‹', size: 20, color: '@color-grey-700' }),
-          ty('text-m', { chars: 'Zurück', color: '@color-grey-700', bind: 'Zurück' }),
+          ty('text-m', { chars: '‹', size: 20, color: '@color-on-canvas' }),
+          ty('text-m', { chars: 'Zurück', color: '@color-on-canvas', bind: 'Zurück' }),
         ],
       },
       // Without `w: 'fill'` a line keeps the 10px width a fresh frame is born at.
-      { t: 'line', color: '@color-grey-300', w: 'fill' },
+      { t: 'line', color: '@color-stroke', w: 'fill' },
     ],
   },
   {
@@ -459,11 +459,11 @@ const KIT = [
     w: 320,
     cross: 'CENTER',
     pad: [0, 0, S.s, S.s],
-    stroke: '@color-grey-300',
+    stroke: '@color-stroke',
     strokeSides: 'bottom',
-    fill: '@color-grey-100',
+    fill: '@color-canvas',
     children: [
-      ty('text-m', { chars: '◎', size: 20, color: '@color-grey-600' }),
+      ty('text-m', { chars: '◎', size: 20, color: '@color-on-canvas-muted' }),
       {
         t: 'frame',
         dir: 'V',
@@ -486,7 +486,7 @@ const KIT = [
           },
           ty('text-s', {
             chars: 'Was gerade in der Redaktion passiert',
-            color: '@color-grey-600',
+            color: '@color-on-canvas-muted',
             w: 'fill',
             bind: 'Untertitel',
           }),
@@ -509,7 +509,7 @@ const KIT = [
       'Beschreibung zeigen': { type: 'BOOLEAN', default: true },
     },
     options: [
-      ['ja', '@color-emphasis', 'MAX'],
+      ['ja', '@color-accent', 'MAX'],
       ['nein', '@color-grey-300', 'MIN'],
     ].map(([value, track, knob]) => ({
       value: value,
@@ -518,7 +518,7 @@ const KIT = [
       cross: 'CENTER',
       gap: S.s,
       pad: [0, 0, S['2xs'], S['2xs']],
-      fill: '@color-grey-100',
+      fill: '@color-canvas',
       children: [
         {
           t: 'frame',
@@ -535,7 +535,7 @@ const KIT = [
               children: [
                 ty('text-s', {
                   chars: 'Neue Recherchen und Mitmach-Aufrufe',
-                  color: '@color-grey-600',
+                  color: '@color-on-canvas-muted',
                   w: 'fill',
                   bind: 'Beschreibung',
                 }),
@@ -573,9 +573,9 @@ const KIT = [
     w: 320,
     cross: 'CENTER',
     pad: [0, 0, S.s, S.s],
-    stroke: '@color-grey-300',
+    stroke: '@color-stroke',
     strokeSides: 'bottom',
-    fill: '@color-grey-100',
+    fill: '@color-canvas',
     children: [
       {
         t: 'frame',
@@ -587,7 +587,7 @@ const KIT = [
           ty('text-m', { chars: 'CrimeTech', weight: 'bold', bind: 'Name' }),
           ty('text-s', {
             chars: 'Wie Polizeibehörden mit Technik gegen Kriminalität vorgehen',
-            color: '@color-grey-600',
+            color: '@color-on-canvas-muted',
             w: 'fill',
             bind: 'Teaser',
           }),
@@ -631,7 +631,7 @@ const KIT = [
     // Yellow in both schemes, so everything on it takes the fixed dark role colour
     // rather than the page's text colour, which turns near-white in dark mode and
     // would vanish on the yellow.
-    fill: '@color-alternative',
+    fill: '@color-accent-alternative',
     children: [
       {
         t: 'frame',

@@ -133,7 +133,7 @@ function rgb(hex) {
 // ---------------------------------------------------------------- tokens
 //
 // The app's design tokens, mirrored into Figma as variables with a Hell and a Dunkel
-// mode. A colour in the spec written as "@color-emphasis" is BOUND to its variable
+// mode. A colour in the spec written as "@color-accent" is BOUND to its variable
 // rather than copied, so changing the value in Figma repaints every screen that uses
 // it — which is the whole point of having tokens at all.
 //
@@ -475,7 +475,7 @@ function wantsOutline(spec) {
   if (spec.stroke) return true;
   // Any fill earns an edge. This used to exempt `#ffffff`, on the reasoning that a
   // page-coloured surface needs no outline — but `sync-tokens.mjs` rewrote every
-  // white to `@color-grey-100`, so the exemption stopped firing and nobody noticed
+  // white to a token name, so the exemption stopped firing and nobody noticed
   // for two commits. Restoring it would be the wrong repair: among the shapes it
   // covered are eleven white ellipses — the onboarding progress dots, one switch knob
   // and the reader's floating buttons — and the outline is the only reason any of
