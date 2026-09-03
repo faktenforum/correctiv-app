@@ -95,7 +95,14 @@ function ty(variant, extra) {
     tracking: Math.round((px('tracking-' + spec.tracking) / size) * 10000) / 100,
     color: '@color-grey-700',
   };
-  for (const key of Object.keys(extra || {})) out[key] = extra[key];
+  // `Object.keys` does not skip an explicit `undefined`, and the specimen sheet
+  // passes `weight: undefined` for the eleven variants that take their own weight.
+  // Copying that over made `out.weight` undefined, which then read as an override
+  // and named a style — `headline-l/undefined` — that does not exist, so those rows
+  // bound no style and drew in Regular under a label saying Bold.
+  for (const key of Object.keys(extra || {})) {
+    if (extra[key] !== undefined) out[key] = extra[key];
+  }
   // `<Typo variant="text-m" weight="bold">` is a variant with its weight overridden,
   // and Figma has no such thing: a text style pins the whole font, cut included. So
   // the pair gets a style of its own, named the way the JSX reads.
@@ -385,7 +392,8 @@ const KIT = [
     dir: 'V',
     w: 280,
     fill: '@color-grey-100',
-    children: [{ t: 'line', color: '@color-grey-300' }],
+    // `w: 'fill'` for the same reason as in ui/ScreenHeader: a line is born 10px wide.
+    children: [{ t: 'line', color: '@color-grey-300', w: 'fill' }],
   },
   {
     t: 'component',
@@ -687,6 +695,11 @@ const AUDIT = {
     // Whether the button stretches is a fact about the column it sits in, and the
     // spec carries that as `w` on the instance.
     ignore: ['fullWidth'],
+    gaps: {
+      disabled:
+        'four tenths opacity, not a variant — one per variant would double the set,' +
+        ' so `use-kit.mjs` puts the opacity on the instance instead',
+    },
   },
   'ui/Badge': { maps: { label: 'Label', tone: 'Ton' } },
   'ui/Chip': { maps: { label: 'Label', selected: 'Gewählt' } },
@@ -740,19 +753,39 @@ function literal(source, from) {
  * helper whose RETURN type is an object literal — `toneFor` in ClaimStatusTag does —
  * and the first `}: {` in the file would otherwise be that one.
  */
-function sourceProps(source) {
+function sourceProps(source, component) {
   const clean = source.replace(/\/\*[\s\S]*?\*\//g, '').replace(/\/\/[^\n]*/g, '');
+
+  // Anchored on the component's OWN function, by name. Anchoring on the first
+  // `export function` was not enough: a file may declare a private subcomponent
+  // BELOW the exported one — `LoginGate.tsx` has `NoAccess({ shortfall })` — and the
+  // audit would then check the helper's props and pass, having verified nothing.
+  const fn = clean.search(new RegExp('export function ' + component + '\\s*\\('));
+  if (fn === -1) throw new Error('no `export function ' + component + '` to read props from');
+
+  // Whatever the parameter destructures is what the component actually USES, which
+  // is the set that matters here — and it is the only way to see a prop inherited
+  // through an intersection. `ButtonProps` is `Omit<PressableProps, …> & { … }`, so
+  // the type literal alone never mentions `disabled`, while the body dims the button
+  // by four tenths when it is set.
+  const params = literal(clean, clean.indexOf('(', fn));
+  const used = [];
+  for (const part of (params || '').split(',')) {
+    const m = part.match(/^\s*(\w+)/);
+    if (m && part.indexOf('...') === -1) used.push(m[1]);
+  }
+
+  // And the declared type, which carries props the destructuring passes through.
   const named = clean.match(/export type \w*Props\s*=/);
-  const fn = clean.search(/export function \w+\(/);
-  const inline = fn === -1 ? -1 : clean.slice(fn).search(/\}\s*:\s*\{/);
+  const inline = clean.slice(fn).search(/\}\s*:\s*\{/);
   const body = named
     ? literal(clean, named.index)
     : inline === -1
       ? null
       : literal(clean, fn + inline + 1);
-  if (body === null) return [];
+  if (body === null) return [...new Set(used)];
 
-  const out = [];
+  const out = used.slice();
   let depth = 0;
   let atTop = true;
   let word = '';
@@ -796,7 +829,13 @@ for (const entry of KIT) {
   for (const name of Object.keys(entry.props || {})) has[name] = true;
   if (entry.prop) has[entry.prop] = true;
 
-  for (const prop of sourceProps(source)) {
+  const found = sourceProps(source, entry.name.slice(entry.name.indexOf('/') + 1));
+  // An empty list is indistinguishable from "no props", so the loop below would pass
+  // having checked nothing. A component the audit claims to map must have props.
+  if (found.length === 0 && Object.keys(plan.maps).length > 0) {
+    problems.push(`${entry.name}: read no props at all, but the audit maps some`);
+  }
+  for (const prop of found) {
     if (NEVER_VISUAL.indexOf(prop) !== -1 && plan.gaps?.[prop] === undefined) continue;
     // A handler is behaviour; the board draws no behaviour.
     if (/^on[A-Z]/.test(prop)) continue;

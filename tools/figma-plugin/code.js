@@ -211,7 +211,7 @@ async function syncVariables(tokens) {
     }
     VARS[name] = v;
   }
-  return names.length + (dark === null ? ' (nur Hell, zweiter Modus ist kostenpflichtig)' : '');
+  return names.length + (dark === null ? ' (light only, a second mode is a paid feature)' : '');
 }
 
 /**
@@ -469,7 +469,13 @@ function wantsOutline(spec) {
   // is already the right drawing.
   if (spec.strokeSides) return false;
   if (spec.stroke) return true;
-  return Boolean(spec.fill) && spec.fill.toLowerCase() !== '#ffffff';
+  // Any fill earns an edge. This used to exempt `#ffffff`, on the reasoning that a
+  // page-coloured surface needs no outline — but `sync-tokens.mjs` rewrote every
+  // white to `@color-grey-100`, so the exemption stopped firing and nobody noticed
+  // for two commits. Restoring it would be the wrong repair: eleven of the shapes it
+  // covers are white ellipses, the tab-bar dots and the switch knobs, and the outline
+  // is the only reason they are visible on a white page at all.
+  return Boolean(spec.fill);
 }
 
 function addOutline(node, spec) {
@@ -521,6 +527,7 @@ function applySizing(node, spec, parentIsAutoLayout) {
 
 function build(spec, parent, parentIsAutoLayout) {
   let node = null;
+  let missingComponent = false;
 
   if (spec.t === 'text') {
     node = figma.createText();
@@ -562,9 +569,9 @@ function build(spec, parent, parentIsAutoLayout) {
       // typo in the spec, and a silently missing row is far harder to find than a
       // box shouting its own name.
       node = figma.createFrame();
-      node.name = 'FEHLT: ' + spec.of;
       node.resize(typeof spec.w === 'number' ? spec.w : 160, spec.h || 24);
       node.fills = [{ type: 'SOLID', color: { r: 1, g: 0, b: 1 } }];
+      missingComponent = true;
     } else {
       node = main.createInstance();
       const ids = PROP_IDS[MODE_NAME + '/' + spec.of] || {};
@@ -610,7 +617,11 @@ function build(spec, parent, parentIsAutoLayout) {
     if (spec.radius) node.cornerRadius = spec.radius;
   }
 
-  if (spec.name) node.name = spec.name;
+  // The placeholder's name wins over the spec's. `use-kit.mjs` puts a `name` on every
+  // instance, so the generic line below used to rename the magenta box back to
+  // "Button, Anmelden" and the box stopped shouting anything.
+  if (missingComponent) node.name = 'MISSING: ' + spec.of;
+  else if (spec.name) node.name = spec.name;
   if (spec.stroke) {
     node.strokes = paint(spec.stroke);
     if (spec.dash) node.dashPattern = spec.dash;
@@ -655,93 +666,6 @@ function build(spec, parent, parentIsAutoLayout) {
   // parents have finished laying out, and the pencil has to trace that size.
   if (MODE.sketch && wantsOutline(spec)) pending.push({ node: node, spec: spec });
   return node;
-}
-
-/**
- * Navigation, drawn rather than connected.
- *
- * Figma design files have no Connector node. Figma also normalises `vectorPaths`
- * against the geometry's own bounding box and then places the node by x/y, so the
- * path is written RELATIVE to that box and the box's corner becomes the position.
- * Writing absolute coordinates and forcing x/y to 0 puts every arrow in the corner.
- */
-function drawArrows(page, arrows) {
-  if (!arrows) return 0;
-  const byName = {};
-  for (const n of page.children) byName[n.name] = n;
-
-  let minX = Infinity;
-  let minY = Infinity;
-  let maxX = -Infinity;
-  let maxY = -Infinity;
-  for (const n of page.children) {
-    if (n.name === arrows.overlay) continue;
-    minX = Math.min(minX, n.x);
-    minY = Math.min(minY, n.y);
-    maxX = Math.max(maxX, n.x + n.width);
-    maxY = Math.max(maxY, n.y + n.height);
-  }
-  if (minX === Infinity) return 0;
-
-  const overlay = figma.createFrame();
-  overlay.name = arrows.overlay;
-  overlay.x = minX - 60;
-  overlay.y = minY - 60;
-  overlay.resize(maxX - minX + 120, maxY - minY + 120);
-  overlay.fills = [];
-  overlay.clipsContent = false;
-  page.appendChild(overlay);
-
-  let drawn = 0;
-  for (const [from, to] of arrows.edges) {
-    const a = byName[from];
-    const b = byName[to];
-    if (!a || !b) continue;
-
-    let pts;
-    if (Math.abs(a.y - b.y) < 10) {
-      const yy = a.y + 140;
-      pts = [
-        [a.x + a.width, yy],
-        [b.x, yy],
-      ];
-    } else {
-      const sy = a.y + a.height;
-      const mid = sy + 30;
-      pts = [
-        [a.x + a.width / 2, sy],
-        [a.x + a.width / 2, mid],
-        [b.x + b.width / 2, mid],
-        [b.x + b.width / 2, b.y],
-      ];
-    }
-
-    let lx = Infinity;
-    let ly = Infinity;
-    for (const p of pts) {
-      lx = Math.min(lx, p[0] - overlay.x);
-      ly = Math.min(ly, p[1] - overlay.y);
-    }
-    let d = '';
-    pts.forEach(function (p, i) {
-      d += (i === 0 ? 'M ' : ' L ') + (p[0] - overlay.x - lx) + ' ' + (p[1] - overlay.y - ly);
-    });
-
-    const v = figma.createVector();
-    v.name = from + ' → ' + to;
-    v.vectorPaths = [{ windingRule: 'NONE', data: d }];
-    v.strokes = paint(arrows.color || '#9e9ea8');
-    v.strokeWeight = arrows.weight || 1.5;
-    v.strokeCap = 'ARROW_LINES';
-    v.fills = [];
-    overlay.appendChild(v);
-    v.x = lx;
-    v.y = ly;
-    drawn++;
-  }
-
-  overlay.locked = true;
-  return drawn;
 }
 
 /**
@@ -796,8 +720,13 @@ async function drawPage(entry, screens) {
   MODE_NAME = MODES[entry.mode] === undefined ? 'replica' : entry.mode;
   MODE = MODES[MODE_NAME];
 
-  // Fonts resolve through MODE, so they can only be collected once it is set. A
-  // family the environment lacks must not take the whole page down with it.
+  // Fonts resolve through MODE, so they can only be collected once it is set.
+  //
+  // A family the environment lacks stops the whole run, deliberately. Carrying on
+  // would only move the failure: `createText` throws the moment it is handed a font
+  // that was never loaded, and it would throw somewhere in the middle of a page with
+  // nothing naming the family. Collecting the misses first buys one clear message
+  // instead of an obscure one, not a partial board.
   const wanted = collectFonts(screens, {});
   const missing = [];
   for (const key of Object.keys(wanted)) {
@@ -808,7 +737,7 @@ async function drawPage(entry, screens) {
     }
   }
   if (missing.length > 0) {
-    throw new Error('Schrift fehlt: ' + missing.join(', '));
+    throw new Error('missing font: ' + missing.join(', '));
   }
 
   let page = null;
@@ -831,7 +760,6 @@ async function drawPage(entry, screens) {
   } else {
     const owned = {};
     for (const n of entry.owned || []) owned[n] = true;
-    if (entry.arrows) owned[entry.arrows.overlay] = true;
     for (const n of page.children.slice()) if (owned[n.name]) n.remove();
   }
 
@@ -841,8 +769,7 @@ async function drawPage(entry, screens) {
   const sketched = pending.length;
   pending = [];
 
-  const arrows = drawArrows(page, entry.arrows);
-  return { name: entry.name, screens: screens.length, arrows: arrows, sketched: sketched };
+  return { name: entry.name, screens: screens.length, sketched: sketched };
 }
 
 // ---------------------------------------------------------------- reading back
@@ -855,6 +782,10 @@ async function drawPage(entry, screens) {
 // This is a one-way door on purpose. The result is a STARTING POINT for spec.json,
 // not a format the board is kept in: once a screen is described, the description is
 // the source and the board is the output.
+//
+// Nothing triggers it today. No page in the spec carries `readBack`, and it is kept
+// only for the next time a board is edited by hand faster than the spec can follow.
+// If that stops being plausible, delete this and the `/export` endpoint together.
 
 function hexOf(paints) {
   if (!paints || paints === figma.mixed || paints.length === 0) return undefined;
@@ -1000,9 +931,7 @@ function definesComponents(node) {
 async function draw(spec) {
   // One description, rendered once per page. `screens` may live on the page entry or,
   // when both pages show the same thing, once at the top for all of them.
-  const pages = spec.pages || [
-    { name: spec.page, mode: spec.mode, owned: spec.owned, arrows: spec.arrows },
-  ];
+  const pages = spec.pages || [{ name: spec.page, mode: spec.mode, owned: spec.owned }];
 
   // Variables first: a fill can only bind to a variable that already exists.
   const tokenCount = await syncVariables(spec.tokens);
@@ -1034,14 +963,14 @@ async function draw(spec) {
   }
 
   return (
-    done.map((d) => d.name + ': ' + d.screens + ' Screens, ' + d.arrows + ' Pfeile').join(' · ') +
+    done.map((d) => d.name + ': ' + d.screens + ' screens').join(' · ') +
     ' · ' +
     tokenCount +
-    ' Tokens · ' +
+    ' tokens · ' +
     styleCount +
-    ' Textstile · ' +
+    ' text styles · ' +
     distinctComponents() +
-    ' Komponenten'
+    ' components'
   );
 }
 

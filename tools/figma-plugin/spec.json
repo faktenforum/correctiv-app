@@ -89,7 +89,12 @@
           "dir": "V",
           "w": "hug",
           "gap": 24,
-          "pad": [24, 24, 24, 24],
+          "pad": [
+            24,
+            24,
+            24,
+            24
+          ],
           "fill": "@color-grey-100",
           "children": [
             {
@@ -111,8 +116,9 @@
                 },
                 {
                   "t": "text",
-                  "style": "text-article/undefined",
+                  "style": "text-article",
                   "font": "serif",
+                  "weight": "regular",
                   "size": 15.5,
                   "leading": 180,
                   "tracking": 1.29,
@@ -140,8 +146,9 @@
                 },
                 {
                   "t": "text",
-                  "style": "text-s/undefined",
+                  "style": "text-s",
                   "font": "sans",
+                  "weight": "regular",
                   "size": 14,
                   "leading": 150,
                   "tracking": 1.43,
@@ -169,8 +176,9 @@
                 },
                 {
                   "t": "text",
-                  "style": "text-m/undefined",
+                  "style": "text-m",
                   "font": "sans",
+                  "weight": "regular",
                   "size": 15,
                   "leading": 150,
                   "tracking": 0.67,
@@ -198,8 +206,9 @@
                 },
                 {
                   "t": "text",
-                  "style": "text-l/undefined",
+                  "style": "text-l",
                   "font": "sans",
+                  "weight": "regular",
                   "size": 18.5,
                   "leading": 145,
                   "tracking": 0.54,
@@ -227,8 +236,9 @@
                 },
                 {
                   "t": "text",
-                  "style": "headline-xs/undefined",
+                  "style": "headline-xs",
                   "font": "sans",
+                  "weight": "bold",
                   "size": 17,
                   "leading": 150,
                   "tracking": 1.18,
@@ -256,8 +266,9 @@
                 },
                 {
                   "t": "text",
-                  "style": "headline-s/undefined",
+                  "style": "headline-s",
                   "font": "sans",
+                  "weight": "bold",
                   "size": 17,
                   "leading": 150,
                   "tracking": 1.18,
@@ -285,8 +296,9 @@
                 },
                 {
                   "t": "text",
-                  "style": "headline-m/undefined",
+                  "style": "headline-m",
                   "font": "sans",
+                  "weight": "bold",
                   "size": 19,
                   "leading": 130,
                   "tracking": 0,
@@ -314,8 +326,9 @@
                 },
                 {
                   "t": "text",
-                  "style": "headline-l/undefined",
+                  "style": "headline-l",
                   "font": "sans",
+                  "weight": "bold",
                   "size": 23,
                   "leading": 120,
                   "tracking": -0.43,
@@ -343,8 +356,9 @@
                 },
                 {
                   "t": "text",
-                  "style": "headline-xl/undefined",
+                  "style": "headline-xl",
                   "font": "sans",
+                  "weight": "bold",
                   "size": 28,
                   "leading": 120,
                   "tracking": -0.71,
@@ -372,8 +386,9 @@
                 },
                 {
                   "t": "text",
-                  "style": "headline-xxl/undefined",
+                  "style": "headline-xxl",
                   "font": "sans",
+                  "weight": "bold",
                   "size": 32,
                   "leading": 120,
                   "tracking": -0.62,
@@ -401,8 +416,9 @@
                 },
                 {
                   "t": "text",
-                  "style": "button/undefined",
+                  "style": "button",
                   "font": "sans",
+                  "weight": "bold",
                   "size": 16,
                   "leading": 150,
                   "tracking": 1.25,
@@ -552,7 +568,12 @@
               "w": "hug",
               "align": "CENTER",
               "cross": "CENTER",
-              "pad": [24, 24, 12, 12],
+              "pad": [
+                24,
+                24,
+                12,
+                12
+              ],
               "radius": 5,
               "fill": "@color-emphasis",
               "children": [
@@ -576,7 +597,12 @@
               "w": "hug",
               "align": "CENTER",
               "cross": "CENTER",
-              "pad": [24, 24, 12, 12],
+              "pad": [
+                24,
+                24,
+                12,
+                12
+              ],
               "radius": 5,
               "fill": "@color-grey-200",
               "children": [
@@ -600,7 +626,12 @@
               "w": "hug",
               "align": "CENTER",
               "cross": "CENTER",
-              "pad": [24, 24, 12, 12],
+              "pad": [
+                24,
+                24,
+                12,
+                12
+              ],
               "radius": 5,
               "fill": "@color-grey-100",
               "children": [
@@ -625,7 +656,12 @@
               "w": "hug",
               "align": "CENTER",
               "cross": "CENTER",
-              "pad": [24, 24, 12, 12],
+              "pad": [
+                24,
+                24,
+                12,
+                12
+              ],
               "radius": 5,
               "fill": "@color-alternative",
               "children": [
@@ -649,7 +685,12 @@
               "w": "hug",
               "align": "CENTER",
               "cross": "CENTER",
-              "pad": [24, 24, 12, 12],
+              "pad": [
+                24,
+                24,
+                12,
+                12
+              ],
               "radius": 5,
               "fill": "@color-always-light",
               "children": [
@@ -688,7 +729,12 @@
               "w": "hug",
               "cross": "CENTER",
               "gap": 4,
-              "pad": [6, 6, 2, 2],
+              "pad": [
+                6,
+                6,
+                2,
+                2
+              ],
               "radius": 2,
               "children": [
                 {
@@ -711,7 +757,12 @@
               "w": "hug",
               "cross": "CENTER",
               "gap": 4,
-              "pad": [6, 6, 2, 2],
+              "pad": [
+                6,
+                6,
+                2,
+                2
+              ],
               "radius": 2,
               "children": [
                 {
@@ -734,7 +785,12 @@
               "w": "hug",
               "cross": "CENTER",
               "gap": 4,
-              "pad": [6, 6, 2, 2],
+              "pad": [
+                6,
+                6,
+                2,
+                2
+              ],
               "radius": 2,
               "children": [
                 {
@@ -757,7 +813,12 @@
               "w": "hug",
               "cross": "CENTER",
               "gap": 4,
-              "pad": [6, 6, 2, 2],
+              "pad": [
+                6,
+                6,
+                2,
+                2
+              ],
               "radius": 2,
               "children": [
                 {
@@ -799,7 +860,12 @@
               "dir": "H",
               "w": "hug",
               "cross": "CENTER",
-              "pad": [12, 12, 6, 6],
+              "pad": [
+                12,
+                12,
+                6,
+                6
+              ],
               "radius": 5,
               "fill": "@color-emphasis",
               "children": [
@@ -822,7 +888,12 @@
               "dir": "H",
               "w": "hug",
               "cross": "CENTER",
-              "pad": [12, 12, 6, 6],
+              "pad": [
+                12,
+                12,
+                6,
+                6
+              ],
               "radius": 5,
               "fill": "@color-grey-200",
               "children": [
@@ -855,7 +926,12 @@
               "value": "surface",
               "dir": "V",
               "w": 280,
-              "pad": [16, 16, 16, 16],
+              "pad": [
+                16,
+                16,
+                16,
+                16
+              ],
               "radius": 5,
               "fill": "@color-grey-200",
               "children": [
@@ -868,7 +944,10 @@
                   "cross": "CENTER",
                   "align": "CENTER",
                   "stroke": "@color-grey-400",
-                  "dash": [4, 4],
+                  "dash": [
+                    4,
+                    4
+                  ],
                   "children": [
                     {
                       "t": "text",
@@ -889,7 +968,12 @@
               "value": "outline",
               "dir": "V",
               "w": 280,
-              "pad": [16, 16, 16, 16],
+              "pad": [
+                16,
+                16,
+                16,
+                16
+              ],
               "radius": 5,
               "fill": "@color-grey-100",
               "children": [
@@ -902,7 +986,10 @@
                   "cross": "CENTER",
                   "align": "CENTER",
                   "stroke": "@color-grey-400",
-                  "dash": [4, 4],
+                  "dash": [
+                    4,
+                    4
+                  ],
                   "children": [
                     {
                       "t": "text",
@@ -962,7 +1049,8 @@
           "children": [
             {
               "t": "line",
-              "color": "@color-grey-300"
+              "color": "@color-grey-300",
+              "w": "fill"
             }
           ]
         },
@@ -1047,7 +1135,12 @@
               "w": "fill",
               "cross": "CENTER",
               "gap": 4,
-              "pad": [16, 16, 12, 12],
+              "pad": [
+                16,
+                16,
+                12,
+                12
+              ],
               "children": [
                 {
                   "t": "text",
@@ -1102,7 +1195,12 @@
           "dir": "H",
           "w": 320,
           "cross": "CENTER",
-          "pad": [0, 0, 12, 12],
+          "pad": [
+            0,
+            0,
+            12,
+            12
+          ],
           "stroke": "@color-grey-300",
           "strokeSides": "bottom",
           "fill": "@color-grey-100",
@@ -1122,7 +1220,12 @@
               "dir": "V",
               "w": "fill",
               "gap": 2,
-              "pad": [12, 0, 0, 0],
+              "pad": [
+                12,
+                0,
+                0,
+                0
+              ],
               "children": [
                 {
                   "t": "frame",
@@ -1208,7 +1311,12 @@
               "w": 320,
               "cross": "CENTER",
               "gap": 12,
-              "pad": [0, 0, 6, 6],
+              "pad": [
+                0,
+                0,
+                6,
+                6
+              ],
               "fill": "@color-grey-100",
               "children": [
                 {
@@ -1261,7 +1369,12 @@
                   "h": 26,
                   "cross": "CENTER",
                   "align": "MAX",
-                  "pad": [3, 3, 3, 3],
+                  "pad": [
+                    3,
+                    3,
+                    3,
+                    3
+                  ],
                   "radius": 13,
                   "fill": "@color-emphasis",
                   "children": [
@@ -1281,7 +1394,12 @@
               "w": 320,
               "cross": "CENTER",
               "gap": 12,
-              "pad": [0, 0, 6, 6],
+              "pad": [
+                0,
+                0,
+                6,
+                6
+              ],
               "fill": "@color-grey-100",
               "children": [
                 {
@@ -1334,7 +1452,12 @@
                   "h": 26,
                   "cross": "CENTER",
                   "align": "MIN",
-                  "pad": [3, 3, 3, 3],
+                  "pad": [
+                    3,
+                    3,
+                    3,
+                    3
+                  ],
                   "radius": 13,
                   "fill": "@color-grey-300",
                   "children": [
@@ -1368,7 +1491,12 @@
           "dir": "H",
           "w": 320,
           "cross": "CENTER",
-          "pad": [0, 0, 12, 12],
+          "pad": [
+            0,
+            0,
+            12,
+            12
+          ],
           "stroke": "@color-grey-300",
           "strokeSides": "bottom",
           "fill": "@color-grey-100",
@@ -1378,7 +1506,12 @@
               "dir": "V",
               "w": "fill",
               "gap": 2,
-              "pad": [0, 12, 0, 0],
+              "pad": [
+                0,
+                12,
+                0,
+                0
+              ],
               "children": [
                 {
                   "t": "text",
@@ -1435,7 +1568,12 @@
               "value": "richtig",
               "dir": "H",
               "w": "hug",
-              "pad": [6, 6, 2, 2],
+              "pad": [
+                6,
+                6,
+                2,
+                2
+              ],
               "radius": 1,
               "fill": "#2e7d4f",
               "children": [
@@ -1456,7 +1594,12 @@
               "value": "falsch",
               "dir": "H",
               "w": "hug",
-              "pad": [6, 6, 2, 2],
+              "pad": [
+                6,
+                6,
+                2,
+                2
+              ],
               "radius": 1,
               "fill": "@color-emphasis",
               "children": [
@@ -1477,7 +1620,12 @@
               "value": "inArbeit",
               "dir": "H",
               "w": "hug",
-              "pad": [6, 6, 2, 2],
+              "pad": [
+                6,
+                6,
+                2,
+                2
+              ],
               "radius": 1,
               "fill": "@color-grey-100",
               "children": [
@@ -1499,7 +1647,12 @@
               "value": "offen",
               "dir": "H",
               "w": "hug",
-              "pad": [6, 6, 2, 2],
+              "pad": [
+                6,
+                6,
+                2,
+                2
+              ],
               "radius": 1,
               "fill": "@color-grey-250",
               "children": [
@@ -1535,7 +1688,12 @@
           },
           "dir": "V",
           "w": 320,
-          "pad": [24, 24, 24, 24],
+          "pad": [
+            24,
+            24,
+            24,
+            24
+          ],
           "radius": 5,
           "fill": "@color-alternative",
           "children": [
@@ -1617,7 +1775,12 @@
           "dir": "V",
           "w": "hug",
           "gap": 24,
-          "pad": [24, 24, 24, 24],
+          "pad": [
+            24,
+            24,
+            24,
+            24
+          ],
           "fill": "@color-grey-100",
           "children": [
             {
@@ -1639,8 +1802,9 @@
                 },
                 {
                   "t": "text",
-                  "style": "text-article/undefined",
+                  "style": "text-article",
                   "font": "serif",
+                  "weight": "regular",
                   "size": 15.5,
                   "leading": 180,
                   "tracking": 1.29,
@@ -1668,8 +1832,9 @@
                 },
                 {
                   "t": "text",
-                  "style": "text-s/undefined",
+                  "style": "text-s",
                   "font": "sans",
+                  "weight": "regular",
                   "size": 14,
                   "leading": 150,
                   "tracking": 1.43,
@@ -1697,8 +1862,9 @@
                 },
                 {
                   "t": "text",
-                  "style": "text-m/undefined",
+                  "style": "text-m",
                   "font": "sans",
+                  "weight": "regular",
                   "size": 15,
                   "leading": 150,
                   "tracking": 0.67,
@@ -1726,8 +1892,9 @@
                 },
                 {
                   "t": "text",
-                  "style": "text-l/undefined",
+                  "style": "text-l",
                   "font": "sans",
+                  "weight": "regular",
                   "size": 18.5,
                   "leading": 145,
                   "tracking": 0.54,
@@ -1755,8 +1922,9 @@
                 },
                 {
                   "t": "text",
-                  "style": "headline-xs/undefined",
+                  "style": "headline-xs",
                   "font": "sans",
+                  "weight": "bold",
                   "size": 17,
                   "leading": 150,
                   "tracking": 1.18,
@@ -1784,8 +1952,9 @@
                 },
                 {
                   "t": "text",
-                  "style": "headline-s/undefined",
+                  "style": "headline-s",
                   "font": "sans",
+                  "weight": "bold",
                   "size": 17,
                   "leading": 150,
                   "tracking": 1.18,
@@ -1813,8 +1982,9 @@
                 },
                 {
                   "t": "text",
-                  "style": "headline-m/undefined",
+                  "style": "headline-m",
                   "font": "sans",
+                  "weight": "bold",
                   "size": 19,
                   "leading": 130,
                   "tracking": 0,
@@ -1842,8 +2012,9 @@
                 },
                 {
                   "t": "text",
-                  "style": "headline-l/undefined",
+                  "style": "headline-l",
                   "font": "sans",
+                  "weight": "bold",
                   "size": 23,
                   "leading": 120,
                   "tracking": -0.43,
@@ -1871,8 +2042,9 @@
                 },
                 {
                   "t": "text",
-                  "style": "headline-xl/undefined",
+                  "style": "headline-xl",
                   "font": "sans",
+                  "weight": "bold",
                   "size": 28,
                   "leading": 120,
                   "tracking": -0.71,
@@ -1900,8 +2072,9 @@
                 },
                 {
                   "t": "text",
-                  "style": "headline-xxl/undefined",
+                  "style": "headline-xxl",
                   "font": "sans",
+                  "weight": "bold",
                   "size": 32,
                   "leading": 120,
                   "tracking": -0.62,
@@ -1929,8 +2102,9 @@
                 },
                 {
                   "t": "text",
-                  "style": "button/undefined",
+                  "style": "button",
                   "font": "sans",
+                  "weight": "bold",
                   "size": 16,
                   "leading": 150,
                   "tracking": 1.25,
@@ -2080,7 +2254,12 @@
               "w": "hug",
               "align": "CENTER",
               "cross": "CENTER",
-              "pad": [24, 24, 12, 12],
+              "pad": [
+                24,
+                24,
+                12,
+                12
+              ],
               "radius": 5,
               "fill": "@color-emphasis",
               "children": [
@@ -2104,7 +2283,12 @@
               "w": "hug",
               "align": "CENTER",
               "cross": "CENTER",
-              "pad": [24, 24, 12, 12],
+              "pad": [
+                24,
+                24,
+                12,
+                12
+              ],
               "radius": 5,
               "fill": "@color-grey-200",
               "children": [
@@ -2128,7 +2312,12 @@
               "w": "hug",
               "align": "CENTER",
               "cross": "CENTER",
-              "pad": [24, 24, 12, 12],
+              "pad": [
+                24,
+                24,
+                12,
+                12
+              ],
               "radius": 5,
               "fill": "@color-grey-100",
               "children": [
@@ -2153,7 +2342,12 @@
               "w": "hug",
               "align": "CENTER",
               "cross": "CENTER",
-              "pad": [24, 24, 12, 12],
+              "pad": [
+                24,
+                24,
+                12,
+                12
+              ],
               "radius": 5,
               "fill": "@color-alternative",
               "children": [
@@ -2177,7 +2371,12 @@
               "w": "hug",
               "align": "CENTER",
               "cross": "CENTER",
-              "pad": [24, 24, 12, 12],
+              "pad": [
+                24,
+                24,
+                12,
+                12
+              ],
               "radius": 5,
               "fill": "@color-always-light",
               "children": [
@@ -2216,7 +2415,12 @@
               "w": "hug",
               "cross": "CENTER",
               "gap": 4,
-              "pad": [6, 6, 2, 2],
+              "pad": [
+                6,
+                6,
+                2,
+                2
+              ],
               "radius": 2,
               "children": [
                 {
@@ -2239,7 +2443,12 @@
               "w": "hug",
               "cross": "CENTER",
               "gap": 4,
-              "pad": [6, 6, 2, 2],
+              "pad": [
+                6,
+                6,
+                2,
+                2
+              ],
               "radius": 2,
               "children": [
                 {
@@ -2262,7 +2471,12 @@
               "w": "hug",
               "cross": "CENTER",
               "gap": 4,
-              "pad": [6, 6, 2, 2],
+              "pad": [
+                6,
+                6,
+                2,
+                2
+              ],
               "radius": 2,
               "children": [
                 {
@@ -2285,7 +2499,12 @@
               "w": "hug",
               "cross": "CENTER",
               "gap": 4,
-              "pad": [6, 6, 2, 2],
+              "pad": [
+                6,
+                6,
+                2,
+                2
+              ],
               "radius": 2,
               "children": [
                 {
@@ -2327,7 +2546,12 @@
               "dir": "H",
               "w": "hug",
               "cross": "CENTER",
-              "pad": [12, 12, 6, 6],
+              "pad": [
+                12,
+                12,
+                6,
+                6
+              ],
               "radius": 5,
               "fill": "@color-emphasis",
               "children": [
@@ -2350,7 +2574,12 @@
               "dir": "H",
               "w": "hug",
               "cross": "CENTER",
-              "pad": [12, 12, 6, 6],
+              "pad": [
+                12,
+                12,
+                6,
+                6
+              ],
               "radius": 5,
               "fill": "@color-grey-200",
               "children": [
@@ -2383,7 +2612,12 @@
               "value": "surface",
               "dir": "V",
               "w": 280,
-              "pad": [16, 16, 16, 16],
+              "pad": [
+                16,
+                16,
+                16,
+                16
+              ],
               "radius": 5,
               "fill": "@color-grey-200",
               "children": [
@@ -2396,7 +2630,10 @@
                   "cross": "CENTER",
                   "align": "CENTER",
                   "stroke": "@color-grey-400",
-                  "dash": [4, 4],
+                  "dash": [
+                    4,
+                    4
+                  ],
                   "children": [
                     {
                       "t": "text",
@@ -2417,7 +2654,12 @@
               "value": "outline",
               "dir": "V",
               "w": 280,
-              "pad": [16, 16, 16, 16],
+              "pad": [
+                16,
+                16,
+                16,
+                16
+              ],
               "radius": 5,
               "fill": "@color-grey-100",
               "children": [
@@ -2430,7 +2672,10 @@
                   "cross": "CENTER",
                   "align": "CENTER",
                   "stroke": "@color-grey-400",
-                  "dash": [4, 4],
+                  "dash": [
+                    4,
+                    4
+                  ],
                   "children": [
                     {
                       "t": "text",
@@ -2490,7 +2735,8 @@
           "children": [
             {
               "t": "line",
-              "color": "@color-grey-300"
+              "color": "@color-grey-300",
+              "w": "fill"
             }
           ]
         },
@@ -2575,7 +2821,12 @@
               "w": "fill",
               "cross": "CENTER",
               "gap": 4,
-              "pad": [16, 16, 12, 12],
+              "pad": [
+                16,
+                16,
+                12,
+                12
+              ],
               "children": [
                 {
                   "t": "text",
@@ -2630,7 +2881,12 @@
           "dir": "H",
           "w": 320,
           "cross": "CENTER",
-          "pad": [0, 0, 12, 12],
+          "pad": [
+            0,
+            0,
+            12,
+            12
+          ],
           "stroke": "@color-grey-300",
           "strokeSides": "bottom",
           "fill": "@color-grey-100",
@@ -2650,7 +2906,12 @@
               "dir": "V",
               "w": "fill",
               "gap": 2,
-              "pad": [12, 0, 0, 0],
+              "pad": [
+                12,
+                0,
+                0,
+                0
+              ],
               "children": [
                 {
                   "t": "frame",
@@ -2736,7 +2997,12 @@
               "w": 320,
               "cross": "CENTER",
               "gap": 12,
-              "pad": [0, 0, 6, 6],
+              "pad": [
+                0,
+                0,
+                6,
+                6
+              ],
               "fill": "@color-grey-100",
               "children": [
                 {
@@ -2789,7 +3055,12 @@
                   "h": 26,
                   "cross": "CENTER",
                   "align": "MAX",
-                  "pad": [3, 3, 3, 3],
+                  "pad": [
+                    3,
+                    3,
+                    3,
+                    3
+                  ],
                   "radius": 13,
                   "fill": "@color-emphasis",
                   "children": [
@@ -2809,7 +3080,12 @@
               "w": 320,
               "cross": "CENTER",
               "gap": 12,
-              "pad": [0, 0, 6, 6],
+              "pad": [
+                0,
+                0,
+                6,
+                6
+              ],
               "fill": "@color-grey-100",
               "children": [
                 {
@@ -2862,7 +3138,12 @@
                   "h": 26,
                   "cross": "CENTER",
                   "align": "MIN",
-                  "pad": [3, 3, 3, 3],
+                  "pad": [
+                    3,
+                    3,
+                    3,
+                    3
+                  ],
                   "radius": 13,
                   "fill": "@color-grey-300",
                   "children": [
@@ -2896,7 +3177,12 @@
           "dir": "H",
           "w": 320,
           "cross": "CENTER",
-          "pad": [0, 0, 12, 12],
+          "pad": [
+            0,
+            0,
+            12,
+            12
+          ],
           "stroke": "@color-grey-300",
           "strokeSides": "bottom",
           "fill": "@color-grey-100",
@@ -2906,7 +3192,12 @@
               "dir": "V",
               "w": "fill",
               "gap": 2,
-              "pad": [0, 12, 0, 0],
+              "pad": [
+                0,
+                12,
+                0,
+                0
+              ],
               "children": [
                 {
                   "t": "text",
@@ -2963,7 +3254,12 @@
               "value": "richtig",
               "dir": "H",
               "w": "hug",
-              "pad": [6, 6, 2, 2],
+              "pad": [
+                6,
+                6,
+                2,
+                2
+              ],
               "radius": 1,
               "fill": "#2e7d4f",
               "children": [
@@ -2984,7 +3280,12 @@
               "value": "falsch",
               "dir": "H",
               "w": "hug",
-              "pad": [6, 6, 2, 2],
+              "pad": [
+                6,
+                6,
+                2,
+                2
+              ],
               "radius": 1,
               "fill": "@color-emphasis",
               "children": [
@@ -3005,7 +3306,12 @@
               "value": "inArbeit",
               "dir": "H",
               "w": "hug",
-              "pad": [6, 6, 2, 2],
+              "pad": [
+                6,
+                6,
+                2,
+                2
+              ],
               "radius": 1,
               "fill": "@color-grey-100",
               "children": [
@@ -3027,7 +3333,12 @@
               "value": "offen",
               "dir": "H",
               "w": "hug",
-              "pad": [6, 6, 2, 2],
+              "pad": [
+                6,
+                6,
+                2,
+                2
+              ],
               "radius": 1,
               "fill": "@color-grey-250",
               "children": [
@@ -3063,7 +3374,12 @@
           },
           "dir": "V",
           "w": 320,
-          "pad": [24, 24, 24, 24],
+          "pad": [
+            24,
+            24,
+            24,
+            24
+          ],
           "radius": 5,
           "fill": "@color-alternative",
           "children": [
@@ -3188,7 +3504,12 @@
               "name": "Spalte",
               "dir": "V",
               "w": "fill",
-              "pad": [20, 20, 0, 0],
+              "pad": [
+                20,
+                20,
+                0,
+                0
+              ],
               "children": [
                 {
                   "t": "space",
@@ -3258,7 +3579,12 @@
                   "radius": 5,
                   "stroke": "@color-grey-300",
                   "cross": "CENTER",
-                  "pad": [14, 14, 0, 0],
+                  "pad": [
+                    14,
+                    14,
+                    0,
+                    0
+                  ],
                   "children": [
                     {
                       "t": "text",
@@ -3296,7 +3622,12 @@
                   "radius": 5,
                   "stroke": "@color-grey-300",
                   "cross": "CENTER",
-                  "pad": [14, 14, 0, 0],
+                  "pad": [
+                    14,
+                    14,
+                    0,
+                    0
+                  ],
                   "children": [
                     {
                       "t": "text",
@@ -3367,7 +3698,12 @@
                   "w": "fill",
                   "fill": "@color-grey-200",
                   "radius": 6,
-                  "pad": [16, 16, 16, 16],
+                  "pad": [
+                    16,
+                    16,
+                    16,
+                    16
+                  ],
                   "children": [
                     {
                       "t": "text",
@@ -3452,7 +3788,12 @@
               "name": "Spalte",
               "dir": "V",
               "w": "fill",
-              "pad": [20, 20, 0, 0],
+              "pad": [
+                20,
+                20,
+                0,
+                0
+              ],
               "children": [
                 {
                   "t": "space",
@@ -3522,7 +3863,12 @@
                   "radius": 5,
                   "stroke": "@color-emphasis",
                   "cross": "CENTER",
-                  "pad": [14, 14, 0, 0],
+                  "pad": [
+                    14,
+                    14,
+                    0,
+                    0
+                  ],
                   "children": [
                     {
                       "t": "text",
@@ -3560,7 +3906,12 @@
                   "radius": 5,
                   "stroke": "@color-emphasis",
                   "cross": "CENTER",
-                  "pad": [14, 14, 0, 0],
+                  "pad": [
+                    14,
+                    14,
+                    0,
+                    0
+                  ],
                   "children": [
                     {
                       "t": "text",
@@ -3629,7 +3980,12 @@
                       "name": "Fokus",
                       "dir": "H",
                       "fill": "@color-grey-200",
-                      "pad": [4, 4, 2, 2],
+                      "pad": [
+                        4,
+                        4,
+                        2,
+                        2
+                      ],
                       "children": [
                         {
                           "t": "text",
@@ -3666,7 +4022,12 @@
                   "w": "fill",
                   "fill": "@color-grey-200",
                   "radius": 6,
-                  "pad": [16, 16, 16, 16],
+                  "pad": [
+                    16,
+                    16,
+                    16,
+                    16
+                  ],
                   "children": [
                     {
                       "t": "text",
@@ -3751,7 +4112,12 @@
               "name": "Spalte",
               "dir": "V",
               "w": "fill",
-              "pad": [20, 20, 0, 0],
+              "pad": [
+                20,
+                20,
+                0,
+                0
+              ],
               "children": [
                 {
                   "t": "space",
@@ -3830,7 +4196,12 @@
                   "fill": "@color-grey-100",
                   "stroke": "@color-grey-300",
                   "radius": 6,
-                  "pad": [16, 16, 4, 4],
+                  "pad": [
+                    16,
+                    16,
+                    4,
+                    4
+                  ],
                   "children": [
                     {
                       "t": "frame",
@@ -3838,7 +4209,12 @@
                       "dir": "H",
                       "w": "fill",
                       "cross": "CENTER",
-                      "pad": [0, 0, 14, 14],
+                      "pad": [
+                        0,
+                        0,
+                        14,
+                        14
+                      ],
                       "children": [
                         {
                           "t": "text",
@@ -3871,7 +4247,12 @@
                       "dir": "H",
                       "w": "fill",
                       "cross": "CENTER",
-                      "pad": [0, 0, 14, 14],
+                      "pad": [
+                        0,
+                        0,
+                        14,
+                        14
+                      ],
                       "children": [
                         {
                           "t": "text",
@@ -3951,7 +4332,12 @@
                   "w": "fill",
                   "fill": "@color-grey-200",
                   "radius": 6,
-                  "pad": [16, 16, 16, 16],
+                  "pad": [
+                    16,
+                    16,
+                    16,
+                    16
+                  ],
                   "children": [
                     {
                       "t": "text",
@@ -4036,7 +4422,12 @@
               "t": "frame",
               "name": "HomeHeader",
               "dir": "H",
-              "pad": [20, 20, 14, 14],
+              "pad": [
+                20,
+                20,
+                14,
+                14
+              ],
               "cross": "CENTER",
               "clip": true,
               "w": "fill",
@@ -4086,7 +4477,12 @@
               "t": "frame",
               "name": "Spalte",
               "dir": "V",
-              "pad": [20, 20, 0, 0],
+              "pad": [
+                20,
+                20,
+                0,
+                0
+              ],
               "clip": true,
               "w": "fill",
               "children": [
@@ -4150,7 +4546,12 @@
                   "t": "frame",
                   "name": "SpotlightBriefing",
                   "dir": "V",
-                  "pad": [16, 16, 16, 16],
+                  "pad": [
+                    16,
+                    16,
+                    16,
+                    16
+                  ],
                   "fill": "@color-grey-200",
                   "radius": 6,
                   "clip": true,
@@ -4463,7 +4864,12 @@
               "t": "frame",
               "name": "Spalte",
               "dir": "V",
-              "pad": [20, 20, 0, 0],
+              "pad": [
+                20,
+                20,
+                0,
+                0
+              ],
               "w": "fill",
               "children": [
                 {
@@ -4489,7 +4895,12 @@
                   "name": "SearchEntry",
                   "dir": "H",
                   "gap": 10,
-                  "pad": [14, 14, 12, 12],
+                  "pad": [
+                    14,
+                    14,
+                    12,
+                    12
+                  ],
                   "cross": "CENTER",
                   "fill": "@color-grey-200",
                   "radius": 6,
@@ -4525,7 +4936,12 @@
                       "t": "frame",
                       "name": "Klima",
                       "dir": "H",
-                      "pad": [14, 14, 9, 9],
+                      "pad": [
+                        14,
+                        14,
+                        9,
+                        9
+                      ],
                       "fill": "@color-grey-100",
                       "stroke": "@color-grey-300",
                       "radius": 6,
@@ -4544,7 +4960,12 @@
                       "t": "frame",
                       "name": "Lokal",
                       "dir": "H",
-                      "pad": [14, 14, 9, 9],
+                      "pad": [
+                        14,
+                        14,
+                        9,
+                        9
+                      ],
                       "fill": "@color-grey-100",
                       "stroke": "@color-grey-300",
                       "radius": 6,
@@ -4563,7 +4984,12 @@
                       "t": "frame",
                       "name": "Schweiz",
                       "dir": "H",
-                      "pad": [14, 14, 9, 9],
+                      "pad": [
+                        14,
+                        14,
+                        9,
+                        9
+                      ],
                       "fill": "@color-grey-100",
                       "stroke": "@color-grey-300",
                       "radius": 6,
@@ -4582,7 +5008,12 @@
                       "t": "frame",
                       "name": "Jugend & Salon5",
                       "dir": "H",
-                      "pad": [14, 14, 9, 9],
+                      "pad": [
+                        14,
+                        14,
+                        9,
+                        9
+                      ],
                       "fill": "@color-grey-100",
                       "stroke": "@color-grey-300",
                       "radius": 6,
@@ -4840,7 +5271,12 @@
               "t": "frame",
               "name": "Spalte",
               "dir": "V",
-              "pad": [20, 20, 0, 0],
+              "pad": [
+                20,
+                20,
+                0,
+                0
+              ],
               "w": "fill",
               "children": [
                 {
@@ -4866,7 +5302,12 @@
                   "name": "LiveBanner",
                   "dir": "H",
                   "gap": 14,
-                  "pad": [16, 16, 16, 16],
+                  "pad": [
+                    16,
+                    16,
+                    16,
+                    16
+                  ],
                   "cross": "CENTER",
                   "fill": "#333336",
                   "radius": 6,
@@ -4924,7 +5365,12 @@
               "t": "frame",
               "name": "Spalte",
               "dir": "V",
-              "pad": [20, 20, 0, 0],
+              "pad": [
+                20,
+                20,
+                0,
+                0
+              ],
               "w": "fill",
               "children": [
                 {
@@ -4947,7 +5393,12 @@
               "name": "Rail, scrollt waagerecht",
               "dir": "H",
               "gap": 12,
-              "pad": [20, 20, 0, 0],
+              "pad": [
+                20,
+                20,
+                0,
+                0
+              ],
               "children": [
                 {
                   "t": "frame",
@@ -5140,7 +5591,12 @@
               "t": "frame",
               "name": "Spalte",
               "dir": "V",
-              "pad": [20, 20, 0, 0],
+              "pad": [
+                20,
+                20,
+                0,
+                0
+              ],
               "w": "fill",
               "children": [
                 {
@@ -5163,7 +5619,12 @@
               "name": "Rail, scrollt waagerecht",
               "dir": "H",
               "gap": 12,
-              "pad": [20, 20, 0, 0],
+              "pad": [
+                20,
+                20,
+                0,
+                0
+              ],
               "children": [
                 {
                   "t": "frame",
@@ -5266,7 +5727,12 @@
               "t": "frame",
               "name": "Spalte",
               "dir": "V",
-              "pad": [20, 20, 0, 0],
+              "pad": [
+                20,
+                20,
+                0,
+                0
+              ],
               "w": "fill",
               "children": [
                 {
@@ -5289,7 +5755,12 @@
               "name": "Rail, scrollt waagerecht",
               "dir": "H",
               "gap": 12,
-              "pad": [20, 20, 0, 0],
+              "pad": [
+                20,
+                20,
+                0,
+                0
+              ],
               "children": [
                 {
                   "t": "frame",
@@ -5544,7 +6015,12 @@
               "t": "frame",
               "name": "Spalte",
               "dir": "V",
-              "pad": [20, 20, 0, 0],
+              "pad": [
+                20,
+                20,
+                0,
+                0
+              ],
               "w": "fill",
               "children": [
                 {
@@ -5594,7 +6070,12 @@
                   "t": "frame",
                   "name": "CalloutCard, Die Zukunft von CORRECTIV: Wir fragen Sie",
                   "dir": "V",
-                  "pad": [16, 16, 16, 16],
+                  "pad": [
+                    16,
+                    16,
+                    16,
+                    16
+                  ],
                   "fill": "@color-grey-100",
                   "stroke": "@color-grey-300",
                   "radius": 6,
@@ -5698,7 +6179,12 @@
                   "t": "frame",
                   "name": "CalloutCard, Wem gehört die Stadt?",
                   "dir": "V",
-                  "pad": [16, 16, 16, 16],
+                  "pad": [
+                    16,
+                    16,
+                    16,
+                    16
+                  ],
                   "fill": "@color-grey-100",
                   "stroke": "@color-grey-300",
                   "radius": 6,
@@ -6226,7 +6712,12 @@
                   "t": "frame",
                   "name": "AfD & Rechtsextremismus",
                   "dir": "H",
-                  "pad": [13, 13, 9, 9],
+                  "pad": [
+                    13,
+                    13,
+                    9,
+                    9
+                  ],
                   "fill": "@color-grey-200",
                   "stroke": "@color-grey-300",
                   "radius": 5,
@@ -6245,7 +6736,12 @@
                   "t": "frame",
                   "name": "Klima",
                   "dir": "H",
-                  "pad": [13, 13, 9, 9],
+                  "pad": [
+                    13,
+                    13,
+                    9,
+                    9
+                  ],
                   "fill": "@color-grey-200",
                   "stroke": "@color-grey-300",
                   "radius": 5,
@@ -6264,7 +6760,12 @@
                   "t": "frame",
                   "name": "Gesundheit",
                   "dir": "H",
-                  "pad": [13, 13, 9, 9],
+                  "pad": [
+                    13,
+                    13,
+                    9,
+                    9
+                  ],
                   "fill": "@color-grey-200",
                   "stroke": "@color-grey-300",
                   "radius": 5,
@@ -6283,7 +6784,12 @@
                   "t": "frame",
                   "name": "Russland & Ukraine",
                   "dir": "H",
-                  "pad": [13, 13, 9, 9],
+                  "pad": [
+                    13,
+                    13,
+                    9,
+                    9
+                  ],
                   "fill": "@color-grey-200",
                   "stroke": "@color-grey-300",
                   "radius": 5,
@@ -6302,7 +6808,12 @@
                   "t": "frame",
                   "name": "Faktenchecks",
                   "dir": "H",
-                  "pad": [13, 13, 9, 9],
+                  "pad": [
+                    13,
+                    13,
+                    9,
+                    9
+                  ],
                   "fill": "@color-grey-200",
                   "stroke": "@color-grey-300",
                   "radius": 5,
@@ -6321,7 +6832,12 @@
                   "t": "frame",
                   "name": "Lokal",
                   "dir": "H",
-                  "pad": [13, 13, 9, 9],
+                  "pad": [
+                    13,
+                    13,
+                    9,
+                    9
+                  ],
                   "fill": "@color-grey-200",
                   "stroke": "@color-grey-300",
                   "radius": 5,
@@ -6340,7 +6856,12 @@
                   "t": "frame",
                   "name": "Schweiz",
                   "dir": "H",
-                  "pad": [13, 13, 9, 9],
+                  "pad": [
+                    13,
+                    13,
+                    9,
+                    9
+                  ],
                   "fill": "@color-grey-200",
                   "stroke": "@color-grey-300",
                   "radius": 5,
@@ -6359,7 +6880,12 @@
                   "t": "frame",
                   "name": "Jugend & Salon5",
                   "dir": "H",
-                  "pad": [13, 13, 9, 9],
+                  "pad": [
+                    13,
+                    13,
+                    9,
+                    9
+                  ],
                   "fill": "@color-grey-200",
                   "stroke": "@color-grey-300",
                   "radius": 5,
@@ -6500,7 +7026,12 @@
               "name": "Benachrichtigungen",
               "dir": "H",
               "gap": 12,
-              "pad": [16, 16, 16, 16],
+              "pad": [
+                16,
+                16,
+                16,
+                16
+              ],
               "cross": "CENTER",
               "fill": "@color-grey-100",
               "stroke": "@color-grey-300",
@@ -6813,7 +7344,12 @@
               "t": "frame",
               "name": "Spalte",
               "dir": "V",
-              "pad": [20, 20, 0, 0],
+              "pad": [
+                20,
+                20,
+                0,
+                0
+              ],
               "w": "fill",
               "children": [
                 {
@@ -7152,7 +7688,12 @@
               "t": "frame",
               "name": "Spalte",
               "dir": "V",
-              "pad": [20, 20, 0, 0],
+              "pad": [
+                20,
+                20,
+                0,
+                0
+              ],
               "w": "fill",
               "children": [
                 {
@@ -7311,7 +7852,12 @@
               "t": "frame",
               "name": "Spalte",
               "dir": "V",
-              "pad": [20, 20, 0, 0],
+              "pad": [
+                20,
+                20,
+                0,
+                0
+              ],
               "w": "fill",
               "children": [
                 {
@@ -7385,7 +7931,12 @@
                   "t": "frame",
                   "name": "Card, Early Access",
                   "dir": "V",
-                  "pad": [16, 16, 16, 16],
+                  "pad": [
+                    16,
+                    16,
+                    16,
+                    16
+                  ],
                   "fill": "@color-grey-100",
                   "stroke": "@color-grey-300",
                   "radius": 6,
@@ -7642,7 +8193,12 @@
               "t": "frame",
               "name": "Spalte",
               "dir": "V",
-              "pad": [20, 20, 0, 0],
+              "pad": [
+                20,
+                20,
+                0,
+                0
+              ],
               "w": "fill",
               "children": [
                 {
@@ -7784,7 +8340,12 @@
                   "t": "frame",
                   "name": "Card, Hinweis",
                   "dir": "V",
-                  "pad": [16, 16, 16, 16],
+                  "pad": [
+                    16,
+                    16,
+                    16,
+                    16
+                  ],
                   "fill": "@color-grey-100",
                   "stroke": "@color-grey-300",
                   "radius": 6,
@@ -7862,7 +8423,12 @@
               "t": "frame",
               "name": "Spalte",
               "dir": "V",
-              "pad": [20, 20, 0, 0],
+              "pad": [
+                20,
+                20,
+                0,
+                0
+              ],
               "w": "fill",
               "children": [
                 {
@@ -7963,7 +8529,12 @@
               "t": "frame",
               "name": "Spalte",
               "dir": "V",
-              "pad": [20, 20, 0, 0],
+              "pad": [
+                20,
+                20,
+                0,
+                0
+              ],
               "w": "fill",
               "children": [
                 {
@@ -8196,7 +8767,12 @@
               "t": "frame",
               "name": "Spalte",
               "dir": "V",
-              "pad": [20, 20, 0, 0],
+              "pad": [
+                20,
+                20,
+                0,
+                0
+              ],
               "w": "fill",
               "children": [
                 {
@@ -8247,7 +8823,12 @@
                   "t": "frame",
                   "name": "Card, ProjectFeed",
                   "dir": "V",
-                  "pad": [16, 16, 16, 16],
+                  "pad": [
+                    16,
+                    16,
+                    16,
+                    16
+                  ],
                   "fill": "@color-grey-100",
                   "stroke": "@color-grey-300",
                   "radius": 6,
@@ -8524,7 +9105,12 @@
               "t": "frame",
               "name": "Spalte",
               "dir": "V",
-              "pad": [20, 20, 0, 0],
+              "pad": [
+                20,
+                20,
+                0,
+                0
+              ],
               "w": "fill",
               "children": [
                 {
@@ -8653,7 +9239,12 @@
               "t": "frame",
               "name": "Spalte",
               "dir": "V",
-              "pad": [20, 20, 0, 0],
+              "pad": [
+                20,
+                20,
+                0,
+                0
+              ],
               "w": "fill",
               "children": [
                 {
@@ -8690,7 +9281,12 @@
                   "t": "frame",
                   "name": "FlatList, virtualisiert (ADR 0012)",
                   "dir": "H",
-                  "pad": [10, 10, 6, 6],
+                  "pad": [
+                    10,
+                    10,
+                    6,
+                    6
+                  ],
                   "fill": "@color-grey-200",
                   "stroke": "@color-grey-300",
                   "radius": 3,
@@ -9101,7 +9697,12 @@
               "t": "frame",
               "name": "Spalte",
               "dir": "V",
-              "pad": [20, 20, 0, 0],
+              "pad": [
+                20,
+                20,
+                0,
+                0
+              ],
               "w": "fill",
               "children": [
                 {
@@ -9138,7 +9739,12 @@
                   "t": "frame",
                   "name": "ClaimRow",
                   "dir": "V",
-                  "pad": [16, 16, 16, 16],
+                  "pad": [
+                    16,
+                    16,
+                    16,
+                    16
+                  ],
                   "fill": "@color-grey-100",
                   "stroke": "@color-grey-300",
                   "radius": 6,
@@ -9189,7 +9795,12 @@
                   "t": "frame",
                   "name": "ClaimRow",
                   "dir": "V",
-                  "pad": [16, 16, 16, 16],
+                  "pad": [
+                    16,
+                    16,
+                    16,
+                    16
+                  ],
                   "fill": "@color-grey-100",
                   "stroke": "@color-grey-300",
                   "radius": 6,
@@ -9240,7 +9851,12 @@
                   "t": "frame",
                   "name": "ClaimRow",
                   "dir": "V",
-                  "pad": [16, 16, 16, 16],
+                  "pad": [
+                    16,
+                    16,
+                    16,
+                    16
+                  ],
                   "fill": "@color-grey-100",
                   "stroke": "@color-grey-300",
                   "radius": 6,
@@ -9291,7 +9907,12 @@
                   "t": "frame",
                   "name": "ClaimRow",
                   "dir": "V",
-                  "pad": [16, 16, 16, 16],
+                  "pad": [
+                    16,
+                    16,
+                    16,
+                    16
+                  ],
                   "fill": "@color-grey-100",
                   "stroke": "@color-grey-300",
                   "radius": 6,
@@ -9381,7 +10002,12 @@
               "t": "frame",
               "name": "Spalte",
               "dir": "V",
-              "pad": [20, 20, 0, 0],
+              "pad": [
+                20,
+                20,
+                0,
+                0
+              ],
               "w": "fill",
               "children": [
                 {
@@ -9479,7 +10105,12 @@
                   "t": "frame",
                   "name": "Card, Belege",
                   "dir": "V",
-                  "pad": [16, 16, 16, 16],
+                  "pad": [
+                    16,
+                    16,
+                    16,
+                    16
+                  ],
                   "fill": "@color-grey-100",
                   "stroke": "@color-grey-300",
                   "radius": 6,
@@ -9531,7 +10162,12 @@
                   "t": "frame",
                   "name": "Card, Einordnung",
                   "dir": "V",
-                  "pad": [16, 16, 16, 16],
+                  "pad": [
+                    16,
+                    16,
+                    16,
+                    16
+                  ],
                   "fill": "@color-grey-100",
                   "stroke": "@color-grey-300",
                   "radius": 6,
@@ -9607,7 +10243,12 @@
               "t": "frame",
               "name": "Spalte",
               "dir": "V",
-              "pad": [20, 20, 0, 0],
+              "pad": [
+                20,
+                20,
+                0,
+                0
+              ],
               "w": "fill",
               "children": [
                 {
@@ -9775,7 +10416,12 @@
                   "t": "frame",
                   "name": "ThankYou, nach dem Absenden",
                   "dir": "V",
-                  "pad": [16, 16, 16, 16],
+                  "pad": [
+                    16,
+                    16,
+                    16,
+                    16
+                  ],
                   "fill": "@color-grey-200",
                   "stroke": "@color-grey-300",
                   "radius": 6,
@@ -9838,7 +10484,12 @@
               "t": "frame",
               "name": "Spalte",
               "dir": "V",
-              "pad": [20, 20, 0, 0],
+              "pad": [
+                20,
+                20,
+                0,
+                0
+              ],
               "w": "fill",
               "children": [
                 {
@@ -10195,7 +10846,12 @@
               "t": "frame",
               "name": "Spalte",
               "dir": "V",
-              "pad": [20, 20, 0, 0],
+              "pad": [
+                20,
+                20,
+                0,
+                0
+              ],
               "w": "fill",
               "children": [
                 {
@@ -10271,7 +10927,12 @@
               "t": "frame",
               "name": "Spalte",
               "dir": "V",
-              "pad": [20, 20, 0, 0],
+              "pad": [
+                20,
+                20,
+                0,
+                0
+              ],
               "w": "fill",
               "children": [
                 {
@@ -10309,7 +10970,12 @@
                   "t": "frame",
                   "name": "Card, Push",
                   "dir": "V",
-                  "pad": [16, 16, 16, 16],
+                  "pad": [
+                    16,
+                    16,
+                    16,
+                    16
+                  ],
                   "fill": "@color-grey-100",
                   "stroke": "@color-grey-300",
                   "radius": 6,
@@ -10351,7 +11017,12 @@
                   "t": "frame",
                   "name": "Card, Darstellung",
                   "dir": "V",
-                  "pad": [16, 16, 16, 16],
+                  "pad": [
+                    16,
+                    16,
+                    16,
+                    16
+                  ],
                   "fill": "@color-grey-100",
                   "stroke": "@color-grey-300",
                   "radius": 6,
@@ -10393,7 +11064,12 @@
                   "t": "frame",
                   "name": "Card, Textgröße",
                   "dir": "V",
-                  "pad": [16, 16, 16, 16],
+                  "pad": [
+                    16,
+                    16,
+                    16,
+                    16
+                  ],
                   "fill": "@color-grey-100",
                   "stroke": "@color-grey-300",
                   "radius": 6,
@@ -10410,7 +11086,12 @@
                           "t": "frame",
                           "name": "A",
                           "dir": "H",
-                          "pad": [0, 0, 14, 14],
+                          "pad": [
+                            0,
+                            0,
+                            14,
+                            14
+                          ],
                           "align": "CENTER",
                           "fill": "@color-grey-100",
                           "stroke": "@color-grey-300",
@@ -10429,7 +11110,12 @@
                           "t": "frame",
                           "name": "A+",
                           "dir": "H",
-                          "pad": [0, 0, 14, 14],
+                          "pad": [
+                            0,
+                            0,
+                            14,
+                            14
+                          ],
                           "align": "CENTER",
                           "fill": "@color-grey-100",
                           "stroke": "@color-emphasis",
@@ -10449,7 +11135,12 @@
                           "t": "frame",
                           "name": "A++",
                           "dir": "H",
-                          "pad": [0, 0, 14, 14],
+                          "pad": [
+                            0,
+                            0,
+                            14,
+                            14
+                          ],
                           "align": "CENTER",
                           "fill": "@color-grey-100",
                           "stroke": "@color-grey-300",
@@ -10502,7 +11193,12 @@
                   "t": "frame",
                   "name": "Card, Über CORRECTIV",
                   "dir": "V",
-                  "pad": [16, 16, 16, 16],
+                  "pad": [
+                    16,
+                    16,
+                    16,
+                    16
+                  ],
                   "fill": "@color-grey-100",
                   "stroke": "@color-grey-300",
                   "radius": 6,
@@ -10824,7 +11520,12 @@
               "t": "frame",
               "name": "Spalte",
               "dir": "V",
-              "pad": [20, 20, 0, 0],
+              "pad": [
+                20,
+                20,
+                0,
+                0
+              ],
               "w": "fill",
               "children": [
                 {
@@ -10850,7 +11551,12 @@
                   "name": "Kartenausschnitt",
                   "dir": "V",
                   "gap": 8,
-                  "pad": [0, 0, 27, 27],
+                  "pad": [
+                    0,
+                    0,
+                    27,
+                    27
+                  ],
                   "align": "CENTER",
                   "cross": "CENTER",
                   "fill": "@color-grey-200",
@@ -11207,7 +11913,12 @@
               "name": "Spalte",
               "dir": "V",
               "w": "fill",
-              "pad": [20, 20, 0, 0],
+              "pad": [
+                20,
+                20,
+                0,
+                0
+              ],
               "children": [
                 {
                   "t": "space",
@@ -11264,7 +11975,12 @@
                   "fill": "@color-grey-100",
                   "stroke": "@color-grey-300",
                   "radius": 6,
-                  "pad": [16, 16, 16, 16],
+                  "pad": [
+                    16,
+                    16,
+                    16,
+                    16
+                  ],
                   "children": [
                     {
                       "t": "frame",
@@ -11355,7 +12071,12 @@
                   "w": "fill",
                   "fill": "@color-grey-200",
                   "radius": 6,
-                  "pad": [16, 16, 16, 16],
+                  "pad": [
+                    16,
+                    16,
+                    16,
+                    16
+                  ],
                   "children": [
                     {
                       "t": "text",
@@ -11490,7 +12211,12 @@
                   "fill": "@color-grey-100",
                   "stroke": "@color-grey-300",
                   "radius": 6,
-                  "pad": [16, 16, 16, 16],
+                  "pad": [
+                    16,
+                    16,
+                    16,
+                    16
+                  ],
                   "children": [
                     {
                       "t": "instance",

@@ -112,6 +112,11 @@ function walk(node) {
   for (const child of node.children || []) walk(child);
 }
 walk(spec.screens || []);
+// And the pages that carry their own screens. Harmless today, because the only such
+// pages are the kit's and `kit.mjs` already writes `@token` refs — but a hand-written
+// page entry would otherwise keep its literal hexes and quietly stop following the
+// tokens, on that page alone.
+for (const page of spec.pages || []) walk(page.screens || []);
 
 await writeFile(SPEC, `${JSON.stringify(spec, null, 2)}\n`);
 

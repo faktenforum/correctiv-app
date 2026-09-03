@@ -33,7 +33,7 @@
   }
 </style>
 <div><span id="dot"></span><b>CORRECTIV Wireframes</b></div>
-<div id="log">verbinde …</div>
+<div id="log">connecting …</div>
 <script>
   // Figma's plugin sandbox has the API but no network; this iframe has network but no
   // API. So the iframe watches the spec server and hands new documents over
@@ -55,19 +55,27 @@
     if (drawing) return;
     try {
       const r = await fetch(BASE + '/generation');
+      // `fetch` does not reject on a 500, and a broken spec.json is exactly what the
+      // server answers 500 to. Without this the plugin forwarded `undefined` and the
+      // JSON syntax error surfaced as "cannot read properties of undefined".
+      if (!r.ok) throw new Error('generation ' + r.status);
       const { generation } = await r.json();
       if (generation !== seen) {
         seen = generation;
         drawing = true;
-        status('busy', 'zeichnet …');
+        status('busy', 'drawing …');
         const s = await fetch(BASE + '/spec');
+        if (!s.ok) throw new Error('spec ' + s.status + ': ' + (await s.text()).slice(0, 120));
         const payload = await s.json();
         parent.postMessage({ pluginMessage: { type: 'spec', spec: payload.spec } }, '*');
         return; // the result handler resumes polling
       }
-      status('on', 'aktuell, Stand ' + seen);
+      status('on', 'up to date, generation ' + seen);
     } catch (e) {
-      status('bad', 'kein Server auf 8787 — node tools/figma-plugin/server.mjs');
+      // Reset, or a server that restarts mid-fetch leaves `drawing` true for ever and
+      // the plugin never polls again, red dot and all, even once it is back.
+      drawing = false;
+      status('bad', 'no server on 8787: node tools/figma-plugin/server.mjs');
     }
   }
 
@@ -84,7 +92,7 @@
           body: JSON.stringify({ page: m.page, screens: m.screens }),
         });
       } catch (e) {
-        status('bad', 'Export nicht zustellbar');
+        status('bad', 'export could not be delivered');
       }
       return;
     }

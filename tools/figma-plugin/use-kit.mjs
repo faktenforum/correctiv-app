@@ -6,7 +6,13 @@
 // meant to be, and lifts the eyeballed numbers to the real ones on the way: a button
 // label measured off a PNG came out at 13px semibold, and `text-button` is 16 bold.
 //
+//   node tools/figma-plugin/sync-tokens.mjs      # FIRST, always
 //   node tools/figma-plugin/use-kit.mjs
+//
+// That order is load-bearing. The matchers below read `@color-emphasis` and friends,
+// because the board's transcribed hexes are eyeballed approximations that only the
+// token map resolves. Run this first and every rule that classifies by colour comes
+// up empty — which is now a hard failure rather than a wrong-coloured board.
 //
 // Destructive and deliberately so. `spec.json` is committed, so the copies are one
 // `git checkout` away; there is no second description kept alongside.
@@ -61,19 +67,36 @@ function buttonTone(node) {
   return null;
 }
 
+/**
+ * Which badge tone this is.
+ *
+ * An unrecognised fill returns null rather than falling through to `neutral`. It used
+ * to fall through, and on a spec that had not been through `sync-tokens.mjs` that
+ * turned five brand-red badges into grey ones with no complaint anywhere — the count
+ * in the summary was right and the board was wrong.
+ */
 function badgeTone(node) {
+  if (node.fill === undefined) return 'live';
   if (node.fill === '@color-emphasis') return 'emphasis';
   if (node.fill === '@color-alternative') return 'club';
-  if (node.fill === undefined) return 'live';
-  return 'neutral';
+  if (['@color-grey-100', '@color-grey-200', '@color-grey-250'].indexOf(node.fill) !== -1) {
+    return 'neutral';
+  }
+  return null;
 }
 
-/** `claimStatusTag` picks the words; the surface says which of the four states. */
+/**
+ * `claimStatusTag` picks the words; the surface says which of the four states.
+ *
+ * Null on anything else, for the same reason as `badgeTone`: the old `return 'offen'`
+ * default made every tag on an untokenised spec read as unchecked.
+ */
 function claimTone(badge) {
   if (badge.fill === '#2e7d4f') return 'richtig';
   if (badge.fill === '@color-emphasis') return 'falsch';
   if (badge.stroke !== undefined) return 'inArbeit';
-  return 'offen';
+  if (['@color-grey-200', '@color-grey-250'].indexOf(badge.fill) !== -1) return 'offen';
+  return null;
 }
 
 /**
@@ -98,6 +121,7 @@ const RULES = [
       const badge = named(n, 'Badge');
       // The subtitle is the last line that is neither the title nor the badge.
       const titleText = title === null ? all[0] : texts(title, [])[0];
+      if (titleText === undefined) return null;
       const subtitle = all.filter((t) => t !== titleText && (badge === null || t.chars !== 'CLUB'));
       return {
         Titel: titleText.chars,
@@ -112,7 +136,10 @@ const RULES = [
     read: (n) => {
       const badge = named(n, 'Badge');
       if (badge === null) return null;
-      return { Status: claimTone(badge), Label: texts(badge, [])[0].chars };
+      const label = texts(badge, [])[0];
+      const status = claimTone(badge);
+      if (label === undefined || status === null) return null;
+      return { Status: status, Label: label.chars };
     },
   },
   {
@@ -122,6 +149,7 @@ const RULES = [
       const all = texts(n, []);
       // Kicker, heart, name, tier line. The heart is a glyph, so it counts as text.
       const words = all.filter((t) => t.chars !== '♡' && t.chars !== '♥');
+      if (words[1] === undefined) return null;
       return { Name: words[1].chars, Stufe: words[2] === undefined ? '' : words[2].chars };
     },
   },
@@ -132,11 +160,14 @@ const RULES = [
       const label = named(n, 'Text');
       const lines = label === null ? texts(n, []) : texts(label, []);
       const knob = named(n, 'Schalter');
+      // The knob's own fill is the only thing that says on or off, so a row without
+      // one cannot be read. Defaulting to 'nein' would have drawn every switch off.
+      if (lines[0] === undefined || knob === null || knob.fill === undefined) return null;
       return {
         Label: lines[0].chars,
         Beschreibung: lines[1] === undefined ? '' : lines[1].chars,
         'Beschreibung zeigen': lines[1] !== undefined,
-        An: knob !== null && knob.fill === '@color-emphasis' ? 'ja' : 'nein',
+        An: knob.fill === '@color-emphasis' ? 'ja' : 'nein',
       };
     },
   },
@@ -146,6 +177,7 @@ const RULES = [
     eats: ['space', 'line', 'space'],
     read: (n) => {
       const lines = texts(n, []).filter((t) => t.chars !== '›');
+      if (lines[0] === undefined) return null;
       return { Name: lines[0].chars, Teaser: lines[1] === undefined ? '' : lines[1].chars };
     },
   },
@@ -175,8 +207,9 @@ const RULES = [
     when: (n) => (n.name || '').startsWith('Badge,'),
     read: (n) => {
       const label = texts(n, [])[0];
-      if (label === undefined) return null;
-      return { Ton: badgeTone(n), Label: label.chars };
+      const tone = badgeTone(n);
+      if (label === undefined || tone === null) return null;
+      return { Ton: tone, Label: label.chars };
     },
   },
 ];
@@ -198,6 +231,10 @@ function convert(children) {
     const node = children[i];
     let done = false;
     for (const rule of RULES) {
+      // An instance keeps the name of the copy it replaced, so every rule would match
+      // it again on a second run — and then find none of the text it reads, because
+      // an instance has no children. Converting is a one-way step.
+      if (node.t === 'instance') break;
       if (!rule.when(node)) continue;
       const set = rule.read(node);
       if (set === null) {
@@ -237,4 +274,17 @@ const total = Object.values(counts).reduce((a, b) => a + b, 0);
 console.log(`${total} copies are now instances`);
 for (const of of Object.keys(counts).sort())
   console.log(`  ${String(counts[of]).padStart(3)}  ${of}`);
-for (const s of skipped) console.log(`  skipped: ${s}`);
+// A skip is a node that matched a rule by name and then could not be read. That is
+// never fine: it leaves one row on the board a copy while its neighbours became
+// instances, which looks like a rendering bug and is a silent hole in the kit.
+//
+// The usual cause is running this before `sync-tokens.mjs`. The tone functions read
+// `@color-emphasis` and friends, because the board's transcribed hexes are eyeballed
+// approximations that only the token map resolves — so on an untokenised spec
+// twenty-five of twenty-six buttons match by name and then classify as nothing.
+if (skipped.length > 0) {
+  for (const s of skipped) console.error(`  UNREADABLE: ${s}`);
+  throw new Error(
+    `${skipped.length} node(s) matched a rule and could not be read, run sync-tokens.mjs first`,
+  );
+}

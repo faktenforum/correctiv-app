@@ -8,7 +8,8 @@
 //
 //   node tools/figma-plugin/server.mjs
 //
-// Binds to 127.0.0.1 only. The plugin's manifest allows exactly this origin.
+// Binds 127.0.0.1 AND [::1], because Chromium may resolve `localhost` to either.
+// The manifest allows `http://localhost:8787`; Figma rejects a bare IP there.
 
 import { createServer } from 'node:http';
 import { readFile, stat, writeFile } from 'node:fs/promises';

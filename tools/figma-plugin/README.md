@@ -33,8 +33,9 @@ A page picks its `mode`. The description is identical; only the rendering differ
 | Boxes | clean rectangles | drawn with a wobble, pencil-style |
 | Copy | real | real |
 
-**Nothing is overwritten.** `spec.json` carries the real tokens (`#ff5064`,
-`#fde162`); the grey ramp is applied at draw time and only by a mode that has one.
+**Nothing is overwritten.** `spec.json` names the real tokens (`@color-emphasis`,
+`@color-alternative`) and the `tokens` block carries their values; the grey ramp is
+applied at draw time and only by a mode that has one.
 A colour the ramp does not list is converted by its own luminance rather than
 dropped, so the table stays a list of deliberate exceptions instead of something that
 must be kept exhaustive.
@@ -53,6 +54,12 @@ app itself uses — and writes the values into `spec.json` under `tokens`. The p
 turns those into a Figma variable collection called **CORRECTIV** and **binds** the
 replica's fills to them, so changing a value in Figma repaints every screen that uses
 it.
+
+**The colours bind, the rest do not.** Twelve of the thirty-nine tokens are colours
+and reach the board through `fill`, `stroke` and `color`. The other twenty-seven are
+the `spacing-*`, `radius-*` and `text-*` scales, and no property in the vocabulary
+accepts a token there: a `gap` or a `radius` is a plain number. They are synced so
+that a designer can read the scale in Figma, not so that editing one moves anything.
 
     node tools/figma-plugin/sync-tokens.mjs      # after npm run tokens
 
@@ -165,6 +172,7 @@ is merely absent is a bug waiting to be found by eye.
 
 `use-kit.mjs` replaces each recognised subtree in the screens with an instance.
 
+    node tools/figma-plugin/sync-tokens.mjs      # first, always
     node tools/figma-plugin/use-kit.mjs
 
 Sixty-six of them: 26 buttons, 15 headers, 6 project rows, 5 setting rows, 5 badges,
@@ -173,7 +181,15 @@ button label measured off a PNG came out at 13px semibold, and `text-button` is 
 bold — so the screens move visibly, and towards the app.
 
 It is destructive on purpose. `spec.json` is committed, so the copies are one
-`git checkout` away; no second description is kept alongside.
+`git checkout` away; no second description is kept alongside. Running it twice is a
+no-op, because a node that is already an instance matches no rule.
+
+**`sync-tokens.mjs` has to have run first.** The matchers classify a button, a badge
+and a status tag by their fill, and they compare against `@color-emphasis` and
+friends, because the board's transcribed hexes are eyeballed approximations that only
+the token map resolves. On an untokenised spec every one of those rules comes up
+empty. That is a hard failure now rather than a board full of grey badges: a node
+that matches a rule by name and then cannot be read stops the script.
 
 Two rules worth knowing. A matched node is never descended into, so the containers
 come first: `NavCard` and `ClaimStatusTag` both *hold* a badge, and matching the
@@ -244,10 +260,10 @@ are never touched. A fully generated page says `owned: '*'` and sweeps itself
 instead: a name list only removes what the document still mentions, so a component
 that gets renamed would otherwise stay behind for good.
 
-**Arrows do not follow.** Figma design files have no Connector node, so navigation
-would have to be drawn: vectors with `strokeCap: 'ARROW_LINES'` in one locked overlay.
-Move a screen and its arrow stays behind. The navigation flow lives in a FigJam board
-instead, where connectors are real.
+**No arrows.** Figma design files have no Connector node, so navigation had to be
+drawn: vectors with `strokeCap: 'ARROW_LINES'` in one locked overlay. Move a screen
+and its arrow stayed behind, which is why it was dropped and the code with it. The
+navigation flow belongs in a FigJam board, where connectors are real.
 
 ## The typeface trap
 
