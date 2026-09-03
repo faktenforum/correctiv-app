@@ -16,11 +16,7 @@ snapshot bundled into the build as the floor when a request fails. See
 [the web target](TROUBLESHOOTING.md#the-web-target) and
 [ADR 0015](adr/0015-reading-correctiv-org-through-its-rest-api.md).
 
-<p align="center">
-  <img src="media/demo.gif" alt="Walkthrough of the CORRECTIV app on Android: live home feed, article reader, media library and the persistent Salon5 live-radio mini player" width="270">
-</p>
-
-<p align="center"><sub>The same journey on Android. Every screen:
+<p align="center"><sub>Every screen, shot on Android and kept current:
 <a href="screens/">screens/</a></sub></p>
 
 > **Status.** The full journey works end to end: the door, onboarding, home, reader,
