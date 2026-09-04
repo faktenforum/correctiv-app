@@ -1,6 +1,7 @@
 import { type ReactElement, useEffect, useState } from 'react';
 
 import docsModule from 'virtual:docs';
+import { PAGE_TITLES } from './nav';
 import { Diagrams } from './pages/Diagrams';
 import { Landing } from './pages/Landing';
 import { Reference } from './pages/Reference';
@@ -56,10 +57,10 @@ export function App() {
   const wide = WIDE.has(route);
 
   useEffect(() => {
-    if (wide) document.title = 'CORRECTIV app handbook';
-    else if (Page) document.title = `${route.slice(1)} — Handbook`;
-    else document.title = `${doc?.title ?? 'Not found'} — Handbook`;
-  }, [doc, wide, Page, route]);
+    const named = PAGE_TITLES[route];
+    if (route === '/') document.title = 'CORRECTIV app handbook';
+    else document.title = `${named ?? doc?.title ?? 'Not found'} — Handbook`;
+  }, [doc, route]);
 
   return (
     <>

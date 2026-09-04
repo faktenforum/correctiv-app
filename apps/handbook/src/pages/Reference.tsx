@@ -2,6 +2,7 @@ import { useMemo, useState } from 'react';
 
 import api from 'virtual:api';
 import docsModule from 'virtual:docs';
+import { symbolId } from '../nav';
 
 const BLOB = `${docsModule.repo}/blob/${docsModule.commit}`;
 
@@ -90,7 +91,7 @@ export function Reference() {
             <ul className="ref-symbols">
               {module.symbols.map((symbol) => (
                 <li key={symbol.name}>
-                  <details className="ref-symbol">
+                  <details className="ref-symbol" id={symbolId(module.subpath, symbol.name)}>
                     <summary>
                       <span className="ref-kind">{symbol.kind}</span>
                       <span className="ref-name">{symbol.name}</span>

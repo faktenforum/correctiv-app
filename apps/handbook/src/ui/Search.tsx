@@ -1,7 +1,9 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
 
+import api from 'virtual:api';
 import docsModule from 'virtual:docs';
 import { navigate } from '../router';
+import { PAGE_TITLES, symbolId } from '../nav';
 
 interface Entry {
   route: string;
@@ -17,15 +19,35 @@ interface Props {
 }
 
 /**
- * Every heading in every document, which is the useful granularity.
+ * Every heading in every document, and every symbol the core exports.
  *
  * Searching document titles alone finds seven things. The reason someone opens
- * this is to reach "the four ports" or "what this retires", and those are
- * headings, so the index is built at that level and each row navigates to the
- * anchor rather than to the top of the page.
+ * this is to reach "the four ports", "what this retires" or `useIsAdmitted`, and
+ * those are headings and symbols, so the index is built at that level and each
+ * row navigates to the anchor rather than to the top of a page.
+ *
+ * The symbols are the reason this is one palette rather than two. The reference
+ * is a lookup surface, and looking something up should not require first knowing
+ * that it is code rather than prose.
  */
 function buildIndex(): Entry[] {
   const entries: Entry[] = [];
+
+  for (const [route, title] of Object.entries(PAGE_TITLES)) {
+    entries.push({ route, title, kind: 'Page', hint: '' });
+  }
+
+  for (const module of api.modules) {
+    for (const symbol of module.symbols) {
+      entries.push({
+        route: `/reference#${symbolId(module.subpath, symbol.name)}`,
+        title: symbol.name,
+        kind: `${symbol.kind} · ${module.subpath}`,
+        hint: symbol.summary,
+      });
+    }
+  }
+
   for (const doc of docsModule.docs) {
     const record = doc.route.startsWith('/decisions/') ? doc.route.slice(11) : null;
     entries.push({
@@ -139,6 +161,12 @@ function go(route: string, onClose: () => void): void {
   onClose();
   navigate(path);
   if (hash) {
-    requestAnimationFrame(() => document.getElementById(hash)?.scrollIntoView());
+    requestAnimationFrame(() => {
+      const target = document.getElementById(hash);
+      // A symbol's prose lives in a closed disclosure, so jumping to one that is
+      // shut lands on a heading and looks like the search found nothing.
+      if (target instanceof HTMLDetailsElement) target.open = true;
+      target?.scrollIntoView({ block: 'center' });
+    });
   }
 }
