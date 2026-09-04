@@ -32,8 +32,11 @@ out/
 # Agent worktrees (Claude Code) — checkouts, not content.
 .claude/worktrees/
 
-# Browser-automation scratch output.
+# Browser-automation scratch output. The bare *.png rule is because the driver
+# writes its screenshots to the working directory when given a relative name, and
+# one of them reached a commit that way.
 .playwright-mcp/
+/*.png
 
 # Agent skills are local tooling, installed per developer. They were once swept
 # into a commit by an `add -A`; the symlink under .claude/skills points into

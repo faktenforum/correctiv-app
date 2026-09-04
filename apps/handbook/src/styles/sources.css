@@ -1,12 +1,31 @@
 /* Anchored on `.sources`, for the reason in landing.css. */
 
+.sources {
+  /* The board's own status colours. Light here, dark in the two blocks below,
+     because a value defined only under the dark media query is undefined for
+     every reader who chose light, and the states then lose their colour with no
+     error anywhere. */
+  --live: #1e7a46;
+  --live-bg: #e6f4ec;
+  --sample: #5b4bb5;
+  --sample-bg: #ece9fb;
+  --none: #707070;
+  --none-bg: #f8f8f8;
+  --stale: #9a4b00;
+  --stale-bg: #fdecd9;
+  --broken: #c0102b;
+  --broken-bg: #fde3e6;
+  --unused: #1c5fa5;
+  --unused-bg: #e3eefb;
+  --focus: #005fcc;
+}
+
 /* Ported from the sources design. Shared colour tokens removed:
    they are generated from packages/design-tokens by plugin/tokens.ts
    and imported once, so this file cannot fork the palette. */
 
 @media (prefers-color-scheme: dark) {
-  :root:not([data-theme='light']) {
-    color-scheme: dark;
+  .sources {
     --live: #7ed3a0;
     --live-bg: #1b3325;
     --sample: #b3a7f5;
@@ -21,22 +40,6 @@
     --unused-bg: #172a40;
     --focus: #8ec5ff;
   }
-}
-:root[data-theme='dark'] {
-  color-scheme: dark;
-  --live: #7ed3a0;
-  --live-bg: #1b3325;
-  --sample: #b3a7f5;
-  --sample-bg: #2a2542;
-  --none: #a8a8a8;
-  --none-bg: #262626;
-  --stale: #f2a25c;
-  --stale-bg: #3a2612;
-  --broken: #ff8391;
-  --broken-bg: #421a20;
-  --unused: #86b7f5;
-  --unused-bg: #172a40;
-  --focus: #8ec5ff;
 }
 
 .sources * {
@@ -821,4 +824,41 @@
   .sources table {
     min-width: 0;
   }
+}
+
+/* Dark, under both guards, so the toggle wins in both directions. Written as
+   `:root[...] .sources` rather than on `:root`, because these are this page's
+   colours and nothing else should inherit them. */
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme='light']) .sources {
+    --live: #7ed3a0;
+    --live-bg: #1b3325;
+    --sample: #b3a7f5;
+    --sample-bg: #2a2542;
+    --none: #a8a8a8;
+    --none-bg: #262626;
+    --stale: #f2a25c;
+    --stale-bg: #3a2612;
+    --broken: #ff8391;
+    --broken-bg: #421a20;
+    --unused: #86b7f5;
+    --unused-bg: #172a40;
+    --focus: #8ec5ff;
+  }
+}
+
+:root[data-theme='dark'] .sources {
+  --live: #7ed3a0;
+  --live-bg: #1b3325;
+  --sample: #b3a7f5;
+  --sample-bg: #2a2542;
+  --none: #a8a8a8;
+  --none-bg: #262626;
+  --stale: #f2a25c;
+  --stale-bg: #3a2612;
+  --broken: #ff8391;
+  --broken-bg: #421a20;
+  --unused: #86b7f5;
+  --unused-bg: #172a40;
+  --focus: #8ec5ff;
 }

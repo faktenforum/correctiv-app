@@ -9,7 +9,7 @@ say so; which wording replaces that is CORRECTIV's call, and the ADR lists the p
 
 [**Read the handbook**](https://faktenforum.github.io/correctiv-app/), which publishes this
 repository's documentation and the source inventory, and
-[**opens the app in a browser**](https://faktenforum.github.io/correctiv-app/app/preview.html)
+[**opens the app in a browser**](https://faktenforum.github.io/correctiv-app/workbench)
 in a device frame.
 No install, no emulator, the same code and the same screens as the Android and iOS
 builds, republished on every push to `main`. It opens inside a device frame,
@@ -28,7 +28,7 @@ snapshot bundled into the build as the floor when a request fails. See
 > responses that will replace it. The real backends (Beabee, Faktenforum GraphQL,
 > payment, SSO) are not wired up yet; signing in and joining the club are simulated,
 > which the app says on screen. In the browser, any address signs in, or open
-> `preview.html#/?s=signed-in` to start behind the door.
+> `/workbench#/?s=signed-in` to start behind the door.
 > Developed on the Android emulator and in the browser. iOS is maintained in code and
 > has not been built. Nothing is on an app store.
 
@@ -90,17 +90,24 @@ lists fall back to remote URLs, which is only visible with no network.
 > ```
 
 **The device frame linked at the top** works locally too, with presets, rotation, free
-resizing and a route field. It is a route of the handbook, [`apps/handbook`](apps/handbook)
-into `apps/mobile/public/`, so the same page answers under `npm run web`, under the
-server above, and on Pages.
+resizing and a route field. It is `/workbench`, a route of the handbook,
+[`apps/handbook`](apps/handbook).
+
+It needs two servers, because it frames the app and the two have to be one origin.
+The handbook's dev server proxies `/app` to the app's, so the browser sees one:
+
+```bash
+npm run handbook                            # the site, at localhost:5173
+npm run web -w @correctiv/mobile            # the app it frames, at localhost:8081
+```
 
 ```
-http://localhost:8081/preview.html          # dev server, Fast Refresh in the frame
-http://localhost:8099/preview.html          # a static export
+http://localhost:5173/workbench             # dev server, Fast Refresh in the frame
+http://localhost:8099/workbench             # a static export, assembled first
 ```
 
 Device, route, appearance and app state travel in the URL
-(`preview.html#/artikel?d=ipad-pro-11&t=dark&s=signed-in`), so a finding can be handed
+(`/workbench#/artikel?d=ipad-pro-11&t=dark&s=signed-in`), so a finding can be handed
 over as a link. The frame is the app untouched: inside it, `useWindowDimensions` and
 the reader's `48rem` breakpoint see the simulated size. `Tools` adds the app's
 appearance and state, its console, a live palette, layout checks and an

@@ -18,6 +18,18 @@ import { useLinkInterception, useRoute } from './router';
 const WIDE = new Set(['/', '/workbench']);
 
 /**
+ * Routes that bring their own chrome, so the site's header stands down.
+ *
+ * The workbench is the one. Its design has a header of its own, with the device
+ * and route controls and its own appearance toggle, and two headers stacked with
+ * two toggles is worse than either. It is also the page the "two audiences" rule
+ * is about: someone following a link to see the app should get the instrument,
+ * not a documentation sidebar and a search field. The workbench's own header
+ * carries the way back.
+ */
+const OWN_CHROME = new Set(['/workbench']);
+
+/**
  * Routes the handbook answers itself, rather than by rendering a document.
  *
  * Kept beside the documents rather than above them: a route that collided with a
@@ -28,7 +40,6 @@ const PAGES = new Map<string, () => ReactElement>([
   ['/diagrams', Diagrams],
   ['/reference', Reference],
   ['/sources', Sources],
-  ['/workbench', Workbench],
 ]);
 
 export function App() {
@@ -68,15 +79,27 @@ export function App() {
         Skip to content
       </a>
 
-      <Header
-        appearance={appearance}
-        onAppearance={setAppearance}
-        onSearch={() => setSearchOpen(true)}
-        onMenu={() => setMenuOpen((open) => !open)}
-        hasSidebar={!wide}
-      />
+      {!OWN_CHROME.has(route) && (
+        <Header
+          appearance={appearance}
+          onAppearance={setAppearance}
+          onSearch={() => setSearchOpen(true)}
+          onMenu={() => setMenuOpen((open) => !open)}
+          hasSidebar={!wide}
+        />
+      )}
 
-      {wide ? (
+      {route === '/workbench' ? (
+        /*
+         * Rendered by name rather than through the map above, because it is the one
+         * page that needs the site's appearance state. Its own header carries the
+         * toggle, and the site header is not on screen to carry it. Two copies of
+         * `useAppearance()` would each hold their own React state, and the one in
+         * here would go stale the moment the other wrote: navigating away would then
+         * stamp the previous theme back over the reader's choice.
+         */
+        <Workbench appearance={appearance} onAppearance={setAppearance} />
+      ) : wide ? (
         // A wide page still gets its own component: the landing page is simply the
         // one that lives at `/`. Rendering Landing for every wide route put the
         // front page at `/workbench`.

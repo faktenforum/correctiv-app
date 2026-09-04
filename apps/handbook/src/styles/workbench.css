@@ -6,8 +6,22 @@
    generated from packages/design-tokens by plugin/tokens.ts and imported once,
    so this file cannot fork the palette. */
 
+.workbench {
+  /* The design made `body` the page: a four-row grid, header, link row, stage and
+     dock, with the stage taking what is left. Here the workbench is one route
+     under no header of the site's, so its own root carries that layout. Dropping
+     it left the stage 54px tall and the device frame 6px, which reads as the app
+     having failed to load rather than as a missing rule. */
+  display: grid;
+  grid-template-rows: auto auto 1fr auto;
+  height: 100dvh;
+  font: 13px/1.45 var(--sans);
+  color: var(--on-canvas);
+  background: var(--canvas);
+}
+
 @media (prefers-color-scheme: dark) {
-  :root:not([data-theme='light']) {
+  .workbench :root:not([data-theme='light']) {
     --warn: #ffd95e;
     --warn-bg: #3a3000;
     --err: #ff8a99;
@@ -16,7 +30,7 @@
     color-scheme: dark;
   }
 }
-:root[data-theme='dark'] {
+.workbench :root[data-theme='dark'] {
   --warn: #ffd95e;
   --warn-bg: #3a3000;
   --err: #ff8a99;
@@ -515,7 +529,7 @@
     outline-color: transparent;
   }
 }
-.stage .demo-hint {
+.workbench .stage .demo-hint {
   font-size: 12px;
   color: var(--on-canvas-muted);
   text-align: center;
@@ -526,7 +540,7 @@
 }
 
 /* dock */
-.dock {
+.workbench .dock {
   border-left: 1px solid var(--stroke);
   background: var(--surface);
   display: flex;
@@ -537,7 +551,7 @@
 .workbench[data-tools='off'] .dock {
   display: none;
 }
-.dock-head {
+.workbench .dock-head {
   display: flex;
   align-items: center;
   gap: 8px;
@@ -545,17 +559,17 @@
   border-bottom: 1px solid var(--stroke);
   flex-wrap: wrap;
 }
-.dock-head h2 {
+.workbench .dock-head h2 {
   flex: 1;
 }
-.summary {
+.workbench .summary {
   display: flex;
   gap: 6px;
   align-items: center;
   font-size: 11px;
   flex-wrap: wrap;
 }
-.summary button {
+.workbench .summary button {
   display: inline-flex;
   align-items: center;
   gap: 4px;
@@ -566,7 +580,7 @@
   background: var(--canvas);
   font-size: 11px;
 }
-.build {
+.workbench .build {
   display: flex;
   align-items: center;
   gap: 8px;
@@ -575,19 +589,19 @@
   font-size: 12px;
   background: var(--canvas);
 }
-.build select {
+.workbench .build select {
   height: 24px;
   font-size: 12px;
 }
-.panels {
+.workbench .panels {
   overflow: auto;
   flex: 1;
   min-height: 0;
 }
-.panel {
+.workbench .panel {
   border-bottom: 1px solid var(--stroke);
 }
-.panel-head {
+.workbench .panel-head {
   display: flex;
   align-items: center;
   gap: 8px;
@@ -598,35 +612,35 @@
   text-align: left;
   font-weight: 600;
 }
-.panel-head:hover {
+.workbench .panel-head:hover {
   background: color-mix(in srgb, var(--on-canvas) 5%, transparent);
 }
-.panel-head .chev {
+.workbench .panel-head .chev {
   width: 14px;
   color: var(--on-canvas-muted);
   transition: transform 0.15s;
   display: inline-block;
 }
-.panel-head[aria-expanded='true'] .chev {
+.workbench .panel-head[aria-expanded='true'] .chev {
   transform: rotate(90deg);
 }
-.panel-head .k {
+.workbench .panel-head .k {
   margin-left: auto;
 }
-.panel-head .name {
+.workbench .panel-head .name {
   display: flex;
   align-items: center;
   gap: 8px;
 }
-.panel-body {
+.workbench .panel-body {
   padding: 4px 12px 14px 34px;
   display: grid;
   gap: 10px;
 }
-.panel-body[hidden] {
+.workbench .panel-body[hidden] {
   display: none;
 }
-.needs-dev {
+.workbench .needs-dev {
   border: 1px solid var(--accent-alt);
   background: color-mix(in srgb, var(--accent-alt) 22%, var(--canvas));
   border-radius: 6px;
@@ -635,7 +649,7 @@
   display: grid;
   gap: 4px;
 }
-.needs-dev b {
+.workbench .needs-dev b {
   font-weight: 600;
 }
 .workbench[data-build='dev'] .needs-dev {
@@ -658,22 +672,22 @@
   padding: 0;
   margin-bottom: 4px;
 }
-.row {
+.workbench .row {
   display: flex;
   align-items: center;
   gap: 8px;
   flex-wrap: wrap;
 }
-.right {
+.workbench .right {
   margin-left: auto;
 }
 
 /* appearance */
-.combos {
+.workbench .combos {
   display: grid;
   gap: 6px;
 }
-.combo {
+.workbench .combo {
   display: grid;
   grid-template-columns: 22px 1fr auto;
   gap: 8px;
@@ -683,48 +697,48 @@
   border-radius: 6px;
   background: var(--canvas);
 }
-.combo .n {
+.workbench .combo .n {
   font-family: var(--mono);
   font-weight: 600;
   color: var(--on-canvas-muted);
 }
-.combo.active {
+.workbench .combo.active {
   border-color: var(--on-canvas);
   box-shadow: inset 0 0 0 1px var(--on-canvas);
 }
-.combo.active .n {
+.workbench .combo.active .n {
   color: var(--on-canvas);
 }
-.combo .sub {
+.workbench .combo .sub {
   font-size: 11px;
   color: var(--on-canvas-muted);
   margin-top: 2px;
 }
-.combo.four {
+.workbench .combo.four {
   border-left: 4px solid var(--accent);
 }
-.facts {
+.workbench .facts {
   display: grid;
   grid-template-columns: 1fr 1fr;
   gap: 8px;
 }
-.fact {
+.workbench .fact {
   border: 1px solid var(--stroke);
   border-radius: 6px;
   padding: 7px 9px;
   background: var(--canvas);
 }
-.fact .lbl {
+.workbench .fact .lbl {
   font-size: 11px;
   color: var(--on-canvas-muted);
 }
-.fact .val {
+.workbench .fact .val {
   font-weight: 600;
   display: flex;
   align-items: center;
   gap: 6px;
 }
-.fact .val .dot {
+.workbench .fact .val .dot {
   width: 10px;
   height: 10px;
   border-radius: 5px;
@@ -732,11 +746,11 @@
 }
 
 /* fixtures */
-.fixtures {
+.workbench .fixtures {
   display: grid;
   gap: 4px;
 }
-.fixture {
+.workbench .fixture {
   display: grid;
   grid-template-columns: auto 1fr;
   gap: 8px;
@@ -747,22 +761,22 @@
   background: var(--canvas);
   cursor: pointer;
 }
-.fixture:has(input:checked) {
+.workbench .fixture:has(input:checked) {
   border-color: var(--on-canvas);
 }
-.fixture input {
+.workbench .fixture input {
   margin: 3px 0 0;
 }
-.fixture .h {
+.workbench .fixture .h {
   font-size: 11px;
   color: var(--on-canvas-muted);
 }
-.fixture b {
+.workbench .fixture b {
   font-weight: 600;
 }
 
 /* console */
-.console-log {
+.workbench .console-log {
   border: 1px solid var(--stroke);
   border-radius: 6px;
   background: var(--canvas);
@@ -771,7 +785,7 @@
   font-family: var(--mono);
   font-size: 11.5px;
 }
-.line {
+.workbench .line {
   display: grid;
   grid-template-columns: 44px 1fr;
   gap: 8px;
@@ -780,35 +794,35 @@
   white-space: pre-wrap;
   overflow-wrap: anywhere;
 }
-.line:last-child {
+.workbench .line:last-child {
   border-bottom: 0;
 }
-.line .lvl {
+.workbench .line .lvl {
   font-weight: 600;
   text-transform: uppercase;
   font-size: 10.5px;
   letter-spacing: 0.04em;
   padding-top: 1px;
 }
-.line.warn {
+.workbench .line.warn {
   background: color-mix(in srgb, var(--warn-bg) 55%, transparent);
 }
-.line.warn .lvl {
+.workbench .line.warn .lvl {
   color: var(--warn);
 }
-.line.error {
+.workbench .line.error {
   background: color-mix(in srgb, var(--err-bg) 55%, transparent);
 }
-.line.error .lvl {
+.workbench .line.error .lvl {
   color: var(--err);
 }
-.line.log .lvl {
+.workbench .line.log .lvl {
   color: var(--on-canvas-muted);
 }
-.line[hidden] {
+.workbench .line[hidden] {
   display: none;
 }
-.empty {
+.workbench .empty {
   padding: 10px;
   color: var(--on-canvas-muted);
   font-family: var(--sans);
@@ -816,18 +830,18 @@
 }
 
 /* tokens */
-.tokens {
+.workbench .tokens {
   display: grid;
   gap: 4px;
 }
-.tok {
+.workbench .tok {
   display: grid;
   grid-template-columns: 28px 1fr auto;
   gap: 8px;
   align-items: center;
   padding: 3px 0;
 }
-.tok input[type='color'] {
+.workbench .tok input[type='color'] {
   width: 28px;
   height: 22px;
   padding: 0;
@@ -835,15 +849,15 @@
   border-radius: 4px;
   background: transparent;
 }
-.tok code {
+.workbench .tok code {
   font-size: 11.5px;
 }
-.tok .v {
+.workbench .tok .v {
   font-family: var(--mono);
   font-size: 11px;
   color: var(--on-canvas-muted);
 }
-.tok.changed code::after {
+.workbench .tok.changed code::after {
   content: ' changed';
   color: var(--accent);
   font-family: var(--sans);
@@ -851,11 +865,11 @@
 }
 
 /* measure */
-.checks {
+.workbench .checks {
   display: grid;
   gap: 4px;
 }
-.check {
+.workbench .check {
   display: grid;
   grid-template-columns: 1fr auto;
   gap: 8px;
@@ -865,17 +879,17 @@
   border-radius: 6px;
   background: var(--canvas);
 }
-.check .d {
+.workbench .check .d {
   font-size: 11px;
   color: var(--on-canvas-muted);
 }
-.findings {
+.workbench .findings {
   display: grid;
   gap: 3px;
   max-height: 200px;
   overflow: auto;
 }
-.finding {
+.workbench .finding {
   display: grid;
   grid-template-columns: 1fr auto;
   gap: 6px;
@@ -886,25 +900,25 @@
   font-size: 11.5px;
   background: var(--canvas);
 }
-.finding code {
+.workbench .finding code {
   font-size: 11px;
   display: block;
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
 }
-.finding .m {
+.workbench .finding .m {
   color: var(--on-canvas-muted);
   font-family: var(--mono);
   font-size: 11px;
 }
 
 /* inspect */
-.stack {
+.workbench .stack {
   display: grid;
   gap: 3px;
 }
-.lvl-row {
+.workbench .lvl-row {
   display: grid;
   grid-template-columns: auto 1fr;
   gap: 8px;
@@ -915,19 +929,19 @@
   background: var(--canvas);
   cursor: pointer;
 }
-.lvl-row:has(input:checked) {
+.workbench .lvl-row:has(input:checked) {
   border-color: var(--on-canvas);
 }
-.lvl-row code {
+.workbench .lvl-row code {
   font-size: 11.5px;
   display: block;
 }
-.lvl-row .src {
+.workbench .lvl-row .src {
   font-family: var(--mono);
   font-size: 11px;
   color: var(--on-canvas-muted);
 }
-.chosen-label {
+.workbench .chosen-label {
   font-family: var(--mono);
   font-size: 12px;
   padding: 6px 8px;
@@ -960,7 +974,7 @@
 .workbench footer summary::-webkit-details-marker {
   display: none;
 }
-.keys {
+.workbench .keys {
   position: absolute;
   bottom: 26px;
   left: 0;
@@ -976,10 +990,10 @@
   color: var(--on-canvas);
   z-index: 5;
 }
-.keys div:nth-child(odd) {
+.workbench .keys div:nth-child(odd) {
   text-align: right;
 }
-.toast {
+.workbench .toast {
   position: fixed;
   left: 50%;
   bottom: 44px;
@@ -993,14 +1007,14 @@
   transition: opacity 0.15s;
   pointer-events: none;
 }
-.toast.show {
+.workbench .toast.show {
   opacity: 1;
 }
 @media (max-width: 900px) {
   .workbench[data-tools='on'] main {
     grid-template-columns: 1fr;
   }
-  .dock {
+  .workbench .dock {
     border-left: 0;
     border-top: 1px solid var(--stroke);
   }

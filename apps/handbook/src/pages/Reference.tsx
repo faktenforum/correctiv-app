@@ -48,7 +48,7 @@ export function Reference() {
   const symbolCount = modules.reduce((n, m) => n + m.symbols.length, 0);
 
   return (
-    <main className="content" id="content">
+    <main className="content reference" id="content">
       <article className="doc" id="top">
         <div className="ref-head">
           <h1>Reference</h1>

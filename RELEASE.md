@@ -10,16 +10,16 @@ Three GitHub Actions workflows live in `.github/workflows/`:
 
 ## The web preview
 
-A web version of the app at <https://faktenforum.github.io/correctiv-app/app/preview.html>,
+A web version of the app at <https://faktenforum.github.io/correctiv-app/workbench>,
 for clicking through without an install. Every push to `main` republishes it; there is
 nothing to tag and nothing to commit. Three things are worth knowing before pointing
 anyone at the URL:
 
-- **Hand out the site root, or `/app/preview.html`, not `/app/`.** The app is built for a
+- **Hand out the site root, or `/workbench`, not `/app/`.** The app is built for a
   phone and has no desktop layout, so the site's root shows it stretched across the
-  whole browser window; `/app/preview.html` frames it at a phone or tablet size instead,
-  and the root introduces both. The old `/preview.html` redirects there and keeps its
-  query string, so links already handed out still work (ADR 0024).
+  whole browser window; `/workbench` frames it at a phone or tablet size instead, and
+  the root introduces both. The old `/preview.html` redirects to the workbench and
+  keeps its query string, so links already handed out still work (ADR 0024).
   The root stays reachable, nothing hides it, so the framed link is the one to
   send.
 - **Its articles are live**, since [ADR 0015](adr/0015-reading-correctiv-org-through-its-rest-api.md).
@@ -32,7 +32,7 @@ anyone at the URL:
   [ADR 0016](adr/0016-a-door-at-the-root-and-an-entitlement-not-an-amount.md) the app
   is for members whose membership includes it, and the published copy starts signed
   out. Sign-in is simulated and the screen prints the rules: any address gets in, one
-  containing "frei" shows the upgrade state. `preview.html#/?s=signed-in` skips the
+  containing "frei" shows the upgrade state. `/workbench#/?s=signed-in` skips the
   form, `s=onboarded` lands on Home.
 - **The site is a project site**, served from `/correctiv-app/`, so the export needs
   `EXPO_BASE_URL` to prefix its asset URLs. `pages.yml` takes that value from
