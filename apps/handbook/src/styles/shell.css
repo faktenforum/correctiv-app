@@ -341,12 +341,16 @@ main {
   font: 500 0.6875rem/1 var(--mono);
   color: var(--on-canvas-muted);
 }
+/* Scoped to `.nav` on purpose. `.row` is a generic name, this is a global
+   stylesheet, and the sources board uses `tr.row` for its table rows. Left bare,
+   the rule below put `display: grid` on every one of them and flattened the table
+   into a column of stacked cells. Nothing in the build can see that. */
 .group ul {
   list-style: none;
   margin: 0;
   padding: 0.1rem 0 0.35rem;
 }
-.row {
+.nav .row {
   position: relative;
   display: grid;
   grid-template-columns: auto minmax(0, 1fr) auto;
@@ -358,22 +362,22 @@ main {
   text-decoration: none;
   line-height: 1.35;
 }
-.row.plain {
+.nav .row.plain {
   grid-template-columns: minmax(0, 1fr);
 }
-.row:hover {
+.nav .row:hover {
   background: var(--surface);
   color: var(--on-canvas);
 }
-.row:focus-visible {
+.nav .row:focus-visible {
   outline-offset: -2px;
 }
-.row[aria-current='page'] {
+.nav .row[aria-current='page'] {
   color: var(--on-canvas);
   font-weight: 600;
   background: var(--surface);
 }
-.row[aria-current='page']::before {
+.nav .row[aria-current='page']::before {
   content: '';
   position: absolute;
   left: 0.45rem;
@@ -383,16 +387,16 @@ main {
   background: var(--accent);
   border-radius: 1px;
 }
-.row .num {
+.nav .row .num {
   font: 600 0.6875rem/1 var(--mono);
   color: var(--on-canvas-muted);
   letter-spacing: 0.02em;
   padding-top: 1px;
 }
-.row[aria-current='page'] .num {
+.nav .row[aria-current='page'] .num {
   color: var(--on-canvas);
 }
-.row .ttl {
+.nav .row .ttl {
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -535,7 +539,10 @@ main {
 }
 
 /* Status line under the title */
-.status {
+/* Scoped to the document: `.status` is a generic name and the landing page uses
+   it for its own band. Left bare, whichever stylesheet loaded last won on every
+   page. */
+.doc .status {
   display: grid;
   grid-template-columns: max-content minmax(0, 1fr);
   gap: 0.3rem 1.25rem;
@@ -547,16 +554,16 @@ main {
   border: 1px solid var(--stroke);
   border-radius: 6px;
 }
-.status dt {
+.doc .status dt {
   margin: 0;
 }
-.status dd {
+.doc .status dd {
   margin: 0;
 }
-.status dd .st {
+.doc .status dd .st {
   margin: 0 0.45rem 2px 0;
 }
-.status .path {
+.doc .status .path {
   font-family: var(--mono);
   font-size: 0.8125rem;
   overflow-wrap: anywhere;
@@ -1029,14 +1036,14 @@ td ins.retired {
     left: -1.25rem;
     width: 1.25rem;
   }
-  .status {
+  .doc .status {
     grid-template-columns: 1fr;
     gap: 0.15rem;
   }
-  .status dt {
+  .doc .status dt {
     margin-top: 0.4rem;
   }
-  .status dt:first-child {
+  .doc .status dt:first-child {
     margin-top: 0;
   }
   .pager {

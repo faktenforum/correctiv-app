@@ -42,7 +42,14 @@ export const NAV: NavGroup[] = [
   {
     label: 'Content',
     open: true,
-    items: [{ route: '/sources', label: 'Sources', blurb: doc('/sources')?.blurb }],
+    items: [
+      { route: '/sources', label: 'Sources' },
+      {
+        route: '/sources/measured',
+        label: 'Sources, measured',
+        blurb: doc('/sources/measured')?.blurb,
+      },
+    ],
   },
   { label: 'Decisions', open: true, items: RECORDS },
   {

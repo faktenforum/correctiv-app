@@ -4,6 +4,7 @@ import docsModule from 'virtual:docs';
 import { Diagrams } from './pages/Diagrams';
 import { Landing } from './pages/Landing';
 import { Reference } from './pages/Reference';
+import { Sources } from './pages/Sources';
 import { Document } from './pages/Document';
 import { Header } from './ui/Header';
 import { Search } from './ui/Search';
@@ -24,6 +25,7 @@ const WIDE = new Set(['/']);
 const PAGES = new Map<string, () => ReactElement>([
   ['/diagrams', Diagrams],
   ['/reference', Reference],
+  ['/sources', Sources],
 ]);
 
 export function App() {

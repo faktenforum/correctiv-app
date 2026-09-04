@@ -8,6 +8,7 @@ import './styles/shell.css';
 import './styles/landing.css';
 import './styles/diagrams.css';
 import './styles/reference.css';
+import './styles/sources.css';
 
 import { App } from './App';
 

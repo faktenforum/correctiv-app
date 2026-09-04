@@ -95,20 +95,25 @@ const ARTICLE_FAMILY = SOURCES.find((s) => s.kind === 'articles' && s.status ===
  * Which row each partly-used source in `UNUSED` belongs beside.
  *
  * The manifest names that source in prose ("Castopod shows") and names the same
- * source by id in `SOURCES`, and nothing joins the two. The name is the join: the
- * first word of the label appears in exactly one live entry's id, label, endpoint
- * or note. Deriving it beats typing the four pairs out, because a typed pair is a
- * second place to be wrong and the manifest exists so there is only one.
+ * source by id in `SOURCES`, and nothing joins the two. The name is the join.
+ * Deriving it beats typing the four pairs out, because a typed pair is a second
+ * place to be wrong and the manifest exists so there is only one.
+ *
+ * What the source is called comes first and its note only after, because a note
+ * can name another source: the YouTube entry mentions PeerTube, and a single pass
+ * over both hands the PeerTube figures to the YouTube row. A source already
+ * claimed is out of the running for the same reason.
  */
-const GAP_PAIRS: { gap: Gap; sourceId: string }[] = UNUSED.flatMap((gap) => {
+const GAP_PAIRS: { gap: Gap; sourceId: string }[] = [];
+for (const gap of UNUSED) {
   const word = gap.label.toLowerCase().split(' ')[0];
-  const entry = SOURCES.find(
-    (s) =>
-      s.status === 'live' &&
-      [s.id, s.label, s.endpoint ?? '', s.note].join(' ').toLowerCase().includes(word),
-  );
-  return entry ? [{ gap, sourceId: entry.id }] : [];
-});
+  const claimed = new Set(GAP_PAIRS.map((pair) => pair.sourceId));
+  const live = SOURCES.filter((s) => s.status === 'live' && !claimed.has(s.id));
+  const entry =
+    live.find((s) => [s.id, s.label, s.endpoint ?? ''].join(' ').toLowerCase().includes(word)) ??
+    live.find((s) => s.note.toLowerCase().includes(word));
+  if (entry) GAP_PAIRS.push({ gap, sourceId: entry.id });
+}
 const GAP_BY_SOURCE = new Map(GAP_PAIRS.map((pair) => [pair.sourceId, pair.gap]));
 const SOURCE_BY_GAP = new Map(GAP_PAIRS.map((pair) => [pair.gap.label, pair.sourceId]));
 
@@ -557,8 +562,15 @@ export function Sources() {
 
       <fieldset className="states">
         <legend>Show</legend>
+        {/*
+          Each tile is a radio, and its label is the whole card. Without the
+          `aria-label` the radio would announce as its own count and its own
+          three-clause summary, which is a paragraph where a name belongs. The
+          name repeats the heading word for word, so what is heard and what is
+          read are the same thing, and the figures stay on screen as evidence.
+        */}
         <div className="tiles">
-          <label className="tile">
+          <label className="tile" aria-label="All rows">
             <input
               type="radio"
               name="state"
@@ -578,7 +590,7 @@ export function Sources() {
             </span>
           </label>
 
-          <label className="tile">
+          <label className="tile" aria-label="Live">
             <input
               type="radio"
               name="state"
@@ -609,7 +621,7 @@ export function Sources() {
             </span>
           </label>
 
-          <label className="tile">
+          <label className="tile" aria-label="Sample data">
             <input
               type="radio"
               name="state"
@@ -632,7 +644,7 @@ export function Sources() {
             </span>
           </label>
 
-          <label className="tile">
+          <label className="tile" aria-label="No source">
             <input
               type="radio"
               name="state"
@@ -807,9 +819,9 @@ export function Sources() {
             </button>
           </div>
 
-          <p className="count" role="status">
+          <output className="count">
             Showing {visible.length} of {ROWS.length} rows
-          </p>
+          </output>
         </div>
 
         <div className="table-wrap">

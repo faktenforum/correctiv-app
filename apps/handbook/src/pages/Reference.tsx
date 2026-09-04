@@ -127,11 +127,3 @@ export function Reference() {
     </main>
   );
 }
-
-/** The first paragraph of a module comment, which is its one-line purpose. */
-function firstParagraph(doc: string): string {
-  return doc
-    .split(/\n\s*\n/)[0]
-    .replace(/\s+/g, ' ')
-    .trim();
-}

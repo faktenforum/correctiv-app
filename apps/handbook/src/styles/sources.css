@@ -199,6 +199,12 @@ h2 {
   left: 12px;
 }
 .tile-body {
+  /* Not in the design, and the design is wrong without it: these are `span`s
+     inside a `label`, so they compute to `display: inline` and the border, the
+     padding and `height: 100%` all fail to lay out. The four summary tiles
+     overlapped each other and their own text. Confirmed against the original
+     design file, which has the same fault. */
+  display: block;
   border: 1px solid var(--stroke);
   border-radius: 6px;
   padding: 14px 16px 12px;
@@ -233,6 +239,8 @@ h2 {
   color: var(--on-canvas-muted);
 }
 .tile-count {
+  /* Same reason: vertical margins do not apply to an inline box. */
+  display: block;
   font-size: 36px;
   line-height: 1;
   font-variant-numeric: tabular-nums;
@@ -240,6 +248,7 @@ h2 {
   letter-spacing: -0.02em;
 }
 .tile-meta {
+  display: block;
   font-size: 13px;
   color: var(--on-canvas-muted);
   line-height: 1.5;
@@ -262,7 +271,10 @@ h2 {
 }
 
 /* findings */
-.findings {
+/* These five names are also the workbench's. It shares this global scope, so they
+   are scoped to this page's root rather than left to whichever stylesheet the
+   entry point happens to import last. `test/styles.test.ts` keeps the two apart. */
+.page .findings {
   list-style: none;
   margin: 0;
   padding: 0;
@@ -270,14 +282,14 @@ h2 {
   grid-template-columns: 1fr 1fr;
   gap: 12px;
 }
-.finding {
+.page .finding {
   border: 1px solid var(--stroke);
   border-radius: 6px;
   padding: 14px 16px 16px;
   background: var(--surface);
   min-width: 0;
 }
-.finding-head {
+.page .finding-head {
   display: flex;
   align-items: center;
   gap: 8px;
@@ -285,23 +297,23 @@ h2 {
   font-size: 15px;
   margin: 0 0 6px;
 }
-.finding-head .glyph {
+.page .finding-head .glyph {
   width: 18px;
   height: 18px;
 }
-.finding.stale .finding-head {
+.page .finding.stale .finding-head {
   color: var(--stale);
 }
-.finding.broken .finding-head {
+.page .finding.broken .finding-head {
   color: var(--broken);
 }
-.finding p {
+.page .finding p {
   margin: 0 0 8px;
 }
-.finding p:last-child {
+.page .finding p:last-child {
   margin-bottom: 0;
 }
-.finding .links {
+.page .finding .links {
   font-size: 13px;
   display: flex;
   flex-wrap: wrap;
@@ -366,7 +378,7 @@ h2 {
 }
 
 /* toolbar */
-.toolbar {
+.page .toolbar {
   display: flex;
   flex-wrap: wrap;
   align-items: flex-end;
@@ -402,22 +414,22 @@ input[type='search'] {
   color: var(--on-canvas);
   min-width: 280px;
 }
-.seg {
+.page .seg {
   display: inline-flex;
   border: 1px solid var(--stroke-strong);
   border-radius: 4px;
   overflow: hidden;
 }
-.seg label {
+.page .seg label {
   position: relative;
   display: block;
   cursor: pointer;
   font-size: 14px;
 }
-.seg label + label {
+.page .seg label + label {
   border-left: 1px solid var(--stroke-strong);
 }
-.seg input {
+.page .seg input {
   position: absolute;
   opacity: 0;
   width: 1px;
@@ -426,20 +438,20 @@ input[type='search'] {
   top: 50%;
   left: 50%;
 }
-.seg span {
+.page .seg span {
   display: block;
   padding: 7px 12px;
   color: var(--on-canvas);
 }
-.seg input:checked + span {
+.page .seg input:checked + span {
   background: var(--on-canvas);
   color: var(--canvas);
 }
-.seg input:focus-visible + span {
+.page .seg input:focus-visible + span {
   outline: 2px solid var(--focus);
   outline-offset: -3px;
 }
-.check {
+.page .check {
   display: flex;
   align-items: center;
   gap: 8px;
@@ -447,7 +459,7 @@ input[type='search'] {
   padding: 8px 0;
   cursor: pointer;
 }
-.check input {
+.page .check input {
   width: 16px;
   height: 16px;
   margin: 0;
@@ -795,7 +807,7 @@ footer p {
   .gaps {
     grid-template-columns: 1fr 1fr;
   }
-  .findings {
+  .page .findings {
     grid-template-columns: 1fr;
   }
   .count {
@@ -812,7 +824,7 @@ footer p {
   }
 }
 @media print {
-  .toolbar,
+  .page .toolbar,
   button.toggle {
     display: none;
   }

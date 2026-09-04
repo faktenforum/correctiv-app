@@ -43,9 +43,15 @@ export const DOCUMENTS: DocumentSource[] = [
   {
     id: 'sources',
     file: 'SOURCES.md',
-    route: '/sources',
-    nav: 'Sources',
-    blurb: 'What the app reads, what is sample data, and what has no source at all.',
+    // Not `/sources`: that is the board built from `content/sources.manifest.ts`,
+    // and a route the handbook answers itself shadows a document silently. This
+    // document is the record the board is built from, and it carries the part a
+    // manifest cannot: the argument, the measurements and their date, and the ten
+    // questions somebody has to answer. `test/routes.test.ts` keeps the two sets
+    // from colliding again.
+    route: '/sources/measured',
+    nav: 'Sources, measured',
+    blurb: 'The figures behind the board, taken by hand, and the questions they raise.',
   },
   {
     id: 'decisions',
