@@ -6277,6 +6277,229 @@
                       }
                     }
                   ]
+                },
+                {
+                  "t": "space",
+                  "h": 22,
+                  "w": "fill"
+                },
+                {
+                  "t": "text",
+                  "chars": "FAKTENFORUM",
+                  "size": 9,
+                  "color": "@color-on-canvas-muted",
+                  "weight": "semibold",
+                  "w": 320
+                },
+                {
+                  "t": "space",
+                  "h": 10,
+                  "w": "fill"
+                },
+                {
+                  "t": "frame",
+                  "name": "Card, Faktenforum",
+                  "dir": "V",
+                  "pad": [
+                    16,
+                    16,
+                    16,
+                    16
+                  ],
+                  "radius": 6,
+                  "clip": true,
+                  "w": "fill",
+                  "fill": "@color-surface",
+                  "children": [
+                    {
+                      "t": "text",
+                      "chars": "Behauptungen gemeinsam prüfen",
+                      "size": 15,
+                      "weight": "semibold",
+                      "color": "@color-on-canvas",
+                      "w": 288
+                    },
+                    {
+                      "t": "space",
+                      "h": 8,
+                      "w": "fill"
+                    },
+                    {
+                      "t": "text",
+                      "chars": "Die Community prüft Behauptungen aus dem Netz, angeleitet von der Redaktion. Gerade sind 6 Behauptungen in Arbeit.",
+                      "size": 12,
+                      "color": "@color-on-canvas-muted",
+                      "w": 288
+                    },
+                    {
+                      "t": "space",
+                      "h": 14,
+                      "w": "fill"
+                    },
+                    {
+                      "t": "instance",
+                      "of": "ui/Button",
+                      "name": "Button, Behauptungen ansehen",
+                      "set": {
+                        "Variante": "outline",
+                        "Titel": "Behauptungen ansehen"
+                      },
+                      "w": "hug"
+                    }
+                  ]
+                },
+                {
+                  "t": "space",
+                  "h": 22,
+                  "w": "fill"
+                },
+                {
+                  "t": "text",
+                  "chars": "ABRISS-ATLAS",
+                  "size": 9,
+                  "color": "@color-on-canvas-muted",
+                  "weight": "semibold",
+                  "w": 320
+                },
+                {
+                  "t": "space",
+                  "h": 10,
+                  "w": "fill"
+                },
+                {
+                  "t": "frame",
+                  "name": "Card, Abriss-Atlas",
+                  "dir": "V",
+                  "pad": [
+                    16,
+                    16,
+                    16,
+                    16
+                  ],
+                  "radius": 6,
+                  "clip": true,
+                  "w": "fill",
+                  "fill": "@color-canvas",
+                  "stroke": "@color-stroke",
+                  "children": [
+                    {
+                      "t": "text",
+                      "chars": "Abrisse dokumentieren",
+                      "size": 15,
+                      "weight": "semibold",
+                      "color": "@color-on-canvas",
+                      "w": 288
+                    },
+                    {
+                      "t": "space",
+                      "h": 8,
+                      "w": "fill"
+                    },
+                    {
+                      "t": "text",
+                      "chars": "Welche Gebäude verschwinden? 4.812 Meldungen aus 312 Städten in Deutschland und der Schweiz.",
+                      "size": 12,
+                      "color": "@color-on-canvas-muted",
+                      "w": 288
+                    },
+                    {
+                      "t": "space",
+                      "h": 14,
+                      "w": "fill"
+                    },
+                    {
+                      "t": "instance",
+                      "of": "ui/Button",
+                      "name": "Button, Atlas ansehen",
+                      "set": {
+                        "Variante": "outline",
+                        "Titel": "Atlas ansehen"
+                      },
+                      "w": "hug"
+                    }
+                  ]
+                },
+                {
+                  "t": "space",
+                  "h": 22,
+                  "w": "fill"
+                },
+                {
+                  "t": "text",
+                  "chars": "TIPP GEBEN",
+                  "size": 9,
+                  "color": "@color-on-canvas-muted",
+                  "weight": "semibold",
+                  "w": 320
+                },
+                {
+                  "t": "space",
+                  "h": 10,
+                  "w": "fill"
+                },
+                {
+                  "t": "frame",
+                  "name": "Card, Tipp geben",
+                  "dir": "V",
+                  "pad": [
+                    16,
+                    16,
+                    16,
+                    16
+                  ],
+                  "radius": 6,
+                  "clip": true,
+                  "w": "fill",
+                  "fill": "@color-surface",
+                  "children": [
+                    {
+                      "t": "text",
+                      "chars": "Faktencheck-Tipp per WhatsApp",
+                      "size": 15,
+                      "weight": "semibold",
+                      "color": "@color-on-canvas",
+                      "w": 288
+                    },
+                    {
+                      "t": "space",
+                      "h": 8,
+                      "w": "fill"
+                    },
+                    {
+                      "t": "text",
+                      "chars": "Verdächtige Behauptung gesehen? Schicken Sie sie direkt der Faktencheck-Redaktion.",
+                      "size": 12,
+                      "color": "@color-on-canvas-muted",
+                      "w": 288
+                    },
+                    {
+                      "t": "space",
+                      "h": 14,
+                      "w": "fill"
+                    },
+                    {
+                      "t": "instance",
+                      "of": "ui/Button",
+                      "name": "Button, WhatsApp öffnen",
+                      "set": {
+                        "Variante": "outline",
+                        "Titel": "WhatsApp öffnen"
+                      },
+                      "w": "hug"
+                    }
+                  ]
+                },
+                {
+                  "t": "space",
+                  "h": 30,
+                  "w": "fill"
+                },
+                {
+                  "t": "text",
+                  "chars": "Im Community-Bereich diskutieren Sie Recherchen mit anderen Mitgliedern, bald auch in der App.",
+                  "size": 12,
+                  "color": "@color-grey-500",
+                  "w": 320
                 }
               ]
             }
