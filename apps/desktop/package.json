@@ -21,6 +21,7 @@
     "screenshot": "node scripts/start.mjs --screenshot dist/screenshot.png",
     "audio-probe": "gjsify build src/debug/audio-probe.ts --app gjs --outfile dist/audio-probe.gjs.mjs --exclude-globals navigator && node scripts/start.mjs --bundle dist/audio-probe.gjs.mjs",
     "font-probe": "gjsify build src/debug/font-probe.ts --app node --outfile dist/font-probe.node.mjs --exclude-globals navigator && node scripts/start.mjs --bundle dist/font-probe.node.mjs --host node",
+    "gst-probe": "gjsify build src/debug/gst-probe.ts --app node --outfile dist/gst-probe.node.mjs --exclude-globals navigator && node scripts/start.mjs --bundle dist/gst-probe.node.mjs --host node",
     "route-sweep": "node scripts/route-sweep.mjs",
     "capture-diff": "node scripts/capture-diff.mjs"
   },
