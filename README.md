@@ -37,7 +37,7 @@ One core, one app, and the tokens they are both drawn with.
 | --- | --- | --- | --- |
 | [`packages/app-core`](packages/app-core) | TypeScript, no UI framework | all | The behaviour: model, parsers, services, caches, **all** state |
 | [`packages/design-tokens`](packages/design-tokens) | TypeScript, no dependencies | all | The colours, spacing and type scale, generated from the vendored design tokens |
-| [`apps/mobile`](apps/mobile) | Expo SDK 56 · React Native 0.85 · expo-router · Uniwind | iOS, Android, **web** | The app |
+| [`apps/mobile`](apps/mobile) | Expo SDK 57 · React Native 0.86 · expo-router · Uniwind | iOS, Android, **web** | The app |
 
 The core earns its place even with a single app. It imports no UI framework and no
 platform SDK, so the feed cascade, the reader, the audio state machine and the

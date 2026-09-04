@@ -104,7 +104,7 @@ equivalents for focus, liveness and errors.
   easy to mistake for "React Navigation just looks like this". → Set
   `animation: 'shift'` (or `'fade'`) in the `Tabs` `screenOptions`. The option lives
   on the vendored `expo-router/build/react-navigation/bottom-tabs`, not on a
-  `@react-navigation` package. SDK 56 has none installed.
+  `@react-navigation` package. SDK 57 has none installed.
 - **expo-image gives a failed thumbnail its own broken-image glyph on a black
   field,** which reads as an app defect. On this project failing thumbnails are
   routine (see the TLS chain entry below). → Wrap remote previews in
