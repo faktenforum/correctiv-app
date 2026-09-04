@@ -6,6 +6,9 @@
 set -uo pipefail
 source "$(dirname "$0")/lib.sh"
 
+quiet_system_ui
+warn_if_debuggable
+
 # Every deep link lands on the door while nobody is signed in. Run after
 # tour-android.sh, whose sign-in persists; this covers running it alone.
 $A shell am start -n "$PKG/${ACTIVITY:-.MainActivity}" >/dev/null
@@ -45,11 +48,11 @@ scroll 1
 tap "Video: " && sleep 8
 shot 83-video
 open_route backstage 4;     shot 90-backstage
-open_route einstellungen 4; shot 91-einstellungen
-open_route gespeichert 3;   shot 92-gespeichert
+open_route einstellungen 4; expect DARSTELLUNG; shot 91-einstellungen
+open_route gespeichert 3;   expect "Gespeicherte Artikel"; shot 92-gespeichert
 open_route faktenforum 5;   shot 93-faktenforum
 open_route atlas 5;         shot 94-atlas
-open_route suche 3;         shot 95-suche
+open_route suche 3;         expect Suchbegriff; shot 95-suche
 open_route bericht 3;       shot 96-bericht
 open_route spotlight 3;     shot 97-spotlight
-echo done
+finish

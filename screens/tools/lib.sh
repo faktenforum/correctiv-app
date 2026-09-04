@@ -17,13 +17,52 @@ mkdir -p "$OUT"
 # out behind it. That is the 83-video failure in a new costume — a step can be wrong
 # without being missing — so the features that pop unasked are turned off before a
 # tour starts rather than dismissed after one goes wrong.
+# Called by each tour, NOT on sourcing. It presses BACK, and sourcing this file to
+# poke at a device by hand then backs out of whatever was open — on the onboarding
+# that leaves the app, which looks exactly like the app crashing.
 quiet_system_ui() {
   $A shell settings put secure stylus_handwriting_enabled 0 >/dev/null 2>&1
   $A shell settings put secure stylus_handwriting_default_value 0 >/dev/null 2>&1
   # Whatever is already on screen, before the first step.
   $A shell input keyevent 4 >/dev/null 2>&1
 }
-quiet_system_ui
+
+# --- a tour is evidence, or it is nothing -----------------------------------
+#
+# A step the tour cannot perform does not stop it. It writes the screenshot anyway,
+# of the screen it was already on, and exits 0. Three of the comments in these files
+# are post-mortems of exactly that: a blank `82-player`, a week of `83-video`
+# shooting an empty state, and a run that reported MISS for every tap after the
+# onboarding's first and left eighteen identical screenshots behind it.
+#
+# So misses are collected here and `finish` makes them fatal.
+MISSES=()
+note_miss() { MISSES+=("$1"); echo "  MISS $1"; }
+
+# Ends a tour. Non-zero if any step did not happen, naming each one.
+finish() {
+  if [ ${#MISSES[@]} -eq 0 ]; then
+    echo "done — $(find "$OUT" -name '*.png' | wc -l) shots, every step performed"
+    return 0
+  fi
+  echo
+  echo "INCOMPLETE — ${#MISSES[@]} step(s) did not happen. Every shot after one of"
+  echo "these is of the screen above it, not the screen it is named for:"
+  printf '  - %s\n' "${MISSES[@]}"
+  return 1
+}
+
+# A development build is a fine thing to photograph and a poor thing to drive: it
+# fetches its bundle from Metro and reloads when Metro rebuilds, which mid-tour puts
+# the app back at its first screen while the walk carries on. Said once, up front,
+# rather than left to be worked out from the screenshots.
+warn_if_debuggable() {
+  if $A shell dumpsys package "$PKG" 2>/dev/null | grep -q 'flags=\[.*DEBUGGABLE'; then
+    echo "WARNING: $PKG is a debuggable build, loaded from Metro. It reloads when"
+    echo "         Metro does, which restarts the walk without failing any step."
+    echo "         Install a release build for a round worth comparing."
+  fi
+}
 
 shot() { $A exec-out screencap -p > "$OUT/$1.png"; echo "shot $1"; }
 back() { $A shell input keyevent 4; sleep 1.4; }
@@ -44,13 +83,41 @@ ui_dump() {
 }
 
 # Taps an element found by content-desc or text.
+#
+# Polls for the label rather than dumping once. A single dump a fixed pause after
+# the previous tap reads whatever is on screen at that instant, and on a slower
+# build that is regularly the screen before — the tap reports MISS while the label
+# arrives half a second later. Waiting costs nothing when it is already there.
 tap() {
-  local label="$1" coords
-  coords=$(ui_dump | python3 "$TOOLS_DIR/find-node.py" "$label")
-  if [ -z "$coords" ]; then echo "  MISS $label"; return 1; fi
+  local label="$1" coords deadline=$((SECONDS + ${TAP_TIMEOUT:-8}))
+  while :; do
+    coords=$(ui_dump | python3 "$TOOLS_DIR/find-node.py" "$label")
+    [ -n "$coords" ] && break
+    if [ $SECONDS -ge $deadline ]; then note_miss "tap $label"; return 1; fi
+    sleep 1
+  done
   $A shell input tap $coords
   echo "  tap $label"
-  sleep 1.4
+  sleep "${TAP_SETTLE:-1.4}"
+}
+
+# Asserts the tour got where it meant to go, before the shot is taken.
+#
+# `tap` succeeding says a control was found and touched. It does not say the app
+# moved: a reload, a system sheet, a slow transition all leave the tap reported and
+# the screen unchanged. Naming what should now be on screen is what turns a walk
+# into a claim — and `labels` prints what was actually there when it is not.
+expect() {
+  local label="$1" deadline=$((SECONDS + ${EXPECT_TIMEOUT:-10}))
+  while :; do
+    [ -n "$(ui_dump | python3 "$TOOLS_DIR/find-node.py" "$label")" ] && return 0
+    if [ $SECONDS -ge $deadline ]; then
+      note_miss "expected \"$label\" on screen"
+      labels
+      return 1
+    fi
+    sleep 1
+  done
 }
 
 # Types into the field found by label. `input text` takes no spaces, and none of
@@ -62,7 +129,11 @@ submit() { $A shell input keyevent 66; sleep "${1:-4}"; }
 
 # Through the door. A cleared app starts at the gate; every address signs in, and
 # the door prints the rules for the other states (ADR 0016).
-sign_in() { type_into "E-Mail-Adresse" "$1"; type_into "Passwort eingeben" "$2"; submit "${3:-4}"; }
+sign_in() {
+  type_into "E-Mail-Adresse" "$1" || return 1
+  type_into "Passwort eingeben" "$2" || return 1
+  submit "${3:-4}"
+}
 
 # For a tour that does not start from a cleared app: sign in only when the door is up.
 ensure_signed_in() {
