@@ -241,7 +241,7 @@ and that turned out to be the most reliable sentence in the file.
 | Window + chrome | ✓ | ✓ | ✓ |
 | Routes | **24 of 24** | **24 of 24** | ✓ Home and the reader; not swept |
 | **The reader** | ✓ WebKitGTK | ✓ **WKWebView shim** | ✓ **WebView2** |
-| Brand typefaces | ✓ | ✗ needs a `.app` | ✓ |
+| Brand typefaces | ✓ | ✓ **inside a `.app`**, never outside one | ✓ |
 | Bundled episode | ✓ | ✓ | ✗ no mp3 decoder |
 | Live radio | ✓ | ✗ two GObject copies | ✗ no mp3 decoder |
 | Accessibility labels | ✓ | ✓ | ✓ |
@@ -288,13 +288,30 @@ nothing to do with each other:
   missing TLS backend, and it is not that. gjsify #1544; `npm run gst-probe` is the
   probe that separates them.
 
-**Brand typefaces need a `.app` on macOS.** `pango_font_map_add_font_file()` is a vfunc
-the CoreText map does not implement, so the faces come back `declined` and the intended
-path is declarative — a `.app` carries `ATSApplicationFontsPath` and the OS activates the
-staged directory before the process starts. Measured outside a bundle: 187 families
-before and 187 after, all five cuts substituted to Helvetica. `declined` is consistent
-both with everything working and with nothing working, which is why
-`npm run font-probe` asks the font map instead.
+**Brand typefaces need a `.app` on macOS, and now that is measured rather than
+inferred.** `pango_font_map_add_font_file()` is a vfunc the CoreText map does not
+implement, so the faces come back `declined` and the intended path is declarative: a
+`.app` carries `ATSApplicationFontsPath` and the OS activates the staged directory
+before the process starts. Same binary, same five faces, asked the same way:
+
+| | outside a `.app` | inside the `.app` |
+|---|---:|---:|
+| families on Pango's map | 187 | **189** |
+| `Merriweather` / `Source Sans 3` | ABSENT | **present** |
+| every cut resolved to | Helvetica | the requested family |
+| what `initFonts()` reported | `declined 5` | `declined 5` |
+
+The last row is why `npm run font-probe` exists: the registration result is IDENTICAL in
+the working case and the broken one, so nothing but the map can tell them apart. gjsify
+had this open — its own ship output says the activation reaching CoreText is
+"UNVERIFIED: no leg in this repository runs a `.app`" — and this is the confirmation,
+reported back as gjsify #1354.
+
+One precondition is easy to lose: the bundle's launcher must `exec` the node INSIDE
+`Contents/MacOS/`, which it does once `@gjsify/node-runtime-darwin-x64` is installed. A
+launcher reaching a `node` off `PATH` would run a process whose main bundle is Node's,
+and `ATSApplicationFontsPath` would name nothing — same artifact, same `Info.plist`, no
+fonts.
 
 And one defect is measured and open upstream: a GTK app on `@gjsify/node-gi` dies
 intermittently in the GI bridge (SIGSEGV or SIGABRT, roughly one run in three here),
