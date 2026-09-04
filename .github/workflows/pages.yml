@@ -110,18 +110,17 @@ jobs:
           cp -r apps/mobile/dist site/app
           echo "assembled $(find site -name '*.html' | wc -l) pages"
 
-      # Six ways this deploy can be broken while both builds succeed, so all six are
-      # read off the assembled files rather than assumed:
+      # Five ways this deploy can be broken while both builds succeed, so all five
+      # are read off the assembled files rather than assumed:
       #   1. a component with no web implementation (react-native-webview renders a
       #      sentence instead of the reader, and exports happily)
       #   2. either base path not applied — the failure mode this workflow exists for
       #   3. a missing route, or a missing 404.html, which is what makes deep links
       #      resolve on a host that cannot rewrite
-      #   4. apps/mobile/public/ not reaching the export, which would 404 the device
-      #      frame
-      #   5. the preview shell built but referencing a bundle that is not there
-      #   6. the handbook shipping no documents, which is a site with a navigation
+      #   4. the handbook shipping no documents, which is a site with a navigation
       #      and nothing behind it
+      #   5. the workbench bundled without the app it frames, which is a device
+      #      frame around a 404
       - name: Assert the deployable is not silently broken
         env:
           BASE_PATH: ${{ steps.pages.outputs.base_path }}
@@ -158,20 +157,6 @@ jobs:
             test -f "site/app/$route.html" || { echo "::error::missing site/app/$route.html — a dynamic route did not pre-render its ids"; exit 1; }
           done
 
-          test -f site/app/preview.html || {
-            echo "::error::site/app/preview.html is missing — apps/mobile/public/ did not reach the export."
-            exit 1
-          }
-
-          # The shell is built (tools/preview) rather than committed, so it can be
-          # present and reference a bundle that is not. That is a white page
-          # produced by an otherwise green build.
-          bundle=$(grep -o 'preview-assets/[^"]*\.js' site/app/preview.html | head -1)
-          test -n "$bundle" && test -f "site/app/$bundle" || {
-            echo "::error::site/app/preview.html references no bundle that reached the export ($bundle)."
-            exit 1
-          }
-
           # The handbook is a single page application: 404.html is what makes a deep
           # link like /decisions/0022 resolve on a host that cannot rewrite.
           test -f site/404.html || { echo "::error::site/404.html is missing — every handbook deep link would 404."; exit 1; }
@@ -185,6 +170,11 @@ jobs:
             echo "::error::the handbook bundle carries none of the repository's documents."
             exit 1
           }
+
+          # The workbench frames the app across `/` and `/app/`, which are the same
+          # origin only because both halves are in this one artifact. If the app's
+          # entry is missing, the frame is a 404 in a phone-shaped box.
+          test -f site/app/index.html || { echo "::error::site/app/index.html is missing — the workbench would frame a 404."; exit 1; }
 
           echo "deployable OK — handbook at $BASE_PATH/, app at $BASE_PATH/app/, $(find site -name '*.html' | wc -l) pages"
 

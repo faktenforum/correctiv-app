@@ -90,7 +90,7 @@ lists fall back to remote URLs, which is only visible with no network.
 > ```
 
 **The device frame linked at the top** works locally too, with presets, rotation, free
-resizing and a route field. It is built from [`tools/preview`](tools/preview/README.md)
+resizing and a route field. It is a route of the handbook, [`apps/handbook`](apps/handbook)
 into `apps/mobile/public/`, so the same page answers under `npm run web`, under the
 server above, and on Pages.
 

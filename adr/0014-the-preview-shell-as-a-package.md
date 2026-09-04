@@ -21,8 +21,12 @@ file by hand is exactly the drift `packages/design-tokens` exists to prevent.
 
 ## Decision
 
-A workspace package, `tools/preview`, React and Vite, whose build output is written
-into `apps/mobile/public/`.
+~~A workspace package, `tools/preview`, React and Vite, whose build output is written
+into `apps/mobile/public/`.~~ **Deleted on 2026-09-04 by
+[ADR 0024](0024-the-handbook-owns-the-root.md)**, which moved the shell into
+`apps/handbook` as its `/workbench` route. It is still React and Vite, and it still
+reaches the app by same-origin property access; what is gone is the separate package
+and the folder it built into.
 
 **Not under `apps/`.** In this repo `apps/*` means *a host of the core*: it implements
 the ports and owns screens ([ADR 0006](0006-one-core-two-hosts.md)). A dev tool is

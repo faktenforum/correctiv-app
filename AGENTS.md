@@ -22,10 +22,21 @@ taking state, never a store method.
 `apps/mobile` is the app. Its web export is published on every push to `main`, so
 anything that lands there is public.
 
-`tools/` is the third place, for what is neither: `tools/preview` is the device frame
-around the web build. It must keep building into `apps/mobile/public/`, because every
-capability it has comes from sharing the app's origin.
-([ADR 0014](adr/0014-the-preview-shell-as-a-package.md))
+`apps/handbook` is the published site: the documentation, the source inventory, the
+diagrams, the core's reference, and the app in a device frame at `/workbench`. It
+reads the repository's Markdown in place and holds no copy of any document, which is
+the rule to keep: a second copy of `ARCHITECTURE.md` would be the one on the website
+and the one nobody edits.
+
+The device frame reaches into the app by same-origin property access, so the two
+halves have to be one origin. The Pages deploy assembles them into one artifact and
+the dev server proxies `/app`; do not give the handbook a second origin, because the
+browser refuses those property reads silently.
+([ADR 0014](adr/0014-the-preview-shell-as-a-package.md),
+[ADR 0024](adr/0024-the-handbook-owns-the-root.md))
+
+`tools/` is the third place, for what is neither a host nor a library the app ships:
+`tools/figma-plugin` is what is left there.
 
 Colours come from classes (`bg-canvas`), which follow the appearance setting on their
 own. Reading a colour in TypeScript needs `useColors()`, or it is pinned to light.

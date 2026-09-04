@@ -158,11 +158,19 @@ the tokens with the palette hook. `src/components/reader/` and
 `src/components/media/` are the two platform splits, each a `.tsx`, a `.web.tsx` and
 a shared props type.
 
-Outside both, `tools/preview` is the device frame that wraps the web target, a
-workspace of its own because it is neither a host nor a library the app ships. It
-builds into `apps/mobile/public/` so that it stays on the app's origin, which is what
-lets it reach the frame at all; [ADR 0014](adr/0014-the-preview-shell-as-a-package.md)
-explains why that folder is load-bearing.
+Outside both, `apps/handbook` is the published site: the repository's own documents,
+the source inventory, the diagrams, a reference generated from the core, and the app
+itself in a device frame at `/workbench`. It is a second host in the sense that
+matters here, a thing with screens, but it hosts the documentation rather than the
+core, and it implements no port.
+
+The device frame was its own workspace, `tools/preview`, and built into
+`apps/mobile/public/` so that it stayed on the app's origin
+([ADR 0014](adr/0014-the-preview-shell-as-a-package.md)). Same-origin is still what
+lets it reach the frame at all, and it is now reached differently: the Pages deploy
+uploads the handbook and the app's export as one artifact, so `/` and `/app/` are the
+same origin, and in development the handbook's Vite server proxies `/app` to the
+app's dev server ([ADR 0024](adr/0024-the-handbook-owns-the-root.md)).
 
 ## Generated artefacts
 

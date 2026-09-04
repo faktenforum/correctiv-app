@@ -41,8 +41,6 @@ out/
 .agents/
 .claude/skills/
 skills-lock.json
-apps/mobile/public/preview.html
-apps/mobile/public/preview-assets/
 
 # The assembled Pages artifact: the handbook's build with the app's export copied
 # under /app. Built in CI, and locally when checking the deploy shape.

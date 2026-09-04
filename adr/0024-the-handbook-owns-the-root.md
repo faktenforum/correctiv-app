@@ -105,8 +105,15 @@ where the app's export lives.
 capability "silently, because the browser simply refuses the property access", stands
 exactly as written. It is why the proxy exists rather than a second port.
 
-Nothing else in 0014 is affected. The device frame, what it can and cannot simulate,
-and the reason it is a workspace rather than a library are all unchanged.
+[ADR 0014](0014-the-preview-shell-as-a-package.md), its decision line: "A workspace
+package, `tools/preview`". **Struck in place**, because the package is gone. The shell
+is a route of `apps/handbook` now, `/workbench`. Its reasoning for not being a host,
+that `apps/*` means a host of the core and a dev tool is not one, is why it sat in
+`tools/` and is worth reading; the handbook is a genuine second thing with screens,
+which is the difference.
+
+Nothing else in 0014 is affected. The device frame and what it can and cannot
+simulate are unchanged.
 
 `README.md` and `RELEASE.md` name `/preview.html` as the address for the demo. Those
 are living documents and are rewritten rather than struck; the stub keeps the old
