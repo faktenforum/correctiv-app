@@ -920,13 +920,26 @@ export function Sources() {
               </caption>
               <thead>
                 <tr className="border-b border-stroke-strong">
-                  {['State', 'Kind', 'Source', 'Reads from'].map((head) => (
+                  {/* The width on "Reads from" is a preference, not a rule: auto
+                      table layout honours it only where there is room. It is here
+                      because that column holds the module paths, and without it
+                      the spare width lands on the source names and the paths break
+                      mid-word. */}
+                  {[
+                    { head: 'State' },
+                    { head: 'Kind' },
+                    { head: 'Source' },
+                    { head: 'Reads from', width: 'w-[17rem]' },
+                  ].map((column) => (
                     <th
-                      key={head}
+                      key={column.head}
                       scope="col"
-                      className="px-s py-xs text-s font-semibold uppercase tracking-wider text-on-canvas-muted"
+                      className={cn(
+                        'px-s py-xs text-s font-semibold uppercase tracking-wider text-on-canvas-muted',
+                        column.width,
+                      )}
                     >
-                      {head}
+                      {column.head}
                     </th>
                   ))}
                   <th
