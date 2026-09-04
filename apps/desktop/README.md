@@ -19,7 +19,7 @@ this host as a reason for two decisions; this is that host, built.
 
 | | |
 | --- | --- |
-| **Routes** | 27 route files (25 openable hrefs + 2 layouts). **22 of 25 rendered** when that was last swept; the three exceptions are below. A newer defect briefly stopped the sweep from being re-run at all — see [*The profil crash, fixed*](#the-profil-crash-fixed) — and is now resolved. |
+| **Routes** | 26 route files (24 openable hrefs + 2 layouts). **24 of 24 rendered** when last swept — 2026-09-04, on macOS under the node host, which is also the first sweep of a non-Linux target. The three routes that used to loop on a deep link are among them; see [*The deep-link loop*](#the-deep-link-loop-fixed-upstream-and-now-measured). |
 | **The vertical slice** | Start → Artikel → Reader, working, over WebKitGTK. |
 | **Audio** | Working, on GStreamer. Position advances, live streams are detected, and the port's re-entrancy contract holds. |
 | **Chrome** | Adwaita's own. `Stack` is an `Adw.NavigationView`, `Tabs` an `Adw.ViewStack` + `Adw.ViewSwitcher`. Nothing restyles a header bar or a button. |
@@ -79,29 +79,34 @@ at 93 470 bytes, with no `PrimitiveError` in the log.
 
 ## What does not work
 
-**Three tab routes cannot be deep-linked.** `router.replace('/mediathek')`,
-`'/mitmachen'` or `'/profil'` enters an infinite update loop — React error #185, with
-`gtk_widget_set_child_visible: assertion 'GTK_IS_WIDGET (widget)' failed` repeating
-about thirty times a second. The screens themselves are fine: starting on Home mounts
-all five tabs with **zero** errors, now that [the profil crash](#the-profil-crash-fixed)
-above is fixed, and `/entdecken` deep-links cleanly.
+### The deep-link loop, fixed upstream and now measured
 
-It is TWO defects that look like one, and separating them took a control run. Patching
-the host to hide a page before removing it takes the criticals from 296 and 131 down to
-**0, 0, 0** over three runs — while the React errors stay at 5, 5, 5. So:
+Three tab routes — `/mediathek`, `/mitmachen`, `/profil` — used to enter an infinite
+update loop when entered by URL: React error #185 with
+`gtk_widget_set_child_visible: assertion 'GTK_IS_WIDGET (widget)' failed` about thirty
+times a second, 432 occurrences in 15 seconds. It was TWO defects that looked like one,
+and separating them took a control run:
 
-* the **criticals** are libadwaita's, reached through `@gjsify/gtk-host`:
+* the **criticals** were libadwaita's, reached through `@gjsify/gtk-host`:
   `adw_view_stack`'s `stack_remove()` clears `visible_child` and leaves
-  `last_visible_child` pointing at a page whose widget it has just dropped, so every
-  later reader dereferences it. The host's `keyed` reorder removes all children and
-  re-adds them, which walks into that once per page per render. `Gtk.Stack` does not
-  have the bug.
-* the **loop** is the tab router's, in `@gjsify/react-native`: the effect that selects
-  the visible page has no dependency array and a guard that only terminates once the
-  selection has taken, so a name the stack does not carry yet never settles.
+  `last_visible_child` pointing at a page whose widget it has just dropped. The host's
+  `keyed` reorder removes all children and re-adds them, walking into that once per
+  page per render. `Gtk.Stack` does not have the bug.
+* the **loop** was the tab router's, in `@gjsify/react-native`: the effect that selects
+  the visible page had no dependency array and a guard that only terminated once the
+  selection had taken, so a name the stack does not carry yet never settled.
 
-Both are fixed upstream in gjsify; this app picks them up on the next version bump. The
-libadwaita half is being reported to GNOME.
+Both landed upstream as gjsify #1484 and #1485 — **in 0.46, the version this app was
+already pinning.** So they were collected without a bump, and had simply never been
+re-measured. Swept 2026-09-04 on macOS under the node host: **24 of 24 openable routes
+render without a refusal**, the three former offenders included — and 24 of 24 again on
+Linux afterwards, which is the regression check for the reader's own header change in
+the same batch.
+
+Worth keeping as the lesson rather than the fix: "fixed upstream, this app picks it up
+on the next bump" aged into a false statement the moment the fix shipped in a version
+the lockfile already held. A claim about a dependency needs re-measuring, not
+re-reading.
 
 **Video is a placeholder**, and that is a decision rather than a limitation of the
 toolkit — the YouTube embed would in fact load inside WebKitGTK. `@gjsify/video` is
@@ -123,7 +128,14 @@ so the parent stays a `Gtk.Box` and the `absolute` child throws. Both features w
 alone; they do not compose yet.
 
 So `src/app/artikel.tsx` is still a variant of the phone's screen with the 160 ms
-header fade removed. The header still hides and returns; it cuts instead of fading.
+header fade removed. Where the header floats — Linux and macOS — it still hides and
+returns, and it cuts instead of fading. Filed as gjsify #1451.
+
+On **Windows** the question does not arise, and not because it was solved: the header
+is a strip above the document there rather than a layer over it, because the web view
+is an OS-composited child window that nothing can be drawn on top of. So that platform
+lost a fade it was never going to get and gained a header that is actually visible.
+See [*The three targets*](#the-three-targets-measured-on-each).
 
 **A colour-scheme change needs a restart.** Adwaita's chrome follows the setting
 immediately, but the app's own token colours are resolved when their CSS class is
@@ -133,10 +145,16 @@ is read once, at startup.
 **Smaller, each named where it happens:** no icons in the tab switcher (the router's
 `Tabs.Screen` takes `title` only); no mini player (there is no bottom bar to pin it
 above, and the switcher's header-bar slot will not survive a wrapper); no lock-screen
-metadata (MPRIS is the desktop counterpart and is not built); the two brand typefaces
-are absent from the *chrome* (Pango falls back to the system font; the article body is
-unaffected); `Bleed` does not bleed, because GTK does not clamp a negative margin — it
-measures with it; and a chip row does not wrap, because `Gtk.Box` cannot.
+metadata (MPRIS is the desktop counterpart and is not built); `Bleed` does not bleed,
+because GTK does not clamp a negative margin — it measures with it; and a routed window
+shows one header bar per navigator level, each with its own close button (gjsify #1460,
+open — visible in the screenshots above as the second bar reading "artikel").
+
+Two entries left this list because they were already fixed and the list had not been
+re-read. **The brand typefaces are in the chrome now** — see below; the faces ship in
+the payload and are registered at startup. **A chip row wraps**, since
+`@gjsify/react-native` 0.46 maps `flex-wrap` to a wrapping widget; the shim's own note
+to remove its stripping branch had been acted on and this sentence had not.
 
 ## How to run it
 
@@ -175,7 +193,19 @@ npm run screenshot   -w @correctiv/desktop   # writes dist/screenshot.png
 
 npm run audio-probe  -w @correctiv/desktop   # drives the audio port, prints the ticks
 npm run route-sweep  -w @correctiv/desktop   # opens every route, reads the log
+
+# The two that exist because a green call is not a green outcome.
+npm run font-probe   -w @correctiv/desktop   # asks the FONT MAP what it ended up with
+npm run gst-probe    -w @correctiv/desktop   # asks the GStreamer REGISTRY what shipped
 ```
+
+The last two are the instruments this port needed most, and both exist for the same
+reason: the thing that reports success is not the thing that answers the question.
+`initFonts()` reports what `add_font_file()` returned, and Pango does not report a
+missing family — so a face can register successfully and the app still wear Tahoma.
+A GStreamer error string reports a symptom whose cause it names wrongly — the same
+`Internal data stream error` means "no TLS backend" in gjsify's own notes and meant "no
+mp3 decoder" here. Each probe asks the subsystem instead of the call.
 
 ### Two hosts, one source
 
@@ -199,28 +229,72 @@ npm run route-sweep -w @correctiv/desktop -- --host node
 **Run the node host from Linux.** It is the only machine that can run both, so it is the
 only place the macOS/Windows bundle gets exercised before it reaches those machines.
 
-Two things are known to be missing on the new targets, and neither is in this tree:
+### The three targets, measured on each
 
-| | state |
-|---|---|
-| **The reader's WebView** | `gi://WebKit` is in none of the shipped GTK runtime bundles. macOS has a separate WKWebView shim behind the same namespace, but it declares the node runtime unsupported and implements no `decide-policy`, which is what the navigation gate uses. Windows has no engine at all. |
-| **Live radio** | the bundles carry an audio-only GStreamer plugin set with no `souphttpsrc`, so an `https://` stream finds no source element. The bundled episode plays. |
+Every cell below was measured on the machine it names, on 2026-09-04, against
+`@gjsify/*` `^0.47.0`. Nothing here is inferred from another platform — the note this
+table replaced said "a claim proven on one of them has never yet held on the others",
+and that turned out to be the most reliable sentence in the file.
 
-**Both are being answered upstream, and neither answer is in this tree.** The table above
-is the state of `@gjsify/*` `^0.46.0`, which is what `package.json` pins and what these
-bundles were built against; the sentences below are gjsify's own measurements, not this
-repo's, and nothing here has been re-run against them.
+| | Linux (gjs) | macOS darwin-x64 (node) | Windows win32-x64 (node) |
+|---|---|---|---|
+| Window + chrome | ✓ | ✓ | ✓ |
+| Routes | **24 of 24** | **24 of 24** | ✓ Home and the reader; not swept |
+| **The reader** | ✓ WebKitGTK | ✓ **WKWebView shim** | ✓ **WebView2** |
+| Brand typefaces | ✓ | ✗ needs a `.app` | ✓ |
+| Bundled episode | ✓ | ✓ | ✗ no mp3 decoder |
+| Live radio | ✓ | ✗ two GObject copies | ✗ no mp3 decoder |
+| Accessibility labels | ✓ | ✓ | ✓ |
 
-- The reader **loads on macOS under Node** — `LoadEvent.FINISHED`, with the DOM read back
-  to check it was the reader document and not an error page. So "declares the node
-  runtime unsupported" is on its way to being false, for macOS.
-- **Windows still has no substrate.** Its runtime bundle carries 45 typelibs and `WebKit`
-  is not among them, which is a packaging gap rather than a shim gap, and it is open.
-- **Streaming is coming to both**, as `souphttpsrc` plus TLS in the darwin and win32
-  plugin sets.
+**The reader works on all three, and the engine was never in the runtime bundle.** It
+comes from a package of its own — `@gjsify/webkit-native` on macOS,
+`@gjsify/webview2-native` on Windows — and this host had simply never declared either.
+Both answer to `gi://WebKit`, so nothing in `src/` branches. Measured, on each:
 
-Re-measure here on the next version bump before changing the table: this host has three
-targets and a claim proven on one of them has never yet held on the others.
+    [desktop] WebView: loading 523925 bytes of HTML.
+    [desktop] WebView: load finished
+
+`decide-policy` exists on neither shim, and that costs nothing: the portable click
+interceptor this app already wrote for its web target gates navigation instead, and it
+was written before it was needed for exactly this reason.
+
+**On Windows the web view cannot be overlaid, and that is by construction.** WebView2 is
+a child window the OS composites on top of the application (gjsify ADR 0035 stage 1), so
+it is not a node in GTK's scene graph and anything drawn over it lands underneath. The
+backend says so itself, once, naming the arrangement it found:
+
+> this view is the main child of a GtkOverlay, so anything overlaid on it will be drawn
+> UNDER the web content instead of over it
+
+That made the reader a dead end there — its only way back is the button in its own
+floating header. So the header is now ORDERED rather than positioned: a strip above the
+document where the view cannot be overlaid, floating over it where it can. See
+[`src/platform/webview.ts`](src/platform/webview.ts), which carries the measurement and
+the trigger that removes it (ADR 0035 stage 2 puts the view in the scene graph).
+
+**Audio is the one that got worse the more it was measured**, and the two failures have
+nothing to do with each other:
+
+- **macOS** — `souphttpsrc` ships and works; what breaks is that the bundle's own
+  `libgstsoup.dylib` reaches libsoup through `g_module_open` **by leaf name**, and on a
+  host with Homebrew glib that resolves to Homebrew's copy, which brings Homebrew's
+  GObject with it. Two type systems in one process, so `g_type_name()` returns GObject's
+  internal qdata quark strings and the stream silently never loads. gjsify #1536.
+- **Windows** — the runtime bundle ships **no mp3 decoder**: `mpg123`, `vorbis` and
+  `flac` are all absent from the payload while the builder's own seed list names them,
+  so `mpg123audiodec` is NULL. The bundled episode and the Icecast stream are both mp3,
+  which is why nothing plays. `soup` and the TLS backend are both fine there — the
+  `Internal data stream error` the stream reports is the string gjsify documents for a
+  missing TLS backend, and it is not that. gjsify #1544; `npm run gst-probe` is the
+  probe that separates them.
+
+**Brand typefaces need a `.app` on macOS.** `pango_font_map_add_font_file()` is a vfunc
+the CoreText map does not implement, so the faces come back `declined` and the intended
+path is declarative — a `.app` carries `ATSApplicationFontsPath` and the OS activates the
+staged directory before the process starts. Measured outside a bundle: 187 families
+before and 187 after, all five cuts substituted to Helvetica. `declined` is consistent
+both with everything working and with nothing working, which is why
+`npm run font-probe` asks the font map instead.
 
 And one defect is measured and open upstream: a GTK app on `@gjsify/node-gi` dies
 intermittently in the GI bridge (SIGSEGV or SIGABRT, roughly one run in three here),

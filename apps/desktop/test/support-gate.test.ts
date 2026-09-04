@@ -28,14 +28,20 @@
  * had captured 92 125. This test was green through all of it, so was the typecheck, and
  * so was the build. The only thing that said anything was a screenshot.
  *
- * The named next step is `@gjsify/react-native/prop-table`: a published subpath with a
- * generated `PROPS.md`, exposing the layer's per-prop answers as DATA, the way
- * `support-table` already exposes the per-import ones. This file already reads the app's
- * source and already parses what it takes from `react-native`; with that table beside
- * it, `<Typo onPress>` becomes a failing assertion here, in a second, with no GTK —
- * which is the same move this whole suite exists to make. Until it publishes,
- * `npm run route-sweep` is the only oracle, and it needs a GTK session, a built bundle
- * and an admitted profile.
+ * The named next step was `@gjsify/react-native/prop-table`, and **it publishes now**
+ * (verified in 0.47.0: `./prop-table` is among the package's export subpaths). It
+ * exposes the layer's per-prop answers as DATA the way `support-table` already exposes
+ * the per-import ones, and `explainProp(primitive, prop)` returns exactly the assertion
+ * a consumer makes — `null` when the prop renders, the sentence a render would print
+ * when it does not.
+ *
+ * So the hole is closable here, in a second, with no GTK. What it still needs is the
+ * other half of the question: this app's shim ANSWERS 110 of the props the layer
+ * refuses, so a test asserting `explainProp(...) === null` on the app's source would
+ * fail on every one of them. The set the shim answers has to become data first — it is
+ * a prose table in `src/shims/react-native.tsx`'s header today — and then this file can
+ * assert the difference. Until then `npm run route-sweep` is the only oracle, and it
+ * needs a GTK session, a built bundle and an admitted profile.
  * ([ADR 0023](../../../adr/0023-re-exported-screens-and-a-variant-where-the-host-refuses.md))
  */
 
