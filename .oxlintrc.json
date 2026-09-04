@@ -108,6 +108,39 @@
       }
     },
     {
+      // A command palette is an ARIA combobox over a listbox, and that is the
+      // pattern these rules are steering away from. `prefer-tag-over-role`
+      // suggests `select`, which cannot render a two-line row, cannot be filtered
+      // as you type and cannot be opened from a keyboard shortcut over the whole
+      // page. `no-noninteractive-element-to-interactive-role` is asking for the
+      // same substitution. The roles here are the accessible spelling of the
+      // widget, not a shortcut around one: the input owns the listbox, options
+      // carry ids and `aria-selected`, and `aria-activedescendant` follows the
+      // arrow keys. Autofocus is what a palette is for, and the dialog was opened
+      // by an explicit gesture. The options themselves take no key listener on
+      // purpose: in this pattern they are never focused, the input keeps focus
+      // and the arrows move `aria-activedescendant`, so a per-option handler
+      // would be unreachable code that only satisfies a rule.
+      "files": ["apps/handbook/src/ui/Search.tsx"],
+      "rules": {
+        "jsx-a11y/click-events-have-key-events": "off",
+        "jsx-a11y/prefer-tag-over-role": "off",
+        "jsx-a11y/no-noninteractive-element-to-interactive-role": "off",
+        "jsx-a11y/no-autofocus": "off"
+      }
+    },
+    {
+      // A segmented appearance control is a radiogroup, and buttons carrying
+      // `role="radio"` are the accessible spelling of one: three states, one tab
+      // stop, arrows moving between them, `aria-checked` saying which is on.
+      // `input type=radio` would need a label and a control per option, which is
+      // markup this icon-only control does not have and does not want.
+      "files": ["apps/handbook/src/ui/Header.tsx"],
+      "rules": {
+        "jsx-a11y/prefer-tag-over-role": "off"
+      }
+    },
+    {
       // The search screen exists for nothing but searching, and it is only ever
       // reached by an explicit tap on the search entry — so focusing the field is
       // what the user just asked for, and it saves a second tap plus a keyboard

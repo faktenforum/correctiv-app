@@ -2,7 +2,7 @@ import { posix } from 'node:path';
 
 import { Marked, type Token, type Tokens } from 'marked';
 
-import { adrNumber, adrRoute, DOCUMENTS } from './registry';
+import { adrNumber, adrRoute, DOCUMENTS } from './registry.ts';
 
 export interface Heading {
   depth: number;

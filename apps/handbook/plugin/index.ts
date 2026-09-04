@@ -2,7 +2,7 @@ import { join } from 'node:path';
 
 import type { Plugin } from 'vite';
 
-import { collectDocs, ROOT } from './collect';
+import { collectDocs, ROOT } from './collect.ts';
 
 const MODULE_ID = 'virtual:docs';
 

@@ -3,7 +3,7 @@ import { join } from 'node:path';
 
 import type { Plugin } from 'vite';
 
-import { ROOT } from './collect';
+import { ROOT } from './collect.ts';
 
 const MODULE_ID = 'virtual:tokens.css';
 const SOURCE = 'packages/design-tokens/theme.css';

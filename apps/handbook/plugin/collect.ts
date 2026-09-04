@@ -3,8 +3,8 @@ import { readdirSync, readFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
-import { renderDoc, routeMap, type RenderedDoc } from './markdown';
-import { adrNumber, adrRoute, DOCUMENTS } from './registry';
+import { renderDoc, routeMap, type RenderedDoc } from './markdown.ts';
+import { adrNumber, adrRoute, DOCUMENTS } from './registry.ts';
 
 export const ROOT = fileURLToPath(new URL('../../..', import.meta.url));
 export const REPO = 'https://github.com/faktenforum/correctiv-app';

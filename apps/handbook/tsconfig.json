@@ -3,7 +3,11 @@
   "compilerOptions": {
     "jsx": "react-jsx",
     "types": ["vite/client"],
-    "verbatimModuleSyntax": true
+    "verbatimModuleSyntax": true,
+    // The Vite config and its plugins are loaded as source, so their imports
+    // carry the extension Vite's native config loader wants. Allowed because
+    // the base config sets noEmit.
+    "allowImportingTsExtensions": true
   },
   "include": ["src", "content", "test", "vite.config.ts", "plugin"]
 }

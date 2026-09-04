@@ -3,7 +3,8 @@ import { fileURLToPath } from 'node:url';
 import react from '@vitejs/plugin-react';
 import { defineConfig } from 'vite';
 
-import { docsPlugin } from './plugin';
+import { docsPlugin } from './plugin/index.ts';
+import { tokensPlugin } from './plugin/tokens.ts';
 
 /**
  * The app's dev server, which this one borrows rather than replaces.
@@ -39,7 +40,7 @@ const APP_DEV_SERVER = 'http://localhost:8081';
  */
 export default defineConfig(({ command }) => ({
   base: process.env.HANDBOOK_BASE?.trim() || '/',
-  plugins: [docsPlugin(), react()],
+  plugins: [docsPlugin(), tokensPlugin(), react()],
   build: {
     outDir: fileURLToPath(new URL('./dist', import.meta.url)),
     emptyOutDir: true,
