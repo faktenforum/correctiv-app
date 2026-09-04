@@ -13,6 +13,13 @@
 //
 // ## The six, what each one is, and what happens to it here
 //
+// **The table below is prose; `answered-props.ts` is the same thing as DATA, and it is
+// the one a test can check.** Keep them in step — and note that the check has already
+// paid for itself: six of the rows here describe a refusal the layer has since answered
+// itself, so their entries live in that file's `UPSTREAM_CAUGHT_UP` ledger rather than
+// among the necessary ones. `test/prop-gate.test.ts` holds the split exact in both
+// directions, because a redundant workaround reads exactly like a necessary one.
+//
 // | prop | uses | GTK's refusal | this host |
 // |---|---|---|---|
 // | `accessibilityLabel` | 46 | not a widget property; `Gtk.Accessible.update_property()` is an imperative call | IMPLEMENTED, through a ref |
