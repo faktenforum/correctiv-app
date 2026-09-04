@@ -1,3 +1,4 @@
+import { cn } from '../../lib/cn';
 import { COMBINATIONS, type Status } from '../api';
 
 /**
@@ -9,12 +10,9 @@ import { COMBINATIONS, type Status } from '../api';
  * neither that breaks". You cannot avoid a combination you cannot see you are
  * in, so the shell states it rather than leaving it to be inferred.
  *
- * The design puts this bar directly above the frame. It sits below instead
- * because it is the only component holding `Status`: `Stage`'s props are the
- * contract with `Workbench.tsx` and carry the state, not what was read back out
- * of the frame. What it says is unchanged, and the design's own footer says the
- * same thing in prose, that the bar and the frame have separate schemes on
- * purpose.
+ * It sits below the frame rather than above it because it is the only component
+ * holding `Status`: `Stage`'s props are the contract with `Workbench.tsx` and
+ * carry the state, not what was read back out of the frame.
  */
 export function Readout({
   status,
@@ -27,35 +25,45 @@ export function Readout({
 }) {
   const combo = COMBINATIONS.find((c) => c.n === status.combination);
   return (
-    <footer>
-      <div className="schemebar">
-        {/* `.schemebar .dot.light` and `.dot.dark` are the two fixed grounds the
-            sheet keeps for exactly this: a swatch of what the app is painting,
-            which must not follow the page's own scheme. */}
-        <span className={`dot ${status.active}`} aria-hidden="true" />
+    <footer className="flex flex-wrap items-center gap-x-s gap-y-3xs border-t border-stroke bg-surface px-s py-xs text-s text-on-canvas-muted">
+      <div className="flex flex-wrap items-center gap-x-2xs gap-y-3xs rounded-md border border-stroke bg-canvas px-xs py-3xs">
+        {/*
+          A swatch of what the APP is painting, which must not follow this page's
+          own scheme. `bg-white` and `bg-neutral-700` are primitives for exactly
+          that reason: they are the two grounds a device scheme means, and a role
+          would move with the wrong thing.
+        */}
+        <span
+          aria-hidden="true"
+          className={cn(
+            'size-[0.625rem] rounded-full border border-stroke-strong',
+            status.active === 'dark' ? 'bg-neutral-700' : 'bg-white',
+          )}
+        />
         <span>
           App is <b>{status.active}</b>
         </span>
-        <span className="sep" aria-hidden="true">
+        <span aria-hidden="true" className="text-stroke-strong">
           |
         </span>
         <span>
           setting <b>{status.appTheme ?? 'unknown'}</b>
         </span>
-        <span className="sep" aria-hidden="true">
+        <span aria-hidden="true" className="text-stroke-strong">
           |
         </span>
         <span>
           device reports <b>{status.scheme ?? 'unknown'}</b>
         </span>
-        <span className="sep" aria-hidden="true">
+        <span aria-hidden="true" className="text-stroke-strong">
           |
         </span>
         <span>
-          combination <b className="mono">{combo ? `${combo.n} of 4` : 'unknown'}</b>
+          combination{' '}
+          <b className="font-mono tabular-nums">{combo ? `${combo.n} of 4` : 'unknown'}</b>
           {combo?.isDefault && ', the default'}
         </span>
-        <span className="right muted">
+        <span className="ml-xs tabular-nums">
           {size.w} × {size.h} px at {Math.round(scale * 100)}%
         </span>
       </div>
@@ -66,7 +74,7 @@ export function Readout({
         opens them still deserves to know which build they are looking at.
       */}
       {!status.handle && (
-        <span className="muted">
+        <span>
           Published build: no dev handle, so the appearance setting and the inspector are inert.
         </span>
       )}

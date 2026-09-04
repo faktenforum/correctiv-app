@@ -1,3 +1,22 @@
+import {
+  Check,
+  ChevronRight,
+  CircleDashed,
+  Copy,
+  Crosshair,
+  Database,
+  Eraser,
+  ExternalLink,
+  OctagonAlert,
+  Palette,
+  Play,
+  RotateCcw,
+  Ruler,
+  SunMoon,
+  Terminal,
+  TriangleAlert,
+  type LucideIcon,
+} from 'lucide-react';
 import { useCallback, useEffect, useRef, useState, type ReactNode } from 'react';
 
 import { COMBINATIONS, type Status } from '../api';
@@ -8,6 +27,11 @@ import type { Finding } from '../frame/measure';
 import { FIXTURES } from '../frame/seed';
 import { asCss, PALETTE, TOKENS, type Overrides, type Scheme } from '../frame/tokens';
 import type { PreviewState, ThemeSetting } from '../state';
+import { cn } from '../../lib/cn';
+import { Badge } from '../../ui/kit/badge';
+import { Button } from '../../ui/kit/button';
+import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '../../ui/kit/collapsible';
+import { Tooltip, TooltipContent, TooltipTrigger } from '../../ui/kit/tooltip';
 
 export interface ToolBindings {
   scheme: Scheme;
@@ -61,14 +85,32 @@ interface Disclosure {
 }
 
 /**
+ * The dock's ground is `surface`, so every readout inside it steps back to
+ * `canvas`. Two roles rather than two shades, which is what keeps the whole dock
+ * legible when the scheme flips.
+ */
+const CARD = 'rounded-md border border-stroke bg-canvas';
+const NOTE = 'text-s leading-relaxed text-on-canvas-muted';
+/** An identifier in a sentence. A border rather than a fill, so it reads on both grounds. */
+const CODE = 'rounded-s border border-stroke px-3xs font-mono text-[0.8125rem]';
+const SEG = 'inline-flex flex-wrap gap-4xs rounded-md border border-stroke bg-canvas p-4xs';
+
+/** One segment of a segmented control, which says which it is with `aria-pressed`. */
+function segment(on: boolean): string {
+  return cn(
+    'rounded-s px-xs py-3xs text-s font-medium transition-colors',
+    'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent',
+    on ? 'bg-accent text-white' : 'text-on-canvas-muted hover:bg-surface hover:text-on-canvas',
+  );
+}
+
+/**
  * The workbench half of the page: everything the demo audience does not get.
  *
- * It is always mounted, and `data-tools` on the page root is what decides
- * whether it is on screen: the stylesheet hides it and widens `main` by a
- * column in the same transition, which is what makes the switch between the two
- * audiences read as one page opening rather than as a second page. `display:
- * none` keeps it out of the accessibility tree while it is closed, so nothing
- * behind the switch is announced to someone who has not opened it.
+ * It is a panel of the split beside the stage, mounted only while the tools
+ * switch is on, so nothing behind that switch is subscribed or announced for
+ * someone who has not opened it. The dock fills its panel and scrolls inside
+ * itself; the page it sits on never scrolls.
  */
 export function Panels(props: Props) {
   const { status, tools } = props;
@@ -95,105 +137,205 @@ export function Panels(props: Props) {
   const findings = tools.measure.report?.findings.length ?? null;
 
   return (
-    <aside className="dock" aria-labelledby="wb-dock-heading">
-      <div className="dock-head">
-        <h2 id="wb-dock-heading">Tools</h2>
-        <div className="summary">
-          <button type="button" onClick={() => reveal('console')}>
-            <Badge n={status.warnings} tone="warn" /> warnings
-          </button>
-          <button type="button" onClick={() => reveal('console')}>
-            <Badge n={status.errors} tone="err" /> errors
-          </button>
-          <button type="button" onClick={() => reveal('measure')}>
-            {findings === null ? (
-              'findings not run'
-            ) : (
-              <>
-                <Badge n={findings} tone="warn" /> findings
-              </>
-            )}
-          </button>
+    <aside
+      aria-labelledby="wb-dock-heading"
+      className="flex h-full min-h-0 flex-col border-l border-stroke bg-surface text-on-surface"
+    >
+      <div className="shrink-0 border-b border-stroke px-s py-xs">
+        <h2
+          id="wb-dock-heading"
+          className="text-s font-semibold uppercase tracking-wider text-on-canvas-muted"
+        >
+          Tools
+        </h2>
+        {/* Three counts and a way into the panel that explains each. The number
+            is written out beside the word it counts, so the summary reads the
+            same to somebody who cannot tell the yellow from the red. */}
+        <div className="mt-2xs flex flex-wrap items-center gap-2xs">
+          <Summary onClick={() => reveal('console')} hint="Open the Console panel">
+            <Count n={status.warnings} tone="warn" /> warnings
+          </Summary>
+          <Summary onClick={() => reveal('console')} hint="Open the Console panel">
+            <Count n={status.errors} tone="err" /> errors
+          </Summary>
+          <Summary onClick={() => reveal('measure')} hint="Open the Measure panel">
+            <Count n={findings} tone="warn" /> findings
+          </Summary>
         </div>
       </div>
 
-      {/*
-        The design offers a select here, to switch between "published, static
-        export" and "development server" for the sake of the demonstration. This
-        is not a choice anyone makes on this page: it is read out of the frame,
-        and it decides whether half the controls below can do anything. So it is
-        stated, not offered.
-      */}
-      <div className="build">
-        <span className="muted">Build</span>
-        <b>{status.handle ? 'Development server' : 'Published, static export'}</b>
-        <span className="note right">
-          {status.handle
-            ? 'Store handle present, every panel live.'
-            : 'Store handle absent, the appearance setting and the inspector are inert.'}
-        </span>
-      </div>
+      <div className="min-h-0 flex-1 overflow-y-auto">
+        {/*
+          The design offers a select here, to switch between "published, static
+          export" and "development server" for the sake of the demonstration. This
+          is not a choice anyone makes on this page: it is read out of the frame,
+          and it decides whether half the controls below can do anything. So it is
+          stated, not offered.
+        */}
+        <div className="border-b border-stroke px-s py-xs">
+          <div className="flex flex-wrap items-center gap-xs">
+            <span className="text-s text-on-canvas-muted">Build</span>
+            <Badge variant={status.handle ? 'default' : 'outline'}>
+              {status.handle ? 'Development server' : 'Published, static export'}
+            </Badge>
+          </div>
+          <p className={cn(NOTE, 'mt-3xs')}>
+            {status.handle
+              ? 'Store handle present, every panel live.'
+              : 'Store handle absent, the appearance setting and the inspector are inert. Fixtures and token overrides still work.'}
+          </p>
+        </div>
 
-      <div className="panels">
-        <Appearance {...props} panel={disclosure('appearance')} />
-        <State {...props} panel={disclosure('state')} />
-        <Console {...props} panel={disclosure('console')} />
-        <Tokens {...props} panel={disclosure('tokens')} />
-        <Measure {...props} panel={disclosure('measure')} />
-        <Inspect {...props} panel={disclosure('inspect')} />
+        <div>
+          <Appearance {...props} panel={disclosure('appearance')} />
+          <State {...props} panel={disclosure('state')} />
+          <Console {...props} panel={disclosure('console')} />
+          <Tokens {...props} panel={disclosure('tokens')} />
+          <Measure {...props} panel={disclosure('measure')} />
+          <Inspect {...props} panel={disclosure('inspect')} />
+        </div>
       </div>
     </aside>
   );
 }
 
-/** A count, always with its number written out, never a colour on its own. */
-function Badge({ n, tone }: { n: number | null; tone: 'warn' | 'err' }) {
-  if (n === null) return <span className="badge zero">not run</span>;
-  return <span className={n > 0 ? `badge ${tone}` : 'badge zero'}>{n}</span>;
+/** A count in the dock's head, and the panel it opens named in a tooltip. */
+function Summary({
+  onClick,
+  hint,
+  children,
+}: {
+  onClick: () => void;
+  hint: string;
+  children: ReactNode;
+}) {
+  return (
+    <Tooltip>
+      <TooltipTrigger asChild>
+        {/* The size here belongs to the badge inside, not to the button's own
+            icon slot, which is a size larger. */}
+        <Button variant="outline" size="sm" onClick={onClick} className="[&_svg]:size-[0.75rem]">
+          {children}
+        </Button>
+      </TooltipTrigger>
+      <TooltipContent>{hint}</TooltipContent>
+    </Tooltip>
+  );
+}
+
+/**
+ * A count, always with its number written out, never a colour on its own.
+ *
+ * Three things separate a warning from an error at once: the shape of the icon,
+ * the word the caller puts beside the count, and the fill. The fill alone would
+ * fail for a reader who cannot see it and for anyone reading a greyscale
+ * screenshot, which is how most of this tool's output travels.
+ */
+function Count({ n, tone }: { n: number | null; tone: 'warn' | 'err' }) {
+  if (n === null) {
+    return (
+      <Badge variant="outline">
+        <CircleDashed aria-hidden="true" className="size-[0.75rem]" />
+        not run
+      </Badge>
+    );
+  }
+  if (n === 0) {
+    return (
+      <Badge variant="outline" className="tabular-nums">
+        <Check aria-hidden="true" className="size-[0.75rem]" />
+        {n}
+      </Badge>
+    );
+  }
+  const Icon = tone === 'err' ? OctagonAlert : TriangleAlert;
+  return (
+    <Badge
+      className={cn(
+        'border-transparent tabular-nums',
+        // Neither of these follows the scheme, and that is the point: a hazard
+        // mark that changed colour with the page would stop being a hazard mark.
+        // The ink on each is the one the palette fixes for it.
+        tone === 'err' ? 'bg-red-500 text-white' : 'bg-yellow-400 text-neutral-700',
+      )}
+    >
+      <Icon aria-hidden="true" className="size-[0.75rem]" />
+      {n}
+    </Badge>
+  );
 }
 
 function Panel({
-  name,
   title,
+  icon: Icon,
   panel,
   tags,
   children,
 }: {
-  name: PanelName;
   title: string;
+  icon: LucideIcon;
   panel: Disclosure;
   tags?: ReactNode;
   children: ReactNode;
 }) {
-  const bodyId = `wb-panel-${name}`;
   return (
-    <section className="panel">
-      <h3 className="sr">{title}</h3>
-      <button
-        type="button"
-        className="panel-head"
-        aria-expanded={panel.open}
-        aria-controls={bodyId}
-        onClick={panel.onToggle}
-      >
-        <span className="chev" aria-hidden="true">
-          ▸
-        </span>
-        <span className="name">
-          {title}
-          {tags}
-        </span>
-      </button>
-      <div className="panel-body" id={bodyId} hidden={!panel.open}>
-        {children}
-      </div>
-    </section>
+    <Collapsible open={panel.open} onOpenChange={panel.onToggle} asChild>
+      <section className="border-b border-stroke last:border-b-0">
+        {/* The heading carries the trigger rather than sitting beside it, so the
+            panel appears once in the document outline and is announced once.
+            Radix puts `aria-expanded` and `aria-controls` on the trigger and the
+            matching id on the body, which is the pair a `<details>` cannot be
+            given and this dock needs, because the head has buttons that open a
+            panel from the outside. */}
+        <h3>
+          <CollapsibleTrigger
+            className={cn(
+              'group flex w-full items-center gap-xs px-s py-xs text-left hover:bg-canvas',
+              'focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-accent',
+            )}
+          >
+            <ChevronRight
+              aria-hidden="true"
+              className="size-[0.875rem] shrink-0 text-on-canvas-muted transition-transform group-data-[state=open]:rotate-90"
+            />
+            <Icon aria-hidden="true" className="size-[0.875rem] shrink-0 text-on-canvas-muted" />
+            <span className="text-m font-semibold text-on-canvas">{title}</span>
+            {tags && (
+              <span className="ml-auto flex flex-wrap items-center justify-end gap-3xs">{tags}</span>
+            )}
+          </CollapsibleTrigger>
+        </h3>
+        <CollapsibleContent className="overflow-hidden">
+          <div className="flex flex-col gap-s px-s pb-s">{children}</div>
+        </CollapsibleContent>
+      </section>
+    </Collapsible>
   );
 }
 
 /** The one thing on this page a person needs a development build to change. */
 function InertHere() {
-  return <span className="tag dev">inert here</span>;
+  return <Badge variant="outline">inert here</Badge>;
+}
+
+/**
+ * Why a control above it is disabled, said in words next to the control.
+ *
+ * Rendered only where the dev handle is absent, which is the same condition that
+ * disables the control, so the reason and the disabled state cannot drift apart.
+ * The deleted stylesheet hid this with a selector on the page root; a condition
+ * in the markup is that rule with nowhere left for the two halves to disagree.
+ */
+function NeedsDev({ children }: { children: ReactNode }) {
+  return (
+    <div className={cn(CARD, 'flex flex-col gap-2xs p-xs')}>
+      <Badge className="self-start border-transparent bg-yellow-400 text-neutral-700">
+        <TriangleAlert aria-hidden="true" className="size-[0.75rem]" />
+        Needs a development build
+      </Badge>
+      <p className={NOTE}>{children}</p>
+    </div>
+  );
 }
 
 const SETTINGS: ThemeSetting[] = ['light', 'dark', 'system'];
@@ -226,47 +368,52 @@ const SWATCH = { light: '#ffffff', dark: '#1a1a1a' }; // palette-exempt
 function Appearance({ status, onChange, panel }: Props & { panel: Disclosure }) {
   return (
     <Panel
-      name="appearance"
       title="Appearance"
+      icon={SunMoon}
       panel={panel}
       tags={
         <>
-          <span className="tag mono">
+          <Badge variant="outline" className="font-mono tabular-nums">
             {status.combination === null
               ? 'combination unknown'
               : `combination ${status.combination}`}
-          </span>
+          </Badge>
           {!status.handle && <InertHere />}
         </>
       }
     >
-      <div className="facts">
-        <div className="fact">
-          <div className="lbl">App setting says</div>
-          <div className="val">{status.appTheme ?? 'unknown'}</div>
+      <dl className="grid grid-cols-2 gap-xs">
+        <div className={cn(CARD, 'min-w-0 px-xs py-2xs')}>
+          <dt className="text-s text-on-canvas-muted">App setting says</dt>
+          <dd className="mt-4xs truncate font-mono text-m text-on-canvas">
+            {status.appTheme ?? 'unknown'}
+          </dd>
         </div>
-        <div className="fact">
-          <div className="lbl">Device reports</div>
-          <div className="val">
+        <div className={cn(CARD, 'min-w-0 px-xs py-2xs')}>
+          <dt className="text-s text-on-canvas-muted">Device reports</dt>
+          <dd className="mt-4xs flex min-w-0 items-center gap-2xs font-mono text-m text-on-canvas">
             <span
-              className="dot"
+              className="size-[0.625rem] shrink-0 rounded-full border border-stroke-strong"
               style={{ background: SWATCH[status.scheme ?? 'light'] }}
               aria-hidden="true"
             />
-            {status.scheme ?? 'unknown'}
-          </div>
+            <span className="truncate">{status.scheme ?? 'unknown'}</span>
+          </dd>
         </div>
-      </div>
+      </dl>
 
-      <fieldset disabled={!status.handle}>
-        <legend>App setting, written to the app's own store</legend>
-        <div className="seg">
+      <fieldset disabled={!status.handle} className="min-w-0 disabled:opacity-60">
+        <legend className={cn(NOTE, 'mb-2xs')}>
+          App setting, written to the app&apos;s own store
+        </legend>
+        <div className={SEG}>
           {SETTINGS.map((setting) => (
             <button
               key={setting}
               type="button"
               aria-pressed={status.appTheme === setting}
               onClick={() => onChange({ theme: setting })}
+              className={segment(status.appTheme === setting)}
             >
               {setting}
             </button>
@@ -274,53 +421,55 @@ function Appearance({ status, onChange, panel }: Props & { panel: Disclosure }) 
         </div>
       </fieldset>
 
-      {/* Hidden by the stylesheet under `.workbench[data-build='dev']`. Two
-          children, because `.needs-dev` is a grid and every child of it is a row. */}
-      <div className="needs-dev">
-        <b>Needs a development build.</b>
-        <span>
-          The published site is a static export, and <code>expo export</code> sets{' '}
-          <code>__DEV__</code> false, so the app leaves no dev handle and the setting cannot be
-          written from here. Run the handbook against <code>npm run web</code>. Everything read out
-          above and below still holds.
-        </span>
-      </div>
+      {!status.handle && (
+        <NeedsDev>
+          The published site is a static export, and <code className={CODE}>expo export</code> sets{' '}
+          <code className={CODE}>__DEV__</code> false, so the app leaves no dev handle and the
+          setting cannot be written from here. Run the handbook against{' '}
+          <code className={CODE}>npm run web</code>. Everything read out above and below still
+          holds.
+        </NeedsDev>
+      )}
 
-      <p className="note">
-        The device half is the browser's to set, not this page's: emulate{' '}
-        <code>prefers-color-scheme</code> in DevTools, under Rendering. An iframe cannot be given a
-        scheme of its own, so combinations 3 and 4 are reached there and only reported here.
+      <p className={NOTE}>
+        The device half is the browser&apos;s to set, not this page&apos;s: emulate{' '}
+        <code className={CODE}>prefers-color-scheme</code> in DevTools, under Rendering. An iframe
+        cannot be given a scheme of its own, so combinations 3 and 4 are reached there and only
+        reported here.
       </p>
 
-      <div className="combos">
+      <ol className="flex flex-col gap-3xs">
         {COMBINATIONS.map((c) => {
           const active = status.combination === c.n;
           return (
-            <div
+            <li
               key={c.n}
-              className={`combo${c.isDefault ? ' four' : ''}${active ? ' active' : ''}`}
               aria-current={active}
+              className={cn(
+                CARD,
+                'flex min-w-0 items-start gap-xs px-xs py-2xs',
+                active && 'border-accent',
+              )}
             >
-              <span className="n">{c.n}</span>
-              <div>
-                {c.label}
-                {c.isDefault && (
-                  <>
-                    {' '}
-                    <span className="tag accent">default</span>
-                  </>
-                )}
-                <div className="sub">
+              <span className="shrink-0 font-mono text-m tabular-nums text-on-canvas-muted">
+                {c.n}
+              </span>
+              <div className="min-w-0 flex-1">
+                <div className="flex flex-wrap items-center gap-2xs">
+                  <span className="text-m text-on-canvas">{c.label}</span>
+                  {c.isDefault && <Badge variant="alt">default</Badge>}
+                  {active && <Badge variant="accent">on screen</Badge>}
+                </div>
+                <p className={cn(NOTE, 'mt-4xs')}>
                   {c.scheme === undefined
                     ? 'Forceable from here, with a development build.'
                     : `Not forceable from this page. Emulate a ${c.scheme} device in the browser.`}
-                </div>
+                </p>
               </div>
-              {active && <span className="tag">on screen</span>}
-            </div>
+            </li>
           );
         })}
-      </div>
+      </ol>
     </Panel>
   );
 }
@@ -333,58 +482,91 @@ function Appearance({ status, onChange, panel }: Props & { panel: Disclosure }) 
  * The design marks this panel as needing a development build, and it does not:
  * a fixture is written to `window.localStorage`, which same-origin makes the
  * app's own, before the frame is pointed at a route. That works in the static
- * export, so there is no `.needs-dev` block here.
+ * export, so nothing here warns about the build.
  */
 function State({ state, onChange, panel }: Props & { panel: Disclosure }) {
   return (
     <Panel
-      name="state"
       title="State"
+      icon={Database}
       panel={panel}
-      tags={<span className="tag mono">{state.seed ?? 'untouched'}</span>}
+      tags={
+        <Badge variant="outline" className="max-w-[10rem] font-mono">
+          <span className="truncate">{state.seed ?? 'untouched'}</span>
+        </Badge>
+      }
     >
-      <fieldset>
-        <legend>Fixture, seeded before the app boots. Choosing one reloads the frame.</legend>
-        <div className="fixtures">
+      <fieldset className="min-w-0">
+        <legend className={cn(NOTE, 'mb-2xs')}>
+          Fixture, seeded before the app boots. Choosing one reloads the frame.
+        </legend>
+        <div className="flex flex-col gap-3xs">
           {/*
             First, and the default, because the plain demo link carries no
             fixture: `preview` with no `s` must not wipe what the last visit left
             in storage on its way in.
           */}
-          <label className="fixture" aria-label="Leave alone">
-            <input
-              type="radio"
-              name="wb-fixture"
-              value=""
-              checked={state.seed === null}
-              onChange={() => onChange({ seed: null })}
-            />
-            <div>
-              <b>Leave alone</b>
-              <div className="h">Whatever the last visit left in storage.</div>
-            </div>
-          </label>
+          <Fixture
+            label="Leave alone"
+            hint="Whatever the last visit left in storage."
+            value=""
+            checked={state.seed === null}
+            onSelect={() => onChange({ seed: null })}
+          />
           {FIXTURES.map((f) => (
-            <label key={f.id} className="fixture" aria-label={f.label}>
-              <input
-                type="radio"
-                name="wb-fixture"
-                value={f.id}
-                checked={state.seed === f.id}
-                onChange={() => onChange({ seed: f.id })}
-              />
-              <div>
-                <b>{f.label}</b>
-                <div className="h">{f.hint}</div>
-              </div>
-            </label>
+            <Fixture
+              key={f.id}
+              label={f.label}
+              hint={f.hint}
+              value={f.id}
+              checked={state.seed === f.id}
+              onSelect={() => onChange({ seed: f.id })}
+            />
           ))}
         </div>
       </fieldset>
-      <p className="note">
-        The fixture is in the link, so whoever opens it starts where you started.
-      </p>
+      <p className={NOTE}>The fixture is in the link, so whoever opens it starts where you started.</p>
     </Panel>
+  );
+}
+
+/** One fixture, as a real radio, so the group behaves like a group under the arrow keys. */
+function Fixture({
+  label,
+  hint,
+  value,
+  checked,
+  onSelect,
+}: {
+  label: string;
+  hint: string;
+  value: string;
+  checked: boolean;
+  onSelect: () => void;
+}) {
+  return (
+    <label
+      aria-label={label}
+      className={cn(
+        CARD,
+        'flex cursor-pointer items-start gap-xs p-xs',
+        'has-[:focus-visible]:ring-2 has-[:focus-visible]:ring-accent',
+        checked && 'border-accent',
+      )}
+    >
+      <input
+        type="radio"
+        name="wb-fixture"
+        value={value}
+        checked={checked}
+        onChange={onSelect}
+        className="mt-4xs size-[0.875rem] shrink-0 accent-accent"
+      />
+      <div className="min-w-0">
+        <div className="text-m font-semibold text-on-canvas">{label}</div>
+        <div className={NOTE}>{hint}</div>
+      </div>
+    </label>
   );
 }
 
@@ -410,20 +592,23 @@ function Console({ status, logs, onClearLogs, panel }: Props & { panel: Disclosu
 
   return (
     <Panel
-      name="console"
       title="Console"
+      icon={Terminal}
       panel={panel}
       tags={
         <>
-          <Badge n={status.warnings} tone="warn" />
-          <span className="sr"> warnings</span>
-          <Badge n={status.errors} tone="err" />
-          <span className="sr"> errors</span>
+          <Count n={status.warnings} tone="warn" />
+          <span className="sr-only"> warnings</span>
+          <Count n={status.errors} tone="err" />
+          <span className="sr-only"> errors</span>
         </>
       }
     >
-      <div className="row">
-        <div className="seg">
+      <div className="flex flex-wrap items-center gap-xs">
+        {/* A fieldset rather than a div carrying `role="group"`: `prefer-tag-over-role`
+            asks for the element, and the legend is the group's name either way. */}
+        <fieldset className={SEG}>
+          <legend className="sr-only">Levels shown</legend>
           {LEVELS.map((level) => (
             <button
               key={level}
@@ -436,48 +621,70 @@ function Console({ status, logs, onClearLogs, panel }: Props & { panel: Disclosu
                   return next;
                 })
               }
+              className={segment(levels.has(level))}
             >
               {level}
             </button>
           ))}
-        </div>
+        </fieldset>
         <input
           type="search"
-          className="mono"
-          style={{ flex: 1, minWidth: 80 }}
           placeholder="filter"
           aria-label="Filter console lines"
           value={filter}
           onChange={(e) => setFilter(e.target.value)}
+          className={cn(
+            CARD,
+            'min-w-[5rem] flex-1 px-xs py-3xs font-mono text-s text-on-canvas',
+            'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent',
+          )}
         />
-        <button
-          type="button"
-          className="btn small"
-          onClick={onClearLogs}
-          disabled={logs.length === 0}
-        >
+        <Button variant="outline" size="sm" onClick={onClearLogs} disabled={logs.length === 0}>
+          <Eraser aria-hidden="true" />
           Clear
-        </button>
+        </Button>
       </div>
 
-      <div className="console-log" role="log" aria-live="polite" aria-label="App console">
+      {/*
+        A plain scroller, not Radix's `ScrollArea`: that wraps its content in a
+        box which sizes to the content, and a line that can be as wide as it likes
+        never truncates. These lines are single-line on purpose, with the whole
+        text on the row's title for the one that matters.
+      */}
+      <div
+        role="log"
+        aria-live="polite"
+        aria-label="App console"
+        className={cn(CARD, 'max-h-[16rem] overflow-y-auto overflow-x-hidden p-4xs')}
+      >
         {shown.length === 0 ? (
-          <p className="empty">
+          <p className={cn(NOTE, 'px-xs py-2xs')}>
             {logs.length === 0
               ? 'Nothing since the last navigation.'
               : 'Nothing matches the filter.'}
           </p>
         ) : (
           shown.map((entry) => (
-            <div key={entry.id} className={`line ${entry.level}`}>
-              <span className="lvl">{entry.level}</span>
-              <span>{entry.text}</span>
+            <div key={entry.id} className="flex min-w-0 items-baseline gap-xs px-3xs py-4xs">
+              <span
+                className={cn(
+                  'shrink-0 rounded-s px-3xs font-mono text-[0.75rem] font-semibold uppercase',
+                  entry.level === 'error'
+                    ? 'bg-red-500 text-white'
+                    : 'bg-yellow-400 text-neutral-700',
+                )}
+              >
+                {entry.level}
+              </span>
+              <span className="min-w-0 flex-1 truncate font-mono text-s" title={entry.text}>
+                {entry.text}
+              </span>
             </div>
           ))
         )}
       </div>
 
-      <p className="note">
+      <p className={NOTE}>
         {shown.length} of {logs.length} lines shown, {status.warnings} warnings, {status.errors}{' '}
         errors.
       </p>
@@ -490,8 +697,9 @@ function Console({ status, logs, onClearLogs, panel }: Props & { panel: Disclosu
  * written to `tokens/theme.css`, which is vendored from `wp-design-tokens` and
  * stays the source of truth. Copy takes the result there.
  *
- * No `.needs-dev` block, unlike the design: the override is a stylesheet
- * appended to the frame's own document, which same-origin allows in any build.
+ * Nothing here warns about the build, unlike the design: the override is a
+ * stylesheet appended to the frame's own document, which same-origin allows in
+ * any build.
  */
 function Tokens({ tools, panel }: Props & { panel: Disclosure }) {
   const { scheme, tokens } = tools;
@@ -506,61 +714,84 @@ function Tokens({ tools, panel }: Props & { panel: Disclosure }) {
 
   return (
     <Panel
-      name="tokens"
       title="Tokens"
+      icon={Palette}
       panel={panel}
-      tags={<span className="tag mono">{scheme} scheme</span>}
+      tags={<Badge variant="outline" className="font-mono">{scheme} scheme</Badge>}
     >
-      <p className="note">
-        Overrides apply to the <b>{scheme}</b> scheme, the one the app is painting with. Nothing is
-        written to the repository; Copy CSS is how a proposal leaves this page.
+      <p className={NOTE}>
+        Overrides apply to the <b className="font-semibold text-on-canvas">{scheme}</b> scheme, the
+        one the app is painting with. Nothing is written to the repository; Copy CSS is how a
+        proposal leaves this page.
       </p>
 
-      <div className="tokens">
+      <div className="flex flex-col gap-3xs">
         {TOKENS.map((token) => {
           const override = tokens.overrides[token]?.[scheme];
           const value = override ?? PALETTE[scheme][token];
           return (
-            <label key={token} className={override ? 'tok changed' : 'tok'}>
-              <input type="color" value={value} onChange={(e) => setToken(token, e.target.value)} />
-              <code>--color-{token}</code>
-              <span className="v">{value}</span>
+            <label
+              key={token}
+              className={cn(
+                CARD,
+                'flex min-w-0 cursor-pointer items-center gap-xs px-xs py-3xs',
+                'has-[:focus-visible]:ring-2 has-[:focus-visible]:ring-accent',
+                override && 'border-accent',
+              )}
+            >
+              <input
+                type="color"
+                value={value}
+                onChange={(e) => setToken(token, e.target.value)}
+                className="size-[1.25rem] shrink-0 cursor-pointer rounded-s border border-stroke bg-canvas p-0"
+              />
+              <code className="min-w-0 flex-1 truncate font-mono text-s text-on-canvas">
+                --color-{token}
+              </code>
+              {override && <Badge variant="outline">changed</Badge>}
+              <span className="shrink-0 font-mono text-s tabular-nums text-on-canvas-muted">
+                {value}
+              </span>
             </label>
           );
         })}
       </div>
 
-      <div className="row">
-        <button
-          type="button"
-          className="btn small"
+      <div className="flex flex-wrap items-center gap-xs">
+        <Button
+          variant="outline"
+          size="sm"
           disabled={!changed.length}
           onClick={() => tokens.set({})}
         >
+          <RotateCcw aria-hidden="true" />
           Reset overrides
-        </button>
-        <button
-          type="button"
-          className="btn small"
+        </Button>
+        <Button
+          variant="outline"
+          size="sm"
           disabled={!changed.length}
           onClick={() => void navigator.clipboard.writeText(asCss(tokens.overrides))}
         >
+          <Copy aria-hidden="true" />
           Copy CSS
-        </button>
-        <span className="note">{changed.length} changed</span>
+        </Button>
+        <span className={NOTE}>{changed.length} changed</span>
       </div>
 
-      <label className="row">
+      <label className="flex items-center gap-xs text-m text-on-canvas">
         <input
           type="checkbox"
           checked={tokens.textPass}
           onChange={(e) => tokens.setTextPass(e.target.checked)}
+          className="size-[0.875rem] shrink-0 accent-accent"
         />
         Text too
       </label>
-      <p className="note">
+      <p className={NOTE}>
         Surfaces and borders follow the variable. Text and icons are resolved in JavaScript and land
-        in inline styles, so <b>Text too</b> chases them by value: a best effort, not a guarantee.
+        in inline styles, so <b className="font-semibold text-on-canvas">Text too</b> chases them by
+        value: a best effort, not a guarantee.
       </p>
     </Panel>
   );
@@ -599,59 +830,72 @@ function Measure({ tools, panel }: Props & { panel: Disclosure }) {
 
   return (
     <Panel
-      name="measure"
       title="Measure"
+      icon={Ruler}
       panel={panel}
-      tags={<Badge n={report?.findings.length ?? null} tone="warn" />}
+      tags={<Count n={report?.findings.length ?? null} tone="warn" />}
     >
-      <div className="row">
-        <button type="button" className="btn small primary" onClick={measure.run}>
+      <div className="flex flex-wrap items-center gap-xs">
+        <Button size="sm" onClick={measure.run}>
+          <Play aria-hidden="true" />
           Run checks
-        </button>
-        <button
-          type="button"
-          className="btn small"
+        </Button>
+        <Button
+          variant="outline"
+          size="sm"
           aria-pressed={measure.outline}
           onClick={() => measure.setOutline(!measure.outline)}
+          className={cn(measure.outline && 'border-accent bg-surface')}
         >
           Outline boxes in the frame
-        </button>
-        <span className="note right">
+        </Button>
+        <span className={NOTE}>
           {report
             ? `Ran across ${report.scanned} elements.`
             : "Runs against the frame's own DOM, and works in any build."}
         </span>
       </div>
 
-      <div className="checks">
+      <ul className="flex flex-col gap-3xs">
         {CHECKS.map((check) => (
-          <div key={check.kind} className="check">
-            <div>
-              <b>{check.title}</b>
-              <div className="d">{check.detail}</div>
+          <li key={check.kind} className={cn(CARD, 'flex items-start gap-xs px-xs py-2xs')}>
+            <div className="min-w-0 flex-1">
+              <div className="text-m font-semibold text-on-canvas">{check.title}</div>
+              <div className={NOTE}>{check.detail}</div>
             </div>
-            <Badge n={count(check.kind)} tone="warn" />
-          </div>
+            <Count n={count(check.kind)} tone="warn" />
+          </li>
         ))}
-      </div>
+      </ul>
 
-      <div className="findings">
-        {report === null && <p className="note">No run yet. Press Run checks.</p>}
+      <div className="flex flex-col gap-3xs">
+        {report === null && <p className={NOTE}>No run yet. Press Run checks.</p>}
         {report !== null && report.findings.length === 0 && (
-          <p className="note">Nothing found across {report.scanned} elements.</p>
+          <p className={NOTE}>Nothing found across {report.scanned} elements.</p>
         )}
         {report?.findings.map((f) => (
-          <div key={`${f.kind}:${f.where}:${f.text}`} className="finding">
-            <div>
-              <span className="tag">{KIND_LABEL[f.kind]}</span> <span className="m">{f.text}</span>
-              {f.where && <code title={f.where}>{f.where}</code>}
+          <div
+            key={`${f.kind}:${f.where}:${f.text}`}
+            className={cn(CARD, 'flex min-w-0 flex-col gap-4xs px-xs py-2xs')}
+          >
+            <div className="flex min-w-0 items-center gap-xs">
+              <Badge variant="outline">{KIND_LABEL[f.kind]}</Badge>
+              <span className="min-w-0 flex-1 text-s text-on-canvas">{f.text}</span>
             </div>
+            {f.where && (
+              <code
+                title={f.where}
+                className="block truncate font-mono text-[0.8125rem] text-on-canvas-muted"
+              >
+                {f.where}
+              </code>
+            )}
           </div>
         ))}
       </div>
 
       {report?.scheme === 'light' && (
-        <p className="note">
+        <p className={NOTE}>
           Colours are ambiguous in light: #ffffff and #333333 each name two tokens. Re-run in dark.
         </p>
       )}
@@ -693,105 +937,113 @@ function Inspect({ status, tools, panel }: Props & { panel: Disclosure }) {
   return (
     <div ref={section}>
       <Panel
-        name="inspect"
         title="Inspect"
+        icon={Crosshair}
         panel={panel}
         tags={!status.handle ? <InertHere /> : undefined}
       >
-        {/* Hidden by the stylesheet under `.workbench[data-build='dev']`. */}
-        <div className="needs-dev">
-          <b>Needs a development build.</b>
-          <span>
+        {!status.handle && (
+          <NeedsDev>
             The source line comes from the owner stack React keeps beside each node, and a
             production bundle keeps none. The picker stays disarmed here.
-          </span>
-        </div>
+          </NeedsDev>
+        )}
 
-        <fieldset disabled={!status.handle}>
-          <div className="row">
-            <button
-              type="button"
-              className="btn small"
+        <fieldset disabled={!status.handle} className="flex flex-col gap-s disabled:opacity-60">
+          <div>
+            <Button
+              variant="outline"
+              size="sm"
               aria-pressed={inspect.picking}
               onClick={() => inspect.setPicking(!inspect.picking)}
+              className={cn(inspect.picking && 'border-accent bg-surface')}
             >
+              <Crosshair aria-hidden="true" />
               {inspect.picking ? 'Picker armed, click in the frame' : 'Pick element'}
-            </button>
+            </Button>
           </div>
 
-          <div className="chosen-label">
+          <p className={cn(CARD, 'min-w-0 truncate px-xs py-2xs font-mono text-s text-on-canvas')}>
             {inspect.hit
               ? inspect.hit.label
                 ? `"${inspect.hit.label}"`
                 : 'Element with no label'
               : 'Nothing chosen.'}
-          </div>
+          </p>
 
           {inspect.hit && frames.length === 0 && (
-            <p className="note">
-              No source: either nothing in this node's owner chain is app code, or the bundle keeps
-              no owner stacks at all, which is every production build.
+            <p className={NOTE}>
+              No source: either nothing in this node&apos;s owner chain is app code, or the bundle
+              keeps no owner stacks at all, which is every production build.
             </p>
           )}
 
           {frames.length > 0 && (
             <>
-              <fieldset>
-                <legend>Source stack, innermost first</legend>
-                <div className="stack">
+              <fieldset className="min-w-0">
+                <legend className={cn(NOTE, 'mb-2xs')}>Source stack, innermost first</legend>
+                <div className="flex flex-col gap-3xs">
                   {frames.map((f, index) => (
                     <label
                       key={`${f.file}:${f.lineNumber}:${f.column}`}
-                      className="lvl-row"
                       aria-label={frameLabel(f)}
+                      className={cn(
+                        CARD,
+                        'flex min-w-0 cursor-pointer items-start gap-xs px-xs py-2xs',
+                        'has-[:focus-visible]:ring-2 has-[:focus-visible]:ring-accent',
+                        index === inspect.selected && 'border-accent',
+                      )}
                     >
                       <input
                         type="radio"
                         name="wb-frame"
                         checked={index === inspect.selected}
                         onChange={() => inspect.setSelected(index)}
+                        className="mt-4xs size-[0.875rem] shrink-0 accent-accent"
                       />
-                      <span>
-                        <code>
+                      <span className="min-w-0 flex-1">
+                        <code className="block truncate font-mono text-s text-on-canvas">
                           {frameShort(f)}
                           {f.methodName ? ` · ${f.methodName}` : ''}
                         </code>
-                        <span className="src">{frameLabel(f)}</span>
+                        <span className={cn(NOTE, 'block truncate')} title={frameLabel(f)}>
+                          {frameLabel(f)}
+                        </span>
                       </span>
                     </label>
                   ))}
                 </div>
               </fieldset>
 
-              {/* `.chosen-label` is the sheet's mono box and this block is one.
-                  A textarea rather than a `pre`, so the text can be selected and
+              {/* A textarea rather than a `pre`, so the text can be selected and
                   scrolled by someone who would rather not press the button. */}
               <textarea
-                className="chosen-label"
-                style={{ width: '100%', color: 'inherit', resize: 'vertical' }}
                 readOnly
                 rows={5}
                 value={block}
                 aria-label="Handover block"
+                className={cn(
+                  CARD,
+                  'w-full resize-y p-xs font-mono text-s text-on-canvas',
+                  'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent',
+                )}
               />
-              <div className="row">
-                <button
-                  type="button"
-                  className="btn small primary"
-                  onClick={() => void navigator.clipboard.writeText(block)}
-                >
+              <div className="flex flex-wrap items-center gap-xs">
+                <Button size="sm" onClick={() => void navigator.clipboard.writeText(block)}>
+                  <Copy aria-hidden="true" />
                   Copy for agent
-                </button>
-                <button
-                  type="button"
-                  className="btn small"
+                </Button>
+                <Button
+                  variant="outline"
+                  size="sm"
                   disabled={!chosen}
                   onClick={() => chosen && inspect.open(chosen)}
                 >
+                  <ExternalLink aria-hidden="true" />
                   Open in editor
-                </button>
+                </Button>
               </div>
-              <p className="note">
+              <p className={NOTE}>
                 Paste it, then say what should be different. The view address is in there, so
                 whoever picks this up can put the same thing back on screen before and after.
               </p>

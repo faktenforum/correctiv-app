@@ -1,3 +1,157 @@
+import { cn } from '../lib/cn';
+
+/*
+ * The drawings' vocabulary, which used to be a stylesheet.
+ *
+ * Tailwind utilities work on SVG elements, so `fill-canvas` and `stroke-stroke`
+ * say on a `rect` what they say on a `div`, and both read the same token the app
+ * reads. What a plain utility cannot say is that eighteen chips are one thing, so
+ * each visual role keeps its name here. A role named once is a role that cannot
+ * drift across three diagrams, which is the whole reason the deleted sheet had
+ * these names.
+ *
+ * Every one of them is a token, never a literal. That is what makes the drawings
+ * follow the light and dark schemes with no second asset to keep in step, and
+ * `test/styles.test.ts` fails the build on a colour value written here.
+ */
+
+/** A container, filled with the ground so a line behind it is knocked out. */
+const BOX = 'fill-canvas stroke-stroke';
+/** The core's own frame, which is the one box that outranks the boxes near it. */
+const BOX_CORE = 'fill-canvas stroke-stroke-strong [stroke-width:1.5]';
+/** A labelled block sitting on the ground, one step up from it. */
+const CHIP = 'fill-surface stroke-stroke';
+/** A port, drawn as a contract rather than a block, so it takes the accent. */
+const CHIP_PORT = 'fill-canvas stroke-accent [stroke-width:1.5]';
+const CARD = 'fill-surface stroke-stroke';
+/** The adapter band, which is a fill and no outline because a rule sits under it. */
+const BAND = 'fill-surface stroke-none';
+const CALLOUT = 'fill-surface stroke-stroke';
+/** A grouping frame, dashed because it encloses without being a thing itself. */
+const DASHED = 'fill-none stroke-stroke-strong [stroke-dasharray:6_5]';
+/** A dependency the package may not have, drawn as an absence. */
+const GHOST = 'fill-canvas stroke-stroke [stroke-dasharray:4_3]';
+
+const RULE = 'stroke-stroke';
+const RULE_STRONG = 'stroke-stroke-strong';
+const AXIS = 'stroke-stroke';
+const WIRE = 'fill-none stroke-on-canvas-muted [stroke-width:1.5]';
+const LEAD = 'stroke-stroke';
+/** The line nothing crosses, and the figcaption below calls it the red line. */
+const BOUNDARY = 'stroke-accent stroke-2';
+/** An amendment a record makes to an earlier one, stated in the record itself. */
+const ARC = 'fill-none stroke-on-canvas-muted';
+/** The same relation, but recorded only in the index, so it is drawn as weaker. */
+const ARC_INDEX = 'fill-none stroke-stroke-strong [stroke-dasharray:2_3]';
+/** A correction to a living document, which is rewritten rather than annotated. */
+const ARC_DOC = 'fill-none stroke-on-canvas-muted [stroke-dasharray:6_4]';
+/*
+ * The arrowheads. A marker does not inherit from the line that references it, it
+ * inherits from where it is defined, so each one carries its own fill and the
+ * two of them match the two weights of arc above.
+ */
+const MARKER = 'fill-on-canvas-muted stroke-none';
+const MARKER_LIGHT = 'fill-stroke-strong stroke-none';
+const HATCH = 'stroke-stroke';
+
+/** A record with nothing recorded against it, drawn small on the axis. */
+const NODE_QUIET = 'fill-stroke-strong stroke-none';
+const NODE_INTACT = 'fill-canvas stroke-on-canvas-muted [stroke-width:1.5]';
+/** Accepted, with claims struck in place. Club yellow, which both schemes share. */
+const NODE_STRUCK = 'fill-accent-alternative stroke-stroke-strong';
+/** Moot, so the ring is broken rather than merely pale. */
+const NODE_MOOT = 'fill-surface stroke-stroke-strong [stroke-dasharray:2_2]';
+
+/*
+ * Type, in the drawing's own units.
+ *
+ * These are the one place the theme's named steps are the wrong tool. A step is
+ * in rem, which does not scale with the viewBox, so a label set in `text-s` would
+ * hold still while the drawing around it grew. Inside an SVG a size in px is a
+ * size in user units, and the drawings were laid out against these four.
+ */
+const T11 = 'text-[11px]';
+const T12 = 'text-[12px]';
+const T13 = 'text-[13px]';
+const T16 = 'text-[16px]';
+const MONO = 'font-mono';
+const BOLD = 'font-semibold';
+const MUTED = 'fill-on-canvas-muted';
+const STRIKE = 'line-through fill-on-canvas-muted';
+/**
+ * A label that sits on a line it must stay readable over.
+ *
+ * The glyphs are stroked in the ground colour and painted stroke-first, so the
+ * outline knocks the line out behind the text rather than over it. This is why
+ * the scroll box below is `bg-canvas` and not `bg-surface`: the halo is a colour,
+ * and it has to be the colour actually behind it.
+ */
+const HALO = '[paint-order:stroke] stroke-canvas [stroke-width:3] [stroke-linejoin:round]';
+
+/*
+ * And the drawing surface itself.
+ *
+ * `fill-on-canvas` is inherited by every `text` in the drawing, which is what
+ * keeps a label from falling back to the browser's black on a dark page. The
+ * baseline rule is a descendant selector because `dominant-baseline` is one of
+ * the few SVG properties that does not inherit, and the drawings are laid out
+ * centred: a legend's text shares the y of the circle beside it.
+ */
+const SURFACE = 'fill-on-canvas [&_text]:[dominant-baseline:central]';
+
+/**
+ * A diagram is wider than the column, so it scrolls inside its own box.
+ *
+ * The focus stop is deliberate and is the exception `.oxlintrc.json` carries for
+ * this file: Chrome and Firefox focus a scroll container on their own, Safari
+ * does not, and a diagram nobody can scroll is worse than a lint exception with a
+ * reason attached.
+ */
+const SCROLL_BOX = cn(
+  'overflow-x-auto rounded-md border border-stroke bg-canvas p-xs',
+  'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent',
+);
+
+/**
+ * Identifiers in the prose around the drawings.
+ *
+ * `app.css` styles `code` only inside `.prose`, which is the rendered-Markdown
+ * wrapper, and none of this page is that. Naming the element from its container
+ * keeps the rule in one place rather than on each of the forty `code` elements
+ * below.
+ */
+const PROSE_CODE =
+  '[&_code]:rounded-s [&_code]:border [&_code]:border-stroke [&_code]:bg-canvas [&_code]:px-3xs [&_code]:font-mono [&_code]:text-[0.875em]';
+
+/*
+ * The page around the drawings.
+ *
+ * The measure is the theme's, and only the scroll boxes are allowed past it: a
+ * caption and a list are prose and want a line length, a diagram is a picture and
+ * wants the width of the column.
+ */
+const SECTION = 'mt-2xl first:mt-0 scroll-mt-[4.5rem]';
+const HEADING = 'max-w-content text-headline-xl font-semibold tracking-tight text-on-canvas';
+const LEDE = 'mt-xs max-w-content text-l leading-normal text-on-canvas-muted';
+const FIGURE = 'mt-m';
+const CAPTION = cn(
+  'mt-s max-w-content text-m leading-normal text-on-canvas-muted [&_strong]:text-on-canvas',
+  PROSE_CODE,
+);
+/** The list under each figure, which is the page for anyone who cannot see it. */
+const ALT = cn(
+  'mt-m max-w-content rounded-md border border-stroke bg-surface p-sm text-m leading-normal',
+  '[&_h3]:mb-xs [&_h3]:text-headline-xs [&_h3]:font-semibold [&_h3]:text-on-canvas',
+  '[&_dt]:mt-s [&_dt]:font-semibold [&_dt]:text-on-canvas [&_dt:first-of-type]:mt-0',
+  '[&_dd]:ml-0 [&_dd]:mt-3xs [&_dd]:text-on-canvas-muted',
+  '[&_ul]:mt-3xs [&_ul]:list-disc [&_ul]:space-y-3xs [&_ul]:pl-sm',
+  '[&_ol]:mt-3xs [&_ol]:list-decimal [&_ol]:space-y-3xs [&_ol]:pl-sm',
+  '[&_p]:mt-xs [&_p]:text-on-canvas-muted',
+  '[&_strong]:font-semibold [&_strong]:text-on-canvas',
+  '[&_s]:text-on-canvas-muted',
+  PROSE_CODE,
+);
+
 /**
  * Three drawings, each standing in for a stretch of prose: where the behaviour
  * ends and the platform begins, which decisions still stand, and how the core is
@@ -12,20 +166,22 @@
  */
 export function Diagrams() {
   return (
-    <main className="wrap diagrams" id="content">
+    <main className="min-w-0 flex-1 px-m py-ml lg:px-12" id="content">
       {/*
         The fragment ids a reader may arrive on sit on the sections themselves.
         The design carried them on an empty anchor before the heading, which is an
         anchor with neither content nor destination, and a section is the thing
         the link means anyway.
       */}
-      <section id="core-host" aria-labelledby="h-core-host">
-        <h2 id="h-core-host">1. The core and its host</h2>
-        <p className="lede">
+      <section id="core-host" aria-labelledby="h-core-host" className={SECTION}>
+        <h2 id="h-core-host" className={HEADING}>
+          1. The core and its host
+        </h2>
+        <p className={LEDE}>
           All behaviour on one side, all platform on the other. The only crossing is four named
           ports, and the adapter that answers them is one small file.
         </p>
-        <figure>
+        <figure className={FIGURE}>
           {/*
             A named section, because that is what a landmark for a scrollable box
             is spelled as in HTML, and an `<svg>` with no role, because that
@@ -33,8 +189,13 @@ export function Diagrams() {
             wants. The name and the description come from the title inside it and
             the list below it, so the drawing is never the only way to read this.
           */}
-          <section className="diagram d1" aria-label="Diagram 1, scrollable" tabIndex={0}>
-            <svg viewBox="0 0 960 710" aria-labelledby="d1-title" aria-describedby="d1-alt">
+          <section className={SCROLL_BOX} aria-label="Diagram 1, scrollable" tabIndex={0}>
+            <svg
+              viewBox="0 0 960 710"
+              className={cn(SURFACE, 'block h-[710px] w-[960px] max-w-none')}
+              aria-labelledby="d1-title"
+              aria-describedby="d1-alt"
+            >
               <title id="d1-title">
                 The core and its host: packages/app-core above, apps/mobile below, joined only by
                 four ports
@@ -49,57 +210,57 @@ export function Diagrams() {
                   markerHeight="8"
                   orient="auto"
                 >
-                  <path d="M0 0 L10 5 L0 10 z" className="mk" />
+                  <path d="M0 0 L10 5 L0 10 z" className={MARKER} />
                 </marker>
               </defs>
 
-              <rect x="40" y="28" width="880" height="190" rx="8" className="box box-core" />
-              <text x="60" y="56" className="mono b t16">
+              <rect x="40" y="28" width="880" height="190" rx="8" className={BOX_CORE} />
+              <text x="60" y="56" className={cn(MONO, BOLD, T16)}>
                 packages/app-core
               </text>
-              <text x="900" y="56" textAnchor="end" className="muted t12">
+              <text x="900" y="56" textAnchor="end" className={cn(MUTED, T12)}>
                 behaviour, all of it
               </text>
-              <g className="mono t12">
-                <rect x="60" y="84" width="96" height="28" rx="6" className="chip" />
+              <g className={cn(MONO, T12)}>
+                <rect x="60" y="84" width="96" height="28" rx="6" className={CHIP} />
                 <text x="108" y="98" textAnchor="middle">
                   model
                 </text>
-                <rect x="166" y="84" width="96" height="28" rx="6" className="chip" />
+                <rect x="166" y="84" width="96" height="28" rx="6" className={CHIP} />
                 <text x="214" y="98" textAnchor="middle">
                   parsers
                 </text>
-                <rect x="272" y="84" width="96" height="28" rx="6" className="chip" />
+                <rect x="272" y="84" width="96" height="28" rx="6" className={CHIP} />
                 <text x="320" y="98" textAnchor="middle">
                   services
                 </text>
-                <rect x="378" y="84" width="96" height="28" rx="6" className="chip" />
+                <rect x="378" y="84" width="96" height="28" rx="6" className={CHIP} />
                 <text x="426" y="98" textAnchor="middle">
                   cache
                 </text>
-                <rect x="484" y="84" width="96" height="28" rx="6" className="chip" />
+                <rect x="484" y="84" width="96" height="28" rx="6" className={CHIP} />
                 <text x="532" y="98" textAnchor="middle">
                   articles
                 </text>
-                <rect x="590" y="84" width="96" height="28" rx="6" className="chip" />
+                <rect x="590" y="84" width="96" height="28" rx="6" className={CHIP} />
                 <text x="638" y="98" textAnchor="middle">
                   feeds
                 </text>
-                <rect x="696" y="84" width="96" height="28" rx="6" className="chip" />
+                <rect x="696" y="84" width="96" height="28" rx="6" className={CHIP} />
                 <text x="744" y="98" textAnchor="middle">
                   audio
                 </text>
-                <rect x="802" y="84" width="96" height="28" rx="6" className="chip" />
+                <rect x="802" y="84" width="96" height="28" rx="6" className={CHIP} />
                 <text x="850" y="98" textAnchor="middle">
                   stores
                 </text>
               </g>
-              <text x="60" y="146" className="t13 b">
+              <text x="60" y="146" className={cn(T13, BOLD)}>
                 Imports no UI framework and no platform SDK. That rule is what gives the package its
                 value.
               </text>
-              <text x="60" y="176" className="t12 muted">
-                <tspan className="mono">packages/app-core/test/boundary.test.ts</tspan> fails the
+              <text x="60" y="176" className={cn(T12, MUTED)}>
+                <tspan className={MONO}>packages/app-core/test/boundary.test.ts</tspan> fails the
                 build if a platform import ever appears.
               </text>
 
@@ -108,7 +269,7 @@ export function Diagrams() {
                 y1="218"
                 x2="150"
                 y2="254"
-                className="wire"
+                className={WIRE}
                 markerEnd="url(#d1-arrow)"
               />
               <line
@@ -116,7 +277,7 @@ export function Diagrams() {
                 y1="218"
                 x2="370"
                 y2="254"
-                className="wire"
+                className={WIRE}
                 markerEnd="url(#d1-arrow)"
               />
               <line
@@ -124,7 +285,7 @@ export function Diagrams() {
                 y1="218"
                 x2="590"
                 y2="254"
-                className="wire"
+                className={WIRE}
                 markerEnd="url(#d1-arrow)"
               />
               <line
@@ -132,25 +293,25 @@ export function Diagrams() {
                 y1="218"
                 x2="810"
                 y2="254"
-                className="wire"
+                className={WIRE}
                 markerEnd="url(#d1-arrow)"
               />
-              <text x="600" y="236" className="t11 muted">
+              <text x="600" y="236" className={cn(T11, MUTED)}>
                 the core calls
               </text>
 
-              <rect x="45" y="250" width="430" height="214" rx="10" className="dashed" />
-              <text x="260" y="250" textAnchor="middle" className="t11 muted halo">
+              <rect x="45" y="250" width="430" height="214" rx="10" className={DASHED} />
+              <text x="260" y="250" textAnchor="middle" className={cn(T11, MUTED, HALO)}>
                 storage ports
               </text>
 
-              <g className="t12">
-                <rect x="55" y="258" width="190" height="198" rx="8" className="card" />
-                <text x="150" y="280" textAnchor="middle" className="mono b t13">
+              <g className={T12}>
+                <rect x="55" y="258" width="190" height="198" rx="8" className={CARD} />
+                <text x="150" y="280" textAnchor="middle" className={cn(MONO, BOLD, T13)}>
                   KeyValueStore
                 </text>
-                <line x1="55" y1="298" x2="245" y2="298" className="rule" />
-                <text x="150" y="318" textAnchor="middle" className="t11 muted">
+                <line x1="55" y1="298" x2="245" y2="298" className={RULE} />
+                <text x="150" y="318" textAnchor="middle" className={cn(T11, MUTED)}>
                   the core needs
                 </text>
                 <text x="150" y="338" textAnchor="middle">
@@ -159,7 +320,7 @@ export function Diagrams() {
                 <text x="150" y="355" textAnchor="middle">
                   asynchronously
                 </text>
-                <text x="150" y="388" textAnchor="middle" className="t11 muted">
+                <text x="150" y="388" textAnchor="middle" className={cn(T11, MUTED)}>
                   this host answers with
                 </text>
                 <text x="150" y="408" textAnchor="middle">
@@ -169,12 +330,12 @@ export function Diagrams() {
                   key per setting
                 </text>
 
-                <rect x="275" y="258" width="190" height="198" rx="8" className="card" />
-                <text x="370" y="280" textAnchor="middle" className="mono b t13">
+                <rect x="275" y="258" width="190" height="198" rx="8" className={CARD} />
+                <text x="370" y="280" textAnchor="middle" className={cn(MONO, BOLD, T13)}>
                   BlobStore
                 </text>
-                <line x1="275" y1="298" x2="465" y2="298" className="rule" />
-                <text x="370" y="318" textAnchor="middle" className="t11 muted">
+                <line x1="275" y1="298" x2="465" y2="298" className={RULE} />
+                <text x="370" y="318" textAnchor="middle" className={cn(T11, MUTED)}>
                   the core needs
                 </text>
                 <text x="370" y="338" textAnchor="middle">
@@ -183,43 +344,43 @@ export function Diagrams() {
                 <text x="370" y="355" textAnchor="middle">
                   asynchronously
                 </text>
-                <text x="370" y="388" textAnchor="middle" className="t11 muted">
+                <text x="370" y="388" textAnchor="middle" className={cn(T11, MUTED)}>
                   this host answers with
                 </text>
                 <text x="370" y="408" textAnchor="middle">
                   AsyncStorage
                 </text>
 
-                <rect x="495" y="258" width="190" height="198" rx="8" className="card" />
-                <text x="590" y="280" textAnchor="middle" className="mono b t13">
+                <rect x="495" y="258" width="190" height="198" rx="8" className={CARD} />
+                <text x="590" y="280" textAnchor="middle" className={cn(MONO, BOLD, T13)}>
                   ContentBundle
                 </text>
-                <line x1="495" y1="298" x2="685" y2="298" className="rule" />
-                <text x="590" y="318" textAnchor="middle" className="t11 muted">
+                <line x1="495" y1="298" x2="685" y2="298" className={RULE} />
+                <text x="590" y="318" textAnchor="middle" className={cn(T11, MUTED)}>
                   the core needs
                 </text>
                 <text x="590" y="338" textAnchor="middle">
                   what shipped inside the app
                 </text>
-                <text x="590" y="388" textAnchor="middle" className="t11 muted">
+                <text x="590" y="388" textAnchor="middle" className={cn(T11, MUTED)}>
                   this host answers with
                 </text>
                 <text x="590" y="408" textAnchor="middle">
                   generated TS modules
                 </text>
 
-                <rect x="715" y="258" width="190" height="198" rx="8" className="card" />
-                <text x="810" y="280" textAnchor="middle" className="mono b t13">
+                <rect x="715" y="258" width="190" height="198" rx="8" className={CARD} />
+                <text x="810" y="280" textAnchor="middle" className={cn(MONO, BOLD, T13)}>
                   AudioBackend
                 </text>
-                <line x1="715" y1="298" x2="905" y2="298" className="rule" />
-                <text x="810" y="318" textAnchor="middle" className="t11 muted">
+                <line x1="715" y1="298" x2="905" y2="298" className={RULE} />
+                <text x="810" y="318" textAnchor="middle" className={cn(T11, MUTED)}>
                   the core needs
                 </text>
                 <text x="810" y="338" textAnchor="middle">
                   playback, as status ticks
                 </text>
-                <text x="810" y="388" textAnchor="middle" className="t11 muted">
+                <text x="810" y="388" textAnchor="middle" className={cn(T11, MUTED)}>
                   this host answers with
                 </text>
                 <text x="810" y="408" textAnchor="middle">
@@ -227,13 +388,13 @@ export function Diagrams() {
                 </text>
               </g>
 
-              <text x="260" y="476" textAnchor="middle" className="t11 muted">
+              <text x="260" y="476" textAnchor="middle" className={cn(T11, MUTED)}>
                 both asynchronous, split only
               </text>
-              <text x="260" y="490" textAnchor="middle" className="t11 muted">
+              <text x="260" y="490" textAnchor="middle" className={cn(T11, MUTED)}>
                 by what they hold, a settings
               </text>
-              <text x="260" y="504" textAnchor="middle" className="t11 muted">
+              <text x="260" y="504" textAnchor="middle" className={cn(T11, MUTED)}>
                 string against a megabyte of feeds
               </text>
 
@@ -242,7 +403,7 @@ export function Diagrams() {
                 y1="520"
                 x2="150"
                 y2="460"
-                className="wire"
+                className={WIRE}
                 markerEnd="url(#d1-arrow)"
               />
               <line
@@ -250,7 +411,7 @@ export function Diagrams() {
                 y1="520"
                 x2="370"
                 y2="460"
-                className="wire"
+                className={WIRE}
                 markerEnd="url(#d1-arrow)"
               />
               <line
@@ -258,7 +419,7 @@ export function Diagrams() {
                 y1="520"
                 x2="590"
                 y2="460"
-                className="wire"
+                className={WIRE}
                 markerEnd="url(#d1-arrow)"
               />
               <line
@@ -266,38 +427,38 @@ export function Diagrams() {
                 y1="520"
                 x2="810"
                 y2="460"
-                className="wire"
+                className={WIRE}
                 markerEnd="url(#d1-arrow)"
               />
-              <text x="600" y="490" className="t11 muted">
+              <text x="600" y="490" className={cn(T11, MUTED)}>
                 the host implements
               </text>
 
-              <rect x="40" y="520" width="880" height="170" rx="8" className="box" />
-              <rect x="41" y="521" width="878" height="34" rx="7" className="band" />
-              <line x1="40" y1="556" x2="920" y2="556" className="rule-strong" />
-              <text x="480" y="538" textAnchor="middle" className="t12">
-                <tspan className="muted">adapter </tspan>
-                <tspan className="mono b">apps/mobile/src/lib/platform/expo.ts</tspan>
-                <tspan className="muted">
+              <rect x="40" y="520" width="880" height="170" rx="8" className={BOX} />
+              <rect x="41" y="521" width="878" height="34" rx="7" className={BAND} />
+              <line x1="40" y1="556" x2="920" y2="556" className={RULE_STRONG} />
+              <text x="480" y="538" textAnchor="middle" className={T12}>
+                <tspan className={MUTED}>adapter </tspan>
+                <tspan className={cn(MONO, BOLD)}>apps/mobile/src/lib/platform/expo.ts</tspan>
+                <tspan className={MUTED}>
                   , one small file, and the whole cost of adding a host
                 </tspan>
               </text>
-              <text x="60" y="592" className="mono b t16">
+              <text x="60" y="592" className={cn(MONO, BOLD, T16)}>
                 apps/mobile
               </text>
-              <text x="900" y="592" textAnchor="end" className="muted t12">
+              <text x="900" y="592" textAnchor="end" className={cn(MUTED, T12)}>
                 the host, all of the platform
               </text>
-              <text x="60" y="622" className="t13">
+              <text x="60" y="622" className={T13}>
                 Expo / React Native
               </text>
-              <text x="60" y="648" className="t13 muted">
+              <text x="60" y="648" className={cn(T13, MUTED)}>
                 targets iOS, Android and web
               </text>
             </svg>
           </section>
-          <figcaption>
+          <figcaption className={CAPTION}>
             <strong>
               Everything that behaves lives above the ports; everything that touches a platform
               lives below them.
@@ -306,7 +467,7 @@ export function Diagrams() {
             <code>expo.ts</code>, and a test keeps the line from moving. Adding a second host means
             writing that one file again.
           </figcaption>
-          <div className="alt" id="d1-alt">
+          <div className={ALT} id="d1-alt">
             <h3>The same diagram as a list</h3>
             <dl>
               <dt>
@@ -355,16 +516,23 @@ export function Diagrams() {
         </figure>
       </section>
 
-      <section id="decisions" aria-labelledby="h-decisions">
-        <h2 id="h-decisions">2. Which decisions still stand, and which of their claims do not</h2>
-        <p className="lede">
+      <section id="decisions" aria-labelledby="h-decisions" className={SECTION}>
+        <h2 id="h-decisions" className={HEADING}>
+          2. Which decisions still stand, and which of their claims do not
+        </h2>
+        <p className={LEDE}>
           Twenty-three records, never rewritten. When a later decision makes an earlier claim false,
           the claim is struck through where it stands and the later record names what it retired.
           Read a row to see whether a record still holds; follow the arcs to see who amended it.
         </p>
-        <figure>
-          <section className="diagram d2" aria-label="Diagram 2, scrollable" tabIndex={0}>
-            <svg viewBox="0 0 1100 985" aria-labelledby="d2-title" aria-describedby="d2-alt">
+        <figure className={FIGURE}>
+          <section className={SCROLL_BOX} aria-label="Diagram 2, scrollable" tabIndex={0}>
+            <svg
+              viewBox="0 0 1100 985"
+              className={cn(SURFACE, 'block h-[985px] w-[1100px] max-w-none')}
+              aria-labelledby="d2-title"
+              aria-describedby="d2-alt"
+            >
               <title id="d2-title">
                 Architecture decision records 0001 to 0023 in order, with arcs from each later
                 record to the earlier record whose claim it struck, and edges to the living
@@ -380,7 +548,7 @@ export function Diagrams() {
                   markerHeight="8"
                   orient="auto"
                 >
-                  <path d="M0 0 L10 5 L0 10 z" className="mk" />
+                  <path d="M0 0 L10 5 L0 10 z" className={MARKER} />
                 </marker>
                 <marker
                   id="d2-arrow-light"
@@ -391,7 +559,7 @@ export function Diagrams() {
                   markerHeight="8"
                   orient="auto"
                 >
-                  <path d="M0 0 L10 5 L0 10 z" className="mk-light" />
+                  <path d="M0 0 L10 5 L0 10 z" className={MARKER_LIGHT} />
                 </marker>
                 <pattern
                   id="d2-hatch"
@@ -400,41 +568,41 @@ export function Diagrams() {
                   height="5"
                   patternTransform="rotate(45)"
                 >
-                  <line x1="0" y1="0" x2="0" y2="5" className="hatch" />
+                  <line x1="0" y1="0" x2="0" y2="5" className={HATCH} />
                 </pattern>
               </defs>
 
-              <text x="330" y="40" textAnchor="end" className="t11 muted">
+              <text x="330" y="40" textAnchor="end" className={cn(T11, MUTED)}>
                 a later record strikes a claim in an earlier one
               </text>
-              <text x="360" y="40" className="t11 muted">
+              <text x="360" y="40" className={cn(T11, MUTED)}>
                 record
               </text>
-              <text x="412" y="40" className="t11 muted">
+              <text x="412" y="40" className={cn(T11, MUTED)}>
                 title
               </text>
-              <text x="700" y="40" className="t11 muted">
+              <text x="700" y="40" className={cn(T11, MUTED)}>
                 claims struck by
               </text>
 
-              <line x1="340" y1="70" x2="340" y2="818" className="axis" />
+              <line x1="340" y1="70" x2="340" y2="818" className={AXIS} />
 
-              <g className="arc-index">
+              <g className={ARC_INDEX}>
                 <path d="M330 274 C 210 274 210 104 330 104" markerEnd="url(#d2-arrow-light)" />
                 <path d="M330 240 C 282 240 282 206 330 206" markerEnd="url(#d2-arrow-light)" />
                 <path d="M330 274 C 264 274 264 206 330 206" markerEnd="url(#d2-arrow-light)" />
               </g>
-              <text x="236" y="189" textAnchor="end" className="t11 muted halo">
+              <text x="236" y="189" textAnchor="end" className={cn(T11, MUTED, HALO)}>
                 index: moot
               </text>
-              <text x="290" y="223" textAnchor="end" className="t11 muted halo">
+              <text x="290" y="223" textAnchor="end" className={cn(T11, MUTED, HALO)}>
                 index: amends
               </text>
-              <text x="276" y="240" textAnchor="end" className="t11 muted halo">
+              <text x="276" y="240" textAnchor="end" className={cn(T11, MUTED, HALO)}>
                 index: carries out
               </text>
 
-              <g className="arc">
+              <g className={ARC}>
                 <path d="M330 342 C 210 342 210 172 330 172" markerEnd="url(#d2-arrow)" />
                 <path d="M330 342 C 246 342 246 240 330 240" markerEnd="url(#d2-arrow)" />
                 <path d="M330 410 C 192 410 192 206 330 206" markerEnd="url(#d2-arrow)" />
@@ -452,7 +620,7 @@ export function Diagrams() {
                 <path d="M330 716 C 282 716 282 682 330 682" markerEnd="url(#d2-arrow)" />
                 <path d="M330 784 C 84 784 84 376 330 376" markerEnd="url(#d2-arrow)" />
               </g>
-              <g className="t11 halo">
+              <g className={cn(T11, HALO)}>
                 <text x="236" y="257" textAnchor="end">
                   2
                 </text>
@@ -482,197 +650,197 @@ export function Diagrams() {
                 </text>
               </g>
 
-              <g className="t13">
-                <circle cx="340" cy="70" r="3.5" className="n-quiet" />
-                <text x="360" y="70" className="mono t12 muted">
+              <g className={T13}>
+                <circle cx="340" cy="70" r="3.5" className={NODE_QUIET} />
+                <text x="360" y="70" className={cn(MONO, T12, MUTED)}>
                   0001
                 </text>
 
-                <circle cx="340" cy="104" r="8" className="n-moot" />
-                <text x="360" y="104" className="mono b muted">
+                <circle cx="340" cy="104" r="8" className={NODE_MOOT} />
+                <text x="360" y="104" className={cn(MONO, BOLD, MUTED)}>
                   0002
                 </text>
-                <text x="412" y="104" className="strike">
+                <text x="412" y="104" className={STRIKE}>
                   Stay on Vite 7
                 </text>
-                <text x="700" y="104" className="mono t12 muted">
+                <text x="700" y="104" className={cn(MONO, T12, MUTED)}>
                   moot since 0007, per the index
                 </text>
 
-                <circle cx="340" cy="138" r="3.5" className="n-quiet" />
-                <text x="360" y="138" className="mono t12 muted">
+                <circle cx="340" cy="138" r="3.5" className={NODE_QUIET} />
+                <text x="360" y="138" className={cn(MONO, T12, MUTED)}>
                   0003
                 </text>
 
-                <circle cx="340" cy="172" r="8" className="n-struck" />
-                <text x="360" y="172" className="mono b">
+                <circle cx="340" cy="172" r="8" className={NODE_STRUCK} />
+                <text x="360" y="172" className={cn(MONO, BOLD)}>
                   0004
                 </text>
                 <text x="412" y="172">
                   React Native pivot
                 </text>
-                <text x="700" y="172" className="mono t12 muted">
+                <text x="700" y="172" className={cn(MONO, T12, MUTED)}>
                   0009, 0018
                 </text>
 
-                <circle cx="340" cy="206" r="8" className="n-struck" />
-                <text x="360" y="206" className="mono b">
+                <circle cx="340" cy="206" r="8" className={NODE_STRUCK} />
+                <text x="360" y="206" className={cn(MONO, BOLD)}>
                   0005
                 </text>
                 <text x="412" y="206">
                   Expo over NativeScript
                 </text>
-                <text x="700" y="206" className="mono t12 muted">
+                <text x="700" y="206" className={cn(MONO, T12, MUTED)}>
                   0011; index: 0006, 0007
                 </text>
 
-                <circle cx="340" cy="240" r="8" className="n-struck" />
-                <text x="360" y="240" className="mono b">
+                <circle cx="340" cy="240" r="8" className={NODE_STRUCK} />
+                <text x="360" y="240" className={cn(MONO, BOLD)}>
                   0006
                 </text>
                 <text x="412" y="240">
                   One core, two hosts
                 </text>
-                <text x="700" y="240" className="mono t12 muted">
+                <text x="700" y="240" className={cn(MONO, T12, MUTED)}>
                   0009, 0015
                 </text>
 
-                <circle cx="340" cy="274" r="8" className="n-struck" />
-                <text x="360" y="274" className="mono b">
+                <circle cx="340" cy="274" r="8" className={NODE_STRUCK} />
+                <text x="360" y="274" className={cn(MONO, BOLD)}>
                   0007
                 </text>
                 <text x="412" y="274">
                   Removing the NativeScript host
                 </text>
-                <text x="700" y="274" className="mono t12 muted">
+                <text x="700" y="274" className={cn(MONO, T12, MUTED)}>
                   0011, 0015
                 </text>
 
-                <circle cx="340" cy="308" r="3.5" className="n-quiet" />
-                <text x="360" y="308" className="mono t12 muted">
+                <circle cx="340" cy="308" r="3.5" className={NODE_QUIET} />
+                <text x="360" y="308" className={cn(MONO, T12, MUTED)}>
                   0008
                 </text>
 
-                <circle cx="340" cy="342" r="8" className="n-intact" />
-                <text x="360" y="342" className="mono b">
+                <circle cx="340" cy="342" r="8" className={NODE_INTACT} />
+                <text x="360" y="342" className={cn(MONO, BOLD)}>
                   0009
                 </text>
-                <text x="412" y="342" className="muted">
+                <text x="412" y="342" className={MUTED}>
                   Redux Toolkit for the core's state
                 </text>
 
-                <circle cx="340" cy="376" r="8" className="n-struck" />
-                <text x="360" y="376" className="mono b">
+                <circle cx="340" cy="376" r="8" className={NODE_STRUCK} />
+                <text x="360" y="376" className={cn(MONO, BOLD)}>
                   0010
                 </text>
                 <text x="412" y="376">
                   Design tokens as a shared package
                 </text>
-                <text x="700" y="376" className="mono t12 muted">
+                <text x="700" y="376" className={cn(MONO, T12, MUTED)}>
                   0022
                 </text>
 
-                <circle cx="340" cy="410" r="8" className="n-intact" />
-                <text x="360" y="410" className="mono b">
+                <circle cx="340" cy="410" r="8" className={NODE_INTACT} />
+                <text x="360" y="410" className={cn(MONO, BOLD)}>
                   0011
                 </text>
                 <text x="412" y="410">
                   Naming the app for release
                 </text>
 
-                <circle cx="340" cy="444" r="8" className="n-struck" />
-                <text x="360" y="444" className="mono b">
+                <circle cx="340" cy="444" r="8" className={NODE_STRUCK} />
+                <text x="360" y="444" className={cn(MONO, BOLD)}>
                   0012
                 </text>
                 <text x="412" y="444">
                   A list virtualizer
                 </text>
-                <text x="700" y="444" className="mono t12 muted">
+                <text x="700" y="444" className={cn(MONO, T12, MUTED)}>
                   0015, 0020
                 </text>
 
-                <circle cx="340" cy="478" r="3.5" className="n-quiet" />
-                <text x="360" y="478" className="mono t12 muted">
+                <circle cx="340" cy="478" r="3.5" className={NODE_QUIET} />
+                <text x="360" y="478" className={cn(MONO, T12, MUTED)}>
                   0013
                 </text>
 
-                <circle cx="340" cy="512" r="8" className="n-intact" />
-                <text x="360" y="512" className="mono b">
+                <circle cx="340" cy="512" r="8" className={NODE_INTACT} />
+                <text x="360" y="512" className={cn(MONO, BOLD)}>
                   0014
                 </text>
                 <text x="412" y="512">
                   The preview shell as a package
                 </text>
 
-                <circle cx="340" cy="546" r="8" className="n-intact" />
-                <text x="360" y="546" className="mono b">
+                <circle cx="340" cy="546" r="8" className={NODE_INTACT} />
+                <text x="360" y="546" className={cn(MONO, BOLD)}>
                   0015
                 </text>
                 <text x="412" y="546">
                   Reading correctiv.org through its REST API
                 </text>
 
-                <circle cx="340" cy="580" r="8" className="n-struck" />
-                <text x="360" y="580" className="mono b">
+                <circle cx="340" cy="580" r="8" className={NODE_STRUCK} />
+                <text x="360" y="580" className={cn(MONO, BOLD)}>
                   0016
                 </text>
                 <text x="412" y="580">
                   A door at the root
                 </text>
-                <text x="700" y="580" className="mono t12 muted">
+                <text x="700" y="580" className={cn(MONO, T12, MUTED)}>
                   0018, 0019, 0020
                 </text>
 
-                <circle cx="340" cy="614" r="3.5" className="n-quiet" />
-                <text x="360" y="614" className="mono t12 muted">
+                <circle cx="340" cy="614" r="3.5" className={NODE_QUIET} />
+                <text x="360" y="614" className={cn(MONO, T12, MUTED)}>
                   0017
                 </text>
 
-                <circle cx="340" cy="648" r="8" className="n-struck" />
-                <text x="360" y="648" className="mono b">
+                <circle cx="340" cy="648" r="8" className={NODE_STRUCK} />
+                <text x="360" y="648" className={cn(MONO, BOLD)}>
                   0018
                 </text>
                 <text x="412" y="648">
                   Removing the guest
                 </text>
-                <text x="700" y="648" className="mono t12 muted">
+                <text x="700" y="648" className={cn(MONO, T12, MUTED)}>
                   0019, 0020
                 </text>
 
-                <circle cx="340" cy="682" r="8" className="n-struck" />
-                <text x="360" y="682" className="mono b">
+                <circle cx="340" cy="682" r="8" className={NODE_STRUCK} />
+                <text x="360" y="682" className={cn(MONO, BOLD)}>
                   0019
                 </text>
                 <text x="412" y="682">
                   Identity lives in the session
                 </text>
-                <text x="700" y="682" className="mono t12 muted">
+                <text x="700" y="682" className={cn(MONO, T12, MUTED)}>
                   0020
                 </text>
 
-                <circle cx="340" cy="716" r="8" className="n-intact" />
-                <text x="360" y="716" className="mono b">
+                <circle cx="340" cy="716" r="8" className={NODE_INTACT} />
+                <text x="360" y="716" className={cn(MONO, BOLD)}>
                   0020
                 </text>
                 <text x="412" y="716">
                   No contribution in the app
                 </text>
 
-                <circle cx="340" cy="750" r="3.5" className="n-quiet" />
-                <text x="360" y="750" className="mono t12 muted">
+                <circle cx="340" cy="750" r="3.5" className={NODE_QUIET} />
+                <text x="360" y="750" className={cn(MONO, T12, MUTED)}>
                   0021
                 </text>
 
-                <circle cx="340" cy="784" r="8" className="n-intact" />
-                <text x="360" y="784" className="mono b">
+                <circle cx="340" cy="784" r="8" className={NODE_INTACT} />
+                <text x="360" y="784" className={cn(MONO, BOLD)}>
                   0022
                 </text>
                 <text x="412" y="784">
                   Three tiers of colour
                 </text>
 
-                <circle cx="340" cy="818" r="8" className="n-intact" />
-                <text x="360" y="818" className="mono b">
+                <circle cx="340" cy="818" r="8" className={NODE_INTACT} />
+                <text x="360" y="818" className={cn(MONO, BOLD)}>
                   0023
                 </text>
                 <text x="412" y="818">
@@ -680,37 +848,37 @@ export function Diagrams() {
                 </text>
               </g>
 
-              <rect x="888" y="470" width="204" height="352" rx="10" className="dashed" />
-              <text x="990" y="470" textAnchor="middle" className="t11 muted halo">
+              <rect x="888" y="470" width="204" height="352" rx="10" className={DASHED} />
+              <text x="990" y="470" textAnchor="middle" className={cn(T11, MUTED, HALO)}>
                 living documents
               </text>
-              <text x="990" y="492" textAnchor="middle" className="t11 muted">
+              <text x="990" y="492" textAnchor="middle" className={cn(T11, MUTED)}>
                 rewritten in place, unlike a record
               </text>
-              <rect x="900" y="514" width="180" height="30" rx="6" className="chip" />
-              <text x="990" y="529" textAnchor="middle" className="mono t12">
+              <rect x="900" y="514" width="180" height="30" rx="6" className={CHIP} />
+              <text x="990" y="529" textAnchor="middle" className={cn(MONO, T12)}>
                 README.md
               </text>
-              <rect x="900" y="604" width="180" height="30" rx="6" className="chip" />
-              <text x="990" y="619" textAnchor="middle" className="mono t12">
+              <rect x="900" y="604" width="180" height="30" rx="6" className={CHIP} />
+              <text x="990" y="619" textAnchor="middle" className={cn(MONO, T12)}>
                 ARCHITECTURE.md
               </text>
-              <text x="990" y="650" textAnchor="middle" className="t11 muted">
+              <text x="990" y="650" textAnchor="middle" className={cn(T11, MUTED)}>
                 0015 also: apps/, .github/, tests
               </text>
-              <rect x="900" y="776" width="180" height="30" rx="6" className="chip" />
-              <text x="990" y="791" textAnchor="middle" className="t12">
+              <rect x="900" y="776" width="180" height="30" rx="6" className={CHIP} />
+              <text x="990" y="791" textAnchor="middle" className={T12}>
                 code comments
               </text>
 
-              <g className="arc-doc">
+              <g className={ARC_DOC}>
                 <path d="M700 512 C 800 512 800 529 896 529" markerEnd="url(#d2-arrow)" />
                 <path d="M700 546 C 800 546 800 619 896 619" markerEnd="url(#d2-arrow)" />
                 <path d="M700 784 C 800 784 800 619 896 619" markerEnd="url(#d2-arrow)" />
                 <path d="M700 818 C 800 818 800 619 896 619" markerEnd="url(#d2-arrow)" />
                 <path d="M700 818 C 800 818 800 791 896 791" markerEnd="url(#d2-arrow)" />
               </g>
-              <g className="t11 halo">
+              <g className={cn(T11, HALO)}>
                 <text x="800" y="520" textAnchor="middle">
                   1
                 </text>
@@ -728,26 +896,26 @@ export function Diagrams() {
                 </text>
               </g>
 
-              <line x1="40" y1="848" x2="1092" y2="848" className="rule" />
-              <g className="t12">
-                <circle cx="60" cy="872" r="8" className="n-intact" />
+              <line x1="40" y1="848" x2="1092" y2="848" className={RULE} />
+              <g className={T12}>
+                <circle cx="60" cy="872" r="8" className={NODE_INTACT} />
                 <text x="76" y="872">
                   accepted, intact
                 </text>
-                <circle cx="260" cy="872" r="8" className="n-struck" />
+                <circle cx="260" cy="872" r="8" className={NODE_STRUCK} />
                 <text x="276" y="872">
                   accepted, some claims struck through in place
                 </text>
-                <circle cx="600" cy="872" r="8" className="n-moot" />
+                <circle cx="600" cy="872" r="8" className={NODE_MOOT} />
                 <text x="616" y="872">
-                  <tspan className="strike">moot</tspan>, superseded in substance
+                  <tspan className={STRIKE}>moot</tspan>, superseded in substance
                 </text>
                 <line
                   x1="40"
                   y1="908"
                   x2="96"
                   y2="908"
-                  className="arc"
+                  className={ARC}
                   markerEnd="url(#d2-arrow)"
                 />
                 <text x="108" y="908">
@@ -758,7 +926,7 @@ export function Diagrams() {
                   y1="936"
                   x2="96"
                   y2="936"
-                  className="arc-index"
+                  className={ARC_INDEX}
                   markerEnd="url(#d2-arrow-light)"
                 />
                 <text x="108" y="936">
@@ -769,7 +937,7 @@ export function Diagrams() {
                   y1="964"
                   x2="96"
                   y2="964"
-                  className="arc-doc"
+                  className={ARC_DOC}
                   markerEnd="url(#d2-arrow)"
                 />
                 <text x="108" y="964">
@@ -778,7 +946,7 @@ export function Diagrams() {
               </g>
             </svg>
           </section>
-          <figcaption>
+          <figcaption className={CAPTION}>
             <strong>A record is amended, never rewritten, so its history is a set of arcs.</strong>{' '}
             Solid arcs come from each later record's own section naming what it retires. The three
             dotted ones exist only in the index, because that section starts at 0009. Dashed edges
@@ -787,7 +955,7 @@ export function Diagrams() {
             record, striking four others and five claims in 0019 alone. 0016 is the most amended,
             struck three times and still accepted.
           </figcaption>
-          <div className="alt" id="d2-alt">
+          <div className={ALT} id="d2-alt">
             <h3>The same diagram as a list</h3>
             <p>
               Three states: <em>intact</em>, <em>accepted with some claims struck</em>, and{' '}
@@ -866,15 +1034,22 @@ export function Diagrams() {
         </figure>
       </section>
 
-      <section id="inside-core" aria-labelledby="h-inside-core">
-        <h2 id="h-inside-core">3. Inside the core</h2>
-        <p className="lede">
+      <section id="inside-core" aria-labelledby="h-inside-core" className={SECTION}>
+        <h2 id="h-inside-core" className={HEADING}>
+          3. Inside the core
+        </h2>
+        <p className={LEDE}>
           Fifty-four TypeScript files in seven layers. Imports point down the stack, the contracts
           sit at the bottom, and below them is a line nothing in the package crosses.
         </p>
-        <figure>
-          <section className="diagram d3" aria-label="Diagram 3, scrollable" tabIndex={0}>
-            <svg viewBox="0 0 1040 710" aria-labelledby="d3-title" aria-describedby="d3-alt">
+        <figure className={FIGURE}>
+          <section className={SCROLL_BOX} aria-label="Diagram 3, scrollable" tabIndex={0}>
+            <svg
+              viewBox="0 0 1040 710"
+              className={cn(SURFACE, 'block h-[710px] w-[1040px] max-w-none')}
+              aria-labelledby="d3-title"
+              aria-describedby="d3-alt"
+            >
               <title id="d3-title">
                 Inside packages/app-core: stores over articles and media, over services and data,
                 over lib, over the ports and types, with a hard boundary below and the platform SDKs
@@ -890,247 +1065,247 @@ export function Diagrams() {
                   markerHeight="8"
                   orient="auto"
                 >
-                  <path d="M0 0 L10 5 L0 10 z" className="mk" />
+                  <path d="M0 0 L10 5 L0 10 z" className={MARKER} />
                 </marker>
               </defs>
 
-              <line x1="22" y1="84" x2="22" y2="556" className="wire" markerEnd="url(#d3-arrow)" />
+              <line x1="22" y1="84" x2="22" y2="556" className={WIRE} markerEnd="url(#d3-arrow)" />
               <text
                 transform="rotate(-90 10 320)"
                 x="10"
                 y="320"
                 textAnchor="middle"
-                className="t11 muted"
+                className={cn(T11, MUTED)}
               >
                 imports point down the stack
               </text>
 
-              <rect x="40" y="28" width="680" height="548" rx="8" className="box box-core" />
-              <text x="60" y="56" className="mono b t16">
+              <rect x="40" y="28" width="680" height="548" rx="8" className={BOX_CORE} />
+              <text x="60" y="56" className={cn(MONO, BOLD, T16)}>
                 packages/app-core
               </text>
-              <text x="700" y="56" textAnchor="end" className="muted t12">
+              <text x="700" y="56" textAnchor="end" className={cn(MUTED, T12)}>
                 54 TypeScript files
               </text>
 
-              <rect x="56" y="80" width="648" height="84" rx="6" className="chip" />
-              <text x="72" y="100" className="mono b t13">
+              <rect x="56" y="80" width="648" height="84" rx="6" className={CHIP} />
+              <text x="72" y="100" className={cn(MONO, BOLD, T13)}>
                 stores
               </text>
-              <text x="140" y="100" className="t12 muted">
+              <text x="140" y="100" className={cn(T12, MUTED)}>
                 one Redux Toolkit store, 12 slices
               </text>
-              <text x="72" y="126" className="t12">
+              <text x="72" y="126" className={T12}>
                 The core owns the slices and exports{' '}
-                <tspan className="mono">createAppStore()</tspan>.
+                <tspan className={MONO}>createAppStore()</tspan>.
               </text>
-              <text x="72" y="146" className="t12">
+              <text x="72" y="146" className={T12}>
                 The host constructs the instance.
               </text>
 
-              <rect x="56" y="180" width="440" height="110" rx="6" className="chip" />
-              <text x="72" y="200" className="mono b t13">
+              <rect x="56" y="180" width="440" height="110" rx="6" className={CHIP} />
+              <text x="72" y="200" className={cn(MONO, BOLD, T13)}>
                 articles
               </text>
-              <text x="150" y="200" className="t12 muted">
+              <text x="150" y="200" className={cn(T12, MUTED)}>
                 the Article model and its load cascade
               </text>
-              <text x="72" y="236" className="mono t11 muted">
+              <text x="72" y="236" className={cn(MONO, T11, MUTED)}>
                 articles/extract
               </text>
-              <rect x="72" y="250" width="56" height="24" rx="5" className="box" />
-              <text x="100" y="262" textAnchor="middle" className="mono t12">
+              <rect x="72" y="250" width="56" height="24" rx="5" className={BOX} />
+              <text x="100" y="262" textAnchor="middle" className={cn(MONO, T12)}>
                 string
               </text>
-              <rect x="136" y="250" width="46" height="24" rx="5" className="box" />
-              <text x="159" y="262" textAnchor="middle" className="mono t12">
+              <rect x="136" y="250" width="46" height="24" rx="5" className={BOX} />
+              <text x="159" y="262" textAnchor="middle" className={cn(MONO, T12)}>
                 DOM
               </text>
-              <text x="194" y="262" className="t12">
-                two backends behind one <tspan className="mono">ArticleExtractor</tspan>
+              <text x="194" y="262" className={T12}>
+                two backends behind one <tspan className={MONO}>ArticleExtractor</tspan>
               </text>
 
-              <rect x="512" y="180" width="192" height="110" rx="6" className="chip" />
-              <text x="528" y="200" className="mono b t13">
+              <rect x="512" y="180" width="192" height="110" rx="6" className={CHIP} />
+              <text x="528" y="200" className={cn(MONO, BOLD, T13)}>
                 media
               </text>
-              <text x="528" y="230" className="t12">
+              <text x="528" y="230" className={T12}>
                 one rule:
               </text>
-              <text x="528" y="248" className="t12">
+              <text x="528" y="248" className={T12}>
                 only one medium
               </text>
-              <text x="528" y="266" className="t12">
+              <text x="528" y="266" className={T12}>
                 plays at a time
               </text>
 
-              <rect x="56" y="306" width="440" height="110" rx="6" className="chip" />
-              <text x="72" y="326" className="mono b t13">
+              <rect x="56" y="306" width="440" height="110" rx="6" className={CHIP} />
+              <text x="72" y="326" className={cn(MONO, BOLD, T13)}>
                 services
               </text>
-              <text x="150" y="326" className="t12 muted">
+              <text x="150" y="326" className={cn(T12, MUTED)}>
                 10 files
               </text>
-              <g className="mono t12">
-                <rect x="72" y="344" width="44" height="24" rx="5" className="box" />
+              <g className={cn(MONO, T12)}>
+                <rect x="72" y="344" width="44" height="24" rx="5" className={BOX} />
                 <text x="94" y="356" textAnchor="middle">
                   auth
                 </text>
-                <rect x="122" y="344" width="52" height="24" rx="5" className="box" />
+                <rect x="122" y="344" width="52" height="24" rx="5" className={BOX} />
                 <text x="148" y="356" textAnchor="middle">
                   cache
                 </text>
-                <rect x="180" y="344" width="44" height="24" rx="5" className="box" />
+                <rect x="180" y="344" width="44" height="24" rx="5" className={BOX} />
                 <text x="202" y="356" textAnchor="middle">
                   http
                 </text>
-                <rect x="230" y="344" width="74" height="24" rx="5" className="box" />
+                <rect x="230" y="344" width="74" height="24" rx="5" className={BOX} />
                 <text x="267" y="356" textAnchor="middle">
                   peertube
                 </text>
-                <rect x="310" y="344" width="66" height="24" rx="5" className="box" />
+                <rect x="310" y="344" width="66" height="24" rx="5" className={BOX} />
                 <text x="343" y="356" textAnchor="middle">
                   podcast
                 </text>
-                <rect x="72" y="380" width="52" height="24" rx="5" className="box" />
+                <rect x="72" y="380" width="52" height="24" rx="5" className={BOX} />
                 <text x="98" y="392" textAnchor="middle">
                   radio
                 </text>
-                <rect x="130" y="380" width="36" height="24" rx="5" className="box" />
+                <rect x="130" y="380" width="36" height="24" rx="5" className={BOX} />
                 <text x="148" y="392" textAnchor="middle">
                   rss
                 </text>
-                <rect x="172" y="380" width="58" height="24" rx="5" className="box" />
+                <rect x="172" y="380" width="58" height="24" rx="5" className={BOX} />
                 <text x="201" y="392" textAnchor="middle">
                   search
                 </text>
-                <rect x="236" y="380" width="80" height="24" rx="5" className="box" />
+                <rect x="236" y="380" width="80" height="24" rx="5" className={BOX} />
                 <text x="276" y="392" textAnchor="middle">
                   spotlight
                 </text>
-                <rect x="322" y="380" width="30" height="24" rx="5" className="box" />
+                <rect x="322" y="380" width="30" height="24" rx="5" className={BOX} />
                 <text x="337" y="392" textAnchor="middle">
                   wp
                 </text>
               </g>
 
-              <rect x="512" y="306" width="192" height="110" rx="6" className="chip" />
-              <text x="528" y="326" className="mono b t13">
+              <rect x="512" y="306" width="192" height="110" rx="6" className={CHIP} />
+              <text x="528" y="326" className={cn(MONO, BOLD, T13)}>
                 data
               </text>
-              <text x="580" y="326" className="t12 muted">
+              <text x="580" y="326" className={cn(T12, MUTED)}>
                 11 files
               </text>
-              <text x="528" y="356" className="t12">
+              <text x="528" y="356" className={T12}>
                 typed content,
               </text>
-              <text x="528" y="374" className="t12">
+              <text x="528" y="374" className={T12}>
                 checked by the compiler
               </text>
 
-              <rect x="56" y="432" width="648" height="44" rx="6" className="chip" />
-              <text x="72" y="454" className="mono b t13">
+              <rect x="56" y="432" width="648" height="44" rx="6" className={CHIP} />
+              <text x="72" y="454" className={cn(MONO, BOLD, T13)}>
                 lib
               </text>
-              <text x="120" y="454" className="t12">
+              <text x="120" y="454" className={T12}>
                 dependency-free string and date helpers
               </text>
 
-              <rect x="56" y="492" width="648" height="68" rx="6" className="chip" />
-              <text x="72" y="512" className="mono b t13">
+              <rect x="56" y="492" width="648" height="68" rx="6" className={CHIP} />
+              <text x="72" y="512" className={cn(MONO, BOLD, T13)}>
                 ports
               </text>
-              <text x="128" y="512" className="mono t11 muted">
+              <text x="128" y="512" className={cn(MONO, T11, MUTED)}>
                 ports/index.ts, 1 file
               </text>
-              <g className="mono t12">
-                <rect x="72" y="528" width="106" height="24" rx="5" className="chip-port" />
+              <g className={cn(MONO, T12)}>
+                <rect x="72" y="528" width="106" height="24" rx="5" className={CHIP_PORT} />
                 <text x="125" y="540" textAnchor="middle">
                   KeyValueStore
                 </text>
-                <rect x="184" y="528" width="78" height="24" rx="5" className="chip-port" />
+                <rect x="184" y="528" width="78" height="24" rx="5" className={CHIP_PORT} />
                 <text x="223" y="540" textAnchor="middle">
                   BlobStore
                 </text>
-                <rect x="268" y="528" width="106" height="24" rx="5" className="chip-port" />
+                <rect x="268" y="528" width="106" height="24" rx="5" className={CHIP_PORT} />
                 <text x="321" y="540" textAnchor="middle">
                   ContentBundle
                 </text>
-                <rect x="380" y="528" width="98" height="24" rx="5" className="chip-port" />
+                <rect x="380" y="528" width="98" height="24" rx="5" className={CHIP_PORT} />
                 <text x="429" y="540" textAnchor="middle">
                   AudioBackend
                 </text>
-                <rect x="484" y="528" width="148" height="24" rx="5" className="box" />
+                <rect x="484" y="528" width="148" height="24" rx="5" className={BOX} />
                 <text x="558" y="540" textAnchor="middle">
                   configurePlatform()
                 </text>
               </g>
-              <text x="700" y="512" textAnchor="end" className="mono b t13">
+              <text x="700" y="512" textAnchor="end" className={cn(MONO, BOLD, T13)}>
                 types
               </text>
-              <text x="700" y="540" textAnchor="end" className="t11 muted">
+              <text x="700" y="540" textAnchor="end" className={cn(T11, MUTED)}>
                 the shared contracts
               </text>
 
-              <line x1="40" y1="600" x2="720" y2="600" className="boundary" />
-              <text x="40" y="622" className="t12 b">
+              <line x1="40" y1="600" x2="720" y2="600" className={BOUNDARY} />
+              <text x="40" y="622" className={cn(T12, BOLD)}>
                 hard boundary, nothing crosses it
               </text>
-              <text x="40" y="640" className="t12 muted">
-                <tspan className="mono">packages/app-core/test/boundary.test.ts</tspan> fails the
+              <text x="40" y="640" className={cn(T12, MUTED)}>
+                <tspan className={MONO}>packages/app-core/test/boundary.test.ts</tspan> fails the
                 build if anything below is imported above this line
               </text>
-              <g className="mono t12 muted">
-                <rect x="40" y="660" width="100" height="30" rx="6" className="ghost" />
+              <g className={cn(MONO, T12, MUTED)}>
+                <rect x="40" y="660" width="100" height="30" rx="6" className={GHOST} />
                 <text x="90" y="675" textAnchor="middle">
                   react-native
                 </text>
-                <rect x="150" y="660" width="50" height="30" rx="6" className="ghost" />
+                <rect x="150" y="660" width="50" height="30" rx="6" className={GHOST} />
                 <text x="175" y="675" textAnchor="middle">
                   expo
                 </text>
-                <rect x="210" y="660" width="90" height="30" rx="6" className="ghost" />
+                <rect x="210" y="660" width="90" height="30" rx="6" className={GHOST} />
                 <text x="255" y="675" textAnchor="middle">
                   expo-audio
                 </text>
-                <rect x="310" y="660" width="210" height="30" rx="6" className="ghost" />
+                <rect x="310" y="660" width="210" height="30" rx="6" className={GHOST} />
                 <text x="415" y="675" textAnchor="middle">
                   @react-native-async-storage
                 </text>
               </g>
-              <text x="536" y="675" className="t11 muted">
+              <text x="536" y="675" className={cn(T11, MUTED)}>
                 platform SDKs, reached by the host only
               </text>
 
-              <rect x="740" y="80" width="280" height="84" rx="6" className="callout" />
-              <line x1="740" y1="122" x2="704" y2="122" className="lead" />
-              <text x="754" y="102" className="t11 muted">
+              <rect x="740" y="80" width="280" height="84" rx="6" className={CALLOUT} />
+              <line x1="740" y1="122" x2="704" y2="122" className={LEAD} />
+              <text x="754" y="102" className={cn(T11, MUTED)}>
                 convention
               </text>
-              <text x="754" y="122" className="t12">
+              <text x="754" y="122" className={T12}>
                 Derived values are exported selectors
               </text>
-              <text x="754" y="140" className="t12">
+              <text x="754" y="140" className={T12}>
                 taking state, never store methods.
               </text>
 
-              <rect x="740" y="476" width="280" height="100" rx="6" className="callout" />
-              <line x1="740" y1="526" x2="704" y2="526" className="lead" />
-              <text x="754" y="498" className="t11 muted">
+              <rect x="740" y="476" width="280" height="100" rx="6" className={CALLOUT} />
+              <line x1="740" y1="526" x2="704" y2="526" className={LEAD} />
+              <text x="754" y="498" className={cn(T11, MUTED)}>
                 convention
               </text>
-              <text x="754" y="518" className="t12">
+              <text x="754" y="518" className={T12}>
                 Subpath imports, no barrel:
               </text>
-              <text x="754" y="538" className="mono t11">
+              <text x="754" y="538" className={cn(MONO, T11)}>
                 @correctiv/app-core/stores/session
               </text>
-              <text x="754" y="558" className="t12">
+              <text x="754" y="558" className={T12}>
                 The root entry exposes only the ports.
               </text>
             </svg>
           </section>
-          <figcaption>
+          <figcaption className={CAPTION}>
             <strong>
               Every layer imports downward, and the lowest one is a set of interfaces.
             </strong>{' '}
@@ -1138,7 +1313,7 @@ export function Diagrams() {
             host's business, and a test keeps them out. The root entry exports only the ports, so a
             host reaches anything else by its path.
           </figcaption>
-          <div className="alt" id="d3-alt">
+          <div className={ALT} id="d3-alt">
             <h3>The same diagram as a list</h3>
             <p>
               <code>packages/app-core</code>, 54 TypeScript files. Imports point down the stack.

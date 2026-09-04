@@ -9,12 +9,18 @@ import { cn } from '../../lib/cn';
  * cannot supply.
  *
  * The workbench needs the frame and the dock to share the width on terms the
- * reader sets, and the split has to survive a reload, which `autoSaveId` on the
- * group arranges. Keyboard resizing comes with the primitive.
+ * reader sets, and keyboard resizing comes with the primitive.
  *
- * shadcn's wrapper is written against version 2 of this package, whose exports
- * were `PanelGroup` and `PanelResizeHandle`. Version 4 calls them `Group` and
- * `Separator`, so the names are mapped here rather than in every caller.
+ * shadcn's wrapper is written against version 2 of this package, and version 4
+ * moved a good deal: the exports are `Group` and `Separator` rather than
+ * `PanelGroup` and `PanelResizeHandle`, and a group takes its orientation from
+ * its own flex direction rather than from a `direction` prop. The names are
+ * mapped here so no caller carries the difference.
+ *
+ * One rule of version 4 is worth knowing before writing a size: a NUMBER is
+ * pixels and a STRING is a percentage. `defaultSize={38}` is thirty-eight
+ * pixels, not thirty-eight percent, and it renders as a sliver rather than as an
+ * error. Write `"38%"`.
  */
 export const ResizablePanel = Panel;
 

@@ -1,6 +1,8 @@
+import { ChevronRight, ExternalLink, Search as SearchIcon } from 'lucide-react';
 import { useMemo, useState } from 'react';
 
 import api from 'virtual:api';
+import type { ApiModule, ApiSymbol } from 'virtual:api';
 import docsModule from 'virtual:docs';
 import { symbolId } from '../nav';
 
@@ -48,76 +50,69 @@ export function Reference() {
   const symbolCount = modules.reduce((n, m) => n + m.symbols.length, 0);
 
   return (
-    <main className="content reference" id="content">
-      <article className="doc" id="top">
-        <div className="ref-head">
-          <h1>Reference</h1>
-          <p>
-            Every exported symbol in <code>packages/app-core</code>, extracted from the source and
-            its doc comments. The core has no barrel, so a module here is the subpath you import.
-            This is a lookup surface; the architecture pages are the way in.
-          </p>
+    <main id="content" className="min-w-0 flex-1 px-m py-ml lg:px-ml">
+      <article className="mx-auto max-w-wide">
+        <h1 className="text-headline-xl font-bold leading-tight tracking-tight">Reference</h1>
+        <p className="mt-xs max-w-content text-m leading-relaxed text-on-canvas-muted">
+          Every exported symbol in <code className="font-mono">packages/app-core</code>, extracted
+          from the source and its doc comments. The core has no barrel, so a module here is the
+          subpath you import. This is a lookup surface; the architecture pages are the way in.
+        </p>
+
+        {/* The filter follows the reader down 53 modules, because a lookup surface
+            whose filter has scrolled away is a list. It sits below the site header
+            rather than over it, hence the offset and the lower stacking order. */}
+        <div className="sticky top-[3.5rem] z-10 mt-m mb-m border-b border-stroke bg-canvas py-s">
+          <div className="flex flex-wrap items-center gap-s">
+            <label htmlFor="ref-q" className="sr-only">
+              Filter modules and symbols
+            </label>
+            <div className="relative min-w-0 flex-1">
+              <SearchIcon
+                aria-hidden="true"
+                className="pointer-events-none absolute left-xs top-1/2 size-[1rem] -translate-y-1/2 text-on-canvas-muted"
+              />
+              <input
+                id="ref-q"
+                type="search"
+                placeholder="Filter, for example loadArticle or stores/"
+                value={query}
+                onChange={(event) => setQuery(event.target.value)}
+                className="h-[2.25rem] w-full rounded-md border border-stroke bg-canvas pl-l pr-s text-m text-on-canvas placeholder:text-on-canvas-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent"
+              />
+            </div>
+            <p aria-live="polite" className="text-s tabular-nums text-on-canvas-muted">
+              {modules.length} modules, {symbolCount} symbols
+            </p>
+          </div>
         </div>
 
-        <div className="ref-filter">
-          <label className="vh" htmlFor="ref-q">
-            Filter modules and symbols
-          </label>
-          <input
-            id="ref-q"
-            type="search"
-            placeholder="Filter, for example loadArticle or stores/"
-            value={query}
-            onChange={(event) => setQuery(event.target.value)}
-          />
-          <span className="count">
-            {modules.length} modules, {symbolCount} symbols
-          </span>
-        </div>
-
-        {modules.length === 0 && <p className="ref-empty">Nothing matches that.</p>}
+        {modules.length === 0 && (
+          <p className="py-2xl text-center text-m text-on-canvas-muted">Nothing matches that.</p>
+        )}
 
         {modules.map((module) => (
-          <section className="ref-module" key={module.subpath}>
-            <h2 id={`m-${module.subpath.replace(/\//g, '-')}`}>{module.subpath}</h2>
-            <p className="ref-import">
-              import …&nbsp;from &apos;@correctiv/app-core/{module.subpath}&apos;
+          <section className="mb-xl" key={module.subpath}>
+            <h2
+              id={`m-${module.subpath.replace(/\//g, '-')}`}
+              className="scroll-mt-[7rem] font-mono text-headline-m font-semibold leading-tight"
+            >
+              {module.subpath}
+            </h2>
+            <p className="mt-3xs break-words font-mono text-s text-on-canvas-muted">
+              {`import … from '@correctiv/app-core/${module.subpath}'`}
             </p>
             {module.doc && (
-              <div className="ref-doc" dangerouslySetInnerHTML={{ __html: module.doc }} />
+              <div
+                className="prose prose-sm mt-s max-w-content"
+                dangerouslySetInnerHTML={{ __html: module.doc }}
+              />
             )}
 
-            <ul className="ref-symbols">
+            <ul className="mt-s divide-y divide-stroke overflow-hidden rounded-md border border-stroke">
               {module.symbols.map((symbol) => (
                 <li key={symbol.name}>
-                  <details className="ref-symbol" id={symbolId(module.subpath, symbol.name)}>
-                    <summary>
-                      <span className="ref-kind">{symbol.kind}</span>
-                      <span className="ref-name">{symbol.name}</span>
-                      <span className="ref-summary">
-                        {symbol.summary || (
-                          <span className="ref-undocumented">No doc comment.</span>
-                        )}
-                      </span>
-                    </summary>
-                    <div className="ref-body">
-                      {symbol.signature && <p className="ref-signature">{symbol.signature}</p>}
-                      {symbol.doc && (
-                        <div
-                          className="ref-prose"
-                          dangerouslySetInnerHTML={{ __html: symbol.doc }}
-                        />
-                      )}
-                      <a
-                        className="ref-source"
-                        href={`${BLOB}/${module.file}#L${symbol.line}`}
-                        target="_blank"
-                        rel="noreferrer noopener"
-                      >
-                        {module.file}:{symbol.line}
-                      </a>
-                    </div>
-                  </details>
+                  <Symbol module={module} symbol={symbol} />
                 </li>
               ))}
             </ul>
@@ -125,5 +120,64 @@ export function Reference() {
         ))}
       </article>
     </main>
+  );
+}
+
+/**
+ * One symbol, as a disclosure the search palette can open from the outside.
+ *
+ * A native `details` rather than a scripted one, because `ui/Search.tsx` jumps to
+ * a symbol by setting `open` on the element it finds by id. The React state here
+ * only mirrors that back for `aria-expanded`; the element itself stays the owner
+ * of whether it is open, so an open from the palette is not undone on the next
+ * render.
+ */
+function Symbol({ module, symbol }: { module: ApiModule; symbol: ApiSymbol }) {
+  const [open, setOpen] = useState(false);
+
+  return (
+    <details
+      id={symbolId(module.subpath, symbol.name)}
+      onToggle={(event) => setOpen(event.currentTarget.open)}
+      className="group scroll-mt-[7rem]"
+    >
+      <summary
+        aria-expanded={open}
+        className="flex cursor-pointer list-none items-center gap-xs px-s py-2xs hover:bg-surface focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-accent [&::-webkit-details-marker]:hidden"
+      >
+        <ChevronRight
+          aria-hidden="true"
+          className="size-[0.875rem] shrink-0 text-on-canvas-muted transition-transform group-open:rotate-90"
+        />
+        <span className="hidden w-[4.5rem] shrink-0 font-mono text-s text-on-canvas-muted sm:block">
+          {symbol.kind}
+        </span>
+        <span className="shrink-0 font-mono text-m font-semibold">{symbol.name}</span>
+        <span className="min-w-0 flex-1 truncate text-s text-on-canvas-muted">
+          {symbol.summary || <span className="italic">No doc comment.</span>}
+        </span>
+      </summary>
+
+      <div className="border-t border-stroke bg-surface px-s py-s sm:pl-xl">
+        {symbol.signature && (
+          <p className="whitespace-pre-wrap break-words font-mono text-s">{symbol.signature}</p>
+        )}
+        {symbol.doc && (
+          <div
+            className="prose prose-sm mt-s max-w-content"
+            dangerouslySetInnerHTML={{ __html: symbol.doc }}
+          />
+        )}
+        <a
+          href={`${BLOB}/${module.file}#L${symbol.line}`}
+          target="_blank"
+          rel="noreferrer noopener"
+          className="mt-s inline-flex items-center gap-3xs font-mono text-s text-on-canvas-muted underline decoration-accent underline-offset-2 hover:text-on-canvas"
+        >
+          {module.file}:{symbol.line}
+          <ExternalLink aria-hidden="true" className="size-[0.75rem]" />
+        </a>
+      </div>
+    </details>
   );
 }

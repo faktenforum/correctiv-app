@@ -2,10 +2,22 @@ import { Fragment, useEffect, useState } from 'react';
 
 import { href } from '../../router';
 import type { Appearance } from '../../theme';
+import { cn } from '../../lib/cn';
 import { DEVICES } from '../devices';
 import { ROUTES } from '../routes';
 import { frameSize, writeHash, type PreviewState } from '../state';
 import type { Status } from '../api';
+
+/** The toolbar's one field shape, so its selects and inputs agree. */
+const FIELD =
+  'h-[1.75rem] rounded-md border border-stroke bg-canvas px-2xs text-s text-on-canvas focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent';
+
+/** And its one label shape, above each field. */
+const LABEL = 'text-s text-on-canvas-muted';
+
+/** The toolbar's one button shape, so its six controls agree. */
+const BTN =
+  'inline-flex h-[1.75rem] items-center rounded-md border border-stroke bg-canvas px-xs text-s text-on-canvas transition-colors hover:bg-surface focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent disabled:opacity-50';
 
 interface Props {
   state: PreviewState;
@@ -58,25 +70,30 @@ export function Toolbar({
 
   return (
     <>
-      <header className="top">
+      <header className="flex flex-wrap items-center gap-x-m gap-y-xs border-b border-stroke bg-canvas px-s py-xs">
         {/*
           The site's header stands down on this route, so this is the only chrome
           the page has and the only way back into the handbook. The link goes
           through `href()` because the site is served from `/correctiv-app/` on
           Pages, where a bare `/` leaves it.
         */}
-        <div className="brand">
-          <span className="mark" aria-hidden="true" />
-          <a className="muted" href={href('/')}>
+        <div className="flex items-center gap-2xs text-m font-semibold tracking-tight focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent">
+          <span className="size-[0.875rem] rounded-s bg-accent" aria-hidden="true" />
+          <a className="text-on-canvas-muted" href={href('/')}>
             CORRECTIV Handbook
           </a>
           <h1>Workbench</h1>
         </div>
 
-        <div className="toolbar" role="toolbar" aria-label="Frame">
-          <label className="field">
-            <span>Device</span>
+        <div
+          className="flex flex-wrap items-end gap-x-m gap-y-xs"
+          role="toolbar"
+          aria-label="Frame"
+        >
+          <label className="flex flex-col gap-4xs">
+            <span className={LABEL}>Device</span>
             <select
+              className={FIELD}
               value={state.device}
               onChange={(e) =>
                 onChange({
@@ -102,13 +119,12 @@ export function Toolbar({
             which is how the fields appear without anyone looking for them.
           */}
           {state.device === 'custom' && (
-            <div className="field">
-              <span>Size, CSS px</span>
-              <span className="row" style={{ gap: 4 }}>
+            <div className="flex flex-col gap-4xs">
+              <span className={LABEL}>Size, CSS px</span>
+              <span className="flex items-center gap-3xs">
                 <input
+                  className={cn(FIELD, 'w-[4.5rem] text-center font-mono tabular-nums')}
                   type="number"
-                  className="mono"
-                  style={{ width: 70 }}
                   min={240}
                   max={2400}
                   aria-label="Width in CSS pixels"
@@ -124,9 +140,8 @@ export function Toolbar({
                 />
                 ×
                 <input
+                  className={cn(FIELD, 'w-[4.5rem] text-center font-mono tabular-nums')}
                   type="number"
-                  className="mono"
-                  style={{ width: 70 }}
                   min={320}
                   max={2400}
                   aria-label="Height in CSS pixels"
@@ -153,9 +168,9 @@ export function Toolbar({
             the stylesheet paints `[aria-pressed="true"]` inside `.seg` exactly as
             it paints `[aria-checked="true"]`.
           */}
-          <fieldset className="field">
+          <fieldset className="flex flex-col gap-4xs">
             <legend>Orientation</legend>
-            <div className="seg">
+            <div className="flex items-center rounded-md border border-stroke p-4xs">
               <button
                 type="button"
                 aria-pressed={!state.landscape}
@@ -173,9 +188,10 @@ export function Toolbar({
             </div>
           </fieldset>
 
-          <label className="field">
-            <span>Zoom</span>
+          <label className="flex flex-col gap-4xs">
+            <span className={LABEL}>Zoom</span>
             <select
+              className={FIELD}
               value={String(state.zoom)}
               onChange={(e) =>
                 onChange({ zoom: e.target.value === 'fit' ? 'fit' : Number(e.target.value) })
@@ -189,11 +205,11 @@ export function Toolbar({
             </select>
           </label>
 
-          <label className="field route">
-            <span>Route</span>
+          <label className="flex min-w-[14rem] flex-1 flex-col gap-4xs">
+            <span className={LABEL}>Route</span>
             <input
+              className={cn(FIELD, 'w-full font-mono')}
               type="text"
-              className="mono"
               list="routes"
               spellCheck={false}
               autoComplete="off"
@@ -213,15 +229,15 @@ export function Toolbar({
             </datalist>
           </label>
 
-          <div className="field">
+          <div className="flex flex-col gap-4xs">
             <span aria-hidden="true">{' '}</span>
-            <span className="row" style={{ gap: 6 }}>
-              <button type="button" className="btn" title="Reload the frame" onClick={onReload}>
+            <span className="flex items-center gap-2xs">
+              <button type="button" className={BTN} title="Reload the frame" onClick={onReload}>
                 Reload
               </button>
               <button
                 type="button"
-                className="btn"
+                className={BTN}
                 title="Open the app on its own, without the frame"
                 onClick={onRaw}
               >
@@ -231,7 +247,7 @@ export function Toolbar({
           </div>
         </div>
 
-        <div className="grow" />
+        <div className="flex-1" />
 
         {/*
           Two appearances meet on this page and the whole point is that they are
@@ -241,21 +257,35 @@ export function Toolbar({
           second `useAppearance()` here would be a second copy of it and the two
           would disagree the moment either was used.
 
-          A cycle rather than three buttons, as in the design, and `.btn.on`
-          rather than `aria-pressed`: a three-state control has no honest pressed
-          value, and the button's own text says which state it is in.
+          A cycle rather than three buttons, and no `aria-pressed`: a three-state
+          control has no honest pressed value, and the button's own text says
+          which state it is in.
         */}
         <ChromeTheme appearance={appearance} onAppearance={onAppearance} />
 
         <button
           type="button"
-          className="switch"
           role="switch"
           aria-checked={state.tools}
           title="Show the workbench tools"
           onClick={() => onChange({ tools: !state.tools })}
+          className="inline-flex h-[1.75rem] items-center gap-xs rounded-full border border-stroke bg-canvas pl-s pr-3xs text-s font-medium focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent"
         >
-          Tools <span className="track" aria-hidden="true" />
+          Tools
+          <span
+            aria-hidden="true"
+            className={cn(
+              'flex h-[1.125rem] w-[2rem] items-center rounded-full p-4xs transition-colors',
+              state.tools ? 'bg-accent' : 'bg-stroke',
+            )}
+          >
+            <span
+              className={cn(
+                'size-[0.875rem] rounded-full bg-white transition-transform',
+                state.tools && 'translate-x-[0.875rem]',
+              )}
+            />
+          </span>
         </button>
       </header>
 
@@ -276,7 +306,7 @@ function ChromeTheme({
   return (
     <button
       type="button"
-      className={appearance === 'system' ? 'btn' : 'btn on'}
+      className={cn(BTN, appearance !== 'system' && 'bg-surface')}
       title="The appearance of this page. The app inside the frame keeps its own setting."
       onClick={() => onAppearance(next)}
     >
@@ -308,8 +338,8 @@ function LinkBar({ state }: { state: PreviewState }) {
   const params = cut === -1 ? [] : hash.slice(cut + 1).split('&');
 
   return (
-    <div className="linkbar">
-      <span className="muted">This view as a link</span>
+    <div className="flex flex-wrap items-center gap-xs border-b border-stroke bg-surface px-s py-3xs text-s">
+      <span className="text-on-canvas-muted">This view as a link</span>
       <code aria-live="off">
         {window.location.pathname}#<b>{route}</b>
         {params.map((pair, index) => {
@@ -324,7 +354,7 @@ function LinkBar({ state }: { state: PreviewState }) {
       </code>
       <button
         type="button"
-        className="btn small"
+        className={cn(BTN, 'h-[1.5rem]')}
         onClick={() => {
           void navigator.clipboard.writeText(window.location.href);
           setCopied(true);
@@ -334,7 +364,7 @@ function LinkBar({ state }: { state: PreviewState }) {
       </button>
       {/* `output`, not a span with `role="status"`: same live region, and the
           element the linter and the platform both name for it. */}
-      <output className="flash">{copied ? 'Copied' : ''}</output>
+      <output className="text-on-canvas-accent">{copied ? 'Copied' : ''}</output>
     </div>
   );
 }

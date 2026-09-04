@@ -19,6 +19,7 @@ import { apply as applyTokens, type Scheme } from './frame/tokens';
 import { addLog, clearLogs, getLogs, subscribeLogs } from './logs';
 import { frameSize, type PreviewState } from './state';
 import { getState, set, start, subscribe } from './store';
+import { ResizableHandle, ResizablePanel, ResizablePanelGroup } from '../ui/kit/resizable';
 import { Panels, type ToolBindings } from './ui/Panels';
 import { Readout } from './ui/Readout';
 import { Stage } from './ui/Stage';
@@ -229,16 +230,11 @@ export function Workbench({
   };
 
   return (
-    // Four rows, as the stylesheet's `.workbench` grid expects: the bar, the
-    // link line, the split, and the readout. The two switches it keys on ride
-    // this element rather than `<body>`, which belongs to the site: this is one
-    // route of it, and a page that stamps the document leaks into every page the
-    // reader visits next.
-    <div
-      className="workbench"
-      data-tools={state.tools ? 'on' : 'off'}
-      data-build={status.handle ? 'dev' : 'static'}
-    >
+    // Four rows: the bar, the link line, the split that takes what is left, and
+    // the readout. `data-dragging` rides this element rather than `<body>`, which
+    // belongs to the site: this is one route of it, and a page that stamps the
+    // document leaks into every page the reader visits next.
+    <div className="grid h-dvh grid-rows-[auto_auto_minmax(0,1fr)_auto] bg-canvas text-on-canvas">
       <Toolbar
         state={state}
         status={status}
@@ -255,31 +251,40 @@ export function Workbench({
         target is here rather than on the grid above it, so it lands on the same
         landmark it lands on everywhere else on the site.
       */}
-      <main id="content">
-        <Stage
-          state={state}
-          scale={scale}
-          stageRef={stageRef}
-          frameRef={frameRef}
-          onResize={onResize}
-          onLoad={onLoad}
-        />
-        {/*
-          Mounted whether or not the tools are on, and hidden by the stylesheet
-          under `.workbench[data-tools='off']`. The switch between the two
-          audiences is a column appearing beside the frame, and a transition
-          needs both ends of itself to exist: unmounting the dock would make the
-          demo and the workbench two different pages rather than one page with a
-          drawer, which is the thing the design is careful about.
-        */}
-        <Panels
-          state={state}
-          status={status}
-          logs={logs}
-          tools={tools}
-          onChange={onChange}
-          onClearLogs={clearLogs}
-        />
+      <main id="content" className="min-h-0">
+        <ResizablePanelGroup>
+          <ResizablePanel defaultSize="62%" minSize="30%">
+            <Stage
+              state={state}
+              scale={scale}
+              stageRef={stageRef}
+              frameRef={frameRef}
+              onResize={onResize}
+              onLoad={onLoad}
+            />
+          </ResizablePanel>
+          {/*
+            The dock is a panel of the split, so the tools switch widens the page
+            rather than swapping it. Rendered only when the tools are on, because
+            a collapsed panel that still holds a console and a token editor keeps
+            them subscribed for a reader who asked for neither.
+          */}
+          {state.tools && (
+            <>
+              <ResizableHandle withHandle />
+              <ResizablePanel defaultSize="38%" minSize="22%" maxSize="60%">
+                <Panels
+                  state={state}
+                  status={status}
+                  logs={logs}
+                  tools={tools}
+                  onChange={onChange}
+                  onClearLogs={clearLogs}
+                />
+              </ResizablePanel>
+            </>
+          )}
+        </ResizablePanelGroup>
       </main>
       <Readout status={status} size={size} scale={scale} />
     </div>

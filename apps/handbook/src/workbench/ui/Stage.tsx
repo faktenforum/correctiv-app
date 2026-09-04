@@ -1,6 +1,11 @@
 import { useEffect, useRef, type RefObject } from 'react';
 
+import { cn } from '../../lib/cn';
 import { frameSize, type PreviewState } from '../state';
+
+/** Shared by the three drag handles, which differ only in edge and cursor. */
+const HANDLE =
+  'absolute bg-transparent after:absolute after:inset-0 after:m-auto after:rounded-s after:bg-stroke-strong hover:after:bg-accent';
 
 interface Props {
   state: PreviewState;
@@ -13,15 +18,6 @@ interface Props {
 
 type Axes = 'x' | 'y' | 'xy';
 
-/**
- * Five boxes the stylesheet cannot name, because the design has no frame in it.
- *
- * `workbench.css` is a port of a page that draws a placeholder where the app
- * goes, so it names the placeholder and its blocks and nothing else: no iframe,
- * no box to scale it inside, no handles to drag it by. These belong in that file
- * under names of their own; they are written here so that nothing on this page
- * depends on a class that does not exist.
- */
 /**
  * The frame, at the size of a device, and the handles that change that size.
  *
@@ -36,11 +32,10 @@ type Axes = 'x' | 'y' | 'xy';
  * 393px, the app reports `innerWidth` 393 and `clientWidth` 393, so no desktop
  * scrollbar is eating layout width and there is nothing to compensate for.
  *
- * The design draws a placeholder here, with abstract blocks for its measure and
- * inspect demonstrations. Those are the parts a real frame supplies, so the
- * placeholder and its `.blk` rules have no counterpart below; `.fitbox`, the
- * handles and the iframe itself keep the classes `workbench-shell.css` gives
- * them, because a design with no iframe in it names none of those.
+ * The graph-paper ground is `stage-grid`, the one piece of decoration in
+ * `styles/app.css`. It is there so the frame reads as a thing standing on a
+ * surface rather than a white box on a white page, which is what it looked like
+ * without it.
  */
 export function Stage({ state, scale, stageRef, frameRef, onResize, onLoad }: Props) {
   const { w, h } = frameSize(state);
@@ -59,10 +54,13 @@ export function Stage({ state, scale, stageRef, frameRef, onResize, onLoad }: Pr
   }, [w, h, scale, onResize]);
 
   return (
-    <div className="stage" ref={stageRef}>
-      <h2 className="sr">App frame</h2>
+    <div
+      ref={stageRef}
+      className="stage-grid relative flex h-full min-h-0 flex-col items-center gap-s overflow-auto p-m"
+    >
+      <h2 className="sr-only">App frame</h2>
 
-      <div className="fitbox" style={{ width: w * scale, height: h * scale }}>
+      <div className="relative shrink-0" style={{ width: w * scale, height: h * scale }}>
         {/*
           The ground behind the app while it boots. Only a pinned dark setting is
           known here without reading the frame, and reading the frame is the
@@ -74,7 +72,7 @@ export function Stage({ state, scale, stageRef, frameRef, onResize, onLoad }: Pr
           `h * scale`, which is what the handles are then positioned against.
         */}
         <div
-          className="device"
+          className="overflow-hidden rounded-md border border-stroke-strong bg-white text-neutral-700 shadow-lg"
           data-app-scheme={state.theme === 'dark' ? 'dark' : undefined}
           style={{
             width: w,
@@ -93,7 +91,7 @@ export function Stage({ state, scale, stageRef, frameRef, onResize, onLoad }: Pr
           */}
           {/* eslint-disable-next-line react/iframe-missing-sandbox */}
           <iframe
-            className="frame"
+            className="block h-full w-full border-0 bg-transparent"
             ref={frameRef}
             title="App preview"
             allow="autoplay; fullscreen; encrypted-media"
@@ -105,9 +103,27 @@ export function Stage({ state, scale, stageRef, frameRef, onResize, onLoad }: Pr
           the same numbers are in the toolbar, in two fields, whenever the device
           is the person's own.
         */}
-        <div className="handle right" ref={right} />
-        <div className="handle bottom" ref={bottom} />
-        <div className="handle corner" ref={corner} />
+        <div
+          ref={right}
+          className={cn(
+            HANDLE,
+            '-right-s top-0 h-full w-s cursor-ew-resize after:h-[2.625rem] after:w-[0.1875rem]',
+          )}
+        />
+        <div
+          ref={bottom}
+          className={cn(
+            HANDLE,
+            '-bottom-s left-0 h-s w-full cursor-ns-resize after:h-[0.1875rem] after:w-[2.625rem]',
+          )}
+        />
+        <div
+          ref={corner}
+          className={cn(
+            HANDLE,
+            '-bottom-s -right-s h-s w-s cursor-nwse-resize after:h-[0.4375rem] after:w-[0.4375rem]',
+          )}
+        />
       </div>
 
       {/*
@@ -117,7 +133,7 @@ export function Stage({ state, scale, stageRef, frameRef, onResize, onLoad }: Pr
         reader that ignores the attribute this page happens to carry.
       */}
       {!state.tools && (
-        <p className="demo-hint">
+        <p className="max-w-[34rem] text-center text-m text-on-canvas-muted">
           This is the app at device size. Pick a device or a route above; the link bar reproduces
           exactly what you see. The tools switch, top right, opens the workbench.
         </p>
