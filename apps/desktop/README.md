@@ -338,7 +338,7 @@ line. The three that differ — `_layout`, `(tabs)/_layout`, `artikel` — each 
 header saying why, and `test/route-tree.test.ts` fails if the phone grows a screen this
 host does not.
 
-[ADR 0023](../../adr/0023-re-exported-screens-and-a-variant-where-the-host-refuses.md)
+[ADR 0024](../../adr/0024-re-exported-screens-and-a-variant-where-the-host-refuses.md)
 is the rule behind that, and the part worth reading before adding a fourth variant: a
 file may differ for the ports, for a platform idiom an ADR already argues for, or for an
 import the support table refuses — and **never for a refused prop**. A prop is answered
@@ -409,7 +409,7 @@ give you.
   publishes the per-import ones. This test already reads the app's source; with that
   table beside it, a `<Typo onPress>` fails in a second instead of in a screenshot.
 - **`test/route-tree.test.ts`** fails when the two trees drift, in either direction
-  ([ADR 0023](../../adr/0023-re-exported-screens-and-a-variant-where-the-host-refuses.md)).
+  ([ADR 0024](../../adr/0024-re-exported-screens-and-a-variant-where-the-host-refuses.md)).
 - **`test/root-layout.test.ts`** fails if this host stops rendering `LoginGate` instead
   of the navigator. It went ten commits with the navigator mounted unconditionally,
   because a missing door has no symptom on the machine of whoever is already admitted —

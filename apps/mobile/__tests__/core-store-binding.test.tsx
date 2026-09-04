@@ -34,12 +34,13 @@ import {
  * Three things could break here and none of them is visible to typecheck:
  *
  *  1. The Provider and the bound actions have to reach the SAME store instance.
- *     The core exports a singleton and the binding dispatches straight into it,
- *     so a second copy — a duplicated module under Metro, say — would show up as
- *     a component that never updates. That the app's Provider is handed the
- *     singleton is pinned in `root-layout.test.tsx`; what is pinned here is the
- *     other half, that a component's own writes go to the Provider's store and
- *     not past it.
+ *     This file's `core.ts` builds that instance and exports it, and the bound
+ *     actions dispatch straight into it (the core exports `createAppStore()` and
+ *     no singleton — ADR 0023), so a second copy — a duplicated module under
+ *     Metro, say — would show up as a component that never updates. That the
+ *     app's Provider is handed that very instance is pinned in
+ *     `root-layout.test.tsx`; what is pinned here is the other half, that a
+ *     component's own writes go to the Provider's store and not past it.
  *  2. `useSelector` compares results by REFERENCE. A selector that builds a fresh
  *     array on every call therefore re-renders its component on every dispatch in
  *     the app, including the audio position tick twice a second. That is why the

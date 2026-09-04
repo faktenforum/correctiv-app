@@ -13,12 +13,6 @@
   //     every className in the tree. It is generated — see `npm run uniwind-types`.
   //   assets.d.ts — `declare module '*.mp3'`; missing it, the first test that
   //     reaches the bundled sample episode fails to resolve it.
-  "include": [
-    "__tests__/**/*.ts",
-    "__tests__/**/*.tsx",
-    "scripts/**/*.mjs",
-    "uniwind-types.d.ts",
-    "assets.d.ts"
-  ],
+  "include": ["__tests__/**/*.ts", "__tests__/**/*.tsx", "uniwind-types.d.ts", "assets.d.ts"],
   "exclude": ["node_modules", "android", "ios"]
 }

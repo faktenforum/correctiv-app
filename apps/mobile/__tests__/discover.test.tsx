@@ -24,23 +24,17 @@ jest.mock('expo-router', () => ({
   router: { push: jest.fn(), back: jest.fn() },
   useLocalSearchParams: jest.fn(() => ({})),
 }));
-jest.mock('@/lib/openExternal', () => ({ openExternal: jest.fn() }));
-jest.mock('@correctiv/app-core/services/search.service', () => ({ searchArticles: jest.fn() }));
-
 /**
- * The real Ionicons loads its font asynchronously and setStates when it lands —
- * after the test has finished, which produced 20 "update was not wrapped in
- * act(...)" warnings. Nothing here tests glyphs, and act() noise is what hides
- * the next real one.
+ * The cascade itself is the core's, and is tested there
+ * (`packages/app-core/test/search-store.test.ts`). Mocked as a thunk rather than a
+ * plain value because the screen dispatches it through the store binding, and a
+ * mock that returns undefined would blow up inside redux-thunk rather than in a
+ * readable assertion.
  */
-jest.mock('@expo/vector-icons', () => {
-  const react = jest.requireActual<typeof import('react')>('react');
-  const { Text } = jest.requireActual<typeof import('react-native')>('react-native');
-  const Ionicons = ({ name }: { name: string }) => react.createElement(Text, null, `icon:${name}`);
-  Ionicons.displayName = 'Ionicons';
-  return { Ionicons };
-});
-jest.mock('@/lib/feeds/corpus', () => ({ searchFeedCorpus: jest.fn() }));
+jest.mock('@correctiv/app-core/stores/search', () => ({
+  MIN_SEARCH_QUERY: 2,
+  searchWithFallback: jest.fn(() => () => Promise.resolve([])),
+}));
 jest.mock('@/lib/feeds/useFeed', () => ({
   useFeed: jest.fn(() => ({ data: null, loading: false, error: null, reload: jest.fn() })),
 }));
@@ -50,20 +44,18 @@ import { router, useLocalSearchParams } from 'expo-router';
 
 import { press, render, renderedText, typeInto } from './support/rendering';
 
-import { searchArticles } from '@correctiv/app-core/services/search.service';
+import { searchWithFallback } from '@correctiv/app-core/stores/search';
 
 import EntdeckenScreen from '@/app/(tabs)/entdecken';
 import ProjektScreen from '@/app/projekt/[id]';
 import SucheScreen from '@/app/suche';
-import { searchFeedCorpus } from '@/lib/feeds/corpus';
 import { useFeed } from '@/lib/feeds/useFeed';
 import { openExternal } from '@/lib/openExternal';
 
 const push = router.push as jest.Mock;
 const params = useLocalSearchParams as jest.Mock;
 const openExternalMock = openExternal as jest.Mock;
-const searchArticlesMock = searchArticles as jest.Mock;
-const searchCorpusMock = searchFeedCorpus as jest.Mock;
+const searchMock = searchWithFallback as jest.Mock;
 const useFeedMock = useFeed as jest.Mock;
 
 const allProjects = projectGroups.flatMap((g) => g.projects);
@@ -215,10 +207,12 @@ describe('Suche', () => {
     imageUrl: null,
   });
 
+  /** What the core's search answers this query with. */
+  const answers = (items: FeedItem[]) => searchMock.mockReturnValue(() => Promise.resolve(items));
+
   beforeEach(() => {
     jest.useFakeTimers();
-    searchArticlesMock.mockResolvedValue([]);
-    searchCorpusMock.mockResolvedValue([]);
+    answers([]);
   });
   afterEach(() => {
     jest.useRealTimers();
@@ -235,7 +229,7 @@ describe('Suche', () => {
     const tree = render(<SucheScreen />);
     typeInto(tree, 'Suchbegriff', 'k');
     await settle();
-    expect(searchArticlesMock).not.toHaveBeenCalled();
+    expect(searchMock).not.toHaveBeenCalled();
     expect(renderedText(tree)).toContain('Suchen Sie über Recherchen');
   });
 
@@ -243,37 +237,18 @@ describe('Suche', () => {
     const tree = render(<SucheScreen />);
     for (const q of ['kl', 'kli', 'klim', 'klima']) typeInto(tree, 'Suchbegriff', q);
     await settle();
-    expect(searchArticlesMock).toHaveBeenCalledTimes(1);
-    expect(searchArticlesMock).toHaveBeenCalledWith('klima', 15);
+    expect(searchMock).toHaveBeenCalledTimes(1);
+    expect(searchMock).toHaveBeenCalledWith('klima');
   });
 
-  it('shows the live hits', async () => {
-    searchArticlesMock.mockResolvedValue([hit('a', 'Die Klimakrise vor Gericht')]);
+  it('shows the hits it gets back', async () => {
+    // Which of the two sources answered is the core's business, not the screen's:
+    // `packages/app-core/test/search-store.test.ts` drives that cascade.
+    answers([hit('a', 'Die Klimakrise vor Gericht')]);
     const tree = render(<SucheScreen />);
     typeInto(tree, 'Suchbegriff', 'klima');
     await settle();
     expect(renderedText(tree)).toContain('Die Klimakrise vor Gericht');
-    expect(searchCorpusMock).not.toHaveBeenCalled();
-  });
-
-  it('falls back to the local corpus when the live search fails', async () => {
-    // The promise the whole cache design exists for: no live network, still hits.
-    searchArticlesMock.mockRejectedValue(new Error('Network request failed'));
-    searchCorpusMock.mockResolvedValue([hit('b', 'Aus dem Cache')]);
-    const tree = render(<SucheScreen />);
-    typeInto(tree, 'Suchbegriff', 'klima');
-    await settle();
-    expect(searchCorpusMock).toHaveBeenCalledWith('klima');
-    expect(renderedText(tree)).toContain('Aus dem Cache');
-  });
-
-  it('falls back when the live search merely returns nothing', async () => {
-    searchArticlesMock.mockResolvedValue([]);
-    searchCorpusMock.mockResolvedValue([hit('c', 'Nur lokal gefunden')]);
-    const tree = render(<SucheScreen />);
-    typeInto(tree, 'Suchbegriff', 'klima');
-    await settle();
-    expect(renderedText(tree)).toContain('Nur lokal gefunden');
   });
 
   it('finds project content that is in no feed', async () => {

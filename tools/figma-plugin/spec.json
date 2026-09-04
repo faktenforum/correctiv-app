@@ -4460,7 +4460,7 @@
               "dir": "H",
               "align": "CENTER",
               "cross": "CENTER",
-              "fill": "#dadadd",
+              "fill": "@color-grey-300",
               "clip": true,
               "w": "fill",
               "children": [
@@ -4727,7 +4727,7 @@
               "t": "ellipse",
               "w": 16,
               "h": 16,
-              "stroke": "#f9545f",
+              "stroke": "@color-accent",
               "x": 28,
               "y": 13
             },
@@ -5152,7 +5152,7 @@
               "t": "ellipse",
               "w": 16,
               "h": 16,
-              "stroke": "#f9545f",
+              "stroke": "@color-accent",
               "x": 100,
               "y": 13
             },
@@ -5308,7 +5308,7 @@
                     16
                   ],
                   "cross": "CENTER",
-                  "fill": "#333336",
+                  "fill": "@color-always-dark",
                   "radius": 6,
                   "clip": true,
                   "w": "fill",
@@ -5413,7 +5413,7 @@
                       "dir": "H",
                       "align": "CENTER",
                       "cross": "CENTER",
-                      "fill": "#dadadd",
+                      "fill": "@color-grey-300",
                       "radius": 4,
                       "clip": true,
                       "w": 112,
@@ -5458,7 +5458,7 @@
                       "dir": "H",
                       "align": "CENTER",
                       "cross": "CENTER",
-                      "fill": "#dadadd",
+                      "fill": "@color-grey-300",
                       "radius": 4,
                       "clip": true,
                       "w": 112,
@@ -5503,7 +5503,7 @@
                       "dir": "H",
                       "align": "CENTER",
                       "cross": "CENTER",
-                      "fill": "#dadadd",
+                      "fill": "@color-grey-300",
                       "radius": 4,
                       "clip": true,
                       "w": 112,
@@ -5548,7 +5548,7 @@
                       "dir": "H",
                       "align": "CENTER",
                       "cross": "CENTER",
-                      "fill": "#dadadd",
+                      "fill": "@color-grey-300",
                       "radius": 4,
                       "clip": true,
                       "w": 112,
@@ -5639,7 +5639,7 @@
                       "dir": "H",
                       "align": "CENTER",
                       "cross": "CENTER",
-                      "fill": "#dadadd",
+                      "fill": "@color-grey-300",
                       "radius": 4,
                       "clip": true,
                       "w": 210,
@@ -5684,7 +5684,7 @@
                       "dir": "H",
                       "align": "CENTER",
                       "cross": "CENTER",
-                      "fill": "#dadadd",
+                      "fill": "@color-grey-300",
                       "radius": 4,
                       "clip": true,
                       "w": 210,
@@ -5775,7 +5775,7 @@
                       "dir": "H",
                       "align": "CENTER",
                       "cross": "CENTER",
-                      "fill": "#dadadd",
+                      "fill": "@color-grey-300",
                       "radius": 4,
                       "clip": true,
                       "w": 210,
@@ -5820,7 +5820,7 @@
                       "dir": "H",
                       "align": "CENTER",
                       "cross": "CENTER",
-                      "fill": "#dadadd",
+                      "fill": "@color-grey-300",
                       "radius": 4,
                       "clip": true,
                       "w": 210,
@@ -5914,7 +5914,7 @@
               "t": "ellipse",
               "w": 16,
               "h": 16,
-              "stroke": "#f9545f",
+              "stroke": "@color-accent",
               "x": 172,
               "y": 13
             },
@@ -6122,7 +6122,7 @@
                     {
                       "t": "frame",
                       "name": "Fortschritt",
-                      "fill": "#e5e5e8",
+                      "fill": "@color-stroke",
                       "radius": 2,
                       "clip": true,
                       "w": "fill",
@@ -6231,7 +6231,7 @@
                     {
                       "t": "frame",
                       "name": "Fortschritt",
-                      "fill": "#e5e5e8",
+                      "fill": "@color-stroke",
                       "radius": 2,
                       "clip": true,
                       "w": "fill",
@@ -6359,7 +6359,7 @@
               "t": "ellipse",
               "w": 16,
               "h": 16,
-              "stroke": "#f9545f",
+              "stroke": "@color-accent",
               "x": 244,
               "y": 13
             },
@@ -6629,7 +6629,7 @@
               "t": "ellipse",
               "w": 7,
               "h": 7,
-              "fill": "#d9d9db"
+              "fill": "@color-stroke"
             },
             {
               "t": "ellipse",
@@ -6641,13 +6641,13 @@
               "t": "ellipse",
               "w": 7,
               "h": 7,
-              "fill": "#d9d9db"
+              "fill": "@color-stroke"
             },
             {
               "t": "ellipse",
               "w": 7,
               "h": 7,
-              "fill": "#d9d9db"
+              "fill": "@color-stroke"
             }
           ]
         },
@@ -6951,13 +6951,13 @@
               "t": "ellipse",
               "w": 7,
               "h": 7,
-              "fill": "#d9d9db"
+              "fill": "@color-stroke"
             },
             {
               "t": "ellipse",
               "w": 7,
               "h": 7,
-              "fill": "#d9d9db"
+              "fill": "@color-stroke"
             },
             {
               "t": "ellipse",
@@ -6969,7 +6969,7 @@
               "t": "ellipse",
               "w": 7,
               "h": 7,
-              "fill": "#d9d9db"
+              "fill": "@color-stroke"
             }
           ]
         },
@@ -7066,7 +7066,7 @@
                 {
                   "t": "frame",
                   "name": "Schalter",
-                  "fill": "#e0e0e3",
+                  "fill": "@color-grey-300",
                   "radius": 9,
                   "clip": true,
                   "w": 34,
@@ -7134,19 +7134,19 @@
               "t": "ellipse",
               "w": 7,
               "h": 7,
-              "fill": "#d9d9db"
+              "fill": "@color-stroke"
             },
             {
               "t": "ellipse",
               "w": 7,
               "h": 7,
-              "fill": "#d9d9db"
+              "fill": "@color-stroke"
             },
             {
               "t": "ellipse",
               "w": 7,
               "h": 7,
-              "fill": "#d9d9db"
+              "fill": "@color-stroke"
             },
             {
               "t": "ellipse",
@@ -7618,7 +7618,7 @@
             {
               "t": "frame",
               "name": "Hero mit schwebenden Knöpfen",
-              "fill": "#dadadd",
+              "fill": "@color-grey-300",
               "clip": true,
               "w": 360,
               "h": 200,
@@ -9629,7 +9629,7 @@
         {
           "t": "frame",
           "name": "ProgressBar",
-          "fill": "#e5e5e8",
+          "fill": "@color-stroke",
           "clip": true,
           "w": 320,
           "h": 3,
@@ -10115,7 +10115,7 @@
                 {
                   "t": "frame",
                   "name": "Fortschritt",
-                  "fill": "#e5e5e8",
+                  "fill": "@color-stroke",
                   "radius": 2,
                   "clip": true,
                   "w": "fill",
@@ -12298,7 +12298,7 @@
               "t": "ellipse",
               "w": 16,
               "h": 16,
-              "stroke": "#f9545f",
+              "stroke": "@color-accent",
               "x": 316,
               "y": 13
             },

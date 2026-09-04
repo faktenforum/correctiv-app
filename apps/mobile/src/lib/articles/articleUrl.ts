@@ -33,3 +33,27 @@ export function isInternalArticleUrl(target: string): boolean {
   if (LISTING.test(parsed.pathname) || FILE.test(parsed.pathname)) return false;
   return parsed.pathname.split('/').filter(Boolean).length >= 2;
 }
+
+/**
+ * Whether a correctiv.org article is a fact check, read off its permalink.
+ *
+ * The reason this is a URL rule and not a look at `FeedItem.feed`: the site-wide
+ * `recherchen` stream stamps every card with the feed that was asked for, on
+ * purpose, so that Home's "Neueste Recherchen" does not sprout Faktencheck badges
+ * (`services/wp.service.ts` → `fetchWpFeed`). Every item in that stream therefore
+ * says `feed: 'recherchen'`, fact checks included, and the field cannot answer this
+ * question. `categories` cannot either: it carries display names rather than the
+ * slugs `FEED_PRIORITY` matches on, and upstream files some posts under a
+ * misspelled "Fakencheck" beside the correct one.
+ *
+ * The first path segment is the test, not a substring: fact checks live at
+ * `/faktencheck/…`, including the sub-sectioned ones (`/faktencheck/hintergrund/…`,
+ * `/faktencheck/aus-der-community/…`), and nothing else does.
+ */
+export function isFactCheckUrl(target: string): boolean {
+  try {
+    return new URL(target).pathname.startsWith('/faktencheck/');
+  } catch {
+    return false;
+  }
+}

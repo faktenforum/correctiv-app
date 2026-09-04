@@ -1,0 +1,10 @@
+{
+  "extends": "./tsconfig.json",
+  // The drift check reads and writes real files, so it needs node types the
+  // package itself deliberately does without (`types: []` — this is a
+  // framework-free package and nothing in src/ may reach a platform).
+  "compilerOptions": {
+    "types": ["node"]
+  },
+  "include": ["test"]
+}

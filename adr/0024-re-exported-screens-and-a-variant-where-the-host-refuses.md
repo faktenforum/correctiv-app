@@ -1,4 +1,4 @@
-# ADR 0023 — The desktop host re-exports the phone's screens, and varies one only where the host refuses
+# ADR 0024 — The desktop host re-exports the phone's screens, and varies one only where the host refuses
 
 > Renumbered from 0020 on 2026-09-03. This was written on the `desktop` branch while
 > main was still at 0019, and main took 0020 for

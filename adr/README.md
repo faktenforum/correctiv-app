@@ -27,9 +27,10 @@ is the way it is; [`../ARCHITECTURE.md`](../ARCHITECTURE.md) describes *what* it
 | [0020](0020-no-contribution-in-the-app.md) | No contribution in the app, and one link out | accepted; answers 0016's join-flow question, deletes the membership slice, retires five of 0019's and one row of 0012's |
 | [0021](0021-the-board-is-a-plugin-and-the-screens-are-data.md) | The design board is a plugin, and the screens are data | accepted; records two measured-and-rejected routes to Figma |
 | [0022](0022-three-tiers-of-colour-and-a-dark-scheme-that-names-roles.md) | Three tiers of colour, and a dark scheme that names roles | accepted; adopts wp-design-tokens `8ed7a28`, retires two of 0010's |
-| [0023](0023-re-exported-screens-and-a-variant-where-the-host-refuses.md) | The desktop host re-exports the phone's screens, and varies one only where the host refuses | accepted; scoped to the experimental `apps/desktop`, retires one of 0012's. **Lives on the `desktop` branch only**, and was 0020 until main took that number |
+| [0023](0023-the-host-constructs-the-store.md) | The host constructs the store | accepted; recorded after the fact, corrects one claim in `ARCHITECTURE.md` and four comments |
+| [0024](0024-re-exported-screens-and-a-variant-where-the-host-refuses.md) | The desktop host re-exports the phone's screens, and varies one only where the host refuses | accepted; scoped to the experimental `apps/desktop`, retires one of 0012's. **Lives on the `desktop` branch only**, and has now been renumbered twice — it was 0020, then 0023, each time because main took the number while this branch was away |
 
-Seven notes for readers of the older ones:
+Eight notes for readers of the older ones:
 
 - ADRs 0001–0004 were written in German and translated on 2026-08-11, so the repo
   reads in one language ([AGENTS.md](../AGENTS.md#language)). Only the wording
@@ -58,6 +59,11 @@ Seven notes for readers of the older ones:
   Redux Toolkit ([0009](0009-redux-toolkit-for-the-cores-state.md)) and the styling
   engine to Uniwind ([0008](0008-uniwind-over-nativewind.md)); those passages are what
   was true when they were written.
+
+- ADR 0022 counts the app's raw colour values and gets it wrong by two. That
+  sentence is struck in place, dated, and says which two sites it missed. It is the
+  one strike in here that no later decision caused: the claim was false when it was
+  written.
 
 [ADR 0022](0022-three-tiers-of-colour-and-a-dark-scheme-that-names-roles.md) retires
 two claims in 0010 about the dark palette. Both were true when written: upstream's

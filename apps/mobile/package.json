@@ -56,7 +56,7 @@
     "fonts": "node scripts/embed-fonts.mjs",
     "offline-articles": "tsx scripts/fetch-offline-articles.mts",
     "offline-podcasts": "tsx scripts/fetch-offline-podcasts.mts",
-    "typecheck": "tsc --noEmit && tsc -p tsconfig.test.json --noEmit",
+    "typecheck": "tsc --noEmit && tsc -p tsconfig.test.json --noEmit && tsc -p tsconfig.scripts.json --noEmit",
     "test": "jest",
     "uniwind-types": "uniwind generate-artifacts --css ./src/global.css"
   },
