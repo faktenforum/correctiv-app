@@ -39,6 +39,21 @@ export default function ArtikelScreen() {
   // Subscribes to just this one article's saved flag, so bookmarking another
   // article does not re-render the reader.
   const saved = useIsSaved(url ?? '');
+  /**
+   * A bookmark needs a headline, and until the article lands there may be none.
+   *
+   * Opened from a feed row the title arrives as a route param, so saving works
+   * immediately. Opened by URL alone — a deep link, a shared address, an internal
+   * link from another reader — there is nothing to write until `loadArticle`
+   * answers, and saving early wrote `title: ''`. That row renders in
+   * `/gespeichert` as a blank line above its date, with no way to tell which
+   * article it was, and it survives a restart. Found on the emulator by
+   * bookmarking a URL that 404s.
+   *
+   * Removing is never blocked: a saved article that is being re-read through a
+   * bare URL still has to be removable.
+   */
+  const canSave = Boolean(title ?? article?.title);
   // Both are read per render, never snapshotted: the appearance has to reach the
   // reader's colour block, and the text-size setting its root font size.
   const textScale = useTextScale();
@@ -162,6 +177,7 @@ export default function ArtikelScreen() {
                 <HeaderButton
                   icon={saved ? 'bookmark' : 'bookmark-outline'}
                   label={saved ? 'Gespeichert, entfernen' : 'Artikel speichern'}
+                  disabled={!saved && !canSave}
                   onPress={() =>
                     actions.savedArticles.toggle({
                       url,
@@ -219,20 +235,32 @@ function HeaderButton({
   icon,
   label,
   onPress,
+  disabled = false,
 }: {
   icon: keyof typeof Ionicons.glyphMap;
   /** Spoken name — the button has no text, so without it a screen reader says nothing. */
   label: string;
   onPress: () => void;
+  /**
+   * Dimmed and inert, not absent. The header is a fixed row of controls over a
+   * hero image; one appearing when the article lands would shift the other two
+   * under the reader's thumb.
+   */
+  disabled?: boolean;
 }) {
   const colors = useColors();
   return (
     <Pressable
       onPress={onPress}
+      disabled={disabled}
       hitSlop={8}
       accessibilityRole="button"
       accessibilityLabel={label}
-      className="items-center justify-center rounded-full border border-stroke bg-canvas active:opacity-70"
+      // Spoken as well as shown: a dimmed circle says nothing to a screen reader.
+      accessibilityState={{ disabled }}
+      className={`items-center justify-center rounded-full border border-stroke bg-canvas ${
+        disabled ? 'opacity-40' : 'active:opacity-70'
+      }`}
       style={{ width: sizes.iconButton, height: sizes.iconButton }}
     >
       <Ionicons name={icon} size={22} color={colors['on-canvas']} />
