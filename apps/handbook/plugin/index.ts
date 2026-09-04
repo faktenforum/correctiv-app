@@ -1,3 +1,4 @@
+import { existsSync, readFileSync } from 'node:fs';
 import { join } from 'node:path';
 
 import type { Plugin } from 'vite';
@@ -5,6 +6,8 @@ import type { Plugin } from 'vite';
 import { collectDocs, ROOT } from './collect.ts';
 
 const MODULE_ID = 'virtual:docs';
+const API_ID = 'virtual:api';
+const API_FILE = join(ROOT, 'apps/handbook/content/api.generated.json');
 
 /**
  * Serves the repository's own Markdown to the handbook, parsed, at build time.
@@ -25,10 +28,25 @@ export function docsPlugin(): Plugin {
     name: 'handbook-docs',
 
     resolveId(id) {
-      return id === MODULE_ID ? `\0${MODULE_ID}` : null;
+      if (id === MODULE_ID) return `\0${MODULE_ID}`;
+      if (id === API_ID) return `\0${API_ID}`;
+      return null;
     },
 
     load(id) {
+      if (id === `\0${API_ID}`) {
+        // Extracted by `npm run api`, which `npm run build` runs first. Not
+        // committed: it is derived, it is large, and it would conflict on every
+        // rename in the core. A clear failure beats an empty reference page that
+        // looks like the core has no exports.
+        if (!existsSync(API_FILE)) {
+          throw new Error(
+            'apps/handbook/content/api.generated.json is missing. Run `npm run api -w @correctiv/handbook`.',
+          );
+        }
+        this.addWatchFile(API_FILE);
+        return `export default ${readFileSync(API_FILE, 'utf8')};`;
+      }
       if (id !== `\0${MODULE_ID}`) return null;
       const { module, files } = collectDocs();
       watched = files;

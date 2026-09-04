@@ -3,6 +3,7 @@ import { type ReactElement, useEffect, useState } from 'react';
 import docsModule from 'virtual:docs';
 import { Diagrams } from './pages/Diagrams';
 import { Landing } from './pages/Landing';
+import { Reference } from './pages/Reference';
 import { Document } from './pages/Document';
 import { Header } from './ui/Header';
 import { Search } from './ui/Search';
@@ -20,7 +21,10 @@ const WIDE = new Set(['/']);
  * document's would shadow it silently, and `test/routes.test.ts` holds the two
  * sets apart.
  */
-const PAGES = new Map<string, () => ReactElement>([['/diagrams', Diagrams]]);
+const PAGES = new Map<string, () => ReactElement>([
+  ['/diagrams', Diagrams],
+  ['/reference', Reference],
+]);
 
 export function App() {
   const [route] = useRoute();

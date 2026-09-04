@@ -21,12 +21,23 @@ import { mkdirSync, readFileSync, writeFileSync } from 'node:fs';
 import { dirname, join, relative } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
+import { Marked } from 'marked';
 import * as td from 'typedoc';
 
 const HERE = dirname(fileURLToPath(import.meta.url));
 const ROOT = join(HERE, '..', '..', '..');
 const CORE = join(ROOT, 'packages/app-core');
 const OUT = join(HERE, '..', 'content', 'api.generated.json');
+
+/**
+ * The comments are Markdown and are written as Markdown.
+ *
+ * They lean on backticks for every identifier and on bold for the sentence that
+ * matters, so shipping them as plain text puts asterisks and backticks on screen
+ * and reads as broken. Rendered here rather than in the browser, so the reference
+ * ships HTML and no parser.
+ */
+const md = new Marked({ gfm: true });
 
 /** TypeDoc's numeric kinds, as the words the site prints. */
 const KINDS = {
@@ -67,6 +78,43 @@ function signatureOf(reflection) {
   return `(${params}): ${s.type ?? 'void'}`;
 }
 
+/**
+ * The file-header comment, which is where this core keeps its best prose.
+ *
+ * TypeDoc reports no module comment for any file here, and it is right to: a
+ * module comment has to be the first thing in the file, and the convention in
+ * `packages/app-core` is a block after the imports and above the first
+ * declaration. In `articles/load.ts` that block explains the whole five-rung
+ * cascade and sits above a private constant, so TypeDoc drops it on the floor
+ * along with the constant. Losing it would leave the reference showing
+ * signatures for the modules whose reasoning is the most worth reading.
+ *
+ * So the first block comment after the imports is read out of the source
+ * directly, unless TypeDoc already attached that text to an exported symbol, in
+ * which case it belongs to the symbol and not to the file.
+ */
+function fileHeader(path, symbols) {
+  let source;
+  try {
+    source = readFileSync(path, 'utf8');
+  } catch {
+    return '';
+  }
+
+  const match = /\/\*\*([\s\S]*?)\*\//.exec(source);
+  if (!match) return '';
+
+  const text = match[1]
+    .split('\n')
+    .map((line) => line.replace(/^\s*\* ?/, ''))
+    .join('\n')
+    .trim();
+
+  if (!text) return '';
+  if (symbols.some((s) => s.raw && s.raw.startsWith(text.slice(0, 60)))) return '';
+  return text;
+}
+
 async function main() {
   const app = await td.Application.bootstrap(
     {
@@ -102,17 +150,22 @@ async function main() {
         kind,
         signature: signatureOf(child),
         summary: firstSentence(doc),
-        doc,
+        raw: doc,
+        doc: doc ? md.parse(doc) : '',
         line: child.sources?.[0]?.line ?? 0,
       });
     }
     if (symbols.length === 0) continue;
 
+    const sorted = symbols.sort((a, b) => a.name.localeCompare(b.name));
+    const moduleDoc = commentText(module.comment) || fileHeader(join(ROOT, file), symbols);
+    // `raw` exists only for the comparison above; the page renders the HTML.
+    for (const symbol of sorted) delete symbol.raw;
     modules.push({
       subpath,
       file: relative(ROOT, join(ROOT, file)),
-      doc: commentText(module.comment),
-      symbols: symbols.sort((a, b) => a.name.localeCompare(b.name)),
+      doc: moduleDoc ? md.parse(moduleDoc) : '',
+      symbols: sorted,
     });
   }
 

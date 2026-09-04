@@ -1,4 +1,4 @@
-declare module '*/api.generated.json' {
+declare module 'virtual:api' {
   export interface ApiSymbol {
     name: string;
     kind: 'function' | 'const' | 'type' | 'interface' | 'class' | 'enum';
@@ -10,6 +10,7 @@ declare module '*/api.generated.json' {
   export interface ApiModule {
     subpath: string;
     file: string;
+    /** The file header, rendered from Markdown at build time. */
     doc: string;
     symbols: ApiSymbol[];
   }

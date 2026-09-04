@@ -36,6 +36,7 @@ export const NAV: NavGroup[] = [
       { route: '/', label: 'Overview' },
       { route: '/architecture', label: 'Architecture', blurb: doc('/architecture')?.blurb },
       { route: '/diagrams', label: 'Diagrams' },
+      { route: '/reference', label: 'Reference' },
     ],
   },
   {
@@ -61,6 +62,7 @@ export const NAV: NavGroup[] = [
 export const ROUTES = new Set<string>([
   '/',
   '/diagrams',
+  '/reference',
   '/workbench',
   ...docs.docs.map((d) => d.route),
 ]);

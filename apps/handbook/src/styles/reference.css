@@ -1,0 +1,154 @@
+/* The core's reference. No design was drawn for this page, so it borrows the
+   shell's vocabulary: the same mono for identifiers, the same muted prose, the
+   same hairline rules. It is a lookup surface, not a document, and it is dense
+   on purpose. */
+
+.ref-head {
+  margin: 0 0 1.5rem;
+}
+.ref-head p {
+  max-width: 62ch;
+  color: var(--on-canvas-muted);
+}
+.ref-filter {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  margin: 1.25rem 0 0.5rem;
+  padding-bottom: 1rem;
+  border-bottom: 1px solid var(--stroke);
+  flex-wrap: wrap;
+}
+.ref-filter input {
+  flex: 1 1 18rem;
+  min-width: 0;
+  padding: 0.45rem 0.7rem;
+  font: inherit;
+  color: var(--on-canvas);
+  background: var(--canvas);
+  border: 1px solid var(--stroke-strong);
+  border-radius: 5px;
+}
+.ref-filter .count {
+  font-size: 0.8125rem;
+  color: var(--on-canvas-muted);
+  font-variant-numeric: tabular-nums;
+}
+
+.ref-module {
+  margin: 2rem 0 0;
+  padding-top: 1.25rem;
+  border-top: 1px solid var(--stroke);
+}
+.ref-module:first-of-type {
+  border-top: 0;
+  padding-top: 0;
+}
+.ref-module > h2 {
+  margin: 0;
+  font-size: 1.0625rem;
+  font-family: var(--mono);
+  font-weight: 600;
+  letter-spacing: -0.01em;
+}
+.ref-import {
+  margin: 0.35rem 0 0;
+  font-family: var(--mono);
+  font-size: 0.8125rem;
+  color: var(--on-canvas-muted);
+  overflow-wrap: anywhere;
+}
+.ref-module > .ref-doc {
+  margin: 0.6rem 0 0;
+  max-width: 68ch;
+  color: var(--on-canvas-muted);
+  font-size: 0.9375rem;
+}
+
+.ref-symbols {
+  list-style: none;
+  margin: 0.9rem 0 0;
+  padding: 0;
+  display: grid;
+  gap: 0.5rem;
+}
+.ref-symbol {
+  padding: 0.7rem 0.85rem;
+  background: var(--surface);
+  border: 1px solid var(--stroke);
+  border-radius: 5px;
+}
+.ref-symbol > summary {
+  display: flex;
+  align-items: baseline;
+  gap: 0.55rem;
+  cursor: pointer;
+  list-style: none;
+  flex-wrap: wrap;
+}
+.ref-symbol > summary::-webkit-details-marker {
+  display: none;
+}
+.ref-symbol > summary:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 3px;
+  border-radius: 3px;
+}
+.ref-kind {
+  flex: none;
+  padding: 0.1rem 0.4rem;
+  font: 600 0.6875rem/1.5 var(--mono);
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--on-canvas-muted);
+  background: var(--canvas);
+  border: 1px solid var(--stroke);
+  border-radius: 3px;
+}
+.ref-name {
+  font: 600 0.9375rem/1.4 var(--mono);
+  color: var(--on-canvas);
+}
+.ref-summary {
+  flex: 1 1 20rem;
+  min-width: 0;
+  font-size: 0.875rem;
+  color: var(--on-canvas-muted);
+}
+.ref-body {
+  margin: 0.7rem 0 0;
+  padding-top: 0.7rem;
+  border-top: 1px solid var(--stroke);
+}
+.ref-signature {
+  margin: 0 0 0.6rem;
+  padding: 0.5rem 0.6rem;
+  font: 0.8125rem/1.5 var(--mono);
+  color: var(--on-canvas);
+  background: var(--canvas);
+  border: 1px solid var(--stroke);
+  border-radius: 4px;
+  overflow-x: auto;
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+}
+.ref-prose {
+  margin: 0;
+  max-width: 70ch;
+  font-size: 0.9375rem;
+  white-space: pre-wrap;
+}
+.ref-source {
+  display: inline-block;
+  margin-top: 0.7rem;
+  font: 0.8125rem/1.4 var(--mono);
+  color: var(--on-canvas-muted);
+}
+.ref-empty {
+  margin: 2rem 0;
+  color: var(--on-canvas-muted);
+}
+.ref-undocumented {
+  color: var(--on-canvas-muted);
+  font-style: italic;
+}

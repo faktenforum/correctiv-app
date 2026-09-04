@@ -33,7 +33,7 @@ export function Diagrams() {
             wants. The name and the description come from the title inside it and
             the list below it, so the drawing is never the only way to read this.
           */}
-          <section className="diagram d1" aria-label="Diagram 1, scrollable">
+          <section className="diagram d1" aria-label="Diagram 1, scrollable" tabIndex={0}>
             <svg viewBox="0 0 960 710" aria-labelledby="d1-title" aria-describedby="d1-alt">
               <title id="d1-title">
                 The core and its host: packages/app-core above, apps/mobile below, joined only by
@@ -363,7 +363,7 @@ export function Diagrams() {
           Read a row to see whether a record still holds; follow the arcs to see who amended it.
         </p>
         <figure>
-          <section className="diagram d2" aria-label="Diagram 2, scrollable">
+          <section className="diagram d2" aria-label="Diagram 2, scrollable" tabIndex={0}>
             <svg viewBox="0 0 1100 985" aria-labelledby="d2-title" aria-describedby="d2-alt">
               <title id="d2-title">
                 Architecture decision records 0001 to 0023 in order, with arcs from each later
@@ -873,7 +873,7 @@ export function Diagrams() {
           sit at the bottom, and below them is a line nothing in the package crosses.
         </p>
         <figure>
-          <section className="diagram d3" aria-label="Diagram 3, scrollable">
+          <section className="diagram d3" aria-label="Diagram 3, scrollable" tabIndex={0}>
             <svg viewBox="0 0 1040 710" aria-labelledby="d3-title" aria-describedby="d3-alt">
               <title id="d3-title">
                 Inside packages/app-core: stores over articles and media, over services and data,

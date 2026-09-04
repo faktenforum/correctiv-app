@@ -130,15 +130,16 @@
       }
     },
     {
-      // `role="img"` on an inline `<svg>` with a `<title>` is the accessible
-      // spelling of a diagram: it stops assistive technology walking the shapes
-      // and reads the title instead. `prefer-tag-over-role` suggests `<img>`,
-      // which would mean an external file, and these diagrams are inline
-      // precisely so their fills and strokes follow the colour scheme through CSS
-      // custom properties. An `<img>` cannot do that.
+      // A diagram wider than the column scrolls inside its own box, and a
+      // keyboard user needs a focus stop to reach that scroll. The rule is right
+      // in general, wrong here: `tabIndex={0}` on a scroll container is the
+      // documented way to make it reachable, and it is the reason the container
+      // is not merely decorative. Chrome and Firefox now focus scroll containers
+      // on their own, Safari does not, and a diagram nobody can scroll is worse
+      // than a lint exception with a reason attached.
       "files": ["apps/handbook/src/pages/Diagrams.tsx"],
       "rules": {
-        "jsx-a11y/prefer-tag-over-role": "off"
+        "jsx-a11y/no-noninteractive-tabindex": "off"
       }
     },
     {

@@ -7,6 +7,7 @@ import 'virtual:tokens.css';
 import './styles/shell.css';
 import './styles/landing.css';
 import './styles/diagrams.css';
+import './styles/reference.css';
 
 import { App } from './App';
 
