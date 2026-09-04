@@ -7633,51 +7633,57 @@
                 },
                 {
                   "t": "ellipse",
-                  "w": 32,
-                  "h": 32,
+                  "w": 40,
+                  "h": 40,
                   "fill": "@color-canvas",
+                  "stroke": "@color-stroke",
                   "x": 16,
-                  "y": 18
+                  "y": 14
                 },
                 {
                   "t": "text",
                   "chars": "‹",
-                  "size": 12,
+                  "icon": "chevron-back",
+                  "size": 16,
                   "color": "@color-on-canvas",
-                  "x": 28,
-                  "y": 26
+                  "x": 29,
+                  "y": 24
                 },
                 {
                   "t": "ellipse",
-                  "w": 32,
-                  "h": 32,
+                  "w": 40,
+                  "h": 40,
                   "fill": "@color-canvas",
-                  "x": 276,
-                  "y": 18
+                  "stroke": "@color-stroke",
+                  "x": 268,
+                  "y": 14
                 },
                 {
                   "t": "text",
                   "chars": "↑",
-                  "size": 12,
+                  "icon": "share-outline",
+                  "size": 16,
                   "color": "@color-on-canvas",
-                  "x": 288,
-                  "y": 26
+                  "x": 281,
+                  "y": 24
                 },
                 {
                   "t": "ellipse",
-                  "w": 32,
-                  "h": 32,
+                  "w": 40,
+                  "h": 40,
                   "fill": "@color-canvas",
+                  "stroke": "@color-stroke",
                   "x": 316,
-                  "y": 18
+                  "y": 14
                 },
                 {
                   "t": "text",
-                  "chars": "⌂",
-                  "size": 12,
+                  "chars": "⚐",
+                  "icon": "bookmark-outline",
+                  "size": 16,
                   "color": "@color-on-canvas",
-                  "x": 328,
-                  "y": 26
+                  "x": 329,
+                  "y": 24
                 }
               ]
             },
