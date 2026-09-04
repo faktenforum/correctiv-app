@@ -7,6 +7,7 @@ import {
   useSyncExternalStore,
 } from 'react';
 
+import type { Appearance } from '../theme';
 import { install, NO_FRAME, readFrame, registerFrame, statusOf, type FrameInfo } from './api';
 import { attachConsole } from './frame/console';
 import { applyTheme, BASE, frameRoute, navigate } from './frame/handle';
@@ -43,7 +44,21 @@ function startOnce(): true {
   return true;
 }
 
-export function Workbench() {
+/**
+ * The site's appearance is passed in rather than read here.
+ *
+ * `App.tsx` owns `useAppearance()` and the `data-theme` attribute it stamps. A
+ * second call in this subtree would be a second copy of that state, and the copy
+ * in `App.tsx` would go stale the moment this one wrote, putting the previous
+ * theme back over the reader's choice on the way out of this route.
+ */
+export function Workbench({
+  appearance,
+  onAppearance,
+}: {
+  appearance: Appearance;
+  onAppearance: (next: Appearance) => void;
+}) {
   useState(startOnce);
 
   const state = useSyncExternalStore(subscribe, getState);
@@ -214,7 +229,16 @@ export function Workbench() {
   };
 
   return (
-    <main className="workbench" id="content">
+    // Four rows, as the stylesheet's `.workbench` grid expects: the bar, the
+    // link line, the split, and the readout. The two switches it keys on ride
+    // this element rather than `<body>`, which belongs to the site: this is one
+    // route of it, and a page that stamps the document leaks into every page the
+    // reader visits next.
+    <div
+      className="workbench"
+      data-tools={state.tools ? 'on' : 'off'}
+      data-build={status.handle ? 'dev' : 'static'}
+    >
       <Toolbar
         state={state}
         status={status}
@@ -223,8 +247,31 @@ export function Workbench() {
         onChange={onChange}
         onReload={() => win()?.location.reload()}
         onRaw={() => window.open(BASE + (state.route || '/'), '_blank', 'noopener')}
+        appearance={appearance}
+        onAppearance={onAppearance}
       />
-      {state.tools && (
+      {/*
+        The split, and the row that takes the height left over. The skip link's
+        target is here rather than on the grid above it, so it lands on the same
+        landmark it lands on everywhere else on the site.
+      */}
+      <main id="content">
+        <Stage
+          state={state}
+          scale={scale}
+          stageRef={stageRef}
+          frameRef={frameRef}
+          onResize={onResize}
+          onLoad={onLoad}
+        />
+        {/*
+          Mounted whether or not the tools are on, and hidden by the stylesheet
+          under `.workbench[data-tools='off']`. The switch between the two
+          audiences is a column appearing beside the frame, and a transition
+          needs both ends of itself to exist: unmounting the dock would make the
+          demo and the workbench two different pages rather than one page with a
+          drawer, which is the thing the design is careful about.
+        */}
         <Panels
           state={state}
           status={status}
@@ -233,17 +280,9 @@ export function Workbench() {
           onChange={onChange}
           onClearLogs={clearLogs}
         />
-      )}
-      <Stage
-        state={state}
-        scale={scale}
-        stageRef={stageRef}
-        frameRef={frameRef}
-        onResize={onResize}
-        onLoad={onLoad}
-      />
+      </main>
       <Readout status={status} size={size} scale={scale} />
-    </main>
+    </div>
   );
 }
 

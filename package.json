@@ -48,6 +48,7 @@
     "offline-articles": "npm run offline-articles -w @correctiv/mobile",
     "offline-podcasts": "npm run offline-podcasts -w @correctiv/mobile",
     "handbook": "npm run dev -w @correctiv/handbook",
-    "build:handbook": "npm run build -w @correctiv/handbook"
+    "build:handbook": "npm run build -w @correctiv/handbook",
+    "app": "npm run web -w @correctiv/mobile"
   }
 }

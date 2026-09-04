@@ -9,11 +9,13 @@ import { tokensPlugin } from './plugin/tokens.ts';
 /**
  * The app's dev server, which this one borrows rather than replaces.
  *
- * `npm run web -w @correctiv/mobile` serves the app here. The handbook frames it,
- * and framing it is only useful if the frame can be reached, which means one
- * origin.
+ * `npm run app` serves the app here. The handbook frames it, and framing it is
+ * only useful if the frame can be reached, which means one origin.
+ *
+ * The port is overridable so a second instance can be run beside a first without
+ * editing this file.
  */
-const APP_DEV_SERVER = 'http://localhost:8081';
+const APP_DEV_SERVER = process.env.APP_DEV_SERVER || 'http://localhost:8081';
 
 /**
  * The handbook is the site, and the app is a directory inside it.
@@ -53,12 +55,38 @@ export default defineConfig(({ command }) => ({
     command === 'serve'
       ? {
           proxy: {
-            '/app': {
+            /*
+             * The app itself, one path below this server.
+             *
+             * A regular expression, not the plain prefix `/app`, because Vite
+             * matches proxy keys as prefixes in declaration order and `/app` is a
+             * prefix of `/apps`. The bundle request below was matched by this rule
+             * first and rewritten to `s/mobile/index.bundle`, which the app's
+             * server has never heard of.
+             */
+            '^/app(/|$)': {
               target: APP_DEV_SERVER,
               changeOrigin: false,
               ws: true,
               rewrite: (path) => path.replace(/^\/app/, '') || '/',
             },
+            /*
+             * And the two roots the app's own HTML asks for absolutely.
+             *
+             * Its dev server writes `/apps/mobile/index.bundle` and `/assets/...`
+             * from the origin root, whatever base path it is given, so a proxy
+             * that covered only `/app` served the bundle request from this server
+             * instead. Vite answered with its own 404 page, the browser refused it
+             * for having a JSON content type, and the frame stayed white with
+             * nothing in it explaining why. Measured against the running dev
+             * server: those two are the only roots it reaches for.
+             *
+             * Neither collides here. The handbook serves nothing at `/apps`, and
+             * in development Vite serves its own modules from `/src` and `/@fs`,
+             * so `/assets` is free until the production build, which is not this.
+             */
+            '/apps': { target: APP_DEV_SERVER, changeOrigin: false },
+            '/assets': { target: APP_DEV_SERVER, changeOrigin: false },
           },
         }
       : undefined,

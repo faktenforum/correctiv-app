@@ -18,25 +18,34 @@
   font: 13px/1.45 var(--sans);
   color: var(--on-canvas);
   background: var(--canvas);
+
+  /* The dock's own status colours, light here and dark under the two guards
+     below. They were on `:root` in the design, which anchoring turned into
+     `.workbench :root`, a selector that needs a document root inside the page and
+     therefore never matched: the warning and error badges and the console line
+     tints lost their colour in both schemes, with nothing to see. */
+  --warn: #8a6d00;
+  --warn-bg: #fff7cc;
+  --err: #b3001b;
+  --err-bg: #ffe3e7;
+  --ok: #1f6f3a;
 }
 
 @media (prefers-color-scheme: dark) {
-  .workbench :root:not([data-theme='light']) {
+  :root:not([data-theme='light']) .workbench {
     --warn: #ffd95e;
     --warn-bg: #3a3000;
     --err: #ff8a99;
     --err-bg: #4a0f18;
     --ok: #7dd49a;
-    color-scheme: dark;
   }
 }
-.workbench :root[data-theme='dark'] {
+:root[data-theme='dark'] .workbench {
   --warn: #ffd95e;
   --warn-bg: #3a3000;
   --err: #ff8a99;
   --err-bg: #4a0f18;
   --ok: #7dd49a;
-  color-scheme: dark;
 }
 .workbench * {
   box-sizing: border-box;
@@ -348,7 +357,7 @@
   min-height: 0;
   transition: grid-template-columns 0.2s;
 }
-.workbench body[data-tools='on'] main {
+.workbench[data-tools='on'] main {
   grid-template-columns: 1fr 400px;
 }
 .workbench .stage {
@@ -501,7 +510,7 @@
   height: 56px;
   border-radius: 0;
 }
-.workbench body[data-outline='on'] .blk[data-finding] {
+.workbench[data-outline='on'] .blk[data-finding] {
   outline: 2px solid var(--accent);
   outline-offset: -2px;
 }
@@ -1018,4 +1027,67 @@
     border-left: 0;
     border-top: 1px solid var(--stroke);
   }
+}
+
+/* The resizable frame, which the design did not have: it drew a placeholder
+   rectangle where the real page puts an iframe with three drag handles. Carried
+   over from the shell this replaced, anchored, and with the `dragging` rule moved
+   off `body`, which belongs to the site and not to this page. */
+.workbench .fitbox {
+  position: relative;
+  margin: 0 auto;
+}
+.workbench .handle {
+  position: absolute;
+  background: transparent;
+}
+.workbench .handle::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  margin: auto;
+  border-radius: 2px;
+  background: var(--stroke-strong);
+}
+.workbench .handle:hover::after {
+  background: var(--accent);
+}
+.workbench .handle.right {
+  top: 0;
+  right: -12px;
+  width: 12px;
+  height: 100%;
+  cursor: ew-resize;
+}
+.workbench .handle.right::after {
+  width: 3px;
+  height: 42px;
+}
+.workbench .handle.bottom {
+  bottom: -12px;
+  left: 0;
+  width: 100%;
+  height: 12px;
+  cursor: ns-resize;
+}
+.workbench .handle.bottom::after {
+  width: 42px;
+  height: 3px;
+}
+.workbench .handle.corner {
+  right: -12px;
+  bottom: -12px;
+  width: 12px;
+  height: 12px;
+  cursor: nwse-resize;
+}
+.workbench .handle.corner::after {
+  width: 7px;
+  height: 7px;
+}
+.workbench[data-dragging='true'] {
+  user-select: none;
+}
+.workbench[data-dragging='true'] iframe {
+  pointer-events: none;
 }

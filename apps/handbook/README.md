@@ -34,13 +34,20 @@ the one nobody edits.
 ## Running it
 
 ```bash
-npm run handbook                 # this site at localhost:5173
-npm run web -w @correctiv/mobile # the app it frames, at localhost:8081
+npm run handbook   # this site at localhost:5173
+npm run app        # the app it frames, at localhost:8081
 ```
 
-Both, if you want the workbench. The dev server proxies `/app` to the app's server so
-the browser sees one origin; without the second command the frame is empty and the
-inspector reports no dev handle.
+Both, if you want the workbench. Without the second command the frame is empty and the
+dock says the store handle is absent.
+
+The dev server proxies three paths to the app's server, so the browser sees one
+origin: `/app` for the app itself, and `/apps` and `/assets` because the app's own
+HTML asks for its bundle and its fonts absolutely, from the origin root, whatever base
+path it is given. Proxying only `/app` left the bundle request answered by this server
+instead, and the frame stayed white while the console said the script came back as
+JSON. The `/app` rule is a regular expression rather than the plain prefix, because
+Vite matches proxy keys as prefixes and `/app` is a prefix of `/apps`.
 
 Against a static export instead, which is what Pages serves:
 

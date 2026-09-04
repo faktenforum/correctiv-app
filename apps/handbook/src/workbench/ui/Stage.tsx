@@ -14,6 +14,15 @@ interface Props {
 type Axes = 'x' | 'y' | 'xy';
 
 /**
+ * Five boxes the stylesheet cannot name, because the design has no frame in it.
+ *
+ * `workbench.css` is a port of a page that draws a placeholder where the app
+ * goes, so it names the placeholder and its blocks and nothing else: no iframe,
+ * no box to scale it inside, no handles to drag it by. These belong in that file
+ * under names of their own; they are written here so that nothing on this page
+ * depends on a class that does not exist.
+ */
+/**
  * The frame, at the size of a device, and the handles that change that size.
  *
  * Why an iframe and not a web-only wrapper inside the app: inside the frame the
@@ -26,6 +35,12 @@ type Axes = 'x' | 'y' | 'xy';
  * Nothing is injected into the frame for sizing, deliberately: measured at
  * 393px, the app reports `innerWidth` 393 and `clientWidth` 393, so no desktop
  * scrollbar is eating layout width and there is nothing to compensate for.
+ *
+ * The design draws a placeholder here, with abstract blocks for its measure and
+ * inspect demonstrations. Those are the parts a real frame supplies, so the
+ * placeholder and its `.blk` rules have no counterpart below; `.fitbox`, the
+ * handles and the iframe itself keep the classes `workbench-shell.css` gives
+ * them, because a design with no iframe in it names none of those.
  */
 export function Stage({ state, scale, stageRef, frameRef, onResize, onLoad }: Props) {
   const { w, h } = frameSize(state);
@@ -44,31 +59,70 @@ export function Stage({ state, scale, stageRef, frameRef, onResize, onLoad }: Pr
   }, [w, h, scale, onResize]);
 
   return (
-    <main className="stage" ref={stageRef}>
+    <div className="stage" ref={stageRef}>
+      <h2 className="sr">App frame</h2>
+
       <div className="fitbox" style={{ width: w * scale, height: h * scale }}>
-        <div className="device" style={{ width: w, height: h, transform: `scale(${scale})` }}>
+        {/*
+          The ground behind the app while it boots. Only a pinned dark setting is
+          known here without reading the frame, and reading the frame is the
+          `Readout`'s job; guessing anything else would flash the wrong colour
+          under the app on every load.
+
+          `transformOrigin` is what makes the box above the right size: scaled
+          from its own top left, the device covers exactly `w * scale` by
+          `h * scale`, which is what the handles are then positioned against.
+        */}
+        <div
+          className="device"
+          data-app-scheme={state.theme === 'dark' ? 'dark' : undefined}
+          style={{
+            width: w,
+            height: h,
+            transform: `scale(${scale})`,
+            transformOrigin: 'top left',
+          }}
+        >
           {/*
             No `sandbox`, on purpose. The attribute's useful values would have to
-            include `allow-same-origin` for this tool to work at all — reading the
-            frame's route, its console and its store is the entire point — and
-            `allow-same-origin` plus `allow-scripts` on a document from this very
-            origin is a sandbox that sandboxes nothing. An attribute that only
-            looks like a precaution is worse than none.
+            include `allow-same-origin` for this tool to work at all, since
+            reading the frame's route, its console and its store is the entire
+            point, and `allow-same-origin` plus `allow-scripts` on a document
+            from this very origin is a sandbox that sandboxes nothing. An
+            attribute that only looks like a precaution is worse than none.
           */}
           {/* eslint-disable-next-line react/iframe-missing-sandbox */}
           <iframe
-            className="app"
+            className="frame"
             ref={frameRef}
             title="App preview"
             allow="autoplay; fullscreen; encrypted-media"
             onLoad={onLoad}
           />
         </div>
+        {/*
+          Pointer only, and deliberately not the sole way to change the size:
+          the same numbers are in the toolbar, in two fields, whenever the device
+          is the person's own.
+        */}
         <div className="handle right" ref={right} />
         <div className="handle bottom" ref={bottom} />
         <div className="handle corner" ref={corner} />
       </div>
-    </main>
+
+      {/*
+        The sentence the demo audience gets, and the one the workbench does not.
+        The stylesheet hides it under `.workbench[data-tools='on']` as well; it is
+        written out of the tree here so the hint cannot be read out by a screen
+        reader that ignores the attribute this page happens to carry.
+      */}
+      {!state.tools && (
+        <p className="demo-hint">
+          This is the app at device size. Pick a device or a route above; the link bar reproduces
+          exactly what you see. The tools switch, top right, opens the workbench.
+        </p>
+      )}
+    </div>
   );
 }
 
@@ -85,7 +139,9 @@ function drag(
   const down = (ev: PointerEvent) => {
     ev.preventDefault();
     handle.setPointerCapture(ev.pointerId);
-    document.body.classList.add('dragging');
+    // On this page's own root, not on `document.body`: the body belongs to the
+    // site and a class left there would outlive the route.
+    handle.closest('.workbench')?.setAttribute('data-dragging', 'true');
     const from = { x: ev.clientX, y: ev.clientY };
 
     const move = (e: PointerEvent) => {
@@ -104,7 +160,7 @@ function drag(
       handle.removeEventListener('pointermove', move);
       handle.removeEventListener('pointerup', up);
       handle.removeEventListener('pointercancel', up);
-      document.body.classList.remove('dragging');
+      handle.closest('.workbench')?.removeAttribute('data-dragging');
     };
 
     handle.addEventListener('pointermove', move);
