@@ -64,7 +64,7 @@ export const ANSWERED_PROPS: readonly AnsweredProp[] = [
     prop: 'accessibilityRole',
     primitive: 'View',
     disposition: 'dropped',
-    why: 'Gtk.Accessible:accessible-role is construct-only and a ref fires after construction',
+    why: 'unimplemented, not impossible — the property is writable after construction (measured); upstream is building the whole role family',
   },
   {
     prop: 'accessible',

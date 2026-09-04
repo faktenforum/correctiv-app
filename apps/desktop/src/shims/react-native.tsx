@@ -24,7 +24,7 @@
 // |---|---|---|---|
 // | `accessibilityLabel` | 46 | not a widget property; `Gtk.Accessible.update_property()` is an imperative call | IMPLEMENTED, through a ref |
 // | `accessibilityState` | 6 | as above | IMPLEMENTED (`selected`/`checked`/`disabled`) |
-// | `accessibilityRole` | 41 | as above | DROPPED — `accessible-role` is construct-only |
+// | `accessibilityRole` | 41 | as above | DROPPED, and for a reason that turned out to be false — see below |
 // | `hitSlop` | 13 | GTK hit-tests the allocation and cannot grow it | DROPPED, and correctly |
 // | `pointerEvents="box-none"` | 4 | `can-target` is one boolean for a widget AND its subtree | mapped to `auto` |
 // | `trackColor`/`thumbColor` | 2 | Adwaita paints a switch from the theme accent | DROPPED |
@@ -48,11 +48,27 @@
 // refusal exists to make someone decide rather than to forbid; this is the decision,
 // made once and written down.
 //
-// `accessibilityRole` is the honest loss. GTK's `accessible-role` is set when the
-// widget is constructed, and by the time a ref fires the widget exists — so a
-// `Pressable` is announced as a button (which it is: a real `Gtk.Button`) but a
-// `View` carrying `accessibilityRole="header"` is announced as a generic container.
-// The label still lands, which is the part a screen-reader user needs most.
+// `accessibilityRole` was called the honest loss here, on the grounds that GTK's
+// `accessible-role` is set at construction and a ref fires too late. **That is wrong,
+// and it was measured wrong rather than argued away.** In `Gtk-4.0.gir` the property is
+// `writable="1"` with no `construct-only`; the `construct="1"` on `Gtk.Widget`'s copy
+// means it MAY be set at construction, not only then. `construct-only="1"` appears 69
+// times in that file and not on this property, and a post-construction write was
+// measured to stick on twelve widget classes — including under `GTK_A11Y=none`.
+//
+// So the 41 call sites are not lost to GTK. They are unimplemented, which is a
+// different sentence, and the difference matters: a capability believed absent gets
+// designed around, and this one was.
+//
+// It is still not implemented HERE, deliberately. `@gjsify/react-native` is growing the
+// whole accessibility surface as a route family — 40 role names, 33 mapped, 7 refused by
+// name with advice — and a 41-site reimplementation in this shim would be redundant the
+// day that lands. The entry moves from "GTK cannot" to "the layer is about to", which is
+// what `shims/answered-props.ts` now records.
+//
+// What still holds from the old paragraph: a `Pressable` is announced as a button
+// because it IS a real `Gtk.Button`, and the label lands, which is the part a
+// screen-reader user needs most.
 //
 // `accessibilityLiveRegion` is the second loss, and the one to come back to. GTK4 has
 // no property for it: the counterpart is `Gtk.Accessible.announce()` (4.14+), an
