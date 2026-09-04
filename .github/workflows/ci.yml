@@ -99,6 +99,27 @@ jobs:
           done
           echo "web export OK — $(find dist -name '*.html' | wc -l) routes, no unsupported-platform stubs"
 
+      # The handbook is the other half of what Pages publishes, and it can break on
+      # its own: it reads the repository's Markdown at build time, so a document
+      # renamed or a link rewritten to a path that no longer exists fails here and
+      # nowhere else. Its tests run in the `check` job; this is the build.
+      - name: Build the handbook
+        run: npm run build -w @correctiv/handbook
+
+      - name: Assert the handbook is not silently empty
+        run: |
+          set -euo pipefail
+          test -f apps/handbook/dist/404.html || {
+            echo "::error::apps/handbook/dist/404.html is missing — every deep link would 404 on Pages."
+            exit 1
+          }
+          # A handbook that shipped no documents still renders its navigation.
+          grep -rq "platform-free" apps/handbook/dist/assets/*.js || {
+            echo "::error::the handbook bundle carries none of the repository's documents."
+            exit 1
+          }
+          echo "handbook OK"
+
       - name: Upload web bundle
         uses: actions/upload-artifact@v4
         with:

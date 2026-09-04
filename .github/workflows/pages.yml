@@ -1,13 +1,25 @@
-# Publishes the Expo web export to GitHub Pages — https://faktenforum.github.io/correctiv-app/
+# Publishes the handbook and the app to GitHub Pages — https://faktenforum.github.io/correctiv-app/
 #
-# A web version of the app for previewing it without an install — same code and same
-# screens as the native builds. Nothing is committed: the export is built here and
-# uploaded straight to Pages. See adr/0004-react-native-pivot.md.
+# TWO BUILDS, ONE ARTIFACT. The site root is the handbook: the repository's own
+# documentation, the source inventory, the diagrams and the reference, rendered as
+# a React app (apps/handbook). The web export of the app is published beneath it at
+# /app/, and the handbook frames it.
 #
-# The address to hand out is `/preview.html`, which frames the app at a phone or
-# tablet size; the site root serves it stretched across the browser window, which is
-# the wrong shape for an app that has no desktop layout. RELEASE.md, "The web
-# preview".
+# The app used to own the root, and this workflow said in its own comments that the
+# root was the wrong place to send people: the app has no desktop layout, so a full
+# browser window is the wrong shape to judge it in, and the address handed out was
+# /preview.html instead. The handbook fills that gap, so the root is now a page that
+# is meant to be read at that size.
+#
+# WHY THIS IS SAFE FOR THE INSPECTOR. Everything the preview shell does to the app is
+# a same-origin property access: contentWindow, matchMedia, documentElement.classList,
+# localStorage, and the handle the app leaves on its own global. None of it is
+# path-sensitive, and both halves are uploaded here as ONE artifact, so `/` and
+# `/app/` are the same origin and framing works. ADR 0014 put the shell inside
+# apps/mobile/public/ to get that guarantee; assembling one origin at deploy time is
+# a second way to the same thing, and it is the one that lets the handbook own the
+# root. In development the handbook's Vite server proxies /app to the app's dev
+# server, which is the same trick locally.
 #
 # ONE-TIME SETUP, and this workflow cannot do it for you: the site's source has to be
 # switched from `main:/docs` to GitHub Actions. Settings → Pages → Build and
@@ -21,11 +33,10 @@
 #
 # The demo runs on live content since ADR 0015: correctiv.org's REST API reflects the
 # Origin, so a browser reaches it. The bundle below is the floor when a request fails.
-# Only the RSS feeds send no CORS
-# header, so every feed request fails in a browser and the store's cascade lands on
-# the snapshot from `npm run offline-articles`. Re-run that generator and merge it
-# before you want the published demo to show recent articles — TROUBLESHOOTING.md,
-# "The web target".
+# Only the RSS feeds send no CORS header, so every feed request fails in a browser and
+# the store's cascade lands on the snapshot from `npm run offline-articles`. Re-run
+# that generator and merge it before you want the published demo to show recent
+# articles — TROUBLESHOOTING.md, "The web target".
 name: Pages
 
 on:
@@ -48,14 +59,11 @@ jobs:
   deploy:
     name: Build and deploy
     runs-on: ubuntu-latest
-    # The environment URL is the link a human clicks from the repository sidebar, so
-    # it points at the device frame and not at the site root: the app is built for a
-    # phone and has no desktop layout, which makes a full browser window the wrong
-    # shape to judge it in. What is deployed is still the whole site. `page_url` ends
-    # in a slash, hence the bare filename.
+    # The site root is now the address to hand out: it is the handbook's landing
+    # page, which introduces the documentation and links to the app in its frame.
     environment:
       name: github-pages
-      url: ${{ steps.deployment.outputs.page_url }}preview.html
+      url: ${{ steps.deployment.outputs.page_url }}
     steps:
       - uses: actions/checkout@v4
 
@@ -70,7 +78,7 @@ jobs:
 
       # Yields base_path — `/correctiv-app` for a project site. Reading it here beats
       # hard-coding the repo name, which would be wrong the moment the site moves to
-      # a custom domain (base_path is then empty and the export needs no prefix).
+      # a custom domain (base_path is then empty and neither build needs a prefix).
       - name: Configure Pages
         id: pages
         uses: actions/configure-pages@v5
@@ -78,66 +86,112 @@ jobs:
       # apps/mobile/app.config.js turns EXPO_BASE_URL into experiments.baseUrl.
       # Without it every asset URL is absolute from the domain root and resolves to
       # faktenforum.github.io/_expo/…, which is a blank page served by a green build.
-      - name: Export web bundle
+      # The value now carries the /app suffix as well, and experiments.baseUrl takes
+      # any depth.
+      - name: Export the app
         working-directory: apps/mobile
         env:
-          EXPO_BASE_URL: ${{ steps.pages.outputs.base_path }}
+          EXPO_BASE_URL: ${{ steps.pages.outputs.base_path }}/app
         run: npm run build:web
 
-      # Four ways this deploy can be broken while the export succeeds, so all four
-      # are read off the built files rather than assumed:
+      # GITHUB_SHA reaches the handbook so every link it writes into the source
+      # points at the commit the page was built from rather than at main. A page
+      # describing a line should keep pointing at that line.
+      - name: Build the handbook
+        env:
+          HANDBOOK_BASE: ${{ steps.pages.outputs.base_path }}/
+        run: npm run build -w @correctiv/handbook
+
+      - name: Assemble the site
+        run: |
+          set -euo pipefail
+          rm -rf site
+          cp -r apps/handbook/dist site
+          cp -r apps/mobile/dist site/app
+          echo "assembled $(find site -name '*.html' | wc -l) pages"
+
+      # Six ways this deploy can be broken while both builds succeed, so all six are
+      # read off the assembled files rather than assumed:
       #   1. a component with no web implementation (react-native-webview renders a
       #      sentence instead of the reader, and exports happily)
-      #   2. the base path not applied — the failure mode this workflow exists for
+      #   2. either base path not applied — the failure mode this workflow exists for
       #   3. a missing route, or a missing 404.html, which is what makes deep links
       #      resolve on a host that cannot rewrite
-      #   4. public/ not reaching the export, which would 404 the address the README,
-      #      RELEASE.md and this workflow's environment link all point people at
+      #   4. apps/mobile/public/ not reaching the export, which would 404 the device
+      #      frame
+      #   5. the preview shell built but referencing a bundle that is not there
+      #   6. the handbook shipping no documents, which is a site with a navigation
+      #      and nothing behind it
       - name: Assert the deployable is not silently broken
-        working-directory: apps/mobile
         env:
           BASE_PATH: ${{ steps.pages.outputs.base_path }}
         run: |
           set -euo pipefail
-          if grep -rq "does not support this platform" dist/; then
+
+          if grep -rq "does not support this platform" site/app/; then
             echo "::error::A component without web support reached the web bundle."
-            grep -rl "does not support this platform" dist/ | head
+            grep -rl "does not support this platform" site/app/ | head
             exit 1
           fi
-          grep -q "\"$BASE_PATH/_expo/static/js/web/" dist/index.html || {
-            echo "::error::dist/index.html does not reference $BASE_PATH/_expo/ — the base path was not applied, and the published site would be blank."
-            grep -o 'src="[^"]*"' dist/index.html | head
+
+          grep -q "\"$BASE_PATH/app/_expo/static/js/web/" site/app/index.html || {
+            echo "::error::site/app/index.html does not reference $BASE_PATH/app/_expo/ — the base path was not applied, and the app would be blank."
+            grep -o 'src="[^"]*"' site/app/index.html | head
             exit 1
           }
+
+          grep -q "\"$BASE_PATH/assets/" site/index.html || {
+            echo "::error::site/index.html does not reference $BASE_PATH/assets/ — HANDBOOK_BASE was not applied, and the handbook would be blank."
+            grep -o 'src="[^"]*"' site/index.html | head
+            exit 1
+          }
+
           for route in index 404 artikel entdecken mediathek mitmachen profil; do
-            test -f "dist/$route.html" || { echo "::error::missing dist/$route.html"; exit 1; }
+            test -f "site/app/$route.html" || { echo "::error::missing site/app/$route.html"; exit 1; }
           done
+
           # One real id per dynamic family. A route that loses its
           # generateStaticParams exports as a single dist/<family>/[id].html and
           # every real URL under it 404s on a static host, while the build and
-          # every test stay green. __tests__/web-target.test.ts keeps the export
-          # on the route; this checks that the ids actually came out.
+          # every test stay green.
           for route in projekt/abriss-atlas aufruf/wem-gehoert-die-stadt serie/klima tagebuch/diary-bern-2 behauptung/claim-001; do
-            test -f "dist/$route.html" || { echo "::error::missing dist/$route.html — a dynamic route did not pre-render its ids"; exit 1; }
+            test -f "site/app/$route.html" || { echo "::error::missing site/app/$route.html — a dynamic route did not pre-render its ids"; exit 1; }
           done
-          test -f dist/preview.html || {
-            echo "::error::dist/preview.html is missing — apps/mobile/public/ did not reach the export, and the address handed out for the demo would 404."
+
+          test -f site/app/preview.html || {
+            echo "::error::site/app/preview.html is missing — apps/mobile/public/ did not reach the export."
             exit 1
           }
+
           # The shell is built (tools/preview) rather than committed, so it can be
-          # present and reference a bundle that is not. That is a white page at the
-          # address the README hands out, produced by an otherwise green build.
-          bundle=$(grep -o 'preview-assets/[^"]*\.js' dist/preview.html | head -1)
-          test -n "$bundle" && test -f "dist/$bundle" || {
-            echo "::error::dist/preview.html references no bundle that reached the export ($bundle) — run npm run preview -w @correctiv/mobile before exporting."
+          # present and reference a bundle that is not. That is a white page
+          # produced by an otherwise green build.
+          bundle=$(grep -o 'preview-assets/[^"]*\.js' site/app/preview.html | head -1)
+          test -n "$bundle" && test -f "site/app/$bundle" || {
+            echo "::error::site/app/preview.html references no bundle that reached the export ($bundle)."
             exit 1
           }
-          echo "deployable OK — $(find dist -name '*.html' | wc -l) routes under $BASE_PATH"
+
+          # The handbook is a single page application: 404.html is what makes a deep
+          # link like /decisions/0022 resolve on a host that cannot rewrite.
+          test -f site/404.html || { echo "::error::site/404.html is missing — every handbook deep link would 404."; exit 1; }
+
+          # The old address, still in README.md and in links people already have.
+          test -f site/preview.html || { echo "::error::site/preview.html redirect stub is missing."; exit 1; }
+
+          # A handbook that shipped no documents still renders its navigation, so
+          # check that a document's own words reached the bundle.
+          grep -rq "platform-free" site/assets/*.js || {
+            echo "::error::the handbook bundle carries none of the repository's documents."
+            exit 1
+          }
+
+          echo "deployable OK — handbook at $BASE_PATH/, app at $BASE_PATH/app/, $(find site -name '*.html' | wc -l) pages"
 
       - name: Upload Pages artifact
         uses: actions/upload-pages-artifact@v3
         with:
-          path: apps/mobile/dist
+          path: site
 
       - name: Deploy to GitHub Pages
         id: deployment

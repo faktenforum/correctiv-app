@@ -130,6 +130,18 @@
       }
     },
     {
+      // `role="img"` on an inline `<svg>` with a `<title>` is the accessible
+      // spelling of a diagram: it stops assistive technology walking the shapes
+      // and reads the title instead. `prefer-tag-over-role` suggests `<img>`,
+      // which would mean an external file, and these diagrams are inline
+      // precisely so their fills and strokes follow the colour scheme through CSS
+      // custom properties. An `<img>` cannot do that.
+      "files": ["apps/handbook/src/pages/Diagrams.tsx"],
+      "rules": {
+        "jsx-a11y/prefer-tag-over-role": "off"
+      }
+    },
+    {
       // A segmented appearance control is a radiogroup, and buttons carrying
       // `role="radio"` are the accessible spelling of one: three states, one tab
       // stop, arrows moving between them, `aria-checked` saying which is on.
