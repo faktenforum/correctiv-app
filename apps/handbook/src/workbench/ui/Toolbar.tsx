@@ -175,6 +175,13 @@ export function Toolbar({
                 type="button"
                 aria-pressed={!state.landscape}
                 onClick={() => onChange({ landscape: false })}
+                className={cn(
+                  'rounded-s px-xs py-4xs text-s transition-colors',
+                  'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent',
+                  !state.landscape
+                    ? 'bg-accent text-white'
+                    : 'text-on-canvas-muted hover:text-on-canvas',
+                )}
               >
                 Portrait
               </button>
@@ -182,6 +189,13 @@ export function Toolbar({
                 type="button"
                 aria-pressed={state.landscape}
                 onClick={() => onChange({ landscape: true })}
+                className={cn(
+                  'rounded-s px-xs py-4xs text-s transition-colors',
+                  'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent',
+                  state.landscape
+                    ? 'bg-accent text-white'
+                    : 'text-on-canvas-muted hover:text-on-canvas',
+                )}
               >
                 Landscape
               </button>

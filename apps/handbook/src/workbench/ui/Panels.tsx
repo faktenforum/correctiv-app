@@ -153,13 +153,13 @@ export function Panels(props: Props) {
             same to somebody who cannot tell the yellow from the red. */}
         <div className="mt-2xs flex flex-wrap items-center gap-2xs">
           <Summary onClick={() => reveal('console')} hint="Open the Console panel">
-            <Count n={status.warnings} tone="warn" /> warnings
+            <Count n={status.warnings} tone="warn" label="warnings" />
           </Summary>
           <Summary onClick={() => reveal('console')} hint="Open the Console panel">
-            <Count n={status.errors} tone="err" /> errors
+            <Count n={status.errors} tone="err" label="errors" />
           </Summary>
           <Summary onClick={() => reveal('measure')} hint="Open the Measure panel">
-            <Count n={findings} tone="warn" /> findings
+            <Count n={findings} tone="warn" label="findings" />
           </Summary>
         </div>
       </div>
@@ -224,19 +224,24 @@ function Summary({
 }
 
 /**
- * A count, always with its number written out, never a colour on its own.
+ * A count, always with its number and the word it counts written out, never a
+ * colour on its own.
  *
  * Three things separate a warning from an error at once: the shape of the icon,
- * the word the caller puts beside the count, and the fill. The fill alone would
- * fail for a reader who cannot see it and for anyone reading a greyscale
- * screenshot, which is how most of this tool's output travels.
+ * the word beside the number, and the fill. The fill alone would fail for a
+ * reader who cannot see it and for anyone reading a greyscale screenshot, which
+ * is how most of this tool's output travels. The word travels inside the badge
+ * rather than beside it because two clean counts are otherwise the same chip
+ * twice, which is what they looked like in the dock's head. It is left off only
+ * where the row beside the badge already names what is being counted.
  */
-function Count({ n, tone }: { n: number | null; tone: 'warn' | 'err' }) {
+function Count({ n, tone, label }: { n: number | null; tone: 'warn' | 'err'; label?: string }) {
+  const suffix = label ? ` ${label}` : '';
   if (n === null) {
     return (
       <Badge variant="outline">
         <CircleDashed aria-hidden="true" className="size-[0.75rem]" />
-        not run
+        {label ? `${label}, not run` : 'not run'}
       </Badge>
     );
   }
@@ -245,6 +250,7 @@ function Count({ n, tone }: { n: number | null; tone: 'warn' | 'err' }) {
       <Badge variant="outline" className="tabular-nums">
         <Check aria-hidden="true" className="size-[0.75rem]" />
         {n}
+        {suffix}
       </Badge>
     );
   }
@@ -261,6 +267,7 @@ function Count({ n, tone }: { n: number | null; tone: 'warn' | 'err' }) {
     >
       <Icon aria-hidden="true" className="size-[0.75rem]" />
       {n}
+      {suffix}
     </Badge>
   );
 }
@@ -601,10 +608,8 @@ function Console({ status, logs, onClearLogs, panel }: Props & { panel: Disclosu
       panel={panel}
       tags={
         <>
-          <Count n={status.warnings} tone="warn" />
-          <span className="sr-only"> warnings</span>
-          <Count n={status.errors} tone="err" />
-          <span className="sr-only"> errors</span>
+          <Count n={status.warnings} tone="warn" label="warnings" />
+          <Count n={status.errors} tone="err" label="errors" />
         </>
       }
     >
@@ -841,19 +846,21 @@ function Measure({ tools, panel }: Props & { panel: Disclosure }) {
       title="Measure"
       icon={Ruler}
       panel={panel}
-      tags={<Count n={report?.findings.length ?? null} tone="warn" />}
+      tags={<Count n={report?.findings.length ?? null} tone="warn" label="findings" />}
     >
       <div className="flex flex-wrap items-center gap-xs">
         <Button size="sm" onClick={measure.run}>
           <Play aria-hidden="true" />
           Run checks
         </Button>
+        {/* The variant carries the pressed state as well as `aria-pressed`,
+            because an outline button tinted with `surface` would be tinted the
+            dock's own ground and so would look exactly like the off state. */}
         <Button
-          variant="outline"
+          variant={measure.outline ? 'default' : 'outline'}
           size="sm"
           aria-pressed={measure.outline}
           onClick={() => measure.setOutline(!measure.outline)}
-          className={cn(measure.outline && 'border-accent bg-surface')}
         >
           Outline boxes in the frame
         </Button>
@@ -960,11 +967,10 @@ function Inspect({ status, tools, panel }: Props & { panel: Disclosure }) {
         <fieldset disabled={!status.handle} className="flex flex-col gap-s disabled:opacity-60">
           <div>
             <Button
-              variant="outline"
+              variant={inspect.picking ? 'default' : 'outline'}
               size="sm"
               aria-pressed={inspect.picking}
               onClick={() => inspect.setPicking(!inspect.picking)}
-              className={cn(inspect.picking && 'border-accent bg-surface')}
             >
               <Crosshair aria-hidden="true" />
               {inspect.picking ? 'Picker armed, click in the frame' : 'Pick element'}

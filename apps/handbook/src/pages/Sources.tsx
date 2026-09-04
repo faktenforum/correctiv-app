@@ -894,10 +894,25 @@ export function Sources() {
             </output>
           </div>
 
-          {/* The board is wider than the rail leaves, so it scrolls inside this box.
-              Its parents carry `min-w-0`, without which a flex child refuses to
-              shrink and the whole page scrolls sideways instead. */}
-          <div className="mt-s min-w-0 overflow-x-auto rounded-md border border-stroke">
+          {/*
+            The board is wider than the rail leaves, so it scrolls inside this box.
+            Two classes here are load-bearing and neither is obvious.
+
+            `min-w-0`, on this box and on every ancestor up to `main`: a flex child
+            refuses to shrink below its content without it, which is the fault that
+            made this page scroll sideways before.
+
+            `relative`, because the cells hold `sr-only` spans, which are absolutely
+            positioned, and with no positioned ancestor their containing block is
+            the page: they sit at their static position hundreds of pixels into a
+            table this box clips, and although the table is clipped the spans are
+            not. The page then scrolls sideways by their reach with nothing visible
+            out there. Measured at a 1024px window: the box scrolled its 936px table
+            inside 719px correctly and the window still scrolled 105px. This is the
+            second time that has happened here, and it is why the kit's
+            `ScrollArea` is written `relative overflow-hidden` too.
+          */}
+          <div className="relative mt-s min-w-0 overflow-x-auto rounded-md border border-stroke">
             <table className="w-full min-w-[44rem] border-collapse text-left">
               <caption className="border-b border-stroke bg-surface px-s py-xs text-left text-s text-on-canvas-muted">
                 Every content source the app reads, stands in for, or still wants. Figures measured

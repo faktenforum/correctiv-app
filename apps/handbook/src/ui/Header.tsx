@@ -59,7 +59,10 @@ export function Header({
       >
         <span aria-hidden="true" className="size-[0.875rem] rounded-[3px] bg-accent" />
         CORRECTIV
-        <span className="font-normal text-on-canvas-muted">Handbook</span>
+        {/* The second word is the first thing to go: at 390px the brand, the
+            search button and a three-state toggle do not all fit, and the toggle
+            is the one a reader came for. */}
+        <span className="hidden font-normal text-on-canvas-muted sm:inline">Handbook</span>
       </a>
 
       <div className="flex-1" />
@@ -83,7 +86,7 @@ export function Header({
       <div
         role="radiogroup"
         aria-label="Appearance"
-        className="flex items-center rounded-md border border-stroke p-4xs"
+        className="flex shrink-0 items-center rounded-md border border-stroke p-4xs"
       >
         {MODES.map((mode, i) => (
           <button

@@ -161,6 +161,18 @@
   padding: 0.1em 0.32em;
   font-weight: 400;
   font-size: 0.875em;
+  /* These documents name file paths inline, and a path has no break opportunity
+     in it. One `packages/app-core/src/services/cache.service.ts` was 355px wide
+     in a 375px window and pushed the whole page sideways. */
+  overflow-wrap: anywhere;
+}
+
+/* A table in a record is wider than a phone. It scrolls in its own box rather
+   than taking the page with it; the plugin gives it no such box. */
+.prose table {
+  display: block;
+  overflow-x: auto;
+  max-width: 100%;
 }
 .prose code::before,
 .prose code::after {

@@ -97,7 +97,7 @@ const HALO = '[paint-order:stroke] stroke-canvas [stroke-width:3] [stroke-linejo
  * the few SVG properties that does not inherit, and the drawings are laid out
  * centred: a legend's text shares the y of the circle beside it.
  */
-const SURFACE = 'fill-on-canvas [&_text]:[dominant-baseline:central]';
+const DRAWING = 'fill-on-canvas [&_text]:[dominant-baseline:central]';
 
 /**
  * A diagram is wider than the column, so it scrolls inside its own box.
@@ -192,7 +192,7 @@ export function Diagrams() {
           <section className={SCROLL_BOX} aria-label="Diagram 1, scrollable" tabIndex={0}>
             <svg
               viewBox="0 0 960 710"
-              className={cn(SURFACE, 'block h-[710px] w-[960px] max-w-none')}
+              className={cn(DRAWING, 'block h-[710px] w-[960px] max-w-none')}
               aria-labelledby="d1-title"
               aria-describedby="d1-alt"
             >
@@ -529,7 +529,7 @@ export function Diagrams() {
           <section className={SCROLL_BOX} aria-label="Diagram 2, scrollable" tabIndex={0}>
             <svg
               viewBox="0 0 1100 985"
-              className={cn(SURFACE, 'block h-[985px] w-[1100px] max-w-none')}
+              className={cn(DRAWING, 'block h-[985px] w-[1100px] max-w-none')}
               aria-labelledby="d2-title"
               aria-describedby="d2-alt"
             >
@@ -1046,7 +1046,7 @@ export function Diagrams() {
           <section className={SCROLL_BOX} aria-label="Diagram 3, scrollable" tabIndex={0}>
             <svg
               viewBox="0 0 1040 710"
-              className={cn(SURFACE, 'block h-[710px] w-[1040px] max-w-none')}
+              className={cn(DRAWING, 'block h-[710px] w-[1040px] max-w-none')}
               aria-labelledby="d3-title"
               aria-describedby="d3-alt"
             >
