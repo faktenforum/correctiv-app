@@ -301,7 +301,9 @@ function Panel({
             <Icon aria-hidden="true" className="size-[0.875rem] shrink-0 text-on-canvas-muted" />
             <span className="text-m font-semibold text-on-canvas">{title}</span>
             {tags && (
-              <span className="ml-auto flex flex-wrap items-center justify-end gap-3xs">{tags}</span>
+              <span className="ml-auto flex flex-wrap items-center justify-end gap-3xs">
+                {tags}
+              </span>
             )}
           </CollapsibleTrigger>
         </h3>
@@ -525,7 +527,9 @@ function State({ state, onChange, panel }: Props & { panel: Disclosure }) {
           ))}
         </div>
       </fieldset>
-      <p className={NOTE}>The fixture is in the link, so whoever opens it starts where you started.</p>
+      <p className={NOTE}>
+        The fixture is in the link, so whoever opens it starts where you started.
+      </p>
     </Panel>
   );
 }
@@ -717,7 +721,11 @@ function Tokens({ tools, panel }: Props & { panel: Disclosure }) {
       title="Tokens"
       icon={Palette}
       panel={panel}
-      tags={<Badge variant="outline" className="font-mono">{scheme} scheme</Badge>}
+      tags={
+        <Badge variant="outline" className="font-mono">
+          {scheme} scheme
+        </Badge>
+      }
     >
       <p className={NOTE}>
         Overrides apply to the <b className="font-semibold text-on-canvas">{scheme}</b> scheme, the

@@ -38,9 +38,16 @@ type Gap = (typeof UNUSED)[number];
  */
 const FIGURE = 'whitespace-nowrap font-mono tabular-nums';
 
-/** An identifier out of the repository: an endpoint, a module path, a slug. */
+/**
+ * An identifier out of the repository: an endpoint, a module path, a slug.
+ *
+ * `wrap-anywhere` rather than `break-words`, because a module path is one long
+ * token and a table column is sized by its longest one. Left to break only at the
+ * hyphen, the "reads from" column claimed 318px it did not need and pushed the
+ * disclosure button past the right edge of the scroll box.
+ */
 const CODE =
-  'rounded-s border border-stroke bg-surface px-3xs py-4xs font-mono text-[0.8125rem] break-words';
+  'rounded-s border border-stroke bg-surface px-3xs py-4xs font-mono text-[0.8125rem] wrap-anywhere';
 
 const LINK =
   'rounded-s underline decoration-accent underline-offset-2 hover:text-on-canvas-accent focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent';
