@@ -31,7 +31,8 @@ import PangoCairo from 'gi://PangoCairo?version=1.0';
 
 import { initFonts } from '@gjsify/gtk-host/fonts';
 
-import { FONT_CUTS, FONT_FAMILIES } from '../style/fonts.js';
+import { alignFamilies } from '../style/font-map.js';
+import { actualFamily, FONT_CUTS, FONT_FAMILIES } from '../style/fonts.js';
 
 const map = PangoCairo.FontMap.get_default();
 
@@ -62,9 +63,22 @@ console.log(`declined:     ${result.declined.length}`);
 console.log(`failed:       ${result.failed.length}`);
 for (const failure of result.failed) console.log(`  FAILED ${failure.path}: ${failure.message}`);
 
-// 3. After.
+// 3. After — and then the reconciliation the app itself does, because the declared
+// name is not portable: the same Merriweather is "Merriweather" under fontconfig and
+// "Merriweather 18pt" under gvsbuild. Without this the probe would report ABSENT for a
+// family that is present under another name, which is a different defect from the one
+// it is looking for.
 const after = families();
 report('after initFonts()', after);
+
+const aligned = alignFamilies();
+console.log('\n--- what the map calls them ---');
+console.log(`families on the map: ${aligned.onMap}`);
+for (const family of aligned.exact) console.log(`  ${family.padEnd(16)} exact`);
+for (const [declared, actual] of aligned.aliased) {
+  console.log(`  ${declared.padEnd(16)} aliased -> "${actual}"`);
+}
+for (const family of aligned.missing) console.log(`  ${family.padEnd(16)} MISSING under any name`);
 
 // 4. What the map actually hands over for each cut. A substitution shows up here and
 // nowhere else — Pango answers with the face it chose, not with the one asked for.
@@ -78,7 +92,7 @@ for (const [name, cut] of Object.entries(FONT_CUTS)) {
   // which a family-only predicate reads as a pass. Both axes are set explicitly, and
   // both are checked.
   const wanted = new Pango.FontDescription();
-  wanted.set_family(cut.family);
+  wanted.set_family(actualFamily(cut.family));
   wanted.set_weight(cut.weight);
   wanted.set_size(12 * Pango.SCALE);
 
@@ -86,7 +100,7 @@ for (const [name, cut] of Object.entries(FONT_CUTS)) {
   const got = font?.describe();
   const gotFamily = got?.get_family() ?? '(nothing)';
   const gotWeight = got?.get_weight() ?? 0;
-  const familyOk = gotFamily.toLowerCase() === cut.family.toLowerCase();
+  const familyOk = gotFamily.toLowerCase() === actualFamily(cut.family).toLowerCase();
   // The weight is the half a family check cannot see: a map that has Regular and not
   // Bold answers a 700 request with Regular, and bold text renders unbolded with no
   // diagnostic anywhere.
@@ -94,7 +108,7 @@ for (const [name, cut] of Object.entries(FONT_CUTS)) {
   if (!familyOk || !weightOk) substituted += 1;
   const verdict = familyOk ? (weightOk ? 'ok' : 'WRONG WEIGHT') : 'SUBSTITUTED';
   console.log(
-    `  ${name.padEnd(24)} asked ${cut.family} ${cut.weight}  ->  ${gotFamily} ${gotWeight}  ${verdict}`,
+    `  ${name.padEnd(24)} asked ${actualFamily(cut.family)} ${cut.weight}  ->  ${gotFamily} ${gotWeight}  ${verdict}`,
   );
 }
 

@@ -117,7 +117,8 @@ export const FONT_FAMILIES: readonly string[] = [
  * removes it and the test below with it.
  */
 export function cssFontFamily(family: string): string {
-    return family.includes(' ') ? `'${family}'` : family;
+  const actual = actualFamily(family);
+  return actual.includes(' ') ? `'${actual}'` : actual;
 }
 
 /**
@@ -130,4 +131,68 @@ export function cssFontFamily(family: string): string {
  */
 export function fontCutFor(name: string): FontCut | undefined {
   return Object.hasOwn(FONT_CUTS, name) ? FONT_CUTS[name] : undefined;
+}
+
+// ---------------------------------------------------------------------------
+// The family name is not portable, and that is measured
+// ---------------------------------------------------------------------------
+//
+// The same byte-identical `Merriweather_400Regular.ttf` registers under a DIFFERENT
+// family name depending on which font stack reads its naming table:
+//
+//   Linux   (fontconfig)  -> "Merriweather"
+//   Windows (gvsbuild)    -> "Merriweather 18pt"
+//
+// Google Fonts ships Merriweather as an optical-size family, and the two stacks
+// disagree about whether the size axis belongs in the family name. `Source Sans 3`
+// has no such axis and reads the same on both. Verified with SHA-256: the files are
+// identical across the two machines, so this is a reader difference and not a payload
+// one — and `pango_font_map_add_font_file()` reported success on both, which is why
+// only asking the map afterwards finds it.
+//
+// Hardcoding one of the two names means silently wearing Tahoma on the other platform.
+// So the name in `FONT_CUTS` is what the app ASKS FOR, and `alignFamilies()` in
+// `font-map.ts` reconciles it against what the running map actually has, once, before
+// the first class is minted.
+
+/** Declared family -> the name the running font map uses for it. */
+const aliases = new Map<string, string>();
+
+/**
+ * Record what the font map calls a declared family.
+ *
+ * Called by `alignFamilies()` at startup. Separate from the table because this module
+ * must stay free of `gi://` — it is imported by `tsc` and by a test, neither of which
+ * has a GTK process.
+ */
+export function setFamilyAlias(declared: string, actual: string): void {
+  aliases.set(declared, actual);
+}
+
+/** Drop every alias. For tests; a process only ever aligns once. */
+export function clearFamilyAliases(): void {
+  aliases.clear();
+}
+
+/** What the running map calls this family, or the declared name when nothing said. */
+export function actualFamily(declared: string): string {
+  return aliases.get(declared) ?? declared;
+}
+
+/**
+ * Which of `available` is this declared family, if any?
+ *
+ * Deliberately narrow. An exact name wins. Otherwise the only accepted shape is the
+ * optical-size one that was actually measured — `<declared> <n>pt` — and only when
+ * exactly ONE candidate has it: a family with several optical sizes is a choice about
+ * which size to use at which point size, which is a design decision rather than
+ * something to guess at startup. Anything else answers `undefined`, so the caller can
+ * report a substitution instead of quietly picking a neighbour.
+ */
+export function matchFamily(declared: string, available: readonly string[]): string | undefined {
+  if (available.includes(declared)) return declared;
+  const escaped = declared.replaceAll(/[.*+?^${}()|[\]\\]/g, String.raw`\$&`);
+  const optical = new RegExp(String.raw`^${escaped} \d+(?:\.\d+)?pt$`);
+  const candidates = available.filter((name) => optical.test(name));
+  return candidates.length === 1 ? candidates[0] : undefined;
 }

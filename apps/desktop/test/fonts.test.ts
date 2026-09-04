@@ -28,7 +28,16 @@ import { basename, resolve } from 'node:path';
 
 import { describe, expect, it } from 'vitest';
 
-import { cssFontFamily, FONT_CUTS, FONT_FAMILIES, fontCutFor } from '../src/style/fonts.js';
+import {
+  actualFamily,
+  clearFamilyAliases,
+  cssFontFamily,
+  FONT_CUTS,
+  FONT_FAMILIES,
+  fontCutFor,
+  matchFamily,
+  setFamilyAlias,
+} from '../src/style/fonts.js';
 
 const APP = resolve(import.meta.dirname, '..');
 const PHONE_FONTS = resolve(APP, '..', 'mobile', 'src', 'lib', 'theme', 'fonts.ts');
@@ -43,10 +52,12 @@ const PHONE_FONTS = resolve(APP, '..', 'mobile', 'src', 'lib', 'theme', 'fonts.t
  */
 function namesTheAppCanProduce(): string[] {
   const source = readFileSync(PHONE_FONTS, 'utf8');
+  // Preconditions, not assertions about the subject: if the phone's file has been
+  // restructured, every test below would compare against an empty set and pass.
   const start = source.indexOf('const FAMILY_MAP');
-  expect(start, 'FAMILY_MAP in apps/mobile/src/lib/theme/fonts.ts').toBeGreaterThan(-1);
+  if (start === -1) throw new Error(`no FAMILY_MAP in ${PHONE_FONTS}`);
   const end = source.indexOf('\n};', start);
-  expect(end, 'the end of the FAMILY_MAP block').toBeGreaterThan(start);
+  if (end <= start) throw new Error(`no end to the FAMILY_MAP block in ${PHONE_FONTS}`);
   const block = source.slice(start, end);
   const names = new Set<string>();
   for (const match of block.matchAll(/'([A-Za-z][A-Za-z0-9]*_\d{3}[A-Za-z]+)'/g)) {
@@ -75,11 +86,15 @@ describe('the brand faces', () => {
   });
 
   it('resolves every face to a real file', () => {
+    const broken: string[] = [];
     for (const [name, cut] of Object.entries(FONT_CUTS)) {
       const path = require.resolve(cut.source, { paths: [APP] });
-      expect(existsSync(path), `${name} -> ${cut.source}`).toBe(true);
-      expect(statSync(path).size, `${name} is not empty`).toBeGreaterThan(0);
+      if (!existsSync(path)) broken.push(`${name}: ${cut.source} does not exist`);
+      else if (statSync(path).size === 0) broken.push(`${name}: ${cut.source} is empty`);
     }
+    // Collected rather than asserted one by one, so a failure names every bad face at
+    // once instead of stopping at the first.
+    expect(broken).toEqual([]);
   });
 
   it('gives every face a distinct basename', () => {
@@ -120,6 +135,45 @@ describe('the brand faces', () => {
       const value = cssFontFamily(family);
       expect(value.includes(' ') ? value.startsWith("'") && value.endsWith("'") : true).toBe(true);
     }
+  });
+
+  it('finds a family the map calls something else', () => {
+    // The measured Windows case. The same byte-identical Merriweather registers as
+    // "Merriweather" under fontconfig and "Merriweather 18pt" under gvsbuild, because
+    // Google Fonts ships it as an optical-size family and the two readers disagree
+    // about whether the size axis belongs in the family name. Both stacks reported the
+    // registration as successful.
+    expect(matchFamily('Merriweather', ['Merriweather 18pt', 'Tahoma'])).toBe('Merriweather 18pt');
+    // An exact name always wins, even when an optical variant is also present.
+    expect(matchFamily('Merriweather', ['Merriweather', 'Merriweather 18pt'])).toBe('Merriweather');
+  });
+
+  it('refuses to guess between several optical sizes', () => {
+    // Which optical size to use at which point size is a design decision. Answering
+    // `undefined` makes the caller report a substitution instead of picking one.
+    expect(matchFamily('Merriweather', ['Merriweather 8pt', 'Merriweather 18pt'])).toBeUndefined();
+    // And the shape is narrow on purpose: a different family that merely starts with
+    // the same letters is not a match.
+    expect(
+      matchFamily('Merriweather', ['Merriweathers Extra', 'Merriweather Sans']),
+    ).toBeUndefined();
+    expect(matchFamily('Merriweather', [])).toBeUndefined();
+  });
+
+  it('quotes an aliased family too, because the alias is the multi-word one', () => {
+    // Where the two platform findings meet. On Linux `Merriweather` needs no quoting;
+    // on Windows the map calls it `Merriweather 18pt`, which does — so the alias has to
+    // be resolved BEFORE the quoting decision, not after.
+    clearFamilyAliases();
+    try {
+      expect(cssFontFamily('Merriweather')).toBe('Merriweather');
+      setFamilyAlias('Merriweather', 'Merriweather 18pt');
+      expect(actualFamily('Merriweather')).toBe('Merriweather 18pt');
+      expect(cssFontFamily('Merriweather')).toBe("'Merriweather 18pt'");
+    } finally {
+      clearFamilyAliases();
+    }
+    expect(cssFontFamily('Merriweather')).toBe('Merriweather');
   });
 
   it('answers only for a name it carries', () => {

@@ -58,6 +58,7 @@ import { manifest } from 'virtual:gjsify-rn-routes';
 import { armScreenshot } from './debug/screenshot.js';
 import { tokensFor } from './generated/tokens.generated.js';
 import { persistedAppearance } from './platform/storage.js';
+import { alignFamilies } from './style/font-map.js';
 import { sheet } from './style/sheet.js';
 
 registerBuiltinWidgets();
@@ -151,6 +152,26 @@ function registerFontsOnce(): void {
   console.log(`[desktop] fonts: ${result.dir} — ${parts.join(', ')}.`);
   for (const failure of result.failed) {
     console.warn(`[desktop] fonts: ${failure.path}: ${failure.message}`);
+  }
+
+  // And then ask the MAP, because the registration count is not the thing that matters.
+  // Measured on Windows: five faces reported registered, and `Merriweather` was not on
+  // the map under that name — it is `Merriweather 18pt` there and `Merriweather` on
+  // Linux, from the same bytes. `alignFamilies()` reconciles the two and `missing` is
+  // what Pango will substitute silently, so it is a warning rather than a count.
+  const families = alignFamilies();
+  const found = [
+    ...families.exact,
+    ...families.aliased.map(([declared, actual]) => `${declared} as "${actual}"`),
+  ];
+  console.log(
+    `[desktop] fonts: ${families.onMap} families on the map; this app has ${found.join(', ') || 'none of its own'}.`,
+  );
+  for (const family of families.missing) {
+    console.warn(
+      `[desktop] fonts: "${family}" is on no font map under any name this recognises. ` +
+        'Pango will substitute it without saying so.',
+    );
   }
 }
 
