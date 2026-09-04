@@ -12,11 +12,15 @@
 // keep working untouched — and `src/shims/expo-font.ts` ignores the map it is handed,
 // because there is nothing to load.
 //
-// WHAT IS LOST: the two typefaces, in the window chrome. Pango falls back to the
-// system UI font. The article body is NOT affected — the reader document embeds its
-// own base64-subsetted fonts in a `<style>` block, which works identically inside
-// WebKitGTK. `src/shims/expo-font.ts` carries the full account and the name of the
-// API that would fix it.
+// WHAT IS NOT LOST, any more. The faces themselves ship: `scripts/stage-fonts.mjs`
+// copies the five cuts out of these very packages into `data/fonts/`, declared to
+// `gjsify ship` as `gjsify.ship.fonts`, and `entry.tsx` puts them on Pango's font map
+// at startup. The path they take is the file system rather than the JavaScript bundle,
+// which is the whole reason this shim can stay a list of nulls.
+//
+// The names still need translating: `Merriweather_700Bold` is an asset id, and Pango
+// knows `Merriweather` at weight 700 — `src/style/fonts.ts` holds that split and
+// `src/shims/react-native.tsx` applies it to every `fontFamily` that goes past.
 //
 // `null` rather than a fake asset id: nothing reads these values on this host, and a
 // plausible-looking number would invite someone to believe a font had been loaded.

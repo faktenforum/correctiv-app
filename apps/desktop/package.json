@@ -8,7 +8,8 @@
   "main": "dist/app.gjs.mjs",
   "scripts": {
     "tokens": "node scripts/generate-tokens.mjs",
-    "build": "npm run build:gjs",
+    "fonts": "node scripts/stage-fonts.mjs",
+    "build": "npm run fonts && npm run build:gjs",
     "build:gjs": "gjsify build src/entry.tsx --app gjs --outfile dist/app.gjs.mjs --exclude-globals navigator",
     "build:node": "gjsify build src/entry.tsx --app node --outfile dist/app.node.mjs",
     "build:all": "npm run build:gjs && npm run build:node",
@@ -19,6 +20,7 @@
     "test": "vitest run",
     "screenshot": "node scripts/start.mjs --screenshot dist/screenshot.png",
     "audio-probe": "gjsify build src/debug/audio-probe.ts --app gjs --outfile dist/audio-probe.gjs.mjs --exclude-globals navigator && node scripts/start.mjs --bundle dist/audio-probe.gjs.mjs",
+    "font-probe": "gjsify build src/debug/font-probe.ts --app node --outfile dist/font-probe.node.mjs --exclude-globals navigator && node scripts/start.mjs --bundle dist/font-probe.node.mjs --host node",
     "route-sweep": "node scripts/route-sweep.mjs",
     "capture-diff": "node scripts/capture-diff.mjs"
   },
@@ -55,5 +57,10 @@
     "@gjsify/devtools": "^0.47.0",
     "@types/react": "~19.2.2",
     "@types/react-reconciler": "^0.32.0"
+  },
+  "gjsify": {
+    "ship": {
+      "fonts": "data/fonts"
+    }
   }
 }

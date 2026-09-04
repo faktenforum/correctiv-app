@@ -92,6 +92,8 @@ import {
   View as BaseView,
 } from '@gjsify/react-native';
 
+import { cssFontFamily, fontCutFor } from '../style/fonts.js';
+
 // Everything this file does not touch — including every refusing export, which is what
 // keeps an unimplemented name a named error rather than `undefined`.
 export * from '@gjsify/react-native';
@@ -454,6 +456,37 @@ function normalizeStyle(style: unknown): Record<string, unknown> | undefined {
           'GTK expresses this as a Gtk.AspectFrame — a different widget, not a property — so it was dropped. The element sizes to its content instead.',
         );
         break;
+
+      // The app names one loaded family per CUT — `Merriweather_700Bold` — because
+      // Android ignores `fontWeight` on a custom font, so `lib/theme/typography.ts`
+      // emits `fontFamily` and no `fontWeight` at all. Pango has never heard of those
+      // names: a registered `.ttf` declares its own family and its own weight.
+      //
+      // Passing the name through is the ONE case in this switch where doing nothing is
+      // worse than dropping. Every other unroutable property either throws in the
+      // partition or is reported here; an unknown font family does neither — Pango
+      // substitutes the default sans, reports nothing, and the app renders correctly in
+      // the wrong typeface. `src/style/fonts.ts` carries the split, read off the files
+      // with `fc-query` rather than derived from their names.
+      case 'fontFamily': {
+        const cut = typeof value === 'string' ? fontCutFor(value) : undefined;
+        if (cut === undefined) {
+          reportStyle(
+            'fontFamily',
+            `"${String(value)}" is not one of this app's cuts (src/style/fonts.ts), so Pango may substitute it silently. Passed through unchanged.`,
+          );
+          out[key] = value;
+          break;
+        }
+        // Quoted where GTK needs it — see `cssFontFamily`, which carries the reason and
+        // the trigger that removes it (gjsify #1539).
+        out.fontFamily = cssFontFamily(cut.family);
+        // The name is the app's canonical carrier of the weight, so it wins over an
+        // explicit `fontWeight`: a style asking for `Merriweather_700Bold` at weight 400
+        // is a contradiction, and the family name is the half the design system keeps.
+        out.fontWeight = String(cut.weight);
+        break;
+      }
 
       // `top`, `right`, `bottom` and `left` are all routed (28 layout properties, read
       // out of the installed build rather than guessed — an earlier version of this

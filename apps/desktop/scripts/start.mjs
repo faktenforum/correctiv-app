@@ -66,7 +66,17 @@ if (!existsSync(bundle)) {
   exit(2);
 }
 
-const childEnv = { ...env, CORRECTIV_DESKTOP_ASSETS: resolve(APP, '..', 'mobile') };
+// `GJSIFY_FONT_DIR` is `gjsify ship`'s handover: its launcher exports it at wherever
+// the staged faces ended up, because only the launcher knows whether the payload became
+// `/usr`, a bundle's `Contents/Resources` or `C:\Program Files`. A dev run has no
+// launcher, so it is set here — otherwise the chrome silently wears the system font in
+// development and the brand faces only appear in a packaged build, which is the worst
+// possible place to first notice a font problem. An existing value is left alone.
+const childEnv = {
+  GJSIFY_FONT_DIR: resolve(APP, 'data', 'fonts'),
+  ...env,
+  CORRECTIV_DESKTOP_ASSETS: resolve(APP, '..', 'mobile'),
+};
 if (opts.screenshot !== null) {
   childEnv.CORRECTIV_DESKTOP_SCREENSHOT = isAbsolute(opts.screenshot)
     ? opts.screenshot

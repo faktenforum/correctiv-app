@@ -50,6 +50,7 @@
 import Adw from 'gi://Adw?version=1';
 
 import { registerBuiltinWidgets } from '@gjsify/gtk-host';
+import { initFonts } from '@gjsify/gtk-host/fonts';
 import { configureStyle, registerRootComponent } from '@gjsify/react-native';
 import { RouterRoot } from '@gjsify/react-native/router';
 import { manifest } from 'virtual:gjsify-rn-routes';
@@ -100,7 +101,63 @@ function configureStyleOnce(): void {
   configureStyle({ tokens: tokensFor(manager.dark), sheet: sheet() });
 }
 
+let fontsRegistered = false;
+
+/**
+ * Put the two brand faces on the font map, and say what happened.
+ *
+ * The faces are staged into `data/fonts/` by `scripts/stage-fonts.mjs` and declared
+ * to `gjsify ship` as `gjsify.ship.fonts`; the launcher exports `GJSIFY_FONT_DIR` at
+ * wherever that directory ended up, because only the launcher knows whether the
+ * payload became `/usr`, a `Contents/Resources` or `C:\Program Files`. `initFonts()`
+ * reads that variable itself. `scripts/start.mjs` sets it for a dev run so the two
+ * paths do not diverge.
+ *
+ * ## Why this LOGS instead of asserting
+ *
+ * The outcome is legitimately different on each platform, and only one of the three
+ * shapes is a defect:
+ *
+ *   * **registered** — a fontconfig-backed Pango took the faces. Linux, and Windows.
+ *   * **declined** — `pango_font_map_add_font_file()` is a vfunc and the CoreText map
+ *     implements none, so macOS answers `G_IO_ERROR_NOT_SUPPORTED`. That is not a
+ *     failure: a `.app` carries `ATSApplicationFontsPath`, so the OS activated the
+ *     staged directory before this process started and the faces are already there.
+ *     The corollary is worth knowing while developing: running the bundle directly on
+ *     macOS, outside a `.app`, has no brand typeface and cannot have one.
+ *   * **failed** — a face the map refused for any other reason. This one is ours.
+ *
+ * An assertion would have to encode all three, and would then be wrong on the next
+ * platform. Pango's own failure mode is the reason there is any output at all: it does
+ * not report a missing family, so `set_family('Merriweather')` against a map that
+ * never got the file resolves to the default sans and nothing anywhere says a word.
+ */
+function registerFontsOnce(): void {
+  if (fontsRegistered) return;
+  fontsRegistered = true;
+  const result = initFonts();
+  if (result.dir === undefined) {
+    console.warn(
+      '[desktop] fonts: GJSIFY_FONT_DIR is not set, so no brand face was registered. ' +
+        'Pango will substitute the system UI font in the chrome.',
+    );
+    return;
+  }
+  const parts = [`${result.registered.length} registered`];
+  if (result.declined.length > 0) {
+    parts.push(`${result.declined.length} declined by the font map (expected on macOS)`);
+  }
+  if (result.failed.length > 0) parts.push(`${result.failed.length} FAILED`);
+  console.log(`[desktop] fonts: ${result.dir} — ${parts.join(', ')}.`);
+  for (const failure of result.failed) {
+    console.warn(`[desktop] fonts: ${failure.path}: ${failure.message}`);
+  }
+}
+
 function App() {
+  // Before the style, and before anything renders: a family Pango does not know is
+  // substituted at DRAW time with no diagnostic.
+  registerFontsOnce();
   configureStyleOnce();
   // Opt-in and env-gated; a no-op unless CORRECTIV_DESKTOP_SCREENSHOT names a path.
   armScreenshot();
