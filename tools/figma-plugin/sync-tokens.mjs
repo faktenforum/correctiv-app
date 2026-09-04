@@ -26,17 +26,37 @@ const SPEC = join(HERE, 'spec.json');
  * semantic tier does, so a re-transcription may need a hand afterwards: white is
  * `canvas` here, but white TEXT on a brand surface is `always-light`.
  *
- * A hex earns an entry only where the mapping is unambiguous; the media-placeholder greys, the YouTube red and the disabled tint
- * stay literal, because pretending they are tokens would put a name on a decision
- * nobody made.
+ * A hex earns an entry only where the mapping is unambiguous, and only where the APP
+ * names it. What stays literal is what the app has no name for either: the greys the
+ * board writes its own placeholder LABELS in, where the app draws an icon instead; the
+ * lavender behind an active tab, which is Android's and not ours; the video stage's
+ * near-black and YouTube's red. Pretending those are tokens would put a name on a
+ * decision nobody made.
  */
 const AS_TOKEN = {
   '#ff5064': 'color-accent',
+  // The brand red as it was measured off a screenshot, one notch off the real value.
+  // Five tab-bar icons carried it, close enough that nobody saw it and far enough that
+  // no token work would ever have caught it: it never pretended to be a token.
+  '#f9545f': 'color-accent',
   '#fde162': 'color-accent-alternative',
   '#ffffff': 'color-canvas',
   '#f4f4f6': 'color-surface',
   '#f5f5f6': 'color-surface',
   '#e2e2e5': 'color-stroke',
+  // Three the app names and the transcription did not. `ProgressBar` and the stage
+  // bars are `bg-stroke`; onboarding's inactive step dots are `colors['stroke']`,
+  // which is the arguable one and was settled the app's way in #76.
+  '#e5e5e8': 'color-stroke',
+  '#d9d9db': 'color-stroke',
+  // `Thumbnail` is `bg-grey-300`, and the switch track went back to it in #76, because
+  // an off track is not a border. Both are the deprecated tier on purpose: the
+  // semantic one has no surface at this value, which ADR 0022 lists for upstream.
+  '#dadadd': 'color-grey-300',
+  '#e0e0e3': 'color-grey-300',
+  // `LiveBanner` is `bg-always-dark`: a fixed role colour, because the banner is dark
+  // in both schemes.
+  '#333336': 'color-always-dark',
   '#a8a8b0': 'color-grey-500',
   '#7a7a82': 'color-on-canvas-muted',
   '#212124': 'color-on-canvas',
