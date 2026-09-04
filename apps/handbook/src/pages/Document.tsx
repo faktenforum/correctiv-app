@@ -1,7 +1,9 @@
+import { ExternalLink } from 'lucide-react';
 import { useEffect, useRef } from 'react';
 
-import type { RenderedDoc } from '../../plugin/markdown';
 import docsModule from 'virtual:docs';
+import type { RenderedDoc } from '../../plugin/markdown.ts';
+import { Badge } from '../ui/kit/badge';
 import { Toc } from '../ui/Toc';
 
 interface Props {
@@ -11,12 +13,12 @@ interface Props {
 const REPO_BLOB = `${docsModule.repo}/blob/${docsModule.commit}`;
 
 /**
- * One document from the repository, with the site's own furniture around it.
+ * One document from the repository, with the site's furniture around it.
  *
  * The HTML is a string produced at build time, so it goes in through
- * `dangerouslySetInnerHTML`. That is safe here in the way the name is asking
- * about: the input is this repository's own Markdown at the commit being built,
- * not anything a reader can supply.
+ * `dangerouslySetInnerHTML`. That is safe in the way the name asks about: the
+ * input is this repository's own Markdown at the commit being built, not
+ * anything a reader can supply.
  */
 export function Document({ doc }: Props) {
   const article = useRef<HTMLElement>(null);
@@ -29,61 +31,71 @@ export function Document({ doc }: Props) {
 
   return (
     <>
-      <main className="content" id="content">
-        <article className="doc" id="top" ref={article}>
-          <nav className="crumbs" aria-label="Breadcrumb">
-            <ol>
+      <main id="content" className="min-w-0 flex-1 px-m py-ml lg:px-12">
+        <article ref={article} className="mx-auto max-w-content">
+          <nav aria-label="Breadcrumb" className="mb-sm text-s text-on-canvas-muted">
+            <ol className="flex flex-wrap items-center gap-2xs">
               <li>Handbook</li>
-              {record && <li>Decisions</li>}
-              <li>{record ? `ADR ${record}` : doc.nav}</li>
+              {record && (
+                <>
+                  <li aria-hidden="true">/</li>
+                  <li>Decisions</li>
+                </>
+              )}
+              <li aria-hidden="true">/</li>
+              <li className="text-on-canvas">{record ? `ADR ${record}` : doc.nav}</li>
             </ol>
           </nav>
 
-          <div dangerouslySetInnerHTML={{ __html: doc.html }} />
+          {doc.retired.length > 0 && (
+            <p className="mb-m flex items-center gap-xs text-m text-on-canvas-muted">
+              <Badge variant="alt">{doc.retired.length} retired</Badge>
+              {doc.retired.length === 1
+                ? 'One claim on this page is'
+                : 'Claims on this page are'}{' '}
+              struck through where they stand, with what voided them beside them.
+            </p>
+          )}
 
-          <footer className="doc-source">
+          <div
+            className="prose prose-sm max-w-none prose-headings:scroll-mt-20 prose-pre:border prose-pre:border-stroke"
+            dangerouslySetInnerHTML={{ __html: doc.html }}
+          />
+
+          <footer className="mt-xl border-t border-stroke pt-sm text-m text-on-canvas-muted">
             <p>
               This page is{' '}
-              <a href={`${REPO_BLOB}/${doc.file}`} target="_blank" rel="noreferrer noopener">
-                <code>{doc.file}</code>
+              <a
+                href={`${REPO_BLOB}/${doc.file}`}
+                target="_blank"
+                rel="noreferrer noopener"
+                className="inline-flex items-center gap-3xs font-mono text-on-canvas underline decoration-accent underline-offset-2"
+              >
+                {doc.file}
+                <ExternalLink aria-hidden="true" className="size-[0.75rem]" />
               </a>{' '}
               in the repository, rendered here. It is not a copy, so there is one place to edit it.
-              {doc.retired.length > 0 && (
-                <>
-                  {' '}
-                  {doc.retired.length}{' '}
-                  {doc.retired.length === 1 ? 'claim on this page has' : 'claims on this page have'}{' '}
-                  been retired and {doc.retired.length === 1 ? 'is' : 'are'} struck through in
-                  place.
-                </>
-              )}
             </p>
           </footer>
         </article>
       </main>
+
       <Toc headings={doc.headings} />
     </>
   );
 }
 
 /**
- * Wraps the clause after each struck claim in the annotation the design draws.
+ * Wraps the clause after each struck claim in the annotation the site draws.
  *
  * The convention in `adr/` is "~~the old claim~~ Voided by ADR 0020.", so the
- * reason is the sentence that follows the strike. This finds that sentence and
- * moves it into an `<ins class="retired">` carrying a small tag, which is what
- * makes the site say "this was true and is no longer, and here is what changed
- * it" rather than leaving a reader to guess whether a struck sentence is a
- * correction, a joke or a rendering fault. This project strikes claims often
- * enough that guessing is the wrong default.
+ * reason is the sentence that follows the strike. A reader landing on a struck
+ * sentence with no annotation has to guess whether it is a correction, a joke or
+ * a rendering fault, and this project strikes claims often enough that guessing
+ * is the wrong default.
  *
- * Done here rather than in the Markdown renderer because it is presentation, and
- * because the renderer sees one token at a time and the relationship being drawn
- * is between a token and what follows it. `plugin/markdown.ts` extracts the same
- * pairing for the counts and the tests; this is the visual half.
- *
- * `<ins>` is the honest element: the annotation really is a later insertion, and
- * it is not in the source document.
+ * `<ins>` is the honest element: the annotation really is a later insertion and
+ * is not in the source document.
  */
 function annotateRetired(root: HTMLElement | null): void {
   if (!root) return;
@@ -100,9 +112,7 @@ function annotateRetired(root: HTMLElement | null): void {
       if (node.nodeType === Node.TEXT_NODE) {
         const end = /[.!?](\s|$)/.exec((node as Text).data);
         if (end) {
-          // Keep the remainder of the paragraph outside the annotation: the
-          // clause is one sentence, and a chip around three paragraphs would be
-          // a highlight rather than a note.
+          // One sentence. A chip drawn around three paragraphs is a highlight.
           (node as Text).splitText(end.index + 1);
           clause.push(node);
           node = null;
@@ -122,14 +132,10 @@ function annotateRetired(root: HTMLElement | null): void {
     ins.append(tag);
 
     const length = clause.reduce((n, c) => n + (c.textContent?.length ?? 0), 0);
+    del.after(ins);
     // Some records put the reason in the next paragraph, where no amount of
-    // walking will find it. Those get the tag alone rather than a chip drawn
-    // around whatever happened to follow.
-    if (clause.length > 0 && length <= 260) {
-      del.after(ins);
-      ins.append(...clause);
-    } else {
-      del.after(ins);
-    }
+    // walking finds it. Those get the tag alone rather than a chip drawn around
+    // whatever happened to follow.
+    if (clause.length > 0 && length <= 260) ins.append(...clause);
   }
 }

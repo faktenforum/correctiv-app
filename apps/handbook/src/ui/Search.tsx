@@ -1,4 +1,6 @@
-import { useEffect, useMemo, useRef, useState } from 'react';
+import { Command } from 'cmdk';
+import { FileText, Hash, LayoutGrid, Braces } from 'lucide-react';
+import { useMemo } from 'react';
 
 import api from 'virtual:api';
 import docsModule from 'virtual:docs';
@@ -8,9 +10,9 @@ import { PAGE_TITLES, symbolId } from '../nav';
 interface Entry {
   route: string;
   title: string;
-  /** What this row is: a document, a section inside one, a record. */
   kind: string;
   hint: string;
+  group: 'Pages' | 'Documents' | 'Sections' | 'Reference';
 }
 
 interface Props {
@@ -19,22 +21,17 @@ interface Props {
 }
 
 /**
- * Every heading in every document, and every symbol the core exports.
+ * One palette over everything the site holds.
  *
- * Searching document titles alone finds seven things. The reason someone opens
- * this is to reach "the four ports", "what this retires" or `useIsAdmitted`, and
- * those are headings and symbols, so the index is built at that level and each
- * row navigates to the anchor rather than to the top of a page.
- *
- * The symbols are the reason this is one palette rather than two. The reference
- * is a lookup surface, and looking something up should not require first knowing
- * that it is code rather than prose.
+ * Documents, every heading inside them, the pages, and all 327 symbols the core
+ * exports. The symbols are the reason it is one palette rather than two: looking
+ * something up should not require first knowing whether it is prose or code.
  */
 function buildIndex(): Entry[] {
   const entries: Entry[] = [];
 
   for (const [route, title] of Object.entries(PAGE_TITLES)) {
-    entries.push({ route, title, kind: 'Page', hint: '' });
+    entries.push({ route, title, kind: 'Page', hint: '', group: 'Pages' });
   }
 
   for (const module of api.modules) {
@@ -44,6 +41,7 @@ function buildIndex(): Entry[] {
         title: symbol.name,
         kind: `${symbol.kind} · ${module.subpath}`,
         hint: symbol.summary,
+        group: 'Reference',
       });
     }
   }
@@ -54,7 +52,8 @@ function buildIndex(): Entry[] {
       route: doc.route,
       title: doc.title,
       kind: record ? `ADR ${record}` : 'Document',
-      hint: doc.blurb || '',
+      hint: doc.blurb,
+      group: 'Documents',
     });
     for (const heading of doc.headings) {
       if (heading.depth < 2 || heading.depth > 3) continue;
@@ -63,96 +62,84 @@ function buildIndex(): Entry[] {
         title: heading.text,
         kind: record ? `ADR ${record}` : doc.title,
         hint: '',
+        group: 'Sections',
       });
     }
   }
+
   return entries;
 }
 
+const ICONS = {
+  Pages: LayoutGrid,
+  Documents: FileText,
+  Sections: Hash,
+  Reference: Braces,
+} as const;
+
 export function Search({ open, onClose }: Props) {
-  const dialog = useRef<HTMLDialogElement>(null);
-  const [query, setQuery] = useState('');
-  const [cursor, setCursor] = useState(0);
   const index = useMemo(buildIndex, []);
-
-  const hits = useMemo(() => {
-    const q = query.trim().toLowerCase();
-    if (!q) return index.filter((e) => e.hint !== '' || !e.route.includes('#')).slice(0, 12);
-    const terms = q.split(/\s+/);
-    return index
-      .map((entry) => {
-        const haystack = `${entry.title} ${entry.kind} ${entry.hint}`.toLowerCase();
-        if (!terms.every((t) => haystack.includes(t))) return null;
-        // A title match beats a match anywhere else, and an early one beats a late one.
-        const at = entry.title.toLowerCase().indexOf(terms[0]);
-        return { entry, score: at === -1 ? 500 : at };
-      })
-      .filter((x): x is { entry: Entry; score: number } => x !== null)
-      .sort((a, b) => a.score - b.score)
-      .slice(0, 20)
-      .map((x) => x.entry);
-  }, [query, index]);
-
-  useEffect(() => {
-    const el = dialog.current;
-    if (!el) return;
-    if (open && !el.open) {
-      el.showModal();
-      setQuery('');
-      setCursor(0);
-    } else if (!open && el.open) {
-      el.close();
-    }
-  }, [open]);
-
-  useEffect(() => setCursor(0), [query]);
+  const groups = useMemo(
+    () =>
+      (['Pages', 'Documents', 'Reference', 'Sections'] as const).map((group) => ({
+        group,
+        entries: index.filter((entry) => entry.group === group),
+      })),
+    [index],
+  );
 
   return (
-    <dialog className="search-dialog" ref={dialog} onClose={onClose} aria-label="Search">
-      <div className="search-box">
-        <input
-          className="search-input"
-          type="search"
-          role="combobox"
-          aria-expanded="true"
-          aria-controls="search-results"
-          aria-activedescendant={hits[cursor] ? `search-hit-${cursor}` : undefined}
-          placeholder="Search the documentation"
-          value={query}
+    <Command.Dialog
+      open={open}
+      onOpenChange={(next) => {
+        if (!next) onClose();
+      }}
+      label="Search the handbook"
+      className="fixed inset-0 z-50 grid place-items-start justify-center bg-black/40 pt-[12vh]"
+      contentClassName="w-[min(40rem,92vw)] overflow-hidden rounded-lg border border-stroke bg-canvas shadow-2xl"
+    >
+      <Command loop>
+        <Command.Input
           autoFocus
-          onChange={(e) => setQuery(e.target.value)}
-          onKeyDown={(e) => {
-            if (e.key === 'ArrowDown') {
-              e.preventDefault();
-              setCursor((c) => Math.min(c + 1, hits.length - 1));
-            } else if (e.key === 'ArrowUp') {
-              e.preventDefault();
-              setCursor((c) => Math.max(c - 1, 0));
-            } else if (e.key === 'Enter' && hits[cursor]) {
-              e.preventDefault();
-              go(hits[cursor].route, onClose);
-            }
-          }}
+          placeholder="Search documents, sections and the core's API"
+          className="w-full border-b border-stroke bg-transparent px-sm py-s text-m text-on-canvas outline-none placeholder:text-on-canvas-muted"
         />
-        <ul className="search-results" id="search-results" role="listbox">
-          {hits.map((hit, i) => (
-            <li
-              key={hit.route}
-              id={`search-hit-${i}`}
-              role="option"
-              aria-selected={i === cursor}
-              aria-label={`${hit.title}, in ${hit.kind}`}
-              onMouseEnter={() => setCursor(i)}
-              onClick={() => go(hit.route, onClose)}
-            >
-              <span className="hit-kind">{hit.kind}</span>
-              <span className="hit-title">{hit.title}</span>
-            </li>
-          ))}
-          {hits.length === 0 && <li className="search-empty">Nothing matches that.</li>}
-        </ul>
-      </div>
-    </dialog>
+        <Command.List className="max-h-[min(24rem,60vh)] overflow-y-auto p-xs">
+          <Command.Empty className="px-s py-m text-center text-m text-on-canvas-muted">
+            Nothing matches that.
+          </Command.Empty>
+
+          {groups.map(({ group, entries }) => {
+            const Icon = ICONS[group];
+            return (
+              <Command.Group
+                key={group}
+                heading={group}
+                className="[&_[cmdk-group-heading]]:px-xs [&_[cmdk-group-heading]]:py-2xs [&_[cmdk-group-heading]]:text-s [&_[cmdk-group-heading]]:font-semibold [&_[cmdk-group-heading]]:uppercase [&_[cmdk-group-heading]]:tracking-wider [&_[cmdk-group-heading]]:text-on-canvas-muted"
+              >
+                {entries.map((entry) => (
+                  <Command.Item
+                    key={entry.route}
+                    value={`${entry.title} ${entry.kind} ${entry.hint}`}
+                    onSelect={() => go(entry.route, onClose)}
+                    className="flex cursor-pointer items-center gap-xs rounded-md px-xs py-2xs text-m text-on-canvas data-[selected=true]:bg-surface"
+                  >
+                    <Icon
+                      aria-hidden="true"
+                      className="size-[0.875rem] shrink-0 text-on-canvas-muted"
+                    />
+                    <span className="truncate font-medium">{entry.title}</span>
+                    <span className="ml-auto truncate pl-s font-mono text-s text-on-canvas-muted">
+                      {entry.kind}
+                    </span>
+                  </Command.Item>
+                ))}
+              </Command.Group>
+            );
+          })}
+        </Command.List>
+      </Command>
+    </Command.Dialog>
   );
 }
 
@@ -163,8 +150,8 @@ function go(route: string, onClose: () => void): void {
   if (hash) {
     requestAnimationFrame(() => {
       const target = document.getElementById(hash);
-      // A symbol's prose lives in a closed disclosure, so jumping to one that is
-      // shut lands on a heading and looks like the search found nothing.
+      // A symbol's prose lives in a closed disclosure, so landing on a shut one
+      // looks like the search found a heading and nothing else.
       if (target instanceof HTMLDetailsElement) target.open = true;
       target?.scrollIntoView({ block: 'center' });
     });

@@ -198,9 +198,16 @@ function InertHere() {
 
 const SETTINGS: ThemeSetting[] = ['light', 'dark', 'system'];
 
-/** The two grounds a device scheme means. Fixed, because they stand for the
- *  device's scheme and must not follow this page's own. */
-const SWATCH = { light: '#ffffff', dark: '#1a1a1a' };
+/**
+ * The two grounds a device scheme means.
+ *
+ * Written out rather than taken from the palette, and that is the point: these
+ * stand for the scheme the *device* reports, so they must not follow the one this
+ * page is painted in. The token package has no name for "the dark canvas as a
+ * fixed value", which is the boundary AGENTS.md describes, where the app says
+ * `always-dark` and the package says nothing. palette-exempt.
+ */
+const SWATCH = { light: '#ffffff', dark: '#1a1a1a' }; // palette-exempt
 
 /**
  * All four combinations of appearance setting and device scheme, named.

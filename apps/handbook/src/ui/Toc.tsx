@@ -1,17 +1,18 @@
 import { useEffect, useMemo, useState } from 'react';
 
-import type { Heading } from '../../plugin/markdown';
+import { cn } from '../lib/cn';
+import type { Heading } from '../../plugin/markdown.ts';
 
 interface Props {
   headings: Heading[];
 }
 
 /**
- * The in-page table of contents, following the heading currently on screen.
+ * The in-page contents, following the heading currently on screen.
  *
- * Only h2 and h3: an h4 in these documents is a detail inside an argument, and
+ * Only h2 and h3. An h4 in these documents is a detail inside an argument, and
  * listing them turns a map into a transcript. The observer's top margin keeps a
- * heading "current" while its section is being read rather than only while the
+ * heading current while its section is being read rather than only while the
  * heading itself is visible.
  */
 export function Toc({ headings }: Props) {
@@ -34,15 +35,30 @@ export function Toc({ headings }: Props) {
     return () => observer.disconnect();
   }, [shown]);
 
-  if (shown.length < 2) return <aside className="toc" aria-label="On this page" />;
+  if (shown.length < 2) return null;
 
   return (
-    <aside className="toc" aria-label="On this page">
-      <p className="toc-label">On this page</p>
-      <ul>
+    <aside
+      aria-label="On this page"
+      className="sticky top-[3.5rem] hidden h-[calc(100dvh-3.5rem)] w-[13rem] shrink-0 overflow-y-auto border-l border-stroke p-sm xl:block"
+    >
+      <p className="mb-xs text-s font-semibold uppercase tracking-wider text-on-canvas-muted">
+        On this page
+      </p>
+      <ul className="space-y-3xs text-m">
         {shown.map((heading) => (
-          <li key={heading.id} data-depth={heading.depth}>
-            <a href={`#${heading.id}`} aria-current={heading.id === active ? 'true' : undefined}>
+          <li key={heading.id} className={heading.depth === 3 ? 'pl-s' : undefined}>
+            <a
+              href={`#${heading.id}`}
+              aria-current={heading.id === active ? 'true' : undefined}
+              className={cn(
+                'block rounded-md py-4xs leading-snug',
+                'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent',
+                heading.id === active
+                  ? 'font-medium text-on-canvas'
+                  : 'text-on-canvas-muted hover:text-on-canvas',
+              )}
+            >
               {heading.text}
             </a>
           </li>

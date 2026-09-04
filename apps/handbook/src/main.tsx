@@ -1,15 +1,9 @@
 import { StrictMode } from 'react';
 import { createRoot } from 'react-dom/client';
 
-// The palette, generated from packages/design-tokens so it cannot fork. It has to
-// come first: every stylesheet below reads the custom properties it defines.
-import 'virtual:tokens.css';
-import './styles/shell.css';
-import './styles/landing.css';
-import './styles/diagrams.css';
-import './styles/reference.css';
-import './styles/sources.css';
-import './styles/workbench.css';
+// Tailwind, and with it the palette from packages/design-tokens. One import, and
+// nothing in this package defines a colour of its own.
+import './styles/app.css';
 
 import { App } from './App';
 
