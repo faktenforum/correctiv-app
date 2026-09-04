@@ -13,7 +13,10 @@
      it left the stage 54px tall and the device frame 6px, which reads as the app
      having failed to load rather than as a missing rule. */
   display: grid;
-  grid-template-rows: auto auto 1fr auto;
+  /* `minmax(0, …)`, not a bare `1fr`: a `1fr` row takes its minimum from its
+     content, so the stage and the dock pushed the row past the viewport and the
+     whole page scrolled instead of the two panes scrolling inside it. */
+  grid-template-rows: auto auto minmax(0, 1fr) auto;
   height: 100dvh;
   font: 13px/1.45 var(--sans);
   color: var(--on-canvas);
@@ -1036,6 +1039,23 @@
 .workbench .fitbox {
   position: relative;
   margin: 0 auto;
+}
+
+/*
+ * The iframe fills the device box exactly.
+ *
+ * It carried these as inline styles until the class conversion, which named a
+ * class that did not exist. The iframe fell back to the browser's default
+ * 300x150 with a 2px border, `.device` clips, and the app looked cut off along a
+ * straight edge partway down the phone. Nothing errors: an iframe with no size
+ * is a valid iframe.
+ */
+.workbench .frame {
+  display: block;
+  width: 100%;
+  height: 100%;
+  border: 0;
+  background: transparent;
 }
 .workbench .handle {
   position: absolute;

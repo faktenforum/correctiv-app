@@ -284,7 +284,12 @@ kbd {
   overflow-y: auto;
   padding: 2rem 1.25rem 2rem 0;
 }
-main {
+.content {
+  /* On the class, not on `main`. This is the prose stylesheet and it is allowed
+     bare element selectors, but `main` is structure rather than prose: the
+     workbench is a `<main>` too, and this padding was giving its stage and dock
+     96px they had no use for, so the dock ended short of the page and looked as
+     though it were floating. */
   min-width: 0;
   padding: 2rem 3rem 4rem;
 }
@@ -301,7 +306,6 @@ main {
  * lets it shrink at all, since a grid item's default minimum is its content.
  */
 .content {
-  min-width: 0;
   width: 100%;
 }
 
@@ -1028,13 +1032,13 @@ td ins.retired {
     transition: transform 0.18s ease;
     box-shadow: none;
   }
-  body.nav-open .sidebar {
+  /* Keyed off the drawer's own attribute, not a class on `body`. The design set
+     `body.nav-open` and nothing in this app ever wrote it, so the drawer could
+     not open on a narrow window at all. */
+  .sidebar[data-open='true'] {
     transform: none;
   }
-  body.nav-open .scrim {
-    display: block;
-  }
-  main {
+  .content {
     padding: 1.5rem 1.25rem 3rem;
   }
   .search-btn {

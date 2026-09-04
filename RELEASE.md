@@ -10,6 +10,14 @@ Three GitHub Actions workflows live in `.github/workflows/`:
 
 ## The web preview
 
+**The published web export is a development bundle.** `build:web` passes `--dev`, so
+`__DEV__` stays true and the app leaves its dev handle on its own global. Without it
+the workbench is half inert on the very site it is published to: the appearance
+setting cannot be written and the inspector cannot read the store. The published app
+is a demo and a debugging target rather than a shipped binary, so it carries React's
+development warnings and about a third more JavaScript, 5.6 MB against 4.2. The
+native builds are unaffected; only `--platform web` takes the flag.
+
 A web version of the app at <https://faktenforum.github.io/correctiv-app/workbench>,
 for clicking through without an install. Every push to `main` republishes it; there is
 nothing to tag and nothing to commit. Three things are worth knowing before pointing

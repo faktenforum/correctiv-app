@@ -101,4 +101,23 @@ describe('the page stylesheets, which share one global scope', () => {
     }
     expect(forks).toEqual([]);
   });
+
+  /**
+   * The prose sheet may style prose and the document. It may not style layout.
+   *
+   * `shell.css` is exempt from the rule above because styling `h2`, `p`, `table`
+   * and `code` globally is its job, and it owns `html` and `body` because it is
+   * the only sheet that owns the page. That exemption also let `main { padding:
+   * 2rem 3rem 4rem }` through, and the workbench is a `<main>` as well: its stage
+   * and dock were given 96px of document padding, so the dock stopped short of
+   * the page and read as floating. A landmark element is every page's, so the
+   * prose sheet has to name a class for it.
+   */
+  it('keeps the prose stylesheet off the layout elements', () => {
+    const LAYOUT = /^(main|header|footer|nav|aside|section|article)\b/;
+    const offenders = selectors(readFileSync(join(STYLES, 'shell.css'), 'utf8')).filter((s) =>
+      LAYOUT.test(s),
+    );
+    expect(offenders).toEqual([]);
+  });
 });

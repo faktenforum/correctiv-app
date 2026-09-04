@@ -58,6 +58,17 @@ rm -rf site && cp -r apps/handbook/dist site && cp -r apps/mobile/dist site/app
 node screens/tools/serve-clean.mjs site 8099
 ```
 
+## The published app is a development build
+
+`build:web` exports with `--dev`, so the deployed app keeps `__DEV__` true and leaves
+its handle on its own global. That is what makes the workbench work on the published
+site rather than only against a local dev server: with a production export the
+appearance panel and the inspector are inert, and the dock says so on every panel.
+
+It costs about a third more JavaScript and the app carries React's development
+warnings. The console panel shows those rather than hiding them, which on a debugging
+surface is the right way round.
+
 ## Same-origin, and why it is load-bearing
 
 Everything the workbench does to the app is a same-origin property access:
