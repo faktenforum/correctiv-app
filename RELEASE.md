@@ -5,19 +5,21 @@ Three GitHub Actions workflows live in `.github/workflows/`:
 | Workflow | File | Trigger | What it does |
 | --- | --- | --- | --- |
 | **CI** | `ci.yml` | every PR, push to `main` | Checks, web export, and an Android release APK as a compile check. No secrets needed. |
-| **Pages** | `pages.yml` | push to `main` (or manual) | Rebuilds the Expo web export under the Pages base path and publishes it to <https://faktenforum.github.io/correctiv-app/>. No secrets needed. |
+| **Pages** | `pages.yml` | push to `main` (or manual) | Builds the handbook and the Expo web export, assembles them into one artifact, and publishes it to <https://faktenforum.github.io/correctiv-app/>. The handbook is the root; the app is at `/app/`. No secrets needed. |
 | **Release Android** | `release-android.yml` | push of a `v*` tag (or manual) | Builds the APK and signs it, with your upload key when the secrets are set and otherwise with the bundled **test key**. Attaches it to the GitHub Release. |
 
 ## The web preview
 
-A web version of the app at <https://faktenforum.github.io/correctiv-app/preview.html>,
+A web version of the app at <https://faktenforum.github.io/correctiv-app/app/preview.html>,
 for clicking through without an install. Every push to `main` republishes it; there is
 nothing to tag and nothing to commit. Three things are worth knowing before pointing
 anyone at the URL:
 
-- **Hand out the `/preview.html` address, not the bare one.** The app is built for a
+- **Hand out the site root, or `/app/preview.html`, not `/app/`.** The app is built for a
   phone and has no desktop layout, so the site's root shows it stretched across the
-  whole browser window; `/preview.html` frames it at a phone or tablet size instead.
+  whole browser window; `/app/preview.html` frames it at a phone or tablet size instead,
+  and the root introduces both. The old `/preview.html` redirects there and keeps its
+  query string, so links already handed out still work (ADR 0024).
   The root stays reachable, nothing hides it, so the framed link is the one to
   send.
 - **Its articles are live**, since [ADR 0015](adr/0015-reading-correctiv-org-through-its-rest-api.md).

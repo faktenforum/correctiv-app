@@ -3,7 +3,7 @@ import { join } from 'node:path';
 
 import { describe, expect, it } from 'vitest';
 
-import { collectDocs, REPO, ROOT } from '../plugin/collect';
+import { adrFiles, collectDocs, REPO, ROOT } from '../plugin/collect';
 import { DOCUMENTS } from '../plugin/registry';
 
 const { module } = collectDocs();
@@ -12,9 +12,10 @@ const routes = new Set(docs.map((d) => d.route));
 
 describe('the published documents', () => {
   it('renders every registered document and every record', () => {
-    // Not a fixed number: a record is added by writing one, and a test that had
-    // to be edited alongside would just be edited alongside.
-    expect(docs.length).toBe(DOCUMENTS.length + 23);
+    // Counted from the directory rather than typed. A record is added by writing
+    // one, and a test that had to be edited alongside would just be edited
+    // alongside, which is how an assertion stops being one.
+    expect(docs.length).toBe(DOCUMENTS.length + adrFiles().length);
     for (const doc of docs) expect(doc.html.length).toBeGreaterThan(200);
   });
 

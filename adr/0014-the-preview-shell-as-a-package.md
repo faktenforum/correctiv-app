@@ -32,7 +32,12 @@ beside `apps/*` and `packages/*`.
 
 **The output goes into the app's `public/`, and the package has no dev server of its
 own.** This is the part that looks like an accident of the build and is in fact the
-whole design.
+whole design. ~~It is also the only way to be on the app's origin in all three
+places.~~ **Narrowed on 2026-09-04 by
+[ADR 0024](0024-the-handbook-owns-the-root.md)**, which assembles one origin at deploy
+time and proxies `/app` in development instead, so that the handbook can own the site
+root. The same-origin requirement below is untouched and is why that ADR was written
+carefully; what is no longer true is that this folder is the only route to it.
 
 ## Same-origin is the constraint, not a detail
 

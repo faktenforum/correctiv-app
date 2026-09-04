@@ -1,6 +1,6 @@
 # Architecture decisions
 
-Twenty-three decisions shaped this repo. Read them when you want to know *why* something
+Twenty-four decisions shaped this repo. Read them when you want to know *why* something
 is the way it is; [`../ARCHITECTURE.md`](../ARCHITECTURE.md) describes *what* it is.
 
 | | Decision | Status |
@@ -28,6 +28,7 @@ is the way it is; [`../ARCHITECTURE.md`](../ARCHITECTURE.md) describes *what* it
 | [0021](0021-the-board-is-a-plugin-and-the-screens-are-data.md) | The design board is a plugin, and the screens are data | accepted; records two measured-and-rejected routes to Figma |
 | [0022](0022-three-tiers-of-colour-and-a-dark-scheme-that-names-roles.md) | Three tiers of colour, and a dark scheme that names roles | accepted; adopts wp-design-tokens `8ed7a28`, retires two of 0010's |
 | [0023](0023-the-host-constructs-the-store.md) | The host constructs the store | accepted; recorded after the fact, corrects one claim in `ARCHITECTURE.md` and four comments |
+| [0024](0024-the-handbook-owns-the-root.md) | The handbook owns the site root, and the app moves under it | accepted; narrows one claim in 0014 |
 
 Eight notes for readers of the older ones:
 

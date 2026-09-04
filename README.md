@@ -7,7 +7,10 @@ is gated ([ADR 0016](adr/0016-a-door-at-the-root-and-an-entitlement-not-an-amoun
 The prototype was built on *closeness, not a paywall*, and several of its screens still
 say so; which wording replaces that is CORRECTIV's call, and the ADR lists the places.
 
-[**Open the app in a browser**](https://faktenforum.github.io/correctiv-app/preview.html).
+[**Read the handbook**](https://faktenforum.github.io/correctiv-app/), which publishes this
+repository's documentation and the source inventory, and
+[**opens the app in a browser**](https://faktenforum.github.io/correctiv-app/app/preview.html)
+in a device frame.
 No install, no emulator, the same code and the same screens as the Android and iOS
 builds, republished on every push to `main`. It opens inside a device frame,
 switchable between phone and tablet sizes, because the app is built for a phone and

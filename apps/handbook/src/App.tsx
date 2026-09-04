@@ -1,6 +1,7 @@
-import { useEffect, useState } from 'react';
+import { type ReactElement, useEffect, useState } from 'react';
 
 import docsModule from 'virtual:docs';
+import { Diagrams } from './pages/Diagrams';
 import { Landing } from './pages/Landing';
 import { Document } from './pages/Document';
 import { Header } from './ui/Header';
@@ -11,6 +12,15 @@ import { useLinkInterception, useRoute } from './router';
 
 /** Pages that get the full width, because they have no long prose to measure. */
 const WIDE = new Set(['/']);
+
+/**
+ * Routes the handbook answers itself, rather than by rendering a document.
+ *
+ * Kept beside the documents rather than above them: a route that collided with a
+ * document's would shadow it silently, and `test/routes.test.ts` holds the two
+ * sets apart.
+ */
+const PAGES = new Map<string, () => ReactElement>([['/diagrams', Diagrams]]);
 
 export function App() {
   const [route] = useRoute();
@@ -34,11 +44,14 @@ export function App() {
   useEffect(() => setMenuOpen(false), [route]);
 
   const doc = docsModule.docs.find((d) => d.route === route);
+  const Page = PAGES.get(route);
   const wide = WIDE.has(route);
 
   useEffect(() => {
-    document.title = wide ? 'CORRECTIV app handbook' : `${doc?.title ?? 'Not found'} — Handbook`;
-  }, [doc, wide]);
+    if (wide) document.title = 'CORRECTIV app handbook';
+    else if (Page) document.title = `${route.slice(1)} — Handbook`;
+    else document.title = `${doc?.title ?? 'Not found'} — Handbook`;
+  }, [doc, wide, Page, route]);
 
   return (
     <>
@@ -59,7 +72,7 @@ export function App() {
       ) : (
         <div className="shell">
           <Sidebar route={route} open={menuOpen} onClose={() => setMenuOpen(false)} />
-          {doc ? <Document doc={doc} /> : <NotFound route={route} />}
+          {Page ? <Page /> : doc ? <Document doc={doc} /> : <NotFound route={route} />}
         </div>
       )}
 

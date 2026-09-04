@@ -6,6 +6,7 @@ import { createRoot } from 'react-dom/client';
 import 'virtual:tokens.css';
 import './styles/shell.css';
 import './styles/landing.css';
+import './styles/diagrams.css';
 
 import { App } from './App';
 
