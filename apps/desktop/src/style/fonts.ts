@@ -103,14 +103,22 @@ export const FONT_FAMILIES: readonly string[] = [
  *
  * A WORKAROUND WITH A REMOVAL TRIGGER, and it lives here rather than inline in the
  * shim so that a test can hold it. `@gjsify/gtk-host`'s style layer writes the value
- * into the rule verbatim, and in CSS a family of more than one word is a sequence of
- * identifiers — so `font-family: Source Sans 3` makes GTK refuse the WHOLE rule
- * ("Junk at end of value for font-family"), the layer's own `assertContained` guard
- * throws `StyleSheetError`, and no React boundary catches it. The screen is gone.
+ * into the rule verbatim — so `font-family: Source Sans 3` makes GTK refuse the WHOLE
+ * rule ("Junk at end of value for font-family"), the layer's own `assertContained`
+ * guard throws `StyleSheetError`, and no React boundary catches it. The screen is gone.
+ * Measured on GJS with both families verifiably on Pango's font map, so the fault is the
+ * CSS and not the font.
  *
- * Measured on GJS with both families verifiably on Pango's font map, so the fault is
- * the CSS and not the font. `Merriweather` needs no quoting, which is exactly why the
- * one-word case is the one that hides this.
+ * THE REASON IS NOT THE SPACE, and getting that wrong is worth recording because this
+ * comment did. A bare sequence of identifiers IS legal CSS and GTK implements it, so
+ * `Noto Sans`, `DejaVu Sans` and `Fira Code` all parse unquoted. What GTK refuses is a
+ * component that is not a valid identifier — overwhelmingly one starting with a DIGIT.
+ * `Source Sans 3` fails on the `3`, not on the spaces. Measured against GTK's own parser
+ * while reviewing the upstream fix, which corrected the issue this file's author filed.
+ *
+ * Quoting on a space is therefore a superset of what is needed: right for this app's two
+ * families, and it would still miss a one-word `8514oem`. That is acceptable only because
+ * the set is closed and asserted — `FONT_FAMILIES` is two names and a test holds it.
  *
  * fixed upstream in gjsify: #1539 quotes it in the emitter, where it belongs, and
  * leaves an already-quoted value alone — so this stays harmless until the next bump
