@@ -6,7 +6,7 @@ itself in a device frame.
 
 It is what answers at the root of
 [faktenforum.github.io/correctiv-app](https://faktenforum.github.io/correctiv-app/).
-The app's web export is published beneath it at `/app/`.
+`pages.yml` publishes the app's web export beneath it, at `/app/`.
 
 ```
 /                    landing
@@ -58,11 +58,11 @@ Everything the workbench does to the app is a same-origin property access:
 handle the app leaves on its own global. Across origins the browser refuses those
 reads silently, so the failure is a tool that looks fine and answers nothing.
 
-On Pages both halves are uploaded as one artifact, so `/` and `/app/` are the same
-origin. In development the proxy above does the same job. Do not give this package a
-second origin. [ADR 0014](../../adr/0014-the-preview-shell-as-a-package.md) explains
-the constraint, [ADR 0024](../../adr/0024-the-handbook-owns-the-root.md) explains why
-it is met this way.
+On Pages the deploy uploads both halves as one artifact, so `/` and `/app/` are the
+same origin. In development the proxy above does the same job. Do not give this package a
+second origin. [ADR 0014](../../adr/0014-the-preview-shell-as-a-package.md) records the
+constraint, [ADR 0024](../../adr/0024-the-handbook-owns-the-root.md) records why the
+site meets it this way.
 
 ## What is generated
 
@@ -70,11 +70,12 @@ it is met this way.
 | --- | --- |
 | `npm run api -w @correctiv/handbook` | `content/api.generated.json`, extracted with `typedoc --json` |
 
-TypeDoc runs as a data extractor, never as a site generator: no HTML, no theme. The
-model is rendered by this site's own components. A generated documentation site would
-have arrived with its own navigation and design and become the front door by accident.
+TypeDoc runs as a data extractor and never as a site generator. No HTML, no theme.
+This site's own components render the model. A generated documentation site would
+have arrived with its own navigation and its own design, and it would have become the
+front door by accident.
 
-Not committed, because it is derived and large. `npm run build` runs it first.
+Not committed. It is derived, it is large, and `npm run build` regenerates it first.
 
 ## The tests, and what they are for
 
@@ -94,6 +95,6 @@ Generated from `packages/design-tokens` by `plugin/tokens.ts`, not written here.
 hand-written copy had three values wrong within the hour, one of them the brand red,
 which the dark scheme lightens to `#ff6173` for contrast on a dark ground.
 
-Every page stylesheet is anchored on that page's own root class. They were drawn as
-standalone pages and styled `html`, `h1` and `code` directly, which is correct there
-and reaches every page here.
+Every page stylesheet hangs off that page's own root class. Each was drawn as a
+standalone page and styled `html`, `h1` and `code` directly, which is correct in a
+standalone file and reaches every page here.

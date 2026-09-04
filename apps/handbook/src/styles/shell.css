@@ -288,6 +288,23 @@ main {
   min-width: 0;
   padding: 2rem 3rem 4rem;
 }
+/*
+ * Two rules for one bug, and the second is the one that fixes it.
+ *
+ * The sources board centres itself with `margin: 0 auto`, and auto margins on a
+ * grid item switch off `justify-self: stretch`. The item then sizes to its
+ * content, and its content holds a table with `min-width: 1000px`. In a 705px
+ * window the column stayed 705px, the main grew to 1187px inside it, and the
+ * whole page scrolled sideways instead of the table scrolling inside its own box.
+ *
+ * `width: 100%` puts it back on the track. `min-width: 0` is the companion that
+ * lets it shrink at all, since a grid item's default minimum is its content.
+ */
+.content {
+  min-width: 0;
+  width: 100%;
+}
+
 .doc {
   max-width: var(--measure);
   margin: 0 auto;

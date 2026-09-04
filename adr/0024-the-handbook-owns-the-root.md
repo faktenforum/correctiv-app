@@ -11,7 +11,7 @@ a chain of which claims each later one made false. None of it is reachable witho
 clone, and the people who most need the source inventory are the ones least likely to
 have one.
 
-GitHub Pages already publishes something: the app's web export, at the site root.
+GitHub Pages already publishes the app's web export, at the site root.
 `pages.yml` has always said in its own comments that the root is the wrong place to
 send anyone, because the app has no desktop layout and a full browser window is the
 wrong shape to judge it in. The address handed out is `/preview.html`, the device
@@ -19,9 +19,9 @@ frame from [ADR 0014](0014-the-preview-shell-as-a-package.md). So the root has b
 an address nobody wanted for as long as the site has existed.
 
 [ADR 0014](0014-the-preview-shell-as-a-package.md) built that frame into
-`apps/mobile/public/`, and gave a reason that is worth restating because it is
-correct: everything the shell does to the app is a same-origin property access, and
-across origins the browser simply refuses the property, silently. Building into the
+`apps/mobile/public/`, and its reason is worth restating because it is correct.
+Everything the shell does to the app is a same-origin property access, and across
+origins the browser refuses the property, silently. Building into the
 app's `public/` folder puts the shell on the app's origin at the dev server, at
 `serve-clean.mjs` and on Pages, all three, with one setting.
 
@@ -34,7 +34,7 @@ under it.
 
 **The handbook is the site. The app is a directory inside it.**
 
-`apps/handbook` is a new host: a Vite and React application that reads the
+`apps/handbook` is a new host, a Vite and React application. It reads the
 repository's own Markdown at build time and publishes it, together with the source
 inventory, the diagrams, a reference generated from the core, and the app itself in
 its frame. `pages.yml` builds both and uploads them as one artifact, the handbook at
@@ -54,9 +54,9 @@ its query string to `/app/preview.html`, because that address is in `README.md`,
 ## Why not the alternatives
 
 **Leave the app at the root and put the handbook under `/docs/`.** Cheapest, no
-workflow surgery, no moved addresses. It also fails the thing it was for: the root
+workflow surgery, no moved addresses. It also fails the thing it was for. The root
 stays an ungated web export that the workflow's own comments call the wrong shape,
-and the introduction is somewhere you have to already know about.
+and the introduction sits somewhere you have to already know about.
 
 **Build the handbook into `apps/mobile/public/` too, the way the preview shell is.**
 This was the first plan and it cannot work: what is in `public/` is copied to wherever

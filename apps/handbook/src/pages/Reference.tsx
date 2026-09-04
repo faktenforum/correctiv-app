@@ -9,12 +9,12 @@ const BLOB = `${docsModule.repo}/blob/${docsModule.commit}`;
 /**
  * The core's API, as a place to look something up rather than a site to read.
  *
- * TypeDoc produced this model with `--json` and nothing else: no HTML, no theme.
+ * TypeDoc produced this model with `--json` and nothing else. No HTML, no theme.
  * That was the whole reason for choosing it. A generated documentation site would
  * have arrived with its own navigation and its own design, and its pages would
  * have become the front door by accident, ahead of the hand-written architecture
- * pages that are the better way in. Here the model is rendered by this site, in
- * this site's vocabulary, and it is reachable from the search palette.
+ * pages that are the better way in. Here this site renders the model in its own
+ * vocabulary, and the search palette reaches it.
  *
  * `packages/app-core` has no barrel on purpose, so a module IS the import path a
  * caller writes. Each heading prints that line verbatim, because "which subpath
@@ -24,10 +24,9 @@ const BLOB = `${docsModule.repo}/blob/${docsModule.commit}`;
  * seeing: 167 of the core's 327 exported symbols carry a doc comment, and the
  * ones that do carry real arguments rather than restatements of their signature.
  *
- * The prose is HTML because the comments are written as Markdown, leaning on
- * backticks for every identifier. It is rendered at build time, from this
- * repository's own source at the commit being built, which is the same trust
- * boundary as the documents.
+ * The prose is HTML because the comments are Markdown and lean on backticks for
+ * every identifier. The build renders it, from this repository's own source at the
+ * commit being built, which is the same trust boundary as the documents.
  */
 export function Reference() {
   const [query, setQuery] = useState('');

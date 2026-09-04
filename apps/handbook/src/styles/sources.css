@@ -84,7 +84,7 @@
   vertical-align: -3px;
 }
 
-.sources .page {
+.sources {
   max-width: 1200px;
   margin: 0 auto;
   padding: 32px 24px 72px;
@@ -249,7 +249,7 @@
 /* These five names are also the workbench's. It shares this global scope, so they
    are scoped to this page's root rather than left to whichever stylesheet the
    entry point happens to import last. `test/styles.test.ts` keeps the two apart. */
-.sources .page .findings {
+.sources .findings {
   list-style: none;
   margin: 0;
   padding: 0;
@@ -257,14 +257,14 @@
   grid-template-columns: 1fr 1fr;
   gap: 12px;
 }
-.sources .page .finding {
+.sources .finding {
   border: 1px solid var(--stroke);
   border-radius: 6px;
   padding: 14px 16px 16px;
   background: var(--surface);
   min-width: 0;
 }
-.sources .page .finding-head {
+.sources .finding-head {
   display: flex;
   align-items: center;
   gap: 8px;
@@ -272,23 +272,23 @@
   font-size: 15px;
   margin: 0 0 6px;
 }
-.sources .page .finding-head .glyph {
+.sources .finding-head .glyph {
   width: 18px;
   height: 18px;
 }
-.sources .page .finding.stale .finding-head {
+.sources .finding.stale .finding-head {
   color: var(--stale);
 }
-.sources .page .finding.broken .finding-head {
+.sources .finding.broken .finding-head {
   color: var(--broken);
 }
-.sources .page .finding p {
+.sources .finding p {
   margin: 0 0 8px;
 }
-.sources .page .finding p:last-child {
+.sources .finding p:last-child {
   margin-bottom: 0;
 }
-.sources .page .finding .links {
+.sources .finding .links {
   font-size: 13px;
   display: flex;
   flex-wrap: wrap;
@@ -353,7 +353,7 @@
 }
 
 /* toolbar */
-.sources .page .toolbar {
+.sources .toolbar {
   display: flex;
   flex-wrap: wrap;
   align-items: flex-end;
@@ -389,22 +389,22 @@
   color: var(--on-canvas);
   min-width: 280px;
 }
-.sources .page .seg {
+.sources .seg {
   display: inline-flex;
   border: 1px solid var(--stroke-strong);
   border-radius: 4px;
   overflow: hidden;
 }
-.sources .page .seg label {
+.sources .seg label {
   position: relative;
   display: block;
   cursor: pointer;
   font-size: 14px;
 }
-.sources .page .seg label + label {
+.sources .seg label + label {
   border-left: 1px solid var(--stroke-strong);
 }
-.sources .page .seg input {
+.sources .seg input {
   position: absolute;
   opacity: 0;
   width: 1px;
@@ -413,20 +413,20 @@
   top: 50%;
   left: 50%;
 }
-.sources .page .seg span {
+.sources .seg span {
   display: block;
   padding: 7px 12px;
   color: var(--on-canvas);
 }
-.sources .page .seg input:checked + span {
+.sources .seg input:checked + span {
   background: var(--on-canvas);
   color: var(--canvas);
 }
-.sources .page .seg input:focus-visible + span {
+.sources .seg input:focus-visible + span {
   outline: 2px solid var(--focus);
   outline-offset: -3px;
 }
-.sources .page .check {
+.sources .check {
   display: flex;
   align-items: center;
   gap: 8px;
@@ -434,7 +434,7 @@
   padding: 8px 0;
   cursor: pointer;
 }
-.sources .page .check input {
+.sources .check input {
   width: 16px;
   height: 16px;
   margin: 0;
@@ -467,6 +467,13 @@
 
 /* the board */
 .sources .table-wrap {
+  /* The containing block for the `.sr-only` spans inside the cells. They are
+     absolutely positioned, and with no positioned ancestor their containing block
+     is the page: they sat at their static position 944px into a table that is
+     1137px wide, and although the table was clipped here, the spans were not. The
+     page scrolled sideways by exactly their reach, with nothing visible out
+     there. */
+  position: relative;
   overflow-x: auto;
   border: 1px solid var(--stroke);
   border-radius: 6px;
@@ -782,7 +789,7 @@
   .sources .gaps {
     grid-template-columns: 1fr 1fr;
   }
-  .sources .page .findings {
+  .sources .findings {
     grid-template-columns: 1fr;
   }
   .sources .count {
@@ -790,7 +797,7 @@
   }
 }
 @media (max-width: 700px) {
-  .sources .page {
+  .sources {
     padding: 24px 16px 56px;
   }
   .sources input[type='search'] {
@@ -799,7 +806,7 @@
   }
 }
 @media print {
-  .sources .page .toolbar,
+  .sources .toolbar,
   .sources button.toggle {
     display: none;
   }
