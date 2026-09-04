@@ -1,0 +1,25 @@
+{
+  "name": "@correctiv/handbook",
+  "description": "The project's published entry: the documentation, the source status, the core's reference and the app in a device frame.",
+  "version": "1.0.0",
+  "license": "AGPL-3.0-or-later",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "npm run api && vite build",
+    "api": "node scripts/api.mjs",
+    "typecheck": "tsc --noEmit",
+    "test": "vitest run"
+  },
+  "devDependencies": {
+    "@types/react": "^19.2.18",
+    "@types/react-dom": "^19.2.5",
+    "@vitejs/plugin-react": "^6.1.1",
+    "marked": "^16.4.1",
+    "react": "^19.2.3",
+    "react-dom": "^19.2.3",
+    "typedoc": "^0.28.20",
+    "vite": "^8.2.2"
+  }
+}
