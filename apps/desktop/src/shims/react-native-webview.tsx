@@ -33,7 +33,7 @@
 //
 // The navigation gate is injected for a different reason: `decide-policy` exists only
 // on WebKitGTK. On macOS this namespace is a WKWebView behind a GObject shim with three
-// signals and not that one, and on Windows there is no WebKit at all — so a
+// signals and not that one, and on Windows it is WebView2 behind the same name — so a
 // signal-only gate is a gate the reader silently loses on both hosts this app is being
 // ported to. The click interception is the mechanism the WEB target already uses for
 // the same absence, so all three non-GTK hosts now behave identically. Details and the
@@ -253,7 +253,8 @@ export function WebView({
       } catch (error) {
         console.log(
           '[desktop] WebView: no `decide-policy` on this WebKit, so only link clicks are ' +
-            `gated (expected on macOS, where the namespace is a WKWebView shim): ${String(error)}`,
+            'gated (expected off Linux, where the namespace is a shim rather than ' +
+            `WebKitGTK): ${String(error)}`,
         );
       }
 

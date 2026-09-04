@@ -51,10 +51,12 @@ export const SCROLL_SCRIPT = `
  *
  * `decide-policy` below is the stronger mechanism and stays where it exists — but it
  * exists only on WebKitGTK. On macOS `gi://WebKit` is `@gjsify/webkit-native`, Apple's
- * WKWebView behind a GObject shim, which implements three signals and not this one; on
- * Windows there is no WebKit at all. A gate that only Linux has is a gate the reader
- * loses on the two hosts this app is being ported to, and it loses it SILENTLY: every
- * link would become a full-page navigation inside the reader.
+ * WKWebView behind a GObject shim; on Windows it is `@gjsify/webview2-native`,
+ * Microsoft's WebView2 behind the same name. Neither implements this signal, and both
+ * were MEASURED saying so: `no signal 'decide-policy' on GjsifyWebKitWebView` and
+ * `... on GjsifyWebView2WebView`. A gate that only Linux has is a gate the reader loses
+ * on both other hosts, and it loses it SILENTLY: every link would become a full-page
+ * navigation inside the reader.
  *
  * So the portable mechanism is the one the WEB target already relies on for exactly the
  * same reason — `ReaderView.web.tsx` intercepts clicks in its `srcDoc` iframe because a

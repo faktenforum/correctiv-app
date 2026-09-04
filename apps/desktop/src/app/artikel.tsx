@@ -63,6 +63,8 @@ import { shareArticle } from '@/lib/shareArticle';
 import { useCoreActions, useIsSaved, useTextScale } from '@/lib/store/core';
 import { sizes, useColors, useIsDark } from '@/lib/theme';
 
+import { webViewIsOsOverlay } from '../platform/webview.js';
+
 /**
  * Article reader: full-page WebKitGTK view over cleaned-up article HTML (token CSS and
  * embedded fonts, so it works offline). Overlay header for back, share and save.
@@ -96,6 +98,10 @@ export default function ArtikelScreen() {
    */
   const [header, setHeader] = useState<HeaderState>('floating');
   const headerHidden = header === 'hidden';
+  // Can anything be drawn OVER the reader on this platform? On Windows the web view is
+  // a child window the OS composites on top of the application, so no. See
+  // `platform/webview.ts` for the measurement and the trigger that removes this.
+  const overlayHeader = !webViewIsOsOverlay();
   const lastOffset = useRef(0);
 
   const onReaderScroll = useCallback((offsetY: number) => {
@@ -144,8 +150,57 @@ export default function ArtikelScreen() {
     return true;
   };
 
+  // Ordered rather than positioned, because on one platform the web view cannot be
+  // overlaid at all — see `platform/webview.ts`. Where it can, the header floats over
+  // the article the way the phone's does; where it cannot, it is a strip ABOVE the
+  // document, which is the shape gjsify's own guide names as the one that works.
+  //
+  // And where it is a strip it stays PUT. Hiding it on scroll is what makes an overlay
+  // header pleasant and what would make a strip jump the article by its own height on
+  // every scroll direction change — the same state machine, opposite effect.
+  const headerStrip = (
+    <View className={overlayHeader ? 'absolute left-0 right-0 top-0' : ''}>
+      <SafeAreaView
+        edges={['top']}
+        className={
+          // Floating, the header only carries the page surface once it has left the
+          // hero image behind — that is what `onSurface` means. As a strip it is
+          // always on the surface, because it always has the document under it.
+          !overlayHeader || header === 'onSurface' ? 'bg-canvas border-b border-stroke' : ''
+        }
+      >
+        <View className="flex-row items-center justify-between px-s py-2xs">
+          <HeaderButton icon="chevron-back" label="Zurück" onPress={goBack} />
+          {url ? (
+            <View className="flex-row gap-2xs">
+              <HeaderButton
+                icon="share-outline"
+                label="Artikel teilen"
+                onPress={() => shareArticle(url, title ?? article?.title)}
+              />
+              <HeaderButton
+                icon={saved ? 'bookmark' : 'bookmark-outline'}
+                label={saved ? 'Gespeichert, entfernen' : 'Artikel speichern'}
+                onPress={() =>
+                  actions.savedArticles.toggle({
+                    url,
+                    title: title ?? article?.title ?? '',
+                    kicker: article?.kicker ?? null,
+                    rating: article?.rating ?? null,
+                    savedAt: new Date().toISOString(),
+                  })
+                }
+              />
+            </View>
+          ) : null}
+        </View>
+      </SafeAreaView>
+    </View>
+  );
+
   return (
     <View className="flex-1 bg-canvas">
+      {overlayHeader ? null : headerStrip}
       {article ? (
         <ReaderView
           html={readerHtml(article, { textScale, isDark })}
@@ -178,8 +233,10 @@ export default function ArtikelScreen() {
           )}
         </View>
       )}
-
       {/*
+        The FLOATING header, and only where one is possible — the strip case rendered
+        above, before the document, and stays put.
+
         The phone wraps this in an `<Animated.View style={{ opacity: headerOpacity }}>`
         that fades over 160 ms. Here it is a plain `<View>` that is simply not rendered
         while the header is hidden, so the transition cuts. See the file header.
@@ -189,40 +246,7 @@ export default function ArtikelScreen() {
         the prop that used to prevent that. Removing it from the tree answers both at
         once and is the honest spelling of "it is not there".
       */}
-      {headerHidden ? null : (
-        <View className="absolute left-0 right-0 top-0">
-          <SafeAreaView
-            edges={['top']}
-            className={header === 'onSurface' ? 'bg-canvas border-b border-stroke' : ''}
-          >
-            <View className="flex-row items-center justify-between px-s py-2xs">
-              <HeaderButton icon="chevron-back" label="Zurück" onPress={goBack} />
-              {url ? (
-                <View className="flex-row gap-2xs">
-                  <HeaderButton
-                    icon="share-outline"
-                    label="Artikel teilen"
-                    onPress={() => shareArticle(url, title ?? article?.title)}
-                  />
-                  <HeaderButton
-                    icon={saved ? 'bookmark' : 'bookmark-outline'}
-                    label={saved ? 'Gespeichert, entfernen' : 'Artikel speichern'}
-                    onPress={() =>
-                      actions.savedArticles.toggle({
-                        url,
-                        title: title ?? article?.title ?? '',
-                        kicker: article?.kicker ?? null,
-                        rating: article?.rating ?? null,
-                        savedAt: new Date().toISOString(),
-                      })
-                    }
-                  />
-                </View>
-              ) : null}
-            </View>
-          </SafeAreaView>
-        </View>
-      )}
+      {overlayHeader && !headerHidden ? headerStrip : null}
     </View>
   );
 }
