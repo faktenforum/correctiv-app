@@ -8,7 +8,8 @@ import { Button, Card, Hairline, Overline, Screen, Typo } from '@/components/ui'
 import { formatDateShortDe } from '@correctiv/app-core/lib/format';
 import type { Entitlement } from '@correctiv/app-core/types/models';
 import { quarterlyReport } from '@correctiv/app-core/data/quartalsbericht';
-import { OFFLINE_ARTICLES } from '@/lib/articles/offlineBundle.generated';
+import { isFactCheckUrl } from '@/lib/articles/articleUrl';
+import { useFeed } from '@/lib/feeds/useFeed';
 import { TIER_LABELS } from '@/lib/membership/tierLabel';
 import { openArticle } from '@/lib/openArticle';
 import { openExternal } from '@/lib/openExternal';
@@ -51,17 +52,8 @@ const NEWSLETTERS = [
   { key: 'klima', label: 'Klima', description: 'Die Klima-Recherchen der Woche' },
 ] as const;
 
-/**
- * Three real investigations from the bundled offline index.
- *
- * An earlier version filtered on `feed === 'recherchen'`. This index is keyed by URL
- * and carries no feed field, so the URL decides. Fact checks are not impact
- * investigations.
- */
-const IMPACT_ARTICLES = Object.entries(OFFLINE_ARTICLES)
-  .filter(([url]) => !url.includes('/faktencheck/'))
-  .slice(0, 3)
-  .map(([url, article]) => ({ url, title: article.title }));
+/** How many investigations the impact card names. */
+const IMPACT_COUNT = 3;
 
 /**
  * Profil — membership, impact, report, backstage, saved articles, newsletters,
@@ -83,6 +75,23 @@ export default function ProfilScreen() {
   const settings = useSettings();
   const saved = useSavedArticles();
   const entitlement = session.entitlement;
+
+  /**
+   * The impact card's investigations come through the store, not out of the
+   * generated bundle. Reading `offlineBundle.generated` here imported the whole
+   * 6000-line module into this route independently of the `ContentBundle` port, and
+   * evaluated the pick once at module scope, so the list could never go live. The
+   * feed cascade answers from the network first and falls back to the same bundle
+   * through the port, which is the arrangement every other list in the app has had
+   * since ADR 0015. `web-target.test.ts` keeps the direct import from coming back.
+   *
+   * `recherchen` is the site-wide stream, so it carries fact checks too — they are
+   * not impact investigations, which is why `isFactCheckUrl` filters them out.
+   */
+  const recherchen = useFeed('recherchen');
+  const impactArticles = (recherchen.data ?? [])
+    .filter((item) => !isFactCheckUrl(item.url))
+    .slice(0, IMPACT_COUNT);
 
   const savedLabel =
     saved.length === 0
@@ -139,8 +148,10 @@ export default function ProfilScreen() {
       <View className="mt-m">
         <Overline label="Ihr Impact" />
         <Card tone="surface" className="mt-2xs">
-          <Typo variant="text-m">{impactLine(entitlement?.memberSince ?? null)}</Typo>
-          {IMPACT_ARTICLES.map((article) => (
+          <Typo variant="text-m">
+            {impactLine(entitlement?.memberSince ?? null, impactArticles.length > 0)}
+          </Typo>
+          {impactArticles.map((article) => (
             <Typo
               key={article.url}
               variant="text-m"
@@ -214,15 +225,24 @@ export default function ProfilScreen() {
  * build before `memberSince` existed hydrates without it and is kept until the next
  * sign-in (see `Entitlement.memberSince`). An empty card is worse than a sentence
  * that does not count months.
+ *
+ * `hasArticles` exists because the list is loaded rather than bundled at module
+ * scope: for the moment before the feed answers there is nothing to introduce, and
+ * a sentence ending in a colon over an empty card reads as a defect.
  */
-function impactLine(memberSince: string | null): string {
-  if (!memberSince) return 'Ihr Beitrag ermöglicht diese Recherchen. Unter anderem diese hier:';
+function impactLine(memberSince: string | null, hasArticles: boolean): string {
+  if (!memberSince) {
+    return hasArticles
+      ? 'Ihr Beitrag ermöglicht diese Recherchen. Unter anderem diese hier:'
+      : 'Ihr Beitrag ermöglicht diese Recherchen.';
+  }
   const months = Math.max(
     1,
     Math.round((Date.now() - new Date(memberSince).getTime()) / (30 * 864e5)),
   );
   const time = months < 2 ? 'seit Kurzem' : `seit ${months} Monaten`;
-  return `Sie unterstützen CORRECTIV ${time}. Unter anderem diese Recherchen wurden mit ermöglicht:`;
+  const lead = `Sie unterstützen CORRECTIV ${time}.`;
+  return hasArticles ? `${lead} Unter anderem diese Recherchen wurden mit ermöglicht:` : lead;
 }
 
 /** One label/value line in the membership card. */

@@ -112,6 +112,14 @@ jobs:
           for route in index 404 artikel entdecken mediathek mitmachen profil; do
             test -f "dist/$route.html" || { echo "::error::missing dist/$route.html"; exit 1; }
           done
+          # One real id per dynamic family. A route that loses its
+          # generateStaticParams exports as a single dist/<family>/[id].html and
+          # every real URL under it 404s on a static host, while the build and
+          # every test stay green. __tests__/web-target.test.ts keeps the export
+          # on the route; this checks that the ids actually came out.
+          for route in projekt/abriss-atlas aufruf/wem-gehoert-die-stadt serie/klima tagebuch/diary-bern-2 behauptung/claim-001; do
+            test -f "dist/$route.html" || { echo "::error::missing dist/$route.html — a dynamic route did not pre-render its ids"; exit 1; }
+          done
           test -f dist/preview.html || {
             echo "::error::dist/preview.html is missing — apps/mobile/public/ did not reach the export, and the address handed out for the demo would 404."
             exit 1

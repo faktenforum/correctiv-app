@@ -77,6 +77,12 @@ module.exports = {
   // Pure logic tests (token bridge, feed parser, extraction) need no RN setup but
   // run happily under jest-expo. Node scripts under scripts/ are covered too.
   testMatch: ['**/__tests__/**/*.test.{ts,tsx,js,mjs}'],
+  /**
+   * The preset's own setup first, then the doubles every suite used to copy. Spread
+   * rather than replaced: jest-expo's entries are what install the React Native
+   * environment, and dropping them takes the whole suite down.
+   */
+  setupFiles: [...(preset.setupFiles ?? []), '<rootDir>/__tests__/support/mocks.ts'],
   transform: {
     ...preset.transform,
     // @correctiv/app-core ships two .mjs modules (the feed parser and the article

@@ -1,0 +1,15 @@
+{
+  "extends": "./tsconfig.json",
+  "compilerOptions": {
+    "customConditions": null,
+    "types": ["node"],
+    "checkJs": true
+  },
+  // The two generators write the committed offline bundles the `ContentBundle` port
+  // serves, and they import core types. Without a program of their own nothing
+  // typechecks them: tsconfig.json excludes `scripts`, tsconfig.test.json takes only
+  // the `.mjs` in it, and `tsx` strips the types without checking any of them. A core
+  // type change therefore surfaced when somebody next ran a generator before a demo.
+  "include": ["scripts/**/*.mts", "scripts/**/*.mjs"],
+  "exclude": ["node_modules", "android", "ios"]
+}
