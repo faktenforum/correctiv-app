@@ -23,7 +23,6 @@ jest.mock('@/lib/audio/player', () => ({
   playRadio: jest.fn(() => Promise.resolve()),
   togglePlay: jest.fn(),
   stop: jest.fn(),
-  audioStore: { getState: jest.fn(), setState: jest.fn(), subscribe: jest.fn(() => jest.fn()) },
 }));
 jest.mock('@/lib/audio/useAudio', () => ({
   useAudio: () => ({
@@ -37,15 +36,6 @@ jest.mock('@/lib/audio/useAudio', () => ({
   useEpisodeStatus: () => 'off',
   useRadioState: () => 'off',
 }));
-
-// The icon font loads asynchronously and setStates after the test ends.
-jest.mock('@expo/vector-icons', () => {
-  const react = jest.requireActual<typeof import('react')>('react');
-  const { Text } = jest.requireActual<typeof import('react-native')>('react-native');
-  const Ionicons = ({ name }: { name: string }) => react.createElement(Text, null, `icon:${name}`);
-  Ionicons.displayName = 'Ionicons';
-  return { Ionicons };
-});
 
 import { router } from 'expo-router';
 

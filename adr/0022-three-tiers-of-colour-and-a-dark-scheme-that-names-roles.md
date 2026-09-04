@@ -188,9 +188,18 @@ with a hex: a *confirmed* fact check must not wear the same red as a refuted one
 fact-checking organisation needs a colour for "true" the way it needs one for "false".
 Upstream should hear this before it hears about `grey-250`.
 
-It is the app's only raw colour value. The two other hexes in the source are in
+~~It is the app's only raw colour value. The two other hexes in the source are in
 comments — react-native-web's Material teal default, named to explain why `thumbColor`
-is set at all, and a contrast figure in the reader's CSS.
+is set at all, and a contrast figure in the reader's CSS.~~
+
+> Struck on 2026-09-04: it was a miscount on the day, not a claim a later decision
+> voided. Two raw colour values are in source rather than in comments —
+> `apps/mobile/src/app/onboarding.tsx` (`'rgba(255,255,255,0.45)'`, the inactive
+> onboarding dot) and `apps/mobile/src/components/media/VideoFrame.tsx`
+> (`background:#000` in the embed page's HTML). Someone auditing the app's raw
+> colours off this paragraph would have stopped at one site and missed both. The
+> point the paragraph is making — that the semantic tier has no colour for
+> "confirmed" and the app fills the hole with a hex — is unaffected.
 
 The last is the real gap, and it is not a counting one: the semantic tier has three
 neutral foregrounds (`on-canvas` #333333, `on-background` #4a4a4a, `on-canvas-muted`

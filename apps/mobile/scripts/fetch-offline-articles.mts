@@ -10,9 +10,10 @@
  * cannot differ from what the app would have extracted
  * live.
  *
- * The snapshots matter most on the web target, where they are not a fallback for a
- * lost network but the only way articles appear at all: correctiv.org sends no
- * `Access-Control-Allow-Origin`, so a browser blocks every feed request. See
+ * The snapshots are the reader's floor with no connection at all. On the web target
+ * they used to be the ceiling as well, because a browser blocks every RSS request;
+ * since ADR 0015 the REST API is the network path there and reflects whatever
+ * `Origin` it is given, so a browser reaches the live feeds first. See
  * `TROUBLESHOOTING.md` → The web target.
  *
  * Cover images are bundled alongside, downscaled and inlined as data URIs. Without

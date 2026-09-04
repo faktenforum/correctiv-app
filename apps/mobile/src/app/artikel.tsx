@@ -1,16 +1,17 @@
 import { Ionicons } from '@expo/vector-icons';
 import { router, useLocalSearchParams } from 'expo-router';
 import { useCallback, useEffect, useRef, useState } from 'react';
-import { ActivityIndicator, Animated, Linking, Pressable, View } from 'react-native';
+import { ActivityIndicator, Animated, Pressable, View } from 'react-native';
 
 import { ReaderView } from '@/components/reader/ReaderView';
 import { Button, SafeAreaView, Typo } from '@/components/ui';
-import { isInternalArticleUrl } from '@/lib/articles/articleUrl';
 import { type HeaderState, nextHeaderState } from '@/lib/articles/readerChrome';
+import { classifyReaderLink } from '@/lib/articles/readerNavigation';
 import { loadArticle } from '@correctiv/app-core/articles/load';
 import type { Article } from '@correctiv/app-core/articles/types';
 import { readerHtml } from '@/lib/articles/reader';
 import { goBack } from '@/lib/navigation/goBack';
+import { openExternal } from '@/lib/openExternal';
 import { shareArticle } from '@/lib/shareArticle';
 import { useCoreActions, useIsSaved, useTextScale } from '@/lib/store/core';
 import { sizes, useColors, useIsDark } from '@/lib/theme';
@@ -20,9 +21,8 @@ import { sizes, useColors, useIsDark } from '@/lib/theme';
  * embedded fonts, so it works offline). Native overlay header for back and save.
  *
  * Links are intercepted: a correctiv.org article pushes another reader, anything
- * else goes to the system browser. There used to be a third case, `correctiv://join`,
- * for a button in the reader's second footer; ADR 0018 removed the footer, and a test
- * in the core now asserts the scheme never reaches a document again.
+ * else goes to the system browser. The rule itself is `readerNavigation`, which
+ * carries the cases and their history.
  */
 export default function ArtikelScreen() {
   const colors = useColors();
@@ -98,21 +98,6 @@ export default function ArtikelScreen() {
     };
   }, [url, badge, attempt]);
 
-  const onNavigate = (target: string): boolean => {
-    if (target === 'about:blank' || target.startsWith('data:') || target.startsWith('file:'))
-      return true;
-    if (isInternalArticleUrl(target)) {
-      router.push({ pathname: '/artikel', params: { url: target } });
-      return false;
-    }
-    // Everything else external → system browser.
-    if (/^https?:/.test(target)) {
-      Linking.openURL(target);
-      return false;
-    }
-    return true;
-  };
-
   return (
     <View className="flex-1 bg-canvas">
       {article ? (
@@ -137,7 +122,7 @@ export default function ArtikelScreen() {
                   <Button
                     title="Im Browser öffnen"
                     variant="outline"
-                    onPress={() => Linking.openURL(url)}
+                    onPress={() => openExternal(url)}
                   />
                 ) : null}
               </View>
@@ -194,6 +179,29 @@ export default function ArtikelScreen() {
       </Animated.View>
     </View>
   );
+}
+
+/**
+ * Every navigation the document starts comes through here. The rule itself lives in
+ * `readerNavigation`, where it can be tested; what is left is which of the three
+ * outcomes the app performs, and whether the webview is allowed to proceed.
+ *
+ * Module scope, not a callback in the component: it captures nothing.
+ */
+function onNavigate(target: string): boolean {
+  switch (classifyReaderLink(target)) {
+    case 'internal': {
+      router.push({ pathname: '/artikel', params: { url: target } });
+      return false;
+    }
+    case 'external': {
+      openExternal(target);
+      return false;
+    }
+    default: {
+      return true;
+    }
+  }
 }
 
 /**

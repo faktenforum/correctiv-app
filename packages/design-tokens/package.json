@@ -13,6 +13,7 @@
   },
   "scripts": {
     "tokens": "node scripts/generate.mjs",
-    "typecheck": "tsc --noEmit"
+    "typecheck": "tsc --noEmit && tsc -p tsconfig.test.json --noEmit",
+    "test": "vitest run"
   }
 }

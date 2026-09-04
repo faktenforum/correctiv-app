@@ -4,7 +4,9 @@ import { Provider } from 'react-redux';
 /**
  * The root layout's three decisions that nothing else can see.
  *
- *  1. **The Provider has to hold the core's singleton.** Screens read through the
+ *  1. **The Provider has to hold the app's store instance.** The core exports
+ *     `createAppStore()` and no singleton; `lib/store/core.ts` builds the one
+ *     there is (ADR 0023). Screens read through the
  *     Provider (`useAppSelector`), while `coreActions` and the two modules that run
  *     outside React dispatch straight into the imported store. Those are only the
  *     same store because this file hands the Provider that very instance — an
@@ -67,17 +69,37 @@ jest.mock('uniwind', () => ({
  */
 jest.mock('@/lib/platform/expo', () => {
   const core = jest.requireActual<typeof import('@correctiv/app-core')>('@correctiv/app-core');
-  return {
-    expoPlatform: core.createMemoryPlatform(),
-    hydratePlatform: jest.fn(() => Promise.resolve()),
-  };
+  return { expoPlatform: core.createMemoryPlatform() };
 });
-jest.mock('@/lib/audio/backend', () => ({
-  expoAudio: { addStatusListener: jest.fn(() => jest.fn()) },
-}));
+
+/**
+ * The backend is only handed to `configurePlatform` here; nothing in this file
+ * plays anything. It is spelled out in full and typed against the port anyway, so
+ * that a rename on the other side fails this file's typecheck rather than leaving
+ * a double that describes a shape the module no longer has. (`addStatusListener`
+ * sat here for two migrations after `onStatus` replaced it.)
+ *
+ * The annotation cannot go inside the factory: Babel's out-of-scope check runs
+ * before the types are stripped and rejects the name even in type position. A
+ * `mock`-prefixed function declaration is the shape jest allows, and it hoists.
+ */
+function mockAudioBackend(): AudioBackend {
+  return {
+    load: jest.fn(() => Promise.resolve()),
+    play: jest.fn(),
+    pause: jest.fn(),
+    seekTo: jest.fn(() => Promise.resolve()),
+    setRate: jest.fn(),
+    release: jest.fn(),
+    onStatus: jest.fn(),
+  };
+}
+
+jest.mock('@/lib/audio/backend', () => ({ expoAudio: mockAudioBackend() }));
 
 import { router, usePathname } from 'expo-router';
 
+import type { AudioBackend } from '@correctiv/app-core';
 import { sessionActions } from '@correctiv/app-core/stores/session';
 import { completeOnboarding } from '@correctiv/app-core/stores/settings';
 import { resetStore } from '@correctiv/app-core/stores/store';

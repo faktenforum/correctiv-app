@@ -6,33 +6,29 @@ import { SampleHitRow, sampleTarget } from '@/components/discover/SampleHitRow';
 import { ArticleRow } from '@/components/feed/ArticleRow';
 import { Hairline, Overline, ScreenHeader, Typo } from '@/components/ui';
 import { searchSamples } from '@correctiv/app-core/data/search-samples';
-import { searchArticles } from '@correctiv/app-core/services/search.service';
+import { MIN_SEARCH_QUERY } from '@correctiv/app-core/stores/search';
 import type { FeedItem } from '@correctiv/app-core/types/models';
-import { searchFeedCorpus } from '@/lib/feeds/corpus';
 import { openArticle } from '@/lib/openArticle';
+import { useCoreActions } from '@/lib/store/core';
 import { typography, useColors } from '@/lib/theme';
 import { useDebounced } from '@/lib/useDebounced';
 
-/** Below two characters nobody is searching meaningfully — nor is the server. */
-const MIN_QUERY = 2;
 const DEBOUNCE_MS = 300;
 
 /**
  * Full-text search over correctiv.org, with a local fallback.
  *
- * The order: WordPress REST (`searchArticles`, in the core) → on an error OR an
- * empty result, the feeds already loaded (`searchFeedCorpus`). The fallback is not
- * a stopgap but the promise the cache design makes: the demo must never hang on
- * Wi-Fi. It is the exception rather than the rule even on the web target: this
- * search has always run on `wp/v2`, which sends a CORS header, so the note that
- * used to stand here — that a browser is blocked and the fallback is normal — was
- * never true of the search. [ADR 0015](../../../../adr/0015-reading-correctiv-org-through-its-rest-api.md).
+ * The cascade itself — live first, the loaded feeds on an error or an empty result
+ * — is `@correctiv/app-core/stores/search`, tested there against a seeded store.
+ * What is left here is the screen's own: a debounce, a spinner, and which of the
+ * three empty states to show.
  *
  * The project hits (podcasts, callouts, backstage, publishing) are not in the feeds
  * and are filtered locally — without a debounce, because that costs nothing.
  */
 export default function SucheScreen() {
   const colors = useColors();
+  const actions = useCoreActions();
   const [query, setQuery] = useState('');
   const trimmed = query.trim();
   const debounced = useDebounced(trimmed, DEBOUNCE_MS);
@@ -41,29 +37,19 @@ export default function SucheScreen() {
   const [searching, setSearching] = useState(false);
 
   useEffect(() => {
-    if (debounced.length < MIN_QUERY) {
+    if (debounced.length < MIN_SEARCH_QUERY) {
       setArticles([]);
       setSearching(false);
       return;
     }
     let active = true;
 
-    // setState sits in the inner async run, not in the effect body — the same
-    // pattern as useAsyncData in lib/feeds/useFeed.ts (safe for the React compiler).
+    // setState sits in the inner async run, not in the effect body, which is what
+    // keeps this safe for the React compiler.
     const run = async () => {
       setSearching(true);
-      try {
-        const live = await searchArticles(debounced, 15);
-        if (!active) return;
-        if (live.length > 0) {
-          setArticles(live);
-          return;
-        }
-      } catch {
-        // Offline, an API error, or the CORS block on web — all the same path.
-      }
-      const local = await searchFeedCorpus(debounced);
-      if (active) setArticles(local);
+      const hits = await actions.search.run(debounced);
+      if (active) setArticles(hits);
     };
 
     run().finally(() => {
@@ -74,17 +60,17 @@ export default function SucheScreen() {
       // A superseded run writes nothing: the latest input wins.
       active = false;
     };
-  }, [debounced]);
+  }, [debounced, actions]);
 
   const sampleHits = useMemo(() => {
-    if (trimmed.length < MIN_QUERY) return [];
+    if (trimmed.length < MIN_SEARCH_QUERY) return [];
     const needle = trimmed.toLowerCase();
     return searchSamples.filter(
       (s) => s.title.toLowerCase().includes(needle) || s.subtitle.toLowerCase().includes(needle),
     );
   }, [trimmed]);
 
-  const tooShort = debounced.length < MIN_QUERY;
+  const tooShort = debounced.length < MIN_SEARCH_QUERY;
   const nothingFound = !tooShort && !searching && articles.length === 0 && sampleHits.length === 0;
 
   return (

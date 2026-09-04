@@ -1,4 +1,4 @@
-import { isInternalArticleUrl } from '@/lib/articles/articleUrl';
+import { isFactCheckUrl, isInternalArticleUrl } from '@/lib/articles/articleUrl';
 
 /**
  * The URL shapes below were read off the live feeds on 2026-08-05, not invented:
@@ -37,5 +37,38 @@ describe('links inside an article', () => {
 
   it.each(NOT_ARTICLES)('leaves %s to the browser', (url) => {
     expect(isInternalArticleUrl(url)).toBe(false);
+  });
+});
+
+/**
+ * The permalinks below are the ones in the committed offline bundle, which is the
+ * live `correctiv.org/feed/` as of the last generator run. That stream carries fact
+ * checks and investigations side by side and stamps both `feed: 'recherchen'`, which
+ * is why the profile's impact card has to read the path.
+ */
+const FACT_CHECKS = [
+  'https://correctiv.org/faktencheck/2026/08/11/keine-ki-foto-von-voigt-kretschmer-und-schulze-ist-echt/',
+  // Sub-sectioned fact checks: still the same first segment.
+  'https://correctiv.org/faktencheck/hintergrund/2026/06/30/deutschland-strom-import/',
+  'https://correctiv.org/faktencheck/aus-der-community/2026/07/15/geruechtekiller/',
+  'https://correctiv.org/faktencheck/gesellschaft/2026/07/24/zeitung-titelseite/',
+];
+
+const INVESTIGATIONS = [
+  'https://correctiv.org/russland/2026/08/11/russisches-haus-ein-ende-fuer-propaganda-und-spionage/',
+  'https://correctiv.org/aktuelles/sicherheit-und-verteidigung/2026/08/11/bundeswehr-schafft-einfallstor/',
+  'https://correctiv.org/in-eigener-sache/2026/08/07/jugendliche-erleben-wald/',
+  // A substring match would call this one a fact check; the first segment does not.
+  'https://correctiv.org/aktuelles/faktencheck-team/2026/08/07/wie-wir-arbeiten/',
+  'not a url at all',
+];
+
+describe('fact checks in the site-wide stream', () => {
+  it.each(FACT_CHECKS)('reads %s as a fact check', (url) => {
+    expect(isFactCheckUrl(url)).toBe(true);
+  });
+
+  it.each(INVESTIGATIONS)('reads %s as an investigation', (url) => {
+    expect(isFactCheckUrl(url)).toBe(false);
   });
 });

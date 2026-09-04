@@ -16,16 +16,7 @@ jest.mock('expo-router', () => ({
   router: { push: jest.fn(), back: jest.fn(), replace: jest.fn() },
   useLocalSearchParams: jest.fn(() => ({})),
 }));
-jest.mock('@/lib/openExternal', () => ({ openExternal: jest.fn() }));
 jest.mock('@/lib/openArticle', () => ({ openArticle: jest.fn() }));
-
-jest.mock('@expo/vector-icons', () => {
-  const react = jest.requireActual<typeof import('react')>('react');
-  const { Text } = jest.requireActual<typeof import('react-native')>('react-native');
-  const Ionicons = ({ name }: { name: string }) => react.createElement(Text, null, `icon:${name}`);
-  Ionicons.displayName = 'Ionicons';
-  return { Ionicons };
-});
 
 import { router } from 'expo-router';
 

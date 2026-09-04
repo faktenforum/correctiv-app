@@ -58,9 +58,11 @@ dropping a host meant dropping that file plus its screens.
 ## Three conventions in the core
 
 1. **State is framework-neutral.** `stores/` is one Redux Toolkit store with twelve
-   slices. `stores/store.ts` explains why the core owns the instance rather than the
-   host. The host adds only the reactivity binding, `apps/mobile/src/lib/store/core.ts`
-   over react-redux. A second host once bound the state this replaced to Vue's
+   slices. The core owns the slices and exports `createAppStore()`; the **host**
+   constructs the instance, which is what lets it pass the DevTools enhancer
+   ([ADR 0023](adr/0023-the-host-constructs-the-store.md), and `stores/store.ts` for
+   the argument). The host adds the reactivity binding with it,
+   `apps/mobile/src/lib/store/core.ts` over react-redux. A second host once bound the state this replaced to Vue's
    `reactive` in about forty lines, which is the measure of what framework-neutral
    bought.
 2. **Derived values are exported selectors taking state, never store methods.** In

@@ -1,10 +1,11 @@
 /**
  * React bindings for the core's Redux store.
  *
- * `@correctiv/app-core` owns the store and the slices (ADR 0004); each host adds
- * its own reactivity. This is the React half — `react-redux`'s `useSelector` over
- * the core's `store`, plus the pure selector functions the slices export, which
- * are ordinary functions of state and compose with it as-is.
+ * `@correctiv/app-core` owns the slices; the **host** constructs the store from
+ * them and adds its own reactivity ([ADR 0023](../../../../../adr/0023-the-host-constructs-the-store.md)).
+ * This is the React half — `react-redux`'s `useSelector` over the instance built
+ * below, plus the pure selector functions the slices export, which are ordinary
+ * functions of state and compose with it as-is.
  *
  * Always select the narrowest slice you need. `useSelector((s) => s.settings)`
  * re-renders on every change to any field in that slice.
@@ -27,6 +28,7 @@ import {
   fetchMany,
   type FeedStatus,
 } from '@correctiv/app-core/stores/feeds';
+import { searchWithFallback } from '@correctiv/app-core/stores/search';
 import {
   boostedModules as selectBoostedModules,
   extraFeeds as selectExtraFeeds,
@@ -351,6 +353,9 @@ function bindCoreActions(dispatch: AppDispatch) {
       fetchMany: bind(fetchMany),
       enrichImage: bind(enrichImage),
     },
+    // Returns its hits rather than writing them to a slice: the query is the search
+    // screen's own state and nothing else in the app asks about it.
+    search: { run: bind(searchWithFallback) },
     podcasts: { fetchAll: bind(fetchAll) },
     spotlight: { fetchIssues: bind(fetchIssues) },
     radio: { fetchStatus: bind(fetchRadioStatus) },
@@ -380,10 +385,11 @@ export type CoreActions = ReturnType<typeof bindCoreActions>;
  *
  * The callers that genuinely run outside React are real and few:
  * `lib/audio/player.ts` (whose actions the exclusive-playback callback invokes as
- * well as screens do), `lib/feeds/corpus.ts` (a module-level promise) and the
- * `registerExclusiveMedium` wiring in `app/_layout.tsx`. That is not a wart — it
- * is the same reason the core owns the store instance at all, which the doc
- * comment in `@correctiv/app-core/stores/store` sets out.
+ * well as screens do) and the `registerExclusiveMedium` wiring in
+ * `app/_layout.tsx`. There was a third, `lib/feeds/corpus.ts`, which reached the
+ * singleton from a module-level promise; the search cascade it held now lives in
+ * `@correctiv/app-core/stores/search` as a thunk and a selector, so it takes the
+ * dispatch it is given.
  */
 export const coreActions = bindCoreActions(coreStore.dispatch);
 

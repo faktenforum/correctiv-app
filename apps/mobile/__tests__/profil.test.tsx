@@ -15,15 +15,23 @@ jest.mock('expo-router', () => ({
   router: { push: jest.fn(), back: jest.fn() },
   useLocalSearchParams: jest.fn(() => ({})),
 }));
-jest.mock('@/lib/openExternal', () => ({ openExternal: jest.fn() }));
 
-jest.mock('@expo/vector-icons', () => {
-  const react = jest.requireActual<typeof import('react')>('react');
-  const { Text } = jest.requireActual<typeof import('react-native')>('react-native');
-  const Ionicons = ({ name }: { name: string }) => react.createElement(Text, null, `icon:${name}`);
-  Ionicons.displayName = 'Ionicons';
-  return { Ionicons };
-});
+/**
+ * The impact card reads the `recherchen` feed through the store rather than the
+ * generated bundle, so this file supplies the items. No network here for the same
+ * reason as `home-timed.test.tsx`: a thunk landing after the test body is an update
+ * outside `act`, and that noise is where a real warning hides.
+ */
+let mockFeedItems: FeedItem[] = [];
+jest.mock('@/lib/feeds/useFeed', () => ({
+  useFeed: () => ({
+    data: mockFeedItems.length > 0 ? mockFeedItems : null,
+    loading: false,
+    error: null,
+    offline: false,
+    reload: jest.fn(),
+  }),
+}));
 
 import { router } from 'expo-router';
 import { openExternal } from '@/lib/openExternal';
@@ -35,7 +43,7 @@ import GespeichertScreen from '@/app/gespeichert';
 import ProfilScreen from '@/app/(tabs)/profil';
 import { sessionActions } from '@correctiv/app-core/stores/session';
 import { resetStore } from '@correctiv/app-core/stores/store';
-import type { Entitlement, MembershipTier } from '@correctiv/app-core/types/models';
+import type { Entitlement, FeedItem, MembershipTier } from '@correctiv/app-core/types/models';
 
 import { coreActions, coreStore } from '@/lib/store/core';
 
@@ -49,8 +57,31 @@ const ARTICLE = {
   savedAt: '2026-06-12T10:00:00.000Z',
 };
 
+/** A card as the `recherchen` stream delivers it: every item stamped with that feed. */
+function item(url: string, title: string): FeedItem {
+  return {
+    id: url,
+    feed: 'recherchen',
+    title,
+    url,
+    teaser: '',
+    publishedAt: '2026-08-11T08:00:00.000Z',
+    categories: [],
+  };
+}
+
+const INVESTIGATION = item(
+  'https://correctiv.org/russland/2026/08/11/russisches-haus/',
+  'Russisches Haus',
+);
+const FACT_CHECK = item(
+  'https://correctiv.org/faktencheck/2026/08/11/keine-ki-foto-ist-echt/',
+  'Keine KI: Foto ist echt',
+);
+
 beforeEach(() => {
   jest.clearAllMocks();
+  mockFeedItems = [];
   act(() => {
     coreStore.dispatch(resetStore());
   });
@@ -214,6 +245,58 @@ describe('Profil as a member', () => {
       '/gespeichert',
       '/einstellungen',
     ]);
+  });
+});
+
+/**
+ * The impact card used to read `offlineBundle.generated` at module scope, which put
+ * the whole snapshot module in this route's import graph, went around the
+ * `ContentBundle` port, and fixed the list at build time. It reads the feed slice
+ * now; `web-target.test.ts` guards the import that is gone.
+ */
+describe('the impact card', () => {
+  it('names investigations from the feed and leaves the fact checks out', () => {
+    mockFeedItems = [
+      INVESTIGATION,
+      FACT_CHECK,
+      item('https://correctiv.org/aktuelles/wirtschaft/2026/08/10/vw/', 'VW unter Druck'),
+      item('https://correctiv.org/klima/2026/08/09/hitze/', 'Hitze in der Stadt'),
+      item('https://correctiv.org/afd/2026/08/08/parteitag/', 'Der vierte Artikel'),
+    ];
+    const text = renderedText(render(<ProfilScreen />));
+
+    expect(text).toContain('Russisches Haus');
+    expect(text).toContain('VW unter Druck');
+    expect(text).toContain('Hitze in der Stadt');
+    // Fact checks are not impact investigations, and only three are named.
+    expect(text).not.toContain('Keine KI: Foto ist echt');
+    expect(text).not.toContain('Der vierte Artikel');
+  });
+
+  it('opens one in the reader', () => {
+    mockFeedItems = [INVESTIGATION];
+    const tree = render(<ProfilScreen />);
+    // The titles are pressable Typo, not labelled rows, so this finds them by text.
+    const line = tree.root.find(
+      (node) => node.props?.children === INVESTIGATION.title && !!node.props?.onPress,
+    );
+    act(() => {
+      line.props.onPress();
+    });
+
+    expect(push).toHaveBeenCalledWith({
+      pathname: '/artikel',
+      params: { url: INVESTIGATION.url, title: INVESTIGATION.title },
+    });
+  });
+
+  /** Nothing loaded yet is a real state now that the list is not bundled. */
+  it('does not introduce a list it has nothing to put in', () => {
+    signIn();
+    const text = renderedText(render(<ProfilScreen />));
+
+    expect(text).toContain('Sie unterstützen CORRECTIV');
+    expect(text).not.toContain('Unter anderem');
   });
 });
 

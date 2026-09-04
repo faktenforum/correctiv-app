@@ -17,7 +17,14 @@ import { fetchText, type FetchTextOptions } from './http';
 
 const memory = new Map<string, { data: unknown; ts: number }>();
 
-function fileKey(key: string): string {
+/**
+ * Exported because it is not an internal detail: the preview shell has to name the
+ * very same blob to seed a feed's cache, and re-implements this from the outside
+ * (`tools/preview/src/frame/seed.ts`). `tools/preview/test/seed.test.ts` holds the
+ * two versions together — without it a changed hash makes every fixture silently
+ * do nothing.
+ */
+export function fileKey(key: string): string {
   // djb2 — stable, and short enough to be a file name on every host
   let h = 5381;
   for (let i = 0; i < key.length; i++) h = ((h << 5) + h + key.charCodeAt(i)) >>> 0;

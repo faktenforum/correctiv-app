@@ -14,6 +14,12 @@ import { join, relative, resolve } from 'node:path';
  * The rule: react-native-webview may only be imported from a file Metro
  * resolves exclusively on native. Anything else must go through
  * components/reader/ReaderView, which has a .web.tsx sibling.
+ *
+ * The file has since collected the rest of the import-shaped incidents in
+ * TROUBLESHOOTING.md, because they share that shape: a green build, a green
+ * typecheck, a green test run, and a broken app. One of them (`expo-router/tabs`)
+ * is not web-only; it lives here because the guard is the same one line of regex
+ * over the same file list, not because the failure is about the export.
  */
 const SRC = resolve(__dirname, '../src');
 
@@ -27,7 +33,7 @@ const NATIVE_ONLY = [/\.native\.[jt]sx?$/, /\.(android|ios)\.[jt]sx?$/];
  */
 const PLATFORM_PAIRED = [
   'components/reader/ReaderView.tsx',
-  // Fremd-Einbettung (YouTube). Same deal: .web.tsx renders a real <iframe>.
+  // A foreign embed (YouTube). Same deal: .web.tsx renders a real <iframe>.
   'components/media/VideoFrame.tsx',
   // Not a native SDK this time but half a megabyte of base64: the bundled covers
   // are for an offline phone, and .web.ts keeps them out of the page.
@@ -75,6 +81,53 @@ describe('web target', () => {
       if (rel === 'lib/articles/covers.ts') return false;
       return /from\s+'[^']*offlineCovers\.generated'/.test(readFileSync(file, 'utf8'));
     });
+
+    expect(offenders.map((f) => relative(SRC, f))).toEqual([]);
+  });
+
+  it('reaches the bundled articles and feeds only through the platform adapter', () => {
+    // The sibling rule above, for the other generated module. `lib/platform/expo.ts`
+    // is the one file that knows the bundle exists — that is what the `ContentBundle`
+    // port is (ARCHITECTURE.md → The four ports, ADR 0006). A screen that imports it
+    // directly gets a list that cannot go live, evaluated once at module scope, plus
+    // 6000 lines of snapshots in its route's import graph. `(tabs)/profil.tsx` did.
+    const offenders = files.filter((file) => {
+      const rel = relative(SRC, file).replaceAll('\\', '/');
+      if (rel === 'lib/platform/expo.ts') return false;
+      return /from\s+'[^']*articles\/offlineBundle\.generated'/.test(readFileSync(file, 'utf8'));
+    });
+
+    expect(offenders.map((f) => relative(SRC, f))).toEqual([]);
+  });
+
+  it('gives every dynamic route a generateStaticParams', () => {
+    // `expo export --platform web` turns a route without it into a single
+    // `[id].html`, so on a static host every real URL under it 404s. `/projekt/klima`
+    // shipped that way while the build and every test stayed green
+    // (TROUBLESHOOTING.md → The web target). Native never notices; it has no URLs.
+    const dynamicRoutes = files.filter((file) => {
+      const rel = relative(SRC, file).replaceAll('\\', '/');
+      return rel.startsWith('app/') && /\[[^\]]+\]\.tsx$/.test(rel);
+    });
+
+    expect(dynamicRoutes.length).toBeGreaterThan(0);
+
+    const offenders = dynamicRoutes.filter(
+      (file) => !/export\s+function\s+generateStaticParams\b/.test(readFileSync(file, 'utf8')),
+    );
+
+    expect(offenders.map((f) => relative(SRC, f))).toEqual([]);
+  });
+
+  it('never imports from expo-router/tabs', () => {
+    // Importing `BottomTabBar` from there to build a custom tab bar pulls a second
+    // React instance into the bundle and the app dies at startup with minified React
+    // error #321, on every platform, while build, typecheck and tests stay green
+    // (TROUBLESHOOTING.md → The web target). `(tabs)/_layout.web.tsx` carries the
+    // comment; this is the part that fails.
+    const offenders = files.filter((file) =>
+      /from\s+['"]expo-router\/tabs['"]/.test(readFileSync(file, 'utf8')),
+    );
 
     expect(offenders.map((f) => relative(SRC, f))).toEqual([]);
   });
