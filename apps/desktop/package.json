@@ -41,7 +41,10 @@
   "optionalDependencies": {
     "@gjsify/gtk-runtime-darwin-arm64": "^0.47.0",
     "@gjsify/gtk-runtime-darwin-x64": "^0.47.0",
-    "@gjsify/gtk-runtime-win32-x64": "^0.47.0"
+    "@gjsify/gtk-runtime-win32-x64": "^0.47.0",
+    "@gjsify/node-runtime-darwin-arm64": "^0.47.0",
+    "@gjsify/node-runtime-darwin-x64": "^0.47.0",
+    "@gjsify/node-runtime-win32-x64": "^0.47.0"
   },
   "devDependencies": {
     "@girs/adw-1": "^4.4.0",
@@ -61,6 +64,21 @@
   },
   "gjsify": {
     "ship": {
+      "appId": "org.correctiv.AppDesktopExperimental",
+      "developer": {
+        "id": "org.correctiv",
+        "name": "CORRECTIV"
+      },
+      "summary": "The CORRECTIV community app, on the desktop",
+      "description": "An EXPERIMENTAL desktop host for the CORRECTIV app, built to answer one question with evidence: can this app grow a desktop target without its core moving. It renders the same React Native screens onto GTK4 and Adwaita. Not a release target.",
+      "license": {
+        "project": "AGPL-3.0-or-later"
+      },
+      "homepageUrl": "https://github.com/faktenforum/correctiv-app",
+      "app": {
+        "darwin": "node",
+        "win32": "node"
+      },
       "fonts": "data/fonts"
     }
   }

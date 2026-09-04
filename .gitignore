@@ -46,3 +46,6 @@ apps/mobile/public/preview-assets/
 
 # Staged by apps/desktop/scripts/stage-fonts.mjs from @expo-google-fonts.
 apps/desktop/data/fonts/
+
+# gjsify ship output.
+apps/desktop/ship/
