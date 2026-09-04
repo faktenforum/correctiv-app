@@ -533,7 +533,7 @@ export function Sources() {
       : KIND_ORDER.map((kind) => ({ key: kind, label: KIND_LABEL[kind] }));
 
   return (
-    <main className="content page" id="content">
+    <main className="content page sources" id="content">
       <Sprite />
 
       <header>

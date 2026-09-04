@@ -84,4 +84,28 @@ describe('the page stylesheets, which share one global scope', () => {
       .map(([name, files]) => `.${name} in ${files.join(' and ')}`);
     expect(collisions).toEqual([]);
   });
+
+  /**
+   * The second kind of collision, and the one that is easier to miss.
+   *
+   * A page drawn as a standalone document styles `h1`, `h2`, `h3` and `p`
+   * directly, which is correct there and wrong in one global scope: the diagrams
+   * sheet arrived with `h3 { text-transform: uppercase }` and shouted the landing
+   * page's door titles. `shell.css` is the exception because prose typography is
+   * exactly its job.
+   */
+  it('leaves bare element selectors to the prose stylesheet', () => {
+    const ELEMENTS =
+      /(?:^|\n)\s*((?:html|body|main|header|footer|nav|section|article|aside|h[1-6]|p|ul|ol|li|dl|dt|dd|a|code|pre|table|thead|tbody|tr|th|td|figure|figcaption|blockquote|hr|img|svg|input|button|label|select|summary|details|del|ins|kbd|form|fieldset|legend|output)\b[^\n{,]*)(?:,|\{)/g;
+
+    const offenders: string[] = [];
+    for (const sheet of sheets) {
+      if (sheet.file === 'shell.css') continue;
+      const css = readFileSync(join(STYLES, sheet.file), 'utf8');
+      for (const match of css.matchAll(ELEMENTS)) {
+        offenders.push(`${sheet.file}: ${match[1].trim()}`);
+      }
+    }
+    expect(offenders).toEqual([]);
+  });
 });

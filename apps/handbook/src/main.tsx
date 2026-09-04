@@ -9,6 +9,7 @@ import './styles/landing.css';
 import './styles/diagrams.css';
 import './styles/reference.css';
 import './styles/sources.css';
+import './styles/workbench-shell.css';
 
 import { App } from './App';
 

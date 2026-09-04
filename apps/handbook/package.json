@@ -13,6 +13,8 @@
     "test": "vitest run"
   },
   "devDependencies": {
+    "@correctiv/app-core": "*",
+    "@correctiv/design-tokens": "*",
     "@types/react": "^19.2.18",
     "@types/react-dom": "^19.2.5",
     "@vitejs/plugin-react": "^6.1.1",

@@ -1,10 +1,10 @@
+/* Anchored on `.diagrams`, for the reason in landing.css. Its `h3` rule carried
+   `text-transform: uppercase` and was shouting the landing page's door titles. */
+
 /* Ported from the diagrams design. Shared colour tokens removed:
    they are generated from packages/design-tokens by plugin/tokens.ts
    and imported once, so this file cannot fork the palette. */
 
-:root {
-  color-scheme: light;
-}
 @media (prefers-color-scheme: dark) {
   :root:not([data-theme='light']) {
     color-scheme: dark;
@@ -13,35 +13,30 @@
 :root[data-theme='dark'] {
   color-scheme: dark;
 }
-* {
+.diagrams * {
   box-sizing: border-box;
 }
-body {
-  margin: 0;
-  background: var(--canvas);
-  color: var(--on-canvas);
-  font: 16px/1.5 var(--sans);
-}
-code,
-kbd {
+
+.diagrams code,
+.diagrams kbd {
   font-family: var(--mono);
   font-size: 0.9em;
 }
-a {
+.diagrams a {
   color: inherit;
   text-decoration-color: var(--accent);
   text-decoration-thickness: 2px;
   text-underline-offset: 3px;
 }
-a:hover {
+.diagrams a:hover {
   text-decoration-color: var(--on-canvas);
 }
-:focus-visible {
+.diagrams :focus-visible {
   outline: 3px solid var(--accent);
   outline-offset: 3px;
   border-radius: 4px;
 }
-.skip {
+.diagrams .skip {
   position: absolute;
   left: -999px;
   top: 8px;
@@ -49,49 +44,49 @@ a:hover {
   padding: 8px 12px;
   border: 2px solid var(--on-canvas);
 }
-.skip:focus {
+.diagrams .skip:focus {
   left: 8px;
   z-index: 10;
 }
-.wrap {
+.diagrams .wrap {
   max-width: 1120px;
   margin: 0 auto;
   padding: 0 24px 72px;
 }
-header.banner {
+.diagrams header.banner {
   padding: 40px 0 8px;
   border-bottom: 1px solid var(--stroke);
 }
-header.banner p.kicker {
+.diagrams header.banner p.kicker {
   margin: 0 0 4px;
   color: var(--on-canvas-muted);
   font-size: 13px;
   letter-spacing: 0.06em;
   text-transform: uppercase;
 }
-h1 {
+.diagrams h1 {
   font-size: 34px;
   line-height: 1.15;
   margin: 0 0 12px;
 }
-h2 {
+.diagrams h2 {
   font-size: 24px;
   line-height: 1.2;
   margin: 56px 0 8px;
 }
-h3 {
+.diagrams h3 {
   font-size: 15px;
   margin: 24px 0 8px;
   color: var(--on-canvas-muted);
   letter-spacing: 0.04em;
   text-transform: uppercase;
 }
-p.lede {
+.diagrams p.lede {
   max-width: 64ch;
   margin: 0 0 16px;
   color: var(--on-canvas-muted);
 }
-nav.toc ul {
+.diagrams nav.toc ul {
   list-style: none;
   display: flex;
   flex-wrap: wrap;
@@ -99,74 +94,74 @@ nav.toc ul {
   margin: 16px 0 0;
   padding: 0;
 }
-nav.toc a {
+.diagrams nav.toc a {
   font-size: 15px;
 }
-figure {
+.diagrams figure {
   margin: 0;
 }
-.diagram {
+.diagrams .diagram {
   overflow-x: auto;
   border: 1px solid var(--stroke);
   border-radius: 10px;
   background: var(--canvas);
   padding: 12px;
 }
-.diagram svg {
+.diagrams .diagram svg {
   display: block;
   width: 100%;
   height: auto;
 }
-.d1 svg {
+.diagrams .d1 svg {
   min-width: 760px;
 }
-.d2 svg {
+.diagrams .d2 svg {
   min-width: 800px;
 }
-.d3 svg {
+.diagrams .d3 svg {
   min-width: 820px;
 }
-figcaption {
+.diagrams figcaption {
   margin: 12px 0 0;
   max-width: 72ch;
   color: var(--on-canvas-muted);
   font-size: 15px;
 }
-figcaption strong {
+.diagrams figcaption strong {
   color: var(--on-canvas);
 }
-.alt {
+.diagrams .alt {
   margin-top: 8px;
   padding: 16px 20px;
   border-left: 3px solid var(--stroke-strong);
   background: var(--surface);
   border-radius: 0 8px 8px 0;
 }
-.alt h3 {
+.diagrams .alt h3 {
   margin-top: 0;
 }
-.alt ul,
-.alt ol {
+.diagrams .alt ul,
+.diagrams .alt ol {
   margin: 0;
   padding-left: 20px;
 }
-.alt li {
+.diagrams .alt li {
   margin: 4px 0;
 }
-.alt li ul {
+.diagrams .alt li ul {
   margin-top: 4px;
 }
-.alt dt {
+.diagrams .alt dt {
   font-weight: 600;
   margin-top: 10px;
 }
-.alt dd {
+.diagrams .alt dd {
   margin: 2px 0 0 0;
 }
-.alt s {
+.diagrams .alt s {
   text-decoration-thickness: 2px;
 }
-footer {
+.diagrams footer {
   margin-top: 64px;
   padding-top: 16px;
   border-top: 1px solid var(--stroke);
@@ -175,162 +170,162 @@ footer {
 }
 
 /* SVG: every fill and stroke comes from a token, never from an attribute */
-svg text {
+.diagrams svg text {
   font-family: var(--sans);
   fill: var(--on-canvas);
   dominant-baseline: middle;
 }
-svg .mono {
+.diagrams svg .mono {
   font-family: var(--mono);
 }
-svg .muted {
+.diagrams svg .muted {
   fill: var(--on-canvas-muted);
 }
-svg .b {
+.diagrams svg .b {
   font-weight: 700;
 }
-svg .t11 {
+.diagrams svg .t11 {
   font-size: 11px;
 }
-svg .t12 {
+.diagrams svg .t12 {
   font-size: 12px;
 }
-svg .t13 {
+.diagrams svg .t13 {
   font-size: 13px;
 }
-svg .t16 {
+.diagrams svg .t16 {
   font-size: 16px;
 }
-svg .halo {
+.diagrams svg .halo {
   paint-order: stroke;
   stroke: var(--canvas);
   stroke-width: 5px;
   stroke-linejoin: round;
 }
-svg .box {
+.diagrams svg .box {
   fill: var(--surface);
   stroke: var(--stroke-strong);
   stroke-width: 1.5;
 }
-svg .box-core {
+.diagrams svg .box-core {
   stroke: var(--on-canvas);
   stroke-width: 2;
 }
-svg .band {
+.diagrams svg .band {
   fill: var(--canvas);
   stroke: none;
 }
-svg .chip {
+.diagrams svg .chip {
   fill: var(--canvas);
   stroke: var(--stroke);
   stroke-width: 1;
 }
-svg .chip-port {
+.diagrams svg .chip-port {
   fill: var(--canvas);
   stroke: var(--accent);
   stroke-width: 1.5;
 }
-svg .card {
+.diagrams svg .card {
   fill: var(--canvas);
   stroke: var(--accent);
   stroke-width: 2;
 }
-svg .rule {
+.diagrams svg .rule {
   stroke: var(--stroke);
   stroke-width: 1;
 }
-svg .rule-strong {
+.diagrams svg .rule-strong {
   stroke: var(--stroke-strong);
   stroke-width: 1.5;
 }
-svg .dashed {
+.diagrams svg .dashed {
   fill: none;
   stroke: var(--stroke-strong);
   stroke-width: 1.5;
   stroke-dasharray: 6 4;
 }
-svg .wire {
+.diagrams svg .wire {
   stroke: var(--on-canvas-muted);
   stroke-width: 1.5;
   fill: none;
 }
-svg .arc {
+.diagrams svg .arc {
   stroke: var(--on-canvas-muted);
   stroke-width: 1.5;
   fill: none;
 }
-svg .arc-index {
+.diagrams svg .arc-index {
   stroke: var(--stroke-strong);
   stroke-width: 1.5;
   fill: none;
   stroke-dasharray: 2 4;
 }
-svg .arc-doc {
+.diagrams svg .arc-doc {
   stroke: var(--on-canvas-muted);
   stroke-width: 1.5;
   fill: none;
   stroke-dasharray: 8 4;
 }
-svg .mk-light {
+.diagrams svg .mk-light {
   fill: var(--stroke-strong);
   stroke: none;
 }
-svg .axis {
+.diagrams svg .axis {
   stroke: var(--stroke-strong);
   stroke-width: 2;
 }
-svg .mk {
+.diagrams svg .mk {
   fill: var(--on-canvas-muted);
   stroke: none;
 }
-svg .boundary {
+.diagrams svg .boundary {
   stroke: var(--accent);
   stroke-width: 4;
   stroke-linecap: round;
 }
-svg .ghost {
+.diagrams svg .ghost {
   fill: none;
   stroke: var(--stroke-strong);
   stroke-width: 1.5;
   stroke-dasharray: 4 4;
 }
-svg .callout {
+.diagrams svg .callout {
   fill: var(--canvas);
   stroke: var(--stroke-strong);
   stroke-width: 1;
   stroke-dasharray: 3 3;
 }
-svg .lead {
+.diagrams svg .lead {
   stroke: var(--stroke-strong);
   stroke-width: 1.5;
   stroke-dasharray: 3 3;
 }
 /* node states in diagram 2: shape and pattern carry the meaning, colour only helps */
-svg .n-intact {
+.diagrams svg .n-intact {
   fill: var(--surface);
   stroke: var(--on-canvas);
   stroke-width: 2;
 }
-svg .n-struck {
+.diagrams svg .n-struck {
   fill: url(#d2-hatch);
   stroke: var(--on-canvas);
   stroke-width: 2;
 }
-svg .n-moot {
+.diagrams svg .n-moot {
   fill: var(--canvas);
   stroke: var(--on-canvas-muted);
   stroke-width: 2;
   stroke-dasharray: 3 3;
 }
-svg .n-quiet {
+.diagrams svg .n-quiet {
   fill: var(--stroke-strong);
   stroke: none;
 }
-svg .hatch {
+.diagrams svg .hatch {
   stroke: var(--on-canvas);
   stroke-width: 1.5;
 }
-svg .strike {
+.diagrams svg .strike {
   text-decoration: line-through;
   fill: var(--on-canvas-muted);
 }

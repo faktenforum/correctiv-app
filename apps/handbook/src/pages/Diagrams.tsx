@@ -12,7 +12,7 @@
  */
 export function Diagrams() {
   return (
-    <main className="wrap" id="content">
+    <main className="wrap diagrams" id="content">
       {/*
         The fragment ids a reader may arrive on sit on the sections themselves.
         The design carried them on an empty anchor before the heading, which is an

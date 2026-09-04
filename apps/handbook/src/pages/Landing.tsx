@@ -60,7 +60,7 @@ const RETIRED = docsModule.docs.reduce((n, d) => n + d.retired.length, 0);
  */
 export function Landing() {
   return (
-    <main className="wrap" id="content">
+    <main className="wrap landing" id="content">
       <section className="intro">
         <h1 id="title">The CORRECTIV app, and everything written down about it</h1>
         <p className="lead">

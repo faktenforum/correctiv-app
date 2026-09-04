@@ -5,6 +5,7 @@ import { Diagrams } from './pages/Diagrams';
 import { Landing } from './pages/Landing';
 import { Reference } from './pages/Reference';
 import { Sources } from './pages/Sources';
+import { Workbench } from './workbench/Workbench';
 import { Document } from './pages/Document';
 import { Header } from './ui/Header';
 import { Search } from './ui/Search';
@@ -13,7 +14,7 @@ import { useAppearance } from './theme';
 import { useLinkInterception, useRoute } from './router';
 
 /** Pages that get the full width, because they have no long prose to measure. */
-const WIDE = new Set(['/']);
+const WIDE = new Set(['/', '/workbench']);
 
 /**
  * Routes the handbook answers itself, rather than by rendering a document.
@@ -26,6 +27,7 @@ const PAGES = new Map<string, () => ReactElement>([
   ['/diagrams', Diagrams],
   ['/reference', Reference],
   ['/sources', Sources],
+  ['/workbench', Workbench],
 ]);
 
 export function App() {
@@ -74,7 +76,14 @@ export function App() {
       />
 
       {wide ? (
-        <Landing />
+        // A wide page still gets its own component: the landing page is simply the
+        // one that lives at `/`. Rendering Landing for every wide route put the
+        // front page at `/workbench`.
+        Page ? (
+          <Page />
+        ) : (
+          <Landing />
+        )
       ) : (
         <div className="shell">
           <Sidebar route={route} open={menuOpen} onClose={() => setMenuOpen(false)} />
