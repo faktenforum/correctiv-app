@@ -13,6 +13,7 @@ import { Sidebar } from './ui/Sidebar';
 import { SidePanel } from './ui/SidePanel';
 import { StatusBar } from './ui/StatusBar';
 import { Toc } from './ui/Toc';
+import { useSections } from './ui/useSections';
 import { ResizableHandle, ResizablePanel, ResizablePanelGroup } from './ui/kit/resizable';
 import { TooltipProvider } from './ui/kit/tooltip';
 import { useWorkbench } from './workbench/Workbench';
@@ -96,7 +97,9 @@ export function App() {
    * box. The title is what decides that, and it is a string rather than the
    * panel itself so the shortcut below does not re-bind on every render.
    */
-  const contents = !isApp && doc && countSections(doc.headings) > 1 ? doc.headings : null;
+  const rendered = useSections(route, !isApp && !doc && Page !== undefined);
+  const headings = doc ? doc.headings : rendered;
+  const contents = !isApp && countSections(headings) > 1 ? headings : null;
   const toolsTitle = isApp ? 'Tools' : contents ? 'On this page' : null;
 
   useEffect(() => {

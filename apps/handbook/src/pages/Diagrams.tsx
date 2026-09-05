@@ -1036,7 +1036,7 @@ export function Diagrams() {
 
       <section id="services" aria-labelledby="h-services" className={SECTION}>
         <h2 id="h-services" className={HEADING}>
-          4. The app and what it talks to
+          3. The app and what it talks to
         </h2>
         <p className={LEDE}>
           One of these is not like the others. beabee answers who somebody is and whether their
@@ -1246,7 +1246,7 @@ export function Diagrams() {
 
       <section id="inside-core" aria-labelledby="h-inside-core" className={SECTION}>
         <h2 id="h-inside-core" className={HEADING}>
-          3. Inside the core
+          4. Inside the core
         </h2>
         <p className={LEDE}>
           Fifty-four TypeScript files in seven layers. Imports point down the stack, the contracts
