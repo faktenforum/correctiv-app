@@ -1,5 +1,5 @@
 import { GripVertical } from 'lucide-react';
-import { useEffect, useState, type ComponentProps } from 'react';
+import { useEffect, useState, type ComponentProps, type RefObject } from 'react';
 import {
   Group,
   Panel,
@@ -41,6 +41,51 @@ export const ResizablePanel = Panel;
  * it belongs to and not to the panels, so this reads it from the document
  * instead: one listener for the whole page, which is what the answer is anyway.
  */
+/**
+ * Hold a collapsible panel open or shut, whether or not it is ready to hear it.
+ *
+ * `collapse()` and `expand()` throw "Panel constraints not found" when the group
+ * has not registered that panel yet, and it has not when the effect runs in the
+ * same commit that mounted it. Crossing the narrow/wide line does exactly that:
+ * resize a window past 64rem and both panels mount and are told what to do in one
+ * breath. The throw took the whole view down, boundary or no boundary.
+ *
+ * So it tries, and if the group is not ready it tries again on the next frame,
+ * by which time it is.
+ */
+export function usePanelState(
+  ref: RefObject<PanelHandle | null>,
+  open: boolean,
+  width: () => string,
+  active: boolean,
+): void {
+  useEffect(() => {
+    if (!active) return;
+    let frame = 0;
+
+    const apply = () => {
+      const panel = ref.current;
+      if (!panel) return;
+      try {
+        if (open) {
+          panel.expand();
+          panel.resize(width());
+        } else {
+          panel.collapse();
+        }
+      } catch {
+        frame = requestAnimationFrame(apply);
+      }
+    };
+
+    apply();
+    return () => cancelAnimationFrame(frame);
+    // `width` is read at apply time, so a new closure each render must not
+    // re-run this: what it returns is the same string.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [active, open, ref]);
+}
+
 export function useDragging(): boolean {
   const [dragging, setDragging] = useState(false);
 

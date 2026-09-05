@@ -26,6 +26,7 @@ import {
   ResizablePanel,
   ResizablePanelGroup,
   useDragging,
+  usePanelState,
   type PanelHandle,
 } from './ui/kit/resizable';
 import { Sheet, SheetContent, SheetTitle } from './ui/kit/sheet';
@@ -223,29 +224,13 @@ export function App() {
   const toolsWidth = useRef<string | null>(null);
   const toolsDefault = contents ? '19%' : '31%';
 
-  useEffect(() => {
-    if (!wide || full) return;
-    const panel = explorerPanelRef.current;
-    if (!panel) return;
-    if (explorerOpen) {
-      panel.expand();
-      panel.resize(explorerWidth.current);
-    } else {
-      panel.collapse();
-    }
-  }, [explorerOpen, full, wide]);
-
-  useEffect(() => {
-    if (!wide || full) return;
-    const panel = toolsPanelRef.current;
-    if (!panel) return;
-    if (toolsOpen && toolsTitle) {
-      panel.expand();
-      panel.resize(toolsWidth.current ?? toolsDefault);
-    } else {
-      panel.collapse();
-    }
-  }, [full, toolsDefault, toolsOpen, toolsTitle, wide]);
+  usePanelState(explorerPanelRef, explorerOpen, () => explorerWidth.current, wide && !full);
+  usePanelState(
+    toolsPanelRef,
+    toolsOpen && toolsTitle !== null,
+    () => toolsWidth.current ?? toolsDefault,
+    wide && !full,
+  );
 
   /*
    * The app's frame controls, and the two places they can stand.

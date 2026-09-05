@@ -164,13 +164,17 @@ export function Stage({ state, size, scale, stageRef, frameRef, onResize, onLoad
 
       {/*
         The sentence the demo audience gets, and the one the inspector's audience
-        does not. Written out of the tree rather than hidden, so a screen reader
-        cannot read out a hint about a sidebar that is already open. Gone in full
-        screen too: it names a bar and a shortcut that are not on the screen it
-        would be sitting on.
+        does not. Written out of the tree, so a screen reader cannot read out a
+        hint about a sidebar that is already open, and gone in full screen too,
+        where it would name a bar and a shortcut that are not on the screen.
+
+        Below 64rem it is `display: none`, which takes it out of the accessibility
+        tree as well. Five lines of prose under a phone-sized frame on a
+        phone-sized screen is a third of the room the app has, spent explaining
+        controls that are one tap away.
       */}
       {!state.tools && !state.full && (
-        <p className="mx-auto max-w-[42rem] shrink-0 px-m pb-m text-center text-m text-on-canvas-muted">
+        <p className="mx-auto hidden max-w-[42rem] shrink-0 px-m pb-m text-center text-m text-on-canvas-muted lg:block">
           This is the app at device size. Pick a device or a route in the bar above; the address in
           the status line reproduces exactly what you see. Open the Tools sidebar, ⌘J, for the
           console, the colour tokens and the element picker.
