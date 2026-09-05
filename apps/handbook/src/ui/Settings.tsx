@@ -126,8 +126,15 @@ export function Settings({
           </h3>
           <p className="mt-xs text-m leading-relaxed text-on-canvas-muted">
             Rendered from commit{' '}
-            <code className="font-mono text-[0.875em]">{docsModule.commit.slice(0, 7)}</code>, and
-            every link into the source points at that commit rather than at{' '}
+            <a
+              href={`${docsModule.repo}/commit/${docsModule.commit}`}
+              target="_blank"
+              rel="noreferrer noopener"
+              className="font-mono text-[0.875em] text-on-canvas underline decoration-accent underline-offset-2 hover:text-on-canvas-accent"
+            >
+              {docsModule.commit.slice(0, 7)}
+            </a>
+            , and every link into the source points at that commit rather than at{' '}
             <code className="font-mono text-[0.875em]">main</code>. The source figures were measured
             by hand on <span className="font-mono text-[0.875em]">{MEASURED_ON}</span>,{' '}
             {ageInWords(MEASURED_ON)}.
