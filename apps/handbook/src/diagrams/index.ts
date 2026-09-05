@@ -44,7 +44,7 @@ export const DIAGRAMS: DiagramMeta[] = [
   {
     id: 'core-host',
     title: 'The core and its host',
-    lede: 'All behaviour on one side, all platform on the other. The only crossing is four named ports, and the adapter that answers them is one small file.',
+    lede: 'All behaviour on one side, all platform on the other. The only crossing is four named ports, and the two small files that answer them are the whole cost of adding a host.',
     width: 960,
     height: 710,
     Figure: CoreAndHost,
