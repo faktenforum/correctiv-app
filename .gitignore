@@ -32,8 +32,11 @@ out/
 # Agent worktrees (Claude Code) — checkouts, not content.
 .claude/worktrees/
 
-# Browser-automation scratch output.
+# Browser-automation scratch output. The bare *.png rule is because the driver
+# writes its screenshots to the working directory when given a relative name, and
+# one of them reached a commit that way.
 .playwright-mcp/
+/*.png
 
 # Agent skills are local tooling, installed per developer. They were once swept
 # into a commit by an `add -A`; the symlink under .claude/skills points into
@@ -41,8 +44,9 @@ out/
 .agents/
 .claude/skills/
 skills-lock.json
-apps/mobile/public/preview.html
-apps/mobile/public/preview-assets/
+# The assembled Pages artifact: the handbook's build with the app's export copied
+# under /app. Built in CI, and locally when checking the deploy shape.
+site/
 
 # Staged by apps/desktop/scripts/stage-fonts.mjs from @expo-google-fonts.
 apps/desktop/data/fonts/

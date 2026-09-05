@@ -8,7 +8,7 @@ layer plus one adapter ([ADR 0006](../../adr/0006-one-core-two-hosts.md)).
 
 ## Stack
 
-- **Expo SDK 56** (React Native 0.85, New Architecture), TypeScript,
+- **Expo SDK 57** (React Native 0.86, New Architecture), TypeScript,
   **expo-router** (tabs and stack), **Uniwind** (Tailwind v4 for React Native)
 - **react-redux** binds the core's Redux store. **AsyncStorage** backs the core's two
   storage ports, unchanged on web, where it is localStorage

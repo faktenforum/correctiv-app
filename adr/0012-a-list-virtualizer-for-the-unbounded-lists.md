@@ -104,7 +104,7 @@ was deliberately not attempted here.
 
 **The desktop host is a reason, not a plan.** ~~No gjsify target exists in this
 repo.~~ One does, in `apps/desktop`, and
-[ADR 0024](0024-re-exported-screens-and-a-variant-where-the-host-refuses.md) records
+[ADR 0026](0026-re-exported-screens-and-a-variant-where-the-host-refuses.md) records
 what became of the three decisions this paragraph asks for: all three were needed, and
 all three are made. If one is ever built, three things this app does today are not
 answered by `@gjsify/react-native`'s support table and would need their own decisions:

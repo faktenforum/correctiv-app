@@ -42,7 +42,7 @@
  * a prose table in `src/shims/react-native.tsx`'s header today — and then this file can
  * assert the difference. Until then `npm run route-sweep` is the only oracle, and it
  * needs a GTK session, a built bundle and an admitted profile.
- * ([ADR 0024](../../../adr/0024-re-exported-screens-and-a-variant-where-the-host-refuses.md))
+ * ([ADR 0026](../../../adr/0026-re-exported-screens-and-a-variant-where-the-host-refuses.md))
  */
 
 import { readdirSync, readFileSync, statSync } from 'node:fs';

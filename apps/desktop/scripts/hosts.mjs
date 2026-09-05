@@ -6,7 +6,7 @@
 //
 // Linux runs the `--app gjs` bundle on the distribution's own GJS. macOS and Windows
 // have no system GJS, so they run the `--app node` bundle with `@gjsify/node-gi`
-// bridging `gi://`. See ADR 0024 for why that split is the packaging answer too, and
+// bridging `gi://`. See gjsify's own ADR 0024 for why that split is the packaging answer too, and
 // `apps/desktop/README.md` for what the desktop host is and is not.
 
 import { execPath, platform } from 'node:process';

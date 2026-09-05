@@ -281,11 +281,10 @@ describe('the impact card', () => {
     // press and the label. This branch wraps them because the GTK host refuses
     // `onPress` on a `Gtk.Label` — correctly, a label emits no `clicked` — and the
     // wrap lives in the phone's screen rather than in a desktop variant because it is
-    // right on both hosts (ADR 0024). Searching for a node that has both the title as
+    // right on both hosts (ADR 0026). Searching for a node that has both the title as
     // its children AND an `onPress` therefore finds nothing here.
     const line = tree.root.find(
-      (node) =>
-        node.props?.accessibilityLabel === INVESTIGATION.title && !!node.props?.onPress,
+      (node) => node.props?.accessibilityLabel === INVESTIGATION.title && !!node.props?.onPress,
     );
     act(() => {
       line.props.onPress();

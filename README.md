@@ -1,136 +1,99 @@
-# CORRECTIV App
+![The CORRECTIV app in the handbook's workbench](docs/readme-header.png)
 
-The CORRECTIV community in one app: the organisation's investigations, fact checks,
-Salon5 radio, CrowdNewsroom callouts, the Faktenforum and the membership club. The app
-is the members' place: it opens to a membership that includes it, and inside it nothing
-is gated ([ADR 0016](adr/0016-a-door-at-the-root-and-an-entitlement-not-an-amount.md)).
-The prototype was built on *closeness, not a paywall*, and several of its screens still
-say so; which wording replaces that is CORRECTIV's call, and the ADR lists the places.
+# CORRECTIV app
 
-[**Open the app in a browser**](https://faktenforum.github.io/correctiv-app/preview.html).
-No install, no emulator, the same code and the same screens as the Android and iOS
-builds, republished on every push to `main`. It opens inside a device frame,
-switchable between phone and tablet sizes, because the app is built for a phone and
-has no desktop layout. Its articles come live from correctiv.org's REST API, with a
-snapshot bundled into the build as the floor when a request fails. See
-[the web target](TROUBLESHOOTING.md#the-web-target) and
-[ADR 0015](adr/0015-reading-correctiv-org-through-its-rest-api.md).
+A prototype community app for CORRECTIV members: the organisation's investigations,
+fact checks, Salon5 radio, CrowdNewsroom callouts, the Faktenforum and the membership
+club. This repository holds the app, the platform-free core it is built on, the design
+tokens they are drawn with, and the site that publishes all of it.
 
-<p align="center"><sub>Every screen, shot on Android and kept current:
-<a href="screens/">screens/</a></sub></p>
+## Start with the handbook
 
-> **Status.** The full journey works end to end: the door, onboarding, home, reader,
-> media, participate, club join, backstage, profile. Live content comes from
-> correctiv.org, Salon5 and PeerTube, mixed with typed sample data shaped like the API
-> responses that will replace it. The real backends (Beabee, Faktenforum GraphQL,
-> payment, SSO) are not wired up yet; signing in and joining the club are simulated,
-> which the app says on screen. In the browser, any address signs in, or open
-> `preview.html#/?s=signed-in` to start behind the door.
-> Developed on the Android emulator and in the browser. iOS is maintained in code and
-> has not been built. Nothing is on an app store.
-
-## What is in here
-
-One core, one app, and the tokens they are both drawn with.
-
-| | Stack | Targets | Role |
-| --- | --- | --- | --- |
-| [`packages/app-core`](packages/app-core) | TypeScript, no UI framework | all | The behaviour: model, parsers, services, caches, **all** state |
-| [`packages/design-tokens`](packages/design-tokens) | TypeScript, no dependencies | all | The colours, spacing and type scale, generated from the vendored design tokens |
-| [`apps/mobile`](apps/mobile) | Expo SDK 56 · React Native 0.85 · expo-router · Uniwind | iOS, Android, **web** | The app |
-
-The core earns its place even with a single app. It imports no UI framework and no
-platform SDK, so the feed cascade, the reader, the audio state machine and the
-membership logic sit where a change of view layer cannot reach them. That is not
-theory here: this repo replaced its entire view layer once and none of that behaviour
-moved. A host supplies four small ports and its own screens. See
-[ADR 0006](adr/0006-one-core-two-hosts.md).
-
-## Getting started
-
-```bash
-npm install         # the whole workspace
-npm run check       # typecheck + lint + format + headless tests, ~10 s, no device
-```
-
-The web target needs no emulator and no Android SDK.
-
-```bash
-npm run web          # browser, Fast Refresh
-npm run android      # dev build on emulator or device (once)
-npm start            # then: Metro (dev client, NOT Expo Go)
-npm run build:web    # static export to apps/mobile/dist/
-```
-
-Requirements: Node 20.19 or newer. Android additionally needs JDK 17 and an Android
-SDK with `ANDROID_HOME` set. iOS builds via EAS in the cloud, so no Mac is needed, and
-has not been built yet.
-
-Before a demo, refresh the bundled offline content. The demo must never depend on
-Wi-Fi, and the published web build shows nothing else.
-
-```bash
-npm run offline-articles    # ~15 real articles, pre-extracted, with covers
-npm run offline-podcasts    # the seven curated Salon5 shows
-```
-
-`offline-articles` wants ImageMagick for the covers. Without it it says so and the
-lists fall back to remote URLs, which is only visible with no network.
-
-> **Serving the static export yourself?** Use the repo's own server. It maps clean
-> URLs (`/artikel` to `artikel.html`) and falls back to `404.html`, both of which
-> GitHub Pages does and `python3 -m http.server` does not. Without that, Expo Router
-> renders its unmatched-route page and a working app looks broken.
->
-> ```bash
-> node screens/tools/serve-clean.mjs apps/mobile/dist 8099
-> ```
-
-**The device frame linked at the top** works locally too, with presets, rotation, free
-resizing and a route field. It is built from [`tools/preview`](tools/preview/README.md)
-into `apps/mobile/public/`, so the same page answers under `npm run web`, under the
-server above, and on Pages.
-
-```
-http://localhost:8081/preview.html          # dev server, Fast Refresh in the frame
-http://localhost:8099/preview.html          # a static export
-```
-
-Device, route, appearance and app state travel in the URL
-(`preview.html#/artikel?d=ipad-pro-11&t=dark&s=signed-in`), so a finding can be handed
-over as a link. The frame is the app untouched: inside it, `useWindowDimensions` and
-the reader's `48rem` breakpoint see the simulated size. `Tools` adds the app's
-appearance and state, its console, a live palette, layout checks and an
-element-to-source picker; the first and the last of those need the dev server, the
-rest hold against the export too. Safe-area insets and touch are not simulated, and
-the *device's* colour scheme is the browser's to emulate; those stay DevTools' job.
-
-## Where to go next
+**[faktenforum.github.io/correctiv-app](https://faktenforum.github.io/correctiv-app/)**
+is the front door, and the app is a link inside it. One site carries the repository's
+documentation, the inventory of what the app reads, the architecture diagrams, a
+reference generated from the core, and the running app in a device frame. It renders
+this repository's Markdown in place, keeps no copy of it, and is rebuilt on every push
+to `main`. Four addresses worth going to directly:
 
 | | |
 | --- | --- |
-| **How it fits together**, and where a given thing lives | [ARCHITECTURE.md](ARCHITECTURE.md) |
-| **The traps this toolchain sets**, one row per real incident, and why a green check is not evidence | [TROUBLESHOOTING.md](TROUBLESHOOTING.md) |
-| **Why** it is built this way | [`adr/`](adr/README.md) |
-| Every screen, and what looking at them found | [`screens/`](screens/) |
-| **What the app reads**, measured, and what the scope wants that has no source | [SOURCES.md](SOURCES.md) |
-| Design tokens, vendored from CORRECTIV's `wp-design-tokens` | [`tokens/`](tokens/README.md) |
-| Releases, signing, and the three CI workflows | [RELEASE.md](RELEASE.md) |
-| Rules for AI agents working in this repo | [AGENTS.md](AGENTS.md) |
+| [`/workbench`](https://faktenforum.github.io/correctiv-app/workbench) | The app itself in a phone or tablet frame, with an inspector for its state, its console, its palette and its layout. No install, no emulator. |
+| [`/sources`](https://faktenforum.github.io/correctiv-app/sources) | What each part of the app reads: a live source, sample data standing in for an API that does not exist yet, or nothing at all. |
+| [`/decisions`](https://faktenforum.github.io/correctiv-app/decisions) | Every architecture record, and which of their claims a later one has made false. |
+| [`/architecture`](https://faktenforum.github.io/correctiv-app/architecture) | One core, four ports, and the article path end to end. |
 
-## Licensing and attribution
+The screens work end to end and the backends behind them do not exist yet. Sign-in,
+the club join, the callouts and the Faktenforum claims run on typed sample data shaped
+like the responses that will replace it, which the app says on screen. Articles, the
+newsletter archive, search, Salon5 audio and video are live.
 
-- **Code:** GNU Affero General Public License v3.0 or later, see [`LICENSE`](LICENSE).
-  This covers every workspace, and each `package.json` declares `AGPL-3.0-or-later`.
-- **`apps/mobile` was scaffolded by `create-expo-app`** and arrived with the Expo
-  templates' MIT licence. AGPL applies going forward. The MIT notice is retained as
-  attribution for the scaffolded portions in
-  [`apps/mobile/NOTICE.md`](apps/mobile/NOTICE.md).
-- **Design tokens** in [`tokens/`](tokens/README.md) are vendored from
-  [correctiv/wp-design-tokens](https://github.com/correctiv/wp-design-tokens)
-  (GPL-2.0-or-later), compatible with AGPL-3.0-or-later.
-- **Fonts:** Merriweather and Source Sans 3 (SIL OFL 1.1) and Ionicons (MIT) are
-  pulled from npm and redistributed in the build. See
-  [`apps/mobile/NOTICE.md`](apps/mobile/NOTICE.md).
-- **Sample content and images** are CORRECTIV material.
-- Not yet published to any app store, and not affiliated with any store listing.
+## How this is built
+
+The app is built by AI-assisted development, "vibe coding", with a human directing the
+work and deciding what lands. What keeps it honest is checkable. Every architectural
+choice is recorded in [`adr/`](adr/README.md), and a claim that a later decision made
+false is struck through where it stands, with a link to the record that voided it,
+instead of being quietly rewritten. Every source the app reads is inventoried in
+[SOURCES.md](SOURCES.md), measured by hand against the live source on a day the file
+states, with that date typed a second time into the site's manifest and a test that
+fails when the two part. `npm run check` at the root runs typecheck, lint, format and
+tests in seconds, and [TROUBLESHOOTING.md](TROUBLESHOOTING.md) collects the
+defects that passed exactly that, which is why a green check is not treated as
+evidence here.
+
+## Getting started
+
+Node 20.19 or newer.
+
+```bash
+npm install
+npm run check       # typecheck, lint, format, tests, in seconds, no device
+npm run app         # the app in a browser, at localhost:8081/app/, Fast Refresh
+npm run android     # a dev build on an emulator or a device
+npm run build:web   # static export to apps/mobile/dist/
+```
+
+Only `npm run android` needs the Android toolchain, JDK 17 and an Android SDK with
+`ANDROID_HOME` set. iOS is maintained in code and has not been built.
+
+The handbook and its workbench are two servers locally, and the site's dev server
+proxies the app under itself so that the frame and the app stay one origin:
+
+```bash
+npm run handbook    # the site, at localhost:5173
+npm run app         # the app it frames, at localhost:8081/app/
+```
+
+The app's dev server carries the same `/app` base the deploy gives it, so the assets
+resolve the same way in both. Expo Router applies that base when the export is built
+and not in the dev server, so locally the frame reaches the app's first screen and a
+deeper route renders the app's own 404. [TROUBLESHOOTING.md](TROUBLESHOOTING.md) has
+the measurement and what to do instead.
+
+The published demo reads live content and falls back to a snapshot committed in the
+repository, so it works without a network. `npm run offline-articles` and
+`npm run offline-podcasts` refresh that snapshot; run them and commit the result
+before you want the demo to show recent articles.
+
+## Where things live
+
+- [`packages/app-core`](packages/app-core) holds every piece of behaviour and imports
+  no UI framework and no platform SDK.
+- [`apps/mobile`](apps/mobile) is the app, on Expo and React Native, for iOS, Android
+  and web.
+- [`apps/handbook`](apps/handbook) is the published site, including `/workbench`.
+- [`packages/design-tokens`](packages/design-tokens) and [`tokens/`](tokens/README.md)
+  are the colours, spacing and type scale, vendored from CORRECTIV's design tokens.
+
+[ARCHITECTURE.md](ARCHITECTURE.md) is how they fit together, [AGENTS.md](AGENTS.md) is
+how to work in here, and [RELEASE.md](RELEASE.md) is how a build reaches a device.
+
+## Licence
+
+AGPL-3.0-or-later, see [`LICENSE`](LICENSE). The MIT notice for the parts scaffolded
+by `create-expo-app` and for the bundled fonts is kept in
+[`apps/mobile/NOTICE.md`](apps/mobile/NOTICE.md); the design tokens are vendored from
+[correctiv/wp-design-tokens](https://github.com/correctiv/wp-design-tokens)
+(GPL-2.0-or-later). Sample content and images are CORRECTIV material, and nothing is
+on an app store.
