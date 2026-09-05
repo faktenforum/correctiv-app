@@ -49,8 +49,17 @@ export function Document({ doc }: Props) {
 
   return (
     <div className="px-m py-ml lg:px-12">
-      <article ref={article} className="mx-auto max-w-content">
-        <nav aria-label="Breadcrumb" className="mb-sm text-s text-on-canvas-muted">
+      {/*
+        The article is as wide as the widest thing in it, and the prose inside it
+        keeps its own measure. A drawing is 960px and the reading measure is 620,
+        so with one bound over everything the diagram scrolled inside a column
+        with 700px of empty page beside it.
+      */}
+      <article ref={article} className="mx-auto max-w-wide">
+        <nav
+          aria-label="Breadcrumb"
+          className="mx-auto mb-sm max-w-content text-s text-on-canvas-muted"
+        >
           <ol className="flex flex-wrap items-center gap-2xs">
             <li>Handbook</li>
             {record && (
@@ -65,7 +74,7 @@ export function Document({ doc }: Props) {
         </nav>
 
         {doc.retired.length > 0 && (
-          <p className="mb-m flex items-center gap-xs text-m text-on-canvas-muted">
+          <p className="mx-auto mb-m flex max-w-content items-center gap-xs text-m text-on-canvas-muted">
             <Badge variant="alt">{doc.retired.length} retired</Badge>
             {doc.retired.length === 1
               ? 'One claim on this page is'
@@ -90,13 +99,13 @@ export function Document({ doc }: Props) {
           ) : (
             <div
               key={`h${i}`}
-              className="prose prose-sm max-w-none prose-headings:scroll-mt-8 prose-pre:border prose-pre:border-stroke"
+              className="prose prose-sm mx-auto max-w-content prose-headings:scroll-mt-8 prose-pre:border prose-pre:border-stroke"
               dangerouslySetInnerHTML={{ __html: part.html }}
             />
           ),
         )}
 
-        <footer className="mt-xl border-t border-stroke pt-sm text-m text-on-canvas-muted">
+        <footer className="mx-auto mt-xl max-w-content border-t border-stroke pt-sm text-m text-on-canvas-muted">
           <p>
             This page is{' '}
             <a
