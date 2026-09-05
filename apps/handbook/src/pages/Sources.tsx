@@ -91,7 +91,16 @@ const STATE_LOOK: Record<Mark, StateLook> = {
   live: {
     Icon: CircleDot,
     label: 'Live',
-    chip: 'border-stroke-strong bg-canvas text-on-canvas',
+    /*
+     * The one filled neutral, and the only state that gets weight without
+     * colour. There is no green in the design tokens, and inventing one would
+     * mean forking `tokens/theme.css`, which is kept byte-identical to upstream
+     * so that a plain diff detects drift. Colour on this board marks the
+     * exceptions, yellow for stale and red for broken, and thirteen green rows
+     * would compete with the three that want attention. Inverting the neutral
+     * says "this is real" as plainly, in both schemes, with the palette we have.
+     */
+    chip: 'border-transparent bg-on-canvas text-canvas',
   },
   stale: {
     Icon: CirclePause,

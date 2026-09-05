@@ -40,6 +40,7 @@ export const NAV: NavGroup[] = [
    * it behind the rail would be an editor's answer to an editor's problem, and
    * this one is small enough to show whole.
    */
+  { label: 'The app', open: true, items: [{ route: '/workbench', label: 'Workbench' }] },
   {
     label: 'Handbook',
     open: true,
@@ -73,7 +74,6 @@ export const NAV: NavGroup[] = [
     items: [
       { route: '/design', label: 'Design' },
       { route: '/reference', label: 'Reference' },
-      { route: '/workbench', label: 'The app' },
     ],
   },
 ];

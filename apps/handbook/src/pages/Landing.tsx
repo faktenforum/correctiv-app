@@ -18,20 +18,19 @@ interface Door {
 
 const DOORS: Door[] = [
   {
+    route: '/workbench',
+    kind: 'The app, running',
+    title: 'Workbench',
+    blurb:
+      'The app itself at device size, with an inspector for its state, its console, its palette and its layout. No install and no emulator, and the address reproduces exactly what you see.',
+    primary: true,
+  },
+  {
     route: '/sources',
     kind: 'Inventory',
     title: 'Sources',
     blurb:
       'For everything the app shows: whether it is a live source, a file standing in for an API that does not exist yet, or a wanted feature with nothing to read at all.',
-    primary: true,
-  },
-  {
-    route: '/workbench',
-    kind: 'The app',
-    title: 'Workbench',
-    blurb:
-      'The app itself in a device frame, with an inspector for its state, its console, its palette and its layout.',
-    primary: true,
   },
   {
     route: '/handbook',
@@ -142,7 +141,10 @@ export function Landing() {
           </h2>
           <ul className="mt-s grid gap-s sm:grid-cols-2 lg:grid-cols-6">
             {DOORS.map((door) => (
-              <li key={door.route} className={door.primary ? 'lg:col-span-3' : 'lg:col-span-2'}>
+              /* The app takes a row to itself and the other four share two, which
+                 is 6 and 3 + 3 in a six-column grid. Three and four twos came to
+                 eleven and left a hole in the first row. */
+              <li key={door.route} className={door.primary ? 'lg:col-span-6' : 'lg:col-span-3'}>
                 <a
                   href={href(door.route)}
                   className={cn(

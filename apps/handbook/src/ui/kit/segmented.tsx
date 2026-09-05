@@ -46,40 +46,45 @@ export function Segmented({
   className,
 }: Props) {
   return (
-    <fieldset
-      disabled={disabled}
-      className={cn(
-        'inline-flex min-w-0 flex-wrap items-center gap-4xs rounded-md border border-stroke bg-canvas p-4xs',
-        'disabled:opacity-60',
-        className,
-      )}
-    >
+    /*
+     * The border belongs to the inner box, not to the fieldset.
+     *
+     * A `<legend>` inside a bordered fieldset is drawn INTO the border: the
+     * browser cuts a notch for it, and the box ends up with a gap along its top
+     * edge and the words floating in it. That is a fieldset's oldest behaviour
+     * and it read as a rendering fault. The fieldset keeps what a fieldset is
+     * for, the grouping and the `disabled` that switches every radio off at
+     * once, and the box keeps the shape.
+     */
+    <fieldset disabled={disabled} className={cn('min-w-0 disabled:opacity-60', className)}>
       <legend className={showLegend ? 'mb-2xs text-s text-on-canvas-muted' : 'sr-only'}>
         {legend}
       </legend>
-      {options.map((option) => (
-        <label key={option.value} className="min-w-0">
-          <input
-            type="radio"
-            name={name}
-            value={option.value}
-            checked={value === option.value}
-            onChange={() => onChange(option.value)}
-            className="peer sr-only"
-          />
-          <span
-            className={cn(
-              'block cursor-pointer rounded-s px-xs py-3xs text-s font-medium transition-colors',
-              'peer-focus-visible:ring-2 peer-focus-visible:ring-accent',
-              value === option.value
-                ? 'bg-accent text-white'
-                : 'text-on-canvas-muted hover:bg-surface hover:text-on-canvas',
-            )}
-          >
-            {option.label}
-          </span>
-        </label>
-      ))}
+      <div className="inline-flex max-w-full flex-wrap items-center gap-4xs rounded-md border border-stroke bg-canvas p-4xs">
+        {options.map((option) => (
+          <label key={option.value} className="min-w-0">
+            <input
+              type="radio"
+              name={name}
+              value={option.value}
+              checked={value === option.value}
+              onChange={() => onChange(option.value)}
+              className="peer sr-only"
+            />
+            <span
+              className={cn(
+                'block cursor-pointer rounded-s px-xs py-3xs text-s font-medium transition-colors',
+                'peer-focus-visible:ring-2 peer-focus-visible:ring-accent',
+                value === option.value
+                  ? 'bg-accent text-white'
+                  : 'text-on-canvas-muted hover:bg-surface hover:text-on-canvas',
+              )}
+            >
+              {option.label}
+            </span>
+          </label>
+        ))}
+      </div>
     </fieldset>
   );
 }

@@ -19,6 +19,17 @@ interface Props {
  */
 const ITEMS = [
   { route: '/', label: 'Overview', Icon: House, match: (r: string) => r === '/' },
+  /*
+   * Second, and before everything written down. This site is the app's
+   * development environment before it is its documentation, and the address
+   * people are handed is the one that shows the app running.
+   */
+  {
+    route: '/workbench',
+    label: 'The app',
+    Icon: Smartphone,
+    match: (r: string) => r === '/workbench',
+  },
   {
     route: '/handbook',
     label: 'Handbook',
@@ -53,12 +64,6 @@ const ITEMS = [
     label: 'Reference',
     Icon: Braces,
     match: (r: string) => r === '/reference',
-  },
-  {
-    route: '/workbench',
-    label: 'The app',
-    Icon: Smartphone,
-    match: (r: string) => r === '/workbench',
   },
 ];
 
