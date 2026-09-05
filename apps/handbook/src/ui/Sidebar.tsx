@@ -44,7 +44,7 @@ export function Sidebar({ route }: Props) {
                     title={item.label}
                     aria-current={item.route === route ? 'page' : undefined}
                     className={cn(
-                      'flex min-w-0 items-center gap-xs rounded-md py-3xs pl-m pr-xs text-m',
+                      'flex min-w-0 items-start gap-xs rounded-md py-3xs pl-m pr-xs text-m',
                       'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent',
                       item.route === route
                         ? 'bg-surface font-medium text-on-canvas'
@@ -52,9 +52,17 @@ export function Sidebar({ route }: Props) {
                     )}
                   >
                     {item.number && (
-                      <span className="font-mono text-[0.6875rem] tabular-nums">{item.number}</span>
+                      <span className="shrink-0 pt-[0.1875rem] font-mono text-[0.6875rem] tabular-nums">
+                        {item.number}
+                      </span>
                     )}
-                    <span className="min-w-0 truncate">{item.label}</span>
+                    {/*
+                      Two lines rather than one and an ellipsis. In a panel this
+                      wide "An npm workspac…" is twenty-four records that all look
+                      the same, and the title is the only thing that tells them
+                      apart.
+                    */}
+                    <span className="line-clamp-2 min-w-0 leading-snug">{item.label}</span>
                   </a>
                 </li>
               ))}

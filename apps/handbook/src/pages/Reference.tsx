@@ -60,9 +60,10 @@ export function Reference() {
         </p>
 
         {/* The filter follows the reader down 53 modules, because a lookup surface
-            whose filter has scrolled away is a list. It sits below the site header
-            rather than over it, hence the offset and the lower stacking order. */}
-        <div className="sticky top-[3.5rem] z-10 mt-m mb-m border-b border-stroke bg-canvas py-s">
+            whose filter has scrolled away is a list. `top-0`, not an offset: the
+            scroller is the shell's main area, which begins below the header, so an
+            offset here would leave a gap the page scrolls through. */}
+        <div className="sticky top-0 z-10 mt-m mb-m border-b border-stroke bg-canvas py-s">
           <div className="flex flex-wrap items-center gap-s">
             <label htmlFor="ref-q" className="sr-only">
               Filter modules and symbols
@@ -95,7 +96,7 @@ export function Reference() {
           <section className="mb-xl" key={module.subpath}>
             <h2
               id={`m-${module.subpath.replace(/\//g, '-')}`}
-              className="scroll-mt-[7rem] font-mono text-headline-m font-semibold leading-tight"
+              className="scroll-mt-[4.75rem] font-mono text-headline-m font-semibold leading-tight"
             >
               {module.subpath}
             </h2>
@@ -139,7 +140,7 @@ function Symbol({ module, symbol }: { module: ApiModule; symbol: ApiSymbol }) {
     <details
       id={symbolId(module.subpath, symbol.name)}
       onToggle={(event) => setOpen(event.currentTarget.open)}
-      className="group scroll-mt-[7rem]"
+      className="group scroll-mt-[4.75rem]"
     >
       <summary
         aria-expanded={open}

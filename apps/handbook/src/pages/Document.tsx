@@ -60,7 +60,7 @@ export function Document({ doc }: Props) {
         )}
 
         <div
-          className="prose prose-sm max-w-none prose-headings:scroll-mt-20 prose-pre:border prose-pre:border-stroke"
+          className="prose prose-sm max-w-none prose-headings:scroll-mt-8 prose-pre:border prose-pre:border-stroke"
           dangerouslySetInnerHTML={{ __html: doc.html }}
         />
 

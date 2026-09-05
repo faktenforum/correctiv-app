@@ -130,7 +130,7 @@ const PROSE_CODE =
  * caption and a list are prose and want a line length, a diagram is a picture and
  * wants the width of the column.
  */
-const SECTION = 'mt-2xl first:mt-0 scroll-mt-[4.5rem]';
+const SECTION = 'mt-2xl first:mt-0 scroll-mt-m';
 const HEADING = 'max-w-content text-headline-xl font-semibold tracking-tight text-on-canvas';
 const LEDE = 'mt-xs max-w-content text-l leading-normal text-on-canvas-muted';
 const FIGURE = 'mt-m';
