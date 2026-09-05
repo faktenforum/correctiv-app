@@ -1,4 +1,12 @@
-import { Moon, PanelLeft, PanelRight, Search as SearchIcon, Sun, SunMoon } from 'lucide-react';
+import {
+  Maximize2,
+  Moon,
+  PanelLeft,
+  PanelRight,
+  Search as SearchIcon,
+  Sun,
+  SunMoon,
+} from 'lucide-react';
 import type { ReactNode } from 'react';
 
 import { Button } from './kit/button';
@@ -18,6 +26,8 @@ interface Props {
   /** Absent where the open view has nothing to put in the right sidebar. */
   onToggleTools?: () => void;
   toolsLabel?: string;
+  /** Present only where there is something worth having the screen to itself. */
+  onFull?: () => void;
   /** The context bar: whatever the open view needs across the top. */
   children?: ReactNode;
 }
@@ -48,6 +58,7 @@ export function Header({
   toolsOpen,
   onToggleTools,
   toolsLabel,
+  onFull,
   children,
 }: Props) {
   return (
@@ -74,7 +85,10 @@ export function Header({
         className="flex min-w-0 items-center gap-2xs rounded-md px-3xs text-m font-semibold tracking-tight focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent"
       >
         <span aria-hidden="true" className="size-[0.875rem] shrink-0 rounded-s bg-accent" />
-        <span className="truncate">CORRECTIV</span>
+        {/* The mark alone below `sm`. On a 390px screen the word is a fifth of
+            the bar and the mark says the same thing. */}
+        <span className="hidden truncate sm:inline">CORRECTIV</span>
+        <span className="sr-only sm:hidden">CORRECTIV handbook</span>
       </a>
 
       {/* The context bar. It is the middle of the header rather than a row of its
@@ -97,6 +111,23 @@ export function Header({
           ⌘K
         </kbd>
       </Button>
+
+      {onFull && (
+        <Tooltip>
+          <TooltipTrigger asChild>
+            <Button
+              variant="ghost"
+              size="icon"
+              onClick={onFull}
+              aria-label="Give the app the whole screen"
+              className="size-[2rem]"
+            >
+              <Maximize2 aria-hidden="true" />
+            </Button>
+          </TooltipTrigger>
+          <TooltipContent side="bottom">The app on its own</TooltipContent>
+        </Tooltip>
+      )}
 
       {onToggleTools && (
         <Tooltip>

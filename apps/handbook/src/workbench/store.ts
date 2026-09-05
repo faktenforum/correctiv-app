@@ -1,3 +1,4 @@
+import { defaultDevice, defaultFull } from './devices';
 import { INITIAL, parseHash, writeHash, type PreviewState } from './state';
 
 /**
@@ -25,6 +26,16 @@ const listeners = new Set<Listener>();
  */
 let owning = false;
 
+/**
+ * Whether a device was ever asked for, by a link or by a person.
+ *
+ * Until one is, the host's own size decides, so a phone opens the app at the
+ * phone's size instead of drawing a smaller phone inside it. After one is, that
+ * choice stands for the session: coming back to the view must not quietly undo
+ * what somebody picked.
+ */
+let deviceAsked = false;
+
 function notify(): void {
   for (const listener of listeners) listener();
 }
@@ -47,6 +58,7 @@ export function set(patch: Partial<PreviewState>): PreviewState {
   ) {
     return state;
   }
+  if (patch.device !== undefined || patch.full !== undefined) deviceAsked = true;
   state = next;
   if (owning) {
     const hash = writeHash(state);
@@ -54,6 +66,20 @@ export function set(patch: Partial<PreviewState>): PreviewState {
   }
   notify();
   return state;
+}
+
+/**
+ * Whether the address said anything about the frame, which outranks the host.
+ *
+ * Either parameter counts. A link carrying `full=1` and no device is somebody
+ * saying "the app, on its own"; answering that by also overriding the device
+ * would be reading half a sentence.
+ */
+function namesFrame(hash: string): boolean {
+  const cut = hash.indexOf('?');
+  if (cut === -1) return false;
+  const p = new URLSearchParams(hash.slice(cut + 1));
+  return p.has('d') || p.has('full');
 }
 
 /**
@@ -66,6 +92,8 @@ export function set(patch: Partial<PreviewState>): PreviewState {
 export function start(): () => void {
   owning = true;
   if (location.hash) state = parseHash(location.hash);
+  if (namesFrame(location.hash)) deviceAsked = true;
+  if (!deviceAsked) state = { ...state, device: defaultDevice(), full: defaultFull() };
   history.replaceState(null, '', writeHash(state));
   notify();
 

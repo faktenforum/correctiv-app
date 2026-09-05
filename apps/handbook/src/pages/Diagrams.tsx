@@ -120,8 +120,15 @@ const SCROLL_BOX = cn(
  * keeps the rule in one place rather than on each of the forty `code` elements
  * below.
  */
+/*
+ * The same inline code the documents get, since this page names the same paths.
+ *
+ * `overflow-wrap: anywhere` for the same reason `app.css` gives it to `.prose`:
+ * a path has no break opportunity in it, and one `apps/mobile/src/lib/platform/
+ * expo.ts` took the whole page sideways in a 375px window.
+ */
 const PROSE_CODE =
-  '[&_code]:rounded-s [&_code]:border [&_code]:border-stroke [&_code]:bg-canvas [&_code]:px-3xs [&_code]:font-mono [&_code]:text-[0.875em]';
+  '[&_code]:rounded-s [&_code]:border [&_code]:border-stroke [&_code]:bg-canvas [&_code]:px-3xs [&_code]:font-mono [&_code]:text-[0.875em] [&_code]:[overflow-wrap:anywhere]';
 
 /*
  * The page around the drawings.

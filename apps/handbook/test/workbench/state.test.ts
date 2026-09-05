@@ -18,10 +18,26 @@ describe('the hash contract', () => {
       theme: 'dark',
       seed: 'signed-in',
       tools: true,
+      full: true,
       check: true,
       overrides: { 'grey-100': { dark: '#102a54' }, emphasis: { light: '#00b0ff' } },
     };
     expect(parseHash(writeHash(state))).toEqual(state);
+  });
+
+  /**
+   * The two the host's own size would otherwise decide.
+   *
+   * `store.start()` reads the address before it looks at the window: a link is
+   * somebody saying "this device, this way round", and answering a phone-sized
+   * window by overriding it would make every link written on a desktop resolve
+   * differently on a phone. The absence of both is what hands the decision over.
+   */
+  it('carries the frame the address asked for, and says when it asked for none', () => {
+    expect(parseHash('#/?d=host&full=1').device).toBe('host');
+    expect(parseHash('#/?d=host&full=1').full).toBe(true);
+    expect(writeHash({ ...INITIAL, device: 'host', full: true })).toContain('full=1');
+    expect(writeHash({ ...INITIAL, full: false })).not.toContain('full');
   });
 
   it('still reads a link written before this package existed', () => {

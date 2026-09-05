@@ -5,7 +5,7 @@ import { cn } from '../../lib/cn';
 import { Button } from '../../ui/kit/button';
 import { Separator } from '../../ui/kit/separator';
 import { Tooltip, TooltipContent, TooltipTrigger } from '../../ui/kit/tooltip';
-import { DEVICES } from '../devices';
+import { DEVICES, HOST_DEVICE } from '../devices';
 import { ROUTES } from '../routes';
 import { frameSize, writeHash, type PreviewState } from '../state';
 import type { Status } from '../api';
@@ -50,6 +50,13 @@ const ZOOMS: { value: string; label: string }[] = [
  */
 export function Toolbar({ state, routeField, onRouteField, onChange, onReload, onRaw }: Props) {
   const size = frameSize(state);
+  /*
+   * At the host's own size there is no frame to turn or to scale: the app has
+   * the screen. Both controls are written out rather than disabled, because a
+   * bar on a 390px screen wraps, and two rows of controls that cannot do
+   * anything are two rows of the app nobody can see.
+   */
+  const host = state.device === HOST_DEVICE;
 
   return (
     <div
@@ -71,7 +78,7 @@ export function Toolbar({ state, routeField, onRouteField, onChange, onReload, o
       >
         {DEVICES.map((d) => (
           <option key={d.id} value={d.id}>
-            {d.id === 'custom' ? d.label : `${d.label}, ${d.w}×${d.h}`}
+            {d.w === 0 ? d.label : `${d.label}, ${d.w}×${d.h}`}
           </option>
         ))}
       </select>
@@ -83,7 +90,7 @@ export function Toolbar({ state, routeField, onRouteField, onChange, onReload, o
         stage handles switches the device to `custom`, which is how the fields
         appear without anyone looking for them.
       */}
-      {state.device === 'custom' && (
+      {!host && state.device === 'custom' && (
         <span className="flex shrink-0 items-center gap-3xs">
           <input
             className={cn(FIELD, 'w-[4rem] text-center font-mono tabular-nums')}
@@ -130,44 +137,48 @@ export function Toolbar({ state, routeField, onRouteField, onChange, onReload, o
         span carrying a group one, and the repo's answer to that so far has been
         a lint exception per file.
       */}
-      <fieldset className="flex shrink-0 items-center rounded-md border border-stroke p-4xs">
-        <legend className="sr-only">Orientation</legend>
-        {[
-          { landscape: false, label: 'Portrait' },
-          { landscape: true, label: 'Landscape' },
-        ].map((option) => (
-          <button
-            key={option.label}
-            type="button"
-            aria-pressed={state.landscape === option.landscape}
-            onClick={() => onChange({ landscape: option.landscape })}
-            className={cn(
-              'rounded-s px-2xs py-4xs text-s transition-colors',
-              'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent',
-              state.landscape === option.landscape
-                ? 'bg-accent text-white'
-                : 'text-on-canvas-muted hover:text-on-canvas',
-            )}
-          >
-            {option.label}
-          </button>
-        ))}
-      </fieldset>
+      {!host && (
+        <fieldset className="flex shrink-0 items-center rounded-md border border-stroke p-4xs">
+          <legend className="sr-only">Orientation</legend>
+          {[
+            { landscape: false, label: 'Portrait' },
+            { landscape: true, label: 'Landscape' },
+          ].map((option) => (
+            <button
+              key={option.label}
+              type="button"
+              aria-pressed={state.landscape === option.landscape}
+              onClick={() => onChange({ landscape: option.landscape })}
+              className={cn(
+                'rounded-s px-2xs py-4xs text-s transition-colors',
+                'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent',
+                state.landscape === option.landscape
+                  ? 'bg-accent text-white'
+                  : 'text-on-canvas-muted hover:text-on-canvas',
+              )}
+            >
+              {option.label}
+            </button>
+          ))}
+        </fieldset>
+      )}
 
-      <select
-        className={cn(FIELD, 'shrink-0')}
-        aria-label="Zoom"
-        value={String(state.zoom)}
-        onChange={(e) =>
-          onChange({ zoom: e.target.value === 'fit' ? 'fit' : Number(e.target.value) })
-        }
-      >
-        {ZOOMS.map((z) => (
-          <option key={z.value} value={z.value}>
-            {z.label}
-          </option>
-        ))}
-      </select>
+      {!host && (
+        <select
+          className={cn(FIELD, 'shrink-0')}
+          aria-label="Zoom"
+          value={String(state.zoom)}
+          onChange={(e) =>
+            onChange({ zoom: e.target.value === 'fit' ? 'fit' : Number(e.target.value) })
+          }
+        >
+          {ZOOMS.map((z) => (
+            <option key={z.value} value={z.value}>
+              {z.label}
+            </option>
+          ))}
+        </select>
+      )}
 
       <input
         className={cn(FIELD, 'min-w-[8rem] flex-1 font-mono')}

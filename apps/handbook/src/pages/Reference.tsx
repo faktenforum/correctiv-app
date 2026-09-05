@@ -96,7 +96,7 @@ export function Reference() {
           <section className="mb-xl" key={module.subpath}>
             <h2
               id={`m-${module.subpath.replace(/\//g, '-')}`}
-              className="scroll-mt-[4.75rem] font-mono text-headline-m font-semibold leading-tight"
+              className="scroll-mt-[4.75rem] font-mono text-headline-m font-semibold leading-tight [overflow-wrap:anywhere]"
             >
               {module.subpath}
             </h2>
@@ -169,14 +169,23 @@ function Symbol({ module, symbol }: { module: ApiModule; symbol: ApiSymbol }) {
             dangerouslySetInnerHTML={{ __html: symbol.doc }}
           />
         )}
+        {/*
+          `inline` rather than `inline-flex`, because a path is one word to a
+          browser and a flex box will not break one: at 375px this line was
+          335px wide inside a 262px box and took the panel sideways with it. As
+          inline text it wraps, and `overflow-wrap` gives it somewhere to do so.
+        */}
         <a
           href={`${BLOB}/${module.file}#L${symbol.line}`}
           target="_blank"
           rel="noreferrer noopener"
-          className="mt-s inline-flex items-center gap-3xs font-mono text-s text-on-canvas-muted underline decoration-accent underline-offset-2 hover:text-on-canvas"
+          className="mt-s inline font-mono text-s text-on-canvas-muted underline decoration-accent underline-offset-2 [overflow-wrap:anywhere] hover:text-on-canvas"
         >
           {module.file}:{symbol.line}
-          <ExternalLink aria-hidden="true" className="size-[0.75rem]" />
+          <ExternalLink
+            aria-hidden="true"
+            className="ml-3xs inline size-[0.75rem] align-[-0.1em]"
+          />
         </a>
       </div>
     </details>

@@ -1,4 +1,4 @@
-import { DEFAULT_DEVICE, DEVICES, preset } from './devices';
+import { DEFAULT_DEVICE, DEVICES, HOST_DEVICE, preset } from './devices';
 import { TOKENS, type Overrides, type Scheme } from './frame/tokens';
 
 /** The app's own appearance setting. `null` means "leave the app alone". */
@@ -18,6 +18,14 @@ export interface PreviewState {
   seed: string | null;
   /** Whether the tool panels are shown at all. Off is the plain demo. */
   tools: boolean;
+  /**
+   * The app alone, with the shell's chrome floated away.
+   *
+   * In the address because "look at this without my furniture around it" is a
+   * thing worth handing over as a link, and because it is how the app view opens
+   * on a phone, where the chrome is most of the screen.
+   */
+  full: boolean;
   /** Colour tokens overridden in the frame, per scheme. */
   overrides: Overrides;
   /** Run the measure checks as soon as the frame settles. */
@@ -34,6 +42,7 @@ export const INITIAL: PreviewState = {
   theme: null,
   seed: null,
   tools: false,
+  full: false,
   overrides: {},
   check: false,
 };
@@ -76,6 +85,7 @@ export function parseHash(hash: string): PreviewState {
     theme: isTheme(theme) ? theme : null,
     seed: p.get('s'),
     tools: p.has('tools'),
+    full: p.has('full'),
     overrides: parseOverrides(p.get('kl'), p.get('kd')),
     check: p.has('check'),
   };
@@ -123,6 +133,7 @@ export function writeHash(state: PreviewState): string {
   if (state.theme) p.set('t', state.theme);
   if (state.seed) p.set('s', state.seed);
   if (state.tools) p.set('tools', '1');
+  if (state.full) p.set('full', '1');
   if (state.check) p.set('check', '1');
   const light = writeOverrides(state.overrides, 'light');
   const dark = writeOverrides(state.overrides, 'dark');
@@ -131,8 +142,16 @@ export function writeHash(state: PreviewState): string {
   return `#${state.route || '/'}?${p}`;
 }
 
-/** The frame's size in CSS pixels, orientation applied. */
+/**
+ * The frame's size in CSS pixels, orientation applied.
+ *
+ * `host` comes out as zeroes, and that is not a fallback to fix here: its size is
+ * whatever box the stage gives it, which this function cannot see. `Workbench.tsx`
+ * measures the box and substitutes it. A caller that forgets gets a frame of no
+ * size, which is visible immediately rather than plausible and wrong.
+ */
 export function frameSize(state: PreviewState): { w: number; h: number } {
+  if (state.device === HOST_DEVICE) return { w: 0, h: 0 };
   const { w, h } = state.device === 'custom' ? state : preset(state.device);
   return state.landscape ? { w: h, h: w } : { w, h };
 }

@@ -1,7 +1,8 @@
 import { useEffect, useRef, type RefObject } from 'react';
 
 import { cn } from '../../lib/cn';
-import { frameSize, type PreviewState } from '../state';
+import { HOST_DEVICE } from '../devices';
+import type { PreviewState } from '../state';
 
 /** Shared by the three drag handles, which differ only in edge and cursor. */
 const HANDLE =
@@ -9,6 +10,8 @@ const HANDLE =
 
 interface Props {
   state: PreviewState;
+  /** Measured, not looked up: `host` has no preset. */
+  size: { w: number; h: number };
   scale: number;
   stageRef: RefObject<HTMLDivElement | null>;
   frameRef: RefObject<HTMLIFrameElement | null>;
@@ -37,13 +40,15 @@ type Axes = 'x' | 'y' | 'xy';
  * surface rather than a white box on a white page, which is what it looked like
  * without it.
  */
-export function Stage({ state, scale, stageRef, frameRef, onResize, onLoad }: Props) {
-  const { w, h } = frameSize(state);
+export function Stage({ state, size, scale, stageRef, frameRef, onResize, onLoad }: Props) {
+  const { w, h } = size;
+  const host = state.device === HOST_DEVICE;
   const right = useRef<HTMLDivElement>(null);
   const bottom = useRef<HTMLDivElement>(null);
   const corner = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
+    if (host) return;
     const handles: [RefObject<HTMLDivElement | null>, Axes][] = [
       [right, 'x'],
       [bottom, 'y'],
@@ -51,7 +56,29 @@ export function Stage({ state, scale, stageRef, frameRef, onResize, onLoad }: Pr
     ];
     const detach = handles.map(([ref, axes]) => drag(ref.current, axes, { w, h }, scale, onResize));
     return () => detach.forEach((off) => off());
-  }, [w, h, scale, onResize]);
+  }, [host, w, h, scale, onResize]);
+
+  /*
+   * The app at the size of the screen it is already on, with nothing drawn round
+   * it. A device frame here would be a phone rendered inside a phone at forty per
+   * cent, which is what this view used to be on a 390px screen, and it is also
+   * how the app view opens on one.
+   */
+  if (host) {
+    return (
+      <div ref={stageRef} className="h-full min-h-0 bg-canvas">
+        <h2 className="sr-only">App frame</h2>
+        {/* eslint-disable-next-line react/iframe-missing-sandbox */}
+        <iframe
+          className="block h-full w-full border-0 bg-transparent"
+          ref={frameRef}
+          title="App preview"
+          allow="autoplay; fullscreen; encrypted-media"
+          onLoad={onLoad}
+        />
+      </div>
+    );
+  }
 
   return (
     <div className="stage-grid flex h-full min-h-0 flex-col">
@@ -138,9 +165,11 @@ export function Stage({ state, scale, stageRef, frameRef, onResize, onLoad }: Pr
       {/*
         The sentence the demo audience gets, and the one the inspector's audience
         does not. Written out of the tree rather than hidden, so a screen reader
-        cannot read out a hint about a sidebar that is already open.
+        cannot read out a hint about a sidebar that is already open. Gone in full
+        screen too: it names a bar and a shortcut that are not on the screen it
+        would be sitting on.
       */}
-      {!state.tools && (
+      {!state.tools && !state.full && (
         <p className="mx-auto max-w-[42rem] shrink-0 px-m pb-m text-center text-m text-on-canvas-muted">
           This is the app at device size. Pick a device or a route in the bar above; the address in
           the status line reproduces exactly what you see. Open the Tools sidebar, ⌘J, for the

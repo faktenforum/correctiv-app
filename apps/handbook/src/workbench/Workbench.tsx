@@ -16,6 +16,7 @@ import { waitReady } from './frame/ready';
 import { applyFixture } from './frame/seed';
 import { apply as applyTokens, type Scheme } from './frame/tokens';
 import { addLog, clearLogs, getLogs, subscribeLogs } from './logs';
+import { HOST_DEVICE } from './devices';
 import { frameSize, type PreviewState } from './state';
 import { getState, set, start, subscribe } from './store';
 import type { ToolBindings } from './ui/Panels';
@@ -67,8 +68,16 @@ export function useWorkbench(active: boolean) {
   /** Bumped on every load, so everything injected into the frame is re-injected. */
   const [loaded, setLoaded] = useState(0);
 
-  const size = frameSize(state);
-  const scale = useScale(stageRef, size, state.zoom, active);
+  /*
+   * `Stage` draws the device frame and the full-bleed frame as two different
+   * subtrees, so switching between them replaces both the stage box and the
+   * iframe. Every effect that holds one of those elements depends on this, or it
+   * keeps measuring and messaging the element that was thrown away: that is how
+   * the app came back blank at 0 × 0 the first time.
+   */
+  const shape = state.device === HOST_DEVICE ? 'host' : 'framed';
+
+  const { size, scale } = useStage(stageRef, state, active, shape);
 
   const status = statusOf(state, frameInfo, reportedRoute, logs);
 
@@ -83,9 +92,15 @@ export function useWorkbench(active: boolean) {
     return start();
   }, [active]);
 
+  /*
+   * Re-run whenever the stage changes shape, not only on load. `Stage` draws a
+   * device frame and a full-bleed frame as two different subtrees, so switching
+   * between them replaces the iframe element, and both this and the navigation
+   * below would otherwise still be holding the one that was thrown away.
+   */
   useEffect(() => {
     registerFrame(active ? frameRef.current : null);
-  }, [active, loaded]);
+  }, [active, loaded, shape]);
 
   /**
    * The frame's first navigation, and every one the route field causes.
@@ -113,7 +128,7 @@ export function useWorkbench(active: boolean) {
       document.body.dataset.state = 'loading';
       navigate(frame, state.route);
     }
-  }, [active, state.route, state.seed]);
+  }, [active, shape, state.route, state.seed]);
 
   /** The appearance setting, re-applied after every load because a reload resets it. */
   useEffect(() => {
@@ -248,39 +263,53 @@ function unchanged(a: FrameInfo, b: FrameInfo): boolean {
 }
 
 /**
- * Fit means "as large as the stage allows", so it depends on the stage, not the
- * state.
+ * How big the frame is and how much it is scaled, both measured against the box.
  *
- * `active` is in the dependencies because it is what decides whether there is a
- * stage at all. Arriving at the app view from another one, the ref goes from null
- * to an element without any of the other dependencies changing, so the observer
- * was never attached and the frame stayed at the initial 100%: correct on a direct
+ * Two answers from one observer because they come from one measurement. `host`
+ * takes the box itself as the size and is never scaled: it is the app at the
+ * screen's size, which is the point of it, and a scale factor over that would be
+ * a lie about how many pixels the app thinks it has.
+ *
+ * `active` is a dependency because it is what decides whether there is a box at
+ * all. Arriving at the app view from another one, the ref goes from null to an
+ * element without any of the other dependencies changing, so the observer was
+ * never attached and the frame stayed at the initial 100%: correct on a direct
  * load of this address, wrong every time somebody clicked their way here.
  */
-function useScale(
+function useStage(
   stageRef: React.RefObject<HTMLDivElement | null>,
-  size: { w: number; h: number },
-  zoom: PreviewState['zoom'],
+  state: PreviewState,
   active: boolean,
-): number {
-  const [scale, setScale] = useState(1);
+  shape: string,
+): { size: { w: number; h: number }; scale: number } {
+  const [box, setBox] = useState({ w: 0, h: 0 });
+  const asked = frameSize(state);
+  const isHost = state.device === HOST_DEVICE;
 
   useLayoutEffect(() => {
-    const compute = () => {
-      if (zoom !== 'fit') return setScale(Number(zoom));
-      const stage = stageRef.current;
-      if (!stage) return;
-      // Padding on both sides plus room for the handles, which hang outside the
-      // frame. `stageRef` is the frame's own box, so nothing else is in here.
-      const availW = stage.clientWidth - 40 - 24;
-      const availH = stage.clientHeight - 40 - 24;
-      setScale(Math.min(1, availW / size.w, availH / size.h));
-    };
-    compute();
-    const observer = new ResizeObserver(compute);
-    if (stageRef.current) observer.observe(stageRef.current);
-    return () => observer.disconnect();
-  }, [active, stageRef, size.w, size.h, zoom]);
+    if (!active) return;
+    const stage = stageRef.current;
+    if (!stage) return;
 
-  return scale;
+    const measure = () => {
+      const next = { w: stage.clientWidth, h: stage.clientHeight };
+      setBox((previous) => (previous.w === next.w && previous.h === next.h ? previous : next));
+    };
+    measure();
+    const observer = new ResizeObserver(measure);
+    observer.observe(stage);
+    return () => observer.disconnect();
+  }, [active, shape, stageRef]);
+
+  // Full bleed: no padding to subtract and no handles to leave room for.
+  if (isHost) return { size: box, scale: 1 };
+
+  const size = asked;
+  if (state.zoom !== 'fit') return { size, scale: Number(state.zoom) };
+
+  // Padding on both sides plus room for the handles, which hang outside the frame.
+  const availW = box.w - 40 - 24;
+  const availH = box.h - 40 - 24;
+  const scale = box.w === 0 ? 1 : Math.min(1, availW / size.w, availH / size.h);
+  return { size, scale };
 }

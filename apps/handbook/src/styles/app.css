@@ -152,6 +152,13 @@
   border-radius: 3px;
 }
 
+/* Identifiers are long and have no spaces in them. `break-word` only breaks a
+   word that would not fit on a line of its own, so ordinary prose is untouched
+   and `fetchPeertubeChannelAsVideos` stops widening the page it sits on. */
+.prose {
+  overflow-wrap: break-word;
+}
+
 /* Inline code, which these documents lean on for every identifier. The plugin
    wraps it in literal backticks by default, which reads as an escaping bug. */
 .prose :not(pre) > code {

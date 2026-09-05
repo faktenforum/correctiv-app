@@ -100,7 +100,13 @@ export function applyTheme(win: Window | null, theme: ThemeSetting): boolean {
 /** The route the frame is showing, with the Pages prefix removed. */
 export function frameRoute(win: Window | null): string | undefined {
   try {
-    const path = win?.location.pathname;
+    // `about:blank` has a pathname too, and it is the string "blank". A frame
+    // that has not been sent anywhere yet is not on a route, and reporting one
+    // deadlocks the shell: the poll wrote `route: 'blank'` into the state, and
+    // the effect that navigates then found the frame already where the state
+    // said it should be and never sent it anywhere.
+    if (!win || !/^https?:$/.test(win.location.protocol)) return undefined;
+    const path = win.location.pathname;
     if (path === undefined) return undefined;
     const stripped = BASE && path.startsWith(BASE) ? path.slice(BASE.length) : path;
     return (stripped || '/').replace(/\.html$/, '').replace(/\/index$/, '/');
