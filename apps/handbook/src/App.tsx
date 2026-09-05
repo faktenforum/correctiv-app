@@ -8,6 +8,7 @@ import { Landing } from './pages/Landing';
 import { Reference } from './pages/Reference';
 import { Sources } from './pages/Sources';
 import { ActivityBar } from './ui/ActivityBar';
+import { Boundary } from './ui/Boundary';
 import { Header } from './ui/Header';
 import { Search } from './ui/Search';
 import { Settings } from './ui/Settings';
@@ -35,7 +36,7 @@ import { cn } from './lib/cn';
 import { useMedia, WIDE } from './lib/useMedia';
 import { PAGE_TITLES } from './nav';
 import { useAppearance } from './theme';
-import { currentPath, useLinkInterception, useRoute } from './router';
+import { useLinkInterception, useRoute } from './router';
 
 /** The views answered with a component rather than with a repository document. */
 const PAGES: Record<string, () => ReactNode> = {
@@ -85,16 +86,14 @@ export function App() {
   const wide = useMedia(WIDE);
 
   /*
-   * The app view opens with both sidebars shut, and that is a product rule
-   * rather than a preference. The address is handed to people who want to see
-   * the app; a documentation tree and an inspector are not what they came for.
-   * The rail stays, because it is the way back. Narrow, nothing opens by itself:
-   * an overlay covering the page before it is asked for is a page nobody can
-   * read.
+   * Both sidebars start shut, on every view.
+   *
+   * The rail is the navigation on arrival and it is always there, so the tree is
+   * a thing you open when you want it rather than a column you close. It also
+   * means the address somebody is handed opens on what it names, and not on a
+   * documentation tree beside it.
    */
-  const [explorerOpen, setExplorerOpen] = useState(
-    () => currentPath() !== APP_VIEW && window.matchMedia(WIDE).matches,
-  );
+  const [explorerOpen, setExplorerOpen] = useState(false);
 
   /*
    * The chrome floated away, leaving the app and one button to bring it back.
@@ -189,6 +188,13 @@ export function App() {
    * `useDragging` turns the transition off while a handle is held, or every
    * frame of the drag would be chasing a 200ms animation and the panel would
    * trail the pointer.
+   *
+   * Both panels and both handles are mounted for as long as this layout is,
+   * whatever the open view puts in them. They used to come and go with the
+   * route, and `react-resizable-panels` re-registers its children when the list
+   * changes: an imperative `resize()` landing in that gap threw "Panel
+   * constraints not found", which took the whole page with it. A hidden handle
+   * beside a collapsed panel costs nothing; a moving child list costs the site.
    */
   const explorerPanelRef = useRef<PanelHandle>(null);
   const toolsPanelRef = useRef<PanelHandle>(null);
@@ -218,10 +224,10 @@ export function App() {
   }, [explorerOpen, full, wide]);
 
   useEffect(() => {
-    if (!wide || full || !toolsTitle) return;
+    if (!wide || full) return;
     const panel = toolsPanelRef.current;
     if (!panel) return;
-    if (toolsOpen) {
+    if (toolsOpen && toolsTitle) {
       panel.expand();
       panel.resize(toolsWidth.current ?? toolsDefault);
     } else {
@@ -363,7 +369,7 @@ export function App() {
                     </div>
                   </div>
                 </ResizablePanel>
-                {explorerOpen && <ResizableHandle />}
+                <ResizableHandle className={cn(!explorerOpen && 'hidden')} />
               </Fragment>
             )}
 
@@ -373,36 +379,38 @@ export function App() {
                 none of them carries a `main` or a height of its own any more.
               */}
               <main id="content" className="h-full min-h-0 overflow-auto">
-                {isApp ? (
-                  <Stage
-                    state={workbench.state}
-                    size={workbench.size}
-                    scale={workbench.scale}
-                    stageRef={workbench.stageRef}
-                    frameRef={workbench.frameRef}
-                    onResize={workbench.onResize}
-                    onLoad={workbench.onLoad}
-                  />
-                ) : Page ? (
-                  <Page />
-                ) : doc ? (
-                  <Document doc={doc} />
-                ) : (
-                  <NotFound route={route} />
-                )}
+                <Boundary route={route}>
+                  {isApp ? (
+                    <Stage
+                      state={workbench.state}
+                      size={workbench.size}
+                      scale={workbench.scale}
+                      stageRef={workbench.stageRef}
+                      frameRef={workbench.frameRef}
+                      onResize={workbench.onResize}
+                      onLoad={workbench.onLoad}
+                    />
+                  ) : Page ? (
+                    <Page />
+                  ) : doc ? (
+                    <Document doc={doc} />
+                  ) : (
+                    <NotFound route={route} />
+                  )}
+                </Boundary>
               </main>
             </ResizablePanel>
 
-            {wide && !full && toolsPanel && (
+            {wide && !full && (
               <Fragment key="tools">
-                {toolsOpen && <ResizableHandle />}
+                <ResizableHandle className={cn(!toolsOpen && 'hidden')} />
                 {/* A list of headings needs a fifth of the width; the
                     inspector, which holds forms and a console, needs a third. */}
                 <ResizablePanel
                   panelRef={toolsPanelRef}
                   collapsible
                   collapsedSize="0%"
-                  defaultSize={contents ? '19%' : '31%'}
+                  defaultSize={toolsDefault}
                   minSize="14%"
                   maxSize="55%"
                   /* Only while a handle is held. Otherwise this fires on the layout
