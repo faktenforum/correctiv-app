@@ -194,19 +194,40 @@ export function App() {
   const toolsPanelRef = useRef<PanelHandle>(null);
   const dragging = useDragging();
 
+  /*
+   * The width to come back to. `expand()` restores "its most recent size", and
+   * for a panel that has only ever been collapsed that turned out to be the
+   * minimum: the inspector opened at fourteen per cent, a third of what it asks
+   * for, with its own contents clipped. So the size is stated on the way in, and
+   * a width somebody dragged to is what gets stated next time.
+   */
+  const explorerWidth = useRef('18%');
+  const toolsWidth = useRef<string | null>(null);
+  const toolsDefault = contents ? '19%' : '31%';
+
   useEffect(() => {
     if (!wide || full) return;
     const panel = explorerPanelRef.current;
-    if (explorerOpen) panel?.expand();
-    else panel?.collapse();
+    if (!panel) return;
+    if (explorerOpen) {
+      panel.expand();
+      panel.resize(explorerWidth.current);
+    } else {
+      panel.collapse();
+    }
   }, [explorerOpen, full, wide]);
 
   useEffect(() => {
     if (!wide || full || !toolsTitle) return;
     const panel = toolsPanelRef.current;
-    if (toolsOpen) panel?.expand();
-    else panel?.collapse();
-  }, [full, toolsOpen, toolsTitle, wide]);
+    if (!panel) return;
+    if (toolsOpen) {
+      panel.expand();
+      panel.resize(toolsWidth.current ?? toolsDefault);
+    } else {
+      panel.collapse();
+    }
+  }, [full, toolsDefault, toolsOpen, toolsTitle, wide]);
 
   /*
    * The app's frame controls, and the two places they can stand.
@@ -319,7 +340,9 @@ export function App() {
                      back, which is a toggle that does nothing: the button flipped,
                      `onResize` flipped it back, and the effect never saw a change. */
                   onResize={(size) => {
-                    if (dragging) setExplorerOpen(size.asPercentage > 0);
+                    if (!dragging) return;
+                    if (size.asPercentage > 0) explorerWidth.current = `${size.asPercentage}%`;
+                    setExplorerOpen(size.asPercentage > 0);
                   }}
                 >
                   {/*
@@ -387,7 +410,9 @@ export function App() {
                      back, which is a toggle that does nothing: the button flipped,
                      `onResize` flipped it back, and the effect never saw a change. */
                   onResize={(size) => {
-                    if (dragging) setToolsOpen(size.asPercentage > 0);
+                    if (!dragging) return;
+                    if (size.asPercentage > 0) toolsWidth.current = `${size.asPercentage}%`;
+                    setToolsOpen(size.asPercentage > 0);
                   }}
                 >
                   <div className="h-full w-full overflow-hidden [contain:paint]">

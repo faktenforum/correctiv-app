@@ -2,7 +2,7 @@
 
 One core holds the behaviour. The app holds its screens and one adapter.
 
-```
+```text diagram=core-host
         ┌────────────────────────────────────────┐
         │           packages/app-core            │
         │                                        │

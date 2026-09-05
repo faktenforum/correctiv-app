@@ -216,6 +216,13 @@
   overflow-wrap: anywhere;
 }
 
+/* An image in a document comes from the repository at the built commit, so it is
+   somebody else's file at somebody else's size. The frame is this site's. */
+.prose img {
+  border: 1px solid var(--color-stroke);
+  border-radius: 6px;
+}
+
 /* A table in a record is wider than a phone. It scrolls in its own box rather
    than taking the page with it; the plugin gives it no such box. */
 .prose table {

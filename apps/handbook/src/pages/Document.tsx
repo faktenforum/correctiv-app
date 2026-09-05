@@ -1,8 +1,10 @@
 import { ExternalLink } from 'lucide-react';
-import { useEffect, useRef } from 'react';
+import { useEffect, useMemo, useRef } from 'react';
 
 import docsModule from 'virtual:docs';
 import type { RenderedDoc } from '../../plugin/markdown.ts';
+import type { ReactNode } from 'react';
+import { CoreAndHost } from '../diagrams/CoreAndHost';
 import { Badge } from '../ui/kit/badge';
 
 interface Props {
@@ -10,6 +12,18 @@ interface Props {
 }
 
 const REPO_BLOB = `${docsModule.repo}/blob/${docsModule.commit}`;
+
+/**
+ * The drawings a document may ask for by name, keyed by the id in its fence.
+ *
+ * `ARCHITECTURE.md` opens with the core and its host as ASCII, which is the only
+ * picture an editor or GitHub can show. `/diagrams` has the same thing drawn. The
+ * document keeps its ASCII and the site swaps in the drawing, so there is still
+ * one source and two renderings of it rather than two sources.
+ */
+const DIAGRAMS: Record<string, () => ReactNode> = {
+  'core-host': CoreAndHost,
+};
 
 /**
  * One document from the repository, rendered into the shell's main area.
@@ -25,6 +39,7 @@ const REPO_BLOB = `${docsModule.repo}/blob/${docsModule.commit}`;
  */
 export function Document({ doc }: Props) {
   const article = useRef<HTMLElement>(null);
+  const parts = useMemo(() => split(doc.html), [doc.html]);
 
   useEffect(() => {
     annotateRetired(article.current);
@@ -59,10 +74,27 @@ export function Document({ doc }: Props) {
           </p>
         )}
 
-        <div
-          className="prose prose-sm max-w-none prose-headings:scroll-mt-8 prose-pre:border prose-pre:border-stroke"
-          dangerouslySetInnerHTML={{ __html: doc.html }}
-        />
+        {/*
+          The document, in as many pieces as it has drawings in it, with the
+          drawings between them.
+          
+          Not a portal into the rendered HTML. That was the first attempt and it
+          rendered nothing: the node a portal is given has to be the one React is
+          still holding, and the node this component captures lives inside a
+          `dangerouslySetInnerHTML` that React owns and may replace under it.
+          Splitting the string is the version where React owns every piece.
+        */}
+        {parts.map((part, i) =>
+          part.diagram ? (
+            <Diagram key={`d${i}`} id={part.diagram} />
+          ) : (
+            <div
+              key={`h${i}`}
+              className="prose prose-sm max-w-none prose-headings:scroll-mt-8 prose-pre:border prose-pre:border-stroke"
+              dangerouslySetInnerHTML={{ __html: part.html }}
+            />
+          ),
+        )}
 
         <footer className="mt-xl border-t border-stroke pt-sm text-m text-on-canvas-muted">
           <p>
@@ -82,6 +114,39 @@ export function Document({ doc }: Props) {
       </article>
     </div>
   );
+}
+
+/** The slot `plugin/markdown.ts` leaves where a document names a drawing. */
+const SLOT = /<div data-diagram="([\w-]+)"><\/div>/;
+
+interface Part {
+  html: string;
+  diagram?: string;
+}
+
+/** The rendered document, cut at each slot, so React can own both halves. */
+function split(html: string): Part[] {
+  const parts: Part[] = [];
+  let rest = html;
+  for (let hit = SLOT.exec(rest); hit; hit = SLOT.exec(rest)) {
+    if (hit.index > 0) parts.push({ html: rest.slice(0, hit.index) });
+    parts.push({ html: '', diagram: hit[1] });
+    rest = rest.slice(hit.index + hit[0].length);
+  }
+  if (rest) parts.push({ html: rest });
+  return parts;
+}
+
+/**
+ * One drawing, or the nothing that says the id names no drawing here.
+ *
+ * A slot nobody answers renders nothing rather than an error: the document is
+ * still readable, and the ASCII it kept is still in the file for anybody reading
+ * it in an editor.
+ */
+function Diagram({ id }: { id: string }) {
+  const Figure = DIAGRAMS[id];
+  return Figure ? <Figure /> : null;
 }
 
 /**

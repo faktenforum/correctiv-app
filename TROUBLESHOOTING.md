@@ -140,6 +140,20 @@ equivalents for focus, liveness and errors.
 
 ## The web target
 
+- **The handbook's frame shows the app's own 404 in development, on every route
+  but the first.** The handbook publishes the app one directory below itself, at
+  `/app/`, and frames it there in both modes. `experiments.baseUrl` is what tells
+  Expo Router to strip that prefix, and it is applied when the export is built,
+  where `__DEV__` is false. The dev server sets `EXPO_BASE_URL=/app` too, which
+  fixes the asset URLs and gets `/app/` itself to render, but the router still
+  reads `/app/entdecken` whole and matches nothing. Measured on 2026-09-05:
+  `localhost:8082/entdecken` renders, `localhost:8082/app/entdecken` does not, and
+  the assembled artifact reads `/correctiv-app/app/entdecken` correctly. → In
+  development the workbench's route field reaches the app's first screen and no
+  further. To walk the app's routes locally, open the app's own dev server
+  directly, at `localhost:8081/`, and give up the inspector while you do, or check
+  the routes against a static export, which is what
+  `screens/tools/serve-clean.mjs` is for.
 - **Serving a static export without clean URLs** makes Expo Router render its
   *unmatched route* page. That looks like an app bug and is a server bug. → Map `/artikel` →
   `artikel.html`. A plain `python3 -m http.server` will not do;

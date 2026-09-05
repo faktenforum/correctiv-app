@@ -136,8 +136,10 @@
       // documented way to make it reachable, and it is the reason the container
       // is not merely decorative. Chrome and Firefox now focus scroll containers
       // on their own, Safari does not, and a diagram nobody can scroll is worse
-      // than a lint exception with a reason attached.
-      "files": ["apps/handbook/src/pages/Diagrams.tsx"],
+      // than a lint exception with a reason attached. A figure another page also
+      // renders lives in `src/diagrams/` as a component, and takes its scroll box
+      // with it, so the exception covers both places the same markup can sit.
+      "files": ["apps/handbook/src/pages/Diagrams.tsx", "apps/handbook/src/diagrams/*.tsx"],
       "rules": {
         "jsx-a11y/no-noninteractive-tabindex": "off"
       }

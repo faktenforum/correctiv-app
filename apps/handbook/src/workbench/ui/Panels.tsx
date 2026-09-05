@@ -185,6 +185,19 @@ export function Panels(props: Props) {
               ? 'Store handle present, every panel live.'
               : 'Store handle absent, the appearance setting and the inspector are inert. Fixtures and token overrides still work.'}
           </p>
+          {/*
+            Said here because this is where somebody notices it. Expo Router
+            applies its base path when the export is built, not in the dev server,
+            so the frame reaches the app's first screen and every route below it
+            renders the app's own 404. `TROUBLESHOOTING.md` has the measurement.
+          */}
+          {status.handle && (
+            <p className={cn(NOTE, 'mt-3xs')}>
+              The route field reaches the first screen only. A dev server does not apply the base
+              path this frame puts the app behind, so a deeper route renders the app&apos;s own 404.
+              The published build has no such limit.
+            </p>
+          )}
         </div>
 
         <div>

@@ -1,163 +1,47 @@
+import { CoreAndHost } from '../diagrams/CoreAndHost';
+import {
+  ALT,
+  ARC,
+  ARC_DOC,
+  ARC_INDEX,
+  AXIS,
+  BOLD,
+  BOUNDARY,
+  BOX,
+  BOX_CORE,
+  CALLOUT,
+  CAPTION,
+  CHIP,
+  CHIP_PORT,
+  DASHED,
+  DRAWING,
+  FIGURE,
+  GHOST,
+  HALO,
+  HATCH,
+  HEADING,
+  LEAD,
+  LEDE,
+  MARKER,
+  MARKER_LIGHT,
+  MONO,
+  MUTED,
+  NODE_INTACT,
+  NODE_MOOT,
+  NODE_QUIET,
+  NODE_STRUCK,
+  PROSE_CODE,
+  RULE,
+  SCROLL_BOX,
+  SECTION,
+  STRIKE,
+  T11,
+  T12,
+  T13,
+  T16,
+  WIRE,
+} from '../diagrams/shared';
 import { cn } from '../lib/cn';
-
-/*
- * The drawings' vocabulary, which used to be a stylesheet.
- *
- * Tailwind utilities work on SVG elements, so `fill-canvas` and `stroke-stroke`
- * say on a `rect` what they say on a `div`, and both read the same token the app
- * reads. What a plain utility cannot say is that eighteen chips are one thing, so
- * each visual role keeps its name here. A role named once is a role that cannot
- * drift across three diagrams, which is the whole reason the deleted sheet had
- * these names.
- *
- * Every one of them is a token, never a literal. That is what makes the drawings
- * follow the light and dark schemes with no second asset to keep in step, and
- * `test/styles.test.ts` fails the build on a colour value written here.
- */
-
-/** A container, filled with the ground so a line behind it is knocked out. */
-const BOX = 'fill-canvas stroke-stroke';
-/** The core's own frame, which is the one box that outranks the boxes near it. */
-const BOX_CORE = 'fill-canvas stroke-stroke-strong [stroke-width:1.5]';
-/** A labelled block sitting on the ground, one step up from it. */
-const CHIP = 'fill-surface stroke-stroke';
-/** A port, drawn as a contract rather than a block, so it takes the accent. */
-const CHIP_PORT = 'fill-canvas stroke-accent [stroke-width:1.5]';
-const CARD = 'fill-surface stroke-stroke';
-/** The adapter band, which is a fill and no outline because a rule sits under it. */
-const BAND = 'fill-surface stroke-none';
-const CALLOUT = 'fill-surface stroke-stroke';
-/** A grouping frame, dashed because it encloses without being a thing itself. */
-const DASHED = 'fill-none stroke-stroke-strong [stroke-dasharray:6_5]';
-/** A dependency the package may not have, drawn as an absence. */
-const GHOST = 'fill-canvas stroke-stroke [stroke-dasharray:4_3]';
-
-const RULE = 'stroke-stroke';
-const RULE_STRONG = 'stroke-stroke-strong';
-const AXIS = 'stroke-stroke';
-const WIRE = 'fill-none stroke-on-canvas-muted [stroke-width:1.5]';
-const LEAD = 'stroke-stroke';
-/** The line nothing crosses, and the figcaption below calls it the red line. */
-const BOUNDARY = 'stroke-accent stroke-2';
-/** An amendment a record makes to an earlier one, stated in the record itself. */
-const ARC = 'fill-none stroke-on-canvas-muted';
-/** The same relation, but recorded only in the index, so it is drawn as weaker. */
-const ARC_INDEX = 'fill-none stroke-stroke-strong [stroke-dasharray:2_3]';
-/** A correction to a living document, which is rewritten rather than annotated. */
-const ARC_DOC = 'fill-none stroke-on-canvas-muted [stroke-dasharray:6_4]';
-/*
- * The arrowheads. A marker does not inherit from the line that references it, it
- * inherits from where it is defined, so each one carries its own fill and the
- * two of them match the two weights of arc above.
- */
-const MARKER = 'fill-on-canvas-muted stroke-none';
-const MARKER_LIGHT = 'fill-stroke-strong stroke-none';
-const HATCH = 'stroke-stroke';
-
-/** A record with nothing recorded against it, drawn small on the axis. */
-const NODE_QUIET = 'fill-stroke-strong stroke-none';
-const NODE_INTACT = 'fill-canvas stroke-on-canvas-muted [stroke-width:1.5]';
-/** Accepted, with claims struck in place. Club yellow, which both schemes share. */
-const NODE_STRUCK = 'fill-accent-alternative stroke-stroke-strong';
-/** Moot, so the ring is broken rather than merely pale. */
-const NODE_MOOT = 'fill-surface stroke-stroke-strong [stroke-dasharray:2_2]';
-
-/*
- * Type, in the drawing's own units.
- *
- * These are the one place the theme's named steps are the wrong tool. A step is
- * in rem, which does not scale with the viewBox, so a label set in `text-s` would
- * hold still while the drawing around it grew. Inside an SVG a size in px is a
- * size in user units, and the drawings were laid out against these four.
- */
-const T11 = 'text-[11px]';
-const T12 = 'text-[12px]';
-const T13 = 'text-[13px]';
-const T16 = 'text-[16px]';
-const MONO = 'font-mono';
-const BOLD = 'font-semibold';
-const MUTED = 'fill-on-canvas-muted';
-const STRIKE = 'line-through fill-on-canvas-muted';
-/**
- * A label that sits on a line it must stay readable over.
- *
- * The glyphs are stroked in the ground colour and painted stroke-first, so the
- * outline knocks the line out behind the text rather than over it. This is why
- * the scroll box below is `bg-canvas` and not `bg-surface`: the halo is a colour,
- * and it has to be the colour actually behind it.
- */
-const HALO = '[paint-order:stroke] stroke-canvas [stroke-width:3] [stroke-linejoin:round]';
-
-/*
- * And the drawing surface itself.
- *
- * `fill-on-canvas` is inherited by every `text` in the drawing, which is what
- * keeps a label from falling back to the browser's black on a dark page. The
- * baseline rule is a descendant selector because `dominant-baseline` is one of
- * the few SVG properties that does not inherit, and the drawings are laid out
- * centred: a legend's text shares the y of the circle beside it.
- */
-const DRAWING = 'fill-on-canvas [&_text]:[dominant-baseline:central]';
-
-/**
- * A diagram is wider than the column, so it scrolls inside its own box.
- *
- * The focus stop is deliberate and is the exception `.oxlintrc.json` carries for
- * this file: Chrome and Firefox focus a scroll container on their own, Safari
- * does not, and a diagram nobody can scroll is worse than a lint exception with a
- * reason attached.
- */
-const SCROLL_BOX = cn(
-  'overflow-x-auto rounded-md border border-stroke bg-canvas p-xs',
-  'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent',
-);
-
-/**
- * Identifiers in the prose around the drawings.
- *
- * `app.css` styles `code` only inside `.prose`, which is the rendered-Markdown
- * wrapper, and none of this page is that. Naming the element from its container
- * keeps the rule in one place rather than on each of the forty `code` elements
- * below.
- */
-/*
- * The same inline code the documents get, since this page names the same paths.
- *
- * `overflow-wrap: anywhere` for the same reason `app.css` gives it to `.prose`:
- * a path has no break opportunity in it, and one `apps/mobile/src/lib/platform/
- * expo.ts` took the whole page sideways in a 375px window.
- */
-const PROSE_CODE =
-  '[&_code]:rounded-s [&_code]:border [&_code]:border-stroke [&_code]:bg-canvas [&_code]:px-3xs [&_code]:font-mono [&_code]:text-[0.875em] [&_code]:[overflow-wrap:anywhere]';
-
-/*
- * The page around the drawings.
- *
- * The measure is the theme's, and only the scroll boxes are allowed past it: a
- * caption and a list are prose and want a line length, a diagram is a picture and
- * wants the width of the column.
- */
-const SECTION = 'mt-2xl first:mt-0 scroll-mt-m';
-const HEADING = 'max-w-content text-headline-xl font-semibold tracking-tight text-on-canvas';
-const LEDE = 'mt-xs max-w-content text-l leading-normal text-on-canvas-muted';
-const FIGURE = 'mt-m';
-const CAPTION = cn(
-  'mt-s max-w-content text-m leading-normal text-on-canvas-muted [&_strong]:text-on-canvas',
-  PROSE_CODE,
-);
-/** The list under each figure, which is the page for anyone who cannot see it. */
-const ALT = cn(
-  'mt-m max-w-content rounded-md border border-stroke bg-surface p-sm text-m leading-normal',
-  '[&_h3]:mb-xs [&_h3]:text-headline-xs [&_h3]:font-semibold [&_h3]:text-on-canvas',
-  '[&_dt]:mt-s [&_dt]:font-semibold [&_dt]:text-on-canvas [&_dt:first-of-type]:mt-0',
-  '[&_dd]:ml-0 [&_dd]:mt-3xs [&_dd]:text-on-canvas-muted',
-  '[&_ul]:mt-3xs [&_ul]:list-disc [&_ul]:space-y-3xs [&_ul]:pl-sm',
-  '[&_ol]:mt-3xs [&_ol]:list-decimal [&_ol]:space-y-3xs [&_ol]:pl-sm',
-  '[&_p]:mt-xs [&_p]:text-on-canvas-muted',
-  '[&_strong]:font-semibold [&_strong]:text-on-canvas',
-  '[&_s]:text-on-canvas-muted',
-  PROSE_CODE,
-);
 
 /**
  * Three drawings, each standing in for a stretch of prose: where the behaviour
@@ -188,339 +72,7 @@ export function Diagrams() {
           All behaviour on one side, all platform on the other. The only crossing is four named
           ports, and the adapter that answers them is one small file.
         </p>
-        <figure className={FIGURE}>
-          {/*
-            A named section, because that is what a landmark for a scrollable box
-            is spelled as in HTML, and an `<svg>` with no role, because that
-            element already carries the graphics-document role that a diagram
-            wants. The name and the description come from the title inside it and
-            the list below it, so the drawing is never the only way to read this.
-          */}
-          <section className={SCROLL_BOX} aria-label="Diagram 1, scrollable" tabIndex={0}>
-            <svg
-              viewBox="0 0 960 710"
-              className={cn(DRAWING, 'block h-[710px] w-[960px] max-w-none')}
-              aria-labelledby="d1-title"
-              aria-describedby="d1-alt"
-            >
-              <title id="d1-title">
-                The core and its host: packages/app-core above, apps/mobile below, joined only by
-                four ports
-              </title>
-              <defs>
-                <marker
-                  id="d1-arrow"
-                  viewBox="0 0 10 10"
-                  refX="9"
-                  refY="5"
-                  markerWidth="8"
-                  markerHeight="8"
-                  orient="auto"
-                >
-                  <path d="M0 0 L10 5 L0 10 z" className={MARKER} />
-                </marker>
-              </defs>
-
-              <rect x="40" y="28" width="880" height="190" rx="8" className={BOX_CORE} />
-              <text x="60" y="56" className={cn(MONO, BOLD, T16)}>
-                packages/app-core
-              </text>
-              <text x="900" y="56" textAnchor="end" className={cn(MUTED, T12)}>
-                behaviour, all of it
-              </text>
-              <g className={cn(MONO, T12)}>
-                <rect x="60" y="84" width="96" height="28" rx="6" className={CHIP} />
-                <text x="108" y="98" textAnchor="middle">
-                  model
-                </text>
-                <rect x="166" y="84" width="96" height="28" rx="6" className={CHIP} />
-                <text x="214" y="98" textAnchor="middle">
-                  parsers
-                </text>
-                <rect x="272" y="84" width="96" height="28" rx="6" className={CHIP} />
-                <text x="320" y="98" textAnchor="middle">
-                  services
-                </text>
-                <rect x="378" y="84" width="96" height="28" rx="6" className={CHIP} />
-                <text x="426" y="98" textAnchor="middle">
-                  cache
-                </text>
-                <rect x="484" y="84" width="96" height="28" rx="6" className={CHIP} />
-                <text x="532" y="98" textAnchor="middle">
-                  articles
-                </text>
-                <rect x="590" y="84" width="96" height="28" rx="6" className={CHIP} />
-                <text x="638" y="98" textAnchor="middle">
-                  feeds
-                </text>
-                <rect x="696" y="84" width="96" height="28" rx="6" className={CHIP} />
-                <text x="744" y="98" textAnchor="middle">
-                  audio
-                </text>
-                <rect x="802" y="84" width="96" height="28" rx="6" className={CHIP} />
-                <text x="850" y="98" textAnchor="middle">
-                  stores
-                </text>
-              </g>
-              <text x="60" y="146" className={cn(T13, BOLD)}>
-                Imports no UI framework and no platform SDK. That rule is what gives the package its
-                value.
-              </text>
-              <text x="60" y="176" className={cn(T12, MUTED)}>
-                <tspan className={MONO}>packages/app-core/test/boundary.test.ts</tspan> fails the
-                build if a platform import ever appears.
-              </text>
-
-              <line
-                x1="150"
-                y1="218"
-                x2="150"
-                y2="254"
-                className={WIRE}
-                markerEnd="url(#d1-arrow)"
-              />
-              <line
-                x1="370"
-                y1="218"
-                x2="370"
-                y2="254"
-                className={WIRE}
-                markerEnd="url(#d1-arrow)"
-              />
-              <line
-                x1="590"
-                y1="218"
-                x2="590"
-                y2="254"
-                className={WIRE}
-                markerEnd="url(#d1-arrow)"
-              />
-              <line
-                x1="810"
-                y1="218"
-                x2="810"
-                y2="254"
-                className={WIRE}
-                markerEnd="url(#d1-arrow)"
-              />
-              <text x="600" y="236" className={cn(T11, MUTED)}>
-                the core calls
-              </text>
-
-              <rect x="45" y="250" width="430" height="214" rx="10" className={DASHED} />
-              <text x="260" y="250" textAnchor="middle" className={cn(T11, MUTED, HALO)}>
-                storage ports
-              </text>
-
-              <g className={T12}>
-                <rect x="55" y="258" width="190" height="198" rx="8" className={CARD} />
-                <text x="150" y="280" textAnchor="middle" className={cn(MONO, BOLD, T13)}>
-                  KeyValueStore
-                </text>
-                <line x1="55" y1="298" x2="245" y2="298" className={RULE} />
-                <text x="150" y="318" textAnchor="middle" className={cn(T11, MUTED)}>
-                  the core needs
-                </text>
-                <text x="150" y="338" textAnchor="middle">
-                  small settings,
-                </text>
-                <text x="150" y="355" textAnchor="middle">
-                  asynchronously
-                </text>
-                <text x="150" y="388" textAnchor="middle" className={cn(T11, MUTED)}>
-                  this host answers with
-                </text>
-                <text x="150" y="408" textAnchor="middle">
-                  AsyncStorage, one prefixed
-                </text>
-                <text x="150" y="425" textAnchor="middle">
-                  key per setting
-                </text>
-
-                <rect x="275" y="258" width="190" height="198" rx="8" className={CARD} />
-                <text x="370" y="280" textAnchor="middle" className={cn(MONO, BOLD, T13)}>
-                  BlobStore
-                </text>
-                <line x1="275" y1="298" x2="465" y2="298" className={RULE} />
-                <text x="370" y="318" textAnchor="middle" className={cn(T11, MUTED)}>
-                  the core needs
-                </text>
-                <text x="370" y="338" textAnchor="middle">
-                  the HTTP cache,
-                </text>
-                <text x="370" y="355" textAnchor="middle">
-                  asynchronously
-                </text>
-                <text x="370" y="388" textAnchor="middle" className={cn(T11, MUTED)}>
-                  this host answers with
-                </text>
-                <text x="370" y="408" textAnchor="middle">
-                  AsyncStorage
-                </text>
-
-                <rect x="495" y="258" width="190" height="198" rx="8" className={CARD} />
-                <text x="590" y="280" textAnchor="middle" className={cn(MONO, BOLD, T13)}>
-                  ContentBundle
-                </text>
-                <line x1="495" y1="298" x2="685" y2="298" className={RULE} />
-                <text x="590" y="318" textAnchor="middle" className={cn(T11, MUTED)}>
-                  the core needs
-                </text>
-                <text x="590" y="338" textAnchor="middle">
-                  what shipped inside the app
-                </text>
-                <text x="590" y="388" textAnchor="middle" className={cn(T11, MUTED)}>
-                  this host answers with
-                </text>
-                <text x="590" y="408" textAnchor="middle">
-                  generated TS modules
-                </text>
-
-                <rect x="715" y="258" width="190" height="198" rx="8" className={CARD} />
-                <text x="810" y="280" textAnchor="middle" className={cn(MONO, BOLD, T13)}>
-                  AudioBackend
-                </text>
-                <line x1="715" y1="298" x2="905" y2="298" className={RULE} />
-                <text x="810" y="318" textAnchor="middle" className={cn(T11, MUTED)}>
-                  the core needs
-                </text>
-                <text x="810" y="338" textAnchor="middle">
-                  playback, as status ticks
-                </text>
-                <text x="810" y="388" textAnchor="middle" className={cn(T11, MUTED)}>
-                  this host answers with
-                </text>
-                <text x="810" y="408" textAnchor="middle">
-                  expo-audio's status events
-                </text>
-              </g>
-
-              <text x="260" y="476" textAnchor="middle" className={cn(T11, MUTED)}>
-                both asynchronous, split only
-              </text>
-              <text x="260" y="490" textAnchor="middle" className={cn(T11, MUTED)}>
-                by what they hold, a settings
-              </text>
-              <text x="260" y="504" textAnchor="middle" className={cn(T11, MUTED)}>
-                string against a megabyte of feeds
-              </text>
-
-              <line
-                x1="150"
-                y1="520"
-                x2="150"
-                y2="460"
-                className={WIRE}
-                markerEnd="url(#d1-arrow)"
-              />
-              <line
-                x1="370"
-                y1="520"
-                x2="370"
-                y2="460"
-                className={WIRE}
-                markerEnd="url(#d1-arrow)"
-              />
-              <line
-                x1="590"
-                y1="520"
-                x2="590"
-                y2="460"
-                className={WIRE}
-                markerEnd="url(#d1-arrow)"
-              />
-              <line
-                x1="810"
-                y1="520"
-                x2="810"
-                y2="460"
-                className={WIRE}
-                markerEnd="url(#d1-arrow)"
-              />
-              <text x="600" y="490" className={cn(T11, MUTED)}>
-                the host implements
-              </text>
-
-              <rect x="40" y="520" width="880" height="170" rx="8" className={BOX} />
-              <rect x="41" y="521" width="878" height="34" rx="7" className={BAND} />
-              <line x1="40" y1="556" x2="920" y2="556" className={RULE_STRONG} />
-              <text x="480" y="538" textAnchor="middle" className={T12}>
-                <tspan className={MUTED}>adapter </tspan>
-                <tspan className={cn(MONO, BOLD)}>apps/mobile/src/lib/platform/expo.ts</tspan>
-                <tspan className={MUTED}>
-                  , one small file, and the whole cost of adding a host
-                </tspan>
-              </text>
-              <text x="60" y="592" className={cn(MONO, BOLD, T16)}>
-                apps/mobile
-              </text>
-              <text x="900" y="592" textAnchor="end" className={cn(MUTED, T12)}>
-                the host, all of the platform
-              </text>
-              <text x="60" y="622" className={T13}>
-                Expo / React Native
-              </text>
-              <text x="60" y="648" className={cn(T13, MUTED)}>
-                targets iOS, Android and web
-              </text>
-            </svg>
-          </section>
-          <figcaption className={CAPTION}>
-            <strong>
-              Everything that behaves lives above the ports; everything that touches a platform
-              lives below them.
-            </strong>{' '}
-            The core declares the four interfaces and calls them, the host answers each one in{' '}
-            <code>expo.ts</code>, and a test keeps the line from moving. Adding a second host means
-            writing that one file again.
-          </figcaption>
-          <div className={ALT} id="d1-alt">
-            <h3>The same diagram as a list</h3>
-            <dl>
-              <dt>
-                <code>packages/app-core</code>, the behaviour
-              </dt>
-              <dd>
-                Contains model, parsers, services, cache, articles, feeds, audio and stores. It
-                imports no UI framework and no platform SDK.{' '}
-                <code>packages/app-core/test/boundary.test.ts</code> fails the build if a platform
-                import ever appears.
-              </dd>
-              <dt>Four ports, the only crossing between the two</dt>
-              <dd>
-                <ul>
-                  <li>
-                    <code>KeyValueStore</code>: the core needs small settings, asynchronously. This
-                    host answers with AsyncStorage, one prefixed key per setting.
-                  </li>
-                  <li>
-                    <code>BlobStore</code>: the core needs the HTTP cache, asynchronously. This host
-                    answers with AsyncStorage.
-                  </li>
-                  <li>
-                    <code>ContentBundle</code>: the core needs what shipped inside the app. This
-                    host answers with generated TS modules.
-                  </li>
-                  <li>
-                    <code>AudioBackend</code>: the core needs playback, as status ticks. This host
-                    answers with expo-audio's status events.
-                  </li>
-                </ul>
-                Both storage ports are asynchronous. What separates them is what they hold, a
-                settings string against a megabyte of cached feeds.
-              </dd>
-              <dt>The adapter</dt>
-              <dd>
-                <code>apps/mobile/src/lib/platform/expo.ts</code>, one small file. It is the whole
-                cost of adding a host.
-              </dd>
-              <dt>
-                <code>apps/mobile</code>, the host
-              </dt>
-              <dd>Expo / React Native, targeting iOS, Android and web.</dd>
-            </dl>
-          </div>
-        </figure>
+        <CoreAndHost />
       </section>
 
       <section id="decisions" aria-labelledby="h-decisions" className={SECTION}>

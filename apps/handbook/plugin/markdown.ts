@@ -224,6 +224,9 @@ function plain(raw: string): string {
  * second symptom is subtle, a second document's repeated heading getting a `-1`
  * suffix because the first document had already used the bare slug.
  */
+/** What `blobBase` puts between the repository and the path, and what a raw file needs instead. */
+const REPO_BLOB_SEGMENT = '/blob';
+
 export function renderDoc(
   source: { id: string; file: string; route: string; nav: string; blurb: string },
   markdown: string,
@@ -244,6 +247,44 @@ export function renderDoc(
         const id = n === 0 ? base : `${base}-${n}`;
         headings.push({ depth: token.depth, id, text: stripTags(text) });
         return `<h${token.depth} id="${id}">${text}</h${token.depth}>\n`;
+      },
+      /**
+       * A fenced block that names a drawing, which the site draws instead.
+       *
+       * The convention is an info string of `text diagram=<id>`. The ASCII stays
+       * in the Markdown, because in an editor and on GitHub it is the only
+       * picture there is, and this repository's rule is that no document has a
+       * second copy anywhere. The site has the same drawing as SVG on
+       * `/diagrams`, so here it leaves a slot and `pages/Document.tsx` renders
+       * the real figure into it.
+       *
+       * An id nothing answers renders as the code block it always was, which is
+       * the failure worth having: a diagram that is merely not drawn yet still
+       * says what it says.
+       */
+      code(token: Tokens.Code) {
+        const named = /(?:^|\s)diagram=([\w-]+)/.exec(token.lang ?? '');
+        if (!named) return false;
+        return `<div data-diagram="${escapeAttr(named[1])}"></div>`;
+      },
+      /**
+       * An image in a document, which lives in the repository and not here.
+       *
+       * The same rule as a link, one step further: a link to a file the site does
+       * not publish becomes a link into the repository at the built commit, and an
+       * image has to become the raw bytes rather than GitHub's page about them.
+       * Without this the `<img>` kept its repository-relative path, which the
+       * browser resolved against the route it was on, and `README.md`'s header
+       * image asked this site for `/docs/readme-header.png`, which it does not
+       * serve.
+       */
+      image(token: Tokens.Image) {
+        const target = resolveHref(token.href, source.file, routes, blobBase);
+        const src = target.external
+          ? target.href.replace(`${REPO_BLOB_SEGMENT}/`, '/raw/')
+          : target.href;
+        const title = token.title ? ` title="${escapeAttr(token.title)}"` : '';
+        return `<img src="${escapeAttr(src)}" alt="${escapeAttr(token.text)}"${title} loading="lazy" />`;
       },
       link(token: Tokens.Link) {
         const target = resolveHref(token.href, source.file, routes, blobBase);
