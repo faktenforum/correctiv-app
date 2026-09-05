@@ -10,6 +10,9 @@ interface Props {
 /**
  * The in-page contents, following the heading currently on screen.
  *
+ * It has no chrome of its own: the shell puts it inside the right sidebar, which
+ * already carries the title and the way to shut it.
+ *
  * Only h2 and h3. An h4 in these documents is a detail inside an argument, and
  * listing them turns a map into a transcript. The observer's top margin keeps a
  * heading current while its section is being read rather than only while the
@@ -38,13 +41,7 @@ export function Toc({ headings }: Props) {
   if (shown.length < 2) return null;
 
   return (
-    <aside
-      aria-label="On this page"
-      className="sticky top-[3.5rem] hidden h-[calc(100dvh-3.5rem)] w-[13rem] shrink-0 overflow-y-auto border-l border-stroke p-sm xl:block"
-    >
-      <p className="mb-xs text-s font-semibold uppercase tracking-wider text-on-canvas-muted">
-        On this page
-      </p>
+    <nav aria-label="On this page" className="p-s">
       <ul className="space-y-3xs text-m">
         {shown.map((heading) => (
           <li key={heading.id} className={heading.depth === 3 ? 'pl-s' : undefined}>
@@ -64,6 +61,6 @@ export function Toc({ headings }: Props) {
           </li>
         ))}
       </ul>
-    </aside>
+    </nav>
   );
 }

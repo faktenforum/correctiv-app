@@ -137,21 +137,13 @@ export function Panels(props: Props) {
   const findings = tools.measure.report?.findings.length ?? null;
 
   return (
-    <aside
-      aria-labelledby="wb-dock-heading"
-      className="flex h-full min-h-0 flex-col border-l border-stroke bg-surface text-on-surface"
-    >
+    <div className="flex h-full min-h-0 flex-col">
+      {/* Three counts and a way into the panel that explains each. The number is
+          written out beside the word it counts, so the summary reads the same to
+          somebody who cannot tell the yellow from the red. It stays put while the
+          panels scroll, which is why the sidebar is told not to scroll this. */}
       <div className="shrink-0 border-b border-stroke px-s py-xs">
-        <h2
-          id="wb-dock-heading"
-          className="text-s font-semibold uppercase tracking-wider text-on-canvas-muted"
-        >
-          Tools
-        </h2>
-        {/* Three counts and a way into the panel that explains each. The number
-            is written out beside the word it counts, so the summary reads the
-            same to somebody who cannot tell the yellow from the red. */}
-        <div className="mt-2xs flex flex-wrap items-center gap-2xs">
+        <div className="flex flex-wrap items-center gap-2xs">
           <Summary onClick={() => reveal('console')} hint="Open the Console panel">
             <Count n={status.warnings} tone="warn" label="warnings" />
           </Summary>
@@ -195,7 +187,7 @@ export function Panels(props: Props) {
           <Inspect {...props} panel={disclosure('inspect')} />
         </div>
       </div>
-    </aside>
+    </div>
   );
 }
 
@@ -297,7 +289,7 @@ function Panel({
         <h3>
           <CollapsibleTrigger
             className={cn(
-              'group flex w-full items-center gap-xs px-s py-xs text-left hover:bg-canvas',
+              'group flex w-full flex-wrap items-center gap-xs px-s py-xs text-left hover:bg-canvas',
               'focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-accent',
             )}
           >
@@ -306,7 +298,7 @@ function Panel({
               className="size-[0.875rem] shrink-0 text-on-canvas-muted transition-transform group-data-[state=open]:rotate-90"
             />
             <Icon aria-hidden="true" className="size-[0.875rem] shrink-0 text-on-canvas-muted" />
-            <span className="text-m font-semibold text-on-canvas">{title}</span>
+            <span className="min-w-0 text-m font-semibold text-on-canvas">{title}</span>
             {tags && (
               <span className="ml-auto flex flex-wrap items-center justify-end gap-3xs">
                 {tags}

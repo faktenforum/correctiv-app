@@ -1,6 +1,6 @@
 import { ArrowRight } from 'lucide-react';
 
-import { COUNTS, MEASURED_ON } from '../../content/sources.manifest';
+import { COUNTS, FEEDS, MEASURED_ON } from '../../content/sources.manifest';
 import docsModule from 'virtual:docs';
 import { Badge } from '../ui/kit/badge';
 import { cn } from '../lib/cn';
@@ -72,7 +72,7 @@ const FIGURES: { label: string; value: number }[] = [
  */
 export function Landing() {
   return (
-    <main id="content" className="min-w-0 flex-1 px-m py-xl lg:px-ml">
+    <div className="px-m py-xl lg:px-ml">
       <div className="mx-auto max-w-wide">
         <section>
           <h1
@@ -108,9 +108,11 @@ export function Landing() {
                 What the app reads
               </h2>
               <p className="mt-xs text-m leading-relaxed text-on-canvas-muted">
-                Counted from the source manifest. The underlying figures were measured by hand
-                against the live sources on {MEASURED_ON} and nothing here refreshes: a browser
-                cannot re-take them, because the feeds send no CORS header.
+                One per manifest entry, which is why the board counts more: it draws the article
+                family as its {FEEDS.length} feeds, because a feed is the thing that goes stale. The
+                figures were measured by hand against the live sources on {MEASURED_ON} and nothing
+                here refreshes, because the feeds send no CORS header for a browser to re-take them
+                through.
               </p>
             </div>
             <dl className="grid grid-cols-2 gap-sm self-start sm:grid-cols-4 lg:gap-m">
@@ -245,6 +247,6 @@ export function Landing() {
           </p>
         </footer>
       </div>
-    </main>
+    </div>
   );
 }

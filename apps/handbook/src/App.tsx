@@ -1,4 +1,4 @@
-import { type ReactElement, useEffect, useState } from 'react';
+import { type ReactNode, useCallback, useEffect, useState } from 'react';
 
 import docsModule from 'virtual:docs';
 import { Diagrams } from './pages/Diagrams';
@@ -6,55 +6,120 @@ import { Document } from './pages/Document';
 import { Landing } from './pages/Landing';
 import { Reference } from './pages/Reference';
 import { Sources } from './pages/Sources';
+import { ActivityBar } from './ui/ActivityBar';
 import { Header } from './ui/Header';
 import { Search } from './ui/Search';
 import { Sidebar } from './ui/Sidebar';
+import { SidePanel } from './ui/SidePanel';
+import { StatusBar } from './ui/StatusBar';
+import { Toc } from './ui/Toc';
+import { ResizableHandle, ResizablePanel, ResizablePanelGroup } from './ui/kit/resizable';
 import { TooltipProvider } from './ui/kit/tooltip';
-import { Workbench } from './workbench/Workbench';
+import { useWorkbench } from './workbench/Workbench';
+import { Panels } from './workbench/ui/Panels';
+import { Readout } from './workbench/ui/Readout';
+import { Stage } from './workbench/ui/Stage';
+import { LinkBar, Toolbar } from './workbench/ui/Toolbar';
+import { cn } from './lib/cn';
 import { PAGE_TITLES } from './nav';
 import { useAppearance } from './theme';
-import { useLinkInterception, useRoute } from './router';
+import { currentPath, useLinkInterception, useRoute } from './router';
+
+/** The views answered with a component rather than with a repository document. */
+const PAGES: Record<string, () => ReactNode> = {
+  '/': Landing,
+  '/diagrams': Diagrams,
+  '/reference': Reference,
+  '/sources': Sources,
+};
+
+const APP_VIEW = '/workbench';
 
 /**
- * Routes the handbook answers with a component of its own.
+ * One application, not a site with a tool bolted to the side of it.
  *
- * The workbench is not here: it is the one page that needs the site's appearance
- * state, so `App` renders it by name. `test/routes.test.ts` holds this set apart
- * from the documents, because a route that collided with one would shadow it
- * with no error anywhere.
+ * Everything is a view of the same shell: a record, the sources board, the
+ * drawings, the core's reference and the app itself in its frame. The rail on
+ * the far left reaches any of them from any of them, the left sidebar holds what
+ * is in the current section, and the right sidebar holds whatever the open view
+ * has to say about itself, the inspector for the app and the contents for a
+ * document.
+ *
+ * The workbench used to be a route with chrome of its own, which made it a second
+ * site rather than a view. Its parts are now in the places this shell keeps for
+ * them: its controls in the context bar, its panels in the right sidebar, its
+ * readout and its link in the status line.
  */
-const PAGES = new Map<string, () => ReactElement>([
-  ['/', Landing],
-  ['/diagrams', Diagrams],
-  ['/reference', Reference],
-  ['/sources', Sources],
-]);
-
-/** Pages that bring their own chrome, so the site's header and rail stand down. */
-const OWN_CHROME = new Set(['/workbench']);
-
 export function App() {
   const [route] = useRoute();
   const [appearance, setAppearance] = useAppearance();
-  const [navOpen, setNavOpen] = useState(true);
   const [searchOpen, setSearchOpen] = useState(false);
 
+  const doc = docsModule.docs.find((d) => d.route === route);
+  const Page = PAGES[route];
+  const isApp = route === APP_VIEW;
+
+  const workbench = useWorkbench(isApp);
   useLinkInterception();
+
+  /*
+   * The app view opens with both sidebars shut, and that is a product rule
+   * rather than a preference. The address is handed to people who want to see
+   * the app; a documentation tree and an inspector are not what they came for.
+   * The rail stays, because it is the way back.
+   */
+  const [explorerOpen, setExplorerOpen] = useState(() => currentPath() !== APP_VIEW);
+
+  /*
+   * Whether the right sidebar is open is per-view state everywhere except on the
+   * app, where it is in the URL under `tools`. That parameter predates this
+   * shell and is the difference between the link `README.md` hands out and the
+   * link somebody sends a colleague to show them a console error, so it keeps
+   * its meaning: opening the sidebar changes the address, and the address opens
+   * the sidebar.
+   */
+  const [docToolsOpen, setDocToolsOpen] = useState(false);
+  const toolsOpen = isApp ? workbench.state.tools : docToolsOpen;
+  const change = workbench.onChange;
+  const setToolsOpen = useCallback(
+    (next: boolean) => {
+      if (isApp) change({ tools: next });
+      else setDocToolsOpen(next);
+    },
+    [change, isApp],
+  );
+
+  /*
+   * The right sidebar belongs to the open view. For the app it is the inspector,
+   * for a record it is the contents, and for the rest there is nothing worth a
+   * surface, so the control that opens it is absent rather than opening an empty
+   * box. The title is what decides that, and it is a string rather than the
+   * panel itself so the shortcut below does not re-bind on every render.
+   */
+  const contents = !isApp && doc && countSections(doc.headings) > 1 ? doc.headings : null;
+  const toolsTitle = isApp ? 'Tools' : contents ? 'On this page' : null;
 
   useEffect(() => {
     const onKey = (event: KeyboardEvent) => {
-      if ((event.metaKey || event.ctrlKey) && event.key.toLowerCase() === 'k') {
+      const meta = event.metaKey || event.ctrlKey;
+      const key = event.key.toLowerCase();
+      if (meta && key === 'k') {
         event.preventDefault();
         setSearchOpen((open) => !open);
+      }
+      // The two sidebar shortcuts an editor has, on the keys it has them on.
+      if (meta && key === 'b') {
+        event.preventDefault();
+        setExplorerOpen((open) => !open);
+      }
+      if (meta && key === 'j' && toolsTitle) {
+        event.preventDefault();
+        setToolsOpen(!toolsOpen);
       }
     };
     window.addEventListener('keydown', onKey);
     return () => window.removeEventListener('keydown', onKey);
-  }, []);
-
-  const doc = docsModule.docs.find((d) => d.route === route);
-  const Page = PAGES.get(route);
-  const ownChrome = OWN_CHROME.has(route);
+  }, [setToolsOpen, toolsOpen, toolsTitle]);
 
   useEffect(() => {
     const named = PAGE_TITLES[route];
@@ -62,37 +127,126 @@ export function App() {
       route === '/' ? 'CORRECTIV app handbook' : `${named ?? doc?.title ?? 'Not found'} — Handbook`;
   }, [doc, route]);
 
-  if (ownChrome) {
-    return (
-      <TooltipProvider delayDuration={300}>
-        <Workbench appearance={appearance} onAppearance={setAppearance} />
-      </TooltipProvider>
-    );
-  }
-
   return (
     <TooltipProvider delayDuration={300}>
-      <a
-        href="#content"
-        className="sr-only focus:not-sr-only focus:absolute focus:left-3 focus:top-3 focus:z-50 focus:rounded-md focus:bg-accent focus:px-s focus:py-xs focus:text-white"
-      >
-        Skip to content
-      </a>
+      <div className="flex h-dvh flex-col bg-canvas text-on-canvas">
+        <a
+          href="#content"
+          className="sr-only focus:not-sr-only focus:absolute focus:left-s focus:top-s focus:z-50 focus:rounded-md focus:bg-accent focus:px-s focus:py-xs focus:text-white"
+        >
+          Skip to content
+        </a>
 
-      <Header
-        appearance={appearance}
-        onAppearance={setAppearance}
-        onSearch={() => setSearchOpen(true)}
-        onToggleNav={() => setNavOpen((open) => !open)}
-        navOpen={navOpen}
-        hasNav={route !== '/'}
-      />
+        <Header
+          appearance={appearance}
+          onAppearance={setAppearance}
+          onSearch={() => setSearchOpen(true)}
+          explorerOpen={explorerOpen}
+          onToggleExplorer={() => setExplorerOpen((open) => !open)}
+          toolsOpen={toolsOpen}
+          onToggleTools={toolsTitle ? () => setToolsOpen(!toolsOpen) : undefined}
+          toolsLabel={toolsTitle ?? undefined}
+        >
+          {isApp && (
+            <Toolbar
+              state={workbench.state}
+              status={workbench.status}
+              routeField={workbench.routeField}
+              onRouteField={workbench.setRouteField}
+              onChange={workbench.onChange}
+              onReload={workbench.onReload}
+              onRaw={workbench.onRaw}
+            />
+          )}
+        </Header>
 
-      <div className="flex items-start">
-        {route !== '/' && (
-          <Sidebar route={route} open={navOpen} onClose={() => setNavOpen(false)} />
-        )}
-        {Page ? <Page /> : doc ? <Document doc={doc} /> : <NotFound route={route} />}
+        <div className="flex min-h-0 flex-1">
+          <ActivityBar route={route} />
+
+          <ResizablePanelGroup className="min-w-0 flex-1">
+            {explorerOpen && (
+              <>
+                <ResizablePanel defaultSize="18%" minSize="12%" maxSize="34%">
+                  <SidePanel title="Explorer" side="left" onClose={() => setExplorerOpen(false)}>
+                    <Sidebar route={route} />
+                  </SidePanel>
+                </ResizablePanel>
+                <ResizableHandle />
+              </>
+            )}
+
+            <ResizablePanel minSize="30%">
+              {/*
+                The one scroller. Every view is a block inside it, which is why
+                none of them carries a `main` or a height of its own any more.
+              */}
+              <main id="content" className="h-full min-h-0 overflow-auto">
+                {isApp ? (
+                  <Stage
+                    state={workbench.state}
+                    scale={workbench.scale}
+                    stageRef={workbench.stageRef}
+                    frameRef={workbench.frameRef}
+                    onResize={workbench.onResize}
+                    onLoad={workbench.onLoad}
+                  />
+                ) : Page ? (
+                  <Page />
+                ) : doc ? (
+                  <Document doc={doc} />
+                ) : (
+                  <NotFound route={route} />
+                )}
+              </main>
+            </ResizablePanel>
+
+            {toolsTitle && toolsOpen && (
+              <>
+                <ResizableHandle />
+                {/* A list of headings needs a fifth of the width; the
+                    inspector, which holds forms and a console, needs a third. */}
+                <ResizablePanel defaultSize={contents ? '19%' : '31%'} minSize="14%" maxSize="55%">
+                  <SidePanel
+                    title={toolsTitle}
+                    side="right"
+                    scroll={contents !== null}
+                    onClose={() => setToolsOpen(false)}
+                  >
+                    {contents ? (
+                      <Toc headings={contents} />
+                    ) : (
+                      <Panels
+                        state={workbench.state}
+                        status={workbench.status}
+                        logs={workbench.logs}
+                        tools={workbench.tools}
+                        onChange={workbench.onChange}
+                        onClearLogs={workbench.clearLogs}
+                      />
+                    )}
+                  </SidePanel>
+                </ResizablePanel>
+              </>
+            )}
+          </ResizablePanelGroup>
+        </div>
+
+        <StatusBar>
+          {isApp ? (
+            <>
+              <Readout status={workbench.status} size={workbench.size} scale={workbench.scale} />
+              <span className="min-w-0 flex-1" />
+              <LinkBar state={workbench.state} />
+            </>
+          ) : (
+            /* The path of the file being rendered, in the typeface a path is
+               written in. A page that is not a document has no file, so it says
+               what it is instead. */
+            <span className={cn('truncate', doc && 'font-mono')}>
+              {doc ? doc.file : (PAGE_TITLES[route] ?? route)}
+            </span>
+          )}
+        </StatusBar>
       </div>
 
       <Search open={searchOpen} onClose={() => setSearchOpen(false)} />
@@ -100,14 +254,19 @@ export function App() {
   );
 }
 
+/** h2 and h3 only, the same two depths `Toc` lists. Fewer than two is no map. */
+function countSections(headings: { depth: number }[]): number {
+  return headings.filter((h) => h.depth === 2 || h.depth === 3).length;
+}
+
 function NotFound({ route }: { route: string }) {
   return (
-    <main id="content" className="mx-auto max-w-content px-m py-2xl">
-      <h1 className="text-2xl font-semibold">No page at {route}</h1>
+    <div className="mx-auto max-w-content px-m py-2xl">
+      <h1 className="text-headline-l font-semibold">No page at {route}</h1>
       <p className="mt-s text-on-canvas-muted">
         The handbook publishes the repository&apos;s own documents. This address matches none of
-        them. Try the navigation, or press <kbd className="font-mono">⌘K</kbd>.
+        them. Press <kbd className="font-mono">⌘K</kbd> to search.
       </p>
-    </main>
+    </div>
   );
 }

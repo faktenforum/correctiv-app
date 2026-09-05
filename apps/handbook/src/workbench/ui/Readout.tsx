@@ -2,17 +2,16 @@ import { cn } from '../../lib/cn';
 import { COMBINATIONS, type Status } from '../api';
 
 /**
- * Size, zoom, and which appearance combination is actually on screen.
+ * Which appearance combination is actually on screen, plus size and zoom.
  *
- * The last part is the point. `TROUBLESHOOTING.md` records a shipped bug that a
+ * The first part is the point. `TROUBLESHOOTING.md` records a shipped bug that a
  * browser walk missed precisely because the walk set the app to `dark` and
  * emulated `prefers-color-scheme: light`, "exercising both paths that work and
  * neither that breaks". You cannot avoid a combination you cannot see you are
  * in, so the shell states it rather than leaving it to be inferred.
  *
- * It sits below the frame rather than above it because it is the only component
- * holding `Status`: `Stage`'s props are the contract with `Workbench.tsx` and
- * carry the state, not what was read back out of the frame.
+ * It goes in the status line because that is where a fact about the current view
+ * belongs, and because the line is there on every view anyway.
  */
 export function Readout({
   status,
@@ -25,8 +24,8 @@ export function Readout({
 }) {
   const combo = COMBINATIONS.find((c) => c.n === status.combination);
   return (
-    <footer className="flex flex-wrap items-center gap-x-s gap-y-3xs border-t border-stroke bg-surface px-s py-xs text-s text-on-canvas-muted">
-      <div className="flex flex-wrap items-center gap-x-2xs gap-y-3xs rounded-md border border-stroke bg-canvas px-xs py-3xs">
+    <>
+      <span className="flex shrink-0 items-center gap-2xs">
         {/*
           A swatch of what the APP is painting, which must not follow this page's
           own scheme. `bg-white` and `bg-neutral-700` are primitives for exactly
@@ -40,44 +39,36 @@ export function Readout({
             status.active === 'dark' ? 'bg-neutral-700' : 'bg-white',
           )}
         />
-        <span>
-          App is <b>{status.active}</b>
-        </span>
-        <span aria-hidden="true" className="text-stroke-strong">
-          |
-        </span>
-        <span>
-          setting <b>{status.appTheme ?? 'unknown'}</b>
-        </span>
-        <span aria-hidden="true" className="text-stroke-strong">
-          |
-        </span>
-        <span>
-          device reports <b>{status.scheme ?? 'unknown'}</b>
-        </span>
-        <span aria-hidden="true" className="text-stroke-strong">
-          |
-        </span>
-        <span>
-          combination{' '}
-          <b className="font-mono tabular-nums">{combo ? `${combo.n} of 4` : 'unknown'}</b>
-          {combo?.isDefault && ', the default'}
-        </span>
-        <span className="ml-xs tabular-nums">
-          {size.w} × {size.h} px at {Math.round(scale * 100)}%
-        </span>
-      </div>
+        App is <b className="text-on-canvas">{status.active}</b>
+      </span>
+
+      <span className="hidden shrink-0 md:inline">
+        setting <b className="text-on-canvas">{status.appTheme ?? 'unknown'}</b>, device reports{' '}
+        <b className="text-on-canvas">{status.scheme ?? 'unknown'}</b>
+      </span>
+
+      <span className="hidden shrink-0 lg:inline">
+        combination{' '}
+        <b className="font-mono tabular-nums text-on-canvas">
+          {combo ? `${combo.n} of 4` : 'unknown'}
+        </b>
+        {combo?.isDefault && ', the default'}
+      </span>
+
+      <span className="shrink-0 tabular-nums">
+        {size.w} × {size.h} at {Math.round(scale * 100)}%
+      </span>
 
       {/*
-        Said in words, not by greying something out. Half the panels behind the
-        tools switch cannot work in the static export, and a reader who never
-        opens them still deserves to know which build they are looking at.
+        Said in words, not by greying something out. Half the panels in the tools
+        sidebar cannot work in the static export, and a reader who never opens
+        them still deserves to know which build they are looking at.
       */}
       {!status.handle && (
-        <span>
-          Published build: no dev handle, so the appearance setting and the inspector are inert.
+        <span className="hidden shrink-0 text-on-canvas-accent xl:inline">
+          Published build, no dev handle
         </span>
       )}
-    </footer>
+    </>
   );
 }

@@ -54,14 +54,22 @@ export function Stage({ state, scale, stageRef, frameRef, onResize, onLoad }: Pr
   }, [w, h, scale, onResize]);
 
   return (
-    <div
-      ref={stageRef}
-      className="stage-grid relative flex h-full min-h-0 flex-col items-center gap-s overflow-auto p-m"
-    >
+    <div className="stage-grid flex h-full min-h-0 flex-col">
       <h2 className="sr-only">App frame</h2>
 
-      <div className="relative shrink-0" style={{ width: w * scale, height: h * scale }}>
-        {/*
+      {/*
+        The box the frame is measured against, and nothing else in it. The
+        caption below used to be a sibling inside this box, which meant `useScale`
+        had to guess how tall two lines of prose would be, and it guessed low: the
+        frame ran off the bottom of the view at 900px tall.
+
+        `m-auto` rather than `items-center`, because a frame larger than the box
+        has to be scrollable from its own top left, and centring in a scroll
+        container puts the top out of reach.
+      */}
+      <div ref={stageRef} className="relative flex min-h-0 flex-1 overflow-auto p-m">
+        <div className="relative m-auto shrink-0" style={{ width: w * scale, height: h * scale }}>
+          {/*
           The ground behind the app while it boots. Only a pinned dark setting is
           known here without reading the frame, and reading the frame is the
           `Readout`'s job; guessing anything else would flash the wrong colour
@@ -71,17 +79,17 @@ export function Stage({ state, scale, stageRef, frameRef, onResize, onLoad }: Pr
           from its own top left, the device covers exactly `w * scale` by
           `h * scale`, which is what the handles are then positioned against.
         */}
-        <div
-          className="overflow-hidden rounded-md border border-stroke-strong bg-white text-neutral-700 shadow-lg"
-          data-app-scheme={state.theme === 'dark' ? 'dark' : undefined}
-          style={{
-            width: w,
-            height: h,
-            transform: `scale(${scale})`,
-            transformOrigin: 'top left',
-          }}
-        >
-          {/*
+          <div
+            className="overflow-hidden rounded-md border border-stroke-strong bg-white text-neutral-700 shadow-lg"
+            data-app-scheme={state.theme === 'dark' ? 'dark' : undefined}
+            style={{
+              width: w,
+              height: h,
+              transform: `scale(${scale})`,
+              transformOrigin: 'top left',
+            }}
+          >
+            {/*
             No `sandbox`, on purpose. The attribute's useful values would have to
             include `allow-same-origin` for this tool to work at all, since
             reading the frame's route, its console and its store is the entire
@@ -89,53 +97,54 @@ export function Stage({ state, scale, stageRef, frameRef, onResize, onLoad }: Pr
             from this very origin is a sandbox that sandboxes nothing. An
             attribute that only looks like a precaution is worse than none.
           */}
-          {/* eslint-disable-next-line react/iframe-missing-sandbox */}
-          <iframe
-            className="block h-full w-full border-0 bg-transparent"
-            ref={frameRef}
-            title="App preview"
-            allow="autoplay; fullscreen; encrypted-media"
-            onLoad={onLoad}
-          />
-        </div>
-        {/*
+            {/* eslint-disable-next-line react/iframe-missing-sandbox */}
+            <iframe
+              className="block h-full w-full border-0 bg-transparent"
+              ref={frameRef}
+              title="App preview"
+              allow="autoplay; fullscreen; encrypted-media"
+              onLoad={onLoad}
+            />
+          </div>
+          {/*
           Pointer only, and deliberately not the sole way to change the size:
           the same numbers are in the toolbar, in two fields, whenever the device
           is the person's own.
         */}
-        <div
-          ref={right}
-          className={cn(
-            HANDLE,
-            '-right-s top-0 h-full w-s cursor-ew-resize after:h-[2.625rem] after:w-[0.1875rem]',
-          )}
-        />
-        <div
-          ref={bottom}
-          className={cn(
-            HANDLE,
-            '-bottom-s left-0 h-s w-full cursor-ns-resize after:h-[0.1875rem] after:w-[2.625rem]',
-          )}
-        />
-        <div
-          ref={corner}
-          className={cn(
-            HANDLE,
-            '-bottom-s -right-s h-s w-s cursor-nwse-resize after:h-[0.4375rem] after:w-[0.4375rem]',
-          )}
-        />
+          <div
+            ref={right}
+            className={cn(
+              HANDLE,
+              '-right-s top-0 h-full w-s cursor-ew-resize after:h-[2.625rem] after:w-[0.1875rem]',
+            )}
+          />
+          <div
+            ref={bottom}
+            className={cn(
+              HANDLE,
+              '-bottom-s left-0 h-s w-full cursor-ns-resize after:h-[0.1875rem] after:w-[2.625rem]',
+            )}
+          />
+          <div
+            ref={corner}
+            className={cn(
+              HANDLE,
+              '-bottom-s -right-s h-s w-s cursor-nwse-resize after:h-[0.4375rem] after:w-[0.4375rem]',
+            )}
+          />
+        </div>
       </div>
 
       {/*
-        The sentence the demo audience gets, and the one the workbench does not.
-        The stylesheet hides it under `.workbench[data-tools='on']` as well; it is
-        written out of the tree here so the hint cannot be read out by a screen
-        reader that ignores the attribute this page happens to carry.
+        The sentence the demo audience gets, and the one the inspector's audience
+        does not. Written out of the tree rather than hidden, so a screen reader
+        cannot read out a hint about a sidebar that is already open.
       */}
       {!state.tools && (
-        <p className="max-w-[34rem] text-center text-m text-on-canvas-muted">
-          This is the app at device size. Pick a device or a route above; the link bar reproduces
-          exactly what you see. The tools switch, top right, opens the workbench.
+        <p className="mx-auto max-w-[42rem] shrink-0 px-m pb-m text-center text-m text-on-canvas-muted">
+          This is the app at device size. Pick a device or a route in the bar above; the address in
+          the status line reproduces exactly what you see. Open the Tools sidebar, ⌘J, for the
+          console, the colour tokens and the element picker.
         </p>
       )}
     </div>
@@ -155,9 +164,6 @@ function drag(
   const down = (ev: PointerEvent) => {
     ev.preventDefault();
     handle.setPointerCapture(ev.pointerId);
-    // On this page's own root, not on `document.body`: the body belongs to the
-    // site and a class left there would outlive the route.
-    handle.closest('.workbench')?.setAttribute('data-dragging', 'true');
     const from = { x: ev.clientX, y: ev.clientY };
 
     const move = (e: PointerEvent) => {
@@ -176,7 +182,6 @@ function drag(
       handle.removeEventListener('pointermove', move);
       handle.removeEventListener('pointerup', up);
       handle.removeEventListener('pointercancel', up);
-      handle.closest('.workbench')?.removeAttribute('data-dragging');
     };
 
     handle.addEventListener('pointermove', move);

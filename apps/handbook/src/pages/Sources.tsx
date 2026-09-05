@@ -596,7 +596,7 @@ export function Sources() {
       : KIND_ORDER.map((kind) => ({ key: kind, label: KIND_LABEL[kind] }));
 
   return (
-    <main id="content" className="min-w-0 flex-1 px-m py-ml text-m lg:px-12">
+    <div className="px-m py-ml text-m lg:px-12">
       {/* Wider than the token package's `wide` container, which is sized for a
           column of prose. The board is seven columns and one of them is a file
           path, and capping it at 1000px puts the disclosure button off the right
@@ -1118,6 +1118,6 @@ export function Sources() {
           </p>
         </footer>
       </div>
-    </main>
+    </div>
   );
 }

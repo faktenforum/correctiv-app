@@ -50,7 +50,7 @@ export function Reference() {
   const symbolCount = modules.reduce((n, m) => n + m.symbols.length, 0);
 
   return (
-    <main id="content" className="min-w-0 flex-1 px-m py-ml lg:px-ml">
+    <div className="px-m py-ml lg:px-ml">
       <article className="mx-auto max-w-wide">
         <h1 className="text-headline-xl font-bold leading-tight tracking-tight">Reference</h1>
         <p className="mt-xs max-w-content text-m leading-relaxed text-on-canvas-muted">
@@ -119,7 +119,7 @@ export function Reference() {
           </section>
         ))}
       </article>
-    </main>
+    </div>
   );
 }
 

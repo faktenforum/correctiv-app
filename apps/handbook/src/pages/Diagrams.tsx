@@ -166,7 +166,7 @@ const ALT = cn(
  */
 export function Diagrams() {
   return (
-    <main className="min-w-0 flex-1 px-m py-ml lg:px-12" id="content">
+    <div className="px-m py-ml lg:px-12">
       {/*
         The fragment ids a reader may arrive on sit on the sections themselves.
         The design carried them on an empty anchor before the heading, which is an
@@ -1570,6 +1570,6 @@ export function Diagrams() {
           </div>
         </figure>
       </section>
-    </main>
+    </div>
   );
 }

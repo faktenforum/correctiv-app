@@ -4,7 +4,6 @@ import { useEffect, useRef } from 'react';
 import docsModule from 'virtual:docs';
 import type { RenderedDoc } from '../../plugin/markdown.ts';
 import { Badge } from '../ui/kit/badge';
-import { Toc } from '../ui/Toc';
 
 interface Props {
   doc: RenderedDoc;
@@ -13,7 +12,11 @@ interface Props {
 const REPO_BLOB = `${docsModule.repo}/blob/${docsModule.commit}`;
 
 /**
- * One document from the repository, with the site's furniture around it.
+ * One document from the repository, rendered into the shell's main area.
+ *
+ * The contents list is not here. The shell puts it in the right sidebar, beside
+ * the inspector it puts there for the app, because both answer the same question
+ * about whatever is open.
  *
  * The HTML is a string produced at build time, so it goes in through
  * `dangerouslySetInnerHTML`. That is safe in the way the name asks about: the
@@ -30,58 +33,54 @@ export function Document({ doc }: Props) {
   const record = doc.route.startsWith('/decisions/') ? doc.route.slice(11) : null;
 
   return (
-    <>
-      <main id="content" className="min-w-0 flex-1 px-m py-ml lg:px-12">
-        <article ref={article} className="mx-auto max-w-content">
-          <nav aria-label="Breadcrumb" className="mb-sm text-s text-on-canvas-muted">
-            <ol className="flex flex-wrap items-center gap-2xs">
-              <li>Handbook</li>
-              {record && (
-                <>
-                  <li aria-hidden="true">/</li>
-                  <li>Decisions</li>
-                </>
-              )}
-              <li aria-hidden="true">/</li>
-              <li className="text-on-canvas">{record ? `ADR ${record}` : doc.nav}</li>
-            </ol>
-          </nav>
+    <div className="px-m py-ml lg:px-12">
+      <article ref={article} className="mx-auto max-w-content">
+        <nav aria-label="Breadcrumb" className="mb-sm text-s text-on-canvas-muted">
+          <ol className="flex flex-wrap items-center gap-2xs">
+            <li>Handbook</li>
+            {record && (
+              <>
+                <li aria-hidden="true">/</li>
+                <li>Decisions</li>
+              </>
+            )}
+            <li aria-hidden="true">/</li>
+            <li className="text-on-canvas">{record ? `ADR ${record}` : doc.nav}</li>
+          </ol>
+        </nav>
 
-          {doc.retired.length > 0 && (
-            <p className="mb-m flex items-center gap-xs text-m text-on-canvas-muted">
-              <Badge variant="alt">{doc.retired.length} retired</Badge>
-              {doc.retired.length === 1
-                ? 'One claim on this page is'
-                : 'Claims on this page are'}{' '}
-              struck through where they stand, with what voided them beside them.
-            </p>
-          )}
+        {doc.retired.length > 0 && (
+          <p className="mb-m flex items-center gap-xs text-m text-on-canvas-muted">
+            <Badge variant="alt">{doc.retired.length} retired</Badge>
+            {doc.retired.length === 1
+              ? 'One claim on this page is'
+              : 'Claims on this page are'}{' '}
+            struck through where they stand, with what voided them beside them.
+          </p>
+        )}
 
-          <div
-            className="prose prose-sm max-w-none prose-headings:scroll-mt-20 prose-pre:border prose-pre:border-stroke"
-            dangerouslySetInnerHTML={{ __html: doc.html }}
-          />
+        <div
+          className="prose prose-sm max-w-none prose-headings:scroll-mt-20 prose-pre:border prose-pre:border-stroke"
+          dangerouslySetInnerHTML={{ __html: doc.html }}
+        />
 
-          <footer className="mt-xl border-t border-stroke pt-sm text-m text-on-canvas-muted">
-            <p>
-              This page is{' '}
-              <a
-                href={`${REPO_BLOB}/${doc.file}`}
-                target="_blank"
-                rel="noreferrer noopener"
-                className="inline-flex items-center gap-3xs font-mono text-on-canvas underline decoration-accent underline-offset-2"
-              >
-                {doc.file}
-                <ExternalLink aria-hidden="true" className="size-[0.75rem]" />
-              </a>{' '}
-              in the repository, rendered here. It is not a copy, so there is one place to edit it.
-            </p>
-          </footer>
-        </article>
-      </main>
-
-      <Toc headings={doc.headings} />
-    </>
+        <footer className="mt-xl border-t border-stroke pt-sm text-m text-on-canvas-muted">
+          <p>
+            This page is{' '}
+            <a
+              href={`${REPO_BLOB}/${doc.file}`}
+              target="_blank"
+              rel="noreferrer noopener"
+              className="inline-flex items-center gap-3xs font-mono text-on-canvas underline decoration-accent underline-offset-2"
+            >
+              {doc.file}
+              <ExternalLink aria-hidden="true" className="size-[0.75rem]" />
+            </a>{' '}
+            in the repository, rendered here. It is not a copy, so there is one place to edit it.
+          </p>
+        </footer>
+      </article>
+    </div>
   );
 }
 

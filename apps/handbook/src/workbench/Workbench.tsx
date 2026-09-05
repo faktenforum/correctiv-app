@@ -7,7 +7,6 @@ import {
   useSyncExternalStore,
 } from 'react';
 
-import type { Appearance } from '../theme';
 import { install, NO_FRAME, readFrame, registerFrame, statusOf, type FrameInfo } from './api';
 import { attachConsole } from './frame/console';
 import { applyTheme, BASE, frameRoute, navigate } from './frame/handle';
@@ -19,49 +18,28 @@ import { apply as applyTokens, type Scheme } from './frame/tokens';
 import { addLog, clearLogs, getLogs, subscribeLogs } from './logs';
 import { frameSize, type PreviewState } from './state';
 import { getState, set, start, subscribe } from './store';
-import { ResizableHandle, ResizablePanel, ResizablePanelGroup } from '../ui/kit/resizable';
-import { Panels, type ToolBindings } from './ui/Panels';
-import { Readout } from './ui/Readout';
-import { Stage } from './ui/Stage';
-import { Toolbar } from './ui/Toolbar';
+import type { ToolBindings } from './ui/Panels';
 
 /**
- * Read the address bar once, and only once the workbench is actually on screen.
+ * Everything the app view is, minus how it is arranged.
  *
- * `start()` writes the parsed state straight back with `replaceState`, so calling
- * it at module scope would rewrite the URL of whatever page the reader happened
- * to open, and `install()` would put `window.preview` on every one of them. The
- * flag is because StrictMode renders twice in development and `start()` would
- * otherwise add a second `hashchange` listener.
- */
-let started = false;
-
-function startOnce(): true {
-  if (!started) {
-    started = true;
-    start();
-    install();
-  }
-  return true;
-}
-
-/**
- * The site's appearance is passed in rather than read here.
+ * A hook rather than a component because the pieces no longer sit together: the
+ * controls are in the header's context bar, the frame is the main area, the
+ * inspector is the right sidebar and the readout is the status line. They all
+ * need the same state, and `App.tsx` is the only place that can hand it to all
+ * four.
  *
- * `App.tsx` owns `useAppearance()` and the `data-theme` attribute it stamps. A
- * second call in this subtree would be a second copy of that state, and the copy
- * in `App.tsx` would go stale the moment this one wrote, putting the previous
- * theme back over the reader's choice on the way out of this route.
+ * The site's own appearance is deliberately not read here. `App.tsx` owns
+ * `useAppearance()` and the class it stamps; a second call would be a second
+ * copy of that state, and the copy in `App.tsx` would go stale the moment this
+ * one wrote.
+ *
+ * `active` is every one of these effects' first condition. The hook is called on
+ * every view because hooks are, but a shell that polled a frame that is not there
+ * and wrote `#/?d=iphone-15-pro` over a document's heading anchor is what the
+ * unconditional version did.
  */
-export function Workbench({
-  appearance,
-  onAppearance,
-}: {
-  appearance: Appearance;
-  onAppearance: (next: Appearance) => void;
-}) {
-  useState(startOnce);
-
+export function useWorkbench(active: boolean) {
   const state = useSyncExternalStore(subscribe, getState);
   const logs = useSyncExternalStore(subscribeLogs, getLogs);
   const stageRef = useRef<HTMLDivElement>(null);
@@ -94,9 +72,20 @@ export function Workbench({
 
   const status = statusOf(state, frameInfo, reportedRoute, logs);
 
+  /*
+   * The address bar is taken on the way in and given back on the way out, and
+   * `window.preview` goes up with it: an automation asking a page that is not
+   * showing the app to change devices would be answering about nothing.
+   */
   useEffect(() => {
-    registerFrame(frameRef.current);
-  }, []);
+    if (!active) return;
+    install();
+    return start();
+  }, [active]);
+
+  useEffect(() => {
+    registerFrame(active ? frameRef.current : null);
+  }, [active, loaded]);
 
   /**
    * The frame's first navigation, and every one the route field causes.
@@ -107,7 +96,7 @@ export function Workbench({
    */
   const seeded = useRef<string | null>(null);
   useEffect(() => {
-    const frame = frameRef.current;
+    const frame = active ? frameRef.current : null;
     if (!frame) return;
 
     // No fixture means leave the storage alone, which is what the plain demo
@@ -124,12 +113,12 @@ export function Workbench({
       document.body.dataset.state = 'loading';
       navigate(frame, state.route);
     }
-  }, [state.route, state.seed]);
+  }, [active, state.route, state.seed]);
 
   /** The appearance setting, re-applied after every load because a reload resets it. */
   useEffect(() => {
-    if (state.theme) applyTheme(win(), state.theme);
-  }, [state.theme, loaded]);
+    if (active && state.theme) applyTheme(win(), state.theme);
+  }, [active, state.theme, loaded]);
 
   useEffect(
     () => applyTokens(win(), state.overrides, textPass),
@@ -141,17 +130,17 @@ export function Workbench({
   // is reachable by opening a link rather than by clicking a button — the same
   // reason the device and the route live in the address bar.
   useEffect(() => {
-    if (state.check && loaded > 0) setReport(audit(win()));
-  }, [state.check, loaded]);
+    if (active && state.check && loaded > 0) setReport(audit(win()));
+  }, [active, state.check, loaded]);
 
   useEffect(() => {
-    if (!picking) return;
+    if (!active || !picking) return;
     return armPicker(win(), (frames, label) => {
       setHit({ label, frames });
       setSelected(0);
       setPicking(false);
     });
-  }, [picking, loaded]);
+  }, [active, picking, loaded]);
 
   const onLoad = useCallback(() => {
     const frame = frameRef.current;
@@ -174,6 +163,7 @@ export function Workbench({
    * at any moment.
    */
   useEffect(() => {
+    if (!active) return;
     const id = window.setInterval(() => {
       const current = win();
 
@@ -199,7 +189,7 @@ export function Workbench({
       if (route !== undefined && route !== getState().route) set({ route });
     }, 300);
     return () => window.clearInterval(id);
-  }, []);
+  }, [active]);
 
   useEffect(() => setRouteField(state.route), [state.route]);
 
@@ -229,74 +219,25 @@ export function Workbench({
     },
   };
 
-  return (
-    // Four rows: the bar, the link line, the split that takes what is left, and
-    // the readout. `data-dragging` rides this element rather than `<body>`, which
-    // belongs to the site: this is one route of it, and a page that stamps the
-    // document leaks into every page the reader visits next.
-    <div className="grid h-dvh grid-rows-[auto_auto_minmax(0,1fr)_auto] bg-canvas text-on-canvas">
-      <Toolbar
-        state={state}
-        status={status}
-        routeField={routeField}
-        onRouteField={setRouteField}
-        onChange={onChange}
-        onReload={() => win()?.location.reload()}
-        onRaw={() => window.open(BASE + (state.route || '/'), '_blank', 'noopener')}
-        appearance={appearance}
-        onAppearance={onAppearance}
-      />
-      {/*
-        The split, and the row that takes the height left over. The skip link's
-        target is here rather than on the grid above it, so it lands on the same
-        landmark it lands on everywhere else on the site.
-      */}
-      <main id="content" className="min-h-0">
-        <ResizablePanelGroup>
-          <ResizablePanel defaultSize="62%" minSize="30%">
-            <Stage
-              state={state}
-              scale={scale}
-              stageRef={stageRef}
-              frameRef={frameRef}
-              onResize={onResize}
-              onLoad={onLoad}
-            />
-          </ResizablePanel>
-          {/*
-            The dock is a panel of the split, so the tools switch widens the page
-            rather than swapping it. Rendered only when the tools are on, because
-            a collapsed panel that still holds a console and a token editor keeps
-            them subscribed for a reader who asked for neither.
-          */}
-          {state.tools && (
-            <>
-              <ResizableHandle withHandle />
-              <ResizablePanel defaultSize="38%" minSize="22%" maxSize="60%">
-                <Panels
-                  state={state}
-                  status={status}
-                  logs={logs}
-                  tools={tools}
-                  onChange={onChange}
-                  onClearLogs={clearLogs}
-                />
-              </ResizablePanel>
-            </>
-          )}
-        </ResizablePanelGroup>
-      </main>
-      <Readout status={status} size={size} scale={scale} />
-    </div>
-  );
+  return {
+    state,
+    status,
+    logs,
+    tools,
+    scale,
+    size,
+    routeField,
+    setRouteField,
+    stageRef,
+    frameRef,
+    onChange,
+    onResize,
+    onLoad,
+    onReload: () => win()?.location.reload(),
+    onRaw: () => window.open(BASE + (state.route || '/'), '_blank', 'noopener'),
+    clearLogs,
+  };
 }
-
-/**
- * The poll reads the frame three times a second, and almost always reads the
- * same four values. Comparing them keeps that from re-rendering the whole shell
- * at 3 Hz, which is enough to make the route field and the colour inputs stutter
- * under the person using them.
- */
 function unchanged(a: FrameInfo, b: FrameInfo): boolean {
   return (
     a.handle === b.handle &&
@@ -319,8 +260,10 @@ function useScale(
       if (zoom !== 'fit') return setScale(Number(zoom));
       const stage = stageRef.current;
       if (!stage) return;
-      const availW = stage.clientWidth - 40 - 24; // padding plus room for the handles
-      const availH = stage.clientHeight - 40 - 46; // padding plus the readout line
+      // Padding on both sides plus room for the handles, which hang outside the
+      // frame. `stageRef` is the frame's own box, so nothing else is in here.
+      const availW = stage.clientWidth - 40 - 24;
+      const availH = stage.clientHeight - 40 - 24;
       setScale(Math.min(1, availW / size.w, availH / size.h));
     };
     compute();
