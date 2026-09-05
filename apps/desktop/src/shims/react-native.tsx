@@ -25,9 +25,10 @@
 //
 // | prop | uses | GTK's refusal | this host |
 // |---|---|---|---|
-// | `accessibilityLabel` | 46 | not a widget property; `Gtk.Accessible.update_property()` is an imperative call | IMPLEMENTED, through a ref — REDUNDANT since 0.48 |
-// | `accessibilityState` | 6 | as above | IMPLEMENTED (`selected`/`checked`/`disabled`) — REDUNDANT since 0.48 |
-// | `accessibilityRole` | 41 | as above | DROPPED, and for a reason that turned out to be false — see below. The layer answers it as of 0.48, so this is now a LOSS THIS FILE CAUSES |
+// | `accessibilityLabel` | 45 | — | the layer's, since 0.48 |
+// | `accessibilityState` | 5 | — | the layer's, since 0.48 |
+// | `accessibilityRole` | 40 | — | the layer's, since 0.48 |
+// | `accessible` | 0 | — | the layer's, since 0.48 |
 // | `hitSlop` | 13 | GTK hit-tests the allocation and cannot grow it | DROPPED, and correctly |
 // | `pointerEvents="box-none"` | 4 | `can-target` is one boolean for a widget AND its subtree | mapped to `auto` |
 // | `trackColor`/`thumbColor` | 2 | Adwaita paints a switch from the theme accent | DROPPED |
@@ -67,10 +68,23 @@
 // whole accessibility surface as a route family — 40 role names, 33 mapped, 7 refused by
 // name with advice — and a 41-site reimplementation in this shim would have been
 // redundant the day that landed. **It landed**, in 0.48
-// ([gjsify #1541](https://github.com/gjsify/gjsify/pull/1541)), so the sentence has
-// turned round: the 41 call sites now lose their role BECAUSE THIS FILE STRIPS IT, and
-// the fix is a deletion. `shims/answered-props.ts` records that under
-// `UPSTREAM_CAUGHT_UP` rather than here, so it is a failing test and not a paragraph.
+// ([gjsify #1541](https://github.com/gjsify/gjsify/pull/1541)), and the wait was the
+// right call: the layer answers `accessibilityLabel`, `accessibilityRole`,
+// `accessibilityState`, `accessibilityHint` and `accessible` on every primitive this
+// app uses, so this file now passes all five through and applies none of them.
+//
+// It is a DELETION that adds a capability, which is the shape worth noticing. The two
+// this file implemented were reimplementations; the two it dropped were losses. 40
+// `accessibilityRole` call sites — 20 `link`, 17 `button`, one `radio`, one
+// `adjustable` — reach `Gtk.Accessible:accessible-role` for the first time, and the
+// layer maps all four names. `accessibilityState.disabled` goes through too, which this
+// file used to withhold on the grounds that `disabled` already sets `sensitive` and two
+// sources for one fact is a bug: the layer measured that pair on GTK 4.22.4 and they do
+// not collide — an explicit write leaves `sensitive` alone, and React Native treats the
+// two as separate props an application sets together.
+//
+// What is left of this file's accessibility handling is `applyAutoFocus`, which is a
+// different thing entirely: a moment rather than an attribute.
 //
 // What still holds from the old paragraph: a `Pressable` is announced as a button
 // because it IS a real `Gtk.Button`, and the label lands, which is the part a
@@ -542,18 +556,6 @@ function normalizeStyle(style: unknown): Record<string, unknown> | undefined {
   return Object.keys(out).length > 0 ? out : undefined;
 }
 
-let accessibilityReported = false;
-
-/**
- * Apply what GTK expresses of React Native's accessibility props to a real widget.
- *
- * Wrapped once in a guard, and that guard is not defensive padding: this is an FFI
- * boxing path. `Gtk.Accessible.update_property` takes an array of `GObject.Value`,
- * which has to be constructed and typed by hand in GJS, and a mismatch throws from
- * inside the introspection layer. A throw here would come out of a `ref` callback
- * during commit and take down the whole tree, for a label. So it is caught, reported
- * ONCE with the reason, and the widget renders without it.
- */
 /**
  * `autoFocus` — `Gtk.Widget.grab_focus()`, at the moment it actually works.
  *
@@ -571,11 +573,10 @@ let accessibilityReported = false;
  * field that stole the focus back every time its window was re-shown would be a
  * different and worse behaviour.
  *
- * SYNCHRONOUS, and unlike `applyAccessibility` it imports nothing. That function needs
- * `Gtk` as a VALUE — `Gtk.AccessibleProperty.LABEL` is an enum member — so it pays for
- * a dynamic import. This one only calls methods on a widget it was handed, so the
- * structural type below is the whole dependency. The first version copied the import
- * anyway and bound a `Gtk` it used only in a type position, which the linter caught.
+ * SYNCHRONOUS, and it imports nothing. It only calls methods on a widget it was
+ * handed, so the structural type below is the whole dependency. The first version
+ * copied a `Gtk` import from the accessibility helper beside it and bound a namespace
+ * it used only in a type position, which the linter caught.
  */
 function applyAutoFocus(widget: unknown, autoFocus: boolean | undefined): void {
   if (widget === null || widget === undefined || autoFocus !== true) return;
@@ -617,71 +618,6 @@ function widgetOf(instance: unknown): unknown {
   if (instance === null || instance === undefined) return instance;
   const handle = instance as { widget?: unknown };
   return typeof handle === 'object' && 'widget' in handle ? handle.widget : instance;
-}
-
-function applyAccessibility(widget: unknown, props: NormalizedProps): void {
-  if (widget === null || widget === undefined) return;
-  const { accessibilityLabel, accessibilityState } = props;
-  if (accessibilityLabel === undefined && accessibilityState === undefined) return;
-
-  void (async () => {
-    try {
-      const [{ default: Gtk }, { default: GObject }] = await Promise.all([
-        import('gi://Gtk?version=4.0'),
-        import('gi://GObject?version=2.0'),
-      ]);
-      const target = widget as Gtk.Widget;
-
-      if (accessibilityLabel !== undefined) {
-        const value = new GObject.Value();
-        value.init(GObject.TYPE_STRING);
-        value.set_string(accessibilityLabel);
-        target.update_property([Gtk.AccessibleProperty.LABEL], [value]);
-      }
-
-      if (accessibilityState !== undefined) {
-        const states: Gtk.AccessibleState[] = [];
-        const values: GObject.Value[] = [];
-        /**
-         * SELECTED and CHECKED are `Gtk.AccessibleTristate`, not booleans.
-         *
-         * Measured: a `G_TYPE_BOOLEAN` GValue here produces four
-         * `GLib-GObject-CRITICAL **: g_value_get_int: assertion 'G_VALUE_HOLDS_INT
-         * (value)' failed` — GTK reads the tristate as an int, so the GValue has to
-         * hold one. FALSE = 0, TRUE = 1, MIXED = 2.
-         */
-        const tristate = (flag: boolean) => {
-          const value = new GObject.Value();
-          value.init(GObject.TYPE_INT);
-          value.set_int(flag ? Gtk.AccessibleTristate.TRUE : Gtk.AccessibleTristate.FALSE);
-          return value;
-        };
-        if (accessibilityState.selected !== undefined) {
-          states.push(Gtk.AccessibleState.SELECTED);
-          values.push(tristate(accessibilityState.selected));
-        }
-        if (accessibilityState.checked !== undefined) {
-          states.push(Gtk.AccessibleState.CHECKED);
-          values.push(tristate(accessibilityState.checked));
-        }
-        if (states.length > 0) target.update_state(states, values);
-        // `disabled` is deliberately not routed: the app always passes it together
-        // with the `disabled` prop, which L2 already maps to `sensitive` — and GTK
-        // derives the accessible state from sensitivity itself. Setting both would
-        // be two sources for one fact.
-      }
-    } catch (error) {
-      if (!accessibilityReported) {
-        accessibilityReported = true;
-        console.error(
-          '[desktop] accessibility props could not be applied to a widget (this is ' +
-            'reported once). Labels will be missing for screen readers; the UI is ' +
-            'otherwise unaffected. Cause:',
-          error,
-        );
-      }
-    }
-  })();
 }
 
 // ---------------------------------------------------------------------------
@@ -768,11 +704,6 @@ function normalize(
   accessibility: NormalizedProps;
 } {
   const {
-    accessibilityLabel,
-    accessibilityRole: _role,
-    accessibilityHint: _hint,
-    accessible: _accessible,
-    accessibilityState,
     hitSlop: _hitSlop,
     trackColor: _trackColor,
     thumbColor: _thumbColor,
@@ -854,7 +785,7 @@ function normalize(
     }
   }
 
-  return { passthrough, accessibility: { accessibilityLabel, accessibilityState, autoFocus } };
+  return { passthrough, accessibility: { autoFocus } };
 }
 
 /**
@@ -1094,33 +1025,29 @@ function wrap<P extends object>(
     const widget = useRef<unknown>(null);
 
     // Destructured OUT of `accessibility` before the hook, so the dependency list holds
-    // the two VALUES rather than the object that carries them. `normalize` builds that
-    // object fresh on every render, so depending on it would rebuild the ref callback
-    // every time — which makes React detach and re-attach the ref on every commit.
-    const { accessibilityLabel, accessibilityState, autoFocus } = accessibility;
+    // the VALUE rather than the object that carries it. `normalize` builds that object
+    // fresh on every render, so depending on it would rebuild the ref callback every
+    // time — which makes React detach and re-attach the ref on every commit.
+    const { autoFocus } = accessibility;
 
     const mergedRef = useCallback(
       (instance: unknown) => {
         widget.current = instance;
-        // Since @gjsify/react-native 0.46 a ref does not always carry the widget: a
-        // `TextInput` receives a `TextInputHandle`, which answers focus/blur/clear and
-        // keeps the widget on `.widget`. Everything else still hands the widget
-        // itself. Both answers below are about the WIDGET, so unwrap first.
+        // A ref does not always carry the widget: a `TextInput` receives a
+        // `TextInputHandle`, which answers focus/blur/clear and keeps the widget on
+        // `.widget`. Everything else still hands the widget itself, and `grab_focus`
+        // is about the WIDGET, so unwrap first.
         //
-        // This is not hypothetical tidiness. It is the bug that shipped: the handle
-        // arrived in 0.46, `applyAccessibility` kept calling `update_property` on it,
-        // and the door's two fields — the only TextInputs in the app — lost their
-        // screen-reader labels behind a warning that names the symptom and not the
-        // cause. Everything else on screen kept working, which is why nothing else
-        // caught it.
-        const target = widgetOf(instance);
-        applyAccessibility(target, { accessibilityLabel, accessibilityState });
-        applyAutoFocus(target, autoFocus as boolean | undefined);
+        // That unwrap is not hypothetical tidiness — it is the bug that shipped. The
+        // handle arrived in 0.46 while this file was still applying accessibility to
+        // whatever the ref held, and the door's two fields, the only `TextInput`s in
+        // the app, lost their screen-reader labels behind a warning that named the
+        // symptom rather than the cause. Those calls have gone to the layer; the
+        // unwrap is what `autoFocus` still needs.
+        applyAutoFocus(widgetOf(instance), autoFocus as boolean | undefined);
         assignRef(userRef, instance);
       },
-      // Re-run when the label changes, so a bookmark button that switches from
-      // "Artikel speichern" to "Gespeichert, entfernen" re-announces.
-      [userRef, accessibilityLabel, accessibilityState, autoFocus],
+      [userRef, autoFocus],
     );
 
     return createElement(Base as never, { ...passthrough, ref: mergedRef } as never);

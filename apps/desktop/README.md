@@ -149,16 +149,49 @@ above, and the switcher's header-bar slot will not survive a wrapper); no lock-s
 metadata (MPRIS is the desktop counterpart and is not built); and `Bleed` does not
 bleed, because GTK does not clamp a negative margin — it measures with it.
 
-**A header row's date is clipped**, and it is the one defect on this page whose cause is
-not yet named. The masthead's `Samstag, 5. September 2026` is allocated 170×23 px at
-every window width from 700 to 1400; one line of it needs 206 px in Source Sans 3 at
-14 px, so it wraps, and 23 px holds one of the two lines. Measured 2026-09-05 by
-rasterising the widget through `Screenshot(<path>)` — which is also how the READ-OUT
-this needs was found missing, see *Driving it from outside*. The same shape clips
-`BACKSTAGE · FRÜHER LESEN` on the Backstage card.
+**A letter-spaced label that is given exactly its natural width wraps and is clipped**,
+and the cause is GTK's rather than this app's. Four labels of seventy-six: the masthead
+date, two overlines, one centred line of small print. Each is allocated its own natural
+width — which is what a flex container gives a child that does not expand — and at that
+width GTK lays it out on two lines while its parent measured the height for one.
 
-Three entries left this list because they were already fixed and the list had not been
-re-read. **A routed window shows ONE header bar**, since
+GTK's natural width for a wrapping label is `ceil(logical width)`, and Pango's logical
+extents exclude the spacing after the final glyph while its line-breaker counts it. So
+the breaker needs `ceil(logical + spacing)` and is handed one or two pixels less.
+Measured on GTK 4.22.4 over four strings and six spacings:
+
+| letter-spacing | 0.0 | 0.2 | 0.5 | 1.0 | 1.5 | 2.0 |
+| --- | --- | --- | --- | --- | --- | --- |
+| natural width short by | 0 | 0 | 0–1 | 1 | 1–2 | 2 |
+
+It reaches through CSS `letter-spacing` and through a Pango attribute alike, is
+unchanged by all three `natural-wrap-mode` values, and is not helped by excluding the
+final character — so there is nothing for this app or for the GTK layer to set. It is an
+`it.failing` vector in `@gjsify/react-native` now, which retires itself the day GTK
+fixes it. The letter-spaced labels here are `Overline` and the masthead, so the app-side
+answer, if one is wanted before then, is a pixel of padding on those two components.
+
+Found with `DumpTree`, and only after that call learned to answer it: the widget reports
+`wrap: true`, `max-width-chars: -1`, `hexpand: false`, all correct, and the defect lives
+entirely in the allocation-versus-request pair that nothing used to report. That readout
+is [gjsify #1589](https://github.com/gjsify/gjsify/pull/1589).
+
+**Four entries left this list, and they are the whole accessibility set.** `@gjsify/react-native`
+0.48 answers `accessibilityLabel`, `accessibilityRole`, `accessibilityState`,
+`accessibilityHint` and `accessible` on every primitive this app uses
+([gjsify #1541](https://github.com/gjsify/gjsify/pull/1541)), so `shims/react-native.tsx`
+passes all five through and applies none of them. `test/prop-gate.test.ts` went red on
+the upgrade and named all four, which is what it is for.
+
+It is a deletion that ADDS a capability. Two of the four were reimplementations; the
+other two were losses. **40 `accessibilityRole` call sites reach GTK for the first
+time** — 20 `link`, 17 `button`, one `radio`, one `adjustable`, all four mapped by the
+layer. Measured on the running window: 18 widgets now carry `GTK_ACCESSIBLE_ROLE_LINK`
+and 10 `BUTTON`, read back through `GetProperty(<path>, "accessible-role")`. Nothing in
+GTK defaults a widget to `LINK`, so those eighteen are the prop arriving.
+
+Three further entries left this list because they were already fixed and the list had
+not been re-read. **A routed window shows ONE header bar**, since
 [gjsify #1540](https://github.com/gjsify/gjsify/pull/1540) in 0.48 — the second and third
 bars, each with a close button of its own, are gone, and the screenshots on this page
 were re-shot for it. **The brand typefaces are in the chrome now** — see below; the faces ship in
