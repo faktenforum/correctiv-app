@@ -1,7 +1,8 @@
-import { ExternalLink } from 'lucide-react';
+import { Download, ExternalLink } from 'lucide-react';
 import { useState } from 'react';
 
 import docsModule from 'virtual:docs';
+import { cn } from '../lib/cn';
 import { href } from '../router';
 import { Page } from '../ui/Page';
 
@@ -18,6 +19,31 @@ const LINK =
   'font-medium text-on-canvas underline decoration-accent underline-offset-2 hover:text-on-canvas-accent';
 
 const CARD = 'rounded-md border border-stroke bg-surface p-sm';
+
+/** Where the plugin's own documentation lives, at the commit this page was built from. */
+const PLUGIN_README = `${docsModule.repo}/blob/${docsModule.commit}/tools/figma-plugin/README.md`;
+
+/**
+ * The desktop client, per platform.
+ *
+ * Figma ships one for macOS and one for Windows and none for Linux, which is why
+ * the third is somebody else's build. All four addresses were checked on
+ * 2026-09-05 and answered.
+ */
+const CLIENTS: { label: string; note: string; href: string }[] = [
+  {
+    label: 'macOS, Apple silicon',
+    note: 'Official',
+    href: 'https://desktop.figma.com/mac-arm/Figma.zip',
+  },
+  { label: 'macOS, Intel', note: 'Official', href: 'https://desktop.figma.com/mac/Figma.zip' },
+  { label: 'Windows', note: 'Official', href: 'https://desktop.figma.com/win/FigmaSetup.exe' },
+  {
+    label: 'Linux',
+    note: 'figma-linux-next, a fork',
+    href: 'https://github.com/arximus88/figma-linux-next/releases/latest',
+  },
+];
 
 /**
  * The design file, framed, and the three places this repository already touches it.
@@ -150,6 +176,65 @@ export function Design() {
               </p>
             </div>
           </div>
+        </section>
+
+        <section className="mt-xl" aria-labelledby="h-plugin">
+          <h2
+            id="h-plugin"
+            className="text-s font-semibold uppercase tracking-wider text-on-canvas-muted"
+          >
+            The plugin, and what it needs
+          </h2>
+
+          <p className="mt-s max-w-content text-m leading-relaxed text-on-canvas-muted">
+            <code className="font-mono text-[0.875em]">tools/figma-plugin</code> draws the
+            app&apos;s screens onto a board inside the file, at the size of the Android screenshots,
+            in two renderings: a faithful replica and a hand-drawn wireframe. It is an interpreter
+            rather than a builder. <code className="font-mono text-[0.875em]">code.js</code> knows
+            nothing about the app and draws whatever{' '}
+            <code className="font-mono text-[0.875em]">spec.json</code> describes, so changing the
+            board means editing a JSON document and never re-importing the plugin.
+          </p>
+
+          <p className="mt-s max-w-content text-m leading-relaxed text-on-canvas-muted">
+            <b className="text-on-canvas">It needs the Figma desktop app.</b> A plugin under
+            development is loaded through Plugins, Development, Import plugin from manifest, and
+            that menu does not exist in the browser. Figma builds a client for macOS and for
+            Windows; on Linux there is none, so this project uses a fork.
+          </p>
+
+          <ul className="mt-s flex flex-wrap gap-xs">
+            {CLIENTS.map((client) => (
+              <li key={client.href}>
+                <a
+                  href={client.href}
+                  target="_blank"
+                  rel="noreferrer noopener"
+                  className={cn(
+                    'flex min-w-[10rem] flex-col rounded-md border border-stroke bg-surface px-sm py-xs',
+                    'transition-colors hover:border-stroke-strong hover:bg-canvas',
+                    'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent',
+                  )}
+                >
+                  <span className="flex items-center gap-2xs text-m font-medium text-on-canvas">
+                    <Download aria-hidden="true" className="size-[0.875rem] shrink-0" />
+                    {client.label}
+                  </span>
+                  <span className="mt-4xs text-s text-on-canvas-muted">{client.note}</span>
+                </a>
+              </li>
+            ))}
+          </ul>
+
+          <p className="mt-s max-w-content text-m leading-relaxed text-on-canvas-muted">
+            The importing itself, and the three traps that come with the Linux client, are in the
+            plugin&apos;s own{' '}
+            <a href={PLUGIN_README} target="_blank" rel="noreferrer noopener" className={LINK}>
+              README
+              <ExternalLink aria-hidden="true" className="ml-3xs inline size-[0.75rem]" />
+            </a>
+            , where they are next to the code they describe.
+          </p>
         </section>
 
         <p className="mt-l text-m text-on-canvas-muted">
