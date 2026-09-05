@@ -29,6 +29,7 @@ export interface DiagramMeta {
   width: number;
   height: number;
   Figure: (props: { alt?: boolean }) => ReactNode;
+  /** The picture alone, for a thumbnail. It describes itself with its `<title>`. */
   Drawing: () => ReactNode;
 }
 

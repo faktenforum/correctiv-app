@@ -30,7 +30,15 @@ import {
  * `alt` reaches this far in only to decide whether the drawing points at a list
  * that may not be on the page.
  */
-export function InsideCoreDrawing({ alt = true }: { alt?: boolean } = {}) {
+/**
+ * The drawing on its own, with no description attached by default.
+ *
+ * `alt` is off here and on in the figure, and that asymmetry is the point: the
+ * description it names lives in the figure, so a drawing rendered by itself,
+ * as a thumbnail on `/diagrams`, would be pointing at an element that is not on
+ * the page.
+ */
+export function InsideCoreDrawing({ alt = false }: { alt?: boolean } = {}) {
   return (
     <svg
       viewBox="0 0 1040 710"
