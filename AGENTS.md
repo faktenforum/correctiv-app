@@ -82,6 +82,22 @@ a section naming every statement it retires, so the two halves cannot drift apar
 Do not strike through a claim that is merely old. Only one that is now **false**,
 where someone reading it would act on it and be wrong.
 
+## Facts that expire
+
+A figure measured against the outside world goes wrong quietly, and no reviewer
+catches it because nothing about it looks wrong. Two such facts exist here, and each
+one is a single fact typed in two places:
+
+- The measuring day, in `SOURCES.md` and in `apps/handbook/content/sources.manifest.ts`.
+  Re-measuring means editing both, so a test fails when the two dates part, and the
+  board prints the age beside the date, worked out in the reader's browser, because a
+  published page sits at its address for months.
+- A claim and the record that voided it, which is the pair above.
+
+Add the check with the fact, not afterwards. "Keep the documentation current" is not
+a rule that belongs here: it cannot fail, so nothing enforces it, and a rule nobody
+can break is noise beside the ones they can.
+
 ## Language
 
 English for everything a developer reads: code, comments, test names, CLI output,

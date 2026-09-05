@@ -1,6 +1,7 @@
 import { ArrowRight } from 'lucide-react';
 
 import { COUNTS, FEEDS, MEASURED_ON } from '../../content/sources.manifest';
+import { ageInWords } from '../lib/measured';
 import docsModule from 'virtual:docs';
 import { Badge } from '../ui/kit/badge';
 import { cn } from '../lib/cn';
@@ -110,9 +111,9 @@ export function Landing() {
               <p className="mt-xs text-m leading-relaxed text-on-canvas-muted">
                 One per manifest entry, which is why the board counts more: it draws the article
                 family as its {FEEDS.length} feeds, because a feed is the thing that goes stale. The
-                figures were measured by hand against the live sources on {MEASURED_ON} and nothing
-                here refreshes, because the feeds send no CORS header for a browser to re-take them
-                through.
+                figures were measured by hand against the live sources on {MEASURED_ON},{' '}
+                {ageInWords(MEASURED_ON)}, and nothing here refreshes, because the feeds send no
+                CORS header for a browser to re-take them through.
               </p>
             </div>
             <dl className="grid grid-cols-2 gap-sm self-start sm:grid-cols-4 lg:gap-m">

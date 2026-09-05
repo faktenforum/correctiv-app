@@ -23,6 +23,7 @@ import type { Feed, Kind, SourceEntry, Status } from '../../content/sources.mani
 import { Badge } from '../ui/kit/badge';
 import { Button } from '../ui/kit/button';
 import { cn } from '../lib/cn';
+import { ageInWords, isStale, STALE_AFTER_DAYS } from '../lib/measured';
 
 type Severity = 'stale' | 'broken';
 /** The five marks the board draws: three product states, two health overlays. */
@@ -623,12 +624,24 @@ export function Sources() {
             <p>
               <strong className="font-semibold text-on-canvas">
                 Every figure on this page was measured by hand on{' '}
-                <span className={FIGURE}>{MEASURED_ON}</span>
+                <span className={FIGURE}>{MEASURED_ON}</span>, {ageInWords(MEASURED_ON)}
               </strong>
               , against the live sources, and typed into the manifest. This page cannot re-measure
               them. The RSS feeds send no CORS header, so a browser cannot fetch them, and nothing
               here refreshes on its own.
             </p>
+            {/*
+              The age is worked out in the browser, not at build time. This page is
+              published and then sits there, and a figure nobody has questioned for
+              a quarter looks exactly like one taken this morning.
+            */}
+            {isStale(MEASURED_ON) && (
+              <p className="font-semibold text-on-canvas">
+                That is more than {STALE_AFTER_DAYS} days ago. The article feeds publish weekly at
+                best, so the post counts and the newest-post dates below have almost certainly
+                moved. Measure again before quoting any of them.
+              </p>
+            )}
             <p>
               If a figure looks wrong, measure again and edit the manifest. It is a record of one
               day, not a monitor.

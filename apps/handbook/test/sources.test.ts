@@ -1,4 +1,4 @@
-import { existsSync, readdirSync } from 'node:fs';
+import { existsSync, readFileSync, readdirSync } from 'node:fs';
 import { join } from 'node:path';
 
 import { describe, expect, it } from 'vitest';
@@ -7,6 +7,7 @@ import { ROOT } from '../plugin/collect.ts';
 import {
   COUNTS,
   FEEDS,
+  MEASURED_ON,
   NOT_CONTENT,
   QUESTIONS,
   SOURCES,
@@ -59,6 +60,31 @@ describe('the source manifest against the code', () => {
   it('gives every live entry an endpoint', () => {
     const vague = SOURCES.filter((s) => s.status === 'live' && !s.endpoint);
     expect(vague.map((s) => s.id)).toEqual([]);
+  });
+});
+
+describe('the manifest against the document it was typed from', () => {
+  /**
+   * One fact, typed in two places, and nobody would notice them parting.
+   *
+   * `SOURCES.md` states the measuring day in its opening paragraph and the
+   * manifest states it again as `MEASURED_ON`. Re-measuring means editing both,
+   * and the failure is silent in the worst way: the board would print a date the
+   * document it claims to be built from disagrees with, and the board is the
+   * confident one because it is on a screen.
+   */
+  it('states the same measuring day as SOURCES.md', () => {
+    const document = readFileSync(join(ROOT, 'SOURCES.md'), 'utf8');
+    const stated = /measured against the live source on \*\*(\d{4}-\d{2}-\d{2})\*\*/.exec(document);
+
+    // Thrown rather than expected, because the message is the useful part: the
+    // sentence was rewritten and this pattern is what has to follow it.
+    if (stated === null) {
+      throw new Error(
+        'SOURCES.md no longer states its measuring day in the shape this reads. Keep the sentence, or update the pattern here and say why.',
+      );
+    }
+    expect(stated[1]).toBe(MEASURED_ON);
   });
 });
 
