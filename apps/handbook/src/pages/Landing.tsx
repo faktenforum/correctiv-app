@@ -6,6 +6,7 @@ import docsModule from 'virtual:docs';
 import { Badge } from '../ui/kit/badge';
 import { cn } from '../lib/cn';
 import { href } from '../router';
+import { Page } from '../ui/Page';
 
 interface Door {
   route: string;
@@ -73,8 +74,8 @@ const FIGURES: { label: string; value: number }[] = [
  */
 export function Landing() {
   return (
-    <div className="px-m py-xl lg:px-ml">
-      <div className="mx-auto max-w-wide">
+    <Page>
+      <div className="min-w-0">
         <section>
           <h1
             id="title"
@@ -248,6 +249,6 @@ export function Landing() {
           </p>
         </footer>
       </div>
-    </div>
+    </Page>
   );
 }

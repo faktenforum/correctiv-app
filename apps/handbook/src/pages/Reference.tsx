@@ -5,6 +5,7 @@ import api from 'virtual:api';
 import type { ApiModule, ApiSymbol } from 'virtual:api';
 import docsModule from 'virtual:docs';
 import { symbolId } from '../nav';
+import { Page } from '../ui/Page';
 
 const BLOB = `${docsModule.repo}/blob/${docsModule.commit}`;
 
@@ -50,8 +51,8 @@ export function Reference() {
   const symbolCount = modules.reduce((n, m) => n + m.symbols.length, 0);
 
   return (
-    <div className="px-m py-ml lg:px-ml">
-      <article className="mx-auto max-w-wide">
+    <Page>
+      <article className="min-w-0">
         <h1 className="text-headline-xl font-bold leading-tight tracking-tight">Reference</h1>
         <p className="mt-xs max-w-content text-m leading-relaxed text-on-canvas-muted">
           Every exported symbol in <code className="font-mono">packages/app-core</code>, extracted
@@ -120,7 +121,7 @@ export function Reference() {
           </section>
         ))}
       </article>
-    </div>
+    </Page>
   );
 }
 

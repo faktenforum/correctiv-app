@@ -30,8 +30,15 @@ import {
  *
  * It sits in its own file because more than one page shows it, and the ids it
  * carries are referenced from outside, so they are part of what it is.
+ *
+ * `alt` is off where the page around the drawing already says the same thing in
+ * prose. On `/diagrams` the list is not a caption, it is the page for anyone who
+ * cannot use the drawing, and it stays. Inside `ARCHITECTURE.md` the four ports
+ * are named in a paragraph and again in a table, so the drawing there is
+ * described by the document and the list comes off. The `<title>` inside the SVG
+ * names it either way.
  */
-export function CoreAndHost() {
+export function CoreAndHost({ alt = true }: { alt?: boolean }) {
   return (
     <figure className={FIGURE}>
       {/*
@@ -46,7 +53,7 @@ export function CoreAndHost() {
           viewBox="0 0 960 710"
           className={cn(DRAWING, 'block h-[710px] w-[960px] max-w-none')}
           aria-labelledby="d1-title"
-          aria-describedby="d1-alt"
+          aria-describedby={alt ? 'd1-alt' : undefined}
         >
           <title id="d1-title">
             The core and its host: packages/app-core above, apps/mobile below, joined only by four
@@ -261,52 +268,54 @@ export function CoreAndHost() {
         <code>expo.ts</code>, and a test keeps the line from moving. Adding a second host means
         writing that one file again.
       </figcaption>
-      <div className={ALT} id="d1-alt">
-        <h3>The same diagram as a list</h3>
-        <dl>
-          <dt>
-            <code>packages/app-core</code>, the behaviour
-          </dt>
-          <dd>
-            Contains model, parsers, services, cache, articles, feeds, audio and stores. It imports
-            no UI framework and no platform SDK.{' '}
-            <code>packages/app-core/test/boundary.test.ts</code> fails the build if a platform
-            import ever appears.
-          </dd>
-          <dt>Four ports, the only crossing between the two</dt>
-          <dd>
-            <ul>
-              <li>
-                <code>KeyValueStore</code>: the core needs small settings, asynchronously. This host
-                answers with AsyncStorage, one prefixed key per setting.
-              </li>
-              <li>
-                <code>BlobStore</code>: the core needs the HTTP cache, asynchronously. This host
-                answers with AsyncStorage.
-              </li>
-              <li>
-                <code>ContentBundle</code>: the core needs what shipped inside the app. This host
-                answers with generated TS modules.
-              </li>
-              <li>
-                <code>AudioBackend</code>: the core needs playback, as status ticks. This host
-                answers with expo-audio's status events.
-              </li>
-            </ul>
-            Both storage ports are asynchronous. What separates them is what they hold, a settings
-            string against a megabyte of cached feeds.
-          </dd>
-          <dt>The adapter</dt>
-          <dd>
-            <code>apps/mobile/src/lib/platform/expo.ts</code>, one small file. It is the whole cost
-            of adding a host.
-          </dd>
-          <dt>
-            <code>apps/mobile</code>, the host
-          </dt>
-          <dd>Expo / React Native, targeting iOS, Android and web.</dd>
-        </dl>
-      </div>
+      {alt && (
+        <div className={ALT} id="d1-alt">
+          <h3>The same diagram as a list</h3>
+          <dl>
+            <dt>
+              <code>packages/app-core</code>, the behaviour
+            </dt>
+            <dd>
+              Contains model, parsers, services, cache, articles, feeds, audio and stores. It
+              imports no UI framework and no platform SDK.{' '}
+              <code>packages/app-core/test/boundary.test.ts</code> fails the build if a platform
+              import ever appears.
+            </dd>
+            <dt>Four ports, the only crossing between the two</dt>
+            <dd>
+              <ul>
+                <li>
+                  <code>KeyValueStore</code>: the core needs small settings, asynchronously. This
+                  host answers with AsyncStorage, one prefixed key per setting.
+                </li>
+                <li>
+                  <code>BlobStore</code>: the core needs the HTTP cache, asynchronously. This host
+                  answers with AsyncStorage.
+                </li>
+                <li>
+                  <code>ContentBundle</code>: the core needs what shipped inside the app. This host
+                  answers with generated TS modules.
+                </li>
+                <li>
+                  <code>AudioBackend</code>: the core needs playback, as status ticks. This host
+                  answers with expo-audio's status events.
+                </li>
+              </ul>
+              Both storage ports are asynchronous. What separates them is what they hold, a settings
+              string against a megabyte of cached feeds.
+            </dd>
+            <dt>The adapter</dt>
+            <dd>
+              <code>apps/mobile/src/lib/platform/expo.ts</code>, one small file. It is the whole
+              cost of adding a host.
+            </dd>
+            <dt>
+              <code>apps/mobile</code>, the host
+            </dt>
+            <dd>Expo / React Native, targeting iOS, Android and web.</dd>
+          </dl>
+        </div>
+      )}
     </figure>
   );
 }

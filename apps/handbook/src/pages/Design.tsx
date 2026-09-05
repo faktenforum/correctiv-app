@@ -3,6 +3,7 @@ import { useState } from 'react';
 
 import docsModule from 'virtual:docs';
 import { href } from '../router';
+import { Page } from '../ui/Page';
 
 /** The file this project is designed in. One place, so nothing here is a copy. */
 const FIGMA_FILE = 'https://www.figma.com/design/9n7x4eWzdZXVlRej7jWJHx/CORRECTIV-App--Aufbau';
@@ -35,8 +36,8 @@ export function Design() {
   const [framed, setFramed] = useState(false);
 
   return (
-    <div className="px-m py-ml lg:px-ml">
-      <article className="mx-auto max-w-wide">
+    <Page>
+      <article className="min-w-0">
         <h1 className="text-headline-xl font-bold leading-tight tracking-tight">Design</h1>
         <p className="mt-xs max-w-content text-m leading-relaxed text-on-canvas-muted">
           The app is designed in one Figma file,{' '}
@@ -156,6 +157,6 @@ export function Design() {
           <code className="font-mono text-[0.875em]">{docsModule.commit.slice(0, 7)}</code>.
         </p>
       </article>
-    </div>
+    </Page>
   );
 }

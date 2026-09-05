@@ -42,6 +42,7 @@ import {
   WIRE,
 } from '../diagrams/shared';
 import { cn } from '../lib/cn';
+import { Page } from '../ui/Page';
 
 /**
  * Three drawings, each standing in for a stretch of prose: where the behaviour
@@ -57,7 +58,7 @@ import { cn } from '../lib/cn';
  */
 export function Diagrams() {
   return (
-    <div className="px-m py-ml lg:px-12">
+    <Page>
       {/*
         The fragment ids a reader may arrive on sit on the sections themselves.
         The design carried them on an empty anchor before the heading, which is an
@@ -1129,6 +1130,6 @@ export function Diagrams() {
           </div>
         </figure>
       </section>
-    </div>
+    </Page>
   );
 }

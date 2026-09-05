@@ -25,6 +25,7 @@ import { Segmented } from '../ui/kit/segmented';
 import { Button } from '../ui/kit/button';
 import { cn } from '../lib/cn';
 import { ageInWords, isStale, STALE_AFTER_DAYS } from '../lib/measured';
+import { Page } from '../ui/Page';
 
 type Severity = 'stale' | 'broken';
 /** The five marks the board draws: three product states, two health overlays. */
@@ -600,13 +601,11 @@ export function Sources() {
       : KIND_ORDER.map((kind) => ({ key: kind, label: KIND_LABEL[kind] }));
 
   return (
-    <div className="px-m py-ml text-m lg:px-12">
-      {/* Wider than the token package's `wide` container, which is sized for a
-          column of prose. The board is seven columns and one of them is a file
-          path, and capping it at 1000px puts the disclosure button off the right
-          edge of its own scroll box, where nobody finds it. Prose inside still
-          takes `max-w-content`, so nothing here is read at this width. */}
-      <div className="mx-auto flex w-full max-w-[80rem] flex-col gap-2xl">
+    <Page className="text-m">
+      {/* No cap of its own any more: the page shell is the column, and the board
+          is seven columns wide with a file path in one of them. Prose inside
+          still takes `max-w-content`, so nothing here is read at this width. */}
+      <div className="flex min-w-0 flex-col gap-2xl">
         <header className="min-w-0">
           <p className="text-s uppercase tracking-wider text-on-canvas-muted">
             CORRECTIV community app · internal documentation
@@ -1114,6 +1113,6 @@ export function Sources() {
           </p>
         </footer>
       </div>
-    </div>
+    </Page>
   );
 }

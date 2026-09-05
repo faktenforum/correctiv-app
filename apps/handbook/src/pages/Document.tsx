@@ -6,6 +6,7 @@ import type { RenderedDoc } from '../../plugin/markdown.ts';
 import type { ReactNode } from 'react';
 import { CoreAndHost } from '../diagrams/CoreAndHost';
 import { Badge } from '../ui/kit/badge';
+import { Page } from '../ui/Page';
 
 interface Props {
   doc: RenderedDoc;
@@ -21,8 +22,11 @@ const REPO_BLOB = `${docsModule.repo}/blob/${docsModule.commit}`;
  * document keeps its ASCII and the site swaps in the drawing, so there is still
  * one source and two renderings of it rather than two sources.
  */
-const DIAGRAMS: Record<string, () => ReactNode> = {
-  'core-host': CoreAndHost,
+const DIAGRAMS: Record<string, ReactNode> = {
+  // Without its list: the document around it names the same four ports in a
+  // paragraph and again in a table, and three tellings of one fact is two too
+  // many. `/diagrams` still shows the list, where the drawing is the page.
+  'core-host': <CoreAndHost alt={false} />,
 };
 
 /**
@@ -48,18 +52,9 @@ export function Document({ doc }: Props) {
   const record = doc.route.startsWith('/decisions/') ? doc.route.slice(11) : null;
 
   return (
-    <div className="px-m py-ml lg:px-12">
-      {/*
-        The article is as wide as the widest thing in it, and the prose inside it
-        keeps its own measure. A drawing is 960px and the reading measure is 620,
-        so with one bound over everything the diagram scrolled inside a column
-        with 700px of empty page beside it.
-      */}
-      <article ref={article} className="mx-auto max-w-wide">
-        <nav
-          aria-label="Breadcrumb"
-          className="mx-auto mb-sm max-w-content text-s text-on-canvas-muted"
-        >
+    <Page>
+      <article ref={article} className="min-w-0">
+        <nav aria-label="Breadcrumb" className="mb-sm max-w-content text-s text-on-canvas-muted">
           <ol className="flex flex-wrap items-center gap-2xs">
             <li>Handbook</li>
             {record && (
@@ -74,7 +69,7 @@ export function Document({ doc }: Props) {
         </nav>
 
         {doc.retired.length > 0 && (
-          <p className="mx-auto mb-m flex max-w-content items-center gap-xs text-m text-on-canvas-muted">
+          <p className="mb-m flex max-w-content items-center gap-xs text-m text-on-canvas-muted">
             <Badge variant="alt">{doc.retired.length} retired</Badge>
             {doc.retired.length === 1
               ? 'One claim on this page is'
@@ -95,17 +90,23 @@ export function Document({ doc }: Props) {
         */}
         {parts.map((part, i) =>
           part.diagram ? (
-            <Diagram key={`d${i}`} id={part.diagram} />
+            // The figure carries its own top margin; the prose that follows a
+            // drawing starts at zero, because it is the first child of a fresh
+            // `.prose` container. Without this the caption and the next
+            // paragraph butt together.
+            <div key={`d${i}`} className="mb-l">
+              <Diagram id={part.diagram} />
+            </div>
           ) : (
             <div
               key={`h${i}`}
-              className="prose prose-sm mx-auto max-w-content prose-headings:scroll-mt-8 prose-pre:border prose-pre:border-stroke"
+              className="prose prose-sm max-w-content prose-headings:scroll-mt-8 prose-pre:border prose-pre:border-stroke"
               dangerouslySetInnerHTML={{ __html: part.html }}
             />
           ),
         )}
 
-        <footer className="mx-auto mt-xl max-w-content border-t border-stroke pt-sm text-m text-on-canvas-muted">
+        <footer className="mt-xl max-w-content border-t border-stroke pt-sm text-m text-on-canvas-muted">
           <p>
             This page is{' '}
             <a
@@ -121,7 +122,7 @@ export function Document({ doc }: Props) {
           </p>
         </footer>
       </article>
-    </div>
+    </Page>
   );
 }
 
@@ -154,8 +155,7 @@ function split(html: string): Part[] {
  * it in an editor.
  */
 function Diagram({ id }: { id: string }) {
-  const Figure = DIAGRAMS[id];
-  return Figure ? <Figure /> : null;
+  return DIAGRAMS[id] ?? null;
 }
 
 /**
