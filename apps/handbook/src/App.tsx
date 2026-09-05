@@ -1,6 +1,7 @@
 import { Fragment, type ReactNode, useCallback, useEffect, useState } from 'react';
 
 import docsModule from 'virtual:docs';
+import { Design } from './pages/Design';
 import { Diagrams } from './pages/Diagrams';
 import { Document } from './pages/Document';
 import { Landing } from './pages/Landing';
@@ -31,6 +32,7 @@ import { currentPath, useLinkInterception, useRoute } from './router';
 /** The views answered with a component rather than with a repository document. */
 const PAGES: Record<string, () => ReactNode> = {
   '/': Landing,
+  '/design': Design,
   '/diagrams': Diagrams,
   '/reference': Reference,
   '/sources': Sources,

@@ -1,4 +1,4 @@
-import { BookText, GitBranch, Braces, ListTree, Smartphone } from 'lucide-react';
+import { BookText, GitBranch, Braces, ListTree, PenTool, Smartphone } from 'lucide-react';
 
 import { Tooltip, TooltipContent, TooltipTrigger } from './kit/tooltip';
 import { cn } from '../lib/cn';
@@ -30,6 +30,12 @@ const ITEMS = [
     label: 'Decisions',
     Icon: GitBranch,
     match: (r: string) => r.startsWith('/decisions'),
+  },
+  {
+    route: '/design',
+    label: 'Design',
+    Icon: PenTool,
+    match: (r: string) => r === '/design',
   },
   {
     route: '/reference',

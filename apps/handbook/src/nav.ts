@@ -36,6 +36,7 @@ export const NAV: NavGroup[] = [
       { route: '/', label: 'Overview' },
       { route: '/architecture', label: 'Architecture', blurb: doc('/architecture')?.blurb },
       { route: '/diagrams', label: 'Diagrams' },
+      { route: '/design', label: 'Design' },
       { route: '/reference', label: 'Reference' },
     ],
   },
@@ -74,6 +75,7 @@ export const NAV: NavGroup[] = [
  */
 export const PAGE_TITLES: Record<string, string> = {
   '/': 'CORRECTIV app handbook',
+  '/design': 'Design, the Figma file',
   '/diagrams': 'Architecture diagrams',
   '/reference': 'Reference',
   '/sources': 'Sources status board',
@@ -83,6 +85,7 @@ export const PAGE_TITLES: Record<string, string> = {
 /** Every route the site answers, for the router and for the search index. */
 export const ROUTES = new Set<string>([
   '/',
+  '/design',
   '/diagrams',
   '/reference',
   '/workbench',
