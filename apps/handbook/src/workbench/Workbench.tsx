@@ -68,7 +68,7 @@ export function useWorkbench(active: boolean) {
   const [loaded, setLoaded] = useState(0);
 
   const size = frameSize(state);
-  const scale = useScale(stageRef, size, state.zoom);
+  const scale = useScale(stageRef, size, state.zoom, active);
 
   const status = statusOf(state, frameInfo, reportedRoute, logs);
 
@@ -247,11 +247,21 @@ function unchanged(a: FrameInfo, b: FrameInfo): boolean {
   );
 }
 
-/** Fit means "as large as the stage allows", so it depends on the stage, not the state. */
+/**
+ * Fit means "as large as the stage allows", so it depends on the stage, not the
+ * state.
+ *
+ * `active` is in the dependencies because it is what decides whether there is a
+ * stage at all. Arriving at the app view from another one, the ref goes from null
+ * to an element without any of the other dependencies changing, so the observer
+ * was never attached and the frame stayed at the initial 100%: correct on a direct
+ * load of this address, wrong every time somebody clicked their way here.
+ */
 function useScale(
   stageRef: React.RefObject<HTMLDivElement | null>,
   size: { w: number; h: number },
   zoom: PreviewState['zoom'],
+  active: boolean,
 ): number {
   const [scale, setScale] = useState(1);
 
@@ -270,7 +280,7 @@ function useScale(
     const observer = new ResizeObserver(compute);
     if (stageRef.current) observer.observe(stageRef.current);
     return () => observer.disconnect();
-  }, [stageRef, size.w, size.h, zoom]);
+  }, [active, stageRef, size.w, size.h, zoom]);
 
   return scale;
 }
