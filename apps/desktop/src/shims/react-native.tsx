@@ -105,11 +105,6 @@
 // When it lands, the row above becomes IMPLEMENTED and this paragraph goes with it.
 // Check the door when it does, because both uses are there.
 
-// Type-only: the values come from `gi://` at runtime, which resolves only inside a
-// GTK process. `@girs/*` is the same vocabulary as data, so `tsc` can read it here.
-import type Gtk from '@girs/gtk-4.0';
-import type GObject from '@girs/gobject-2.0';
-
 import {
   Children,
   createElement,

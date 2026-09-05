@@ -115,28 +115,21 @@ GJS-only while ADR 0032's ship path puts macOS and Windows on Node + node-gi, so
 video here would work on one of the three desktop targets. Both video paths render an
 honest notice in the app's own voice instead.
 
-**The reader loses its fade**, and the reason narrowed on 2026-09-03. It used to be
-that `Animated` was not implemented at all (tier P3: "a subsystem rather than a
-component — doing it badly is worse than not doing it"). @gjsify/react-native 0.46
-implements the three names this app uses, and `test/support-gate.test.ts` went red on
-the upgrade to say so — which is what that assertion is for.
+**The reader has its fade back**, as of `@gjsify/react-native` 0.48, and the entry is
+kept because the route it took is the lesson. It was first "`Animated` is not
+implemented" (tier P3: a subsystem rather than a component, and doing it badly is worse
+than not doing it). 0.46 implemented the three names this app uses, and the entry
+narrowed to a composition: the phone's overlay header is an `<Animated.View
+className="absolute …">`, and an `Animated.View` child did not make its parent a
+`Gtk.Overlay` the way a `View` child does. Both features worked alone and did not
+compose — filed as gjsify #1451.
 
-What stops it now is one composition: the phone's overlay header is an
-`<Animated.View className="absolute …">`, and an `Animated.View` child does not make
-its parent a `Gtk.Overlay` the way a `View` child does. `overlayOnAbsoluteChild` is
-declared by four primitives in the layer's table and `Animated` is not in that table,
-so the parent stays a `Gtk.Box` and the `absolute` child throws. Both features work
-alone; they do not compose yet.
-
-So `src/app/artikel.tsx` is still a variant of the phone's screen with the 160 ms
-header fade removed. Where the header floats — Linux and macOS — it still hides and
-returns, and it cuts instead of fading. Filed as gjsify #1451.
-
-On **Windows** the question does not arise, and not because it was solved: the header
-is a strip above the document there rather than a layer over it, because the web view
-is an OS-composited child window that nothing can be drawn on top of. So that platform
-lost a fade it was never going to get and gained a header that is actually visible.
-See [*The three targets*](#the-three-targets-measured-on-each).
+0.48 fixed it as a class rather than a case (#1537: a wrapper is transparent to the
+facts a parent reads), and `Animated.View` renders through the `View` primitive, which
+declares `overlayOnAbsoluteChild`. Measured here on 2026-09-05: the phone's header
+markup renders with no `PrimitiveError` and the 160 ms fade is restored on Linux and
+macOS. `src/app/artikel.tsx` is still a variant, for the Windows reason below and for
+nothing else — see [ADR 0026](../../adr/0026-re-exported-screens-and-a-variant-where-the-host-refuses.md).
 
 **A colour-scheme change needs a restart.** Adwaita's chrome follows the setting
 immediately, but the app's own token colours are resolved when their CSS class is

@@ -1,55 +1,48 @@
 // The article reader, on the desktop.
 //
-// One of three routes that differ from the phone, and the only reason it differs is
-// still the reader header's fade — but the reason for THAT changed on 2026-09-03 and
-// is worth reading before anyone deletes this file. Everything else here is
+// One of three routes that differ from the phone, and the reason it differs changed
+// again on 2026-09-05 — to a smaller one. Everything else here is
 // `apps/mobile/src/app/artikel.tsx` verbatim, kept line-for-line so a `diff` between
 // the two is short enough to read in a review.
 //
-// ## It is no longer that `Animated` is missing
+// ## The fade is back, and this file no longer varies for it
 //
-// It was, until @gjsify/react-native 0.46. `Animated` was a refusing export at tier
-// P3, and `test/support-gate.test.ts` went red on the upgrade to say the variant could
-// go — which is exactly what that assertion is for. 0.46 implements the three names
-// this app uses: `new Animated.Value(n)`, `Animated.timing(…).start()` and
-// `<Animated.View style={{ opacity }}>`.
+// The history is worth three sentences because it is the same claim narrowing twice.
+// `Animated` was a refusing export at tier P3, so this file rendered the header without
+// the 160 ms fade. @gjsify/react-native 0.46 implemented the three names this app uses,
+// so the variant was deleted — and came back, because an `Animated.View` child did not
+// make its parent a `Gtk.Overlay` the way a `View` child does, and the phone's overlay
+// header is `<Animated.View className="absolute …">`. Both features worked alone and
+// did not compose; filed as gjsify #1451.
 //
-// ## What stops it is `absolute` on an `Animated.View`
+// 0.48 fixed it as a class rather than a case (#1537 — a wrapper is transparent to the
+// facts a parent reads), and `Animated.View` renders through the `View` primitive,
+// which declares `overlayOnAbsoluteChild`. MEASURED here: the phone's header markup
+// renders with no `PrimitiveError`, and the fade is the phone's again.
 //
-// The phone's overlay header is `<Animated.View className="absolute left-0 right-0
-// top-0">` inside a `<View className="flex-1">`. On this host that throws:
+// ## What is left, and it is a platform idiom rather than a refusal
 //
-//   <View> absolute — positions this element on top of its parent, so the PARENT has
-//   to be a `Gtk.Overlay` — and it is not.
+// On Windows the web view is a child window the OS composites on top of the
+// application, so nothing can be drawn over the document at all — `platform/webview.ts`
+// carries the measurement and gjsify ADR 0035 stage 1 the mechanism. Where the view
+// can be overlaid, the header floats and fades exactly as the phone's does; where it
+// cannot, it is a strip ABOVE the document, and it does not hide on scroll — the same
+// state machine would jump the article by the strip's own height on every change of
+// direction.
 //
-// A `View` becomes a `Gtk.Overlay` as soon as one of its children is absolutely
-// positioned; that is `overlayOnAbsoluteChild` in the layer's primitive table, and
-// four primitives declare it. `Animated` is not in that table at all, so an
-// `Animated.View` child does not make its parent an overlay the way a `View` child
-// does — MEASURED: swapping this file's plain `<View className="absolute …">` for the
-// phone's `<Animated.View>` is the only change needed to reproduce it.
+// That is cause 2 in [ADR 0026](../../../adr/0026-re-exported-screens-and-a-variant-where-the-host-refuses.md),
+// a platform idiom an ADR already argues for, not cause 3, an import the support table
+// refuses. Cause 3 is struck through there.
 //
-// So the two features are individually supported and do not compose, which is a
-// narrower gap than the one this file was written for and a real one. It belongs
-// upstream, in the primitive table, not open-coded here.
-//
-// ## What is different, exactly
-//
-// THE HEADER STILL HIDES AND COMES BACK. That behaviour lives in `nextHeaderState()`
-// in `lib/articles/readerChrome.ts`, which is pure logic and unchanged — the overlay
+// `nextHeaderState()` in `lib/articles/readerChrome.ts` is unchanged and shared: the
 // header still gets out of the text's way when the article scrolls down, which is the
 // fault it exists to fix (a headline reading "zeniert" because the back chevron sat on
 // "insz").
-//
-// WHAT IS MISSING IS THE 160 ms FADE. It cuts instead: the header is not rendered
-// while hidden, rather than rendered at `opacity-0`, so an invisible header cannot
-// swallow taps meant for the article — which is what `pointerEvents` does on the
-// phone.
 
 import { Ionicons } from '@expo/vector-icons';
 import { router, useLocalSearchParams } from 'expo-router';
 import { useCallback, useEffect, useRef, useState } from 'react';
-import { ActivityIndicator, Linking, Pressable, View } from 'react-native';
+import { ActivityIndicator, Animated, Linking, Pressable, View } from 'react-native';
 
 import { ReaderView } from '@/components/reader/ReaderView';
 import { Button, SafeAreaView, Typo } from '@/components/ui';
@@ -103,6 +96,7 @@ export default function ArtikelScreen() {
   // `platform/webview.ts` for the measurement and the trigger that removes this.
   const overlayHeader = !webViewIsOsOverlay();
   const lastOffset = useRef(0);
+  const headerOpacity = useRef(new Animated.Value(1)).current;
 
   const onReaderScroll = useCallback((offsetY: number) => {
     const previous = lastOffset.current;
@@ -115,6 +109,14 @@ export default function ArtikelScreen() {
     lastOffset.current = 0;
     setHeader('floating');
   }, [url, attempt]);
+
+  useEffect(() => {
+    Animated.timing(headerOpacity, {
+      toValue: headerHidden ? 0 : 1,
+      duration: 160,
+      useNativeDriver: true,
+    }).start();
+  }, [headerHidden, headerOpacity]);
 
   useEffect(() => {
     if (!url) return;
@@ -159,7 +161,23 @@ export default function ArtikelScreen() {
   // header pleasant and what would make a strip jump the article by its own height on
   // every scroll direction change — the same state machine, opposite effect.
   const headerStrip = (
-    <View className={overlayHeader ? 'absolute left-0 right-0 top-0' : ''}>
+    <Animated.View
+      style={overlayHeader ? { opacity: headerOpacity } : undefined}
+      // Follows the fade, as the phone's does: a header at opacity 0 is still a widget,
+      // and without this it swallows the clicks meant for the article under it.
+      //
+      // `auto` where the phone writes `box-none`, and that is this host's answer rather
+      // than a compromise made here. GTK's `can-target` is ONE boolean for a widget and
+      // its whole subtree, so the two cannot be split; the shim answers `box-none` as
+      // `auto` for every call site and types the prop as the two values GTK has. It is
+      // the accurate answer for this wrapper, which is a `Gtk.Box` with no click
+      // handler of its own to steal one.
+      //
+      // Overlay case only: the Windows strip sits above the document rather than over
+      // it, and never hides.
+      pointerEvents={overlayHeader && headerHidden ? 'none' : 'auto'}
+      className={overlayHeader ? 'absolute left-0 right-0 top-0' : ''}
+    >
       <SafeAreaView
         edges={['top']}
         className={
@@ -195,7 +213,7 @@ export default function ArtikelScreen() {
           ) : null}
         </View>
       </SafeAreaView>
-    </View>
+    </Animated.View>
   );
 
   return (

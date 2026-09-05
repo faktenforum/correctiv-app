@@ -59,34 +59,30 @@ const DESKTOP_SRC = resolve(__dirname, '..', 'src');
  * Names the app imports from `react-native` that this host answers WITHOUT the
  * support table's blessing, each with the file that does it.
  *
- * One entry, and it is the reason `src/app/artikel.tsx` exists as a variant at all.
- * A second entry here should be argued for, not added: the alternative to a variant
- * is usually a shim, and a shim that fakes a subsystem is worse than a screen that
- * does without it.
+ * EMPTY, and it took two rounds to get back here. An entry should be argued for, not
+ * added: the alternative to a variant is usually a shim, and a shim that fakes a
+ * subsystem is worse than a screen that does without it.
  *
- * The REASON for this one changed on 2026-09-03 even though the name did not, and the
- * assertion at the bottom of this file is what forced the re-check. `Animated` was a
- * refusing export until @gjsify/react-native 0.46; 0.46 implements the three names
- * this app uses, that assertion went red, and the variant was deleted for a re-export
- * — which then failed to render, because an `Animated.View` child does not make its
- * parent a `Gtk.Overlay` the way a `View` child does, and the phone's overlay header
- * is `absolute`. So the variant came back for a narrower reason. See its header.
+ * `Animated` was the one entry and is the whole history of this list. It was a refusing
+ * export until @gjsify/react-native 0.46, which implements the three names this app
+ * uses; the assertion at the bottom of this file went red on that upgrade and named the
+ * variant, which was duly deleted — and came straight back, because an `Animated.View`
+ * child did not make its parent a `Gtk.Overlay` the way a `View` child does, so the
+ * phone's `absolute` overlay header threw. The entry stayed with an `importableAnyway`
+ * sentence saying so. 0.48 fixed the composition (gjsify #1451, closed by #1537: a
+ * wrapper is transparent to the facts a parent reads), the phone's header renders here,
+ * and the entry is gone.
  *
- * That is the shape this list is meant to have: a name here means "the host cannot do
- * this yet", and the check below asks the layer rather than trusting the note.
+ * **THE ASSERTION BELOW DID NOT CATCH THAT, and cannot.** It accepts an
+ * `importableAnyway` sentence as the re-argument, so a sentence that had become false
+ * passed. There is no oracle for it either: the published prop table answers "is this
+ * prop accepted on this primitive" and nothing published answers "does this element
+ * make its parent an overlay". The entry was re-checked because the whole 0.47 → 0.48
+ * ledger was, and ADR 0026's second addendum says so rather than leaving it implied.
  */
 const ANSWERED_BY_A_DESKTOP_VARIANT: Readonly<
   Record<string, { readonly where: string; readonly importableAnyway?: string }>
-> = {
-  Animated: {
-    where: 'src/app/artikel.tsx renders the reader header without the fade',
-    importableAnyway:
-      'the three names this app uses landed in 0.46, but an Animated.View child does ' +
-      'not make its parent a Gtk.Overlay the way a View child does — four primitives ' +
-      'declare overlayOnAbsoluteChild and Animated is not in the table — so the ' +
-      "phone's `absolute` overlay header throws. Individually supported, not composable.",
-  },
-};
+> = {};
 
 function sourceFiles(dir: string): string[] {
   return readdirSync(dir).flatMap((entry) => {
@@ -155,7 +151,9 @@ describe('the react-native import surface', () => {
     // paid for itself once: `Animated` landed in @gjsify/react-native 0.46 and this
     // went red on the upgrade, naming the variant that could go — rather than leaving
     // a hand-written workaround in place for ever because nobody re-checked. The list
-    // is empty now, so this passes trivially; it is here for the next entry.
+    // is empty again, so this passes trivially; it is here for the next entry. What it
+    // does NOT cover is above: an entry whose `importableAnyway` sentence has quietly
+    // become false is a pass here, and 0.48 produced exactly one.
     // A name that has become importable and carries NO `importableAnyway` note is the
     // failure: the layer now exports it, so the variant has to be re-argued or deleted.
     // Writing the note is that re-argument, and it is deliberately a sentence rather

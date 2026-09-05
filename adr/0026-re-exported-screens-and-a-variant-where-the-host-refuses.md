@@ -69,11 +69,20 @@ The three that are not, each with the cause that put it there:
    stretched over all of them; a desktop window has no bottom bar, and drawing one would
    be the exact mistake that ADR argues against. The web target has a third layout for
    the same reason.
-3. **An import the support table refuses.** `src/app/artikel.tsx` exists because
+3. ~~**An import the support table refuses.** `src/app/artikel.tsx` exists because
    `Animated` is a refusing export (gjsify ADR 0032, tier P3: a subsystem rather than a
    component, and doing it badly is worse than not doing it). There is no prop-level
    answer to an import with no implementation, so the screen renders the reader header
-   without the 160 ms fade and says so at the top of the file.
+   without the 160 ms fade and says so at the top of the file.~~ Voided by
+   `@gjsify/react-native` 0.48, which implements `Animated` AND makes an
+   `Animated.View` transparent to the facts its parent reads
+   ([gjsify #1451](https://github.com/gjsify/gjsify/issues/1451), fixed by #1537), so
+   the phone's `<Animated.View className="absolute …">` header composes here and the
+   fade is back. `artikel.tsx` is still a variant, and now under cause 2 rather than
+   this one: on Windows the web view is a child window the OS composites on top of the
+   application, so nothing can be drawn over the document and the header is a strip
+   above it. The addendum of 2026-09-05 has the measurement and cites gjsify's own
+   record for the mechanism.
 
 **A refused *prop* is never a fourth cause**, and that exclusion is the load-bearing half
 of this decision. The GTK layer refuses about 110 prop uses by name across this app, and
@@ -205,6 +214,36 @@ is stripped loudly. It is **not** translated to `flex-1`, which is the tempting 
 would be wrong: `flex-1` is `hexpand`, which changes where a short value sits.
 
 The route sweep is 24 of 24 after all of it.
+
+## Addendum, 2026-09-05: the third cause is gone, and one variant changed its reason
+
+`@gjsify/*` 0.48, linked from a working copy rather than pinned
+(`apps/desktop/README.md`, *Against a gjsify working copy*).
+
+**Cause 3 is void, and the fade is back.** The addendum above records the variant
+coming back because an `Animated.View` child did not make its parent a `Gtk.Overlay`
+the way a `View` child does. gjsify #1537 fixed that as a class rather than a case —
+a wrapper is now transparent to the facts a parent reads — and `Animated.View` renders
+through the `View` primitive, which declares `overlayOnAbsoluteChild`. MEASURED here on
+2026-09-05: the phone's `<Animated.View style={{ opacity }} className="absolute left-0
+right-0 top-0">` renders the reader's overlay header with no `PrimitiveError`, and the
+160 ms fade is restored.
+
+**So `artikel.tsx` varies under cause 2 now, not cause 3.** The remaining difference is
+the one platform idiom this file has always also carried: on Windows the web view is a
+child window the OS composites on top of the application, so nothing can float over the
+document and the header is a strip above it. That is a platform idiom an ADR argues for
+— gjsify ADR 0035 — which is exactly what cause 2 admits. The file's header says so.
+
+**`Animated` leaves the variant list.** `ANSWERED_BY_A_DESKTOP_VARIANT` in
+`test/support-gate.test.ts` is empty again. Its third assertion did not force this
+re-check and could not have: the entry carried an `importableAnyway` sentence, which is
+what that assertion accepts as the re-argument, so a sentence that had become false
+passed. **That is the shape of gap this ADR should say out loud.** The prop table
+answers "is this prop accepted on this primitive" and there is no published answer to
+"does this element make its parent an overlay", so the composition question has no
+oracle and the sentence is all there is. It was re-checked because the whole 0.47→0.48
+ledger was, not because anything failed.
 
 ## What this retires
 
