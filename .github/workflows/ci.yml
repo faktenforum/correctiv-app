@@ -7,7 +7,11 @@
 #                   not silently broken (see the job for why). Built for a domain
 #                   root; pages.yml rebuilds the same export under the Pages base
 #                   path and publishes it.
-#   android       — Android APK of the app
+#   android       — Android APK of the app, and only when the change could reach it.
+#                   It costs a quarter of an hour against the other two together
+#                   costing two minutes, and the handbook, the ADRs and the
+#                   screenshots cannot break a native build. `check` works out which
+#                   kind of change this is; see the step that does it.
 #
 # The repo is an npm workspace: `npm ci` runs at the root. Behaviour lives in
 # packages/app-core, which is why `check` is worth running on its own before either
@@ -35,6 +39,8 @@ jobs:
   check:
     name: Typecheck & tests
     runs-on: ubuntu-latest
+    outputs:
+      native: ${{ steps.scope.outputs.native }}
     steps:
       - uses: actions/checkout@v4
 
@@ -51,6 +57,50 @@ jobs:
       # Includes the boundary guard that keeps the core free of platform SDKs.
       - name: Check
         run: npm run check
+
+      # Whether the Android job has anything to say about this change. It is the
+      # expensive job by an order of magnitude, and a whole class of change cannot
+      # reach it: the handbook is a separate site, `tools/` ships with nothing, and
+      # the ADRs and the screenshots are read by people. Everything else runs it,
+      # because the list below is what to SKIP and a new directory therefore
+      # defaults to building. Any doubt, including this step failing, also builds:
+      # a build that ran for nothing costs fifteen minutes, one that was skipped and
+      # should not have been costs a broken app nobody sees until the release.
+      - name: Can this change reach the Android build
+        id: scope
+        env:
+          GH_TOKEN: ${{ github.token }}
+          REPO: ${{ github.repository }}
+          PR: ${{ github.event.number }}
+          BEFORE: ${{ github.event.before }}
+          AFTER: ${{ github.sha }}
+        run: |
+          set -uo pipefail
+          # `|| true` because the runner starts this script with `bash -e`: without
+          # it a failed call ends the step here, and the empty-file branch below,
+          # which is the whole fail-safe, never runs.
+          if [ "${{ github.event_name }}" = pull_request ]; then
+            gh api --paginate "repos/${REPO}/pulls/${PR}/files" --jq '.[].filename' > changed.txt || true
+          else
+            gh api "repos/${REPO}/compare/${BEFORE}...${AFTER}" --jq '.files[].filename' > changed.txt || true
+          fi
+          # Empty means the call failed. 300 is where the compare endpoint truncates
+          # its file list, and a truncated list can hide the one file that matters.
+          if [ ! -s changed.txt ] || [ "$(wc -l < changed.txt)" -ge 300 ]; then
+            echo "the changed files are unreadable or truncated; building to be safe"
+            echo "native=true" >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+          SKIP='^(apps/handbook/|tools/|screens/|adr/|docs/|\.vscode/|\.github/workflows/pages\.yml$|[^/]+\.md$|[^/]+\.png$|\.editorconfig$)'
+          if grep -Ev "$SKIP" changed.txt > reaching.txt; then
+            echo "native=true" >> "$GITHUB_OUTPUT"
+            echo "Android build runs; these files reach it:"
+            head -20 reaching.txt
+          else
+            echo "native=false" >> "$GITHUB_OUTPUT"
+            echo "Android build skipped; nothing here reaches it:"
+            head -20 changed.txt
+          fi
 
   web:
     name: Expo web export
@@ -132,6 +182,10 @@ jobs:
     name: Android build
     runs-on: ubuntu-latest
     needs: check
+    # Decided one job up, off the changed files. Nothing requires this check to
+    # report, so a skip does not hold a merge; to build anyway, run
+    # release-android.yml by hand, which produces the same APK on the run itself.
+    if: needs.check.outputs.native == 'true'
     steps:
       - uses: actions/checkout@v4
 
