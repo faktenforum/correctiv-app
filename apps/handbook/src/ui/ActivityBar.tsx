@@ -1,4 +1,4 @@
-import { BookText, GitBranch, Braces, ListTree, PenTool, Smartphone } from 'lucide-react';
+import { BookText, Braces, GitBranch, House, ListTree, PenTool, Smartphone } from 'lucide-react';
 
 import { Tooltip, TooltipContent, TooltipTrigger } from './kit/tooltip';
 import { cn } from '../lib/cn';
@@ -18,18 +18,29 @@ interface Props {
  * see the app opens into.
  */
 const ITEMS = [
-  { route: '/', label: 'Overview', Icon: BookText, match: (r: string) => r === '/' },
+  { route: '/', label: 'Overview', Icon: House, match: (r: string) => r === '/' },
   {
-    route: '/sources',
-    label: 'Sources',
-    Icon: ListTree,
-    match: (r: string) => r.startsWith('/sources'),
+    route: '/handbook',
+    label: 'Handbook',
+    Icon: BookText,
+    // The documents and the drawings of them. `/architecture` and `/diagrams`
+    // are inside this section, which is what every document's breadcrumb has
+    // claimed since the site was built.
+    match: (r: string) =>
+      ['/handbook', '/architecture', '/conventions', '/traps', '/readme', '/release'].includes(r) ||
+      r.startsWith('/diagrams'),
   },
   {
     route: '/decisions',
     label: 'Decisions',
     Icon: GitBranch,
     match: (r: string) => r.startsWith('/decisions'),
+  },
+  {
+    route: '/sources',
+    label: 'Sources',
+    Icon: ListTree,
+    match: (r: string) => r.startsWith('/sources'),
   },
   {
     route: '/design',

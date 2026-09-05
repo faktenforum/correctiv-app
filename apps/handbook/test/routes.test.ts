@@ -11,7 +11,7 @@ import { DOCUMENTS } from '../plugin/registry.ts';
  * about strings. The cost is that a route added there and not here goes
  * unchecked, which is why the list is short and sits next to the assertion.
  */
-const PAGES = ['/', '/design', '/diagrams', '/reference', '/sources', '/workbench'];
+const PAGES = ['/', '/handbook', '/design', '/diagrams', '/reference', '/sources', '/workbench'];
 
 const { module } = collectDocs();
 

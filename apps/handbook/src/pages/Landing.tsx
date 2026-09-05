@@ -34,10 +34,11 @@ const DOORS: Door[] = [
     primary: true,
   },
   {
-    route: '/architecture',
-    kind: 'Explanation',
-    title: 'Architecture',
-    blurb: 'One core, four ports, and the article path end to end.',
+    route: '/handbook',
+    kind: 'Written down',
+    title: 'Handbook',
+    blurb:
+      'What the system is and how to work in it: the architecture, the drawings of it, the conventions, and the traps that pass every check.',
   },
   {
     route: '/decisions',
@@ -46,10 +47,10 @@ const DOORS: Door[] = [
     blurb: 'Why the repository is the way it is, and which of its claims have since expired.',
   },
   {
-    route: '/diagrams',
-    kind: 'Drawn',
-    title: 'Diagrams',
-    blurb: 'The core and its host, the decisions and what they retire, and the core’s own layers.',
+    route: '/design',
+    kind: 'Drawn by hand',
+    title: 'Design',
+    blurb: 'The Figma file the screens come from, and the three places it reaches the code.',
   },
 ];
 

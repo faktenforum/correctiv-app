@@ -1,8 +1,11 @@
 import { Fragment, type ReactNode, useCallback, useEffect, useRef, useState } from 'react';
 
 import docsModule from 'virtual:docs';
+import { DIAGRAMS } from './diagrams';
 import { Design } from './pages/Design';
-import { Diagrams } from './pages/Diagrams';
+import { DiagramIndex } from './pages/DiagramIndex';
+import { DiagramView } from './pages/DiagramView';
+import { Handbook } from './pages/Handbook';
 import { Document } from './pages/Document';
 import { Landing } from './pages/Landing';
 import { Reference } from './pages/Reference';
@@ -41,8 +44,9 @@ import { useLinkInterception, useRoute } from './router';
 /** The views answered with a component rather than with a repository document. */
 const PAGES: Record<string, () => ReactNode> = {
   '/': Landing,
+  '/handbook': Handbook,
   '/design': Design,
-  '/diagrams': Diagrams,
+  '/diagrams': DiagramIndex,
   '/reference': Reference,
   '/sources': Sources,
 };
@@ -73,6 +77,14 @@ export function App() {
   const doc = docsModule.docs.find((d) => d.route === route);
   const Page = PAGES[route];
   const isApp = route === APP_VIEW;
+  /*
+   * The one route with a segment under it. A `Record` of exact matches answers
+   * everything else, and four drawings do not earn a router: they earn one
+   * `startsWith` and a lookup in the list they are already in.
+   */
+  const diagram = route.startsWith('/diagrams/')
+    ? DIAGRAMS.find((d) => d.id === route.slice('/diagrams/'.length))
+    : undefined;
 
   const workbench = useWorkbench(isApp);
   useLinkInterception();
@@ -390,6 +402,8 @@ export function App() {
                       onResize={workbench.onResize}
                       onLoad={workbench.onLoad}
                     />
+                  ) : diagram ? (
+                    <DiagramView meta={diagram} />
                   ) : Page ? (
                     <Page />
                   ) : doc ? (

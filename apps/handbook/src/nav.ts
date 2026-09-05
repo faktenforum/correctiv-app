@@ -1,4 +1,5 @@
 import docs from 'virtual:docs';
+import { DIAGRAMS } from './diagrams';
 
 export interface NavItem {
   route: string;
@@ -29,22 +30,36 @@ export const RECORDS: NavItem[] = docs.docs
   }));
 
 export const NAV: NavGroup[] = [
+  /*
+   * The same seven sections the rail has, in the same order and under the same
+   * names. Two lists of the site that disagreed about what its parts are called
+   * is what "Architecture, under Handbook" meant when Handbook was not a thing.
+   *
+   * Every group stays in the tree rather than the tree following the rail. This
+   * site is seven pages, seven documents and the records; hiding six sevenths of
+   * it behind the rail would be an editor's answer to an editor's problem, and
+   * this one is small enough to show whole.
+   */
   {
-    label: 'Start',
+    label: 'Handbook',
     open: true,
     items: [
-      { route: '/', label: 'Overview' },
+      { route: '/handbook', label: 'Overview' },
       { route: '/architecture', label: 'Architecture', blurb: doc('/architecture')?.blurb },
       { route: '/diagrams', label: 'Diagrams' },
-      { route: '/design', label: 'Design' },
-      { route: '/reference', label: 'Reference' },
+      ...DIAGRAMS.map((d) => ({ route: `/diagrams/${d.id}`, label: d.title })),
+      { route: '/conventions', label: 'Conventions', blurb: doc('/conventions')?.blurb },
+      { route: '/traps', label: 'Traps', blurb: doc('/traps')?.blurb },
+      { route: '/readme', label: 'Readme' },
+      { route: '/release', label: 'Release' },
     ],
   },
+  { label: 'Decisions', open: false, items: RECORDS },
   {
-    label: 'Content',
+    label: 'Sources',
     open: true,
     items: [
-      { route: '/sources', label: 'Sources' },
+      { route: '/sources', label: 'The board' },
       {
         route: '/sources/measured',
         label: 'Sources, measured',
@@ -52,18 +67,15 @@ export const NAV: NavGroup[] = [
       },
     ],
   },
-  { label: 'Decisions', open: true, items: RECORDS },
   {
-    label: 'Working here',
-    open: false,
+    label: 'The rest',
+    open: true,
     items: [
-      { route: '/conventions', label: 'Conventions' },
-      { route: '/traps', label: 'Traps' },
-      { route: '/readme', label: 'Readme' },
-      { route: '/release', label: 'Release' },
+      { route: '/design', label: 'Design' },
+      { route: '/reference', label: 'Reference' },
+      { route: '/workbench', label: 'The app' },
     ],
   },
-  { label: 'The app', open: false, items: [{ route: '/workbench', label: 'Workbench' }] },
 ];
 
 /**
@@ -75,6 +87,8 @@ export const NAV: NavGroup[] = [
  */
 export const PAGE_TITLES: Record<string, string> = {
   '/': 'CORRECTIV app handbook',
+  '/handbook': 'Handbook',
+  ...Object.fromEntries(DIAGRAMS.map((d) => [`/diagrams/${d.id}`, d.title])),
   '/design': 'Design, the Figma file',
   '/diagrams': 'Architecture diagrams',
   '/reference': 'Reference',
@@ -85,6 +99,8 @@ export const PAGE_TITLES: Record<string, string> = {
 /** Every route the site answers, for the router and for the search index. */
 export const ROUTES = new Set<string>([
   '/',
+  '/handbook',
+  ...DIAGRAMS.map((d) => `/diagrams/${d.id}`),
   '/design',
   '/diagrams',
   '/reference',
