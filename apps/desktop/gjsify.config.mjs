@@ -4,7 +4,8 @@
 // plugins; this file is where this application composes them, and every entry below is
 // a decision rather than boilerplate.
 
-import { existsSync, statSync } from 'node:fs';
+import { existsSync, readFileSync, statSync } from 'node:fs';
+import { createRequire } from 'node:module';
 import { dirname, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
@@ -160,6 +161,82 @@ function redirectPlugin() {
   };
 }
 
+/**
+ * The GTK layer's peer dependencies, pinned to THIS application's copies.
+ *
+ * WHY IT EXISTS AT ALL. `@gjsify/react-native` declares `react`, `react-reconciler`
+ * and the two React Navigation packages as PEER dependencies, which under npm's
+ * hoisting means one copy in the tree and nothing to decide. `scripts/gjsify-link.mjs`
+ * breaks that: a linked package's real path is inside the gjsify checkout, so every
+ * bare specifier it names resolves through THAT tree's `node_modules`, where a second
+ * `react` is installed as a devDependency. Two Reacts in one bundle, and the failure
+ * is not a duplicate-module warning:
+ *
+ *     TypeError: can't access property "useMemo", z.H is null
+ *
+ * `H` is the hooks dispatcher on React's shared internals. The component was rendered
+ * by one copy and read its hooks off the other, whose dispatcher is null outside a
+ * render. It cost one build to find and reads like a bug in the layer.
+ *
+ * WHY THE LIST IS READ RATHER THAN WRITTEN. The names come from the layer's own
+ * `peerDependencies`, so a peer gjsify adds is deduped the day it is added. A copy of
+ * the list here would be a second truth, and the failure it produces is this one.
+ *
+ * Unresolvable names are skipped rather than reported: `solid-js` is a peer of that
+ * package and this application does not use the Solid binding, so there is nothing to
+ * pin and nothing wrong.
+ */
+function peerDedupePlugin() {
+  const require = createRequire(import.meta.url);
+
+  // `@gjsify/react-native` does not export `./package.json`, so the manifest is found
+  // by walking up from the resolved entry rather than asked for by subpath.
+  const manifestOf = (specifier) => {
+    let dir = dirname(require.resolve(specifier));
+    for (;;) {
+      const candidate = resolve(dir, 'package.json');
+      if (existsSync(candidate)) return JSON.parse(readFileSync(candidate, 'utf8'));
+      const up = dirname(dir);
+      if (up === dir) return {};
+      dir = up;
+    }
+  };
+
+  const peers = new Set(Object.keys(manifestOf('@gjsify/react-native').peerDependencies ?? {}));
+  const pinned = new Set(
+    [...peers].filter((name) => {
+      try {
+        require.resolve(name);
+        return true;
+      } catch {
+        return false;
+      }
+    }),
+  );
+
+  /** The package a specifier names: two segments when it is scoped, one otherwise. */
+  const packageOf = (source) => {
+    const parts = source.split('/');
+    return source.startsWith('@') ? parts.slice(0, 2).join('/') : parts[0];
+  };
+
+  return {
+    name: 'correctiv-desktop-peer-dedupe',
+    resolveId: {
+      order: 'pre',
+      handler(source) {
+        if (source.startsWith('.') || source.startsWith('/')) return null;
+        if (!pinned.has(packageOf(source))) return null;
+        try {
+          return require.resolve(source);
+        } catch {
+          return null;
+        }
+      },
+    },
+  };
+}
+
 export default {
   bundler: {
     /**
@@ -182,6 +259,9 @@ export default {
       },
     },
     plugins: [
+      // Before the redirects, because a peer this application answers itself — nothing
+      // does today — should still win over the pin.
+      peerDedupePlugin(),
       redirectPlugin(),
       // expo-router discovers routes with Metro's `require.context`, which does not
       // exist in this chain. This walks `src/app` instead and emits one module that

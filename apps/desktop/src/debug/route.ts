@@ -1,10 +1,16 @@
 // A start-on-this-route hook, for looking at a screen without clicking to it.
 //
-// The desktop host has no way to drive its own UI from outside: `installDevtools` —
-// which does have `ActivateWidget` and would click a card for us — needs the
-// `Adw.Application` instance from `vfunc_startup`, and `AppRegistry.runApplication`
-// owns that object here. Until that seam exists, reaching the reader means either a
-// human with a mouse or this.
+// THE SEAM THIS SAID DID NOT EXIST NOW DOES, and this module is kept anyway. It used
+// to read: `installDevtools` — which has `ActivateWidget` and would click a card for
+// us — needs the `Adw.Application` from `vfunc_startup`, and `AppRegistry` owns that
+// object here, so reaching the reader means a human with a mouse or this. gjsify #1455
+// closed it in 0.48: `RunApplicationOptions` extends the shell's whole option set, so
+// `GJSIFY_DEVTOOLS=1` exports `org.gjsify.Devtools` with no wiring at all (README,
+// *Driving it from outside*).
+//
+// What that does NOT replace is starting ON a route. Driving the UI means finding a
+// card and activating it: a click path per screen, over whatever the feeds happened to
+// return. This names the screen outright and depends on nothing.
 //
 // It is the same shape the other GJS apps in this workspace use for the same reason
 // (`BH_APP_*`, `BP_APP_*`): one environment variable, read once, that replaces the

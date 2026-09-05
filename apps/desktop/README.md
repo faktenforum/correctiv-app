@@ -8,8 +8,9 @@ It can. The core did not move. What follows is what runs, what does not, and wha
 does not prove.
 
 The host is [gjsify](https://github.com/gjsify/gjsify)'s React-Native-on-GTK4 layer
-(`@gjsify/react-native` 0.46.0), which renders React Native's view vocabulary onto GTK4
-and Adwaita. [ADR 0012](../../adr/0012-a-list-virtualizer-for-the-unbounded-lists.md)
+(`@gjsify/react-native`; the manifest pins `^0.47.0` and a working copy is what this is
+developed against, see *Against a gjsify working copy*), which renders React Native's
+view vocabulary onto GTK4 and Adwaita. [ADR 0012](../../adr/0012-a-list-virtualizer-for-the-unbounded-lists.md)
 and [ADR 0013](../../adr/0013-native-tabs-and-a-web-tab-bar-of-its-own.md) already named
 this host as a reason for two decisions; this is that host, built.
 
@@ -145,13 +146,22 @@ is read once, at startup.
 **Smaller, each named where it happens:** no icons in the tab switcher (the router's
 `Tabs.Screen` takes `title` only); no mini player (there is no bottom bar to pin it
 above, and the switcher's header-bar slot will not survive a wrapper); no lock-screen
-metadata (MPRIS is the desktop counterpart and is not built); `Bleed` does not bleed,
-because GTK does not clamp a negative margin — it measures with it; and a routed window
-shows one header bar per navigator level, each with its own close button (gjsify #1460,
-open — visible in the screenshots above as the second bar reading "artikel").
+metadata (MPRIS is the desktop counterpart and is not built); and `Bleed` does not
+bleed, because GTK does not clamp a negative margin — it measures with it.
 
-Two entries left this list because they were already fixed and the list had not been
-re-read. **The brand typefaces are in the chrome now** — see below; the faces ship in
+**A header row's date is clipped**, and it is the one defect on this page whose cause is
+not yet named. The masthead's `Samstag, 5. September 2026` is allocated 170×23 px at
+every window width from 700 to 1400; one line of it needs 206 px in Source Sans 3 at
+14 px, so it wraps, and 23 px holds one of the two lines. Measured 2026-09-05 by
+rasterising the widget through `Screenshot(<path>)` — which is also how the READ-OUT
+this needs was found missing, see *Driving it from outside*. The same shape clips
+`BACKSTAGE · FRÜHER LESEN` on the Backstage card.
+
+Three entries left this list because they were already fixed and the list had not been
+re-read. **A routed window shows ONE header bar**, since
+[gjsify #1540](https://github.com/gjsify/gjsify/pull/1540) in 0.48 — the second and third
+bars, each with a close button of its own, are gone, and the screenshots on this page
+were re-shot for it. **The brand typefaces are in the chrome now** — see below; the faces ship in
 the payload and are registered at startup. **A chip row wraps**, since
 `@gjsify/react-native` 0.46 maps `flex-wrap` to a wrapping widget; the shim's own note
 to remove its stripping branch had been acted on and this sentence had not.
@@ -183,8 +193,7 @@ So sign in once. The session persists to
 Three development aids, all environment-gated and all no-ops otherwise:
 
 ```bash
-# Start on a particular route — there is no way to drive the UI from outside yet.
-# Needs an admitted session in the profile; see above.
+# Start on a particular route. Needs an admitted session in the profile; see above.
 CORRECTIV_DESKTOP_ROUTE=/spotlight npm run start -w @correctiv/desktop
 
 # Capture the window to a PNG and exit. In-process, because GNOME 45+ refuses
@@ -206,6 +215,80 @@ missing family — so a face can register successfully and the app still wear Ta
 A GStreamer error string reports a symptom whose cause it names wrongly — the same
 `Internal data stream error` means "no TLS backend" in gjsify's own notes and meant "no
 mp3 decoder" here. Each probe asks the subsystem instead of the call.
+
+### Driving it from outside
+
+`GJSIFY_DEVTOOLS=1` exports `org.gjsify.Devtools` on the session bus, at
+`/org/correctiv/AppDesktopExperimental/devtools` under the application's own name. It
+is opt-in and a no-op without the variable, so a normal run is byte-unchanged.
+
+```bash
+GJSIFY_DEVTOOLS=1 npm run start -w @correctiv/desktop
+```
+
+Twenty-six methods, of which four answer questions this host could not answer before:
+`DumpTree` (the widget tree with stable positional paths), `GetProperty`,
+`Screenshot` (the window, **or one widget by path** — its PNG dimensions are that
+widget's allocation, which is how the clipped header date was measured), and
+`FindWidget`/`ActivateWidget`/`SendKey`, which click- and key-drive the running app.
+
+Nothing here wires it. It arrives with `registerRootComponent`, because
+`RunApplicationOptions` extends the shell's whole option set rather than forwarding a
+list of fields — the option that a forwarding list dropped was this one, and gjsify
+#1455 is that omission. Reading a `-w @correctiv/desktop` flag is the whole setup.
+
+**What it does not answer.** A widget's SIZE REQUEST. `DumpTree` says a widget is
+mapped and `GetProperty` says its properties are what the code set, and neither
+distinguishes a label that was allocated the width it asked for from one that was
+allocated less and is now clipped. Rasterising each widget and reading the PNG header
+is the workaround, and it reports the allocation without the request, so it says *that*
+a widget is the wrong size and never *whose* arithmetic made it so.
+
+### Against a gjsify working copy
+
+Every defect this host has left is in gjsify rather than here, so the loop that matters
+is the one from a fix there to a screenshot here. `scripts/gjsify-link.mjs` makes it
+minutes instead of a release:
+
+```bash
+npm run gjsify:link   -w @correctiv/desktop -- --repo ~/src/gjsify   # once
+npm run gjsify:status -w @correctiv/desktop                          # what is linked
+npm run gjsify:unlink -w @correctiv/desktop                          # published again
+```
+
+It replaces every `node_modules/@gjsify/*` the working copy has a package for — all
+ninety, not the four this app names — with a symlink, stashing the published directory
+so `--unlink` is a rename rather than a download. All of them, because a linked package
+resolves its OWN imports through the working copy: linking four would leave a bundle
+holding two release trains, and gjsify's release train promises compatibility inside a
+release, not across one.
+
+**Build the working copy first.** `@gjsify/*` publish `lib/`, which is gitignored, so a
+fresh checkout has every package's source and none of its entry points. The script
+refuses to link an unbuilt package and names it rather than producing a bundler error
+about a module that is plainly there.
+
+**A linked package needs its peer dependencies pinned**, and `gjsify.config.mjs` does it
+— see `peerDedupePlugin`. `react` and `react-reconciler` are peer dependencies of
+`@gjsify/react-native`, which under npm's hoisting means one copy and nothing to decide;
+through a symlink the layer resolves them in the gjsify checkout, where a second React
+is installed as a devDependency. Two Reacts in one bundle, and the message is
+`TypeError: can't access property "useMemo", z.H is null` from inside a `Provider`,
+which reads as a bug in the layer.
+
+`build:gjs` and `build:node` print which gjsify produced the bundle, down to the
+checkout's `git describe`:
+
+```
+gjsify: LINKED — 90 package(s) from a working copy, not npm.
+  /home/…/gjsify
+    v0.48.0 · detached · v0.48.0-4-g0899bcc9ac · feat(adwaita)!: a page is chosen…
+```
+
+That readout is the point rather than the link. A version number does not distinguish
+two bundles built an hour apart from a moving checkout, and "fixed upstream, this app
+picks it up on the next bump" is the sentence this README already records ageing into a
+false one. A claim about a dependency needs the dependency named in the build log.
 
 ### Two hosts, one source
 

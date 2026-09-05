@@ -1,2 +1,7 @@
 # The bundle, its captures and the sweep's PNGs. Build output: `npm run build`.
 dist/
+
+# Where this developer keeps a gjsify working copy, remembered by
+# `scripts/gjsify-link.mjs --repo`. A path outside this repository is not a fact
+# about it.
+.gjsify-repo

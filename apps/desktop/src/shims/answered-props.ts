@@ -49,30 +49,6 @@ export interface AnsweredProp {
  */
 export const ANSWERED_PROPS: readonly AnsweredProp[] = [
   {
-    prop: 'accessibilityLabel',
-    primitive: 'View',
-    disposition: 'implemented',
-    why: 'set through a ref with Gtk.Accessible.update_property(); 46 call sites lose their spoken name',
-  },
-  {
-    prop: 'accessibilityState',
-    primitive: 'View',
-    disposition: 'implemented',
-    why: 'selected/checked/disabled as GtkAccessibleTristate, through the same ref',
-  },
-  {
-    prop: 'accessibilityRole',
-    primitive: 'View',
-    disposition: 'dropped',
-    why: 'unimplemented, not impossible — the property is writable after construction (measured); upstream is building the whole role family',
-  },
-  {
-    prop: 'accessible',
-    primitive: 'View',
-    disposition: 'dropped',
-    why: 'GTK has no per-widget accessibility opt-out; every widget is in the tree',
-  },
-  {
     prop: 'hitSlop',
     primitive: 'Pressable',
     disposition: 'dropped',
@@ -119,17 +95,31 @@ export const ANSWERED_PROPS: readonly AnsweredProp[] = [
  * nothing observable, and worth removing on the next touch of the relevant branch
  * because a redundant workaround is indistinguishable from a necessary one.
  *
- * The reason it is a LIST and not six deletions is that removing each one is a
- * behaviour change to verify on three platforms, and this session measured rather than
- * rewrote. The test holds the list exact in both directions: a seventh prop the layer
- * catches up on fails here, and so does an entry the layer goes back to refusing.
+ * The reason it is a LIST and not a set of deletions is that removing each one is a
+ * behaviour change to verify on three platforms, and the sessions that added them
+ * measured rather than rewrote. The test holds the list exact in both directions: a
+ * further prop the layer catches up on fails here, and so does an entry the layer goes
+ * back to refusing.
  *
- * `accessibilityLiveRegion` on `Text` is the one that is a capability GAIN rather than
- * bookkeeping: this host's header says a screen-reader user is told nothing on the
- * door, and the layer now answers it through `Gtk.Accessible.announce()` on the one
- * element whose content IS its message. That is worth wiring, not just deleting.
+ * Two of these are capability GAINS rather than bookkeeping, and both are still to be
+ * wired:
+ *
+ *   * `accessibilityLiveRegion` on `Text`. This host's header says a screen-reader user
+ *     is told nothing on the door, and the layer answers it through
+ *     `Gtk.Accessible.announce()` on the one element whose content IS its message.
+ *   * **`accessibilityRole` on `View`, 41 call sites**, which this shim DROPS. It was
+ *     dropped because the layer had no answer, not because GTK has none — the header of
+ *     `react-native.tsx` measured that and said the entry would move the day the layer
+ *     grew the role family. gjsify 0.48 grew it
+ *     ([#1541](https://github.com/gjsify/gjsify/pull/1541)), so those 41 sites are a
+ *     deletion away from having a role, and `accessible` and the two implemented ones
+ *     come with them.
  */
 export const UPSTREAM_CAUGHT_UP: readonly (readonly [primitive: string, prop: string])[] = [
+  ['View', 'accessibilityLabel'],
+  ['View', 'accessibilityState'],
+  ['View', 'accessibilityRole'],
+  ['View', 'accessible'],
   ['Text', 'accessibilityLiveRegion'],
   ['TextInput', 'autoComplete'],
   ['TextInput', 'textContentType'],

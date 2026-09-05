@@ -15,16 +15,19 @@
 //
 // **The table below is prose; `answered-props.ts` is the same thing as DATA, and it is
 // the one a test can check.** Keep them in step — and note that the check has already
-// paid for itself: six of the rows here describe a refusal the layer has since answered
-// itself, so their entries live in that file's `UPSTREAM_CAUGHT_UP` ledger rather than
-// among the necessary ones. `test/prop-gate.test.ts` holds the split exact in both
-// directions, because a redundant workaround reads exactly like a necessary one.
+// paid for itself twice: ten of the rows here describe a refusal the layer has since
+// answered itself, so their entries live in that file's `UPSTREAM_CAUGHT_UP` ledger
+// rather than among the necessary ones. The four newest arrived with gjsify 0.48, which
+// answers the accessibility props on every primitive this app uses — the test went red
+// on the upgrade and named all four, which is the whole reason it exists.
+// `test/prop-gate.test.ts` holds the split exact in both directions, because a
+// redundant workaround reads exactly like a necessary one.
 //
 // | prop | uses | GTK's refusal | this host |
 // |---|---|---|---|
-// | `accessibilityLabel` | 46 | not a widget property; `Gtk.Accessible.update_property()` is an imperative call | IMPLEMENTED, through a ref |
-// | `accessibilityState` | 6 | as above | IMPLEMENTED (`selected`/`checked`/`disabled`) |
-// | `accessibilityRole` | 41 | as above | DROPPED, and for a reason that turned out to be false — see below |
+// | `accessibilityLabel` | 46 | not a widget property; `Gtk.Accessible.update_property()` is an imperative call | IMPLEMENTED, through a ref — REDUNDANT since 0.48 |
+// | `accessibilityState` | 6 | as above | IMPLEMENTED (`selected`/`checked`/`disabled`) — REDUNDANT since 0.48 |
+// | `accessibilityRole` | 41 | as above | DROPPED, and for a reason that turned out to be false — see below. The layer answers it as of 0.48, so this is now a LOSS THIS FILE CAUSES |
 // | `hitSlop` | 13 | GTK hit-tests the allocation and cannot grow it | DROPPED, and correctly |
 // | `pointerEvents="box-none"` | 4 | `can-target` is one boolean for a widget AND its subtree | mapped to `auto` |
 // | `trackColor`/`thumbColor` | 2 | Adwaita paints a switch from the theme accent | DROPPED |
@@ -60,11 +63,14 @@
 // different sentence, and the difference matters: a capability believed absent gets
 // designed around, and this one was.
 //
-// It is still not implemented HERE, deliberately. `@gjsify/react-native` is growing the
+// It was not implemented HERE, deliberately: `@gjsify/react-native` was growing the
 // whole accessibility surface as a route family — 40 role names, 33 mapped, 7 refused by
-// name with advice — and a 41-site reimplementation in this shim would be redundant the
-// day that lands. The entry moves from "GTK cannot" to "the layer is about to", which is
-// what `shims/answered-props.ts` now records.
+// name with advice — and a 41-site reimplementation in this shim would have been
+// redundant the day that landed. **It landed**, in 0.48
+// ([gjsify #1541](https://github.com/gjsify/gjsify/pull/1541)), so the sentence has
+// turned round: the 41 call sites now lose their role BECAUSE THIS FILE STRIPS IT, and
+// the fix is a deletion. `shims/answered-props.ts` records that under
+// `UPSTREAM_CAUGHT_UP` rather than here, so it is a failing test and not a paragraph.
 //
 // What still holds from the old paragraph: a `Pressable` is announced as a button
 // because it IS a real `Gtk.Button`, and the label lands, which is the part a
