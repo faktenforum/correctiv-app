@@ -159,9 +159,12 @@ equivalents for focus, liveness and errors.
   workbench therefore has no store handle, and it says so on the panels that
   need one. The same limit applies to the dev server, which is a `--dev` bundle
   by definition: locally the route field reaches the app's first screen and no
-  further. To walk the app's routes with the inspector, there is no way today;
-  to walk them at all, open the app's own dev server directly at
-  `localhost:8081/`, or serve a static export with
+  further. Driving the app's own router instead of its address bar was tried on
+  2026-09-05, by putting `router` on the dev handle: it moves the URL and not
+  the rendered tree, for `replace`, `navigate` and a group-qualified path alike,
+  so it is not the fix and was not kept. To walk the app's routes today, open
+  the app's own dev server directly at `localhost:8081/` and give up the
+  inspector while you do, or serve a static export with
   `screens/tools/serve-clean.mjs`.
 - **Serving a static export without clean URLs** makes Expo Router render its
   *unmatched route* page. That looks like an app bug and is a server bug. → Map `/artikel` →

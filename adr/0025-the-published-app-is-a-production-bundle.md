@@ -62,6 +62,21 @@ Locally the frame reaches the app's first screen and no further, so the route fi
 a desktop convenience there rather than a way to walk the app. `TROUBLESHOOTING.md`,
 "The web target", carries the measurement.
 
+## What the inspector needs, which is not this
+
+Element-to-source needs Metro. `frame/locate.ts` posts a stack to `/symbolicate`
+and a file to `/open-stack-frame`, and both are endpoints of the dev server, so
+picking an element can only ever work against one and never on a static host,
+whatever bundle is published there. That is worth saying plainly, because it is
+easy to read "the published site has no dev handle" as the reason the picker is
+quiet there, and it is not.
+
+Against the dev server the whole surface works except the route field, which
+reaches the app's first screen and no further, for the same base-path reason.
+Driving the app's own router instead of its address bar was tried on 2026-09-05,
+by putting `router` on the dev handle: it moves the URL and not the rendered
+tree, so it was not kept.
+
 ## What would change this
 
 A second export. Publishing a production app at `/app/` and a development one beside
