@@ -7,7 +7,15 @@ import {
   useSyncExternalStore,
 } from 'react';
 
-import { install, NO_FRAME, readFrame, registerFrame, statusOf, type FrameInfo } from './api';
+import {
+  install,
+  NO_FRAME,
+  readFrame,
+  registerFrame,
+  statusOf,
+  uninstall,
+  type FrameInfo,
+} from './api';
 import { attachConsole } from './frame/console';
 import { applyTheme, BASE, frameRoute, navigate } from './frame/handle';
 import { armPicker, openInEditor, type Located } from './frame/locate';
@@ -89,7 +97,11 @@ export function useWorkbench(active: boolean) {
   useEffect(() => {
     if (!active) return;
     install();
-    return start();
+    const release = start();
+    return () => {
+      release();
+      uninstall();
+    };
   }, [active]);
 
   /*
@@ -115,7 +127,7 @@ export function useWorkbench(active: boolean) {
     if (!frame) return;
 
     // No fixture means leave the storage alone, which is what the plain demo
-    // asks for: `preview.html` with no `s` is the link `README.md` hands out,
+    // asks for: `/workbench` with no `s` is the link `RELEASE.md` hands out,
     // and it must not wipe what the last visit left behind on its way in.
     let reseed = false;
     if (state.seed !== null && seeded.current !== state.seed) {

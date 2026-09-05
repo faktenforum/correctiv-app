@@ -50,7 +50,7 @@
     "android": "expo run:android",
     "ios": "expo run:ios",
     "web": "EXPO_BASE_URL=/app expo start --web",
-    "build:web": "expo export --platform web --dev && cp dist/index.html dist/404.html",
+    "build:web": "expo export --platform web && cp dist/index.html dist/404.html",
     "fonts": "node scripts/embed-fonts.mjs",
     "offline-articles": "tsx scripts/fetch-offline-articles.mts",
     "offline-podcasts": "tsx scripts/fetch-offline-podcasts.mts",

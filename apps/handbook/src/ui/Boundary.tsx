@@ -45,8 +45,9 @@ export class Boundary extends Component<Props, State> {
   }
 
   componentDidCatch(error: Error, info: ErrorInfo) {
-    // Kept, because the workbench's console panel reads what the page logs and
-    // this is the one message worth having in it.
+    // Kept, because the browser's own console is where this lands. The
+    // workbench's console panel is patched onto the frame's window and never
+    // this one, so nothing on the site would carry the message otherwise.
     console.error('[handbook] view failed', error, info.componentStack);
   }
 

@@ -103,9 +103,11 @@ export const DRAWING = 'fill-on-canvas [&_text]:[dominant-baseline:central]';
  * A diagram is wider than the column, so it scrolls inside its own box.
  *
  * The focus stop is deliberate and is the exception `.oxlintrc.json` carries for
- * this file: Chrome and Firefox focus a scroll container on their own, Safari
- * does not, and a diagram nobody can scroll is worse than a lint exception with a
- * reason attached.
+ * `apps/handbook/src/diagrams/*.tsx`, which is where the `tabIndex={0}` beside this
+ * class actually sits, one per figure. Nothing here needs the exception; this file
+ * is the class it is spelled with. Chrome and Firefox focus a scroll container on
+ * their own, Safari does not, and a diagram nobody can scroll is worse than a lint
+ * exception with a reason attached.
  */
 export const SCROLL_BOX = cn(
   'overflow-x-auto rounded-md border border-stroke bg-canvas p-xs',

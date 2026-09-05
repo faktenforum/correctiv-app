@@ -102,6 +102,17 @@ export function Design() {
 
           {framed ? (
             <div className="mt-s overflow-hidden rounded-md border border-stroke">
+              {/*
+                `allow-same-origin` beside `allow-scripts`, which oxlint warns
+                about and which is right here. Its rule is about a SAME-origin
+                frame, where the pair lets the document reach out and remove its
+                own sandbox, so the attribute only looks like a precaution. This
+                frame is figma.com: `allow-same-origin` grants it its own origin,
+                not ours, and Figma needs it to reach its own storage. What the
+                sandbox still withholds is what it is for here, top-level
+                navigation above all: a third-party frame cannot move the page
+                out from under the reader.
+              */}
               <iframe
                 title="CORRECTIV App, Aufbau, in Figma"
                 src={FIGMA_EMBED}

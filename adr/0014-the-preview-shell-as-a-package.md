@@ -45,9 +45,12 @@ carefully; what is no longer true is that this folder is the only route to it.
 
 ## Same-origin is the constraint, not a detail
 
-`@expo/cli` serves `public/` from the dev server and copies it into `dist/` on export,
+~~`@expo/cli` serves `public/` from the dev server and copies it into `dist/` on export,
 so one build answers at `localhost:8081/preview.html`, at `serve-clean.mjs`'s port and
-on Pages — always on the app's own origin. Every capability the tool has follows from
+on Pages — always on the app's own origin.~~ Voided by
+[ADR 0024](0024-the-handbook-owns-the-root.md): the shell is not in the app's `public/`,
+so no build answers there. Same origin is still how it is reached, by assembling one
+artifact and proxying in development. Every capability the tool has follows from
 that and from nothing else:
 
 | Capability | What it actually is |
@@ -72,18 +75,24 @@ is a lint suppression and a comment where a reader will ask.
 
 ## What it costs, so nobody is surprised
 
-- **A build step before the app runs.** `npm run web` and `npm run build:web` build
+- ~~**A build step before the app runs.** `npm run web` and `npm run build:web` build
   the shell first (`npm run preview`), because the dev server serves `public/`
   statically and would otherwise serve a stale one. `npm run preview:watch` while
-  working on the shell itself.
-- **Generated output in the app's tree.** `apps/mobile/public/preview.html` and
+  working on the shell itself.~~ Voided by [ADR 0024](0024-the-handbook-owns-the-root.md):
+  neither script exists, and neither `web` nor `build:web` builds a shell.
+- ~~**Generated output in the app's tree.** `apps/mobile/public/preview.html` and
   `preview-assets/` are git-ignored. A Vite plugin clears `preview-assets/` before
   each build: `emptyOutDir` cannot be used when the out directory belongs to someone
   else, and without the plugin every build leaves its hashed pair behind and
-  `expo export` copies all of them into a target that is published on every push.
-- **One more assertion in `pages.yml`.** It already checks that `dist/preview.html`
-  survived the export; it now also checks that the bundle it references did. A missing
-  asset is a white page at the address the README hands out, and a green build.
+  `expo export` copies all of them into a target that is published on every push.~~
+  Voided by [ADR 0024](0024-the-handbook-owns-the-root.md): nothing is generated into
+  the app's tree any more, and `apps/mobile/public/` is empty.
+- ~~**One more assertion in `pages.yml`.** It already checks that `dist/preview.html`
+  survived the export; it now also checks that the bundle it references did.~~ Voided
+  by [ADR 0024](0024-the-handbook-owns-the-root.md): the workflow asserts nothing about
+  a shell inside the export. A missing asset is still a white page at the address the
+  README hands out, and a green build, which is why the assertions it does carry are
+  read off the assembled files.
 
 ## The one change inside the app
 

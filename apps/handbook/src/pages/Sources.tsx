@@ -660,8 +660,17 @@ export function Sources() {
           </div>
         </header>
 
-        <fieldset className="min-w-0">
-          <legend className={SECTION_HEAD}>Show</legend>
+        {/*
+          A heading beside the legend, not instead of it. The legend names the
+          group for the browser and the group needs one; the heading is what puts
+          this block in the outline, which it was not in while it was painted at
+          heading size and was not a heading.
+        */}
+        <fieldset className="min-w-0" aria-labelledby="h-show">
+          <legend className="sr-only">Show which rows</legend>
+          <h2 id="h-show" className={SECTION_HEAD}>
+            Show
+          </h2>
           <div className="mt-s grid gap-xs sm:grid-cols-2 xl:grid-cols-4">
             <Tile
               value="all"
@@ -864,7 +873,6 @@ export function Sources() {
               options={[
                 { value: 'state', label: 'State' },
                 { value: 'kind', label: 'Content kind' },
-                { value: 'area', label: 'Screen' },
               ]}
               onChange={(value) => setGroupBy(value as GroupBy)}
             />
@@ -1037,6 +1045,12 @@ export function Sources() {
                                 onClick={() => toggle(row.id)}
                               >
                                 {isOpen ? 'Hide' : 'Details'}
+                                {/* Thirty of these on the page, and a reader
+                                    listing its controls heard "Details" thirty
+                                    times. The row's own name is what tells them
+                                    apart, so it goes in the accessible name and
+                                    stays out of the visible one. */}
+                                <span className="sr-only">, {row.name}</span>
                               </Button>
                             </td>
                           </tr>

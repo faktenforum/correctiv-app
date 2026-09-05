@@ -68,7 +68,7 @@ function format(args: unknown[]): string {
  *
  * Which matters, because `load` is late. The app's own first render, and every
  * warning it emits, happens before the frame fires it. So this is also called
- * from the poll in `App.tsx`, which reaches a booting document that the load
+ * from the poll in `Workbench.tsx`, which reaches a booting document that the load
  * handler alone would only meet after the fact.
  */
 export function attachConsole(win: Window | null, onEntry: (entry: LogEntry) => void): void {

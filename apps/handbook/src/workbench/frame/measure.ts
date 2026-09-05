@@ -10,11 +10,12 @@ import { PALETTE, TOKENS, toRgb, type Scheme } from './tokens';
  * overflows by four pixels, a tap target too small for a thumb, and a colour that
  * is not in the palette at all.
  *
- * The colour check has a known blind spot and states it rather than hiding it. In
- * the light palette `#ffffff` is both `grey-100` and `always-light`, and `#333333`
- * is both `grey-700` and `always-dark`, so a value match cannot say which was
- * meant. In the dark palette all twelve values are distinct, which is why the
- * report says to run this one in dark mode.
+ * The colour check has a known blind spot and states it rather than hiding it: a
+ * value match cannot say which token was meant, because several tokens share a
+ * value. Counted in `tokens.generated.ts`, the light palette puts 35 tokens on 12
+ * distinct values and the dark one puts them on 20, so the same reading is less
+ * ambiguous in dark, which is why the report says to run it there. Less, not
+ * unambiguous: dark collides too.
  */
 export interface Finding {
   kind: 'overflow' | 'tap-target' | 'off-palette';

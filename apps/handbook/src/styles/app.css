@@ -223,10 +223,11 @@
   border-radius: 6px;
 }
 
-/* A table in a record is wider than a phone. It scrolls in its own box rather
-   than taking the page with it; the plugin gives it no such box. */
-.prose table {
-  display: block;
+/* A table in a record is wider than a phone, so the BOX around it scrolls. It
+   used to be the table itself, with `display: block`, which stops a browser that
+   takes the role from the display type announcing it as a table at all. The
+   plugin wraps every table in this box. */
+.prose .table-scroll {
   overflow-x: auto;
   max-width: 100%;
 }

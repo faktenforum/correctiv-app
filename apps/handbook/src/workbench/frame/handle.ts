@@ -43,8 +43,10 @@ export const BASE = `${import.meta.env.BASE_URL.replace(/\/$/, '')}/app`;
  * The handle the app leaves on its own global in a dev build, or `null`.
  *
  * `null` is the normal state of the published demo, not a fault: `expo export`
- * sets `__DEV__` false, so the static export carries no handle. Every caller
- * has to render that difference rather than appear to work — see `ThemeControl`.
+ * sets `__DEV__` false, so the static export carries no handle. Every caller has
+ * to render that difference rather than appear to work: `NeedsDev` in
+ * `ui/Panels.tsx` says it beside the control it disables, and `ui/Readout.tsx`
+ * says it in the status line for a reader who never opens a panel.
  */
 export function handleOf(win: Window | null): DevHandle | null {
   try {

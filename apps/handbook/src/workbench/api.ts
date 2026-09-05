@@ -142,7 +142,7 @@ export function readFrame(win: Window | null): FrameInfo {
 /**
  * Whether this patch will point the frame somewhere new.
  *
- * It mirrors the condition in `App.tsx`, which is the code that actually
+ * It mirrors the condition in `Workbench.tsx`, which is the code that actually
  * navigates: a fixture has to be in storage before the app boots, so a new one
  * costs a load, and so does a route the frame is not already showing.
  */
@@ -178,4 +178,16 @@ export function install(): void {
     audit: () => audit(frame?.contentWindow ?? null),
   };
   (window as Window & { preview?: PreviewApi }).preview = api;
+}
+
+/**
+ * Taken away with the view that installed it.
+ *
+ * The three verbs all answer about a frame, and there is no frame on any other
+ * view of this site. Left in place, `set()` would resolve against nothing and
+ * `get()` would report a device the reader cannot see, which is the automation
+ * and the person disagreeing about what is on screen.
+ */
+export function uninstall(): void {
+  delete (window as Window & { preview?: PreviewApi }).preview;
 }

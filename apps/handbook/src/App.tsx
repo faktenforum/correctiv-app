@@ -16,7 +16,6 @@ import { Header } from './ui/Header';
 import { Search } from './ui/Search';
 import { Settings } from './ui/Settings';
 import { ShowChrome } from './ui/ShowChrome';
-import { Sidebar } from './ui/Sidebar';
 import { SidePanel } from './ui/SidePanel';
 import { StatusBar } from './ui/StatusBar';
 import { Toc } from './ui/Toc';
@@ -99,16 +98,6 @@ export function App() {
   const wide = useMedia(WIDE);
 
   /*
-   * Both sidebars start shut, on every view.
-   *
-   * The rail is the navigation on arrival and it is always there, so the tree is
-   * a thing you open when you want it rather than a column you close. It also
-   * means the address somebody is handed opens on what it names, and not on a
-   * documentation tree beside it.
-   */
-  const [explorerOpen, setExplorerOpen] = useState(false);
-
-  /*
    * The chrome floated away, leaving the app and one button to bring it back.
    * It lives in the address because "look at this without my furniture" is worth
    * handing over, and because on a phone the chrome is most of the screen.
@@ -118,7 +107,7 @@ export function App() {
   /*
    * Whether the right sidebar is open is per-view state everywhere except on the
    * app, where it is in the URL under `tools`. That parameter predates this
-   * shell and is the difference between the link `README.md` hands out and the
+   * shell and is the difference between the link `RELEASE.md` hands out and the
    * link somebody sends a colleague to show them a console error, so it keeps
    * its meaning: opening the sidebar changes the address, and the address opens
    * the sidebar.
@@ -130,18 +119,8 @@ export function App() {
     (next: boolean) => {
       if (isApp) change({ tools: next });
       else setDocToolsOpen(next);
-      // They are the same piece of screen when there is only one column.
-      if (next && !window.matchMedia(WIDE).matches) setExplorerOpen(false);
     },
     [change, isApp],
-  );
-
-  const openExplorer = useCallback(
-    (next: boolean) => {
-      setExplorerOpen(next);
-      if (next && !window.matchMedia(WIDE).matches) setToolsOpen(false);
-    },
-    [setToolsOpen],
   );
 
   /*
@@ -163,11 +142,6 @@ export function App() {
       if (meta && key === 'k') {
         event.preventDefault();
         setSearchOpen((open) => !open);
-      }
-      // The two sidebar shortcuts an editor has, on the keys it has them on.
-      if (meta && key === 'b') {
-        event.preventDefault();
-        setExplorerOpen((open) => !open);
       }
       if (meta && key === 'j' && toolsTitle) {
         event.preventDefault();
@@ -209,7 +183,6 @@ export function App() {
    * constraints not found", which took the whole page with it. A hidden handle
    * beside a collapsed panel costs nothing; a moving child list costs the site.
    */
-  const explorerPanelRef = useRef<PanelHandle>(null);
   const toolsPanelRef = useRef<PanelHandle>(null);
   const dragging = useDragging();
 
@@ -220,11 +193,9 @@ export function App() {
    * for, with its own contents clipped. So the size is stated on the way in, and
    * a width somebody dragged to is what gets stated next time.
    */
-  const explorerWidth = useRef('18%');
   const toolsWidth = useRef<string | null>(null);
   const toolsDefault = contents ? '19%' : '31%';
 
-  usePanelState(explorerPanelRef, explorerOpen, () => explorerWidth.current, wide && !full);
   usePanelState(
     toolsPanelRef,
     toolsOpen && toolsTitle !== null,
@@ -251,17 +222,6 @@ export function App() {
       onRaw={workbench.onRaw}
     />
   ) : null;
-
-  const explorerPanel = (
-    <SidePanel
-      title="Explorer"
-      side="left"
-      titleAs={narrow ? SheetTitle : undefined}
-      onClose={() => openExplorer(false)}
-    >
-      <Sidebar route={route} />
-    </SidePanel>
-  );
 
   const toolsPanel = toolsTitle && (
     <SidePanel
@@ -307,8 +267,6 @@ export function App() {
           <Header
             onSearch={() => setSearchOpen(true)}
             onSettings={() => setSettingsOpen(true)}
-            explorerOpen={explorerOpen}
-            onToggleExplorer={() => openExplorer(!explorerOpen)}
             toolsOpen={toolsOpen}
             onToggleTools={toolsTitle ? () => setToolsOpen(!toolsOpen) : undefined}
             toolsLabel={toolsTitle ?? undefined}
@@ -323,53 +281,12 @@ export function App() {
 
           <ResizablePanelGroup className={cn('min-w-0 flex-1', !dragging && 'panels-animate')}>
             {/*
-              Keyed, all three, because the first two come and go. Without keys
-              React matches these children by position, so shutting the explorer
-              made the main panel change places with a fragment, and React
-              answered by throwing the panel away and building a new one. That
-              took the iframe with it, and the app came back blank.
+              Keyed, both of them, because the right-hand one comes and goes.
+              Without keys React matches these children by position, so a panel
+              appearing changed places with a fragment and React answered by
+              throwing the panel away and building a new one. That took the
+              iframe with it, and the app came back blank.
             */}
-            {wide && !full && (
-              <Fragment key="explorer">
-                <ResizablePanel
-                  panelRef={explorerPanelRef}
-                  collapsible
-                  collapsedSize="0%"
-                  defaultSize="18%"
-                  minSize="12%"
-                  maxSize="34%"
-                  /* Only while a handle is held. Otherwise this fires on the layout
-                     the collapse itself causes and writes the old state straight
-                     back, which is a toggle that does nothing: the button flipped,
-                     `onResize` flipped it back, and the effect never saw a change. */
-                  onResize={(size) => {
-                    if (!dragging) return;
-                    if (size.asPercentage > 0) explorerWidth.current = `${size.asPercentage}%`;
-                    setExplorerOpen(size.asPercentage > 0);
-                  }}
-                >
-                  {/*
-                    The clip and the floor. The panel's width is what animates,
-                    and without a floor the sidebar's text would reflow through
-                    every width on the way down, which reads as a glitch rather
-                    than as a panel leaving. Below the floor it slides out under
-                    the clip instead.
-
-                    `contain: paint` and not only `overflow: hidden`, measured:
-                    a floor of 15rem inside a zero-width hidden box still added
-                    120px to the document's scroll width, so the whole page
-                    scrolled sideways with a shut sidebar off the end of it.
-                  */}
-                  <div className="h-full w-full overflow-hidden [contain:paint]">
-                    <div className="h-full w-full min-w-[13rem]" inert={!explorerOpen}>
-                      {explorerPanel}
-                    </div>
-                  </div>
-                </ResizablePanel>
-                <ResizableHandle className={cn(!explorerOpen && 'hidden')} />
-              </Fragment>
-            )}
-
             <ResizablePanel key="main" minSize="30%">
               {/*
                 The one scroller. Every view is a block inside it, which is why
@@ -433,26 +350,16 @@ export function App() {
           </ResizablePanelGroup>
 
           {/*
-            Narrow, a sidebar is a drawer over the page rather than a column
-            beside it. There is no width to divide at 390px: a twelve per cent
-            panel is forty-seven pixels, and the page it left behind is not a
+            Narrow, the tools are a drawer over the page rather than a column
+            beside it. There is no width to divide at 390px: a fourteen per cent
+            panel is fifty-five pixels, and the page it left behind is not a
             page.
 
             A `Sheet`, which is a Radix dialog, rather than a positioned div: it
             traps focus, closes on Escape and on a tap outside, hides the page
             behind it from a screen reader, and slides in from the edge it is
-            docked to. That last part is not decoration. Two drawers open on this
-            screen and the edge they came from is the only thing that says which
-            one arrived before you have read it.
+            docked to.
           */}
-          {narrow && (
-            <Sheet open={explorerOpen} onOpenChange={openExplorer}>
-              <SheetContent side="left" className="w-[min(20rem,85vw)]">
-                {explorerPanel}
-              </SheetContent>
-            </Sheet>
-          )}
-
           {narrow && toolsPanel && (
             <Sheet open={toolsOpen} onOpenChange={setToolsOpen}>
               <SheetContent side="right" className="w-[min(26rem,92vw)]">

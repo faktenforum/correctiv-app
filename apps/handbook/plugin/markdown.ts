@@ -298,7 +298,21 @@ export function renderDoc(
   });
 
   const tokens = md.lexer(markdown);
-  const html = md.parse(markdown) as string;
+  /*
+   * A table in its own scroll box, rather than a table made to scroll.
+   *
+   * A record's table is wider than a phone and has to scroll somewhere. The
+   * stylesheet used to do that with `display: block` on the table itself, and a
+   * table that is a block is no longer a table: a browser that takes the role
+   * from the display type stops announcing rows and columns. Wrapping the
+   * rendered string rather than overriding marked's table renderer, because the
+   * override would have to reimplement the whole thing to add one element around
+   * it, and this input is our own Markdown.
+   */
+  const html = (md.parse(markdown) as string).replace(
+    /<table>([\s\S]*?)<\/table>/g,
+    '<div class="table-scroll"><table>$1</table></div>',
+  );
   const title = headings.find((h) => h.depth === 1)?.text ?? source.nav;
 
   return { ...source, title, html, headings, retired: retiredClaims(tokens) };

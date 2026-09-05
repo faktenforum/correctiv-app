@@ -246,9 +246,15 @@ export function InsideCoreDrawing({ alt = false }: { alt?: boolean } = {}) {
       <text x="40" y="622" className={cn(T12, BOLD)}>
         hard boundary, nothing crosses it
       </text>
+      {/*
+        The test matches a list of names, not the region of this drawing. Its
+        patterns are anchored at the start of the import, so `react-native` and
+        `expo-audio` are caught and the scoped `@react-native-async-storage/…` is
+        not. Saying "anything below" made the drawing promise more than the test.
+      */}
       <text x="40" y="640" className={cn(T12, MUTED)}>
-        <tspan className={MONO}>packages/app-core/test/boundary.test.ts</tspan> fails the build if
-        anything below is imported above this line
+        <tspan className={MONO}>packages/app-core/test/boundary.test.ts</tspan> fails the build on
+        an import matching its list: react-native, expo, node built-ins
       </text>
       <g className={cn(MONO, T12, MUTED)}>
         <rect x="40" y="660" width="100" height="30" rx="6" className={GHOST} />
@@ -313,7 +319,12 @@ export function InsideCoreDrawing({ alt = false }: { alt?: boolean } = {}) {
 export function InsideCore({ alt = true }: { alt?: boolean }) {
   return (
     <figure className={FIGURE}>
-      <section className={SCROLL_BOX} aria-label="Diagram 3, scrollable" tabIndex={0}>
+      {/*
+        Fourth, because `diagrams/index.ts` orders it fourth and `DiagramView` counts
+        the breadcrumb off that same array. The `d3-` ids inside the drawing are
+        older and are only ever read by `aria-labelledby`, so they are left alone.
+      */}
+      <section className={SCROLL_BOX} aria-label="Diagram 4, scrollable" tabIndex={0}>
         <InsideCoreDrawing alt={alt} />
       </section>
       <figcaption className={CAPTION}>
@@ -356,8 +367,14 @@ export function InsideCore({ alt = true }: { alt?: boolean }) {
           </ol>
           <p>
             Below the contracts is a hard boundary. The platform SDKs (react-native, expo,
-            expo-audio, async storage) sit on the far side and nothing in the package imports them;{' '}
-            <code>packages/app-core/test/boundary.test.ts</code> fails the build if one appears.
+            expo-audio, async storage) sit on the far side and nothing in the package imports them.{' '}
+            <code>packages/app-core/test/boundary.test.ts</code> holds that line by refusing a list
+            of names: react-native, expo, node built-ins, the NativeScript scopes, and the view
+            layers the core used to be tied to. It matches the start of the import, so{' '}
+            <code>@react-native-async-storage/async-storage</code> is not on the list and stays out
+            by convention rather than by the test. The same file also checks that{' '}
+            <code>ports/index.ts</code> still declares all four ports, so a capability cannot reach
+            the host without being named there.
           </p>
           <p>
             Two conventions: derived values are exported selectors taking state, never store

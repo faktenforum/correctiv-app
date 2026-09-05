@@ -101,7 +101,7 @@ simulated in `services/auth.service.ts` against a directory of rules the screen
 prints, and that file is the seam to beabee.
 [ADR 0016](adr/0016-a-door-at-the-root-and-an-entitlement-not-an-amount.md).
 
-The web demo's fixtures carry a session for the same reason: `preview.html#/?s=signed-in`
+The web demo's fixtures carry a session for the same reason: `/workbench#/?s=signed-in`
 is a member's first start, `s=no-access` is the door's fourth state, and every fixture
 that shows a screen signs in first.
 
@@ -251,7 +251,7 @@ or if the dark palette silently becomes the light one again.
 
 `apps/mobile` exports to static HTML, and that export is the published demo, best
 opened through the device frame at
-<https://faktenforum.github.io/correctiv-app/preview.html>. Same routes, screens and
+<https://faktenforum.github.io/correctiv-app/workbench>. Same routes, screens and
 core as the native builds, with two host-level differences.
 
 - **The two platform splits.** `ReaderView` and `VideoFrame` each have a `.web.tsx`

@@ -73,38 +73,43 @@ export function CoreAndHostDrawing({ alt = false }: { alt?: boolean } = {}) {
       <text x="900" y="56" textAnchor="end" className={cn(MUTED, T12)}>
         behaviour, all of it
       </text>
+      {/*
+        The directories of `packages/app-core/src`, in the order the fourth drawing
+        stacks them, so the two agree. There are eight slots and nine directories:
+        `ui` is one file of icon names and is the one left out.
+      */}
       <g className={cn(MONO, T12)}>
         <rect x="60" y="84" width="96" height="28" rx="6" className={CHIP} />
         <text x="108" y="98" textAnchor="middle">
-          model
+          stores
         </text>
         <rect x="166" y="84" width="96" height="28" rx="6" className={CHIP} />
         <text x="214" y="98" textAnchor="middle">
-          parsers
+          articles
         </text>
         <rect x="272" y="84" width="96" height="28" rx="6" className={CHIP} />
         <text x="320" y="98" textAnchor="middle">
-          services
+          media
         </text>
         <rect x="378" y="84" width="96" height="28" rx="6" className={CHIP} />
         <text x="426" y="98" textAnchor="middle">
-          cache
+          services
         </text>
         <rect x="484" y="84" width="96" height="28" rx="6" className={CHIP} />
         <text x="532" y="98" textAnchor="middle">
-          articles
+          data
         </text>
         <rect x="590" y="84" width="96" height="28" rx="6" className={CHIP} />
         <text x="638" y="98" textAnchor="middle">
-          feeds
+          lib
         </text>
         <rect x="696" y="84" width="96" height="28" rx="6" className={CHIP} />
         <text x="744" y="98" textAnchor="middle">
-          audio
+          ports
         </text>
         <rect x="802" y="84" width="96" height="28" rx="6" className={CHIP} />
         <text x="850" y="98" textAnchor="middle">
-          stores
+          types
         </text>
       </g>
       <text x="60" y="146" className={cn(T13, BOLD)}>
@@ -232,10 +237,18 @@ export function CoreAndHostDrawing({ alt = false }: { alt?: boolean } = {}) {
       <rect x="40" y="520" width="880" height="170" rx="8" className={BOX} />
       <rect x="41" y="521" width="878" height="34" rx="7" className={BAND} />
       <line x1="40" y1="556" x2="920" y2="556" className={RULE_STRONG} />
+      {/*
+        Two files, not one. `expo.ts` answers three of the ports; the audio one is
+        answered in `lib/audio/backend.ts` and composed onto the other three at the
+        boot site, so that reasoning about where state is stored does not drag in an
+        audio SDK. `expo.ts` says as much in its own closing comment.
+      */}
       <text x="480" y="538" textAnchor="middle" className={T12}>
         <tspan className={MUTED}>adapter </tspan>
-        <tspan className={cn(MONO, BOLD)}>apps/mobile/src/lib/platform/expo.ts</tspan>
-        <tspan className={MUTED}>, one small file, and the whole cost of adding a host</tspan>
+        <tspan className={cn(MONO, BOLD)}>lib/platform/expo.ts</tspan>
+        <tspan className={MUTED}> and </tspan>
+        <tspan className={cn(MONO, BOLD)}>lib/audio/backend.ts</tspan>
+        <tspan className={MUTED}>, the whole cost of adding a host</tspan>
       </text>
       <text x="60" y="592" className={cn(MONO, BOLD, T16)}>
         apps/mobile
@@ -284,9 +297,11 @@ export function CoreAndHost({ alt = true }: { alt?: boolean }) {
           Everything that behaves lives above the ports; everything that touches a platform lives
           below them.
         </strong>{' '}
-        The core declares the four interfaces and calls them, the host answers each one in{' '}
-        <code>expo.ts</code>, and a test keeps the line from moving. Adding a second host means
-        writing that one file again.
+        The core declares the four interfaces and calls them, and a test keeps the line from moving.
+        This host answers three of them in <code>apps/mobile/src/lib/platform/expo.ts</code> and the
+        fourth in <code>apps/mobile/src/lib/audio/backend.ts</code>, which{' '}
+        <code>apps/mobile/src/app/_layout.tsx</code> composes onto the other three. Adding a second
+        host means writing those two files again.
       </figcaption>
       {alt && (
         <div className={ALT} id="d1-alt">
@@ -296,10 +311,9 @@ export function CoreAndHost({ alt = true }: { alt?: boolean }) {
               <code>packages/app-core</code>, the behaviour
             </dt>
             <dd>
-              Contains model, parsers, services, cache, articles, feeds, audio and stores. It
-              imports no UI framework and no platform SDK.{' '}
-              <code>packages/app-core/test/boundary.test.ts</code> fails the build if a platform
-              import ever appears.
+              Holds stores, articles, media, services, data, lib, ports and types. It imports no UI
+              framework and no platform SDK. <code>packages/app-core/test/boundary.test.ts</code>{' '}
+              fails the build on an import matching its list.
             </dd>
             <dt>Four ports, the only crossing between the two</dt>
             <dd>
@@ -326,8 +340,11 @@ export function CoreAndHost({ alt = true }: { alt?: boolean }) {
             </dd>
             <dt>The adapter</dt>
             <dd>
-              <code>apps/mobile/src/lib/platform/expo.ts</code>, one small file. It is the whole
-              cost of adding a host.
+              <code>apps/mobile/src/lib/platform/expo.ts</code> answers the three storage and
+              content ports. <code>apps/mobile/src/lib/audio/backend.ts</code> answers the fourth,
+              and <code>apps/mobile/src/app/_layout.tsx</code> composes it onto the other three, so
+              that reasoning about where state is stored does not drag in an audio SDK. Those two
+              files are the whole cost of adding a host.
             </dd>
             <dt>
               <code>apps/mobile</code>, the host

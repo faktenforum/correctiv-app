@@ -1,4 +1,5 @@
 import { cn } from '../lib/cn';
+import { href } from '../router';
 import {
   ALT,
   ARC_INDEX,
@@ -175,7 +176,12 @@ export function ServicesDrawing() {
 export function Services({ alt = true }: { alt?: boolean }) {
   return (
     <figure className={FIGURE}>
-      <section className={SCROLL_BOX} aria-label="Diagram 4, scrollable" tabIndex={0}>
+      {/*
+        Third, because `diagrams/index.ts` orders it third and `DiagramView` counts
+        the breadcrumb off that same array. The number a screen reader hears and the
+        number the page shows have to be the one number.
+      */}
+      <section className={SCROLL_BOX} aria-label="Diagram 3, scrollable" tabIndex={0}>
         <ServicesDrawing />
       </section>
       <figcaption className={CAPTION}>
@@ -185,14 +191,14 @@ export function Services({ alt = true }: { alt?: boolean }) {
         <code className={PROSE_CODE}>services/auth.service.ts</code>, and the shape of the answer is
         the contract. Five content sources are live; three are files typed in the shape of the API
         meant to replace them. Which is which, and the figures behind each, is the{' '}
-        <a href="/sources" className="underline decoration-accent underline-offset-2">
+        <a href={href('/sources')} className="underline decoration-accent underline-offset-2">
           sources board
         </a>
         .
       </figcaption>
       {alt && (
         <div className={ALT}>
-          <p className="font-semibold">The same diagram as a list</p>
+          <h3>The same diagram as a list</h3>
           <p className="mt-xs">
             <strong>beabee, identity and membership.</strong> One login for the website and the app.
             It answers with the tier, whether the app is included, why, and for how long. The app

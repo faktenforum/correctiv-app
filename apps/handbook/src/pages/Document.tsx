@@ -5,7 +5,9 @@ import docsModule from 'virtual:docs';
 import type { RenderedDoc } from '../../plugin/markdown.ts';
 import type { ReactNode } from 'react';
 import { CoreAndHost } from '../diagrams/CoreAndHost';
+import { cn } from '../lib/cn';
 import { Badge } from '../ui/kit/badge';
+import { href } from '../router';
 import { Page } from '../ui/Page';
 
 interface Props {
@@ -106,6 +108,8 @@ export function Document({ doc }: Props) {
           ),
         )}
 
+        {record && <Neighbours route={doc.route} />}
+
         <footer className="mt-xl max-w-content border-t border-stroke pt-sm text-m text-on-canvas-muted">
           <p>
             This page is{' '}
@@ -123,6 +127,57 @@ export function Document({ doc }: Props) {
         </footer>
       </article>
     </Page>
+  );
+}
+
+/**
+ * The record before and the one after, which is what the tree used to be for.
+ *
+ * The records are a chain: one amends another, and reading two in a row is the
+ * ordinary way to use them. Everything else the explorer listed is on an index
+ * page, but "the next record" was only ever a list, and a list is a poor way to
+ * say "next". The search palette reaches any record by name; this is for the one
+ * whose name you do not know yet.
+ */
+function Neighbours({ route }: { route: string }) {
+  const records = docsModule.docs.filter((d) => d.route.startsWith('/decisions/'));
+  const at = records.findIndex((d) => d.route === route);
+  if (at === -1) return null;
+  const previous = at > 0 ? records[at - 1] : null;
+  const next = at < records.length - 1 ? records[at + 1] : null;
+
+  return (
+    <nav
+      aria-label="The records either side of this one"
+      className="mt-xl grid max-w-content gap-xs border-t border-stroke pt-sm sm:grid-cols-2"
+    >
+      {previous ? <Neighbour doc={previous} where="before" /> : <span />}
+      {next && <Neighbour doc={next} where="after" />}
+    </nav>
+  );
+}
+
+function Neighbour({ doc, where }: { doc: RenderedDoc; where: 'before' | 'after' }) {
+  const after = where === 'after';
+  return (
+    <a
+      href={href(doc.route)}
+      className={cn(
+        'group flex min-w-0 flex-col rounded-md border border-stroke bg-surface p-xs',
+        'transition-colors hover:border-stroke-strong hover:bg-canvas',
+        'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent',
+        after && 'sm:col-start-2 sm:text-right',
+      )}
+    >
+      <span className="text-s text-on-canvas-muted">
+        {after ? 'Next' : 'Previous'} · {doc.nav}
+      </span>
+      {/* The record's own h1, minus the prefix its number already carries. The
+          number alone says which record; the title says whether you want it. */}
+      <span className="mt-4xs text-m font-medium leading-snug text-on-canvas">
+        {doc.title.replace(/^ADR\s*0\d{3}\s*[—–-]\s*/, '')}
+      </span>
+    </a>
   );
 }
 

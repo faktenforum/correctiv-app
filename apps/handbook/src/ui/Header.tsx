@@ -1,7 +1,5 @@
 import {
   Maximize2,
-  PanelLeft,
-  PanelLeftClose,
   PanelRight,
   PanelRightClose,
   Search as SearchIcon,
@@ -18,8 +16,6 @@ import { href } from '../router';
 interface Props {
   onSearch: () => void;
   onSettings: () => void;
-  explorerOpen: boolean;
-  onToggleExplorer: () => void;
   toolsOpen: boolean;
   /** Absent where the open view has nothing to put in the right sidebar. */
   onToggleTools?: () => void;
@@ -33,47 +29,27 @@ interface Props {
 /**
  * The bar across the top, and the only place the application names itself.
  *
- * Each sidebar's control sits on the sidebar's own side, at the end of the bar:
- * the explorer's on the far left, the right sidebar's on the far right, with
- * everything that belongs to no side in between. A control for the right-hand
- * panel sitting to the left of the search was a control pointing at nothing.
+ * The right sidebar's control sits on the right sidebar's side, at the end of the
+ * bar, with everything that belongs to no side in between. A control for the
+ * right-hand panel sitting to the left of the search was a control pointing at
+ * nothing.
  *
- * Both change their icon as well as their ground. `PanelLeft` says "there is a
- * left panel" and `PanelLeftClose` says "and it is open, this shuts it", which
- * is a difference a reader who cannot tell the two grounds apart can still see.
+ * It changes its icon as well as its ground. `PanelRight` says "there is a panel
+ * here" and `PanelRightClose` says "and it is open, this shuts it", which is a
+ * difference a reader who cannot tell the two grounds apart can still see.
  */
 export function Header({
   onSearch,
   onSettings,
-  explorerOpen,
-  onToggleExplorer,
   toolsOpen,
   onToggleTools,
   toolsLabel,
   onFull,
   children,
 }: Props) {
-  const ExplorerIcon = explorerOpen ? PanelLeftClose : PanelLeft;
   const ToolsIcon = toolsOpen ? PanelRightClose : PanelRight;
   return (
     <header className="flex min-h-[2.75rem] shrink-0 flex-wrap items-center gap-xs border-b border-stroke bg-canvas py-4xs pl-3xs pr-s">
-      <Tooltip>
-        <TooltipTrigger asChild>
-          <Button
-            variant="ghost"
-            size="icon"
-            onClick={onToggleExplorer}
-            aria-expanded={explorerOpen}
-            aria-controls="site-nav"
-            aria-label={explorerOpen ? 'Hide the explorer' : 'Show the explorer'}
-            className={cn('size-[2rem]', explorerOpen && 'bg-surface text-on-canvas')}
-          >
-            <ExplorerIcon aria-hidden="true" />
-          </Button>
-        </TooltipTrigger>
-        <TooltipContent side="bottom">Explorer · ⌘B</TooltipContent>
-      </Tooltip>
-
       <a
         href={href('/')}
         className="flex min-w-0 items-center gap-2xs rounded-md px-3xs text-m font-semibold tracking-tight focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent"

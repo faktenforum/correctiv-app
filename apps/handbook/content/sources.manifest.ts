@@ -17,7 +17,10 @@
  *   against the live sources on the date below. A browser cannot re-take them,
  *   because the RSS feeds send no CORS header, and a build has no business
  *   pretending otherwise. So every figure here carries that date and the site
- *   shows it, with no relative times and no freshness indicator.
+ *   shows it, with how long ago that was worked out in the reader's browser and a
+ *   warning once it is more than a quarter old (`src/lib/measured.ts`). The date
+ *   is the fact; the distance from today to it is the part that cannot be baked
+ *   into a page that then sits at its address for months.
  */
 
 /** Whether a thing on screen is fed by a real source, by a file, or by nothing yet. */

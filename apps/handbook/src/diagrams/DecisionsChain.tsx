@@ -51,9 +51,14 @@ export function DecisionsChainDrawing({ alt = false }: { alt?: boolean } = {}) {
       aria-labelledby="d2-title"
       aria-describedby={alt ? 'd2-alt' : undefined}
     >
+      {/*
+        No count and no range in here. `adr/` grows, a number written into a title
+        does not, and the lede beside the drawing already reads the count from
+        `virtual:docs` rather than being told it.
+      */}
       <title id="d2-title">
-        Architecture decision records 0001 to 0023 in order, with arcs from each later record to the
-        earlier record whose claim it struck, and edges to the living documents it corrected
+        The architecture decision records in order, with arcs from each later record to the earlier
+        record whose claim it struck, and edges to the living documents it corrected
       </title>
       <defs>
         <marker
@@ -513,9 +518,25 @@ export function DecisionsChain({ alt = true }: { alt?: boolean }) {
               0012 A list virtualizer: accepted, struck by 0015 (one table row's reason, the
               conclusion untouched) and by 0020.
             </li>
+            {/*
+              0014 is drawn above as intact and is described here as struck, and the
+              two disagree on purpose. 0024 struck two of its claims, but the axis
+              ends at 0023 and there is no row below it that would not land on the
+              legend, so the arc this list names cannot be drawn without moving the
+              legend. The list is the half that can carry the truth today.
+            */}
+            {/*
+              No count on this one. The strikes 0024 left in 0014 are still being
+              written, so a number here would be wrong by the time it is read; what
+              0024's own "what this retires" section names is stable, and that is
+              what this says instead.
+            */}
             <li>
-              0014 The preview shell as a package: intact. Retired one claim in{' '}
-              <code>README.md</code>.
+              0014 The preview shell as a package: accepted, struck by 0024 in several places. The
+              workspace package <code>tools/preview</code> is gone, building into{' '}
+              <code>apps/mobile/public/</code> is no longer the only way to be on the app&apos;s
+              origin, and the costs that move removed are struck where they stand. Its same-origin
+              argument itself is untouched. Retired one claim in <code>README.md</code>.
             </li>
             <li>
               0015 Reading correctiv.org through its REST API: intact. Strikes 0006, 0007 and 0012,

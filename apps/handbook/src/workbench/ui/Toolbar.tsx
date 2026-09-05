@@ -73,7 +73,11 @@ export function Toolbar({ state, routeField, onRouteField, onChange, onReload, o
           onChange({
             device: e.target.value,
             landscape: false,
-            ...(e.target.value === 'custom' ? size : {}),
+            // Carry the size over into `custom`, so picking it keeps what is on
+            // screen. Not from `host`, whose `frameSize` is zero by design: the
+            // stage measures that one, and spreading it collapsed the frame to
+            // 0 × 0 with no way back but a reload.
+            ...(e.target.value === 'custom' && !host ? size : {}),
           })
         }
       >

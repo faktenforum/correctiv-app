@@ -87,6 +87,19 @@ export default defineConfig(({ command }) => ({
              */
             '/apps': { target: APP_DEV_SERVER, changeOrigin: false },
             '/assets': { target: APP_DEV_SERVER, changeOrigin: false },
+            /*
+             * The two questions the element picker asks Metro, which it used to
+             * be able to ask because the shell was served by Metro itself
+             * (ADR 0014). `frame/locate.ts` posts a stack to `/symbolicate` to
+             * turn bundle positions into source files, and `/open-stack-frame`
+             * to open one in an editor. Both are absolute from the origin root,
+             * and this origin is the handbook's; without these two lines the
+             * picker returned nothing and said "no source", which is what it
+             * says for a static export, so it looked like a build difference
+             * rather than a missing proxy.
+             */
+            '/symbolicate': { target: APP_DEV_SERVER, changeOrigin: false },
+            '/open-stack-frame': { target: APP_DEV_SERVER, changeOrigin: false },
           },
         }
       : undefined,

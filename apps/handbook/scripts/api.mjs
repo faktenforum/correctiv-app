@@ -53,10 +53,14 @@ const KINDS = {
 function commentText(comment) {
   if (!comment) return '';
   const parts = comment.summary ?? [];
-  return parts
-    .map((part) => (part.kind === 'code' ? part.text : part.text))
-    .join('')
-    .trim();
+  return (
+    parts
+      // Every part carries its text; the kinds differ in what they mean, not in
+      // where the words are. This was a ternary with the same branch twice.
+      .map((part) => part.text)
+      .join('')
+      .trim()
+  );
 }
 
 /** The first sentence, for a list row. The rest is for the panel. */
@@ -163,7 +167,9 @@ async function main() {
     for (const symbol of sorted) delete symbol.raw;
     modules.push({
       subpath,
-      file: relative(ROOT, join(ROOT, file)),
+      // `file` is already relative to ROOT; round-tripping it through join and
+      // relative returned the input.
+      file,
       doc: moduleDoc ? md.parse(moduleDoc) : '',
       symbols: sorted,
     });

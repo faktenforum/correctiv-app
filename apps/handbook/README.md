@@ -105,14 +105,16 @@ check could see.
 | `test/docs.test.ts` | a document link pointing at a path that has moved, and struck-through claims counted twice or losing the clause that voids them |
 | `test/sources.test.ts` | a file added to `packages/app-core/src/data/` with no entry in the manifest, so sample data reaches a screen and not the inventory |
 | `test/routes.test.ts` | a page shadowing a document, which removes it from the site with no error |
-| `test/styles.test.ts` | five stylesheets in one global scope meaning different things by the same name |
+| `test/styles.test.ts` | a colour value written here instead of taken from `packages/design-tokens`, which forks the palette invisibly, and the entry stylesheet importing the theme without the variants that choose between light and dark |
 
 ## Colour
 
-Generated from `packages/design-tokens` by `plugin/tokens.ts`, not written here. A
-hand-written copy had three values wrong within the hour, one of them the brand red,
-which the dark scheme lightens to `#ff6173` for contrast on a dark ground.
+Taken from `packages/design-tokens`, not written here. `src/styles/app.css` imports
+`theme.standalone.css`, which is the file the app consumes too, so `bg-canvas` means
+one thing in both and a colour has nowhere to fork to. A hand-written copy had three
+values wrong within the hour, one of them the brand red, which the dark scheme
+lightens to `#ff6173` for contrast on a dark ground.
 
-Every page stylesheet hangs off that page's own root class. Each was drawn as a
-standalone page and styled `html`, `h1` and `code` directly, which is correct in a
-standalone file and reaches every page here.
+There is one stylesheet, and its own header says why: `src/styles/app.css`. The site
+used to carry five, each drawn as a standalone page and styling `html`, `h1` and
+`code` directly, which is correct in a standalone file and reaches every page here.

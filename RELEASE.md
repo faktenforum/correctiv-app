@@ -10,13 +10,15 @@ Three GitHub Actions workflows live in `.github/workflows/`:
 
 ## The web preview
 
-**The published web export is a development bundle.** `build:web` passes `--dev`, so
-`__DEV__` stays true and the app leaves its dev handle on its own global. Without it
-the workbench is half inert on the very site it is published to: the appearance
-setting cannot be written and the inspector cannot read the store. The published app
-is a demo and a debugging target rather than a shipped binary, so it carries React's
-development warnings and about a third more JavaScript, 5.6 MB against 4.2. The
-native builds are unaffected; only `--platform web` takes the flag.
+**The published web export is a production bundle, and has to be.** It was a
+development one for a while, to keep the app's dev handle on the published site so
+the workbench's appearance control and inspector would work there. That trade was
+not the one it looked like: a `--dev` bundle applies `experiments.baseUrl` to asset
+URLs and not to route matching, and the app is published under `/app/`, so every
+route past the door rendered the app's own 404 while the door itself went on looking
+fine. `pages.yml` now fails the deploy if the bundle carries the handle, because that
+is the tell. The published workbench has no store handle and says so on the panels
+that need one; see TROUBLESHOOTING.md, "The web target".
 
 A web version of the app at <https://faktenforum.github.io/correctiv-app/workbench>,
 for clicking through without an install. Every push to `main` republishes it; there is

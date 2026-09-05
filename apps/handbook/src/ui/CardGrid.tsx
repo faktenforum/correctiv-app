@@ -18,10 +18,10 @@ export interface Card {
 /**
  * A set of doors, which is what an index page is.
  *
- * One component because three pages want the same one and a fourth will: the
- * landing page's sections, the handbook's documents, the drawings. The card is a
- * link with a heading in it rather than a div with a link, so the whole card is
- * the target and the heading is still a heading.
+ * One component because more than one page wants it: the handbook's documents
+ * and the drawings. The card is a link with a heading inside it rather than a div
+ * with a link inside it, so the whole card is the target and the heading is
+ * still a heading, which is how a reader moving by heading finds the doors.
  */
 export function CardGrid({ cards, columns = 2 }: { cards: Card[]; columns?: 2 | 3 }) {
   return (
@@ -48,13 +48,19 @@ export function CardGrid({ cards, columns = 2 }: { cards: Card[]; columns?: 2 | 
                   {card.kind}
                 </Badge>
               )}
-              <span className="flex items-center gap-2xs text-headline-xs font-semibold text-on-canvas">
+              {/*
+                A real heading, because these pages are an h1 and then a set of
+                doors, and a reader moving by heading should reach them. It was a
+                span painted at heading size, which this comment already claimed
+                it was not.
+              */}
+              <h2 className="flex items-center gap-2xs text-headline-xs font-semibold text-on-canvas">
                 {card.title}
                 <ArrowRight
                   aria-hidden="true"
                   className="size-[0.875rem] shrink-0 text-on-canvas-muted transition-transform group-hover:translate-x-3xs"
                 />
-              </span>
+              </h2>
               {card.blurb && (
                 <span className="mt-3xs text-m leading-relaxed text-on-canvas-muted">
                   {card.blurb}

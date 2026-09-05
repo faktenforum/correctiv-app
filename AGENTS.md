@@ -123,7 +123,7 @@ route, a bundle config or a platform split, run `npm run build:web`, then
 `node screens/tools/serve-clean.mjs apps/mobile/dist 8099` and open it. A plain
 static server maps no clean URLs and makes a working app look broken. After layout,
 screenshot it and look (`screens/tools/tour-android.sh`, compared against
-`screens/`), or open `/preview.html`, which frames the web target at a phone or
+`screens/`), or open `/workbench`, which frames the web target at a phone or
 tablet size and carries device, route, appearance and app state in its URL. Anything
 touching colour has to be seen in **both** appearance settings *and* with the setting
 on "System" against a dark device. That last combination is the app's default and is

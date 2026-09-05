@@ -116,10 +116,12 @@ function segment(on: boolean): string {
 /**
  * The workbench half of the page: everything the demo audience does not get.
  *
- * It is a panel of the split beside the stage, mounted only while the tools
- * switch is on, so nothing behind that switch is subscribed or announced for
- * someone who has not opened it. The dock fills its panel and scrolls inside
- * itself; the page it sits on never scrolls.
+ * It is a panel of the split beside the stage. Wide, `App.tsx` keeps it mounted
+ * and collapses it to zero width, because a panel that comes and goes changes
+ * `react-resizable-panels`' child list and that took the whole page down once;
+ * shut, it is `inert`, so none of this is announced to someone who has not opened
+ * it. The dock fills its panel and scrolls inside itself; the page it sits on
+ * never scrolls.
  */
 export function Panels(props: Props) {
   const { status, tools } = props;
@@ -916,7 +918,9 @@ function Measure({ tools, panel }: Props & { panel: Disclosure }) {
 
       {report?.scheme === 'light' && (
         <p className={NOTE}>
-          Colours are ambiguous in light: #ffffff and #333333 each name two tokens. Re-run in dark.
+          Colours are ambiguous in light: several tokens share #ffffff, several share #333333, and a
+          value match cannot say which was meant. Re-run in dark, where the palette spreads over
+          more distinct values.
         </p>
       )}
     </Panel>

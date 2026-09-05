@@ -140,20 +140,29 @@ equivalents for focus, liveness and errors.
 
 ## The web target
 
-- **The handbook's frame shows the app's own 404 in development, on every route
-  but the first.** The handbook publishes the app one directory below itself, at
-  `/app/`, and frames it there in both modes. `experiments.baseUrl` is what tells
-  Expo Router to strip that prefix, and it is applied when the export is built,
-  where `__DEV__` is false. The dev server sets `EXPO_BASE_URL=/app` too, which
-  fixes the asset URLs and gets `/app/` itself to render, but the router still
-  reads `/app/entdecken` whole and matches nothing. Measured on 2026-09-05:
-  `localhost:8082/entdecken` renders, `localhost:8082/app/entdecken` does not, and
-  the assembled artifact reads `/correctiv-app/app/entdecken` correctly. → In
-  development the workbench's route field reaches the app's first screen and no
-  further. To walk the app's routes locally, open the app's own dev server
-  directly, at `localhost:8081/`, and give up the inspector while you do, or check
-  the routes against a static export, which is what
-  `screens/tools/serve-clean.mjs` is for.
+- **A development bundle ignores the base path when it matches routes, and the
+  door hides it.** The handbook publishes the app one directory below itself, at
+  `/app/`, and `experiments.baseUrl` is what tells Expo Router to strip that
+  prefix. A `--dev` bundle applies it to asset URLs and not to route matching, so
+  every route under the base falls through to the app's own 404. What makes this
+  hard to see is that the door still renders: `_layout.tsx` draws it outside the
+  router, so a signed-out visitor sees a working app and a signed-in one sees
+  nothing but 404. Measured on 2026-09-05, one URL, one fixture, two builds:
+
+  | build | signed in at `/app/entdecken` | dev handle |
+  | --- | --- | --- |
+  | `--dev` | the app's own 404 | present |
+  | production | Entdecken renders | absent |
+
+  → `build:web` exports production, and `pages.yml` fails the deploy if the
+  handle is present, which is the tell for a `--dev` bundle. The published
+  workbench therefore has no store handle, and it says so on the panels that
+  need one. The same limit applies to the dev server, which is a `--dev` bundle
+  by definition: locally the route field reaches the app's first screen and no
+  further. To walk the app's routes with the inspector, there is no way today;
+  to walk them at all, open the app's own dev server directly at
+  `localhost:8081/`, or serve a static export with
+  `screens/tools/serve-clean.mjs`.
 - **Serving a static export without clean URLs** makes Expo Router render its
   *unmatched route* page. That looks like an app bug and is a server bug. → Map `/artikel` →
   `artikel.html`. A plain `python3 -m http.server` will not do;
@@ -328,7 +337,7 @@ equivalents for focus, liveness and errors.
 
 - **`t=dark` in a preview URL does nothing on a static export, and says nothing while
   it does nothing.** `expo export` sets `__DEV__` false, so the export carries no dev
-  handle: `/preview.html`'s appearance panel disables itself, and the shell accepts
+  handle: `/workbench`'s appearance panel disables itself, and the shell accepts
   `t=dark` in the hash and ignores it. A screenshot round driven that way produces
   "dark" images that are all light. → Drive the scheme from the browser instead —
   `emulateMedia({colorScheme:'dark'})`, or DevTools — with the app's own setting left

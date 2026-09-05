@@ -83,15 +83,21 @@ jobs:
         id: pages
         uses: actions/configure-pages@v5
 
-      # The web export is a DEVELOPMENT bundle, on purpose, and `build:web` passes
-      # `--dev` for it. A production export sets `__DEV__` false, the app leaves no
-      # dev handle on its global, and half of the workbench is inert on the very
-      # site it is published to: the appearance setting cannot be written and the
-      # inspector cannot read the store. The published app is a demo and a
-      # debugging target, not a shipped binary, so the trade is worth it. It costs
-      # about a third more JavaScript, 5.6 MB against 4.2, and the app carries
-      # React's development warnings, which the workbench's console panel shows
-      # rather than hides.
+      # A PRODUCTION export, and it has to be. This built a development bundle for
+      # a while, to keep the app's dev handle on the published site so the
+      # workbench's appearance control and inspector would work there. Measured on
+      # 2026-09-05, that trade was not the one it looked like: a `--dev` bundle
+      # does not apply `experiments.baseUrl` to ROUTE MATCHING, only to asset
+      # URLs. The app is published under `/app/`, so every route past the door
+      # rendered the app's own 404 while the door itself, which the layout draws
+      # outside the router, went on looking fine.
+      #
+      #   --dev      + base /app  signed in at /app/entdecken -> the app's 404
+      #   production + base /app  signed in at /app/entdecken -> Entdecken
+      #
+      # So the published app works and carries no handle, and the workbench says
+      # so on the panels that need one. A published app nobody can walk through is
+      # not worth a debugging surface on top of it.
       #
       # apps/mobile/app.config.js turns EXPO_BASE_URL into experiments.baseUrl.
       # Without it every asset URL is absolute from the domain root and resolves to
@@ -186,13 +192,14 @@ jobs:
           # entry is missing, the frame is a 404 in a phone-shaped box.
           test -f site/app/index.html || { echo "::error::site/app/index.html is missing — the workbench would frame a 404."; exit 1; }
 
-          # And the export has to be the development one, or the workbench loses
-          # its store handle on the published site and says so on every panel. The
-          # handle is the app's own global, so grepping for it is the check.
-          grep -rq '__correctiv' site/app/_expo/ || {
-            echo "::error::the app bundle carries no dev handle — build:web lost its --dev flag, and the published workbench would be half inert."
+          # And it has to be a PRODUCTION export. A development bundle leaves the
+          # app's dev handle on its global, which is convenient, and does not
+          # apply the base path to route matching, which breaks every route past
+          # the door. The handle is the tell, so grepping for it is the check.
+          if grep -rq '__correctiv' site/app/_expo/; then
+            echo "::error::the app bundle carries the dev handle, so build:web exported with --dev. A development bundle ignores experiments.baseUrl when matching routes, and the app is published under $BASE_PATH/app/, so every route past the door would render the app's own 404."
             exit 1
-          }
+          fi
 
           echo "deployable OK — handbook at $BASE_PATH/, app at $BASE_PATH/app/, $(find site -name '*.html' | wc -l) pages"
 

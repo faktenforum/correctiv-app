@@ -6,7 +6,7 @@ Status: accepted, 2026-09-04.
 
 The repository's documentation is the part of it that no code review would produce.
 `SOURCES.md` carries figures measured by hand against live sources and ten editorial
-questions nobody has answered. `adr/` carries twenty-three records and, more usefully,
+questions nobody has answered. `adr/` carries a chain of records and, more usefully,
 a chain of which claims each later one made false. None of it is reachable without a
 clone, and the people who most need the source inventory are the ones least likely to
 have one.
@@ -47,9 +47,9 @@ to the app's dev server on port 8081, with `ws: true` so the app's own reload so
 survives, and the browser again sees one origin. Against a static export, the
 assembled tree is served whole.
 
-**The old address keeps working.** `/preview.html` is a redirect stub that carries
-its query string to `/app/preview.html`, because that address is in `README.md`, in
-`RELEASE.md` and in links people already have.
+**The old address keeps working.** `/preview.html` is a redirect stub in the handbook
+that carries its query string to `/workbench`, because that address is in `RELEASE.md`
+and in links people already have.
 
 ## Why not the alternatives
 
@@ -64,7 +64,7 @@ the export is served, so a handbook built that way lands at `/app/` with the app
 the root is exactly as unreachable as before.
 
 **A documentation generator, Docusaurus or VitePress.** Less work for the prose. But
-the site is not only prose: it carries a filterable inventory, three hand-drawn
+the site is not only prose: it carries a filterable inventory, four hand-drawn
 diagrams, a symbol reference and a live device frame with an inspector, all of which
 are an application. And it would put a second toolchain, webpack with its own MDX and
 its own React, into a repository that refuses eslint and prettier and whose
@@ -112,8 +112,18 @@ that `apps/*` means a host of the core and a dev tool is not one, is why it sat 
 `tools/` and is worth reading; the handbook is a genuine second thing with screens,
 which is the difference.
 
+0014's "What it costs" section named three costs that the move removed: the build
+step before the app runs (`npm run preview`), the generated output in the app's tree,
+and the `pages.yml` assertion about a shell inside the export. **All three struck in
+place.** None of them exists any more, and a reader planning work around them would be
+planning around nothing. Its "Same-origin is the constraint" opening, which said one
+build answers at `localhost:8081/preview.html`, is struck for the same reason; the
+constraint it argues for is untouched and is why this ADR exists.
+
 Nothing else in 0014 is affected. The device frame and what it can and cannot
-simulate are unchanged.
+simulate are unchanged, and its note that the published export carries no dev handle
+is true again: publishing a development bundle was tried and measured, and
+`TROUBLESHOOTING.md`, "The web target", records why it cannot be.
 
 `README.md` and `RELEASE.md` name `/preview.html` as the address for the demo. Those
 are living documents and are rewritten rather than struck; the stub keeps the old

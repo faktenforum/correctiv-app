@@ -9,7 +9,6 @@ interface Props {
   side: 'left' | 'right';
   onClose: () => void;
   children: ReactNode;
-  className?: string;
   /**
    * Off where the child keeps a head of its own that has to stay put while the
    * rest scrolls. Two scrollers in one column is the bug this prevents.
@@ -36,7 +35,6 @@ export function SidePanel({
   side,
   onClose,
   children,
-  className,
   scroll = true,
   titleAs: Title = 'h2',
 }: Props) {
@@ -47,7 +45,6 @@ export function SidePanel({
       className={cn(
         'flex h-full min-h-0 flex-col bg-canvas',
         side === 'left' ? 'border-r border-stroke' : 'border-l border-stroke',
-        className,
       )}
     >
       <div className="flex h-[2.25rem] shrink-0 items-center gap-xs border-b border-stroke pl-s pr-3xs">
