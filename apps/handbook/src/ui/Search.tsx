@@ -88,57 +88,67 @@ export function Search({ open, onClose }: Props) {
     [index],
   );
 
+  /*
+   * Three class names, three elements, and they are not interchangeable.
+   *
+   * `Command.Dialog` portals the backdrop and the panel as SIBLINGS on `body`,
+   * then puts the command root inside the panel. So the backdrop and the panel
+   * each need their own `fixed` and their own place, and `className`, which lands
+   * on the root, must carry no layout at all. It carried the backdrop's before:
+   * a `fixed inset-0` root escaped the panel it was inside, which collapsed the
+   * panel to two pixels and left the list standing on the page with no ground
+   * under it.
+   */
   return (
     <Command.Dialog
+      loop
       open={open}
       onOpenChange={(next) => {
         if (!next) onClose();
       }}
       label="Search the handbook"
-      className="fixed inset-0 z-50 grid place-items-start justify-center bg-black/40 pt-[12vh]"
-      contentClassName="w-[min(40rem,92vw)] overflow-hidden rounded-lg border border-stroke bg-canvas shadow-2xl"
+      overlayClassName="fixed inset-0 z-50 bg-black/50"
+      contentClassName="fixed left-1/2 top-[12vh] z-50 w-[min(40rem,92vw)] -translate-x-1/2 overflow-hidden rounded-lg border border-stroke bg-canvas shadow-2xl"
     >
-      <Command loop>
-        <Command.Input
-          autoFocus
-          placeholder="Search documents, sections and the core's API"
-          className="w-full border-b border-stroke bg-transparent px-sm py-s text-m text-on-canvas outline-none placeholder:text-on-canvas-muted"
-        />
-        <Command.List className="max-h-[min(24rem,60vh)] overflow-y-auto p-xs">
-          <Command.Empty className="px-s py-m text-center text-m text-on-canvas-muted">
-            Nothing matches that.
-          </Command.Empty>
+      <Command.Input
+        autoFocus
+        placeholder="Search documents, sections and the core's API"
+        className="w-full border-b border-stroke bg-transparent px-sm py-s text-m text-on-canvas outline-none placeholder:text-on-canvas-muted"
+      />
+      <Command.List className="max-h-[min(24rem,60vh)] overflow-y-auto p-xs">
+        <Command.Empty className="px-s py-m text-center text-m text-on-canvas-muted">
+          Nothing matches that.
+        </Command.Empty>
 
-          {groups.map(({ group, entries }) => {
-            const Icon = ICONS[group];
-            return (
-              <Command.Group
-                key={group}
-                heading={group}
-                className="[&_[cmdk-group-heading]]:px-xs [&_[cmdk-group-heading]]:py-2xs [&_[cmdk-group-heading]]:text-s [&_[cmdk-group-heading]]:font-semibold [&_[cmdk-group-heading]]:uppercase [&_[cmdk-group-heading]]:tracking-wider [&_[cmdk-group-heading]]:text-on-canvas-muted"
-              >
-                {entries.map((entry) => (
-                  <Command.Item
-                    key={entry.route}
-                    value={`${entry.title} ${entry.kind} ${entry.hint}`}
-                    onSelect={() => go(entry.route, onClose)}
-                    className="flex cursor-pointer items-center gap-xs rounded-md px-xs py-2xs text-m text-on-canvas data-[selected=true]:bg-surface"
-                  >
-                    <Icon
-                      aria-hidden="true"
-                      className="size-[0.875rem] shrink-0 text-on-canvas-muted"
-                    />
-                    <span className="truncate font-medium">{entry.title}</span>
-                    <span className="ml-auto truncate pl-s font-mono text-s text-on-canvas-muted">
-                      {entry.kind}
-                    </span>
-                  </Command.Item>
-                ))}
-              </Command.Group>
-            );
-          })}
-        </Command.List>
-      </Command>
+        {groups.map(({ group, entries }) => {
+          const Icon = ICONS[group];
+          return (
+            <Command.Group
+              key={group}
+              heading={group}
+              className="[&_[cmdk-group-heading]]:px-xs [&_[cmdk-group-heading]]:py-2xs [&_[cmdk-group-heading]]:text-s [&_[cmdk-group-heading]]:font-semibold [&_[cmdk-group-heading]]:uppercase [&_[cmdk-group-heading]]:tracking-wider [&_[cmdk-group-heading]]:text-on-canvas-muted"
+            >
+              {entries.map((entry) => (
+                <Command.Item
+                  key={entry.route}
+                  value={`${entry.title} ${entry.kind} ${entry.hint}`}
+                  onSelect={() => go(entry.route, onClose)}
+                  className="flex cursor-pointer items-center gap-xs rounded-md px-xs py-2xs text-m text-on-canvas data-[selected=true]:bg-surface"
+                >
+                  <Icon
+                    aria-hidden="true"
+                    className="size-[0.875rem] shrink-0 text-on-canvas-muted"
+                  />
+                  <span className="truncate font-medium">{entry.title}</span>
+                  <span className="ml-auto truncate pl-s font-mono text-s text-on-canvas-muted">
+                    {entry.kind}
+                  </span>
+                </Command.Item>
+              ))}
+            </Command.Group>
+          );
+        })}
+      </Command.List>
     </Command.Dialog>
   );
 }
