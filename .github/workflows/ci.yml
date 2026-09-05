@@ -76,10 +76,13 @@ jobs:
           AFTER: ${{ github.sha }}
         run: |
           set -uo pipefail
+          # `|| true` because the runner starts this script with `bash -e`: without
+          # it a failed call ends the step here, and the empty-file branch below,
+          # which is the whole fail-safe, never runs.
           if [ "${{ github.event_name }}" = pull_request ]; then
-            gh api --paginate "repos/${REPO}/pulls/${PR}/files" --jq '.[].filename' > changed.txt
+            gh api --paginate "repos/${REPO}/pulls/${PR}/files" --jq '.[].filename' > changed.txt || true
           else
-            gh api "repos/${REPO}/compare/${BEFORE}...${AFTER}" --jq '.files[].filename' > changed.txt
+            gh api "repos/${REPO}/compare/${BEFORE}...${AFTER}" --jq '.files[].filename' > changed.txt || true
           fi
           # Empty means the call failed. 300 is where the compare endpoint truncates
           # its file list, and a truncated list can hide the one file that matters.
