@@ -12,7 +12,7 @@ import type { ReactNode } from 'react';
  */
 export function StatusBar({ children }: { children: ReactNode }) {
   return (
-    <footer className="flex h-[1.75rem] shrink-0 items-center gap-s border-t border-stroke bg-surface px-s text-s text-on-canvas-muted">
+    <footer className="flex h-[1.75rem] shrink-0 items-center gap-s overflow-hidden border-t border-stroke bg-surface px-s text-s text-on-canvas-muted">
       {children}
     </footer>
   );

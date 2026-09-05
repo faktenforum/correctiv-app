@@ -21,6 +21,7 @@ import {
 } from '../../content/sources.manifest';
 import type { Feed, Kind, SourceEntry, Status } from '../../content/sources.manifest';
 import { Badge } from '../ui/kit/badge';
+import { Segmented } from '../ui/kit/segmented';
 import { Button } from '../ui/kit/button';
 import { cn } from '../lib/cn';
 import { ageInWords, isStale, STALE_AFTER_DAYS } from '../lib/measured';
@@ -53,9 +54,9 @@ const CODE =
 const LINK =
   'rounded-s underline decoration-accent underline-offset-2 hover:text-on-canvas-accent focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent';
 
-/** A question link, shaped like the kit's outline badge because it sits beside them. */
+/** What a question chip adds to the kit's outline badge, which it otherwise is. */
 const CHIP_LINK =
-  'inline-flex shrink-0 items-center gap-3xs whitespace-nowrap rounded-full border border-stroke px-xs py-4xs text-s font-medium text-on-canvas-muted hover:border-accent hover:text-on-canvas-accent focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent';
+  'hover:border-accent hover:text-on-canvas-accent focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent';
 
 const SECTION_HEAD = 'text-headline-l font-semibold tracking-tight text-on-canvas';
 const SECTION_LEDE = 'mt-2xs max-w-content text-m text-on-canvas-muted';
@@ -250,10 +251,12 @@ interface BoardRow {
 
 function questionChips(numbers: number[]): ReactNode {
   return numbers.map((n) => (
-    <a className={CHIP_LINK} href={`#q${n}`} key={n}>
-      Q{n}
-      <span className="sr-only">, open question {n}</span>
-    </a>
+    <Badge asChild variant="outline" className={CHIP_LINK} key={n}>
+      <a href={`#q${n}`}>
+        Q{n}
+        <span className="sr-only">, open question {n}</span>
+      </a>
+    </Badge>
   ));
 }
 
@@ -844,39 +847,19 @@ export function Sources() {
               />
             </div>
 
-            <fieldset className="min-w-0">
-              <legend className="mb-3xs text-s font-medium text-on-canvas-muted">Group by</legend>
-              <div className="flex items-center gap-4xs rounded-md border border-stroke bg-canvas p-4xs">
-                {(
-                  [
-                    { value: 'state', label: 'State' },
-                    { value: 'kind', label: 'Content kind' },
-                  ] satisfies { value: GroupBy; label: string }[]
-                ).map((option) => (
-                  <label key={option.value} className="min-w-0">
-                    <input
-                      type="radio"
-                      name="group"
-                      value={option.value}
-                      checked={groupBy === option.value}
-                      onChange={() => setGroupBy(option.value)}
-                      className="peer sr-only"
-                    />
-                    <span
-                      className={cn(
-                        'block cursor-pointer rounded-s px-s py-3xs text-m transition-colors',
-                        'peer-focus-visible:ring-2 peer-focus-visible:ring-accent',
-                        groupBy === option.value
-                          ? 'bg-surface font-medium text-on-canvas ring-1 ring-stroke'
-                          : 'text-on-canvas-muted hover:text-on-canvas',
-                      )}
-                    >
-                      {option.label}
-                    </span>
-                  </label>
-                ))}
-              </div>
-            </fieldset>
+            <Segmented
+              name="group"
+              legend="Group by"
+              showLegend
+              className="min-w-0"
+              value={groupBy}
+              options={[
+                { value: 'state', label: 'State' },
+                { value: 'kind', label: 'Content kind' },
+                { value: 'area', label: 'Screen' },
+              ]}
+              onChange={(value) => setGroupBy(value as GroupBy)}
+            />
 
             <label className="flex items-center gap-xs text-m text-on-canvas-muted">
               <input

@@ -1,4 +1,4 @@
-import { Fragment, type ReactNode, useCallback, useEffect, useState } from 'react';
+import { Fragment, type ReactNode, useCallback, useEffect, useRef, useState } from 'react';
 
 import docsModule from 'virtual:docs';
 import { Design } from './pages/Design';
@@ -10,13 +10,21 @@ import { Sources } from './pages/Sources';
 import { ActivityBar } from './ui/ActivityBar';
 import { Header } from './ui/Header';
 import { Search } from './ui/Search';
+import { Settings } from './ui/Settings';
 import { ShowChrome } from './ui/ShowChrome';
 import { Sidebar } from './ui/Sidebar';
 import { SidePanel } from './ui/SidePanel';
 import { StatusBar } from './ui/StatusBar';
 import { Toc } from './ui/Toc';
 import { useSections } from './ui/useSections';
-import { ResizableHandle, ResizablePanel, ResizablePanelGroup } from './ui/kit/resizable';
+import {
+  ResizableHandle,
+  ResizablePanel,
+  ResizablePanelGroup,
+  useDragging,
+  type PanelHandle,
+} from './ui/kit/resizable';
+import { Sheet, SheetContent, SheetTitle } from './ui/kit/sheet';
 import { TooltipProvider } from './ui/kit/tooltip';
 import { useWorkbench } from './workbench/Workbench';
 import { Panels } from './workbench/ui/Panels';
@@ -59,6 +67,7 @@ export function App() {
   const [route] = useRoute();
   const [appearance, setAppearance] = useAppearance();
   const [searchOpen, setSearchOpen] = useState(false);
+  const [settingsOpen, setSettingsOpen] = useState(false);
 
   const doc = docsModule.docs.find((d) => d.route === route);
   const Page = PAGES[route];
@@ -169,6 +178,36 @@ export function App() {
       route === '/' ? 'CORRECTIV app handbook' : `${named ?? doc?.title ?? 'Not found'} — Handbook`;
   }, [doc, route]);
 
+  /** One column, so a sidebar is a drawer over the page rather than beside it. */
+  const narrow = !wide && !full;
+
+  /*
+   * Docked, a sidebar collapses to nothing rather than being unmounted, so its
+   * width has a value to animate from. Unmounting is instant by construction:
+   * there is no width to transition out of when the element is gone.
+   *
+   * `useDragging` turns the transition off while a handle is held, or every
+   * frame of the drag would be chasing a 200ms animation and the panel would
+   * trail the pointer.
+   */
+  const explorerPanelRef = useRef<PanelHandle>(null);
+  const toolsPanelRef = useRef<PanelHandle>(null);
+  const dragging = useDragging();
+
+  useEffect(() => {
+    if (!wide || full) return;
+    const panel = explorerPanelRef.current;
+    if (explorerOpen) panel?.expand();
+    else panel?.collapse();
+  }, [explorerOpen, full, wide]);
+
+  useEffect(() => {
+    if (!wide || full || !toolsTitle) return;
+    const panel = toolsPanelRef.current;
+    if (toolsOpen) panel?.expand();
+    else panel?.collapse();
+  }, [full, toolsOpen, toolsTitle, wide]);
+
   /*
    * The app's frame controls, and the two places they can stand.
    *
@@ -190,7 +229,12 @@ export function App() {
   ) : null;
 
   const explorerPanel = (
-    <SidePanel title="Explorer" side="left" onClose={() => openExplorer(false)}>
+    <SidePanel
+      title="Explorer"
+      side="left"
+      titleAs={narrow ? SheetTitle : undefined}
+      onClose={() => openExplorer(false)}
+    >
       <Sidebar route={route} />
     </SidePanel>
   );
@@ -200,6 +244,7 @@ export function App() {
       title={toolsTitle}
       side="right"
       scroll={contents !== null}
+      titleAs={narrow ? SheetTitle : undefined}
       onClose={() => setToolsOpen(false)}
     >
       {contents ? (
@@ -224,8 +269,6 @@ export function App() {
     </SidePanel>
   );
 
-  const drawersOpen = !wide && !full && (explorerOpen || (toolsOpen && toolsTitle !== null));
-
   return (
     <TooltipProvider delayDuration={300}>
       <div className="flex h-dvh flex-col bg-canvas text-on-canvas">
@@ -238,9 +281,8 @@ export function App() {
 
         {!full && (
           <Header
-            appearance={appearance}
-            onAppearance={setAppearance}
             onSearch={() => setSearchOpen(true)}
+            onSettings={() => setSettingsOpen(true)}
             explorerOpen={explorerOpen}
             onToggleExplorer={() => openExplorer(!explorerOpen)}
             toolsOpen={toolsOpen}
@@ -255,7 +297,7 @@ export function App() {
         <div className="relative flex min-h-0 flex-1">
           {!full && <ActivityBar route={route} />}
 
-          <ResizablePanelGroup className="min-w-0 flex-1">
+          <ResizablePanelGroup className={cn('min-w-0 flex-1', !dragging && 'panels-animate')}>
             {/*
               Keyed, all three, because the first two come and go. Without keys
               React matches these children by position, so shutting the explorer
@@ -263,12 +305,42 @@ export function App() {
               answered by throwing the panel away and building a new one. That
               took the iframe with it, and the app came back blank.
             */}
-            {wide && !full && explorerOpen && (
+            {wide && !full && (
               <Fragment key="explorer">
-                <ResizablePanel defaultSize="18%" minSize="12%" maxSize="34%">
-                  {explorerPanel}
+                <ResizablePanel
+                  panelRef={explorerPanelRef}
+                  collapsible
+                  collapsedSize="0%"
+                  defaultSize="18%"
+                  minSize="12%"
+                  maxSize="34%"
+                  /* Only while a handle is held. Otherwise this fires on the layout
+                     the collapse itself causes and writes the old state straight
+                     back, which is a toggle that does nothing: the button flipped,
+                     `onResize` flipped it back, and the effect never saw a change. */
+                  onResize={(size) => {
+                    if (dragging) setExplorerOpen(size.asPercentage > 0);
+                  }}
+                >
+                  {/*
+                    The clip and the floor. The panel's width is what animates,
+                    and without a floor the sidebar's text would reflow through
+                    every width on the way down, which reads as a glitch rather
+                    than as a panel leaving. Below the floor it slides out under
+                    the clip instead.
+
+                    `contain: paint` and not only `overflow: hidden`, measured:
+                    a floor of 15rem inside a zero-width hidden box still added
+                    120px to the document's scroll width, so the whole page
+                    scrolled sideways with a shut sidebar off the end of it.
+                  */}
+                  <div className="h-full w-full overflow-hidden [contain:paint]">
+                    <div className="h-full w-full min-w-[13rem]" inert={!explorerOpen}>
+                      {explorerPanel}
+                    </div>
+                  </div>
                 </ResizablePanel>
-                <ResizableHandle />
+                {explorerOpen && <ResizableHandle />}
               </Fragment>
             )}
 
@@ -298,13 +370,31 @@ export function App() {
               </main>
             </ResizablePanel>
 
-            {wide && !full && toolsPanel && toolsOpen && (
+            {wide && !full && toolsPanel && (
               <Fragment key="tools">
-                <ResizableHandle />
+                {toolsOpen && <ResizableHandle />}
                 {/* A list of headings needs a fifth of the width; the
                     inspector, which holds forms and a console, needs a third. */}
-                <ResizablePanel defaultSize={contents ? '19%' : '31%'} minSize="14%" maxSize="55%">
-                  {toolsPanel}
+                <ResizablePanel
+                  panelRef={toolsPanelRef}
+                  collapsible
+                  collapsedSize="0%"
+                  defaultSize={contents ? '19%' : '31%'}
+                  minSize="14%"
+                  maxSize="55%"
+                  /* Only while a handle is held. Otherwise this fires on the layout
+                     the collapse itself causes and writes the old state straight
+                     back, which is a toggle that does nothing: the button flipped,
+                     `onResize` flipped it back, and the effect never saw a change. */
+                  onResize={(size) => {
+                    if (dragging) setToolsOpen(size.asPercentage > 0);
+                  }}
+                >
+                  <div className="h-full w-full overflow-hidden [contain:paint]">
+                    <div className="h-full w-full min-w-[15rem]" inert={!toolsOpen}>
+                      {toolsPanel}
+                    </div>
+                  </div>
                 </ResizablePanel>
               </Fragment>
             )}
@@ -314,32 +404,29 @@ export function App() {
             Narrow, a sidebar is a drawer over the page rather than a column
             beside it. There is no width to divide at 390px: a twelve per cent
             panel is forty-seven pixels, and the page it left behind is not a
-            page. The backdrop is a button because tapping beside a drawer to
-            shut it is the gesture, and a div with an onClick is not reachable
-            any other way.
+            page.
+
+            A `Sheet`, which is a Radix dialog, rather than a positioned div: it
+            traps focus, closes on Escape and on a tap outside, hides the page
+            behind it from a screen reader, and slides in from the edge it is
+            docked to. That last part is not decoration. Two drawers open on this
+            screen and the edge they came from is the only thing that says which
+            one arrived before you have read it.
           */}
-          {drawersOpen && (
-            <>
-              <button
-                type="button"
-                aria-label="Close the sidebar"
-                onClick={() => {
-                  setExplorerOpen(false);
-                  setToolsOpen(false);
-                }}
-                className="absolute inset-0 z-30 cursor-default bg-black/50"
-              />
-              {explorerOpen && (
-                <div className="absolute inset-y-0 left-0 z-40 w-[min(20rem,85vw)] shadow-2xl">
-                  {explorerPanel}
-                </div>
-              )}
-              {toolsOpen && toolsPanel && (
-                <div className="absolute inset-y-0 right-0 z-40 w-[min(26rem,92vw)] shadow-2xl">
-                  {toolsPanel}
-                </div>
-              )}
-            </>
+          {narrow && (
+            <Sheet open={explorerOpen} onOpenChange={openExplorer}>
+              <SheetContent side="left" className="w-[min(20rem,85vw)]">
+                {explorerPanel}
+              </SheetContent>
+            </Sheet>
+          )}
+
+          {narrow && toolsPanel && (
+            <Sheet open={toolsOpen} onOpenChange={setToolsOpen}>
+              <SheetContent side="right" className="w-[min(26rem,92vw)]">
+                {toolsPanel}
+              </SheetContent>
+            </Sheet>
           )}
         </div>
 
@@ -347,7 +434,19 @@ export function App() {
           <StatusBar>
             {isApp ? (
               <>
-                <Readout status={workbench.status} size={workbench.size} scale={workbench.scale} />
+                {/*
+                  Clipped, not wrapped. The line is one row tall by definition,
+                  and a readout that ran past the end used to widen the page
+                  itself: 120px of sideways scroll on a 1440px window, from a
+                  status bar.
+                */}
+                <span className="flex min-w-0 items-center gap-s overflow-hidden">
+                  <Readout
+                    status={workbench.status}
+                    size={workbench.size}
+                    scale={workbench.scale}
+                  />
+                </span>
                 <span className="min-w-0 flex-1" />
                 <LinkBar state={workbench.state} />
               </>
@@ -366,6 +465,13 @@ export function App() {
       {full && <ShowChrome onShow={() => change({ full: false })} />}
 
       <Search open={searchOpen} onClose={() => setSearchOpen(false)} />
+
+      <Settings
+        open={settingsOpen}
+        onOpenChange={setSettingsOpen}
+        appearance={appearance}
+        onAppearance={setAppearance}
+      />
     </TooltipProvider>
   );
 }

@@ -35,7 +35,7 @@ export function Sidebar({ route }: Props) {
             {group.label}
           </CollapsibleTrigger>
 
-          <CollapsibleContent>
+          <CollapsibleContent className="overflow-hidden data-[state=closed]:animate-collapsible-up data-[state=open]:animate-collapsible-down">
             <ul className="mt-4xs space-y-px">
               {group.items.map((item) => (
                 <li key={item.route}>

@@ -1,8 +1,16 @@
 import { GripVertical } from 'lucide-react';
-import type { ComponentProps } from 'react';
-import { Group, Panel, Separator as ResizeSeparator } from 'react-resizable-panels';
+import { useEffect, useState, type ComponentProps } from 'react';
+import {
+  Group,
+  Panel,
+  Separator as ResizeSeparator,
+  type PanelImperativeHandle,
+} from 'react-resizable-panels';
 
 import { cn } from '../../lib/cn';
+
+/** What `panelRef` hands back: `collapse`, `expand`, `resize`, `isCollapsed`. */
+export type PanelHandle = PanelImperativeHandle;
 
 /**
  * Split panes, which is the one piece of furniture a hand-written stylesheet
@@ -23,6 +31,36 @@ import { cn } from '../../lib/cn';
  * error. Write `"38%"`.
  */
 export const ResizablePanel = Panel;
+
+/**
+ * Whether a resize handle is being held, anywhere in the document.
+ *
+ * A panel whose width animates has to stop animating while somebody is dragging
+ * it, or every frame sets a new target and the panel trails the pointer by the
+ * length of the transition. The library exposes the drag state on the separator
+ * it belongs to and not to the panels, so this reads it from the document
+ * instead: one listener for the whole page, which is what the answer is anyway.
+ */
+export function useDragging(): boolean {
+  const [dragging, setDragging] = useState(false);
+
+  useEffect(() => {
+    const down = (event: PointerEvent) => {
+      if ((event.target as Element | null)?.closest?.('[data-separator]')) setDragging(true);
+    };
+    const up = () => setDragging(false);
+    document.addEventListener('pointerdown', down, true);
+    document.addEventListener('pointerup', up, true);
+    document.addEventListener('pointercancel', up, true);
+    return () => {
+      document.removeEventListener('pointerdown', down, true);
+      document.removeEventListener('pointerup', up, true);
+      document.removeEventListener('pointercancel', up, true);
+    };
+  }, []);
+
+  return dragging;
+}
 
 export function ResizablePanelGroup({ className, ...props }: ComponentProps<typeof Group>) {
   return (

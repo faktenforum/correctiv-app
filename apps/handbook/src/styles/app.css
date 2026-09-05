@@ -18,6 +18,48 @@
 @plugin '@tailwindcss/typography';
 
 /*
+ * The utilities behind `animate-in`, `slide-in-from-left`, and the rest.
+ *
+ * shadcn's components are written against them and this project had been
+ * shipping the class names without them: `tooltip.tsx` has carried
+ * `data-[state=delayed-open]:animate-in` since it was copied in, and it did
+ * nothing, because nothing defined the utility. Tailwind v4 dropped the plugin
+ * these used to come from, and this is its successor.
+ *
+ * Every duration here is short on purpose. Motion in an editor is there to say
+ * where a panel came from, not to be watched.
+ */
+@import 'tw-animate-css';
+
+/*
+ * A docked sidebar's width, which has to be written here rather than as a class.
+ *
+ * `react-resizable-panels` puts the flex value on its own `[data-panel]` element
+ * and the caller's `className` on a div INSIDE it, so a transition passed as a
+ * class lands one element below the property it is meant to animate. Measured,
+ * not guessed: the class was on the inner div and `transition-property` on the
+ * panel read `all 0s`.
+ *
+ * The group carries the class rather than each panel, because the panel that
+ * grows is as much of the movement as the one that shrinks. It comes off while a
+ * handle is held: a drag sets a new target every frame, and a 200ms transition
+ * over that is a panel trailing the pointer.
+ */
+.panels-animate > [data-panel] {
+  transition: flex-grow 200ms ease-out;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}
+
+/*
  * shadcn's components are written against its own colour names, and this project
  * has its own. Rather than alias one onto the other, the components are rewritten
  * as they are copied in, because two of the names collide in meaning and an alias

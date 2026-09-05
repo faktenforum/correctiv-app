@@ -1,3 +1,4 @@
+import { Slot } from '@radix-ui/react-slot';
 import { cva, type VariantProps } from 'class-variance-authority';
 import type { ComponentProps } from 'react';
 
@@ -19,10 +20,19 @@ const badge = cva(
   },
 );
 
+/**
+ * `asChild` because a badge is sometimes a link.
+ *
+ * The sources board wanted a chip that navigates and, without this, copied the
+ * class string above verbatim onto an `<a>`, twice. Two copies of a design
+ * decision are two places to change it and one place to forget.
+ */
 export function Badge({
   className,
   variant,
+  asChild,
   ...props
-}: ComponentProps<'span'> & VariantProps<typeof badge>) {
-  return <span className={cn(badge({ variant }), className)} {...props} />;
+}: ComponentProps<'span'> & VariantProps<typeof badge> & { asChild?: boolean }) {
+  const Component = asChild ? Slot : 'span';
+  return <Component className={cn(badge({ variant }), className)} {...props} />;
 }

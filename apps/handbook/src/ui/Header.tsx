@@ -1,11 +1,11 @@
 import {
   Maximize2,
-  Moon,
   PanelLeft,
+  PanelLeftClose,
   PanelRight,
+  PanelRightClose,
   Search as SearchIcon,
-  Sun,
-  SunMoon,
+  Settings as SettingsIcon,
 } from 'lucide-react';
 import type { ReactNode } from 'react';
 
@@ -14,12 +14,10 @@ import { Separator } from './kit/separator';
 import { Tooltip, TooltipContent, TooltipTrigger } from './kit/tooltip';
 import { cn } from '../lib/cn';
 import { href } from '../router';
-import type { Appearance } from '../theme';
 
 interface Props {
-  appearance: Appearance;
-  onAppearance: (next: Appearance) => void;
   onSearch: () => void;
+  onSettings: () => void;
   explorerOpen: boolean;
   onToggleExplorer: () => void;
   toolsOpen: boolean;
@@ -32,27 +30,21 @@ interface Props {
   children?: ReactNode;
 }
 
-const MODES: { value: Appearance; label: string; Icon: typeof Sun }[] = [
-  { value: 'light', label: 'Light', Icon: Sun },
-  { value: 'dark', label: 'Dark', Icon: Moon },
-  { value: 'system', label: 'System', Icon: SunMoon },
-];
-
 /**
  * The bar across the top, and the only place the application names itself.
  *
- * It carries the two sidebar controls, the search, the appearance setting, and a
- * slot in the middle for whatever the open view needs: the device, route and zoom
- * when the app is on screen, and nothing at all when a record is.
+ * Each sidebar's control sits on the sidebar's own side, at the end of the bar:
+ * the explorer's on the far left, the right sidebar's on the far right, with
+ * everything that belongs to no side in between. A control for the right-hand
+ * panel sitting to the left of the search was a control pointing at nothing.
  *
- * Three appearance states rather than two, because `TROUBLESHOOTING.md` numbers
- * four combinations and the fourth, "system" against a dark device, is the app's
- * default and the one that has already shipped broken.
+ * Both change their icon as well as their ground. `PanelLeft` says "there is a
+ * left panel" and `PanelLeftClose` says "and it is open, this shuts it", which
+ * is a difference a reader who cannot tell the two grounds apart can still see.
  */
 export function Header({
-  appearance,
-  onAppearance,
   onSearch,
+  onSettings,
   explorerOpen,
   onToggleExplorer,
   toolsOpen,
@@ -61,6 +53,8 @@ export function Header({
   onFull,
   children,
 }: Props) {
+  const ExplorerIcon = explorerOpen ? PanelLeftClose : PanelLeft;
+  const ToolsIcon = toolsOpen ? PanelRightClose : PanelRight;
   return (
     <header className="flex min-h-[2.75rem] shrink-0 flex-wrap items-center gap-xs border-b border-stroke bg-canvas py-4xs pl-3xs pr-s">
       <Tooltip>
@@ -72,9 +66,9 @@ export function Header({
             aria-expanded={explorerOpen}
             aria-controls="site-nav"
             aria-label={explorerOpen ? 'Hide the explorer' : 'Show the explorer'}
-            className="size-[2rem]"
+            className={cn('size-[2rem]', explorerOpen && 'bg-surface text-on-canvas')}
           >
-            <PanelLeft aria-hidden="true" />
+            <ExplorerIcon aria-hidden="true" />
           </Button>
         </TooltipTrigger>
         <TooltipContent side="bottom">Explorer · ⌘B</TooltipContent>
@@ -129,63 +123,41 @@ export function Header({
         </Tooltip>
       )}
 
-      {onToggleTools && (
-        <Tooltip>
-          <TooltipTrigger asChild>
-            <Button
-              variant="ghost"
-              size="icon"
-              onClick={onToggleTools}
-              aria-expanded={toolsOpen}
-              aria-label={toolsOpen ? `Hide ${toolsLabel}` : `Show ${toolsLabel}`}
-              className={cn('size-[2rem]', toolsOpen && 'bg-surface')}
-            >
-              <PanelRight aria-hidden="true" />
-            </Button>
-          </TooltipTrigger>
-          <TooltipContent side="bottom">{toolsLabel} · ⌘J</TooltipContent>
-        </Tooltip>
-      )}
-
-      <Separator orientation="vertical" className="mx-3xs h-[1.5rem]" />
-
-      <div
-        role="radiogroup"
-        aria-label="Appearance"
-        className="flex shrink-0 items-center rounded-md border border-stroke p-4xs"
-      >
-        {MODES.map((mode, i) => (
-          <button
-            key={mode.value}
-            type="button"
-            role="radio"
-            aria-checked={appearance === mode.value}
-            tabIndex={appearance === mode.value ? 0 : -1}
-            onClick={() => onAppearance(mode.value)}
-            onKeyDown={(event) => {
-              const step =
-                event.key === 'ArrowRight' || event.key === 'ArrowDown'
-                  ? 1
-                  : event.key === 'ArrowLeft' || event.key === 'ArrowUp'
-                    ? -1
-                    : 0;
-              if (step === 0) return;
-              event.preventDefault();
-              onAppearance(MODES[(i + step + MODES.length) % MODES.length].value);
-            }}
-            className={cn(
-              'flex size-[1.5rem] items-center justify-center rounded-s transition-colors',
-              'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent',
-              appearance === mode.value
-                ? 'bg-surface text-on-canvas'
-                : 'text-on-canvas-muted hover:text-on-canvas',
-            )}
+      <Tooltip>
+        <TooltipTrigger asChild>
+          <Button
+            variant="ghost"
+            size="icon"
+            onClick={onSettings}
+            aria-label="Settings"
+            className="size-[2rem]"
           >
-            <mode.Icon aria-hidden="true" className="size-[0.875rem]" />
-            <span className="sr-only">{mode.label}</span>
-          </button>
-        ))}
-      </div>
+            <SettingsIcon aria-hidden="true" />
+          </Button>
+        </TooltipTrigger>
+        <TooltipContent side="bottom">Settings</TooltipContent>
+      </Tooltip>
+
+      {onToggleTools && (
+        <>
+          <Separator orientation="vertical" className="mx-3xs h-[1.5rem]" />
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <Button
+                variant="ghost"
+                size="icon"
+                onClick={onToggleTools}
+                aria-expanded={toolsOpen}
+                aria-label={toolsOpen ? `Hide ${toolsLabel}` : `Show ${toolsLabel}`}
+                className={cn('size-[2rem]', toolsOpen && 'bg-surface text-on-canvas')}
+              >
+                <ToolsIcon aria-hidden="true" />
+              </Button>
+            </TooltipTrigger>
+            <TooltipContent side="bottom">{toolsLabel} · ⌘J</TooltipContent>
+          </Tooltip>
+        </>
+      )}
     </header>
   );
 }

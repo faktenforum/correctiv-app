@@ -1,5 +1,5 @@
 import { PanelLeftClose, PanelRightClose } from 'lucide-react';
-import type { ReactNode } from 'react';
+import type { ElementType, ReactNode } from 'react';
 
 import { Button } from './kit/button';
 import { cn } from '../lib/cn';
@@ -15,6 +15,12 @@ interface Props {
    * rest scrolls. Two scrollers in one column is the bug this prevents.
    */
   scroll?: boolean;
+  /**
+   * The element the title is, which is `h2` docked and `Dialog.Title` in a
+   * drawer. Radix names the drawer by its title, so passing it here keeps one
+   * visible heading instead of a visible one and a screen-reader-only twin.
+   */
+  titleAs?: ElementType;
 }
 
 /**
@@ -25,7 +31,15 @@ interface Props {
  * it belongs to the page, and you can put it away". The difference matters
  * because the tools are not a mode: the app is still there with them open.
  */
-export function SidePanel({ title, side, onClose, children, className, scroll = true }: Props) {
+export function SidePanel({
+  title,
+  side,
+  onClose,
+  children,
+  className,
+  scroll = true,
+  titleAs: Title = 'h2',
+}: Props) {
   const Icon = side === 'left' ? PanelLeftClose : PanelRightClose;
   return (
     <aside
@@ -37,9 +51,9 @@ export function SidePanel({ title, side, onClose, children, className, scroll = 
       )}
     >
       <div className="flex h-[2.25rem] shrink-0 items-center gap-xs border-b border-stroke pl-s pr-3xs">
-        <h2 className="flex-1 truncate text-s font-semibold uppercase tracking-wider text-on-canvas-muted">
+        <Title className="flex-1 truncate text-s font-semibold uppercase tracking-wider text-on-canvas-muted">
           {title}
-        </h2>
+        </Title>
         <Button
           variant="ghost"
           size="icon"

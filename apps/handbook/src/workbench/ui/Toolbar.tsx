@@ -3,6 +3,7 @@ import { Check, Copy, ExternalLink, RotateCw } from 'lucide-react';
 
 import { cn } from '../../lib/cn';
 import { Button } from '../../ui/kit/button';
+import { Segmented } from '../../ui/kit/segmented';
 import { Separator } from '../../ui/kit/separator';
 import { Tooltip, TooltipContent, TooltipTrigger } from '../../ui/kit/tooltip';
 import { DEVICES, HOST_DEVICE } from '../devices';
@@ -130,37 +131,18 @@ export function Toolbar({ state, routeField, onRouteField, onChange, onReload, o
         </span>
       )}
 
-      {/*
-        A fieldset rather than the design's `role="radiogroup"`, and
-        `aria-pressed` rather than `role="radio"`: `jsx-a11y`'s
-        `prefer-tag-over-role` refuses both a button carrying a radio role and a
-        span carrying a group one, and the repo's answer to that so far has been
-        a lint exception per file.
-      */}
       {!host && (
-        <fieldset className="flex shrink-0 items-center rounded-md border border-stroke p-4xs">
-          <legend className="sr-only">Orientation</legend>
-          {[
-            { landscape: false, label: 'Portrait' },
-            { landscape: true, label: 'Landscape' },
-          ].map((option) => (
-            <button
-              key={option.label}
-              type="button"
-              aria-pressed={state.landscape === option.landscape}
-              onClick={() => onChange({ landscape: option.landscape })}
-              className={cn(
-                'rounded-s px-2xs py-4xs text-s transition-colors',
-                'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent',
-                state.landscape === option.landscape
-                  ? 'bg-accent text-white'
-                  : 'text-on-canvas-muted hover:text-on-canvas',
-              )}
-            >
-              {option.label}
-            </button>
-          ))}
-        </fieldset>
+        <Segmented
+          name="orientation"
+          legend="Orientation"
+          className="shrink-0"
+          value={state.landscape ? 'landscape' : 'portrait'}
+          options={[
+            { value: 'portrait', label: 'Portrait' },
+            { value: 'landscape', label: 'Landscape' },
+          ]}
+          onChange={(value) => onChange({ landscape: value === 'landscape' })}
+        />
       )}
 
       {!host && (

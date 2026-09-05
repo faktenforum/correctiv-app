@@ -143,17 +143,6 @@
       }
     },
     {
-      // A segmented appearance control is a radiogroup, and buttons carrying
-      // `role="radio"` are the accessible spelling of one: three states, one tab
-      // stop, arrows moving between them, `aria-checked` saying which is on.
-      // `input type=radio` would need a label and a control per option, which is
-      // markup this icon-only control does not have and does not want.
-      "files": ["apps/handbook/src/ui/Header.tsx"],
-      "rules": {
-        "jsx-a11y/prefer-tag-over-role": "off"
-      }
-    },
-    {
       // The search screen exists for nothing but searching, and it is only ever
       // reached by an explicit tap on the search entry — so focusing the field is
       // what the user just asked for, and it saves a second tap plus a keyboard

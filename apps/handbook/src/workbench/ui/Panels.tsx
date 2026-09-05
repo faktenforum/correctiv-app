@@ -31,6 +31,7 @@ import { cn } from '../../lib/cn';
 import { Badge } from '../../ui/kit/badge';
 import { Button } from '../../ui/kit/button';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '../../ui/kit/collapsible';
+import { Segmented } from '../../ui/kit/segmented';
 import { Tooltip, TooltipContent, TooltipTrigger } from '../../ui/kit/tooltip';
 
 export interface ToolBindings {
@@ -95,7 +96,15 @@ const NOTE = 'text-s leading-relaxed text-on-canvas-muted';
 const CODE = 'rounded-s border border-stroke px-3xs font-mono text-[0.8125rem]';
 const SEG = 'inline-flex flex-wrap gap-4xs rounded-md border border-stroke bg-canvas p-4xs';
 
-/** One segment of a segmented control, which says which it is with `aria-pressed`. */
+/**
+ * One toggle in the console's level filter, which is the only place left that
+ * wants this shape and buttons at once.
+ *
+ * `aria-pressed` is right here and was wrong on the two exclusive choices that
+ * used to share this helper: the levels are a set, several can be on, and
+ * "warnings are showing" is exactly what pressed means. Those two are
+ * `ui/kit/segmented.tsx` now.
+ */
 function segment(on: boolean): string {
   return cn(
     'rounded-s px-xs py-3xs text-s font-medium transition-colors',
@@ -403,24 +412,15 @@ function Appearance({ status, onChange, panel }: Props & { panel: Disclosure }) 
         </div>
       </dl>
 
-      <fieldset disabled={!status.handle} className="min-w-0 disabled:opacity-60">
-        <legend className={cn(NOTE, 'mb-2xs')}>
-          App setting, written to the app&apos;s own store
-        </legend>
-        <div className={SEG}>
-          {SETTINGS.map((setting) => (
-            <button
-              key={setting}
-              type="button"
-              aria-pressed={status.appTheme === setting}
-              onClick={() => onChange({ theme: setting })}
-              className={segment(status.appTheme === setting)}
-            >
-              {setting}
-            </button>
-          ))}
-        </div>
-      </fieldset>
+      <Segmented
+        name="app-theme"
+        legend="App setting, written to the app's own store"
+        showLegend
+        disabled={!status.handle}
+        value={status.appTheme ?? ''}
+        options={SETTINGS.map((setting) => ({ value: setting, label: setting }))}
+        onChange={(value) => onChange({ theme: value as ThemeSetting })}
+      />
 
       {!status.handle && (
         <NeedsDev>
