@@ -22,10 +22,21 @@ taking state, never a store method.
 `apps/mobile` is the app. Its web export is published on every push to `main`, so
 anything that lands there is public.
 
-`tools/` is the third place, for what is neither: `tools/preview` is the device frame
-around the web build. It must keep building into `apps/mobile/public/`, because every
-capability it has comes from sharing the app's origin.
-([ADR 0014](adr/0014-the-preview-shell-as-a-package.md))
+`apps/handbook` is the published site: the documentation, the source inventory, the
+diagrams, the core's reference, and the app in a device frame at `/workbench`. It
+reads the repository's Markdown in place and holds no copy of any document, which is
+the rule to keep: a second copy of `ARCHITECTURE.md` would be the one on the website
+and the one nobody edits.
+
+The device frame reaches into the app by same-origin property access, so the two
+halves have to be one origin. The Pages deploy assembles them into one artifact and
+the dev server proxies `/app`; do not give the handbook a second origin, because the
+browser refuses those property reads silently.
+([ADR 0014](adr/0014-the-preview-shell-as-a-package.md),
+[ADR 0024](adr/0024-the-handbook-owns-the-root.md))
+
+`tools/` is the third place, for what is neither a host nor a library the app ships:
+`tools/figma-plugin` is what is left there.
 
 Colours come from classes (`bg-canvas`), which follow the appearance setting on their
 own. Reading a colour in TypeScript needs `useColors()`, or it is pinned to light.
@@ -71,6 +82,22 @@ a section naming every statement it retires, so the two halves cannot drift apar
 Do not strike through a claim that is merely old. Only one that is now **false**,
 where someone reading it would act on it and be wrong.
 
+## Facts that expire
+
+A figure measured against the outside world goes wrong quietly, and no reviewer
+catches it because nothing about it looks wrong. Two such facts exist here, and each
+one is a single fact typed in two places:
+
+- The measuring day, in `SOURCES.md` and in `apps/handbook/content/sources.manifest.ts`.
+  Re-measuring means editing both, so a test fails when the two dates part, and the
+  board prints the age beside the date, worked out in the reader's browser, because a
+  published page sits at its address for months.
+- A claim and the record that voided it, which is the pair above.
+
+Add the check with the fact, not afterwards. "Keep the documentation current" is not
+a rule that belongs here: it cannot fail, so nothing enforces it, and a rule nobody
+can break is noise beside the ones they can.
+
 ## Language
 
 English for everything a developer reads: code, comments, test names, CLI output,
@@ -96,7 +123,7 @@ route, a bundle config or a platform split, run `npm run build:web`, then
 `node screens/tools/serve-clean.mjs apps/mobile/dist 8099` and open it. A plain
 static server maps no clean URLs and makes a working app look broken. After layout,
 screenshot it and look (`screens/tools/tour-android.sh`, compared against
-`screens/`), or open `/preview.html`, which frames the web target at a phone or
+`screens/`), or open `/workbench`, which frames the web target at a phone or
 tablet size and carries device, route, appearance and app state in its URL. Anything
 touching colour has to be seen in **both** appearance settings *and* with the setting
 on "System" against a dark device. That last combination is the app's default and is

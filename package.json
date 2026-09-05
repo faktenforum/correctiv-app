@@ -43,10 +43,12 @@
     "android": "npm run android -w @correctiv/mobile",
     "ios": "npm run ios -w @correctiv/mobile",
     "build:web": "npm run build:web -w @correctiv/mobile",
-    "preview": "npm run build -w @correctiv/preview",
     "tokens": "npm run tokens -w @correctiv/design-tokens",
     "fonts": "npm run fonts -w @correctiv/mobile",
     "offline-articles": "npm run offline-articles -w @correctiv/mobile",
-    "offline-podcasts": "npm run offline-podcasts -w @correctiv/mobile"
+    "offline-podcasts": "npm run offline-podcasts -w @correctiv/mobile",
+    "handbook": "npm run dev -w @correctiv/handbook",
+    "build:handbook": "npm run build -w @correctiv/handbook",
+    "app": "npm run web -w @correctiv/mobile"
   }
 }

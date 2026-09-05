@@ -104,7 +104,7 @@ equivalents for focus, liveness and errors.
   easy to mistake for "React Navigation just looks like this". → Set
   `animation: 'shift'` (or `'fade'`) in the `Tabs` `screenOptions`. The option lives
   on the vendored `expo-router/build/react-navigation/bottom-tabs`, not on a
-  `@react-navigation` package. SDK 56 has none installed.
+  `@react-navigation` package. SDK 57 has none installed.
 - **expo-image gives a failed thumbnail its own broken-image glyph on a black
   field,** which reads as an app defect. On this project failing thumbnails are
   routine (see the TLS chain entry below). → Wrap remote previews in
@@ -140,6 +140,32 @@ equivalents for focus, liveness and errors.
 
 ## The web target
 
+- **A development bundle ignores the base path when it matches routes, and the
+  door hides it.** The handbook publishes the app one directory below itself, at
+  `/app/`, and `experiments.baseUrl` is what tells Expo Router to strip that
+  prefix. A `--dev` bundle applies it to asset URLs and not to route matching, so
+  every route under the base falls through to the app's own 404. What makes this
+  hard to see is that the door still renders: `_layout.tsx` draws it outside the
+  router, so a signed-out visitor sees a working app and a signed-in one sees
+  nothing but 404. Measured on 2026-09-05, one URL, one fixture, two builds:
+
+  | build | signed in at `/app/entdecken` | dev handle |
+  | --- | --- | --- |
+  | `--dev` | the app's own 404 | present |
+  | production | Entdecken renders | absent |
+
+  → `build:web` exports production, and `pages.yml` fails the deploy if the
+  handle is present, which is the tell for a `--dev` bundle. The published
+  workbench therefore has no store handle, and it says so on the panels that
+  need one. The same limit applies to the dev server, which is a `--dev` bundle
+  by definition: locally the route field reaches the app's first screen and no
+  further. Driving the app's own router instead of its address bar was tried on
+  2026-09-05, by putting `router` on the dev handle: it moves the URL and not
+  the rendered tree, for `replace`, `navigate` and a group-qualified path alike,
+  so it is not the fix and was not kept. To walk the app's routes today, open
+  the app's own dev server directly at `localhost:8081/` and give up the
+  inspector while you do, or serve a static export with
+  `screens/tools/serve-clean.mjs`.
 - **Serving a static export without clean URLs** makes Expo Router render its
   *unmatched route* page. That looks like an app bug and is a server bug. → Map `/artikel` →
   `artikel.html`. A plain `python3 -m http.server` will not do;
@@ -314,7 +340,7 @@ equivalents for focus, liveness and errors.
 
 - **`t=dark` in a preview URL does nothing on a static export, and says nothing while
   it does nothing.** `expo export` sets `__DEV__` false, so the export carries no dev
-  handle: `/preview.html`'s appearance panel disables itself, and the shell accepts
+  handle: `/workbench`'s appearance panel disables itself, and the shell accepts
   `t=dark` in the hash and ignores it. A screenshot round driven that way produces
   "dark" images that are all light. → Drive the scheme from the browser instead —
   `emulateMedia({colorScheme:'dark'})`, or DevTools — with the app's own setting left

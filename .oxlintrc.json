@@ -108,6 +108,43 @@
       }
     },
     {
+      // A command palette is an ARIA combobox over a listbox, and that is the
+      // pattern these rules are steering away from. `prefer-tag-over-role`
+      // suggests `select`, which cannot render a two-line row, cannot be filtered
+      // as you type and cannot be opened from a keyboard shortcut over the whole
+      // page. `no-noninteractive-element-to-interactive-role` is asking for the
+      // same substitution. The roles here are the accessible spelling of the
+      // widget, not a shortcut around one: the input owns the listbox, options
+      // carry ids and `aria-selected`, and `aria-activedescendant` follows the
+      // arrow keys. Autofocus is what a palette is for, and the dialog was opened
+      // by an explicit gesture. The options themselves take no key listener on
+      // purpose: in this pattern they are never focused, the input keeps focus
+      // and the arrows move `aria-activedescendant`, so a per-option handler
+      // would be unreachable code that only satisfies a rule.
+      "files": ["apps/handbook/src/ui/Search.tsx"],
+      "rules": {
+        "jsx-a11y/click-events-have-key-events": "off",
+        "jsx-a11y/prefer-tag-over-role": "off",
+        "jsx-a11y/no-noninteractive-element-to-interactive-role": "off",
+        "jsx-a11y/no-autofocus": "off"
+      }
+    },
+    {
+      // A diagram wider than the column scrolls inside its own box, and a
+      // keyboard user needs a focus stop to reach that scroll. The rule is right
+      // in general, wrong here: `tabIndex={0}` on a scroll container is the
+      // documented way to make it reachable, and it is the reason the container
+      // is not merely decorative. Chrome and Firefox now focus scroll containers
+      // on their own, Safari does not, and a diagram nobody can scroll is worse
+      // than a lint exception with a reason attached. Every figure is a component
+      // in `src/diagrams/` now, and takes its scroll box with it, so that is the
+      // one place this markup sits.
+      "files": ["apps/handbook/src/diagrams/*.tsx"],
+      "rules": {
+        "jsx-a11y/no-noninteractive-tabindex": "off"
+      }
+    },
+    {
       // The search screen exists for nothing but searching, and it is only ever
       // reached by an explicit tap on the search entry — so focusing the field is
       // what the user just asked for, and it saves a second tap plus a keyboard

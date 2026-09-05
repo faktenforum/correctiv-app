@@ -1,6 +1,6 @@
 # Architecture decisions
 
-Twenty-three decisions shaped this repo. Read them when you want to know *why* something
+Twenty-five decisions shaped this repo. Read them when you want to know *why* something
 is the way it is; [`../ARCHITECTURE.md`](../ARCHITECTURE.md) describes *what* it is.
 
 | | Decision | Status |
@@ -18,7 +18,7 @@ is the way it is; [`../ARCHITECTURE.md`](../ARCHITECTURE.md) describes *what* it
 | [0011](0011-naming-the-app-for-release.md) | Naming the app for release, and letting the old host go | accepted; retires two of 0007's |
 | [0012](0012-a-list-virtualizer-for-the-unbounded-lists.md) | A list virtualizer, for the two lists that need one | accepted |
 | [0013](0013-native-tabs-and-a-web-tab-bar-of-its-own.md) | Native tabs on the phone, and a web tab bar of its own | accepted; verified on Android, iOS unrun |
-| [0014](0014-the-preview-shell-as-a-package.md) | The preview shell as a package that can reach the app | accepted |
+| [0014](0014-the-preview-shell-as-a-package.md) | The preview shell as a package that can reach the app | accepted; its package, its folder and its three costs retired by 0024, its same-origin argument intact |
 | [0015](0015-reading-correctiv-org-through-its-rest-api.md) | Reading correctiv.org through its REST API, not its RSS feeds | accepted; retires the CORS item in 0006, unopened in a browser |
 | [0016](0016-a-door-at-the-root-and-an-entitlement-not-an-amount.md) | A door at the root, and an entitlement rather than an amount | accepted; simulated sign-in, two of its statements retired by 0018 |
 | [0017](0017-native-rendering-as-the-rule-a-webview-for-the-exception.md) | Native rendering as the rule, a webview for the exception | accepted; corrects a frame-header claim in `ReaderView.web.tsx`, one open question named |
@@ -28,6 +28,8 @@ is the way it is; [`../ARCHITECTURE.md`](../ARCHITECTURE.md) describes *what* it
 | [0021](0021-the-board-is-a-plugin-and-the-screens-are-data.md) | The design board is a plugin, and the screens are data | accepted; records two measured-and-rejected routes to Figma |
 | [0022](0022-three-tiers-of-colour-and-a-dark-scheme-that-names-roles.md) | Three tiers of colour, and a dark scheme that names roles | accepted; adopts wp-design-tokens `8ed7a28`, retires two of 0010's |
 | [0023](0023-the-host-constructs-the-store.md) | The host constructs the store | accepted; recorded after the fact, corrects one claim in `ARCHITECTURE.md` and four comments |
+| [0024](0024-the-handbook-owns-the-root.md) | The handbook owns the site root, and the app moves under it | accepted; retires two of 0014's, its argument untouched |
+| [0025](0025-the-published-app-is-a-production-bundle.md) | The published app is a production bundle, and the workbench gives up its handle | accepted; a capability measured and rejected |
 
 Eight notes for readers of the older ones:
 
