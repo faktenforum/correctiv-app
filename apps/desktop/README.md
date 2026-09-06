@@ -80,6 +80,62 @@ at 93 470 bytes, with no `PrimitiveError` in the log.
 
 ## What does not work
 
+### Twelve seconds of frozen window, from one number in the layer
+
+**Fixed in the gjsify working copy this host is developed against, and in no
+published version** — a checkout that installs `@gjsify/*` from npm still freezes.
+
+A cold start pinned one core for 12.7 s. The main loop serviced nothing in that
+window, so every feed the app had already asked for hit its timeout while the loop
+never ran: the `The operation was aborted` lines in the log are that, not a network
+fault, and they print in the millisecond the burn ends. The window was mapped and
+correct throughout, which is why this was only ever reported as "it hangs a bit at
+the start".
+
+Four answers that sounded better than the right one, each killed by a measurement:
+
+* **not the network** — identical 13.5 s inside `unshare -rn`, with no network at all;
+* **not the stylesheet** — `StyleSheet.flush()` instrumented: four flushes, **2 ms** in total;
+* **not layout in general** — a resize on the settled window costs 2 to 33 ms;
+* **not the size of the tree** — the door, before any session, burns 300 ms all in.
+
+There is no `sysprof` here, so `eu-stack` sampled the main thread three times during
+the burn. All three stood in `gather_aligned_item_requests`, under
+`gtk_flow_box_measure`, under GTK's own `surface_layout_cb` — GTK's ordinary layout
+pass, not JS measuring synchronously.
+
+`@gjsify/react-native` maps `flex-wrap` to `Gtk.FlowBox` and pinned its
+`max-children-per-line` to 65535, which is GTK's spelling of "as many as fit" and
+was pinned for a good reason: the default of 7 wraps a chip row after seven chips.
+But GTK measures THE CAP rather than the children, and quadratically. One
+`Gtk.FlowBox` holding TWO children, per measure, on GTK 4.22.4:
+
+| cap | 64 | 1024 | 8192 | 32768 | 65535 |
+| --- | --- | --- | --- | --- | --- |
+| ms per measure | 0.018 | 0.40 | 19.3 | 421.8 | **1517.9** |
+
+`ArticleRow` puts `flex-wrap` on its meta line, so the feed builds one of these per
+article. Five on Home, about 2.5 s each.
+
+**The cap is wrong in the answer too**, which is worse than what it costs and was
+found on the way out: at `column-spacing: 8` the natural width carries
+`8 × (cap - 1)` px of gaps that do not exist — 524 867 px for content 683 px wide.
+The layer's own note said the natural width was "unaffected by it, measured
+identical for 12 children at 12, 1024 and 65535", and that holds ONLY at
+`column-spacing: 0` — the one case that table cannot produce, since it routes every
+`gap-*` into `column-spacing`.
+
+The fix is `ChildPolicy`'s `perLineCap` in `@gjsify/gtk-host`: the host keeps the cap
+equal to the child count on every insert and every remove. A line can never hold
+more children than exist, so it forbids nothing 65535 allowed and costs nothing to
+measure. Measured here after the change: **13 510 ms → 700 ms**, 24 of 24 routes,
+and the chip row still wraps into three lines at 560 px.
+
+**Nothing in this app changed**, and that is the part to keep. The markup was
+ordinary React Native the whole time, every screenshot of it was right, and
+`npm run check` was green for the entire life of the defect. A screenshot proves a
+tree rendered; it says nothing about what the render cost.
+
 ### The deep-link loop, fixed upstream and now measured
 
 Three tab routes — `/mediathek`, `/mitmachen`, `/profil` — used to enter an infinite
