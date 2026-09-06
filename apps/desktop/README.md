@@ -23,7 +23,7 @@ this host as a reason for two decisions; this is that host, built.
 | **Routes** | 26 route files (24 openable hrefs + 2 layouts). **24 of 24 rendered** when last swept — 2026-09-04, on macOS under the node host, which is also the first sweep of a non-Linux target. The three routes that used to loop on a deep link are among them; see [*The deep-link loop*](#the-deep-link-loop-fixed-upstream-and-now-measured). |
 | **The vertical slice** | Start → Artikel → Reader, working, over WebKitGTK. |
 | **Audio** | Working, on GStreamer. Position advances, live streams are detected, and the port's re-entrancy contract holds. |
-| **Chrome** | Adwaita's own. `Stack` is an `Adw.NavigationView`, `Tabs` an `Adw.ViewStack` + `Adw.ViewSwitcher`. Nothing restyles a header bar or a button. |
+| **Chrome** | Adwaita's own. `Stack` is an `Adw.NavigationView`, `Tabs` an `Adw.ViewStack` + `Adw.ViewSwitcher` — moving to an `Adw.ViewSwitcherBar` at the bottom when the window is too narrow to show it, which is the phone's tab bar on a Linux phone. Nothing restyles a header bar or a button. |
 | **Colour** | The app's own tokens, both palettes, generated from `packages/design-tokens/theme.css`. The screenshots here are the dark one. |
 | **Video** | A placeholder. Deliberately — see below. |
 
@@ -192,11 +192,28 @@ immediately, but the app's own token colours are resolved when their CSS class i
 minted, so switching mid-session would leave half the window in each scheme. The palette
 is read once, at startup.
 
-**Smaller, each named where it happens:** no icons in the tab switcher (the router's
-`Tabs.Screen` takes `title` only); no mini player (there is no bottom bar to pin it
-above, and the switcher's header-bar slot will not survive a wrapper); no lock-screen
-metadata (MPRIS is the desktop counterpart and is not built); and `Bleed` does not
-bleed, because GTK does not clamp a negative margin — it measures with it.
+**Smaller, each named where it happens:** no mini player (the narrow layout now has a
+bottom bar to pin it above, but the wide one does not, and a strip that appears with
+the window width is worse than one that is honestly missing); no lock-screen metadata
+(MPRIS is the desktop counterpart and is not built); and `Bleed` does not bleed,
+because GTK does not clamp a negative margin — it measures with it.
+
+**A horizontal rail squeezes its content instead of scrolling it.** Every `Rail` on
+every screen: the podcast covers on Mediathek come out 106x30 px where the phone shows
+150x150, and a chip whose label does not fit wraps inside its own pill and is clipped.
+MEASURED on GTK 4.22.4 — a `Gtk.ScrolledWindow` allocates its child `MAX(viewport,
+child MINIMUM)` along the axis it scrolls, so a row that wants 527 px in a 380 px
+scroller is given 462, and every child absorbs the difference. React Native never does
+that: its `flexShrink` DEFAULTS TO 0, so a row does not squeeze its children at all.
+
+It is TWO defects and fixing one alone makes the app look worse, which is why neither
+is fixed here yet. Giving the content its natural width (a `width-request` equal to its
+own natural, measured — `propagate-natural-width` is the property that looks like this
+fix and changes nothing, also measured) corrects every chip row and every clipped
+label, and then the tiles that carry an explicit `width` grow past it: `width: 150`
+becomes GTK's `width-request`, which is a MINIMUM, so nothing caps the tile's natural
+width once something asks for it. The second half needs a way to say "exactly this
+wide" that GTK has no property for.
 
 **A letter-spaced label that is given exactly its natural width wraps and is clipped**,
 and the cause is GTK's rather than this app's. Four labels of seventy-six: the masthead
