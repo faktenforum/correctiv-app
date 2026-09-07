@@ -25,7 +25,7 @@ this host as a reason for two decisions; this is that host, built.
 | **Audio** | Working, on GStreamer. Position advances, live streams are detected, and the port's re-entrancy contract holds. |
 | **Chrome** | Adwaita's own. `Stack` is an `Adw.NavigationView`, `Tabs` an `Adw.ViewStack` + `Adw.ViewSwitcher` — moving to an `Adw.ViewSwitcherBar` at the bottom when the window is too narrow to show it, which is the phone's tab bar on a Linux phone. Nothing restyles a header bar or a button. |
 | **Colour** | The app's own tokens, both palettes, generated from `packages/design-tokens/theme.css`. The screenshots here are the dark one. |
-| **Video** | A placeholder. Deliberately — see below. |
+| **Video** | PeerTube plays, over GStreamer into a `GdkPaintable`. The YouTube embed is still a notice, and macOS/Windows are — see below. |
 
 ### The reader
 
@@ -165,11 +165,46 @@ on the next bump" aged into a false statement the moment the fix shipped in a ve
 the lockfile already held. A claim about a dependency needs re-measuring, not
 re-reading.
 
-**Video is a placeholder**, and that is a decision rather than a limitation of the
-toolkit — the YouTube embed would in fact load inside WebKitGTK. `@gjsify/video` is
-GJS-only while ADR 0032's ship path puts macOS and Windows on Node + node-gi, so real
-video here would work on one of the three desktop targets. Both video paths render an
-honest notice in the app's own voice instead.
+**PeerTube video plays on Linux**, and the entry is kept because the claim it replaces
+was wrong in an instructive way. It read: ~~"`@gjsify/video` is GJS-only while ADR
+0032's ship path puts macOS and Windows on Node + node-gi, so real video here would
+work on one of the three desktop targets"~~. That is true of `@gjsify/video` and says
+nothing about video, and the app had the counter-example in it the whole time — the
+audio backend plays over GStreamer through the same `gi://Gst` a video pipeline needs.
+
+MEASURED on GStreamer 1.28.6 against the real feed, `playbin3` + `gtk4paintablesink`
+on a FunFacts master playlist:
+
+```
+Paintable: GstGtk4Paintable
+Zustand: PLAYING
+  t=1s  Position 0.18s / 1146s  Bild 640x360
+  t=5s  Position 4.20s / 1146s  Bild 2560x1440
+```
+
+The position tracks the wall clock, and the intrinsic size climbing from 640x360 to
+2560x1440 four seconds in is HLS picking a rendition — adaptive streaming happening
+rather than merely not refused. `Gtk.MediaFile` is the shorter road that goes nowhere:
+it has no `new_for_uri`, and given a `Gio.File` for an `https://` playlist it blocks
+instead of failing, because the demuxer resolves its segments against a URI the file
+abstraction has taken away.
+
+**macOS and Windows still get the notice, and the reason has moved from the toolkit to
+the payload.** Their runtime bundles ship no video plugins at all: MEASURED against the
+published `@gjsify/gtk-runtime-win32-x64@0.48.0` (42 GStreamer files) and
+`-darwin-arm64` (33), both carry `gstvideo`, which is the LIBRARY, and not one plugin
+that decodes or displays — no `videoconvert`, no `libav`, no `hls`/`adaptivedemux`, no
+`gtk4paintablesink`. The seed list they are built from is called `GST_AUDIO_PLUGINS`
+and is honest about it. So the same code would run there the day the bundle carries
+the plugins, and until then `createVideoPlayer` throws by name and the screen says so.
+
+**The YouTube stage is still a notice**, which is the other video path and a different
+technology: an embed that would in fact load inside WebKitGTK, in a page this host does
+not build. `src/overrides/VideoFrame.tsx` carries that one.
+
+**No control strip.** GTK's ready-made one is `Gtk.MediaControls`, which drives a
+`Gtk.MediaStream`; a GStreamer pipeline hands out a `GdkPaintable`, and the two do not
+meet without a `GtkMediaStream` of our own.
 
 **The reader has its fade back**, as of `@gjsify/react-native` 0.48, and the entry is
 kept because the route it took is the lesson. It was first "`Animated` is not
