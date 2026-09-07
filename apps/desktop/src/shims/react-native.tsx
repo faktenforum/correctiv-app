@@ -1121,7 +1121,36 @@ export const View = wrap<ViewProps>(BaseView, 'View');
 
 export const Text = wrap<TextProps>(BaseText, 'Text', false, true);
 export const Pressable = wrap<PressableProps>(BasePressable, 'Pressable', true);
-export const ScrollView = wrap<ScrollViewProps>(BaseScrollView, 'ScrollView');
+const ScrollViewBase = wrap<ScrollViewProps>(BaseScrollView, 'ScrollView');
+
+/**
+ * THIS HOST SHOWS ITS SCROLLBARS, whatever the screen asked for.
+ *
+ * Seventeen call sites in this application pass `showsVerticalScrollIndicator={false}`
+ * and `Rail` passes the horizontal one, which is right where they were written: a
+ * finger has nothing to grab, the bar would sit under it, and the content moving IS
+ * the feedback. None of that is true of a pointer. On the desktop the indicator is
+ * the only thing that says a rail continues past the window edge, and it is the only
+ * way to reach the rest of it without a horizontal wheel — a mouse has none, and a
+ * rail is exactly where this bites: the topic chips and every card row scroll
+ * sideways and looked like they simply ended.
+ *
+ * ONLY THE AXIS THAT SCROLLS, because the two props are not independent here: a
+ * horizontal `<ScrollView>` already pins the other axis to `never` (the layer's own
+ * table), and overriding both would have the two routes writing the same property.
+ *
+ * It costs no layout. GTK's scrollbars are OVERLAY by default: they appear over the
+ * content on hover and take no space, so the rail is exactly as tall either way.
+ *
+ * The same decision as the tab switcher, one control down: each platform's own
+ * idiom rather than one drawing stretched across all of them (ADR 0013).
+ */
+export function ScrollView(props: ScrollViewProps): ReactElement {
+  const shown: ScrollViewProps = props.horizontal
+    ? { ...props, showsHorizontalScrollIndicator: true }
+    : { ...props, showsVerticalScrollIndicator: true };
+  return createElement(ScrollViewBase, shown);
+}
 export const ActivityIndicator = wrap<ActivityIndicatorProps>(
   BaseActivityIndicator,
   'ActivityIndicator',
