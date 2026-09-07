@@ -257,17 +257,25 @@ The three that are fixed, because each was a separate thing:
   able to pan, so every wrapper around every cover swallowed the scroll events the
   rail around them needed.
 * **A horizontal scroller never asks its content for a height.** `Gtk.ScrolledWindow`
-  measures at width -1 and nothing changes that, so a rail of tiles answered 34 px:
-  the labels, and nothing for the images. Fixed upstream at the content's own MINIMUM
-  width, which is what an overflowing row is allocated. ~~At the width the content is
-  actually given, `hadjustment:page-size`, the only width signal a `Gtk.Widget`
-  has~~ — that was the first shape and three quarters of it went, each part for a
-  measurement (gjsify #1599). The viewport's width differs from the minimum only when
-  the content FITS, and there a size request cannot help: a request only RAISES a
-  height, and a wrapping card that fills the rail needs 36 px where GTK already
-  reports 160. **So that rail is still too tall**, GTK has no property that caps a
-  natural height, and the vector upstream asserts the hook changes nothing there
-  rather than leaving a branch that looks like a fix.
+  asks `VERTICAL for_size -1` and nothing changes that — measured across six
+  configurations — so a rail of tiles answered 34 px: the labels, and nothing for the
+  images. Fixed upstream by a `Gtk.BoxLayout` SUBCLASS on the content box that answers
+  that one question at `max(hadjustment:page-size, the content's own minimum)`, which
+  is what a viewport allocates (gjsify #1599).
+
+  ~~Fixed with a `set_size_request` written from a layout effect~~ was the first shape,
+  and every part of it went for a measurement. A request only RAISES a height, so a
+  card that fills the rail could not be made SHORTER than the 160 GTK answers where it
+  needs 36 — that shipped as a declared limit and is now simply right. A written height
+  is also read back as the content's own, so it ratcheted; and it was measured ONCE per
+  commit of the `<ScrollView>`, so a title arriving from a re-render below the scroller
+  left the rail 16 px short and clipped the third line of every card title. A layout
+  manager has none of those: GTK re-measures on the child's own `queue_resize`.
+
+  The one part that survived is the deferral. `page-size` is written during the
+  scroller's own `size_allocate`, and a `queue_resize` from that handler does not reach
+  the pass in progress: measured, inline the measurement was already 36 while the
+  scroller stayed at 160, and one idle later the scroller followed.
 
 **A letter-spaced mark is one pixel short of its own text, and only one lever moves
 that pixel.** MEASURED on GTK 4.22.4: a wrapping `Gtk.Label` whose text contains a
