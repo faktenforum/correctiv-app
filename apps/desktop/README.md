@@ -277,6 +277,15 @@ The three that are fixed, because each was a separate thing:
   the pass in progress: measured, inline the measurement was already 36 while the
   scroller stayed at 160, and one idle later the scroller followed.
 
+**Emoji in a stream's track title render as replacement boxes, and that is not this
+app.** MEASURED in a twelve-line GTK program with no application code: the default
+`PangoCairo` font map lists 100 families INCLUDING „Noto Color Emoji" and „Noto
+Emoji", and a plain `Gtk.Label` reading „🎵 Leben 🎵" still lays out with two unknown
+glyphs. So Pango is not falling back to a font it can see, the app's own five faces
+and its 102-family map are not involved, and nothing in a screen or a shim can answer
+it. Recorded rather than chased: a fix belongs in fontconfig or in an explicit emoji
+family on the font stack, and it would be measured the same way.
+
 **A chip rail squeezes its chips where the phone lets the rail overflow, and that is
 `flexShrink` again.** React Native's `flexShrink` defaults to **0**, so a row item
 there is never squeezed below its content — the row overflows and the rail scrolls.
