@@ -277,6 +277,34 @@ The three that are fixed, because each was a separate thing:
   the pass in progress: measured, inline the measurement was already 36 while the
   scroller stayed at 160, and one idle later the scroller followed.
 
+**A chip rail squeezes its chips where the phone lets the rail overflow, and that is
+`flexShrink` again.** React Native's `flexShrink` defaults to **0**, so a row item
+there is never squeezed below its content — the row overflows and the rail scrolls.
+GTK has no shrink factor and a `Gtk.Box` gives its children anything between their
+minimum and their natural size. MEASURED on the same four-chip rail in a 260 px
+viewport, three ways:
+
+| the label | row minimum | row allocated | label widths | heights |
+| --- | --- | --- | --- | --- |
+| wrapping, as it was | 293 | 293 | 39, 38, 59, **53** | 18, 18, 18, **54** |
+| `numberOfLines={1}` | 168 | 260 | 39, 38, **40**, **39** | all 18 |
+| pinned to its natural width | 358 | **358** | 39, 38, 59, **118** | all 18 |
+
+Wrapping is what the chips did: the last one was squeezed to 53 px, wrapped onto
+three lines, and the 34 px rail clipped them. **`numberOfLines={1}` is worse**, which
+is the measurement worth keeping — `ellipsize` takes a label's minimum width to about
+one character, so the box squeezes every chip and truncates all four. Pinned, nothing
+is squeezed and the rail scrolls.
+
+So `Chip` writes `flexShrink: 0` out, which is a declaration rather than a change on
+the phone, and this host answers it with a width request on the `<Text>`. The
+property is refused by name one layer down — measured, `UnknownUtilityError:
+"flexShrink" — is not a property the style partition routes`, which React caught as
+an unhandled error and left the window empty — so the shim consumes it in the same
+switch as `aspectRatio`. It is keyed on the DECLARATION and not on the shape of the
+element, because the mini player's title is `numberOfLines={1}` in a flex row and is
+supposed to ellipsize.
+
 **A letter-spaced mark is one pixel short of its own text, and only one lever moves
 that pixel.** MEASURED on GTK 4.22.4: a wrapping `Gtk.Label` whose text contains a
 space reports a natural width below what Pango needs to set it on one line, by about

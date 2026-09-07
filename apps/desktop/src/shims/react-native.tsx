@@ -498,6 +498,16 @@ function normalizeStyle(style: unknown): Record<string, unknown> | undefined {
       case 'aspectRatio':
         break;
 
+      // `flexShrink` IS ANSWERED HERE TOO, by `usePinnedWidth`, so it is consumed
+      // rather than reported. GTK has no shrink factor and the partition refuses the
+      // name outright — measured, `UnknownUtilityError: "flexShrink" — is not a
+      // property the style partition routes`, which React caught as an unhandled
+      // error and left the window empty. React Native's default is 0, so what a
+      // consumer writing it out asks for is "do not squeeze me below my content";
+      // that is a width request on this host, and only a `<Text>` gets one.
+      case 'flexShrink':
+        break;
+
       // The app names one loaded family per CUT — `Merriweather_700Bold` — because
       // Android ignores `fontWeight` on a custom font, so `lib/theme/typography.ts`
       // emits `fontFamily` and no `fontWeight` at all. Pango has never heard of those
@@ -1137,9 +1147,41 @@ function letterSpacingOf(style: unknown): number {
   return typeof value === 'number' && Number.isFinite(value) && value > 0 ? value : 0;
 }
 
+/** `flexShrink: 0` written out — React Native's default, and here a declaration. */
+function refusesToShrink(style: unknown): boolean {
+  return flattenStyle(style)?.flexShrink === 0;
+}
+
 /**
- * A ONE-LINE, LETTER-SPACED LABEL IS PINNED TO THE WIDTH IT NEEDS, because GTK
- * reports one pixel too few and the layer above has nothing else to go on.
+ * A TEXT THAT DECLARES `flexShrink: 0` IS PINNED TO THE WIDTH IT NEEDS, and so is a
+ * one-line letter-spaced one, which needs one pixel more than GTK reports.
+ *
+ * ## The shrink half
+ *
+ * `flexShrink` DEFAULTS TO 0 IN REACT NATIVE, so a row item there is never squeezed
+ * below its content and the row overflows instead. GTK has no shrink factor — the
+ * layer below strips the property and says so at startup — and a `Gtk.Box` squeezes
+ * its children anywhere between their minimum and their natural size. MEASURED on a
+ * four-chip rail in a 260 px viewport, the same tree three ways:
+ *
+ * | the label | row min | row allocated | label widths | heights |
+ * | --- | --- | --- | --- | --- |
+ * | wrapping | 293 | 293 | 39, 38, 59, **53** | 18, 18, 18, **54** |
+ * | `numberOfLines={1}` | 168 | 260 | 39, 38, **40**, **39** | all 18 |
+ * | pinned | 358 | **358** | 39, 38, 59, **118** | all 18 |
+ *
+ * Wrapping is what the chips did: the last one was squeezed to 53 px, wrapped onto
+ * three lines and was clipped by a 34 px rail. `numberOfLines={1}` is WORSE, and that
+ * is the measurement worth keeping — `ellipsize` takes a label's minimum width to
+ * about one character, so the box squeezed every chip and truncated all four. Pinned,
+ * nothing is squeezed, the row overflows its viewport and the rail scrolls, which is
+ * what the phone does.
+ *
+ * It is keyed on the DECLARATION and not on the shape of the element, because the
+ * same host has to leave the mini player's title alone: that one is `numberOfLines={1}`
+ * inside a flex row and it is supposed to ellipsize.
+ *
+ * ## The letter-spacing half
  *
  * MEASURED on GTK 4.22.4, „Backstage · Früher lesen" at 11px with the app's own
  * tracking: the label reports a natural width of 165 and Pango needs 166 to set it
@@ -1171,9 +1213,11 @@ function letterSpacingOf(style: unknown): number {
  * Upstream in gjsify this is an `it.failing` vector in `text-metrics.spec.ts`. When
  * GTK reports the width Pango needs, that vector goes green and this goes with it.
  */
-function usePinnedSingleLineWidth(props: TextProps): ((widget: unknown) => void) | undefined {
+function usePinnedWidth(props: TextProps): ((widget: unknown) => void) | undefined {
   const spacing = letterSpacingOf(props.style);
-  const active = props.numberOfLines === 1 && spacing > 0 && props.ref === undefined;
+  const active =
+    props.ref === undefined &&
+    (refusesToShrink(props.style) || (props.numberOfLines === 1 && spacing > 0));
   const labelRef = useRef<MeasurableLabel | null>(null);
   const pinnedRef = useRef<number | null>(null);
 
@@ -1206,7 +1250,7 @@ function usePinnedSingleLineWidth(props: TextProps): ((widget: unknown) => void)
 }
 
 export function Text(props: TextProps): ReactElement {
-  const pin = usePinnedSingleLineWidth(props);
+  const pin = usePinnedWidth(props);
   return createElement(TextBase, pin === undefined ? props : { ...props, ref: pin as never });
 }
 export const Pressable = wrap<PressableProps>(BasePressable, 'Pressable', true);

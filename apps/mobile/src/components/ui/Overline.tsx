@@ -35,7 +35,7 @@ export function Overline({ label, color = 'on-canvas-muted', className }: Overli
       color={color}
       className={className}
       numberOfLines={1}
-      style={{ fontSize: 12, letterSpacing: 1.2 }}
+      style={{ fontSize: 12, letterSpacing: 1.2, flexShrink: 0 }}
     >
       {label.toUpperCase()}
     </Typo>

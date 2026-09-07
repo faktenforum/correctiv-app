@@ -54,6 +54,7 @@ export function Badge({ label, tone = 'emphasis', className }: BadgeProps) {
             color: colors[TEXT_COLOR[tone]],
             fontSize: 11,
             letterSpacing: 0.4,
+            flexShrink: 0,
             textTransform: 'uppercase',
           },
         ]}
