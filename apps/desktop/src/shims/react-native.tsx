@@ -484,15 +484,17 @@ function normalizeStyle(style: unknown): Record<string, unknown> | undefined {
         out.borderWidth = value;
         break;
 
-      // GTK has no aspect-ratio property on a box. `Gtk.AspectFrame` is the widget
-      // that does this, which is a different widget rather than a property on this
-      // one — so it would be a primitive of its own, not a translation. Used once,
-      // on the video stage, which is a placeholder here anyway.
+      // GTK has no aspect-ratio property on a box, and it does not need one: the
+      // widget for this is `Gtk.AspectFrame`, which `wrap` puts AROUND the element
+      // (see `aspectRatioOf`). Consumed here so it does not reach the partition as an
+      // unroutable property, and NOT reported, because it is answered.
+      //
+      // It used to be dropped with "used once, on the video stage, which is a
+      // placeholder here anyway". That was wrong twice over: `Thumbnail` frames every
+      // podcast cover and every video still with one, so it is on 97 image widgets in
+      // this application, and dropping it left them with no height at all — a 116px
+      // cover came out 99x31.
       case 'aspectRatio':
-        reportStyle(
-          'aspectRatio',
-          'GTK expresses this as a Gtk.AspectFrame — a different widget, not a property — so it was dropped. The element sizes to its content instead.',
-        );
         break;
 
       // The app names one loaded family per CUT — `Merriweather_700Bold` — because
@@ -573,6 +575,19 @@ function normalizeStyle(style: unknown): Record<string, unknown> | undefined {
  * copied a `Gtk` import from the accessibility helper beside it and bound a namespace
  * it used only in a type position, which the linter caught.
  */
+/**
+ * The `aspectRatio` an element authored, as a positive number, or `undefined`.
+ *
+ * Read off the RAW props: `normalizeStyle` consumes the property on the way past, and
+ * by the time `wrap` has a `passthrough` it is gone. React Native's own rule is
+ * width ÷ height, which is `Gtk.AspectFrame:ratio` exactly.
+ */
+function aspectRatioOf(style: unknown): number | undefined {
+  const flat = flattenStyle(style);
+  const value = flat?.aspectRatio;
+  return typeof value === 'number' && Number.isFinite(value) && value > 0 ? value : undefined;
+}
+
 function applyAutoFocus(widget: unknown, autoFocus: boolean | undefined): void {
   if (widget === null || widget === undefined || autoFocus !== true) return;
 
@@ -966,6 +981,7 @@ function wrap<P extends object>(
   // components "not a valid JSX element type" the moment anything else renders it —
   // `VideoView` in `app/video.tsx` was where that surfaced.
   const Wrapped = (props: P): ReactElement => {
+    const aspect = aspectRatioOf((props as { style?: unknown }).style);
     const { passthrough, accessibility } = normalize(props as NormalizedProps, displayName);
 
     if ('children' in passthrough) {
@@ -1045,7 +1061,33 @@ function wrap<P extends object>(
       [userRef, autoFocus],
     );
 
-    return createElement(Base as never, { ...passthrough, ref: mergedRef } as never);
+    const element = createElement(Base as never, { ...passthrough, ref: mergedRef } as never);
+    if (aspect === undefined) return element;
+    /**
+     * `aspectRatio` is a WIDGET here, not a property, so the element goes inside one.
+     *
+     * `Gtk.AspectFrame` with `obey-child: false` is a height-for-width request and not
+     * merely an alignment — MEASURED on GTK 4.22.4, `measure(VERTICAL, 116)` answers
+     * 116 at ratio 1 and 65 at 16/9, with a `Gtk.Picture` inside as with a box. That
+     * is React Native's rule, width ÷ height, with nothing to translate.
+     *
+     * Everything else stays on the INNER element: the ratio is the only thing the
+     * frame is for, and a class list split across two widgets would put the rounding
+     * and the background on one and the margins on the other, which is the kind of
+     * difference nobody finds later. `hexpand` is the frame's own, because a frame
+     * that does not take the width it is offered computes its height from nothing.
+     *
+     * BELONGS UPSTREAM. This is React Native semantics against a GTK widget, with no
+     * part of it specific to this application; the reason it is here is that
+     * `@gjsify/react-native` routes `aspectRatio` nowhere yet, and a wrapper node
+     * around a primitive is a change to how plans are shaped rather than a property
+     * mapping. The descriptor it needs is upstream already (gjsify #1598).
+     */
+    return createElement(
+      'gtk-aspect-frame' as never,
+      { ratio: aspect, obeyChild: false, hexpand: true } as never,
+      element,
+    );
   };
   Wrapped.displayName = displayName;
   return Wrapped;

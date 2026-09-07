@@ -198,22 +198,40 @@ the window width is worse than one that is honestly missing); no lock-screen met
 (MPRIS is the desktop counterpart and is not built); and `Bleed` does not bleed,
 because GTK does not clamp a negative margin — it measures with it.
 
-**A horizontal rail squeezes its content instead of scrolling it.** Every `Rail` on
-every screen: the podcast covers on Mediathek come out 106x30 px where the phone shows
-150x150, and a chip whose label does not fit wraps inside its own pill and is clipped.
-MEASURED on GTK 4.22.4 — a `Gtk.ScrolledWindow` allocates its child `MAX(viewport,
-child MINIMUM)` along the axis it scrolls, so a row that wants 527 px in a 380 px
-scroller is given 462, and every child absorbs the difference. React Native never does
-that: its `flexShrink` DEFAULTS TO 0, so a row does not squeeze its children at all.
+**A horizontal rail still has too much vertical space, and that is the last piece of
+a defect whose other three are fixed.** The covers on Mediathek were 99x31 px where the
+phone shows them square; they are square now. What is left is a video rail that
+reserves the height of a card twice as wide as the one it draws.
 
-It is TWO defects and fixing one alone makes the app look worse, which is why neither
-is fixed here yet. Giving the content its natural width (a `width-request` equal to its
-own natural, measured — `propagate-natural-width` is the property that looks like this
-fix and changes nothing, also measured) corrects every chip row and every clipped
-label, and then the tiles that carry an explicit `width` grow past it: `width: 150`
-becomes GTK's `width-request`, which is a MINIMUM, so nothing caps the tile's natural
-width once something asks for it. The second half needs a way to say "exactly this
-wide" that GTK has no property for.
+The three that are fixed, because each was a separate thing:
+
+* **`aspectRatio` was dropped**, with a note saying it was "used once, on the video
+  stage". `Thumbnail` frames every cover and every still with one, so it was on 97
+  image widgets. It becomes a `Gtk.AspectFrame` now — MEASURED, that widget is a
+  height-for-width REQUEST and not an alignment: `measure(VERTICAL, 116)` answers 116
+  at ratio 1 and 65 at 16/9. The descriptor it needed is upstream.
+* **A `Gtk.Picture` sizes its parent.** Its natural width is the paintable's: a
+  1400x1400 cover reports 1400, `can-shrink` only moves the MINIMUM to zero, and a
+  box, a viewport and an aspect frame all pass it straight up. One 116px tile asked
+  for 1437 px and a rail of seven asked for 10 060. React Native does not work that
+  way — `<Image style={{ width: '100%' }}>` contributes no intrinsic size — so the
+  picture sits in the one container measured to report 0/0, a `Gtk.ScrolledWindow`
+  with `propagate-natural-*: false`. It scrolls nothing: both policies are EXTERNAL
+  and the child is allocated the viewport exactly.
+* **A horizontal scroller never asks its content for a height.** `Gtk.ScrolledWindow`
+  measures at width -1 and nothing changes that, so a rail of tiles answered 34 px:
+  the labels, and nothing for the images. Fixed upstream, at the width the content is
+  actually given (`hadjustment:page-size`, the only width signal a `Gtk.Widget` has).
+
+**What is left is the natural width.** GTK measures a widget's minimum height in the
+other orientation AT ITS NATURAL WIDTH, and a card's natural width is its title on one
+line — 400 px for a card that renders at 155. So the rail reserves the height a 400 px
+16:9 image would need. The fix is for `width: 155` to CAP the natural width, and GTK
+has no property for that: `width-request` is a minimum by its own definition, and the
+only container measured to cap a natural size is a scrolled window, which is a widget
+per element rather than a property. Named here rather than half-fixed: an earlier
+attempt gave the content its natural width instead, which corrected every chip row and
+made every fixed-width tile grow past the width it declared.
 
 **A letter-spaced label that is given exactly its natural width wraps and is clipped**,
 and the cause is GTK's rather than this app's. Four labels of seventy-six: the masthead

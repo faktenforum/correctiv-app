@@ -162,15 +162,45 @@ export function Image({
   if (paintable === null) {
     return <View className={classes} />;
   }
+  /**
+   * THE PICTURE MUST NOT SIZE ITS PARENT, and that is the whole reason for the
+   * scroller around it.
+   *
+   * `Gtk.Picture` takes its natural size from the paintable: MEASURED, a 1400x1400
+   * cover reports a natural width of 1400, and `can-shrink` only moves the MINIMUM to
+   * zero. A `Gtk.Box`, a `Gtk.Viewport` and a `Gtk.AspectFrame` all pass that straight
+   * up, so one 116px tile asked for 1437px and a rail of seven asked for 10 060 — a
+   * number that then decides how tall the rail thinks it is.
+   *
+   * React Native does not work that way: `<Image style={{ width: '100%' }}>` is a
+   * request to fill, and contributes no intrinsic size at all. `Gtk.ScrolledWindow`
+   * with `propagate-natural-width/height: false` is the one container measured to
+   * report 0/0 for exactly this child, and it is not a scroller here in any other
+   * sense — both policies are EXTERNAL, so it draws no bars, and its child is
+   * allocated `MAX(viewport, child minimum)`, which with a shrinkable picture is the
+   * viewport exactly. Nothing scrolls because nothing overflows.
+   *
+   * The frame around it — `Thumbnail`'s `aspectRatio`, a `Gtk.AspectFrame` — is what
+   * gives the picture a size to fill. See `shims/react-native.tsx`.
+   */
   return (
-    <gtk-picture
-      paintable={paintable as never}
-      contentFit={CONTENT_FIT[contentFit] as never}
-      canShrink
+    <gtk-scrolled-window
+      propagateNaturalWidth={false}
+      propagateNaturalHeight={false}
+      hscrollbarPolicy={'external' as never}
+      vscrollbarPolicy={'external' as never}
       hexpand
       vexpand
-      {...(accessibilityLabel === undefined ? {} : { alternativeText: accessibilityLabel })}
-    />
+    >
+      <gtk-picture
+        paintable={paintable as never}
+        contentFit={CONTENT_FIT[contentFit] as never}
+        canShrink
+        hexpand
+        vexpand
+        {...(accessibilityLabel === undefined ? {} : { alternativeText: accessibilityLabel })}
+      />
+    </gtk-scrolled-window>
   );
 }
 
