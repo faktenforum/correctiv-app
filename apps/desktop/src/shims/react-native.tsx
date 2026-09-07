@@ -111,6 +111,7 @@ import {
   Fragment,
   isValidElement,
   useCallback,
+  useLayoutEffect,
   useRef,
   type ReactElement,
   type ReactNode,
@@ -1119,7 +1120,95 @@ export const Platform = BasePlatform as Omit<typeof BasePlatform, 'OS'> & {
 // typechecked clean and would have accepted any misspelling of it.
 export const View = wrap<ViewProps>(BaseView, 'View');
 
-export const Text = wrap<TextProps>(BaseText, 'Text', false, true);
+const TextBase = wrap<TextProps>(BaseText, 'Text', false, true);
+
+/** Just enough of `Gtk.Label` to measure it and pin its width, structurally. */
+type MeasurableLabel = {
+  measure(orientation: number, forSize: number): [number, number, number, number];
+  set_size_request(width: number, height: number): void;
+  width_request: number;
+  height_request: number;
+};
+/** `Gtk.Orientation.HORIZONTAL`, spelled out because this file imports no GI. */
+const HORIZONTAL = 0;
+
+function letterSpacingOf(style: unknown): number {
+  const value = flattenStyle(style)?.letterSpacing;
+  return typeof value === 'number' && Number.isFinite(value) && value > 0 ? value : 0;
+}
+
+/**
+ * A ONE-LINE, LETTER-SPACED LABEL IS PINNED TO THE WIDTH IT NEEDS, because GTK
+ * reports one pixel too few and the layer above has nothing else to go on.
+ *
+ * MEASURED on GTK 4.22.4, „Backstage · Früher lesen" at 11px with the app's own
+ * tracking: the label reports a natural width of 165 and Pango needs 166 to set it
+ * on one line. It is allocated exactly its own natural width, so the last pixel is
+ * missing at every size. The shortfall follows the tracking rather than the text,
+ * measured across the values in use and beyond them:
+ *
+ * | `letterSpacing` | 0 | 0.4 | 1 | 1.2 | 1.5 | 2 | 3 |
+ * | shortfall (px)  | 0 |  1  | 1 |  1  |  1  | 2 | 3 |
+ *
+ * A SINGLE-WORD MARK IS NEVER AFFECTED — „RECHERCHE", „Live", „Spotlight" all
+ * measure minimum == natural, so there is no break opportunity to take. That is
+ * why this only ever showed on the two-word ones.
+ *
+ * The symptom depends on what the label does when it runs out: a wrapping one puts
+ * one word on a second line the parent has already committed no height for, and the
+ * yellow Backstage band clipped it; a `numberOfLines={1}` one ellipsizes instead,
+ * and the rail's badge read "FAKTENCHE…" at exactly its natural width. Both are the
+ * same missing pixel.
+ *
+ * PADDING CANNOT FIX IT, measured: padding raises the natural width and the text's
+ * own budget by the same amount, so the shortfall survives (165 → 166 → 167, still
+ * short). `width-request` is the only lever that moves one and not the other, and
+ * GTK ties it to the MINIMUM width too — which is why this is scoped to
+ * `numberOfLines={1}`. There, a floor at the one-line width is not a side effect
+ * but the behaviour React Native already has: `flexShrink` defaults to 0, so a
+ * one-line label is never squeezed below its content on the phone either.
+ *
+ * Upstream in gjsify this is an `it.failing` vector in `text-metrics.spec.ts`. When
+ * GTK reports the width Pango needs, that vector goes green and this goes with it.
+ */
+function usePinnedSingleLineWidth(props: TextProps): ((widget: unknown) => void) | undefined {
+  const spacing = letterSpacingOf(props.style);
+  const active = props.numberOfLines === 1 && spacing > 0 && props.ref === undefined;
+  const labelRef = useRef<MeasurableLabel | null>(null);
+  const pinnedRef = useRef<number | null>(null);
+
+  const apply = useCallback(() => {
+    const label = labelRef.current;
+    if (label === null) return;
+    // OUR OWN VALUE FIRST. `measure` answers `max(natural, size request)`, so a
+    // width written here is read back as if the text had asked for it and the
+    // number only ever grows — the same ratchet the rails' height hit.
+    if (pinnedRef.current !== null && label.width_request === pinnedRef.current) {
+      label.set_size_request(-1, label.height_request);
+      pinnedRef.current = null;
+    }
+    const natural = label.measure(HORIZONTAL, -1)[1];
+    if (natural <= 0) return;
+    const pinned = natural + Math.ceil(spacing);
+    label.set_size_request(pinned, label.height_request);
+    pinnedRef.current = pinned;
+  }, [spacing]);
+
+  useLayoutEffect(() => {
+    if (active) apply();
+  });
+
+  return active
+    ? (widget: unknown): void => {
+        labelRef.current = (widget ?? null) as MeasurableLabel | null;
+      }
+    : undefined;
+}
+
+export function Text(props: TextProps): ReactElement {
+  const pin = usePinnedSingleLineWidth(props);
+  return createElement(TextBase, pin === undefined ? props : { ...props, ref: pin as never });
+}
 export const Pressable = wrap<PressableProps>(BasePressable, 'Pressable', true);
 const ScrollViewBase = wrap<ScrollViewProps>(BaseScrollView, 'ScrollView');
 
@@ -1151,6 +1240,7 @@ export function ScrollView(props: ScrollViewProps): ReactElement {
     : { ...props, showsVerticalScrollIndicator: true };
   return createElement(ScrollViewBase, shown);
 }
+
 export const ActivityIndicator = wrap<ActivityIndicatorProps>(
   BaseActivityIndicator,
   'ActivityIndicator',

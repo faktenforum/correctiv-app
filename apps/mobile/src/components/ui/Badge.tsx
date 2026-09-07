@@ -26,7 +26,13 @@ const TEXT_COLOR: Record<Tone, ColorToken> = {
   live: 'accent',
 };
 
-/** A small label (project / fact check / backstage). Radius s, no shadows. */
+/**
+ * A small label (project / fact check / backstage). Radius s, no shadows.
+ *
+ * `numberOfLines` is one for the reason spelled out in `Overline`: a letter-spaced
+ * label with a space in it wraps at its own natural width on GTK, and the second
+ * line is clipped. A pill is one line in the design either way.
+ */
 export function Badge({ label, tone = 'emphasis', className }: BadgeProps) {
   const colors = useColors();
   return (
@@ -41,6 +47,7 @@ export function Badge({ label, tone = 'emphasis', className }: BadgeProps) {
         <View className="mr-3xs rounded-full bg-accent" style={{ width: 7, height: 7 }} />
       )}
       <Text
+        numberOfLines={1}
         style={[
           typography['text-s'],
           {

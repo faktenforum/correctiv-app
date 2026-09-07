@@ -251,12 +251,80 @@ The three that are fixed, because each was a separate thing:
   for 1437 px and a rail of seven asked for 10 060. React Native does not work that
   way — `<Image style={{ width: '100%' }}>` contributes no intrinsic size — so the
   picture sits in the one container measured to report 0/0, a `Gtk.ScrolledWindow`
-  with `propagate-natural-*: false`. It scrolls nothing: both policies are EXTERNAL
-  and the child is allocated the viewport exactly.
+  with `propagate-natural-*: false`. It scrolls nothing: both policies are NEVER and
+  the child is allocated the viewport exactly. ~~Both policies are EXTERNAL~~ was the
+  first shape and cost the rail its scrolling: an EXTERNAL policy leaves the scroller
+  able to pan, so every wrapper around every cover swallowed the scroll events the
+  rail around them needed.
 * **A horizontal scroller never asks its content for a height.** `Gtk.ScrolledWindow`
   measures at width -1 and nothing changes that, so a rail of tiles answered 34 px:
-  the labels, and nothing for the images. Fixed upstream, at the width the content is
-  actually given (`hadjustment:page-size`, the only width signal a `Gtk.Widget` has).
+  the labels, and nothing for the images. Fixed upstream at the content's own MINIMUM
+  width, which is what an overflowing row is allocated. ~~At the width the content is
+  actually given, `hadjustment:page-size`, the only width signal a `Gtk.Widget`
+  has~~ — that was the first shape and three quarters of it went, each part for a
+  measurement (gjsify #1599). The viewport's width differs from the minimum only when
+  the content FITS, and there a size request cannot help: a request only RAISES a
+  height, and a wrapping card that fills the rail needs 36 px where GTK already
+  reports 160. **So that rail is still too tall**, GTK has no property that caps a
+  natural height, and the vector upstream asserts the hook changes nothing there
+  rather than leaving a branch that looks like a fix.
+
+**A letter-spaced mark is one pixel short of its own text, and only one lever moves
+that pixel.** MEASURED on GTK 4.22.4: a wrapping `Gtk.Label` whose text contains a
+space reports a natural width below what Pango needs to set it on one line, by about
+the tracking itself — 0 at `letterSpacing: 0`, 1 px at 0.4, 1, 1.2 and 1.5, 2 px at 2,
+3 px at 3. A mark sized to its own content is therefore allocated exactly one pixel
+too little at every window size, and what it does then depends on how it runs out:
+
+| the mark | what it did |
+| --- | --- |
+| the yellow Backstage band, wrapping | „LESEN" on a second line the parent had committed no height for, clipped |
+| the rail's badge, `numberOfLines={1}` | ellipsized at its natural width: „FAKTENCHE…" |
+
+Same missing pixel, two symptoms, and a single-word mark („RECHERCHE", „Live",
+„Spotlight") has no break opportunity and was never affected — which is why it only
+ever showed on the two-word ones.
+
+**Padding cannot fix it**, measured: it raises the natural width and the text's own
+budget by the same amount, so the shortfall survives (165 → 166 → 167, still short).
+That is why the first attempt at this failed and was reverted. `width-request` is the
+only lever that moves one and not the other, and GTK ties it to the MINIMUM width as
+well — so the fix is scoped to `numberOfLines={1}` in
+[`src/shims/react-native.tsx`](src/shims/react-native.tsx), where a floor at the
+one-line width is not a side effect but the behaviour the phone already has:
+`flexShrink` defaults to 0, so a one-line label is never squeezed below its content
+there either. Upstream it is an `it.failing` vector in gjsify's `text-metrics.spec.ts`,
+and when GTK reports the width Pango needs, both go at once.
+
+**A card is pinned open by one unbreakable word, and the obvious fix was measured and
+rejected.** The live-radio banner would not shrink with the window, because a stream
+announced its track as `20260901_Gamescom_Laberpocast_Sophie_Amelie_final` — one token
+with no break in it. MEASURED on GTK 4.22.4: a `Gtk.Label` wraps at WORD boundaries, so
+its MINIMUM width is its longest word, and that minimum IS its contribution to the
+layout. 394 px for that string, and the card could be no narrower.
+
+`wrap-mode: word-char` takes the minimum to 13 px, and it is the wrong fix. Measured
+across five cases:
+
+| text | `numberOfLines` | `word` | `word-char` |
+| --- | --- | --- | --- |
+| that filename | 1 | 13 | 13 |
+| that filename | 2 | 394 | **13** |
+| `Bundesverfassungsgericht` | 2 | 187 | **15** |
+| `Live` | 1 | 13 | 13 |
+| `Live` | 2 | 29 | **14** |
+
+At one line it changes nothing — `ellipsize` already collapses the minimum. At two it
+fixes the filename AND lets a short label be squeezed until Pango breaks it inside the
+word: the club badge rendered as „LIV-“. A two-line card title in a narrow column is
+the ordinary case, so there is no threshold that separates the two.
+
+AND THE REAL CAUSE IS THE SAME ONE AS THE RAIL BELOW. React Native's `flexShrink`
+defaults to 0, so a box is never squeezed below its content and its line-breaker never
+gets asked; Android's own breaker would in fact break that word. Lowering a GTK label's
+minimum lets GTK do something React Native never has the chance to do. It is a
+`flexShrink` question wearing a `wrap-mode` costume, and GTK has no property for the
+real one. Withdrawn upstream (gjsify #1600) with the measurement rather than merged.
 
 **What is left is the natural width.** GTK measures a widget's minimum height in the
 other orientation AT ITS NATURAL WIDTH, and a card's natural width is its title on one
