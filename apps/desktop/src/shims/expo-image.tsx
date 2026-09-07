@@ -176,9 +176,18 @@ export function Image({
    * request to fill, and contributes no intrinsic size at all. `Gtk.ScrolledWindow`
    * with `propagate-natural-width/height: false` is the one container measured to
    * report 0/0 for exactly this child, and it is not a scroller here in any other
-   * sense — both policies are EXTERNAL, so it draws no bars, and its child is
-   * allocated `MAX(viewport, child minimum)`, which with a shrinkable picture is the
-   * viewport exactly. Nothing scrolls because nothing overflows.
+   * sense: its child is allocated `MAX(viewport, child minimum)`, which with a
+   * shrinkable picture is the viewport exactly, so nothing overflows.
+   *
+   * BOTH POLICIES ARE `never`, and the first version wrote `external`. The two differ
+   * in exactly one thing that matters here: `external` DECLARES the widget scrollable
+   * and leaves the bar to someone else, `never` declares it is not scrollable at all.
+   * A wrapper whose child always fits is the second, and saying so is what keeps a
+   * scroll over a cover from being claimed by a widget that has nothing to scroll —
+   * the rails stopped scrolling under the pointer wherever an image was.
+   *
+   * The cap is unaffected by the choice: measured, both policies report 0/0, and the
+   * frame around them still answers 116 at a width of 116.
    *
    * The frame around it — `Thumbnail`'s `aspectRatio`, a `Gtk.AspectFrame` — is what
    * gives the picture a size to fill. See `shims/react-native.tsx`.
@@ -187,8 +196,8 @@ export function Image({
     <gtk-scrolled-window
       propagateNaturalWidth={false}
       propagateNaturalHeight={false}
-      hscrollbarPolicy={'external' as never}
-      vscrollbarPolicy={'external' as never}
+      hscrollbarPolicy={'never' as never}
+      vscrollbarPolicy={'never' as never}
       hexpand
       vexpand
     >
