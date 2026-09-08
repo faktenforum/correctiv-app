@@ -184,6 +184,21 @@ export const PipelineStream = GObject.registerClass(
     }
 
     // --- Gdk.Paintable, forwarded to the sink's own ---
+    //
+    // FORWARDED, AND NOT PAINTED THROUGH. The picture above renders the SINK's
+    // paintable directly, because one of these three forwards cannot work: a `double`
+    // returned from `vfunc_get_intrinsic_aspect_ratio` never reaches the caller.
+    //
+    // MEASURED, with the override instrumented: it is called 28 times, the sink
+    // answers it `1.7777777777777777` inside the call, the override then returns a
+    // literal `1.7777777` — and `stream.get_intrinsic_aspect_ratio()` still answers
+    // `0.000`. The two integer forwards beside it work (640x360 arrives), so it is
+    // that return value and not the dispatch. `Gtk.Picture` reads the aspect for
+    // `content-fit`, gets 0, and snapshots the video ONE PIXEL WIDE — measured,
+    // `lastSnapshotSize=1x261`, which is the thin line this file first shipped.
+    //
+    // They stay because they are correct and cost nothing: the day that marshalling
+    // works, the stream can be the picture's paintable and this comment retires.
 
     vfunc_snapshot(snapshot: Gdk.Snapshot, width: number, height: number): void {
       this.inner.snapshot(snapshot, width, height);

@@ -104,16 +104,22 @@ export function createVideoPlayer(): VideoBackend {
     'paintable',
   );
 
-  // THE STREAM IS THE PAINTABLE. `GtkMediaStream` implements `GdkPaintable`, so the
-  // picture above renders the same object the control strip drives, and there is no
-  // second place for the playing state to live. `stream.ts` carries the measurement.
+  // THE STREAM DRIVES, THE SINK PAINTS, and the split is measured rather than
+  // chosen. `GtkMediaStream` implements `GdkPaintable`, so the stream could have been
+  // the picture's paintable too — and it cannot be: a `double` returned from
+  // `vfunc_get_intrinsic_aspect_ratio` never reaches the caller, so `Gtk.Picture`
+  // reads an aspect of 0 and draws the video one pixel wide. `stream.ts` carries the
+  // instrumented measurement.
+  //
+  // What is NOT split is the playing state: the stream owns it, `play`/`pause` below
+  // go through it, and the strip drives the same object.
   const stream = new PipelineStream();
   stream.attach(pipeline, inner as never);
 
   let released = false;
 
   return {
-    paintable: stream,
+    paintable: inner,
     stream,
     // NO `wanted` FLAG HERE. The stream's own `playing` is the one record of what the
     // user asked for, and `open` puts the pipeline where that record already stands —

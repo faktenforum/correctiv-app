@@ -365,6 +365,24 @@ before anything was written:
 
 So the pipeline wears GTK's own media interface: a `Gtk.MediaStream` subclass that
 also implements `Gdk.Paintable` and forwards the paintable vfuncs to the sink's own.
+
+**THE PICTURE STILL TAKES THE SINK'S PAINTABLE, and that is a GJS defect rather than a
+choice.** A `double` returned from `vfunc_get_intrinsic_aspect_ratio` never reaches the
+caller. Measured with the override instrumented: it is called 28 times, the sink
+answers it `1.7777777777777777` inside the call, the override then returns a literal
+`1.7777777`, and `stream.get_intrinsic_aspect_ratio()` still answers **`0.000`** — while
+the two integer forwards beside it work and 640x360 arrives. `Gtk.Picture` reads that
+aspect for `content-fit`, gets 0, and snapshots the video **one pixel wide**:
+`lastSnapshotSize=1x261`, which is the thin line this shipped for one commit. With the
+sink's own paintable the picture measures `548x308, ratio 1.779`, its 16:9. The
+forwards stay because they are correct and cost nothing; the day that marshalling works
+the stream can paint.
+
+Verified by GEOMETRY rather than by a photograph, which is worth saying: with a live
+video texture in the window the devtools `Screenshot` returns nothing (`contents !=
+NULL` fails), GNOME denies `org.gnome.Shell.Screenshot` outright, and there is no
+Wayland grabber here. The route sweep still captures `/video` — 13 077 bytes — because
+that route holds no live paintable until a video is chosen.
 Measured end to end in the app, on the real feed: `0:05 / -14:05` → `0:09` → `0:13`
 with the seek bar populated from the stream's own duration, and after pressing the
 strip's button the clock freezes at `0:14` across two samples. Play, pause, seek,
