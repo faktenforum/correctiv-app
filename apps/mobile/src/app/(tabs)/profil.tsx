@@ -1,5 +1,5 @@
 import { router } from 'expo-router';
-import { View } from 'react-native';
+import { Pressable, View } from 'react-native';
 
 import { ClubCard } from '@/components/profile/ClubCard';
 import { NavCard } from '@/components/profile/NavCard';
@@ -151,17 +151,26 @@ export default function ProfilScreen() {
           <Typo variant="text-m">
             {impactLine(entitlement?.memberSince ?? null, impactArticles.length > 0)}
           </Typo>
+          {/*
+            A LINK, not a paragraph that happens to be tappable. `<Typo onPress>`
+            opens the reader, and MEASURED in the render tree it carried no
+            `accessibilityRole` and no `accessibilityLabel` — so TalkBack and
+            VoiceOver read the headline out with nothing to say it can be opened,
+            and a tap gave no feedback. The `Pressable` carries the role, the name
+            and the press state; the `Typo` keeps the type.
+          */}
           {impactArticles.map((article) => (
-            <Typo
+            <Pressable
               key={article.url}
-              variant="text-m"
-              weight="semibold"
-              numberOfLines={2}
-              className="mt-s"
               onPress={() => openArticle(article)}
+              accessibilityRole="link"
+              accessibilityLabel={article.title}
+              className="mt-s active:opacity-70"
             >
-              {article.title}
-            </Typo>
+              <Typo variant="text-m" weight="semibold" numberOfLines={2}>
+                {article.title}
+              </Typo>
+            </Pressable>
           ))}
         </Card>
       </View>
