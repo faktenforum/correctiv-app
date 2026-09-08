@@ -264,13 +264,20 @@ The three that are fixed, because each was a separate thing:
   is what a viewport allocates (gjsify #1599).
 
   ~~Fixed with a `set_size_request` written from a layout effect~~ was the first shape,
-  and every part of it went for a measurement. A request only RAISES a height, so a
-  card that fills the rail could not be made SHORTER than the 160 GTK answers where it
-  needs 36 — that shipped as a declared limit and is now simply right. A written height
-  is also read back as the content's own, so it ratcheted; and it was measured ONCE per
-  commit of the `<ScrollView>`, so a title arriving from a re-render below the scroller
-  left the rail 16 px short and clipped the third line of every card title. A layout
-  manager has none of those: GTK re-measures on the child's own `queue_resize`.
+  and the reason first given for replacing it was ~~that a request only RAISES a height,
+  so a card that fills the rail could not be made shorter than the 160 GTK answers~~ —
+  **which is false**, and an upstream review caught it. Four instruments on one card
+  tree, wanting 36: plain `Gtk.Box` 18, the layout manager with its watch removed 160,
+  the layout manager 36, and **a request at the same width one idle later 36**. GTK's
+  `for_size -1` answer is a wrapping row's height at its natural width and therefore
+  the smallest height it has, so every target sits above that floor and a request can
+  always lift the answer to it. The 160 was the new code with its watch removed.
+
+  What does hold, measured: a title arriving from a re-render BELOW the `<ScrollView>`
+  never re-ran a layout effect, so the rail wrote 145 where it needed 161 and clipped
+  the third line of every card title; and the request landed on the same field as a
+  consumer's `contentContainerStyle` height. A layout manager has neither problem —
+  GTK re-measures on the child's own `queue_resize`, and nothing is written.
 
   The one part that survived is the deferral. `page-size` is written during the
   scroller's own `size_allocate`, and a `queue_resize` from that handler does not reach
