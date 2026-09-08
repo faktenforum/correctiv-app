@@ -49,10 +49,19 @@
 
 import Gst from 'gi://Gst?version=1.0';
 
+import { PipelineStream } from './stream.js';
+
 /** What one player answers. The subset of `expo-video`'s player this app calls. */
 export interface VideoBackend {
   /** The `GdkPaintable` a `Gtk.Picture` renders. Null when the sink is missing. */
   readonly paintable: unknown;
+  /**
+   * The same object as a `Gtk.MediaStream`, for `Gtk.MediaControls` to drive.
+   *
+   * One object rather than two, so the strip's play button and the screen's own
+   * `player.play()` cannot disagree about what is playing.
+   */
+  readonly stream: unknown;
   play: () => void;
   pause: () => void;
   /** Point the pipeline at another URI, or at nothing. */
@@ -91,46 +100,43 @@ export function createVideoPlayer(): VideoBackend {
   }
   pipeline.set_property('video-sink', sink);
 
-  const paintable: unknown = (
-    sink as unknown as { get_property(name: string): unknown }
-  ).get_property('paintable');
-  let playing = false;
+  const inner = (sink as unknown as { get_property(name: string): unknown }).get_property(
+    'paintable',
+  );
+
+  // THE STREAM IS THE PAINTABLE. `GtkMediaStream` implements `GdkPaintable`, so the
+  // picture above renders the same object the control strip drives, and there is no
+  // second place for the playing state to live. `stream.ts` carries the measurement.
+  const stream = new PipelineStream();
+  stream.attach(pipeline, inner as never);
+
   let released = false;
 
-  const state = (next: Gst.State): void => {
-    if (released) return;
-    pipeline.set_state(next);
-  };
-
   return {
-    paintable,
+    paintable: stream,
+    stream,
+    // NO `wanted` FLAG HERE. The stream's own `playing` is the one record of what the
+    // user asked for, and `open` puts the pipeline where that record already stands —
+    // so a `replace` after a `play` needs no second `play` to follow it.
     play(): void {
       if (released) return;
-      playing = true;
-      state(Gst.State.PLAYING);
+      stream.play();
     },
     pause(): void {
       if (released) return;
-      playing = false;
-      state(Gst.State.PAUSED);
+      stream.pause();
     },
     replace(uri: string | null): void {
       if (released) return;
-      // READY first, not NULL: `playbin3` refuses a new `uri` while it is running,
-      // and going all the way to NULL throws away the sink's paintable binding —
-      // which the `Gtk.Picture` above is already holding.
-      state(Gst.State.READY);
-      pipeline.set_property('uri', uri ?? '');
-      if (uri !== null && uri !== '' && playing) state(Gst.State.PLAYING);
+      stream.open(uri);
     },
     release(): void {
       if (released) return;
       released = true;
-      playing = false;
-      pipeline.set_state(Gst.State.NULL);
+      stream.release();
     },
     get playing(): boolean {
-      return playing;
+      return released ? false : stream.playing;
     },
     get currentTime(): number {
       if (released) return 0;
@@ -138,14 +144,10 @@ export function createVideoPlayer(): VideoBackend {
       return ok ? Number(position) / Number(Gst.SECOND) : 0;
     },
     get muted(): boolean {
-      return released
-        ? false
-        : Boolean(
-            (pipeline as unknown as { get_property(name: string): unknown }).get_property('mute'),
-          );
+      return released ? false : stream.muted;
     },
     set muted(value: boolean) {
-      if (!released) pipeline.set_property('mute', value);
+      if (!released) stream.muted = value;
     },
   };
 }

@@ -32,6 +32,8 @@ export interface VideoPlayer {
   currentTime: number;
   /** This host's own: what `VideoView` renders, or null when there is no pipeline. */
   readonly paintable?: unknown;
+  /** This host's own: the same object as a `Gtk.MediaStream`, for the control strip. */
+  readonly stream?: unknown;
   /** This host's own: why there is no pipeline, for the notice. */
   readonly unavailable?: string;
 }
@@ -50,6 +52,7 @@ function unavailablePlayer(why: string): VideoPlayer {
     loop: false,
     currentTime: 0,
     paintable: null,
+    stream: null,
     unavailable: why,
   };
 }
@@ -97,6 +100,9 @@ export function useVideoPlayer(
       get paintable() {
         return backend.paintable;
       },
+      get stream() {
+        return backend.stream;
+      },
     };
   });
 
@@ -137,12 +143,16 @@ export interface VideoViewProps {
  * Unwrapped, one video would decide how wide the window wants to be, and would keep
  * changing its mind. `shims/expo-image.tsx` carries the measurement.
  *
- * `nativeControls` is ACCEPTED AND NOT DRAWN. GTK's ready-made control strip is
- * `Gtk.MediaControls`, which drives a `Gtk.MediaStream`; what a GStreamer pipeline
- * hands out is a `GdkPaintable`, and the two do not meet without a `GtkMediaStream`
- * implementation of our own. Rather than leave the screen with no way to stop, the
- * picture itself toggles play/pause on a click — one control instead of a strip, and
- * said out loud rather than left as a surprise.
+ * `nativeControls` IS DRAWN NOW, and by the toolkit rather than by this file:
+ * `Gtk.MediaControls` over the picture, carrying play/pause, a seek bar, the elapsed
+ * and total time and a volume slider. ~~Accepted and not drawn~~ was the state until
+ * `video/stream.ts` gave the pipeline GTK's own media interface — and what stood here
+ * before promised something else again, that "the picture itself toggles play/pause on
+ * a click". IT DID NOT: there was no gesture in this file at all, so the screen had no
+ * way to pause. A docblock is not a feature, which is the useful half of that mistake.
+ *
+ * The strip sits in a `Gtk.Overlay` above the picture, at `valign: end`, which is
+ * where `Gtk.Video` puts its own.
  */
 export function VideoView(props: VideoViewProps): ReactElement {
   const player = props.player;
@@ -162,7 +172,7 @@ export function VideoView(props: VideoViewProps): ReactElement {
     );
   }
 
-  return (
+  const stage = (
     <gtk-scrolled-window
       propagateNaturalWidth={false}
       propagateNaturalHeight={false}
@@ -179,5 +189,21 @@ export function VideoView(props: VideoViewProps): ReactElement {
         vexpand
       />
     </gtk-scrolled-window>
+  );
+
+  if (props.nativeControls !== true || player?.stream === undefined || player.stream === null) {
+    return stage;
+  }
+
+  return (
+    <gtk-overlay hexpand vexpand>
+      {stage}
+      <gtk-media-controls
+        slot="overlay"
+        mediaStream={player.stream as never}
+        valign={'end' as never}
+        hexpand
+      />
+    </gtk-overlay>
   );
 }

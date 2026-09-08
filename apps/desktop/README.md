@@ -349,6 +349,35 @@ switch as `aspectRatio`. It is keyed on the DECLARATION and not on the shape of 
 element, because the mini player's title is `numberOfLines={1}` in a flex row and is
 supposed to ellipsize.
 
+**The video had no way to pause, and the file said it did.** `VideoView` accepted
+`nativeControls` and drew nothing; the docblock promised that "the picture itself
+toggles play/pause on a click", and there was no gesture in that file at all. A
+docblock is not a feature.
+
+The toolkit now draws the strip, and the two ready-made routes to it were measured
+before anything was written:
+
+| route | measured |
+| --- | --- |
+| `Gtk.Video` + `Gtk.MediaFile` | does not reach this stream: GTK's own media backend never prepares the FunFacts master playlist — `prepared=false` for 6.4 s, `duration=0`, no audio, no video, and no error either |
+| a single MP4 rendition instead | PeerTube's own API answers `hasAudio=false` for every video file it lists (2160p, 1440p, 1080p, 720p); it splits the sound into a rendition of its own, so only the master playlist carries both tracks |
+| `Gtk.MediaControls` | wants a `GtkMediaStream`, which is what [`src/video/stream.ts`](src/video/stream.ts) now is |
+
+So the pipeline wears GTK's own media interface: a `Gtk.MediaStream` subclass that
+also implements `Gdk.Paintable` and forwards the paintable vfuncs to the sink's own.
+Measured end to end in the app, on the real feed: `0:05 / -14:05` → `0:09` → `0:13`
+with the seek bar populated from the stream's own duration, and after pressing the
+strip's button the clock freezes at `0:14` across two samples. Play, pause, seek,
+elapsed, remaining and volume are Adwaita's widget rather than drawn here.
+
+ONE ORDERING TRAP PAID FOR THAT, and it is worth keeping: `useVideoPlayer(url, setup)`
+calls `play()` in its setup callback, which runs BEFORE the url is known, because the
+route fetches it. So the stream is already marked playing when a url arrives, the
+second `play()` is a no-op, `vfunc_play` never runs and the pipeline sits in READY —
+measured, `0:00 / -0:01` and a black picture after seven seconds. `open` therefore puts
+the pipeline where the stream's own `playing` already stands instead of waiting to be
+told twice, and the backend keeps no second copy of that state.
+
 **A letter-spaced mark is one pixel short of its own text, and only one lever moves
 that pixel.** MEASURED on GTK 4.22.4: a wrapping `Gtk.Label` whose text contains a
 space reports a natural width below what Pango needs to set it on one line, by about
