@@ -284,6 +284,28 @@ The three that are fixed, because each was a separate thing:
   the pass in progress: measured, inline the measurement was already 36 while the
   scroller stayed at 160, and one idle later the scroller followed.
 
+**The window lets itself be narrower than its content, and the content is clipped
+rather than scrolled — cause NOT identified.** MEASURED on the merged host at the
+Mediathek: the window reports a minimum of `[360, 544]`, `ResizeWindow(360)` is
+therefore a size a user can drag to, and at 360 the bottom tab bar shows four of five
+tabs — „Profil" is simply gone — while the page box inside reads 439 wide with a
+minimum of 439. So 79 px of real interface is cut off inside the window's own stated
+minimum.
+
+Three explanations are RULED OUT by measurement, which is the useful half of this
+entry:
+
+| candidate | measured |
+| --- | --- |
+| `hscrollbar-policy: never` swallows the child's minimum | it does not: a 439 px child gives the scroller `[439, 439]`; AUTOMATIC gives 46 and EXTERNAL 0 |
+| `Adw.BreakpointBin` caps its child so breakpoints can fire | it does not: a 439 px child gives `[439, 439]` with a 360 px request, and `[500, 500]` with a 500 px one |
+| the 360 floor in gjsify's tab router (#1597) caps it | that line is `max(child minimum, 360)`, a floor, and a size request cannot lower a widget's minimum anyway |
+
+What remains unmeasured is which widget between the tab bar and the toplevel reports
+360 while its content needs 439. Written down without a cause rather than with a
+guessed one; the next step is a recording measure on that chain, the way the rail's
+own defect was found.
+
 **Emoji in a stream's track title render as replacement boxes, and that is not this
 app.** MEASURED in a twelve-line GTK program with no application code: the default
 `PangoCairo` font map lists 100 families INCLUDING „Noto Color Emoji" and „Noto
