@@ -324,6 +324,37 @@ Two further traps on the way there:
 Manifest note: a localhost origin belongs in `devAllowedDomains`, not
 `allowedDomains`, and Figma wants `http://localhost:8787` rather than the bare IP.
 
+## Running it on macOS
+
+The official desktop app, so none of the section above applies. Import from manifest
+records the directory the files sit in and the plugin runs from there. Nothing to
+repair afterwards, which is the entire job of `fix-plugin-path.mjs`.
+
+The **Plugins** menu is native and fills itself late. It is absent until a file is
+open, and then reads `Loading…` until someone opens it by hand once. A script that
+reads the menu without opening it gets `Loading…` forever and concludes the import
+failed.
+
+**What stops a fresh file is the plan, not the platform.** `spec.json` describes four
+pages, a Starter file holds three, and a new file has already spent one on `Page 1`.
+`drawPage` looks a page up by name before it creates one, so deleting `Page 1` buys
+the fourth back. The refusal comes from Figma's own document model, so no client
+avoids it.
+
+**A macOS VM has no GPU and Figma will not say so.** Chromium cannot reach
+ANGLE-over-Metal, the window paints nothing, and the process sits at 0% CPU, which
+reads as a hang. `--disable-gpu` paints the interface and then kills the editor,
+because the canvas is WebGL. Software GL is what works:
+
+    open -a Figma --args --use-gl=angle --use-angle=swiftshader --enable-unsafe-swiftshader
+
+`open`, not the binary. A process started over SSH has no Aqua session, so Chromium
+cannot reach the Keychain, cannot decrypt its cookie store, and drops the Figma login
+on the next start without saying anything.
+
+The emoji twins hold here too. `♡` U+2661 and `►` U+25BA draw as text on macOS, where
+the font the wireframe falls back to is Apple Color Emoji.
+
 ## Two things to know
 
 **Re-running is safe.** Every frame a page's `owned` list names is deleted before it
