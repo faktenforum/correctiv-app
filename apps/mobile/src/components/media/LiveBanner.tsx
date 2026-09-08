@@ -88,7 +88,24 @@ export function LiveBanner({ subtitle = '24/7 aus Bottrop' }: { subtitle?: strin
         <Typo variant="headline-s" color="always-light">
           Salon5 Radio
         </Typo>
-        <Typo variant="text-s" color="always-light" numberOfLines={2} className="opacity-70">
+        {/*
+          ONE LINE, because a stream announces titles nobody chose. MEASURED on GTK
+          4.22.4: a `Gtk.Label` wraps at word boundaries, so its minimum width is its
+          longest WORD, and a station that announced its track as
+          „20260901_Gamescom_Laberpocast_Sophie_Amelie" — one token, no break in it —
+          made that minimum 358 px at two lines and pinned this card, and with it the
+          whole window, open. At one line `ellipsize` is allowed to do the work and
+          the minimum is 13 px for any text at all: 13 against 358 for that token, 13
+          against 32 for an ordinary title.
+
+          Seen in the running app as the station changed track: „Cleo Sol - Sweet Blue
+          (Official Video)" gave the page a minimum of 234 px, the filename above gave
+          it 439. It is not the LENGTH — it is that the token has no space in it.
+
+          The cost is that a long ordinary title now ellipsizes instead of taking a
+          second line, which is what a now-playing line does everywhere else.
+        */}
+        <Typo variant="text-s" color="always-light" numberOfLines={1} className="opacity-70">
           {line}
         </Typo>
       </View>

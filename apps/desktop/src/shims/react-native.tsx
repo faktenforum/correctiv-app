@@ -1215,9 +1215,14 @@ function refusesToShrink(style: unknown): boolean {
  */
 function usePinnedWidth(props: TextProps): ((widget: unknown) => void) | undefined {
   const spacing = letterSpacingOf(props.style);
-  const active =
-    props.ref === undefined &&
-    (refusesToShrink(props.style) || (props.numberOfLines === 1 && spacing > 0));
+  // THE DECLARATION AND NOTHING ELSE. This also read `numberOfLines === 1 && spacing
+  // > 0`, and that was far too wide: every variant in `lib/theme/typography.ts` carries
+  // a `letterSpacing` from the design tokens, so the second clause fired on EVERY
+  // single-line `<Typo>` in the application. Measured, it pinned the live banner's
+  // now-playing line at its natural 445 px — the exact opposite of what that line
+  // needs, since a stream announces titles nobody chose — and the mini player's title
+  // with it.
+  const active = props.ref === undefined && refusesToShrink(props.style);
   const labelRef = useRef<MeasurableLabel | null>(null);
   const pinnedRef = useRef<number | null>(null);
 

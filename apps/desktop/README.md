@@ -335,7 +335,13 @@ one character, so the box squeezes every chip and truncates all four. Pinned, no
 is squeezed and the rail scrolls.
 
 So `Chip` writes `flexShrink: 0` out, which is a declaration rather than a change on
-the phone, and this host answers it with a width request on the `<Text>`. The
+the phone, and this host answers it with a width request on the `<Text>`. **The trigger
+is that declaration and nothing else**, corrected after it shipped wider: it also read
+`numberOfLines === 1 && letterSpacing > 0`, and EVERY variant in
+`lib/theme/typography.ts` carries a `letterSpacing` from the design tokens, so that
+clause fired on every single-line `<Typo>` in the application. Measured, it pinned the
+live banner's now-playing line at its natural 445 px — the exact opposite of what that
+line needs — and the mini player's title with it. The
 property is refused by name one layer down — measured, `UnknownUtilityError:
 "flexShrink" — is not a property the style partition routes`, which React caught as
 an unhandled error and left the window empty — so the shim consumes it in the same
@@ -399,6 +405,23 @@ gets asked; Android's own breaker would in fact break that word. Lowering a GTK 
 minimum lets GTK do something React Native never has the chance to do. It is a
 `flexShrink` question wearing a `wrap-mode` costume, and GTK has no property for the
 real one. Withdrawn upstream (gjsify #1600) with the measurement rather than merged.
+
+**FIXED HERE INSTEAD, at the one label that needs it.** `numberOfLines={1}` is the
+lever the table above was missing: at ONE line `ellipsize` is allowed to do the work
+and the minimum collapses for any text at all. Measured on the three cases:
+
+| text | `numberOfLines={1}` | `numberOfLines={2}` |
+| --- | --- | --- |
+| `20260901_Gamescom_Laberpocast_Sophie_Amelie` | **13** | 358 |
+| an ordinary track title | 13 | 32 |
+| the „Live" badge | 13 | 29 |
+
+So `LiveBanner`'s now-playing line is single-line. Seen end to end as the station
+changed track: with that filename the label's minimum was 311 and the page's 439, and
+at 360 px — the window's own minimum — the bottom tab bar lost „Profil" entirely; with
+the fix the same label reads 13, the page 238, and at 360 all five tabs are there with
+one label ellipsized. The cost is that a long ordinary title ellipsizes instead of
+taking a second line, which is what a now-playing line does everywhere else.
 
 **What is left is the natural width.** GTK measures a widget's minimum height in the
 other orientation AT ITS NATURAL WIDTH, and a card's natural width is its title on one
