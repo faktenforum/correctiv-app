@@ -100,6 +100,24 @@ export default defineConfig(({ command }) => ({
              */
             '/symbolicate': { target: APP_DEV_SERVER, changeOrigin: false },
             '/open-stack-frame': { target: APP_DEV_SERVER, changeOrigin: false },
+            /*
+             * The two sockets that make an edit appear, which is the whole point
+             * of a dev server and the one thing the frame could not do.
+             *
+             * `ws: true` on the `/app` rule above covers only sockets opened
+             * below that path, and neither of Metro's is. Both build their own
+             * address from `window.location.host` — inside the frame that is this
+             * server, not the app's — and ask at the origin root: `/hot` carries
+             * Fast Refresh, `/message` the reload commands the CLI sends.
+             *
+             * Vite answered `/hot` itself, because Vite has its own socket on this
+             * port, so the two spoke past each other: no error in the console, no
+             * reload, an edit that simply never arrived. Reloading the frame by
+             * hand fetched the new bundle, which is what made it look like the app
+             * was fine and the change had not been saved.
+             */
+            '/hot': { target: APP_DEV_SERVER, changeOrigin: false, ws: true },
+            '/message': { target: APP_DEV_SERVER, changeOrigin: false, ws: true },
           },
         }
       : undefined,
