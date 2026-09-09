@@ -721,12 +721,39 @@ than collapsed, and there is no reveal animation to arrange.
 `.suggested-action` paints in the system accent, and measured here that is
 `Adw.StyleManager.accentColor` 0 — BLUE — with `systemSupportsAccentColors` true on
 libadwaita 1.9.3. The LIVE banner two rows above it is brand red, so the two do not
-match. Following the user's chosen accent is what a GNOME application does, and the
-brand colour is not on offer in any case: `Adw.AccentColor` is an enum — BLUE, TEAL,
-GREEN, YELLOW, ORANGE, RED, PINK, PURPLE, SLATE — so the choice is between the system
-accent and forcing Adwaita's `RED`, which is not CORRECTIV's red and would recolour
-every accent in the window. Left on the system accent, and recorded here rather than
-decided quietly.
+match. It is left on the system accent, because following the accent its user chose is
+what a GNOME application does.
+
+~~The brand colour is not on offer in any case, because `Adw.AccentColor` is an enum.~~
+**That was wrong, and it mattered, because it turned a choice into a limitation.** The
+enum is for READING the system's choice — the accent reaches widgets as CSS, so an
+application can define it. MEASURED with
+[`src/debug/accent-probe.ts`](src/debug/accent-probe.ts), one spelling per process:
+
+| what the app installs | a resolved accent reads |
+| --- | --- |
+| nothing — the system's | `0.504 0.817 1.219` |
+| `:root { --accent-color: #ff5c5c }` | **`1.000 0.361 0.361`** — exactly what was asked for |
+| `@define-color accent_color #ff5c5c` | `1.231 0.570 0.551` — it applies, but not as the value given |
+
+So the CSS-variable spelling libadwaita moved to in 1.6 reproduces an arbitrary colour
+exactly, and the pre-1.6 `@define-color` still takes effect but reads back differently.
+WHY it differs is not measured here and is therefore not claimed; the variables are the
+spelling to use on 1.9.3. Note also that these readings run above 1.0 — the untouched
+system blue reads `1.219` in its blue channel — so `Gtk.Widget.get_color()` on GTK 4.22
+is not returning plain 0..1 sRGB, which is worth knowing before comparing any two of
+these numbers by eye.
+
+The probe took two attempts to ask cleanly: the first injected both spellings into ONE
+process and reported that `@define-color` "did not win", which was a confounded reading
+with the variable still installed at the same provider priority. One spelling per
+process is the only honest form of the question.
+
+**What this leaves is a real choice**, and it is not this document's to make: keep the
+user's accent, or install the brand red as `--accent-bg-color` and recolour every accent
+in the window with it. The app already owns a `Gtk.CssProvider` — `src/style/sheet.ts`,
+installed by `configureStyle` — so the second option is a rule in a sheet that already
+exists rather than new machinery.
 
 **A letter-spaced mark is one pixel short of its own text, and only one lever moves
 that pixel.** MEASURED on GTK 4.22.4: a wrapping `Gtk.Label` whose text contains a

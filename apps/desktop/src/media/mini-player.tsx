@@ -74,13 +74,16 @@ export function MiniPlayer() {
       {/* `suggested-action` paints it in the SYSTEM accent, and on this machine that is
           blue — measured, `Adw.StyleManager.accentColor` is 0 (BLUE) with
           `systemSupportsAccentColors` true on libadwaita 1.9.3. So the button does NOT
-          match the brand red the banner above it uses, and that is a decision rather
-          than an oversight: a GNOME application follows the accent its user chose.
+          match the brand red the banner above it uses, and it is left that way on
+          purpose: a GNOME application follows the accent its user chose.
 
-          The brand red is not available anyway. `Adw.AccentColor` is an ENUM — BLUE,
-          TEAL, GREEN, YELLOW, ORANGE, RED, PINK, PURPLE, SLATE — so the app could force
-          Adwaita's `RED`, which is not CORRECTIV's red, and would override the user's
-          own accent everywhere in the window. README.md carries the choice. */}
+          ~~The brand red is not available anyway, because `Adw.AccentColor` is an
+          enum.~~ IT IS AVAILABLE — that enum is for READING the system's choice, and
+          the accent reaches widgets as CSS. MEASURED with `debug/accent-probe.ts`: a
+          provider setting `:root { --accent-color: #ff5c5c }` moves a resolved accent
+          reading from the system blue to exactly `1.000 0.361 0.361`, the requested
+          colour. So this is a real choice between following the user and branding the
+          window, not a limitation. README.md carries it. */}
       <gtk-button
         cssClasses={['circular', 'suggested-action']}
         iconName={playing ? PAUSE_ICON : PLAY_ICON}

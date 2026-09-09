@@ -29,6 +29,7 @@
     "gst-probe": "gjsify build src/debug/gst-probe.ts --app node --outfile dist/gst-probe.node.mjs --exclude-globals navigator && node scripts/start.mjs --bundle dist/gst-probe.node.mjs --host node",
     "video-probe": "gjsify build src/debug/video-probe.ts --app gjs --outfile dist/video-probe.gjs.mjs --exclude-globals navigator && node scripts/start.mjs --bundle dist/video-probe.gjs.mjs",
     "mpris-probe": "gjsify build src/debug/mpris-probe.ts --app gjs --outfile dist/mpris-probe.gjs.mjs --exclude-globals navigator && node scripts/start.mjs --bundle dist/mpris-probe.gjs.mjs",
+    "accent-probe": "gjsify build src/debug/accent-probe.ts --app gjs --outfile dist/accent-probe.gjs.mjs --exclude-globals navigator && node scripts/start.mjs --bundle dist/accent-probe.gjs.mjs",
     "route-sweep": "node scripts/route-sweep.mjs",
     "capture-diff": "node scripts/capture-diff.mjs"
   },
