@@ -229,12 +229,11 @@ immediately, but the app's own token colours are resolved when their CSS class i
 minted, so switching mid-session would leave half the window in each scheme. The palette
 is read once, at startup.
 
-**Smaller, each named where it happens:** no mini player (the narrow layout now has a
-bottom bar to pin it above, but the wide one does not, and a strip that appears with
-the window width is worse than one that is honestly missing); and `Bleed` does not
-bleed, because GTK does not clamp a negative margin — it measures with it.
-~~No lock-screen metadata~~ — MPRIS is exported now, and *The shell can see what is
-playing* below carries what it answers.
+**Smaller, each named where it happens:** `Bleed` does not bleed, because GTK does not
+clamp a negative margin — it measures with it. ~~No lock-screen metadata~~ — MPRIS is
+exported now, and *The shell can see what is playing* below carries what it answers.
+~~No mini player~~ — there is one, and *The mini player, as Adwaita widgets* says what
+it took.
 
 **A horizontal rail still has too much vertical space, and that is the last piece of
 a defect whose other three are fixed.** The covers on Mediathek were 99x31 px where the
@@ -679,6 +678,55 @@ here. The claim direction IS driven, end to end, in the table above.
 offer them; `Rate` is read-only at 1 rather than reporting a speed a shell could not
 change back. `TrackList` and `Playlists` are separate interfaces and are not exported
 at all — `HasTrackList` says so.
+
+**THE MINI PLAYER, AS ADWAITA WIDGETS.** The phone pins a now-playing strip above its
+tab bar, and this host could not have one — not for want of trying, but because there
+was nowhere to put it. `<Tabs>` reads its children as `<Tabs.Screen>` declarations and
+refuses anything else, and wrapping `<Tabs>` from outside does not work either: the
+switcher is created with `slot="title"`, which resolves against the PARENT, so a box
+placed between the tab layout and the header bar takes the switcher's slot away and the
+router refuses it by name.
+
+So the seam went upstream: [gjsify#1617](https://github.com/gjsify/gjsify/pull/1617)
+gives `<Tabs>` a `bottomBar`, and `Adw.ToolbarView` then carries the strip and the view
+switcher bar together. Which one is on top is a fact about Adwaita rather than about the
+router — MEASURED on libadwaita 1.9.3, two bottom bars in a 480x320 window:
+
+| bar | y | height |
+| --- | --- | --- |
+| the content | 0 | 214 |
+| added FIRST | 217 | 40 |
+| added SECOND | 257 | 24 |
+
+The first-added sits closer to the content, so the router renders the caller's bar
+before the switcher bar. Photographed at 420x760, the strip is above the tab bar, which
+is the phone's arrangement; at 1100 wide it is at the foot of the window.
+
+**IT IS ADWAITA, NOT THE PHONE'S STRIP REDRAWN**, which is the part worth having.
+[`src/media/mini-player.tsx`](src/media/mini-player.tsx) is `.toolbar` around a
+`.circular .suggested-action` button, a `.flat` button holding `.heading` and
+`.caption .dim-label` labels, and `media-playback-start-symbolic` from the icon theme —
+so it inherits Adwaita's padding, focus ring, hover state and dark-mode colours instead
+of restating them. The STATE is the core's audio slice, the same selectors and actions
+the phone's strip uses; only the drawing is native. `Gtk.Label`'s `ellipsize` does the
+one-line title, which also stops a long episode name setting the window's minimum
+width.
+
+Nothing playing costs nothing: the component answers `null`, the router's wrapper box
+is then an empty bottom bar, and an empty bottom bar takes NO height — measured, the
+view stack above it is allocated identically either way. So the strip is absent rather
+than collapsed, and there is no reveal animation to arrange.
+
+**THE PLAY BUTTON IS BLUE, AND THAT IS A DECISION FOR SOMEBODY TO MAKE.**
+`.suggested-action` paints in the system accent, and measured here that is
+`Adw.StyleManager.accentColor` 0 — BLUE — with `systemSupportsAccentColors` true on
+libadwaita 1.9.3. The LIVE banner two rows above it is brand red, so the two do not
+match. Following the user's chosen accent is what a GNOME application does, and the
+brand colour is not on offer in any case: `Adw.AccentColor` is an enum — BLUE, TEAL,
+GREEN, YELLOW, ORANGE, RED, PINK, PURPLE, SLATE — so the choice is between the system
+accent and forcing Adwaita's `RED`, which is not CORRECTIV's red and would recolour
+every accent in the window. Left on the system accent, and recorded here rather than
+decided quietly.
 
 **A letter-spaced mark is one pixel short of its own text, and only one lever moves
 that pixel.** MEASURED on GTK 4.22.4: a wrapping `Gtk.Label` whose text contains a
