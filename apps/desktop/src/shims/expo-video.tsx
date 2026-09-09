@@ -15,12 +15,13 @@
 // notice below is what the screen gets. Measured against the published bundles, and
 // recorded beside the code that would otherwise be blamed for it.
 
-import { useEffect, useRef, useState, type ReactElement } from 'react';
+import { useCallback, useEffect, useRef, useState, type ReactElement } from 'react';
 
 import { View } from 'react-native';
 
 import { Typo } from '@/components/ui';
 import { createVideoPlayer, VideoUnavailable, type VideoBackend } from '../video/backend.js';
+import { installStage, openFullscreen } from '../video/stage.js';
 
 export interface VideoPlayer {
   play: () => void;
@@ -30,6 +31,7 @@ export interface VideoPlayer {
   muted: boolean;
   loop: boolean;
   currentTime: number;
+  readonly playing: boolean;
   /** This host's own: what `VideoView` renders, or null when there is no pipeline. */
   readonly paintable?: unknown;
   /** This host's own: the same object as a `Gtk.MediaStream`, for the control strip. */
@@ -51,6 +53,7 @@ function unavailablePlayer(why: string): VideoPlayer {
     muted: false,
     loop: false,
     currentTime: 0,
+    playing: false,
     paintable: null,
     stream: null,
     unavailable: why,
@@ -96,6 +99,9 @@ export function useVideoPlayer(
       loop: false,
       get currentTime() {
         return backend.currentTime;
+      },
+      get playing() {
+        return backend.playing;
       },
       get paintable() {
         return backend.paintable;
@@ -152,11 +158,63 @@ export interface VideoViewProps {
  * way to pause. A docblock is not a feature, which is the useful half of that mistake.
  *
  * The strip sits in a `Gtk.Overlay` above the picture, at `valign: end`, which is
- * where `Gtk.Video` puts its own.
+ * where `Gtk.Video` puts its own — and `video/stage.ts` gives it the behaviour the
+ * strip alone does not have: a click that pauses, a double click and a button for full
+ * screen, Escape to leave it, and a strip that goes away once the pointer is still.
+ * Not while PAUSED, where a strip that vanished would leave no way back.
  */
 export function VideoView(props: VideoViewProps): ReactElement {
   const player = props.player;
   const paintable = player?.paintable ?? null;
+  const overlayRef = useRef<unknown>(null);
+  const controlsRef = useRef<unknown>(null);
+  /** The full-screen window's closer while one is open, so the button can toggle. */
+  const closeFullRef = useRef<(() => void) | null>(null);
+  const [fullscreen, setFullscreen] = useState(false);
+
+  const controlled = props.nativeControls === true && (player?.stream ?? null) !== null;
+
+  const togglePlay = useCallback((): void => {
+    if (player === undefined) return;
+    if (player.playing) player.pause();
+    else player.play();
+  }, [player]);
+
+  const toggleFullscreen = useCallback((): void => {
+    const open = closeFullRef.current;
+    if (open !== null) {
+      open();
+      return;
+    }
+    if (player === undefined) return;
+    closeFullRef.current = openFullscreen({
+      paintable: player.paintable,
+      stream: player.stream,
+      anchor: overlayRef.current,
+      onClosed: () => {
+        closeFullRef.current = null;
+        setFullscreen(false);
+      },
+    });
+    setFullscreen(true);
+  }, [player]);
+
+  useEffect(() => {
+    const overlay = overlayRef.current;
+    const controls = controlsRef.current;
+    if (!controlled || overlay === null || controls === null) return;
+    return installStage({
+      overlay,
+      controls,
+      isPlaying: () => player?.playing === true,
+      togglePlay,
+      requestFullscreen: toggleFullscreen,
+    });
+  }, [controlled, player, togglePlay, toggleFullscreen]);
+
+  // A screen left while the video is full screen would leave the window behind with
+  // nothing driving it.
+  useEffect(() => () => closeFullRef.current?.(), []);
 
   if (paintable === null) {
     return (
@@ -191,18 +249,27 @@ export function VideoView(props: VideoViewProps): ReactElement {
     </gtk-scrolled-window>
   );
 
-  if (props.nativeControls !== true || player?.stream === undefined || player.stream === null) {
-    return stage;
-  }
+  if (!controlled) return stage;
 
   return (
-    <gtk-overlay hexpand vexpand>
+    <gtk-overlay ref={overlayRef as never} hexpand vexpand>
       {stage}
       <gtk-media-controls
         slot="overlay"
-        mediaStream={player.stream as never}
+        ref={controlsRef as never}
+        mediaStream={player?.stream as never}
         valign={'end' as never}
         hexpand
+      />
+      <gtk-button
+        slot="overlay"
+        iconName={fullscreen ? 'view-restore-symbolic' : 'view-fullscreen-symbolic'}
+        cssClasses={['osd', 'circular']}
+        valign={'start' as never}
+        halign={'end' as never}
+        marginTop={8}
+        marginEnd={8}
+        onClicked={toggleFullscreen}
       />
     </gtk-overlay>
   );

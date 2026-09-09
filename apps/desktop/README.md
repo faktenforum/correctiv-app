@@ -366,6 +366,38 @@ before anything was written:
 So the pipeline wears GTK's own media interface: a `Gtk.MediaStream` subclass that
 also implements `Gdk.Paintable` and forwards the paintable vfuncs to the sink's own.
 
+**AND THE STRIP ALONE IS NOT A PLAYER.** `Gtk.MediaControls` is the strip and only the
+strip; `Gtk.Video` keeps the behaviour around it to itself. So
+[`src/video/stage.ts`](src/video/stage.ts) adds what a player does: a click that
+pauses, a double click and a button for full screen, and a strip that leaves once the
+pointer is still — but never while PAUSED, where a strip that vanished would leave no
+way back. Measured with the pointer away from the window, the strip reports
+`visible=false`; it returns on the first motion.
+
+**FULL SCREEN IS THE VIDEO, NOT THE WINDOW**, and the first shape had that wrong.
+`window.fullscreen()` made the whole application fill the screen — header bar, title,
+description — with the video still a 548 px box inside it: measured, the window went to
+2560x1440 while the picture stayed 548x308. Now a window of its own opens with nothing
+but the frames and a strip, and NOTHING IS REPARENTED: it takes a second
+`Gtk.Picture` on the same `GdkPaintable`, which is safe because a paintable is a
+passive drawing interface with no single owner, and it leaves the reconciler's subtree
+where the reconciler put it. Measured: pressing the button gives two toplevels — the
+app window untouched at 1100x820 and a `GtkWindow "Video"` at 2560x1440 whose picture
+is 2560x1440 at ratio 1.778 — and Escape or its own button takes it back to one.
+
+WHAT IS NOT THERE: the crossfade. `Gtk.Video` reveals its strip through a
+`Gtk.Revealer`, and this host declines one — `GtkRevealer` is in the generated property
+table but is not curated, so a child placed in it is refused by name. The strip is shown
+and hidden outright until one curated descriptor upstream closes that.
+
+**THE PLAY BADGES WERE NOT CENTRED, and the icon shim is where that lands.** The layer
+below maps React Native's `alignItems`/`justifyContent` onto the BOX's own alignment
+rather than its children's, because GTK's box has no main-axis distribution to map them
+to. A fixed-size round badge therefore centres itself correctly and leaves its icon at
+the top: MEASURED, a 52x52 badge held a `Gtk.Image` allocated **52x22** against the top
+edge. `Ionicons` now renders with `halign`/`valign` centre, and the same image measures
+**22x22** in the middle — an icon has an intrinsic size and no reason to stretch.
+
 **THE PICTURE STILL TAKES THE SINK'S PAINTABLE, and that is a GJS defect rather than a
 choice.** A `double` returned from `vfunc_get_intrinsic_aspect_ratio` never reaches the
 caller. Measured with the override instrumented: it is called 28 times, the sink

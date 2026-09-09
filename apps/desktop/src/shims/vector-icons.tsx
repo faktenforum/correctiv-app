@@ -135,6 +135,15 @@ export interface IoniconsProps {
  *
  * `color` becomes a minted CSS class, because a symbolic icon takes its colour from
  * the CSS `color` property and `Gtk.Image` exposes no property for it.
+ *
+ * CENTRED, NOT FILLED, and that is the one line that makes a badge look right. An
+ * icon has an intrinsic size and no reason to stretch, and the layer below maps React
+ * Native's `alignItems`/`justifyContent` onto the BOX's own alignment rather than its
+ * children's — GTK's box has no main-axis distribution to map them to. So a fixed-size
+ * round badge centres ITSELF correctly and leaves its icon at the top: MEASURED on the
+ * Mediathek's play badges, a 52x52 badge held a `Gtk.Image` allocated 52x22, sitting
+ * against the top edge. With `halign`/`valign` centre the image takes its own 22x22 in
+ * the middle, which is where React Native draws it.
  */
 export function Ionicons({ name, size = 24, color, className }: IoniconsProps) {
   const colorClass = classForColor('color', color);
@@ -143,6 +152,8 @@ export function Ionicons({ name, size = 24, color, className }: IoniconsProps) {
     <gtk-image
       iconName={symbolicFor(name)}
       pixelSize={size}
+      halign={'center' as never}
+      valign={'center' as never}
       {...(cssClasses.length > 0 ? { cssClasses } : {})}
     />
   );
