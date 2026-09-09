@@ -136,14 +136,29 @@ export interface IoniconsProps {
  * `color` becomes a minted CSS class, because a symbolic icon takes its colour from
  * the CSS `color` property and `Gtk.Image` exposes no property for it.
  *
- * CENTRED, NOT FILLED, and that is the one line that makes a badge look right. An
- * icon has an intrinsic size and no reason to stretch, and the layer below maps React
- * Native's `alignItems`/`justifyContent` onto the BOX's own alignment rather than its
+ * CENTRED IN BOTH AXES, WHICH TAKES `vexpand` AND NOT JUST `valign`. An icon has an
+ * intrinsic size and no reason to stretch, and the layer below maps React Native's
+ * `alignItems`/`justifyContent` onto the BOX's own alignment rather than its
  * children's — GTK's box has no main-axis distribution to map them to. So a fixed-size
- * round badge centres ITSELF correctly and leaves its icon at the top: MEASURED on the
- * Mediathek's play badges, a 52x52 badge held a `Gtk.Image` allocated 52x22, sitting
- * against the top edge. With `halign`/`valign` centre the image takes its own 22x22 in
- * the middle, which is where React Native draws it.
+ * round badge centres ITSELF correctly and leaves its icon wherever the box packed it.
+ *
+ * MEASURED on a 52x52 box with a 22 px icon, all four ways:
+ *
+ * | the icon's alignment      | allocation | y   |
+ * | ------------------------- | ---------- | --- |
+ * | fill, as it first was     | 52x22      | 0   |
+ * | `valign: center`          | 22x22      | 0   |
+ * | `valign: center` + expand | 22x22      | 15  |
+ * | fill + expand             | 52x52      | 0   |
+ *
+ * `valign: center` alone answers 22x22 and still sits at the TOP, because a box packs
+ * a non-expanding child at the start and leaves it no room to align in — which is why
+ * the first fix looked right horizontally and wrong vertically. With `vexpand` the
+ * child's allocation covers the box and the image lands at y=15, the middle of 52
+ * minus 22.
+ *
+ * `vexpand` and not `hexpand`: in a ROW the vertical axis is the cross axis, so this
+ * changes nothing there, while `hexpand` would take the width a label beside it needs.
  */
 export function Ionicons({ name, size = 24, color, className }: IoniconsProps) {
   const colorClass = classForColor('color', color);

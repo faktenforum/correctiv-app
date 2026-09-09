@@ -390,13 +390,34 @@ WHAT IS NOT THERE: the crossfade. `Gtk.Video` reveals its strip through a
 table but is not curated, so a child placed in it is refused by name. The strip is shown
 and hidden outright until one curated descriptor upstream closes that.
 
-**THE PLAY BADGES WERE NOT CENTRED, and the icon shim is where that lands.** The layer
-below maps React Native's `alignItems`/`justifyContent` onto the BOX's own alignment
-rather than its children's, because GTK's box has no main-axis distribution to map them
-to. A fixed-size round badge therefore centres itself correctly and leaves its icon at
-the top: MEASURED, a 52x52 badge held a `Gtk.Image` allocated **52x22** against the top
-edge. `Ionicons` now renders with `halign`/`valign` centre, and the same image measures
-**22x22** in the middle — an icon has an intrinsic size and no reason to stretch.
+**THE PLAY BADGES WERE NOT CENTRED, and it took two attempts.** The layer below maps
+React Native's `alignItems`/`justifyContent` onto the BOX's own alignment rather than
+its children's, because GTK's box has no main-axis distribution to map them to. That is
+right for a box sized to its content and wrong for one with slack. Measured on a 52x52
+badge holding a 22 px icon, four ways:
+
+| the icon | allocation |
+| --- | --- |
+| filling, as it was | 52x22 at y=0 |
+| `valign: center` | 22x22 at **y=0** — still at the top |
+| `valign: center` + `vexpand` | 22x22 at y=15 |
+| in a **homogeneous** box | 22x22 at y=15 |
+
+`valign` alone answers 22x22 and does not move it, because a box packs a non-expanding
+child at the start and leaves it nothing to align in — which is why the first fix looked
+right horizontally and wrong vertically. **`vexpand` on the icon was tried and reverted
+within the hour**: it is set on every icon this app draws, and an expanding child in a
+vertical box takes all the slack — the video stage collapsed to `470x0` with the header
+drawn inside it. So the decision is made from the BOX's own props instead: a class list
+that centres on the main axis plus a fixed size on that axis becomes `homogeneous`,
+which reaches the badge and nothing else. With several children a homogeneous box gives
+each an equal share, which is space-around rather than centre; that combination does not
+occur here and is written down rather than guarded.
+
+**AND THE FULL-SCREEN BUTTON ALSO PAUSED.** The click gesture sat on the `Gtk.Overlay`,
+and an overlay hears the clicks its own children take — so pressing the button went full
+screen AND toggled play. It is on the picture now, where "a click on the video" means the
+video. Measured across the switch: `0:05 → 0:07 →` press `→ 0:10 → 0:12`, still playing.
 
 **THE PICTURE STILL TAKES THE SINK'S PAINTABLE, and that is a GJS defect rather than a
 choice.** A `double` returned from `vfunc_get_intrinsic_aspect_ratio` never reaches the

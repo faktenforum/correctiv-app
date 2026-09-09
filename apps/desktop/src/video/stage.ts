@@ -36,6 +36,15 @@ export interface StageTarget {
   readonly overlay: unknown;
   /** The `Gtk.MediaControls` that is shown and hidden. */
   readonly controls: unknown;
+  /**
+   * The picture — the CLICK TARGET, and not the overlay.
+   *
+   * A click gesture on the overlay also hears the clicks its own children take: the
+   * full-screen button sits in that overlay, so pressing it both went full screen AND
+   * toggled play, which is exactly the "it pauses when I switch to full screen" that
+   * was reported. On the picture, "a click on the video" means the video.
+   */
+  readonly surface: unknown;
   readonly isPlaying: () => boolean;
   readonly togglePlay: () => void;
   /** Asked for on a double click. The caller owns the full-screen window. */
@@ -189,6 +198,7 @@ export function installStage(target: StageTarget): () => void {
     });
   };
 
+  const surface = target.surface as Widget;
   const click = new Gtk.GestureClick();
   click.connect('pressed', (_gesture: Gtk.GestureClick, presses: number): void => {
     // ONE CLICK PAUSES, TWO GO FULL SCREEN, and the second click undoes the first's
@@ -203,7 +213,7 @@ export function installStage(target: StageTarget): () => void {
     }
     reveal();
   });
-  overlay.add_controller(click);
+  surface.add_controller(click);
 
   const motion = new Gtk.EventControllerMotion();
   motion.connect('motion', () => reveal());
@@ -221,7 +231,7 @@ export function installStage(target: StageTarget): () => void {
 
   return (): void => {
     cancelHide();
-    overlay.remove_controller(click);
+    surface.remove_controller(click);
     overlay.remove_controller(motion);
     // Left visible: the next screen to mount a stage starts from a known state.
     controls.visible = true;

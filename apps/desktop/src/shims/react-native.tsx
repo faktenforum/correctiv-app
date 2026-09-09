@@ -599,6 +599,52 @@ function aspectRatioOf(style: unknown): number | undefined {
   return typeof value === 'number' && Number.isFinite(value) && value > 0 ? value : undefined;
 }
 
+/**
+ * A FIXED-SIZE BOX ASKED TO CENTRE ITS CONTENT gets `homogeneous`, which is the only
+ * property GTK has for it.
+ *
+ * The layer below maps `alignItems`/`justifyContent` onto the BOX's own alignment
+ * rather than its children's, and says why: GTK's box has no main-axis distribution.
+ * That is right for a box sized to its content, where the two are the same thing, and
+ * wrong for a box with slack — a round 52x52 play badge holding a 22 px icon.
+ *
+ * MEASURED on exactly that box, four ways:
+ *
+ * | shape                                | the icon    |
+ * | ------------------------------------ | ----------- |
+ * | icon filling, as it first was        | 52x22 @ y=0 |
+ * | icon `valign: center`                | 22x22 @ y=0 |
+ * | icon `valign: center` + `vexpand`    | 22x22 @ y=15 |
+ * | HOMOGENEOUS box, icon `valign: center` | 22x22 @ y=15 |
+ *
+ * The last two both centre; only the last one is safe. `vexpand` on the icon was
+ * tried and REVERTED within the hour: it is set on every icon this app draws, and an
+ * expanding child in a vertical box takes all the slack — the video stage collapsed
+ * to `470x0` with the header drawn inside it. `homogeneous` is decided from the box's
+ * own props instead, so it reaches the badge and nothing else.
+ *
+ * With two or more children a homogeneous box gives each an equal share, which is
+ * space-around rather than centre. That combination — a fixed main axis, centred
+ * content and several children — does not occur here, and it is written down rather
+ * than guarded.
+ *
+ * Only a NUMBER in `style` counts as fixing the axis. A height from a utility class
+ * (`h-13`) is not seen here, and such a box keeps the old behaviour.
+ */
+function centresOnMainAxis(className: unknown, style: unknown): boolean {
+  const classes = typeof className === 'string' ? className.split(/\s+/) : [];
+  if (!classes.includes('justify-center')) return false;
+  const flat = flattenStyle(style);
+  const size = classes.includes('flex-row') ? flat?.width : flat?.height;
+  return typeof size === 'number' && size > 0;
+}
+
+function applyMainAxisCentring(widget: unknown, centred: boolean): void {
+  if (!centred || widget === null || widget === undefined) return;
+  const box = widget as { set_homogeneous?: (value: boolean) => void };
+  if (typeof box.set_homogeneous === 'function') box.set_homogeneous(true);
+}
+
 function applyAutoFocus(widget: unknown, autoFocus: boolean | undefined): void {
   if (widget === null || widget === undefined || autoFocus !== true) return;
 
@@ -1051,6 +1097,10 @@ function wrap<P extends object>(
     // fresh on every render, so depending on it would rebuild the ref callback every
     // time — which makes React detach and re-attach the ref on every commit.
     const { autoFocus } = accessibility;
+    const centred = centresOnMainAxis(
+      (props as { className?: unknown }).className,
+      (props as { style?: unknown }).style,
+    );
 
     const mergedRef = useCallback(
       (instance: unknown) => {
@@ -1067,9 +1117,10 @@ function wrap<P extends object>(
         // symptom rather than the cause. Those calls have gone to the layer; the
         // unwrap is what `autoFocus` still needs.
         applyAutoFocus(widgetOf(instance), autoFocus as boolean | undefined);
+        applyMainAxisCentring(widgetOf(instance), centred);
         assignRef(userRef, instance);
       },
-      [userRef, autoFocus],
+      [userRef, autoFocus, centred],
     );
 
     const element = createElement(Base as never, { ...passthrough, ref: mergedRef } as never);

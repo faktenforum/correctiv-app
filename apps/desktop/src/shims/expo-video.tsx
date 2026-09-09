@@ -168,6 +168,7 @@ export function VideoView(props: VideoViewProps): ReactElement {
   const paintable = player?.paintable ?? null;
   const overlayRef = useRef<unknown>(null);
   const controlsRef = useRef<unknown>(null);
+  const surfaceRef = useRef<unknown>(null);
   /** The full-screen window's closer while one is open, so the button can toggle. */
   const closeFullRef = useRef<(() => void) | null>(null);
   const [fullscreen, setFullscreen] = useState(false);
@@ -202,10 +203,12 @@ export function VideoView(props: VideoViewProps): ReactElement {
   useEffect(() => {
     const overlay = overlayRef.current;
     const controls = controlsRef.current;
-    if (!controlled || overlay === null || controls === null) return;
+    const surface = surfaceRef.current;
+    if (!controlled || overlay === null || controls === null || surface === null) return;
     return installStage({
       overlay,
       controls,
+      surface,
       isPlaying: () => player?.playing === true,
       togglePlay,
       requestFullscreen: toggleFullscreen,
@@ -240,6 +243,7 @@ export function VideoView(props: VideoViewProps): ReactElement {
       vexpand
     >
       <gtk-picture
+        ref={surfaceRef as never}
         paintable={paintable as never}
         contentFit={(props.contentFit === 'cover' ? 2 : 1) as never}
         canShrink
