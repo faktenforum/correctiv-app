@@ -48,6 +48,7 @@ export default function VideoScreen() {
           <View className="bg-always-dark" style={{ aspectRatio: 16 / 9 }}>
             {current.source === 'peertube' ? (
               <PeertubeStage
+                video={current}
                 hlsUrl={hlsUrl}
                 loading={status === 'loading'}
                 failed={status === 'error'}
@@ -65,17 +66,58 @@ export default function VideoScreen() {
   );
 }
 
+/**
+ * Which channel a video came from, as a person would name it.
+ *
+ * One place for it, because two now need it: the meta block under the stage, and the
+ * metadata the system's own media controls display.
+ */
+const channelOf = (video: Video): string =>
+  video.source === 'peertube' ? 'FunFacts' : 'CORRECTIV';
+
 /** The native HLS player. Its own component, because `useVideoPlayer` is a hook. */
 function PeertubeStage({
+  video,
   hlsUrl,
   loading,
   failed,
 }: {
+  video: Video;
   hlsUrl: string;
   loading: boolean;
   failed: boolean;
 }) {
-  const player = useVideoPlayer(hlsUrl || null, (instance) => {
+  /**
+   * THE SOURCE CARRIES THE METADATA, and that is the only way the system's media
+   * controls learn anything about a video.
+   *
+   * `metadata` is documented as "information which will be displayed in the now playing
+   * notification. When undefined the player will display information contained in the
+   * video metadata" — and a PeerTube HLS playlist carries nothing worth showing. So the
+   * lock screen and Control Center said nothing for a video while saying the right thing
+   * for a podcast, which `lib/audio/backend.ts` has done all along through
+   * `setActiveForLockScreen`.
+   *
+   * An object literal here is NOT a new player per render: `useVideoPlayer` keys its
+   * shared object on `JSON.stringify` of the parsed source, so it is the CONTENT that
+   * has to change, not the identity.
+   */
+  const source = hlsUrl
+    ? {
+        uri: hlsUrl,
+        metadata: {
+          title: video.title,
+          artist: channelOf(video),
+          artwork: video.thumbnailUrl,
+        },
+      }
+    : null;
+
+  const player = useVideoPlayer(source, (instance) => {
+    // OFF BY DEFAULT, which is why the controls never appeared. On Android this also
+    // needs `supportsBackgroundPlayback` in the config plugin — see app.json, where the
+    // reason is written down beside it.
+    instance.showNowPlayingNotification = true;
     instance.play();
   });
 
@@ -99,7 +141,13 @@ function PeertubeStage({
       style={{ flex: 1 }}
       contentFit="contain"
       nativeControls
-      // Instead of a shrinking in-app bar, the system takes over the window.
+      // ACCEPTED, AND PICTURE-IN-PICTURE IS NOT ENABLED YET. These two ask for it; the
+      // `expo-video` config plugin has to grant it (`supportsPictureInPicture`), and it
+      // does not, so `android:supportsPictureInPicture` is absent from the manifest.
+      // Left in place as the declared intent rather than removed, because the decision
+      // is open — and worth knowing when it is taken: PiP is about LEAVING THE APP. It
+      // does nothing for navigating away from this screen, where `useVideoPlayer`
+      // releases the player and playback ends.
       allowsPictureInPicture
       startsPictureInPictureAutomatically
     />
@@ -112,7 +160,7 @@ function VideoMeta({ video }: { video: Video }) {
   const when = days <= 0 ? 'Heute' : days === 1 ? 'Gestern' : formatDateDe(video.publishedAt);
   const duration = video.durationSec ? formatMinutesDe(video.durationSec) : '';
   const views = video.views != null ? `${formatNumberDe(video.views)} Aufrufe` : '';
-  const channel = video.source === 'peertube' ? 'FunFacts' : 'CORRECTIV';
+  const channel = channelOf(video);
   const host = (video.url || '').replace(/^https?:\/\//, '').split('/')[0];
 
   return (
