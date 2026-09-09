@@ -584,8 +584,8 @@ picture underneath it and is what reveals the strip.
 `homogeneous` fix for the play badges said in its own docblock that a fixed-size
 centring box with several children "does not occur here" — and `app/atlas.tsx` is
 exactly one: `justify-center`, `style={{ height: 130 }}`, an icon and a caption.
-Writing it down instead of guarding it is what let it ship. MEASURED in the running
-app, before and after a child-count guard:
+Writing it down instead of guarding it is what let it ship, and homogeneous means
+EQUAL SHARES rather than centre. MEASURED in the running app:
 
 | the placeholder's caption | box | label |
 | --- | --- | --- |
@@ -594,13 +594,29 @@ app, before and after a child-count guard:
 
 The box keeps its height; the caption is what broke. Squeezed into its half of a
 homogeneous box it took its minimum width and wrapped "Kartenausschnitt (statisch)"
-over three lines. VERIFIED IN BOTH DIRECTIONS, because a guard that never fires would
-put the badges back: on `/mediathek` afterwards, twelve 52x52 boxes with a 22x22 icon
-still read `homogeneous=true`, one 36x36 with a 16x16 does, the 24x24 tab-bar icon
-reads false, and the atlas box reads false. That also settles what the count depends
-on — the children are in place when the ref fires. The property is now set BOTH ways
-too: `centred` is in the ref callback's dependency list, and an early return on false
-left the last `true` standing on a widget React had decided should not have it.
+over three lines.
+
+~~So `homogeneous` goes on only where the box has exactly ONE child.~~ **A child count
+was the wrong fix, and the PHOTOGRAPH is what said so** — the measurement had passed:
+twelve badges still `homogeneous=true`, the atlas box false, the caption on one line.
+Looking at the screen showed the icon and caption sitting at the TOP of a 142 px box,
+because the guard had removed a wrong distribution without supplying the right one.
+This is the entry for why a green measurement is not a look.
+
+**THE STRUCTURAL ANSWER WAS ALREADY IN THE FILE.** `justify-between` is answered by
+interleaving a `flex-1` spacer between the children, because that is what
+`space-between` IS. `justify-content: center` is the same kind of fact — equal
+expanding space at the two ENDS, none between — so `justify-center` now gets a spacer
+before and after its children. One child or several, no property to unset, nothing to
+decide from a class list, and INERT where there is no slack: an expanding child of a
+content-sized box is allocated nothing, so every box that hugs its content lays out
+exactly as before. `homogeneous`, `centresOnMainAxis`, the child count and the
+two-way write are all deleted; the icon's own `vexpand` and the box's `homogeneous`
+stay recorded in the shim as the two wrong answers that preceded it.
+
+Photographed, not just measured: the atlas placeholder now holds its icon and its
+one-line caption centred as a pair, and the twelve play badges on `/mediathek` have
+their triangle in the middle of the circle.
 
 **Two smaller ones in the same pass, neither of them observed.** `contentFit` was
 `props.contentFit === 'cover' ? 2 : 1`, so `fill` and `none` both asked for `CONTAIN`

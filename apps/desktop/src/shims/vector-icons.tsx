@@ -157,12 +157,13 @@ export interface IoniconsProps {
  * this file is not where the fix went. It was tried and REVERTED within the hour: it
  * would be on every icon this app draws, and an expanding child in a vertical box
  * takes all the slack — the video stage collapsed to `470x0` with the header drawn
- * inside it. The vertical half is decided from the BOX's own props instead, in
- * `shims/react-native.tsx`, which makes a fixed-size centring box with ONE child
- * `homogeneous`; measured, that lands the same 22x22 icon at y=15. The child count is
- * part of it: without it the rule also caught `app/atlas.tsx`'s two-child placeholder
- * and wrapped its caption over three lines. That file carries the numbers and the set
- * it reaches.
+ * inside it.
+ *
+ * The vertical half is answered STRUCTURALLY instead, in `shims/react-native.tsx`: a
+ * `justify-center` box gets a `flex-1` spacer before and after its children, which is
+ * what `justify-content: center` is. Same 22x22 icon at y=15 in a 52x52 badge, and it
+ * works for a box with several children too — `homogeneous` did not, and that file
+ * carries both wrong answers and the photograph that ended the second one.
  */
 export function Ionicons({ name, size = 24, color, className }: IoniconsProps) {
   const colorClass = classForColor('color', color);

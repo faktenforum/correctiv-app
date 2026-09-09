@@ -599,103 +599,6 @@ function aspectRatioOf(style: unknown): number | undefined {
   return typeof value === 'number' && Number.isFinite(value) && value > 0 ? value : undefined;
 }
 
-/**
- * A FIXED-SIZE BOX ASKED TO CENTRE ITS CONTENT gets `homogeneous`, which is the only
- * property GTK has for it.
- *
- * The layer below maps `alignItems`/`justifyContent` onto the BOX's own alignment
- * rather than its children's, and says why: GTK's box has no main-axis distribution.
- * That is right for a box sized to its content, where the two are the same thing, and
- * wrong for a box with slack — a round 52x52 play badge holding a 22 px icon.
- *
- * MEASURED on exactly that box, four ways:
- *
- * | shape                                | the icon    |
- * | ------------------------------------ | ----------- |
- * | icon filling, as it first was        | 52x22 @ y=0 |
- * | icon `valign: center`                | 22x22 @ y=0 |
- * | icon `valign: center` + `vexpand`    | 22x22 @ y=15 |
- * | HOMOGENEOUS box, icon `valign: center` | 22x22 @ y=15 |
- *
- * The last two both centre; only the last one is safe. `vexpand` on the icon was
- * tried and REVERTED within the hour: it is set on every icon this app draws, and an
- * expanding child in a vertical box takes all the slack — the video stage collapsed
- * to `470x0` with the header drawn inside it. `homogeneous` is decided from the box's
- * own props instead, so it reaches a box with slack and leaves a box sized to its
- * content alone.
- *
- * ~~That combination does not occur here, and it is written down rather than
- * guarded.~~ **IT DOES OCCUR, and writing it down is what let it ship.**
- * `app/atlas.tsx` is exactly it: `justify-center` with `style={{ height: 130 }}` around
- * an `Ionicons` and a `Typo`. With two or more children a homogeneous box gives each an
- * equal share, which is space-around and not centre. MEASURED on that box in the
- * running app, before and after the guard:
- *
- * | the placeholder's caption | box       | label      |
- * | ------------------------- | --------- | ---------- |
- * | homogeneous, as it shipped | 1052x142 | **103x65** |
- * | not homogeneous            | 1052x142 | **162x27** |
- *
- * The box keeps its height either way; the CAPTION is what broke. Squeezed into its
- * half of a homogeneous box it took its minimum width, 103 px, and wrapped
- * "Kartenausschnitt (statisch)" over three lines; released, it sits on one line at its
- * natural 162. So `homogeneous` goes on only where the box has EXACTLY ONE child, and
- * there "equal share" and "give the child the whole box" are the same instruction.
- *
- * VERIFIED IN BOTH DIRECTIONS, because a guard that never fires would put the badges
- * back where they started. Measured on `/mediathek` after it: twelve 52x52 boxes with a
- * 22x22 icon read `homogeneous=true`, so does one 36x36 with a 16x16, the 24x24 tab-bar
- * icon reads false, and the atlas box reads false. Which also settles the question the
- * count depends on — the children ARE in place when the ref fires.
- *
- * Only a NUMBER in `style` counts as fixing the axis. A height from a utility class
- * (`h-13`) is not seen here, and such a box keeps the old behaviour.
- */
-function centresOnMainAxis(className: unknown, style: unknown): boolean {
-  const classes = typeof className === 'string' ? className.split(/\s+/) : [];
-  if (!classes.includes('justify-center')) return false;
-  const flat = flattenStyle(style);
-  const size = classes.includes('flex-row') ? flat?.width : flat?.height;
-  return typeof size === 'number' && size > 0;
-}
-
-/**
- * Whether this widget has exactly one child, asked of GTK rather than of React.
- *
- * `get_first_child`/`get_next_sibling` is `Gtk.Widget`'s own walk and is duck-typed
- * like everything else here. That the children are already in place when a ref fires is
- * the assumption this rests on, and it is measured rather than reasoned: with the count
- * in force, the twelve play badges still read `homogeneous=true` in the running app. A
- * ref firing before its children were appended would have read one child as none and
- * quietly un-centred every badge.
- */
-function hasOneChild(widget: unknown): boolean {
-  const box = widget as {
-    get_first_child?: () => { get_next_sibling: () => unknown } | null;
-  };
-  if (typeof box.get_first_child !== 'function') return false;
-  const first = box.get_first_child();
-  return first !== null && first !== undefined && first.get_next_sibling() === null;
-}
-
-/**
- * SET BOTH WAYS, or a box that stops centring keeps the property. `centred` is in the
- * ref callback's dependency list, so React detaches and re-attaches the ref when it
- * changes — and an early return on `false` left the last `true` standing on a widget
- * React had decided should no longer have it.
- *
- * Writing `false` to every other box is safe because this is the ONLY writer: the layer
- * below records `GtkBox:homogeneous` as having no React Native counterpart and says
- * outright that nothing in it writes the property. If that ever changes, this line
- * stops being a no-op and starts being a clobber.
- */
-function applyMainAxisCentring(widget: unknown, centred: boolean): void {
-  if (widget === null || widget === undefined) return;
-  const box = widget as { set_homogeneous?: (value: boolean) => void };
-  if (typeof box.set_homogeneous !== 'function') return;
-  box.set_homogeneous(centred && hasOneChild(widget));
-}
-
 function applyAutoFocus(widget: unknown, autoFocus: boolean | undefined): void {
   if (widget === null || widget === undefined || autoFocus !== true) return;
 
@@ -760,6 +663,7 @@ function widgetOf(instance: unknown): unknown {
  * action on the right.
  */
 const SPACER_KEY = '__gjsify_between_spacer__';
+const CENTRE_KEY = '__gjsify_centre_spacer__';
 
 /**
  * `shrink` -> stripped, loudly.
@@ -784,16 +688,31 @@ const SPACER_KEY = '__gjsify_between_spacer__';
  * it. The chip rows on `onboarding` and `ArticleRow`'s metadata line flow onto a
  * second line now instead of running off the edge.
  */
-function bridgeClassName(className: unknown): { className?: string; between: boolean } {
+function bridgeClassName(className: unknown): {
+  className?: string;
+  between: boolean;
+  centre: boolean;
+} {
   if (typeof className !== 'string' || className === '') {
-    return { className: className as string | undefined, between: false };
+    return { className: className as string | undefined, between: false, centre: false };
   }
   let between = false;
+  let centre = false;
   const kept: string[] = [];
   for (const token of className.split(/\s+/)) {
     if (token === '') continue;
     if (token === 'justify-between') {
       between = true;
+      continue;
+    }
+    if (token === 'justify-center') {
+      // KEPT as well as reported. The layer maps `justify-content` onto the BOX's own
+      // alignment, which is a documented approximation and is what positions a
+      // content-sized box inside its parent today; taking it away would move every one
+      // of those. The spacers are additive, and a box with no slack allocates them
+      // nothing.
+      centre = true;
+      kept.push(token);
       continue;
     }
     if (token === 'shrink') {
@@ -805,7 +724,7 @@ function bridgeClassName(className: unknown): { className?: string; between: boo
     }
     kept.push(token);
   }
-  return { className: kept.length > 0 ? kept.join(' ') : undefined, between };
+  return { className: kept.length > 0 ? kept.join(' ') : undefined, between, centre };
 }
 
 /**
@@ -1052,6 +971,43 @@ function interleaveSpacers(children: unknown): ReactNode {
 }
 
 /**
+ * `[a, b]` -> `[spacer, a, b, spacer]`. The structural half of `justify-center`.
+ *
+ * THE SAME ANSWER AS `justify-between`, AND FOR THE SAME REASON. GTK's box has no
+ * main-axis distribution, the layer's own refusal message says to spell one with a
+ * `flex-1` child, and `justify-content: center` IS equal expanding space at the two
+ * ENDS with none between — where `space-between` is the gaps with none at the ends.
+ *
+ * WHAT THIS REPLACED, kept because it is the record of two wrong answers. First
+ * `vexpand` on the icon itself, in `shims/vector-icons.tsx`: it does centre, and it is
+ * set on every icon this app draws, so an expanding child in a vertical box took all
+ * the slack and collapsed the video stage to `470x0` with the header drawn inside it.
+ * Reverted within the hour. Then `homogeneous` on the box, decided from its own props:
+ * that centred a lone child correctly — measured, a 22x22 icon in a 52x52 badge went
+ * from y=0 to y=15 — and mangled a box with two, because homogeneous means EQUAL SHARES
+ * and not centre. `app/atlas.tsx` is that box, and measured in the running app its
+ * caption was squeezed to its minimum width, 103 px, and wrapped over three lines
+ * instead of sitting on one at 162.
+ *
+ * A child count then fixed the caption and left the pair at the TOP of a 142 px box —
+ * which the photograph showed and the measurement had not, because the guard removed a
+ * wrong distribution without supplying the right one. Spacers supply it, for one child
+ * and for several, with no property to unset and nothing to decide from a class list.
+ *
+ * INERT WHERE THERE IS NO SLACK, which is what makes it safe on every `justify-center`
+ * box rather than only the ones with a fixed size: an expanding child of a
+ * content-sized box is allocated nothing, so a box that hugs its content lays out
+ * exactly as it did before.
+ */
+function padWithSpacers(children: unknown): ReactNode {
+  const list = Children.toArray(children as ReactNode).filter(Boolean);
+  if (list.length === 0) return children as ReactNode;
+  const spacer = (side: string): ReactNode =>
+    createElement(BaseView as never, { key: `${CENTRE_KEY}${side}`, className: 'flex-1' });
+  return [spacer('start'), ...list, spacer('end')];
+}
+
+/**
  * Set a caller's ref, whichever of the two shapes it has.
  *
  * Both appear in this app — `expo-image` passes a callback, `LoginGate` passes the
@@ -1109,6 +1065,10 @@ function wrap<P extends object>(
     else passthrough.className = bridged.className;
     if (bridged.between) {
       passthrough.children = interleaveSpacers(passthrough.children);
+    } else if (bridged.centre) {
+      // `else`, because the two are mutually exclusive in flexbox: a class list
+      // carrying both is a mistake in the markup, not a shape to compose.
+      passthrough.children = padWithSpacers(passthrough.children);
     }
 
     if (isButton && hasElementChild(passthrough.children)) {
@@ -1148,10 +1108,6 @@ function wrap<P extends object>(
     // fresh on every render, so depending on it would rebuild the ref callback every
     // time — which makes React detach and re-attach the ref on every commit.
     const { autoFocus } = accessibility;
-    const centred = centresOnMainAxis(
-      (props as { className?: unknown }).className,
-      (props as { style?: unknown }).style,
-    );
 
     const mergedRef = useCallback(
       (instance: unknown) => {
@@ -1168,10 +1124,9 @@ function wrap<P extends object>(
         // symptom rather than the cause. Those calls have gone to the layer; the
         // unwrap is what `autoFocus` still needs.
         applyAutoFocus(widgetOf(instance), autoFocus as boolean | undefined);
-        applyMainAxisCentring(widgetOf(instance), centred);
         assignRef(userRef, instance);
       },
-      [userRef, autoFocus, centred],
+      [userRef, autoFocus],
     );
 
     const element = createElement(Base as never, { ...passthrough, ref: mergedRef } as never);
