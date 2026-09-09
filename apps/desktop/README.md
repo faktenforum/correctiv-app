@@ -717,43 +717,67 @@ is then an empty bottom bar, and an empty bottom bar takes NO height — measure
 view stack above it is allocated identically either way. So the strip is absent rather
 than collapsed, and there is no reveal animation to arrange.
 
-**THE PLAY BUTTON IS BLUE, AND THAT IS A DECISION FOR SOMEBODY TO MAKE.**
-`.suggested-action` paints in the system accent, and measured here that is
-`Adw.StyleManager.accentColor` 0 — BLUE — with `systemSupportsAccentColors` true on
-libadwaita 1.9.3. The LIVE banner two rows above it is brand red, so the two do not
-match. It is left on the system accent, because following the accent its user chose is
-what a GNOME application does.
+**ADWAITA'S OWN WIDGETS ARE BRAND RED**, and getting there corrected two wrong claims
+of this document's.
 
-~~The brand colour is not on offer in any case, because `Adw.AccentColor` is an enum.~~
-**That was wrong, and it mattered, because it turned a choice into a limitation.** The
-enum is for READING the system's choice — the accent reaches widgets as CSS, so an
-application can define it. MEASURED with
-[`src/debug/accent-probe.ts`](src/debug/accent-probe.ts), one spelling per process:
+The mini player's play button wears `.suggested-action`, which paints in the accent —
+and that was Adwaita's blue, two rows under a brand-red LIVE banner. ~~The brand colour
+is not on offer in any case, because `Adw.AccentColor` is an enum.~~ **Wrong, and it
+turned a choice into a limitation.** That enum is only how an app READS the system's
+pick; the accent reaches widgets as CSS, so an app can define it.
+[`src/debug/accent-probe.ts`](src/debug/accent-probe.ts) asks each spelling in a process
+of its own — `npm run accent-probe -w @correctiv/desktop`, plus `-- --bg-only`,
+`-- --legacy`, `-- --legacy-standalone` and `-- --light`. Asking for `#ff5c5c` and
+reading a resolved standalone accent off a `.accent` label:
 
-| what the app installs | a resolved accent reads |
+| what the app installs | standalone accent reads |
 | --- | --- |
-| nothing — the system's | `0.504 0.817 1.219` |
-| `:root { --accent-color: #ff5c5c }` | **`1.000 0.361 0.361`** — exactly what was asked for |
-| `@define-color accent_color #ff5c5c` | `1.231 0.570 0.551` — it applies, but not as the value given |
+| nothing — the system's, dark scheme | `0.504 0.817 1.219` |
+| `--accent-color` and `--accent-bg-color` | `1.000 0.361 0.361` — exactly what was asked |
+| **`--accent-bg-color` alone, dark** | `1.231 0.570 0.551` — DERIVED, lightened |
+| **`--accent-bg-color` alone, light** | `0.730 0.033 0.138` — DERIVED, darkened |
+| `@define-color accent_color` + `accent_bg_color` | `1.231 0.570 0.551` |
+| **`@define-color accent_color` ALONE** | **unchanged** — the legacy standalone name is ignored |
 
-So the CSS-variable spelling libadwaita moved to in 1.6 reproduces an arbitrary colour
-exactly, and the pre-1.6 `@define-color` still takes effect but reads back differently.
-WHY it differs is not measured here and is therefore not claimed; the variables are the
-spelling to use on 1.9.3. Note also that these readings run above 1.0 — the untouched
-system blue reads `1.219` in its blue channel — so `Gtk.Widget.get_color()` on GTK 4.22
-is not returning plain 0..1 sRGB, which is worth knowing before comparing any two of
-these numbers by eye.
+~~The pre-1.6 `@define-color` applies, but not as the value given.~~ **Also wrong**, and
+the last row is what showed it: on its own the legacy standalone name moves nothing. The
+earlier reading came from `@define-color accent_bg_color` in the same run plus Adwaita's
+derivation — a conclusion drawn from two variables changed at once.
 
-The probe took two attempts to ask cleanly: the first injected both spellings into ONE
-process and reported that `@define-color` "did not win", which was a confounded reading
-with the variable still installed at the same provider priority. One spelling per
-process is the only honest form of the question.
+**SO THE APP SETS ONLY `--accent-bg-color`, and that is the whole design.** libadwaita
+keeps two accents: the background one a `.suggested-action` button is painted with, and
+the standalone one accent-coloured TEXT uses, which has to stay legible on the window.
+Setting both is the obvious move and would have shipped an accessibility regression —
+the third and fourth rows are why. Adwaita derives the standalone accent PER SCHEME,
+lightening it for a dark window and darkening it for a light one, and pinning it to the
+app's own token instead would have put a pale red on white in light mode.
 
-**What this leaves is a real choice**, and it is not this document's to make: keep the
-user's accent, or install the brand red as `--accent-bg-color` and recolour every accent
-in the window with it. The app already owns a `Gtk.CssProvider` — `src/style/sheet.ts`,
-installed by `configureStyle` — so the second option is a rule in a sheet that already
-exists rather than new machinery.
+`--accent-fg-color` is left alone too, and for a weaker reason said plainly: the
+on-accent foreground read white both before and after in every measurement, so it did
+not need setting for THIS colour. Whether Adwaita would flip it to black for a pale
+accent is not measured here.
+
+It is installed in `entry.tsx`, from the same token scale every class in the app
+resolves against — `rgb(255 80 100)` light, `rgb(255 97 115)` dark — and right after
+the preference has been applied and `dark` read, so it agrees with the palette by
+construction. Like that read it is once per launch and needs the same restart.
+
+**It costs a SECOND `Gtk.CssProvider`**, which `style/sheet.ts` argues against: that
+file keeps one so a minted class cannot be shadowed by a rule at another priority. The
+argument is about classes, and `StyleSheet` exposes only `classFor(declarations)` —
+there is no API for a rule with a `:root` selector. The two providers touch disjoint
+selectors and cannot shadow each other; what it costs is a second entry in the GTK
+inspector.
+
+Photographed in both schemes: the strip's play button matches the banner above it, on a
+dark window and on a light one.
+
+Two things to know before comparing any of these numbers with an sRGB triple by eye.
+The readings run ABOVE 1.0 — the untouched dark-scheme blue reports `1.219` in its blue
+channel — so `Gtk.Widget.get_color()` on GTK 4.22 is not handing back plain 0..1 sRGB.
+And a write-only module variable holding the provider was deleted rather than renamed:
+`no-unused-vars` called it out, and it was insurance against a hazard that does not
+exist, because `add_provider_for_display` takes a reference on the C side.
 
 **A letter-spaced mark is one pixel short of its own text, and only one lever moves
 that pixel.** MEASURED on GTK 4.22.4: a wrapping `Gtk.Label` whose text contains a

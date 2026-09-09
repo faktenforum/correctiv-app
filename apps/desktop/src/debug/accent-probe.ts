@@ -47,13 +47,19 @@ print(
 );
 
 const accented = new Gtk.Label({ label: 'accent', cssClasses: ['accent'] });
-const window = new Gtk.Window({ child: accented, defaultWidth: 240, defaultHeight: 80 });
+/** `.suggested-action` sets `color: var(--accent-fg-color)`, so this reads the OTHER one. */
+const suggested = new Gtk.Button({ label: 'suggested', cssClasses: ['suggested-action'] });
+const holder = new Gtk.Box({ orientation: Gtk.Orientation.VERTICAL });
+holder.append(accented);
+holder.append(suggested);
+const window = new Gtk.Window({ child: holder, defaultWidth: 240, defaultHeight: 120 });
 window.present();
 
-const rgba = (): string => {
-  const c = accented.get_color();
+const show = (widget: Gtk.Widget): string => {
+  const c = widget.get_color();
   return `${c.red.toFixed(3)} ${c.green.toFixed(3)} ${c.blue.toFixed(3)}`;
 };
+const rgba = (): string => `standalone ${show(accented)} | on-accent fg ${show(suggested)}`;
 
 /** Install a provider at the APPLICATION priority, the way an app ships a theme tweak. */
 const inject = (css: string): void => {
@@ -81,11 +87,52 @@ let step = 0;
  */
 const legacy = ARGV.includes('--legacy');
 
+/**
+ * `--bg-only`: set ONLY `--accent-bg-color` and see whether the standalone
+ * `--accent-color` follows.
+ *
+ * This decides a design question rather than satisfying curiosity. libadwaita keeps two
+ * accents — the background one a `.suggested-action` button is painted with, and the
+ * standalone one accent-coloured TEXT uses, which has to stay legible on the window
+ * background. If Adwaita DERIVES the second from the first, an application should set
+ * only the first and leave the contrast work to the toolkit.
+ */
+const bgOnly = ARGV.includes('--bg-only');
+
+/**
+ * `--legacy-standalone`: `@define-color accent_color` and NOTHING else.
+ *
+ * The decisive test for a claim this probe got wrong once. The `--legacy` run set both
+ * `accent_color` AND `accent_bg_color` and read back a value that was not the one
+ * given, which was written up as "the legacy spelling applies but differently". Then
+ * `--bg-only` produced the SAME number from the background alone — so the likelier
+ * story is that the legacy standalone name was ignored and what moved the reading was
+ * Adwaita deriving the standalone accent from the background. This separates them.
+ */
+const legacyStandalone = ARGV.includes('--legacy-standalone');
+
+/**
+ * `--light`: force the light scheme before measuring.
+ *
+ * The accessibility question, and the one that decides whether an app may lean on the
+ * derivation. In the dark scheme Adwaita LIGHTENS the standalone accent so it stays
+ * legible on a dark window. If it does not DARKEN it for a light window, an app that
+ * sets only the background accent gets a low-contrast accent text in light mode.
+ */
+if (ARGV.includes('--light')) {
+  manager.colorScheme = Adw.ColorScheme.FORCE_LIGHT;
+  print('forced the LIGHT scheme');
+}
+
 GLib.timeout_add(GLib.PRIORITY_DEFAULT, 500, () => {
   step += 1;
   if (step === 1) {
     print(`1. untouched, the system accent:  ${rgba()}`);
-    if (legacy) {
+    if (legacyStandalone) {
+      inject('@define-color accent_color #ff5c5c;');
+    } else if (bgOnly) {
+      inject(':root { --accent-bg-color: #ff5c5c; }');
+    } else if (legacy) {
       // The pre-1.6 spelling, on its own.
       inject('@define-color accent_color #ff5c5c; @define-color accent_bg_color #ff5c5c;');
     } else {
@@ -95,8 +142,11 @@ GLib.timeout_add(GLib.PRIORITY_DEFAULT, 500, () => {
     return GLib.SOURCE_CONTINUE;
   }
   print(
-    `2. after ${legacy ? '@define-color accent_color' : '--accent-color'}: ${rgba()}   (asked for 1.000 0.361 0.361)`,
+    `2. after ${legacyStandalone ? '@define-color accent_color ONLY' : bgOnly ? '--accent-bg-color ONLY' : legacy ? '@define-color both' : '--accent-color + bg'}:\n   ${rgba()}`,
   );
+  if (bgOnly) {
+    print('   MOVED means Adwaita derives the standalone accent; UNCHANGED means it does not');
+  }
   window.destroy();
   loop.quit();
   return GLib.SOURCE_REMOVE;

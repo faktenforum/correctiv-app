@@ -48,6 +48,8 @@
 // shim's own header spells out in capitals for WebKit. Importing the module here is
 // safe; only the display-dependent READ below must stay inside its guard.
 import Adw from 'gi://Adw?version=1';
+import Gdk from 'gi://Gdk?version=4.0';
+import Gtk from 'gi://Gtk?version=4.0';
 
 import { registerBuiltinWidgets } from '@gjsify/gtk-host';
 import { initFonts } from '@gjsify/gtk-host/fonts';
@@ -101,6 +103,81 @@ function configureStyleOnce(): void {
   else if (preference === 'dark') manager.colorScheme = Adw.ColorScheme.FORCE_DARK;
 
   configureStyle({ tokens: tokensFor(manager.dark), sheet: sheet() });
+  installBrandAccent(manager.dark);
+}
+
+/**
+ * Give libadwaita the BRAND accent, so its own widgets are CORRECTIV red.
+ *
+ * Without this the mini player's play button is Adwaita's `.suggested-action` blue two
+ * rows under a brand-red LIVE banner. `Adw.AccentColor` is an enum of nine named
+ * colours and cannot carry a brand — but it is only how an app READS the system's
+ * choice. The accent reaches widgets as CSS, so an app can define it.
+ *
+ * ## Only the BACKGROUND accent, and that is the whole design
+ *
+ * libadwaita keeps two: `--accent-bg-color`, which a `.suggested-action` button is
+ * painted with, and the standalone `--accent-color`, which accent-coloured TEXT uses
+ * and which has to stay legible on the window. Setting both is the obvious move and is
+ * WRONG — it would have shipped an accessibility regression. MEASURED with
+ * `debug/accent-probe.ts`, giving it only `--accent-bg-color: #ff5c5c` and reading a
+ * resolved standalone accent:
+ *
+ *     dark scheme    1.231 0.570 0.551   lightened, for a dark window
+ *     light scheme   0.730 0.033 0.138   darkened, for a light one
+ *
+ * Adwaita derives it per scheme and does the contrast work in both directions. Setting
+ * `--accent-color` to the app's own token instead pins one value — the same red the
+ * app draws accent TEXT in — and in light mode that is a pale red on white.
+ *
+ * `--accent-fg-color` is left alone too, but for a weaker reason, said plainly: the
+ * on-accent foreground read white both before and after in every measurement, so it
+ * did not need setting for THIS colour. Whether Adwaita would flip it to black for a
+ * pale accent is not measured here.
+ *
+ * ## A second provider, which the sheet's own docblock argues against
+ *
+ * `style/sheet.ts` keeps one provider so that a minted class cannot be shadowed by a
+ * rule at another priority. That argument is about CLASSES, and `StyleSheet` exposes
+ * only `classFor(declarations)` — there is no API for a rule with a `:root` selector.
+ * The two providers therefore touch disjoint selectors and cannot shadow each other;
+ * what it costs is a second entry in the GTK inspector.
+ *
+ * ## Per scheme, from the app's own scale
+ *
+ * The accent token differs between the two — `rgb(255 80 100)` light, `rgb(255 97 115)`
+ * dark — so this reads the same scale every class in the app resolves against rather
+ * than hard-coding a hex. It runs after the preference has been applied and `dark`
+ * read, so it agrees with the palette by construction; like that read, it is once per
+ * launch and needs the restart the header describes.
+ */
+function installBrandAccent(dark: boolean): void {
+  const accent = tokensFor(dark).colors?.accent;
+  if (typeof accent !== 'string' || accent === '') {
+    console.warn(
+      '[desktop] accent: the token scale has no `accent`, so Adwaita keeps the system colour.',
+    );
+    return;
+  }
+  const display = Gdk.Display.get_default();
+  if (display === null) {
+    // Unreachable from here — the caller has already used `Adw.StyleManager` — and
+    // reported rather than thrown, because losing the accent is not worth a launch.
+    console.warn('[desktop] accent: no Gdk.Display, so Adwaita keeps the system colour.');
+    return;
+  }
+  const provider = new Gtk.CssProvider();
+  provider.load_from_string(`:root { --accent-bg-color: ${accent}; }`);
+  // NO GC ROOT KEPT, and the linter is what settled that. A module-level variable
+  // holding the provider is written and never read, which `no-unused-vars` calls out
+  // as exactly what it is — and it was insurance against a hazard that does not exist:
+  // `add_provider_for_display` takes a reference on the C side, so the provider
+  // outlives its JS wrapper whatever GJS does with it.
+  Gtk.StyleContext.add_provider_for_display(
+    display,
+    provider,
+    Gtk.STYLE_PROVIDER_PRIORITY_APPLICATION,
+  );
 }
 
 let fontsRegistered = false;
