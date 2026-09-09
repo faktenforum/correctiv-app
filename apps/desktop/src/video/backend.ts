@@ -49,6 +49,8 @@
 
 import Gst from 'gi://Gst?version=1.0';
 
+import { mediaControls } from '../media/install.js';
+import { installVideoMpris } from '../media/mpris-video.js';
 import { createVideoStream, type VideoStream } from './stream.js';
 
 /** What one player answers. The subset of `expo-video`'s player this app calls. */
@@ -121,6 +123,12 @@ export function createVideoPlayer(): VideoBackend {
   // go through it, and the strip drives the same object.
   const stream = createVideoStream(pipeline);
 
+  // MPRIS, per pipeline: a video does not outlive its screen, so the shell's entry
+  // appears with the stage and goes away with it — handing the name back to the radio
+  // if that was playing underneath. Null where there is no session bus.
+  const controls = mediaControls();
+  const unbindControls = controls === null ? null : installVideoMpris(controls, stream);
+
   let released = false;
 
   return {
@@ -146,6 +154,10 @@ export function createVideoPlayer(): VideoBackend {
     release(): void {
       if (released) return;
       released = true;
+      // BEFORE the stream goes: the binding reads `stream.playing` on its way out, and
+      // it disconnects the notify handlers that `stream.release()` would otherwise
+      // leave pointing at a dead pipeline.
+      unbindControls?.();
       stream.release();
     },
     get playing(): boolean {

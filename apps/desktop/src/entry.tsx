@@ -57,6 +57,7 @@ import { manifest } from 'virtual:gjsify-rn-routes';
 
 import { armScreenshot } from './debug/screenshot.js';
 import { tokensFor } from './generated/tokens.generated.js';
+import { installMediaControlsOnce } from './media/install.js';
 import { persistedAppearance } from './platform/storage.js';
 import { alignFamilies } from './style/font-map.js';
 import { sheet } from './style/sheet.js';
@@ -182,6 +183,10 @@ function App() {
   configureStyleOnce();
   // Opt-in and env-gated; a no-op unless CORRECTIV_DESKTOP_SCREENSHOT names a path.
   armScreenshot();
+  // MPRIS, so the shell's media controls see what is playing. Here rather than in a
+  // screen because audio outlives the screen that started it, and a no-op where there
+  // is no session bus — which is macOS and Windows.
+  installMediaControlsOnce();
   return <RouterRoot manifest={manifest} />;
 }
 

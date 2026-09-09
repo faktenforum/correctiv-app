@@ -28,12 +28,20 @@
 //
 // ## What is genuinely missing, named rather than faked
 //
-// LOCK-SCREEN / MPRIS METADATA. `nowPlaying` is accepted and dropped. The desktop
-// counterpart is MPRIS over D-Bus (`org.mpris.MediaPlayer2`), which would put the
-// track in GNOME's own media controls and is a real, reachable piece of work — it is
-// simply not done here. This is the same shape as the NativeScript host's
-// lock-screen gap that ADR 0006 recorded rather than hid: named in the file that
-// would implement it.
+// ~~LOCK-SCREEN / MPRIS METADATA. `nowPlaying` is accepted and dropped.~~ **MPRIS is
+// exported now** — `media/mpris.ts` puts the track in GNOME's own media controls, and
+// `nowPlaying` is still dropped HERE, which is the part worth explaining.
+//
+// The metadata this backend is handed is the same metadata the core already holds, and
+// the core is where MPRIS reads it: `media/mpris-audio.ts` binds
+// `@correctiv/app-core/stores/audio`, not this file. That is not a detour. `AudioBackend`
+// documents what happens when the two sides of this port disagree about what is
+// playing, and a shell's Pause arriving straight at the pipeline below would leave the
+// store believing it was still playing — the same class of desync as the crash named
+// above. So a shell's button dispatches the thunk the app's own button dispatches.
+//
+// What that leaves here is a parameter with no reader, which stays in the signature
+// because the port declares it and the phone hosts use it.
 
 import GLib from 'gi://GLib?version=2.0';
 import Gst from 'gi://Gst?version=1.0';
@@ -198,8 +206,9 @@ export const gstAudio: AudioBackend = {
     active.set_property('uri', resolveUri(url));
     active.set_state(Gst.State.PAUSED);
     startTicking();
-    // `nowPlaying` is dropped. See the header: MPRIS is the desktop counterpart and
-    // is not implemented.
+    // Dropped HERE, and not lost: MPRIS reads the same metadata from the core's own
+    // store rather than from this parameter, so that a shell's Pause goes through the
+    // store instead of round the back of it. The header carries the reason.
     void nowPlaying;
     return Promise.resolve();
   },

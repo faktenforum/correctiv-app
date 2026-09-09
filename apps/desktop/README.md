@@ -231,10 +231,10 @@ is read once, at startup.
 
 **Smaller, each named where it happens:** no mini player (the narrow layout now has a
 bottom bar to pin it above, but the wide one does not, and a strip that appears with
-the window width is worse than one that is honestly missing); no lock-screen metadata
-(MPRIS is the desktop counterpart and is built for neither the audio player nor the
-video one, so a running video is invisible to the shell's media controls); and `Bleed`
-does not bleed, because GTK does not clamp a negative margin — it measures with it.
+the window width is worse than one that is honestly missing); and `Bleed` does not
+bleed, because GTK does not clamp a negative margin — it measures with it.
+~~No lock-screen metadata~~ — MPRIS is exported now, and *The shell can see what is
+playing* below carries what it answers.
 
 **A horizontal rail still has too much vertical space, and that is the last piece of
 a defect whose other three are fixed.** The covers on Mediathek were 99x31 px where the
@@ -625,6 +625,60 @@ And `allowsPictureInPicture` / `startsPictureInPictureAutomatically` are accepte
 not implemented, which is worth naming because the screen DOES set both, with a comment
 saying the system takes over the window: GTK has no picture-in-picture, and this host's
 answer to the same want is the full-screen window above.
+
+**THE SHELL CAN SEE WHAT IS PLAYING.** `org.mpris.MediaPlayer2` is the freedesktop
+contract behind the GNOME lock screen, the panel's media widget and `playerctl`, and
+without it a running episode was invisible outside this app's own window.
+[`src/media/mpris.ts`](src/media/mpris.ts) exports it; the audio side reads the CORE's
+store and the video side reads the pipeline, and *Why the commands go through the
+caller* in that file says why those are different.
+
+Four marshalling mechanics had to be established first, and none of them is something
+a type would have caught. [`src/debug/mpris-probe.ts`](src/debug/mpris-probe.ts) is
+where they came from — `npm run mpris-probe -w @correctiv/desktop`:
+
+| asked | measured |
+| --- | --- |
+| two interfaces on ONE object path? | yes. The spec puts `org.mpris.MediaPlayer2` and `…Player` both at `/org/mpris/MediaPlayer2`, `wrapJSObject` wraps one interface per object, and two exported objects at the same path both answer — D-Bus registration is per (path, interface) |
+| what does an `a{sv}` getter return? | a PLAIN object whose VALUES are `GLib.Variant`. `mpris:trackid` came back as `objectpath`, `mpris:length` as `int64`, `xesam:artist` as an array, and a title carrying „Größe" survived as UTF-8 |
+| does `x` (int64) survive both ways? | yes — a `Seek` of 5 000 000 reached the JS as exactly that |
+| does a `readwrite` property reach a setter? | yes — `Volume` set to 0.42 arrived |
+
+Then measured against the running app, over `gdbus`:
+
+| | |
+| --- | --- |
+| radio playing | `PlaybackStatus` **Playing**, title `Salon5 Radio`, artist `● LIVE · 24/7 aus Bottrop`, position advancing, **`CanSeek` false and no `mpris:length`** — which is right, a live stream has neither |
+| control from the bus | `Pause` → **Paused** with the position frozen at 17 776 018 µs across two samples two seconds apart; `PlayPause` → **Playing** and moving again |
+| `PropertiesChanged` | **exactly two signals for two changes** over a nine-second window in which the audio store dispatched about eighteen 500 ms ticks. The service diffs against the last published snapshot, and `Position` is deliberately outside that diff because the spec keeps it out |
+| a video takes it over | trackid advances to `/org/correctiv/track/2`, the real title and thumbnail, `xesam:artist` `FunFacts`, `mpris:length` **850 000 000 µs** — and `CanSeek` **true**, where the radio was false |
+| seeking a video from the bus | `SetPosition` to 400 s landed at 403.08 s; `Seek -60 s` took 406.1 s to 349.6 s; and `SetPosition` carrying a **stale trackid was ignored**, which is the guard the spec asks for |
+
+**THE HAND-BACK IS THE PART A WINDOW COULD NOT TEST, and it is where the bug was.**
+`release` first put the service back to silence unconditionally, so radio → video →
+close left a GNOME panel empty above a still-playing radio, permanently: the audio
+binding claims once and thereafter only reports changes, so its own record said it
+still held the name. Two players deep, invisible in a screenshot.
+
+So the ordering moved into [`src/media/arbiter.ts`](src/media/arbiter.ts), which has no
+`gi://` import, and [`test/mpris-arbiter.test.ts`](test/mpris-arbiter.test.ts) drives
+it: six vectors, and three mutants killed — `release` blanking the stack (the shipped
+bug, which fails five of the six), `claim` always reporting a change, and `claim`
+duplicating an entry instead of moving it.
+
+**What is NOT driven, said rather than implied:** the hand-back in the running app.
+Confirming it needs the video screen to unmount, which needs a navigation this machine
+cannot perform — `ActivateWidget` answers `true` on Adw's back button and pops nothing
+(measured: the media strip was still in the tree afterwards, because Adw's back action
+responds to a click and `gtk_widget_activate` is not one), `SendKey` reaches a widget's
+own key handlers rather than routing an event, and there is no synthetic pointer input
+here. The claim direction IS driven, end to end, in the table above.
+
+`Raise`, `Quit`, `Next` and `Previous` are exported and answer nothing, with
+`CanRaise`, `CanQuit`, `CanGoNext` and `CanGoPrevious` all false so a shell does not
+offer them; `Rate` is read-only at 1 rather than reporting a speed a shell could not
+change back. `TrackList` and `Playlists` are separate interfaces and are not exported
+at all — `HasTrackList` says so.
 
 **A letter-spaced mark is one pixel short of its own text, and only one lever moves
 that pixel.** MEASURED on GTK 4.22.4: a wrapping `Gtk.Label` whose text contains a
