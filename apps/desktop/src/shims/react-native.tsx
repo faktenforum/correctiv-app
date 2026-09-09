@@ -621,12 +621,32 @@ function aspectRatioOf(style: unknown): number | undefined {
  * tried and REVERTED within the hour: it is set on every icon this app draws, and an
  * expanding child in a vertical box takes all the slack — the video stage collapsed
  * to `470x0` with the header drawn inside it. `homogeneous` is decided from the box's
- * own props instead, so it reaches the badge and nothing else.
+ * own props instead, so it reaches a box with slack and leaves a box sized to its
+ * content alone.
  *
- * With two or more children a homogeneous box gives each an equal share, which is
- * space-around rather than centre. That combination — a fixed main axis, centred
- * content and several children — does not occur here, and it is written down rather
- * than guarded.
+ * ~~That combination does not occur here, and it is written down rather than
+ * guarded.~~ **IT DOES OCCUR, and writing it down is what let it ship.**
+ * `app/atlas.tsx` is exactly it: `justify-center` with `style={{ height: 130 }}` around
+ * an `Ionicons` and a `Typo`. With two or more children a homogeneous box gives each an
+ * equal share, which is space-around and not centre. MEASURED on that box in the
+ * running app, before and after the guard:
+ *
+ * | the placeholder's caption | box       | label      |
+ * | ------------------------- | --------- | ---------- |
+ * | homogeneous, as it shipped | 1052x142 | **103x65** |
+ * | not homogeneous            | 1052x142 | **162x27** |
+ *
+ * The box keeps its height either way; the CAPTION is what broke. Squeezed into its
+ * half of a homogeneous box it took its minimum width, 103 px, and wrapped
+ * "Kartenausschnitt (statisch)" over three lines; released, it sits on one line at its
+ * natural 162. So `homogeneous` goes on only where the box has EXACTLY ONE child, and
+ * there "equal share" and "give the child the whole box" are the same instruction.
+ *
+ * VERIFIED IN BOTH DIRECTIONS, because a guard that never fires would put the badges
+ * back where they started. Measured on `/mediathek` after it: twelve 52x52 boxes with a
+ * 22x22 icon read `homogeneous=true`, so does one 36x36 with a 16x16, the 24x24 tab-bar
+ * icon reads false, and the atlas box reads false. Which also settles the question the
+ * count depends on — the children ARE in place when the ref fires.
  *
  * Only a NUMBER in `style` counts as fixing the axis. A height from a utility class
  * (`h-13`) is not seen here, and such a box keeps the old behaviour.
@@ -639,10 +659,41 @@ function centresOnMainAxis(className: unknown, style: unknown): boolean {
   return typeof size === 'number' && size > 0;
 }
 
+/**
+ * Whether this widget has exactly one child, asked of GTK rather than of React.
+ *
+ * `get_first_child`/`get_next_sibling` is `Gtk.Widget`'s own walk and is duck-typed
+ * like everything else here. That the children are already in place when a ref fires is
+ * the assumption this rests on, and it is measured rather than reasoned: with the count
+ * in force, the twelve play badges still read `homogeneous=true` in the running app. A
+ * ref firing before its children were appended would have read one child as none and
+ * quietly un-centred every badge.
+ */
+function hasOneChild(widget: unknown): boolean {
+  const box = widget as {
+    get_first_child?: () => { get_next_sibling: () => unknown } | null;
+  };
+  if (typeof box.get_first_child !== 'function') return false;
+  const first = box.get_first_child();
+  return first !== null && first !== undefined && first.get_next_sibling() === null;
+}
+
+/**
+ * SET BOTH WAYS, or a box that stops centring keeps the property. `centred` is in the
+ * ref callback's dependency list, so React detaches and re-attaches the ref when it
+ * changes — and an early return on `false` left the last `true` standing on a widget
+ * React had decided should no longer have it.
+ *
+ * Writing `false` to every other box is safe because this is the ONLY writer: the layer
+ * below records `GtkBox:homogeneous` as having no React Native counterpart and says
+ * outright that nothing in it writes the property. If that ever changes, this line
+ * stops being a no-op and starts being a clobber.
+ */
 function applyMainAxisCentring(widget: unknown, centred: boolean): void {
-  if (!centred || widget === null || widget === undefined) return;
+  if (widget === null || widget === undefined) return;
   const box = widget as { set_homogeneous?: (value: boolean) => void };
-  if (typeof box.set_homogeneous === 'function') box.set_homogeneous(true);
+  if (typeof box.set_homogeneous !== 'function') return;
+  box.set_homogeneous(centred && hasOneChild(widget));
 }
 
 function applyAutoFocus(widget: unknown, autoFocus: boolean | undefined): void {

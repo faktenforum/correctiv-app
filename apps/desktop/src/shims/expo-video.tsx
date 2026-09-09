@@ -22,6 +22,7 @@ import { View } from 'react-native';
 import { Typo } from '@/components/ui';
 import { createVideoPlayer, VideoUnavailable, type VideoBackend } from '../video/backend.js';
 import { installStage, openFullscreen } from '../video/stage.js';
+import type { VideoStream } from '../video/stream.js';
 
 export interface VideoPlayer {
   play: () => void;
@@ -29,8 +30,19 @@ export interface VideoPlayer {
   replace: (source: unknown) => void;
   release: () => void;
   muted: boolean;
+  /**
+   * ACCEPTED AND NOT IMPLEMENTED, which is safe only because nothing sets it: no
+   * screen in this app writes `loop`, and a video that reaches its end stops (see
+   * `video/stream.ts`, which now hears the pipeline's EOS) rather than repeating.
+   */
   loop: boolean;
-  currentTime: number;
+  /**
+   * READONLY on this host, deliberately. It is writable in `expo-video`, and here it
+   * is a getter over `query_position` — so an assignment would throw at runtime rather
+   * than seek. A type error at the call site is the earliest place to catch that, and
+   * no screen assigns it today.
+   */
+  readonly currentTime: number;
   readonly playing: boolean;
   /** This host's own: what `VideoView` renders, or null when there is no pipeline. */
   readonly paintable?: unknown;
@@ -130,12 +142,40 @@ export function useVideoPlayer(
   return player;
 }
 
+/**
+ * `expo-video`'s `contentFit` values are `Gtk.ContentFit`'s nicks, bar one — the same
+ * mapping `shims/expo-image.tsx` makes, and for the same reason.
+ *
+ * WHAT STOOD HERE WAS `props.contentFit === 'cover' ? 2 : 1`, which is right for the
+ * two values this app passes and silently wrong for the other two: `fill` asked for
+ * `CONTAIN`, so a video told to distort to its box would have letterboxed instead, and
+ * `none` the same. Nothing passes either today — `app/video.tsx` passes `contain` —
+ * so this is a mapping made honest rather than a defect observed.
+ */
+const CONTENT_FIT: Readonly<Record<string, string>> = {
+  cover: 'cover',
+  contain: 'contain',
+  fill: 'fill',
+  none: 'none',
+  // GTK has no `scale-down`; `contain` never enlarges past the natural size either.
+  'scale-down': 'contain',
+};
+
 export interface VideoViewProps {
   player?: VideoPlayer;
   style?: Record<string, unknown>;
   contentFit?: string;
   nativeControls?: boolean;
+  /**
+   * ACCEPTED AND NOT IMPLEMENTED, and unlike `loop` this app DOES set both:
+   * `app/video.tsx` passes them, with a comment saying the system takes over the
+   * window. It does not here. GTK has no picture-in-picture, and this host's answer to
+   * the same want is `video/stage.ts`'s full-screen window — a second toplevel showing
+   * the same paintable, which is the shape a PiP window would take anyway. Named here
+   * so a reader of the screen does not go looking for the feature in this file.
+   */
   allowsPictureInPicture?: boolean;
+  /** Accepted and not implemented; see `allowsPictureInPicture`. */
   startsPictureInPictureAutomatically?: boolean;
   className?: string;
 }
@@ -187,10 +227,13 @@ export function VideoView(props: VideoViewProps): ReactElement {
       open();
       return;
     }
-    if (player === undefined) return;
+    // Both callers are gated on `controlled`, which is what makes the stream non-null;
+    // the check is here because a cast is not a guarantee.
+    const stream = (player?.stream ?? null) as VideoStream | null;
+    if (player === undefined || stream === null) return;
     closeFullRef.current = openFullscreen({
       paintable: player.paintable,
-      stream: player.stream,
+      stream,
       anchor: overlayRef.current,
       onClosed: () => {
         closeFullRef.current = null;
@@ -245,7 +288,7 @@ export function VideoView(props: VideoViewProps): ReactElement {
       <gtk-picture
         ref={surfaceRef as never}
         paintable={paintable as never}
-        contentFit={(props.contentFit === 'cover' ? 2 : 1) as never}
+        contentFit={(CONTENT_FIT[props.contentFit ?? 'contain'] ?? 'contain') as never}
         canShrink
         hexpand
         vexpand

@@ -27,6 +27,8 @@ import Gdk from 'gi://Gdk?version=4.0';
 import GLib from 'gi://GLib?version=2.0';
 import Gtk from 'gi://Gtk?version=4.0';
 
+import type { VideoStream } from './stream.js';
+
 /** How long the strip stays after the pointer stops moving. */
 const HIDE_AFTER_MS = 2500;
 
@@ -57,22 +59,23 @@ type Widget = {
   get_root(): unknown;
 };
 
+/** The window a widget sits in, for a full-screen window to be transient for. */
 const windowOf = (widget: unknown): Gtk.Window | null => {
   const root = (widget as Widget).get_root();
   return root instanceof Gtk.Window ? root : null;
 };
 
-/** Whether the window behind this stage is full screen right now. */
-export function isFullscreen(widget: unknown): boolean {
-  return windowOf(widget)?.is_fullscreen() ?? false;
-}
-
 /** What a full-screen window needs: the frames, the stream to drive, a stage to sit over. */
 export interface FullscreenTarget {
   /** The sink's `GdkPaintable` — the SAME one the page's picture shows. */
   readonly paintable: unknown;
-  /** The `Gtk.MediaStream`, so the full-screen strip drives the same playback. */
-  readonly stream: unknown;
+  /**
+   * The stream, so the full-screen strip drives the same playback.
+   *
+   * The app's own `VideoStream` and not any `Gtk.MediaStream`, because binding a
+   * second strip to a live stream needs `bindControls` — see below.
+   */
+  readonly stream: VideoStream;
   /** Any widget in the page, to find the window this should sit over. */
   readonly anchor: unknown;
   /** Told when the full-screen window has gone, so an icon can follow. */
@@ -105,11 +108,19 @@ export function openFullscreen(target: FullscreenTarget): () => void {
     hexpand: true,
     vexpand: true,
   });
-  const controls = new Gtk.MediaControls({
-    mediaStream: target.stream as Gtk.MediaStream,
-    valign: Gtk.Align.END,
-    hexpand: true,
-  });
+  // THROUGH `bindControls`, or opening full screen moves the playhead. A strip bound
+  // to a stream that stands past ten seconds asks it to seek to 10.00 s — measured, and
+  // measured against a fake stream with no GStreamer in it, so it is the widget and not
+  // this pipeline. `stream.ts` carries the numbers and refuses the seek for the length
+  // of this call.
+  const controls = target.stream.bindControls(
+    () =>
+      new Gtk.MediaControls({
+        mediaStream: target.stream,
+        valign: Gtk.Align.END,
+        hexpand: true,
+      }),
+  );
   const leave = new Gtk.Button({
     iconName: 'view-restore-symbolic',
     valign: Gtk.Align.START,
@@ -148,18 +159,40 @@ export function openFullscreen(target: FullscreenTarget): () => void {
     return true;
   });
   window.add_controller(keys);
-  // A click anywhere in the full-screen view pauses, like the page's stage does.
+  // ON THE PICTURE, NOT THE OVERLAY, for the reason `StageTarget.surface` carries one
+  // layer up: a bubble-phase controller on a `Gtk.Overlay` receives the pointer events
+  // its own children were the target of, and this overlay holds the leave button and
+  // the strip. With the gesture on the overlay, pressing either would ALSO have toggled
+  // play.
+  //
+  // WHAT IS EVIDENCE FOR THAT, exactly: the page's own stage had the gesture on its
+  // overlay and the reported symptom was the full-screen button pausing the video,
+  // which moving the gesture to the picture fixed. And `installStage` below still keeps
+  // its MOTION controller on the overlay precisely because an ancestor hears its
+  // children — that is what reveals the strip when the pointer is over the picture, and
+  // it is measured in the driven run. The click case in THIS window was moved for that
+  // reason rather than after reproducing it separately: synthetic pointer input needs a
+  // tool this machine does not have, so it is one press nobody has counted.
   const click = new Gtk.GestureClick();
   click.connect('pressed', (_g: Gtk.GestureClick, presses: number): void => {
-    const stream = target.stream as Gtk.MediaStream;
-    if (presses >= 2) close();
-    else if (stream.playing) stream.pause();
+    const stream = target.stream;
+    // ONE CLICK PAUSES, TWO LEAVE — and the second undoes the first's pause, so the
+    // playback state comes out of full screen where it went in. GTK delivers the single
+    // press before it can know a second is coming, so both live on one gesture and the
+    // double click corrects rather than pretends. `installStage` does the same in the
+    // other direction.
+    if (stream.playing) stream.pause();
     else stream.play();
+    if (presses >= 2) close();
   });
-  overlay.add_controller(click);
+  picture.add_controller(click);
   window.connect('close-request', () => {
     close();
-    return false;
+    // TRUE, because `close` has already destroyed the window. `false` propagates to
+    // GTK's default handler, whose job is to destroy it — a second destroy on the same
+    // object. Not observed to critical, and not worth leaving as a question when the
+    // signal's own contract has a word for "handled".
+    return true;
   });
 
   window.fullscreen();
@@ -187,13 +220,21 @@ export function installStage(target: StageTarget): () => void {
    * Show the strip, and take it away again once the pointer has been still — unless
    * the video is PAUSED, where a strip that vanished would leave no way back.
    * `Gtk.Video` keeps its own for the same reason.
+   *
+   * THE TIMER KEEPS ASKING WHILE PAUSED rather than giving up on the first no, and
+   * that is a defect this shape had: a one-shot that fired while paused was gone, and
+   * `reveal` is only reached from a pointer or a click — so measured in the app, a
+   * pause inside the first 2.5 s left the strip up for the rest of the screen's life,
+   * `mapped=true` five seconds after playback had resumed with the pointer never
+   * moved. Repeating, it hides within one period of the resume instead.
    */
   const reveal = (): void => {
     controls.visible = true;
     cancelHide();
     hide = GLib.timeout_add(GLib.PRIORITY_DEFAULT, HIDE_AFTER_MS, () => {
+      if (!target.isPlaying()) return GLib.SOURCE_CONTINUE;
       hide = 0;
-      if (target.isPlaying()) controls.visible = false;
+      controls.visible = false;
       return GLib.SOURCE_REMOVE;
     });
   };
@@ -229,11 +270,13 @@ export function installStage(target: StageTarget): () => void {
 
   reveal();
 
+  // The two controllers and the timeout are what outlive the screen; the widgets do
+  // not, so nothing here restores their state. The strip is the reconciler's, and a
+  // `controlled` that flips takes the whole overlay out of the tree — there is no
+  // hidden strip for a later stage to inherit.
   return (): void => {
     cancelHide();
     surface.remove_controller(click);
     overlay.remove_controller(motion);
-    // Left visible: the next screen to mount a stage starts from a known state.
-    controls.visible = true;
   };
 }

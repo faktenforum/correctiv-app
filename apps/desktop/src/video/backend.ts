@@ -12,10 +12,10 @@
 // MEASURED here on GStreamer 1.28.6, on the real feed rather than a sample —
 // `playbin3` + `gtk4paintablesink` on a FunFacts PeerTube master playlist:
 //
-//     Paintable: GstGtk4Paintable
-//     Zustand: PLAYING
-//       t=1s  Position 0.18s / 1146s  Bild 640x360
-//       t=5s  Position 4.20s / 1146s  Bild 2560x1440
+//     paintable: GstGtk4Paintable
+//     state:     PLAYING
+//       t=1s  position 0.18s / 1146s  picture 640x360
+//       t=5s  position 4.20s / 1146s  picture 2560x1440
 //
 // The position advances with the wall clock and the intrinsic size climbs from 640x360
 // to 2560x1440 four seconds in, which is HLS choosing a rendition — so adaptive
@@ -49,19 +49,25 @@
 
 import Gst from 'gi://Gst?version=1.0';
 
-import { PipelineStream } from './stream.js';
+import { createVideoStream, type VideoStream } from './stream.js';
 
 /** What one player answers. The subset of `expo-video`'s player this app calls. */
 export interface VideoBackend {
-  /** The `GdkPaintable` a `Gtk.Picture` renders. Null when the sink is missing. */
+  /**
+   * The `GdkPaintable` a `Gtk.Picture` renders — the SINK's own.
+   *
+   * Not nullable, whatever the shim above does with a null: a missing sink is a
+   * `VideoUnavailable` thrown out of `createVideoPlayer`, so a backend that exists has
+   * a paintable.
+   */
   readonly paintable: unknown;
   /**
-   * The same object as a `Gtk.MediaStream`, for `Gtk.MediaControls` to drive.
+   * The `Gtk.MediaStream` for `Gtk.MediaControls` to drive.
    *
-   * One object rather than two, so the strip's play button and the screen's own
+   * One stream however many strips, so the strip's play button and the screen's own
    * `player.play()` cannot disagree about what is playing.
    */
-  readonly stream: unknown;
+  readonly stream: VideoStream;
   play: () => void;
   pause: () => void;
   /** Point the pipeline at another URI, or at nothing. */
@@ -104,17 +110,16 @@ export function createVideoPlayer(): VideoBackend {
     'paintable',
   );
 
-  // THE STREAM DRIVES, THE SINK PAINTS, and the split is measured rather than
-  // chosen. `GtkMediaStream` implements `GdkPaintable`, so the stream could have been
-  // the picture's paintable too — and it cannot be: a `double` returned from
-  // `vfunc_get_intrinsic_aspect_ratio` never reaches the caller, so `Gtk.Picture`
-  // reads an aspect of 0 and draws the video one pixel wide. `stream.ts` carries the
-  // instrumented measurement.
+  // THE STREAM DRIVES, THE SINK PAINTS, and the split is where it is because the sink
+  // is better at painting than any forwarding could be: rendering the stream instead
+  // would put a JS `vfunc_snapshot` in the path of every frame, for work
+  // `gtk4paintablesink` already does natively. `stream.ts` carries the two
+  // measurements that closed the question, including the GJS defect that first made
+  // the stream unusable as a paintable.
   //
   // What is NOT split is the playing state: the stream owns it, `play`/`pause` below
   // go through it, and the strip drives the same object.
-  const stream = new PipelineStream();
-  stream.attach(pipeline, inner as never);
+  const stream = createVideoStream(pipeline);
 
   let released = false;
 
@@ -123,7 +128,9 @@ export function createVideoPlayer(): VideoBackend {
     stream,
     // NO `wanted` FLAG HERE. The stream's own `playing` is the one record of what the
     // user asked for, and `open` puts the pipeline where that record already stands —
-    // so a `replace` after a `play` needs no second `play` to follow it.
+    // so a `replace` after a `play` needs no second `play` to follow it. That was
+    // false for the SECOND video until `open` learned to read the flag before
+    // unpreparing the stream, which clears it; the measurement is in `stream.ts`.
     play(): void {
       if (released) return;
       stream.play();

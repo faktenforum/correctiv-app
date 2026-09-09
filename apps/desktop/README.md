@@ -25,7 +25,7 @@ this host as a reason for two decisions; this is that host, built.
 | **Audio** | Working, on GStreamer. Position advances, live streams are detected, and the port's re-entrancy contract holds. |
 | **Chrome** | Adwaita's own. `Stack` is an `Adw.NavigationView`, `Tabs` an `Adw.ViewStack` + `Adw.ViewSwitcher` — moving to an `Adw.ViewSwitcherBar` at the bottom when the window is too narrow to show it, which is the phone's tab bar on a Linux phone. Nothing restyles a header bar or a button. |
 | **Colour** | The app's own tokens, both palettes, generated from `packages/design-tokens/theme.css`. The screenshots here are the dark one. |
-| **Video** | PeerTube plays, over GStreamer into a `GdkPaintable`. The YouTube embed is still a notice, and macOS/Windows are — see below. |
+| **Video** | PeerTube plays, over GStreamer into a `GdkPaintable`, under GTK's own control strip: play, pause, a seek bar that lands where it is asked, volume, click to pause, and a full-screen window of its own. The YouTube embed is still a notice, and macOS/Windows are — see below. |
 
 ### The reader
 
@@ -176,10 +176,10 @@ MEASURED on GStreamer 1.28.6 against the real feed, `playbin3` + `gtk4paintables
 on a FunFacts master playlist:
 
 ```
-Paintable: GstGtk4Paintable
-Zustand: PLAYING
-  t=1s  Position 0.18s / 1146s  Bild 640x360
-  t=5s  Position 4.20s / 1146s  Bild 2560x1440
+paintable: GstGtk4Paintable
+state:     PLAYING
+  t=1s  position 0.18s / 1146s  picture 640x360
+  t=5s  position 4.20s / 1146s  picture 2560x1440
 ```
 
 The position tracks the wall clock, and the intrinsic size climbing from 640x360 to
@@ -202,9 +202,11 @@ the plugins, and until then `createVideoPlayer` throws by name and the screen sa
 technology: an embed that would in fact load inside WebKitGTK, in a page this host does
 not build. `src/overrides/VideoFrame.tsx` carries that one.
 
-**No control strip.** GTK's ready-made one is `Gtk.MediaControls`, which drives a
+~~**No control strip.** GTK's ready-made one is `Gtk.MediaControls`, which drives a
 `Gtk.MediaStream`; a GStreamer pipeline hands out a `GdkPaintable`, and the two do not
-meet without a `GtkMediaStream` of our own.
+meet without a `GtkMediaStream` of our own.~~ **There is one now**, and this entry is
+what voided it: [`src/video/stream.ts`](src/video/stream.ts) is that `GtkMediaStream`,
+and *The video had no way to pause* further down carries the measurements.
 
 **The reader has its fade back**, as of `@gjsify/react-native` 0.48, and the entry is
 kept because the route it took is the lesson. It was first "`Animated` is not
@@ -230,8 +232,9 @@ is read once, at startup.
 **Smaller, each named where it happens:** no mini player (the narrow layout now has a
 bottom bar to pin it above, but the wide one does not, and a strip that appears with
 the window width is worse than one that is honestly missing); no lock-screen metadata
-(MPRIS is the desktop counterpart and is not built); and `Bleed` does not bleed,
-because GTK does not clamp a negative margin — it measures with it.
+(MPRIS is the desktop counterpart and is built for neither the audio player nor the
+video one, so a running video is invisible to the shell's media controls); and `Bleed`
+does not bleed, because GTK does not clamp a negative margin — it measures with it.
 
 **A horizontal rail still has too much vertical space, and that is the last piece of
 a defect whose other three are fixed.** The covers on Mediathek were 99x31 px where the
@@ -355,16 +358,17 @@ toggles play/pause on a click", and there was no gesture in that file at all. A
 docblock is not a feature.
 
 The toolkit now draws the strip, and the two ready-made routes to it were measured
-before anything was written:
+before anything was written — and all three re-measured 2026-09-09, on GTK 4.22.4 and
+the same feed:
 
 | route | measured |
 | --- | --- |
-| `Gtk.Video` + `Gtk.MediaFile` | does not reach this stream: GTK's own media backend never prepares the FunFacts master playlist — `prepared=false` for 6.4 s, `duration=0`, no audio, no video, and no error either |
-| a single MP4 rendition instead | PeerTube's own API answers `hasAudio=false` for every video file it lists (2160p, 1440p, 1080p, 720p); it splits the sound into a rendition of its own, so only the master playlist carries both tracks |
+| `Gtk.Video` + `Gtk.MediaFile` | does not reach this stream: GTK's own media backend never prepares the FunFacts master playlist — `prepared=false` through 7.2 s, `duration=0`, no audio, no video, and `error=none` either. It has no `new_for_uri`, so the playlist can only arrive as a `Gio.File`, and the demuxer then resolves its segments against a URI the file abstraction has taken away |
+| a single MP4 rendition instead | PeerTube's own API answers `hasAudio=false` for every video rendition it lists — six of them, 2160p down to 360p, on each of three FunFacts videos — and puts the sound in an `Audio only` rendition of its own, so only the master playlist carries both tracks |
 | `Gtk.MediaControls` | wants a `GtkMediaStream`, which is what [`src/video/stream.ts`](src/video/stream.ts) now is |
 
-So the pipeline wears GTK's own media interface: a `Gtk.MediaStream` subclass that
-also implements `Gdk.Paintable` and forwards the paintable vfuncs to the sink's own.
+So the pipeline wears GTK's own media interface: a `Gtk.MediaStream` subclass driving
+one `playbin3`, with the frames left to the sink's own paintable.
 
 **AND THE STRIP ALONE IS NOT A PLAYER.** `Gtk.MediaControls` is the strip and only the
 strip; `Gtk.Video` keeps the behaviour around it to itself. So
@@ -402,6 +406,7 @@ badge holding a 22 px icon, four ways:
 | `valign: center` | 22x22 at **y=0** — still at the top |
 | `valign: center` + `vexpand` | 22x22 at y=15 |
 | in a **homogeneous** box | 22x22 at y=15 |
+| two children in a homogeneous box | 22x22 at y=2 and at y=28 |
 
 `valign` alone answers 22x22 and does not move it, because a box packs a non-expanding
 child at the start and leaves it nothing to align in — which is why the first fix looked
@@ -410,44 +415,200 @@ within the hour**: it is set on every icon this app draws, and an expanding chil
 vertical box takes all the slack — the video stage collapsed to `470x0` with the header
 drawn inside it. So the decision is made from the BOX's own props instead: a class list
 that centres on the main axis plus a fixed size on that axis becomes `homogeneous`,
-which reaches the badge and nothing else. With several children a homogeneous box gives
-each an equal share, which is space-around rather than centre; that combination does not
-occur here and is written down rather than guarded.
+which reaches a box with slack and leaves a box sized to its own content alone.
+Re-measured in the running app: every 52x52 play badge reads `homogeneous=true` around
+a 22x22 icon, so does a 36x36 badge around a 16x16 one, and the 24x24 tab-bar icon reads
+false. The last row of the table is why the several-children case is written down rather
+than guarded — a homogeneous box gives each child an equal share, which is space-around
+and not centre — and that combination, a fixed main axis with centred content and more
+than one child, does not occur here.
 
 **AND THE FULL-SCREEN BUTTON ALSO PAUSED.** The click gesture sat on the `Gtk.Overlay`,
 and an overlay hears the clicks its own children take — so pressing the button went full
 screen AND toggled play. It is on the picture now, where "a click on the video" means the
 video. Measured across the switch: `0:05 → 0:07 →` press `→ 0:10 → 0:12`, still playing.
 
-**THE PICTURE STILL TAKES THE SINK'S PAINTABLE, and that is a GJS defect rather than a
-choice.** A `double` returned from `vfunc_get_intrinsic_aspect_ratio` never reaches the
-caller. Measured with the override instrumented: it is called 28 times, the sink
+**THE PICTURE TAKES THE SINK'S PAINTABLE, and the forwards that used to sit beside that
+are gone.** A `double` returned from `vfunc_get_intrinsic_aspect_ratio` never reaches
+the caller. Measured with the override instrumented: it is called 28 times, the sink
 answers it `1.7777777777777777` inside the call, the override then returns a literal
 `1.7777777`, and `stream.get_intrinsic_aspect_ratio()` still answers **`0.000`** — while
 the two integer forwards beside it work and 640x360 arrives. `Gtk.Picture` reads that
 aspect for `content-fit`, gets 0, and snapshots the video **one pixel wide**:
 `lastSnapshotSize=1x261`, which is the thin line this shipped for one commit. With the
-sink's own paintable the picture measures `548x308, ratio 1.779`, its 16:9. The
-forwards stay because they are correct and cost nothing; the day that marshalling works
-the stream can paint.
+sink's own paintable the picture measures `548x308, ratio 1.779`, its 16:9.
 
-Verified by GEOMETRY rather than by a photograph, which is worth saying: with a live
-video texture in the window the devtools `Screenshot` returns nothing (`contents !=
-NULL` fails), GNOME denies `org.gnome.Shell.Screenshot` outright, and there is no
-Wayland grabber here. The route sweep still captures `/video` — 13 077 bytes — because
-that route holds no live paintable until a video is chosen.
-Measured end to end in the app, on the real feed: `0:05 / -14:05` → `0:09` → `0:13`
-with the seek bar populated from the stream's own duration, and after pressing the
-strip's button the clock freezes at `0:14` across two samples. Play, pause, seek,
-elapsed, remaining and volume are Adwaita's widget rather than drawn here.
+~~The forwards stay because they are correct and cost nothing; the day that marshalling
+works the stream can paint.~~ **Both halves of that were wrong**, and re-measuring
+2026-09-09 is what showed it, so the four overrides and the two invalidate handlers
+under them have been deleted:
 
-ONE ORDERING TRAP PAID FOR THAT, and it is worth keeping: `useVideoPlayer(url, setup)`
-calls `play()` in its setup callback, which runs BEFORE the url is known, because the
-route fetches it. So the stream is already marked playing when a url arrives, the
-second `play()` is a no-op, `vfunc_play` never runs and the pipeline sits in READY —
-measured, `0:00 / -0:01` and a black picture after seven seconds. `open` therefore puts
-the pipeline where the stream's own `playing` already stands instead of waiting to be
-told twice, and the backend keeps no second copy of that state.
+| asked | measured |
+| --- | --- |
+| does the aspect override cost nothing? | it costs the aspect ratio. With NO override at all, `GdkPaintable`'s own default divides the two integer forwards and answers **`1.7777778`** — and that arrives. The override replaced a working default with 0. Same result on a plain `GObject.Object` and on a `Gtk.MediaStream` subclass, so it is GJS's vfunc return and not GTK; a `double` **property** round-trips fine |
+| would the stream paint, if marshalling worked? | it should not. A forwarded `vfunc_snapshot` is one JS call per frame per picture, for work `gtk4paintablesink` already does natively. The sink's paintable is the permanent answer, not a workaround |
+| what did the forwarding cost? | a whole pipeline per visit. It needed the sink paintable's two invalidate signals re-emitted from the stream, and nothing disconnected them: measured at `release()`, both were still connected — the paintable held a closure holding the stream, the stream holds the pipeline, the pipeline holds the sink. Nothing in that ring is collectable |
+
+With the overrides gone, `Implements: [Gdk.Paintable]` goes too: measured, GJS refuses a
+class that overrides a paintable vfunc without declaring the interface and accepts one
+that overrides none, and the subclass is a `GdkPaintable` either way by inheritance.
+
+~~Verified by geometry rather than by a photograph: with a live video texture in the
+window the devtools `Screenshot` returns nothing.~~ **That was false, and it was this
+document that invented it.** An empty reply was read as "video cannot be photographed"
+when the capture had declined for an unrelated reason and said nothing at all — a
+`Screenshot` answered zero bytes for four different absences with no way to tell them
+apart. RE-MEASURED 2026-09-09 on GTK 4.22.4 with `GskVulkanRenderer`:
+
+| what | bytes |
+| --- | --- |
+| a `gtk4paintablesink` picture on `videotestsrc` | 24 042 |
+| the same picture on the real HLS stream | 202 645 |
+| its window | 204 865 |
+| **this application, video playing, window scope** | **308 714** |
+| **the same run, the picture alone by path** | **252 192** |
+
+The renderer downloads a video texture like any other. What was actually missing is the
+REASON, and it is fixed upstream rather than worked around here: gjsify#1611 gives the
+capture a `blocker` — `no-renderer`, `zero-size`, `empty-snapshot`, `empty-png` — and
+makes the service log it beside the empty bytes, so the next empty answer cannot have a
+cause invented for it either.
+
+What IS true is the narrower thing: the numbers below are read off the CONTROL STRIP's
+own clock and the widget tree, not off pixels. On the real feed the strip went
+`0:05 / -14:05` → `0:09` → `0:13` with the seek bar populated from the stream's own
+duration, and after pressing its button the clock froze at `0:14` across two samples.
+Play, pause, elapsed, remaining and volume are Adwaita's widget rather than drawn here.
+The route sweep captures `/video` at 13 077 bytes, which is the route before a video is
+chosen.
+
+**AND THE SEEK BAR WAS AN ORNAMENT, which nothing here had measured.** `seek_simple`
+answered `true` every time and the playhead went to the start every time. MEASURED on
+this HLS stream, with the pipeline answering `seekable=true range 0..850s` throughout:
+
+| flags | asked | landed |
+| --- | --- | --- |
+| `FLUSH \| KEY_UNIT`, as it shipped | 300 s from 19.2 s | **3.7 s** |
+| `FLUSH \| KEY_UNIT` | 10 s, 60 s, 600 s | **0.00 s**, every one |
+| `FLUSH` alone | 300 s | 3.8 s |
+| `FLUSH \| KEY_UNIT \| SNAP_BEFORE` | 300 s | 3.8 s |
+| **`FLUSH \| ACCURATE`** | 120 s, 45 s, 700 s, 5 s, 400 s | **all five, within the three seconds the sampling itself takes** |
+
+So it is the key-unit snap picking the playlist's first segment rather than the nearest
+keyframe, and one flag is the whole fix. The seek bar cannot be driven from the
+devtools — `SendKey` reaches `Gtk.EventControllerKey` handlers and a `GtkScale`'s keys
+are class-level shortcuts — so it was measured on the same pipeline shape outside the
+app, and then confirmed inside it through the seek the next entry is about.
+
+**OPENING FULL SCREEN MOVED THE PLAYHEAD, because a second strip seeks the stream it is
+bound to.** MEASURED against a fake `GtkMediaStream` with no GStreamer in it, so this is
+the widget and not this pipeline: a `Gtk.MediaControls` bound to a stream that stands
+past ten seconds asks it to seek to exactly `10.00` s — the seek adjustment's own
+initial upper bound, clamped and written back through its value before the real duration
+replaces it. At 0 s, 3 s and 9.5 s it asks for nothing; from 10.4 s to 500 s it asks for
+10.00 s, whether the piece is 60 s or 850 s long; and it does so at construction and
+again on a later `set_media_stream`. The target is FIXED, so the further in the viewer
+is, the bigger the jump back.
+
+The page's own strip is built while the stream still stands at 0, which is why only the
+full-screen window ever showed it. Measured in the app, the same press three ways:
+
+| | the page | full screen |
+| --- | --- | --- |
+| as it shipped (`KEY_UNIT`) | `0:11` | **`0:00`** — the video restarted |
+| `ACCURATE`, no guard | `0:11` | `0:11` → `0:14` — the seek lands where it is asked |
+| `ACCURATE`, seeks refused for the length of the binding | `0:11` | `0:13` → `0:16` — no seek at all |
+
+**AND NOBODY WAS LISTENING TO THE PIPELINE'S BUS.** Measured on the real feed seeked to
+843 s of 850: it posts EOS and then sits in PLAYING with the position frozen at 850.1 s,
+for ever — so the strip kept a pause icon over a video that had stopped, and the 250 ms
+tick re-sent the same timestamp four times a second. From the other end, a URI that 404s
+posts three errors (`Forbidden`, then `Internal data stream error.`, then one about not
+enough data) and the screen kept a black picture and a `0:00` clock. The bus is watched
+now, the way the audio backend watches its own, and each is handed to the call GTK has
+for it: `stream_ended` — measured, `playing` false and `ended` true, so the strip offers
+a play button — and `gerror`. Replaying then needs one more measured line, because a
+pipeline that has seen EOS ignores `set_state(PLAYING)`: only a flushing seek back to 0
+restarts it (measured, 1.25 s a second and a half later), and `ended` is still true
+inside `vfunc_play`, where GTK clears it afterwards.
+
+TWO ORDERING TRAPS PAID FOR THE PLAY BUTTON, and both are worth keeping. The first:
+`useVideoPlayer(url, setup)` calls `play()` in its setup callback, which runs BEFORE the
+url is known, because the route fetches it. So the stream is already marked playing when
+a url arrives, the second `play()` is a no-op, `vfunc_play` never runs and the pipeline
+sits in READY — measured, `0:00 / -0:01` and a black picture after seven seconds. `open`
+therefore puts the pipeline where the stream's own `playing` already stands instead of
+waiting to be told twice, and the backend keeps no second copy of that state.
+
+The second is the same flag read one line too late, and it made ~~"a `replace` after a
+`play` needs no second `play` to follow it"~~ false for every video after the first:
+`stream_unprepared` CLEARS `playing`, along with the timestamp and the duration. Measured
+against GTK directly, and then in the app with a second `open` and no `play()` after it:
+
+| the flag is read | measured |
+| --- | --- |
+| after the unprepare, as it shipped | `playing` false, position `0.00 s` and staying there, the strip back to `0:00 / -0:01` |
+| before it | `playing` true, position `3.60 s` four seconds later, the clock running |
+
+**THREE OF THE FOUR THINGS THE STRIP WAS TOLD WERE ASSERTIONS.**
+`stream_prepared(has_audio, has_video, seekable, duration)` was called with a literal
+`true` for the first three, which happened to be right on this feed and is wrong on the
+`Audio only` rendition beside it. `src/debug/video-probe.ts` is where the real answers
+came from — a probe next to the audio and registry ones, so the numbers can be
+re-measured rather than trusted. MEASURED 2026-09-09:
+
+| asked | answer |
+| --- | --- |
+| `playbin3`'s `n-audio` / `n-video` | **there are none.** GStreamer answers "no property n-audio in object" and GJS then criticals on the empty GValue |
+| what carries the tracks instead | a `GstStreamCollection` on the bus: three streams, types TEXT(16), AUDIO(2), VIDEO(4), posted at t=0.75 s — before the duration is queryable at t=1.0 s, so the flags are known in time |
+| `seekable` | true, range 0..850 s. `parse_seeking()` answers `[format, seekable, start, end]`, and reading index 2 for `seekable` is how the first run of the probe reported `false` on a stream that seeks fine |
+| does the duration move? | no: `none`, then 850 s, then unchanged across 24 samples |
+| would `duration-changed` be the honest signal? | **no, and this is the useful negative.** It is posted three times, all three before the pipeline reaches PAUSED, and a `query_duration` from inside each handler answers `none`. The 250 ms tick is not a poll standing in for a signal, it is the only thing that ever knows |
+
+The duration is also guarded against `GST_CLOCK_TIME_NONE`, which `query_duration` may
+carry with a true return. That one was NOT reproduced here, and the guard is against
+the contract rather than an observation — one comparison against a seek bar offering
+584 942 years.
+
+**THE FULL-SCREEN WINDOW HAD THE OVERLAY BUG THE PAGE WAS FIXED FOR.** Its click
+gesture sat on the `Gtk.Overlay` holding the leave button and the strip, which is the
+arrangement that made the page's full-screen button pause the video. Moved to the
+picture, and the double click now undoes its own first press so the playback state
+comes out of full screen where it went in. Said plainly, because it matters here: this
+one is NOT separately reproduced. Synthetic pointer input needs a tool this machine
+does not have, so it is one press nobody has counted — what is measured is the page's
+identical case and the motion controller on that same overlay, which fires for the
+picture underneath it and is what reveals the strip.
+
+**AND THE CENTRING RULE CAUGHT A SCREEN IT WAS WRITTEN NOT TO CATCH.** The
+`homogeneous` fix for the play badges said in its own docblock that a fixed-size
+centring box with several children "does not occur here" — and `app/atlas.tsx` is
+exactly one: `justify-center`, `style={{ height: 130 }}`, an icon and a caption.
+Writing it down instead of guarding it is what let it ship. MEASURED in the running
+app, before and after a child-count guard:
+
+| the placeholder's caption | box | label |
+| --- | --- | --- |
+| homogeneous, as it shipped | 1052x142 | **103x65** |
+| not homogeneous | 1052x142 | **162x27** |
+
+The box keeps its height; the caption is what broke. Squeezed into its half of a
+homogeneous box it took its minimum width and wrapped "Kartenausschnitt (statisch)"
+over three lines. VERIFIED IN BOTH DIRECTIONS, because a guard that never fires would
+put the badges back: on `/mediathek` afterwards, twelve 52x52 boxes with a 22x22 icon
+still read `homogeneous=true`, one 36x36 with a 16x16 does, the 24x24 tab-bar icon
+reads false, and the atlas box reads false. That also settles what the count depends
+on — the children are in place when the ref fires. The property is now set BOTH ways
+too: `centred` is in the ref callback's dependency list, and an early return on false
+left the last `true` standing on a widget React had decided should not have it.
+
+**Two smaller ones in the same pass, neither of them observed.** `contentFit` was
+`props.contentFit === 'cover' ? 2 : 1`, so `fill` and `none` both asked for `CONTAIN`
+— nothing passes either, and it now goes through the same nick map `expo-image` uses.
+And `allowsPictureInPicture` / `startsPictureInPictureAutomatically` are accepted and
+not implemented, which is worth naming because the screen DOES set both, with a comment
+saying the system takes over the window: GTK has no picture-in-picture, and this host's
+answer to the same want is the full-screen window above.
 
 **A letter-spaced mark is one pixel short of its own text, and only one lever moves
 that pixel.** MEASURED on GTK 4.22.4: a wrapping `Gtk.Label` whose text contains a

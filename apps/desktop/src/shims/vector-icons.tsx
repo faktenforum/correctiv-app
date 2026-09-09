@@ -136,29 +136,33 @@ export interface IoniconsProps {
  * `color` becomes a minted CSS class, because a symbolic icon takes its colour from
  * the CSS `color` property and `Gtk.Image` exposes no property for it.
  *
- * CENTRED IN BOTH AXES, WHICH TAKES `vexpand` AND NOT JUST `valign`. An icon has an
- * intrinsic size and no reason to stretch, and the layer below maps React Native's
+ * CENTRED AND NOT FILLED, WHICH IS HALF THE CENTRING. An icon has an intrinsic size
+ * and no reason to stretch, so this sets `halign`/`valign` centre — MEASURED on a
+ * 52x52 badge holding a 22 px icon, that takes the image from a stretched 52x22 to its
+ * own 22x22. It does NOT move it: the layer below maps React Native's
  * `alignItems`/`justifyContent` onto the BOX's own alignment rather than its
- * children's — GTK's box has no main-axis distribution to map them to. So a fixed-size
- * round badge centres ITSELF correctly and leaves its icon wherever the box packed it.
+ * children's, because GTK's box has no main-axis distribution to map them to, and a
+ * box packs a non-expanding child at the START with nothing to align in.
  *
- * MEASURED on a 52x52 box with a 22 px icon, all four ways:
+ * Re-measured on GTK 4.22.4, all four ways:
  *
- * | the icon's alignment      | allocation | y   |
- * | ------------------------- | ---------- | --- |
- * | fill, as it first was     | 52x22      | 0   |
- * | `valign: center`          | 22x22      | 0   |
- * | `valign: center` + expand | 22x22      | 15  |
- * | fill + expand             | 52x52      | 0   |
+ * | the icon in a 52x52 box     | allocation | y   |
+ * | --------------------------- | ---------- | --- |
+ * | fill, as it first was       | 52x22      | 0   |
+ * | `valign: center`, as here   | 22x22      | 0   |
+ * | `valign: center` + `vexpand`| 22x22      | 15  |
+ * | fill + `vexpand`            | 52x52      | 0   |
  *
- * `valign: center` alone answers 22x22 and still sits at the TOP, because a box packs
- * a non-expanding child at the start and leaves it no room to align in — which is why
- * the first fix looked right horizontally and wrong vertically. With `vexpand` the
- * child's allocation covers the box and the image lands at y=15, the middle of 52
- * minus 22.
- *
- * `vexpand` and not `hexpand`: in a ROW the vertical axis is the cross axis, so this
- * changes nothing there, while `hexpand` would take the width a label beside it needs.
+ * `vexpand` IS NOT SET HERE, and the row that centres it is in the table to say why
+ * this file is not where the fix went. It was tried and REVERTED within the hour: it
+ * would be on every icon this app draws, and an expanding child in a vertical box
+ * takes all the slack — the video stage collapsed to `470x0` with the header drawn
+ * inside it. The vertical half is decided from the BOX's own props instead, in
+ * `shims/react-native.tsx`, which makes a fixed-size centring box with ONE child
+ * `homogeneous`; measured, that lands the same 22x22 icon at y=15. The child count is
+ * part of it: without it the rule also caught `app/atlas.tsx`'s two-child placeholder
+ * and wrapped its caption over three lines. That file carries the numbers and the set
+ * it reaches.
  */
 export function Ionicons({ name, size = 24, color, className }: IoniconsProps) {
   const colorClass = classForColor('color', color);
