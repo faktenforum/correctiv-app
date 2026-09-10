@@ -6,7 +6,7 @@ import type { Scheme } from './tokens';
  *
  * Structural on purpose: importing the real types would drag `apps/mobile`'s
  * React Native TypeScript project into this package, and this package is meant
- * to know nothing about React Native. What it needs is three verbs, and the
+ * to know nothing about React Native. What it needs is four verbs, and the
  * app's own doc comment (`apps/mobile/src/lib/store/core.ts`, `DevHandle`) is
  * the other side of this declaration.
  */
@@ -20,6 +20,12 @@ export interface DevHandle {
     settings: { setTheme(theme: ThemeSetting): unknown };
   } & Record<string, unknown>;
   resetStore: () => unknown;
+  /**
+   * The app's imperative router. Only `navigate` is declared, because it is the
+   * only one this package calls; `driveRoute` below says why the address cannot
+   * do the job on its own in a development build.
+   */
+  router: { navigate(route: string): void };
 }
 
 /**
@@ -124,5 +130,40 @@ export function navigate(frame: HTMLIFrameElement, route: string): void {
     frame.contentWindow?.location.replace(target);
   } catch {
     frame.src = target;
+  }
+}
+
+/**
+ * Send the frame to a route through the app's own router, and put the address back.
+ *
+ * The address alone cannot do it in development, and the reason is upstream:
+ * `expo-router`'s `stripBaseUrl` removes the base path only when
+ * `NODE_ENV !== 'development'`, so a dev bundle framed at `/app/` matches
+ * `/app/gespeichert` against its own routes, finds nothing, and renders
+ * `+not-found`. Measured 2026-09-10 with both servers running: every framed route
+ * did that, `/app/` included, which is worse than
+ * [ADR 0025](../../../../../adr/0025-the-published-app-is-a-production-bundle.md)
+ * had recorded.
+ *
+ * So the route travels the way everything else in this directory travels, by
+ * same-origin property access ([ADR 0014](../../../../../adr/0014-the-preview-shell-as-a-package.md)),
+ * and the address is restored immediately afterwards. Restoring it is not cosmetic:
+ * the router writes `/gespeichert`, a path on the HANDBOOK's origin, and a reload of
+ * the frame would then leave the app entirely and render the handbook's own 404
+ * inside it. Measured, both the fault and the fix.
+ *
+ * Returns whether it navigated. `false` means there is no handle, which is the
+ * normal state of the published export — and the state in which the address works
+ * by itself, because a production bundle does apply the base path. The two halves
+ * cover the two builds exactly, which is why neither needs a flag.
+ */
+export function driveRoute(win: Window | null, route: string): boolean {
+  const handle = handleOf(win);
+  if (!win || !handle?.router) return false;
+  try {
+    handle.router.navigate(route);
+    return true;
+  } catch {
+    return false; // a route the app does not have, say; the caller falls back
   }
 }

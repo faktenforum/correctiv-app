@@ -11,6 +11,7 @@
  * re-renders on every change to any field in that slice.
  */
 import { bindActionCreators, type StoreEnhancer } from '@reduxjs/toolkit';
+import type { router } from 'expo-router';
 import { useEffect, useMemo } from 'react';
 import { useDispatch, useSelector, useStore, type TypedUseSelectorHook } from 'react-redux';
 
@@ -413,6 +414,25 @@ export interface DevHandle {
   actions: CoreActions;
   /** Every slice back to its initial value, without rebuilding the store. */
   resetStore: typeof resetStore;
+  /**
+   * The imperative router, so the shell can send the frame to a route without
+   * going through the address.
+   *
+   * It has to, in development. `expo-router`'s `stripBaseUrl` removes the base
+   * path only when `NODE_ENV !== 'development'`
+   * (`expo-router/build/fork/getStateFromPath-forks.js`), so a dev bundle framed
+   * at `/app/` matches `/app/gespeichert` against its own routes, finds nothing,
+   * and renders `+not-found`. Measured 2026-09-10: every framed route did, `/app/`
+   * included. The published export has no such trouble and no handle either, so
+   * the shell falls back to the address there — see `driveRoute` in the
+   * handbook's `workbench/frame/handle.ts` for the pair.
+   *
+   * Navigating this way leaves the address behind: the router writes `/gespeichert`,
+   * which is a path on the HANDBOOK's origin, and a reload of the frame would then
+   * land on the handbook's own 404. The shell puts the address back afterwards. It
+   * is the one that knows what the frame's address is supposed to be.
+   */
+  router: typeof router;
 }
 
 /**
@@ -443,6 +463,13 @@ function exposeDevHandle(): void {
     store: coreStore,
     actions: coreActions,
     resetStore,
+    // Required here rather than imported at the top, for the reason the enhancer
+    // above is: `expo-router` ships ESM the test transform does not cover, and a
+    // module-scope import took three suites down with "Cannot use import
+    // statement outside a module" — from files that had not changed. This branch
+    // never runs under jest, so the require never happens there.
+    // eslint-disable-next-line @typescript-eslint/no-require-imports
+    router: (require('expo-router') as typeof import('expo-router')).router,
   };
 }
 

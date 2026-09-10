@@ -17,7 +17,7 @@ import {
   type FrameInfo,
 } from './api';
 import { attachConsole } from './frame/console';
-import { applyTheme, BASE, frameRoute, navigate } from './frame/handle';
+import { BASE, applyTheme, driveRoute, frameRoute, navigate } from './frame/handle';
 import { armPicker, openInEditor, type Located } from './frame/locate';
 import { audit, setOutline, type Finding } from './frame/measure';
 import { waitReady } from './frame/ready';
@@ -137,10 +137,30 @@ export function useWorkbench(active: boolean) {
     }
     if (reseed || frameRoute(frame.contentWindow) !== state.route) {
       clearLogs();
-      document.body.dataset.state = 'loading';
-      navigate(frame, state.route);
+      // A reseed has to reload, because the fixture is read while the app mounts.
+      // Otherwise prefer the app's own router: in a development build the address
+      // cannot carry the route at all (`driveRoute` says why), and where it can,
+      // not reloading keeps the screen's state and is faster.
+      if (reseed || !driveRoute(frame.contentWindow, state.route)) {
+        document.body.dataset.state = 'loading';
+        navigate(frame, state.route);
+      }
     }
   }, [active, shape, state.route, state.seed]);
+
+  /**
+   * The route again, after every load, for the build whose address cannot carry it.
+   *
+   * A development bundle boots at `/app/<route>` and renders `+not-found`, and the
+   * address then says the frame is exactly where the state wants it — so the effect
+   * above is satisfied and nothing drives the router. This is what does, on the
+   * first load and on every reload after it, the same shape and the same reason as
+   * the appearance below. In the published export there is no handle, `driveRoute`
+   * returns false, and the address was right to begin with.
+   */
+  useEffect(() => {
+    if (active) driveRoute(win(), state.route);
+  }, [active, state.route, loaded]);
 
   /** The appearance setting, re-applied after every load because a reload resets it. */
   useEffect(() => {
