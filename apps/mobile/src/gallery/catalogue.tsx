@@ -246,6 +246,13 @@ export const CATALOGUE: Folder[] = [
         specimens: [
           { label: 'default', node: <Overline label="Junge Formate" /> },
           { label: 'color="accent"', node: <Overline label="Faktencheck" color="accent" /> },
+          {
+            // The one unbounded label the app passes this component: a WordPress
+            // `post::topline`, written by an editor. Here because the component is
+            // one line now and this is the specimen that shows what that costs.
+            label: 'a kicker longer than the line',
+            node: <Overline label="Recherche zu Pflegeheimen in Nordrhein-Westfalen" />,
+          },
         ],
       },
       {
@@ -517,6 +524,14 @@ export const CATALOGUE: Folder[] = [
         specimens: [
           { label: 'default subtitle', node: <LiveBanner /> },
           { label: 'subtitle', node: <LiveBanner subtitle="Sondersendung aus Bottrop" /> },
+          {
+            // The case the component's one-line declaration is about: a stream
+            // announces titles nobody chose, and this is one the station really
+            // sent. It is here rather than in prose because the line is the only
+            // place in the app where the text is neither ours nor a person's.
+            label: 'subtitle, a title with no break in it',
+            node: <LiveBanner subtitle="20260901_Gamescom_Laberpocast_Sophie_Amelie" />,
+          },
         ],
       },
       {

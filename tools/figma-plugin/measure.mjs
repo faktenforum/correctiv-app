@@ -823,12 +823,18 @@ if (emit) {
   // Merged, not replaced. This is a per-component tool: re-reading one after a fix
   // must not drop the other thirty-six, and losing them is the kind of thing only
   // the next full run would notice.
-  const before = await readFile(out, 'utf8')
+  //
+  // MERGED INTO THE FILE'S OWN ORDER, and that is the part worth stating. Writing
+  // `measured` instead would put whatever was just re-read at the top, so a run
+  // that changed nothing still produced a diff the size of the file — measured
+  // once at 420 lines moved for two entries whose content was identical, which is
+  // a review cost with no information in it. The file decides the order; a
+  // component this run measured for the first time is appended.
+  const merged = await readFile(out, 'utf8')
     .then((text) => JSON.parse(text))
     .catch(() => ({}));
-  Object.assign(before, measured);
-  for (const key of Object.keys(before)) measured[key] = before[key];
-  await writeFile(out, `${formatted(measured)}\n`);
-  const count = Object.keys(measured).length;
+  Object.assign(merged, measured);
+  await writeFile(out, `${formatted(merged)}\n`);
+  const count = Object.keys(merged).length;
   console.log(`${count} component${count === 1 ? '' : 's'} written to ${out}`);
 }
