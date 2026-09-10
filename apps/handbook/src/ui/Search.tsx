@@ -1,18 +1,18 @@
 import { Command } from 'cmdk';
-import { FileText, Hash, LayoutGrid, Braces } from 'lucide-react';
+import { Component, FileText, Hash, LayoutGrid, Braces } from 'lucide-react';
 import { useMemo } from 'react';
 
 import api from 'virtual:api';
 import docsModule from 'virtual:docs';
 import { navigate } from '../router';
-import { PAGE_TITLES, symbolId } from '../nav';
+import { componentId, PAGE_TITLES, symbolId } from '../nav';
 
 interface Entry {
   route: string;
   title: string;
   kind: string;
   hint: string;
-  group: 'Pages' | 'Documents' | 'Sections' | 'Reference';
+  group: 'Pages' | 'Documents' | 'Sections' | 'Reference' | 'Components';
 }
 
 interface Props {
@@ -23,9 +23,12 @@ interface Props {
 /**
  * One palette over everything the site holds.
  *
- * Documents, every heading inside them, the pages, and all 327 symbols the core
- * exports. The symbols are the reason it is one palette rather than two: looking
- * something up should not require first knowing whether it is prose or code.
+ * Documents, every heading inside them, the pages, all 327 symbols the core
+ * exports and all 46 components the app is built from. The last two are the
+ * reason it is one palette rather than three: looking something up should not
+ * require first knowing whether it is prose, a library or a screen's vocabulary.
+ * They stay separate GROUPS, though, because `Button` is a component and no
+ * amount of searching makes it importable from the core.
  */
 function buildIndex(): Entry[] {
   const entries: Entry[] = [];
@@ -34,7 +37,7 @@ function buildIndex(): Entry[] {
     entries.push({ route, title, kind: 'Page', hint: '', group: 'Pages' });
   }
 
-  for (const module of api.modules) {
+  for (const module of api.core.modules) {
     for (const symbol of module.symbols) {
       entries.push({
         route: `/reference#${symbolId(module.subpath, symbol.name)}`,
@@ -42,6 +45,20 @@ function buildIndex(): Entry[] {
         kind: `${symbol.kind} · ${module.subpath}`,
         hint: symbol.summary,
         group: 'Reference',
+      });
+    }
+  }
+
+  for (const group of api.components.groups) {
+    for (const component of group.components) {
+      entries.push({
+        route: `/components#${componentId(group.name, component.name, component.platform)}`,
+        title: component.name,
+        // The folder, and the platform where the folder holds a split: two rows
+        // called `VideoFrame` are otherwise one row typed twice.
+        kind: `${group.name}${component.platform ? ` · ${component.platform}` : ''}`,
+        hint: component.summary,
+        group: 'Components',
       });
     }
   }
@@ -75,13 +92,14 @@ const ICONS = {
   Documents: FileText,
   Sections: Hash,
   Reference: Braces,
+  Components: Component,
 } as const;
 
 export function Search({ open, onClose }: Props) {
   const index = useMemo(buildIndex, []);
   const groups = useMemo(
     () =>
-      (['Pages', 'Documents', 'Reference', 'Sections'] as const).map((group) => ({
+      (['Pages', 'Documents', 'Reference', 'Components', 'Sections'] as const).map((group) => ({
         group,
         entries: index.filter((entry) => entry.group === group),
       })),
@@ -112,7 +130,7 @@ export function Search({ open, onClose }: Props) {
     >
       <Command.Input
         autoFocus
-        placeholder="Search documents, sections and the core's API"
+        placeholder="Search documents, sections, the core's API and the components"
         className="w-full border-b border-stroke bg-transparent px-sm py-s text-m text-on-canvas outline-none placeholder:text-on-canvas-muted"
       />
       <Command.List className="max-h-[min(24rem,60vh)] overflow-y-auto p-xs">

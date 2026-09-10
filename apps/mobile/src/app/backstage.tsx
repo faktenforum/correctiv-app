@@ -2,7 +2,7 @@ import { Ionicons } from '@expo/vector-icons';
 import { router } from 'expo-router';
 import { Pressable, ScrollView, View } from 'react-native';
 
-import { Badge, Button, Card, Overline, ScreenHeader, Typo } from '@/components/ui';
+import { Badge, Button, Card, Overline, ScreenHeader, SectionCard, Typo } from '@/components/ui';
 import {
   clubNewsletter,
   diaries,
@@ -39,23 +39,20 @@ export default function BackstageScreen() {
           Backstage
         </Typo>
 
-        <View className="mt-l">
-          <Overline label="Früher lesen" color="accent" />
-          <Card className="mt-2xs">
-            <Typo variant="headline-xs">{earlyAccess.title}</Typo>
-            <Typo variant="text-s" color="on-canvas-muted" className="mt-2xs">
-              {earlyAccess.teaser}
-            </Typo>
-            <Typo variant="text-s" color="grey-500" className="mt-s">
-              Öffentlich ab {earlyAccess.publicFromLabel}
-            </Typo>
-            <Button
-              title="Jetzt lesen"
-              className="mt-s"
-              onPress={() => openArticle({ url: earlyAccess.articleUrl, title: earlyAccess.title })}
-            />
-          </Card>
-        </View>
+        <SectionCard label="Früher lesen" labelColor="accent" className="mt-l">
+          <Typo variant="headline-xs">{earlyAccess.title}</Typo>
+          <Typo variant="text-s" color="on-canvas-muted" className="mt-2xs">
+            {earlyAccess.teaser}
+          </Typo>
+          <Typo variant="text-s" color="grey-500" className="mt-s">
+            Öffentlich ab {earlyAccess.publicFromLabel}
+          </Typo>
+          <Button
+            title="Jetzt lesen"
+            className="mt-s"
+            onPress={() => openArticle({ url: earlyAccess.articleUrl, title: earlyAccess.title })}
+          />
+        </SectionCard>
 
         <View className="mt-m">
           <Overline label="Recherchetagebuch" />
@@ -66,33 +63,27 @@ export default function BackstageScreen() {
           </View>
         </View>
 
-        <View className="mt-m">
-          <Overline label="Backstage-Brief" />
-          <Card tone="surface" className="mt-2xs">
-            <Typo variant="headline-xs">{clubNewsletter.subject}</Typo>
-            <Typo variant="text-s" color="grey-500" className="mt-4xs">
-              {formatDateShortDe(clubNewsletter.date)}
+        <SectionCard label="Backstage-Brief" tone="surface" className="mt-m">
+          <Typo variant="headline-xs">{clubNewsletter.subject}</Typo>
+          <Typo variant="text-s" color="grey-500" className="mt-4xs">
+            {formatDateShortDe(clubNewsletter.date)}
+          </Typo>
+          {clubNewsletter.paragraphs.map((paragraph) => (
+            <Typo key={paragraph.slice(0, 24)} variant="text-s" className="mt-s">
+              {paragraph}
             </Typo>
-            {clubNewsletter.paragraphs.map((paragraph) => (
-              <Typo key={paragraph.slice(0, 24)} variant="text-s" className="mt-s">
-                {paragraph}
-              </Typo>
-            ))}
-          </Card>
-        </View>
+          ))}
+        </SectionCard>
 
-        <View className="mt-m">
-          <Overline label="Fragerunde" />
-          <Card className="mt-2xs">
-            <Typo variant="headline-xs">{qa.title}</Typo>
-            <Typo variant="text-s" color="on-canvas-muted" className="mt-2xs">
-              {qa.description}
-            </Typo>
-            <Typo variant="text-s" color="accent" className="mt-s">
-              {qa.deadlineLabel}
-            </Typo>
-          </Card>
-        </View>
+        <SectionCard label="Fragerunde" className="mt-m">
+          <Typo variant="headline-xs">{qa.title}</Typo>
+          <Typo variant="text-s" color="on-canvas-muted" className="mt-2xs">
+            {qa.description}
+          </Typo>
+          <Typo variant="text-s" color="accent" className="mt-s">
+            {qa.deadlineLabel}
+          </Typo>
+        </SectionCard>
 
         <View className="mt-m">
           <Overline label="Termine" />
@@ -109,21 +100,18 @@ export default function BackstageScreen() {
           ))}
         </View>
 
-        <View className="mt-m">
-          <Overline label="Verlag" />
-          <Card tone="surface" className="mt-2xs">
-            <Typo variant="headline-xs">{verlagPerk.title}</Typo>
-            <Typo variant="text-s" color="on-canvas-muted" className="mt-2xs">
-              {verlagPerk.description}
-            </Typo>
-            <Button
-              title="Zum Shop"
-              variant="outline"
-              className="mt-s"
-              onPress={() => openExternal(verlagPerk.shopUrl)}
-            />
-          </Card>
-        </View>
+        <SectionCard label="Verlag" tone="surface" className="mt-m">
+          <Typo variant="headline-xs">{verlagPerk.title}</Typo>
+          <Typo variant="text-s" color="on-canvas-muted" className="mt-2xs">
+            {verlagPerk.description}
+          </Typo>
+          <Button
+            title="Zum Shop"
+            variant="outline"
+            className="mt-s"
+            onPress={() => openExternal(verlagPerk.shopUrl)}
+          />
+        </SectionCard>
       </ScrollView>
     </View>
   );

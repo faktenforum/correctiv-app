@@ -39,6 +39,7 @@
     "test": "npm run test --workspaces --if-present",
     "test:watch": "npm run test:watch -w @correctiv/app-core",
     "web": "npm run web -w @correctiv/mobile",
+    "web:root": "npm run web:root -w @correctiv/mobile",
     "start": "npm start -w @correctiv/mobile",
     "android": "npm run android -w @correctiv/mobile",
     "ios": "npm run ios -w @correctiv/mobile",

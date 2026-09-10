@@ -58,9 +58,47 @@ holds on Pages: the device frame, the route field, the storage fixtures, the con
 the palette overrides and the measure checks.
 
 The same limit applies to the dev server, which is a development bundle by definition.
-Locally the frame reaches the app's first screen and no further, so the route field is
-a desktop convenience there rather than a way to walk the app. `TROUBLESHOOTING.md`,
-"The web target", carries the measurement.
+~~Locally the frame reaches the app's first screen and no further, so the route field is
+a desktop convenience there rather than a way to walk the app.~~ Re-measured on
+2026-09-10 it reaches no screen at all: through the handbook's dev proxy, signed in with
+the `onboarded` fixture, `/app/entdecken` renders the app's own 404 and so does `/app/`
+itself. Only what the shell draws outside the router appears. The conclusion about the
+route field is unchanged and the reason is the same, a development bundle ignores
+`experiments.baseUrl` when it matches routes; the first screen was the part that was
+too generous. `TROUBLESHOOTING.md`, "The web target", carries the measurement.
+
+## A route that is not published, measured because somebody will want one
+
+The component gallery asked this question on 2026-09-10 and then did not need the
+answer, because publishing it turned out to cost almost nothing: every component it
+draws is already in the bundle, since real screens use them, so the page adds its
+catalogue and nothing else. Measured by exporting twice, with the route and without:
+21,560 bytes on a 4.4 MB bundle, plus the 19,915-byte `gallery.html` that any
+pre-rendered route costs. It is a published route like any other. But the measurements
+are worth keeping, because the next dev-only screen will not be so lucky.
+
+**Guarding the component is not enough.** A route whose component returns `null` unless
+`__DEV__` is still pre-rendered. One throwaway route in that shape produced a 19 KB
+`dist/probe.html`, a blank page at a public address, with its module still in the bundle
+behind it. expo-router offers no opt-out: its route list is
+`require.context(EXPO_ROUTER_APP_ROOT, true, …)` in `expo-router/_ctx.web.js`, whose
+regex excludes exactly `+api`, `+middleware`, `+html` and `+native-intent`.
+
+**Blocking the file works**, because Metro's file map is what `require.context`
+enumerates. A `resolver.blockList` entry added under `process.env.NODE_ENV ===
+'production'` removed the page, took the export from 70 files to 69, and left none of
+the required modules in the bundle. `NODE_ENV` is the discriminator that needs no flag
+anybody has to remember: `expo export` sets it, `expo start` does not.
+
+**And the shape of a `__DEV__` guard decides whether Metro drops the module at all.**
+Five variants in one production export, grepping for a string only the required module
+contains: a `require` inside a function survives, whatever the condition around it,
+because Metro collects dependencies from the syntax tree. Only the module-scope forms,
+`__DEV__ ? require(…) : null` and `if (__DEV__) { require(…) }`, are folded away first.
+`lib/store/core.ts` uses the surviving shape and its debugger stays out regardless, but
+by `redux-devtools-expo-dev-plugin`'s own module-scope guard rather than by the call
+site. The comment there claimed the call site did it, and now says this instead; the
+code is unchanged.
 
 ## What the inspector needs, which is not this
 

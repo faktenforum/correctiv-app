@@ -87,9 +87,15 @@ import { videoActions } from '@correctiv/app-core/stores/video';
  * difference between reading logs and seeing what happened.
  *
  * `require` inside the `__DEV__` branch rather than a top-level import, so a
- * release build drops the whole thing instead of bundling a debugger. RTK's own
- * `devTools` integration is switched off in the same breath — the plugin replaces
- * it, and two of them fight over one connection.
+ * release build never runs the enhancer. It does still BUNDLE it: Metro collects
+ * a `require` from the syntax tree whatever condition stands around it, and only
+ * a module-scope guard folds one away, measured on 2026-09-10 in
+ * [ADR 0025](../../../../../adr/0025-the-published-app-is-a-production-bundle.md).
+ * What keeps the debugger itself out of the export is the package's own such
+ * guard: its entry resolves `./devtools` only when `NODE_ENV` is not production,
+ * so what arrives in the export is the no-op branch. RTK's own `devTools`
+ * integration is switched off in the same breath — the plugin replaces it, and
+ * two of them fight over one connection.
  */
 function devToolsEnhancers(): StoreEnhancer[] {
   // `__DEV__` is true under jest too, and the plugin ships ESM the test transform

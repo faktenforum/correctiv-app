@@ -37,8 +37,8 @@ export function docsPlugin(): Plugin {
       if (id === `\0${API_ID}`) {
         // Extracted by `npm run api`, which `npm run build` runs first. Not
         // committed: it is derived, it is large, and it would conflict on every
-        // rename in the core. A clear failure beats an empty reference page that
-        // looks like the core has no exports.
+        // rename in the core or in the app's components. A clear failure beats an
+        // empty reference page that looks like nothing is exported.
         if (!existsSync(API_FILE)) {
           throw new Error(
             'apps/handbook/content/api.generated.json is missing. Run `npm run api -w @correctiv/handbook`.',
