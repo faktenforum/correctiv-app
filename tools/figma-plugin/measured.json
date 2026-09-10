@@ -2045,6 +2045,113 @@
         }
       ],
       "name": "media/LiveBanner, subtitle"
+    },
+    {
+      "t": "component",
+      "dir": "H",
+      "cross": "CENTER",
+      "w": 319,
+      "h": 98,
+      "pad": ["@spacing-s", "@spacing-s", "@spacing-s", "@spacing-s"],
+      "radius": "@radius-md",
+      "fill": "@color-always-dark",
+      "children": [
+        {
+          "t": "frame",
+          "dir": "V",
+          "align": "CENTER",
+          "cross": "CENTER",
+          "w": 48,
+          "h": 48,
+          "radius": 24,
+          "fill": "@color-accent",
+          "children": [
+            {
+              "t": "text",
+              "chars": "◉",
+              "font": "sans",
+              "size": 24,
+              "color": "@color-always-light"
+            }
+          ]
+        },
+        {
+          "t": "space",
+          "w": "@spacing-s"
+        },
+        {
+          "t": "frame",
+          "dir": "V",
+          "w": 235,
+          "h": 74,
+          "children": [
+            {
+              "t": "frame",
+              "dir": "H",
+              "cross": "CENTER",
+              "w": "fill",
+              "h": 25,
+              "gap": "@spacing-2xs",
+              "children": [
+                {
+                  "t": "frame",
+                  "dir": "H",
+                  "cross": "CENTER",
+                  "w": "hug",
+                  "h": 25,
+                  "pad": ["@spacing-2xs", "@spacing-2xs", "@spacing-4xs", "@spacing-4xs"],
+                  "radius": "@radius-s",
+                  "children": [
+                    {
+                      "t": "ellipse",
+                      "w": 7,
+                      "h": 7,
+                      "fill": "@color-accent"
+                    },
+                    {
+                      "t": "space",
+                      "w": "@spacing-3xs"
+                    },
+                    {
+                      "t": "text",
+                      "chars": "Live",
+                      "w": 21,
+                      "size": 11,
+                      "color": "@color-on-canvas-accent",
+                      "tracking": 3.64,
+                      "transform": "uppercase"
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "t": "space",
+              "h": "@spacing-4xs"
+            },
+            {
+              "t": "text",
+              "style": "headline-xs",
+              "chars": "Salon5 Radio",
+              "w": "fill",
+              "weight": "bold",
+              "size": 17,
+              "color": "@color-always-light",
+              "tracking": 1.18
+            },
+            {
+              "t": "text",
+              "style": "text-s",
+              "chars": "20260901_Gamescom_Laberpocast_Sophie_Amelie",
+              "w": "fill",
+              "size": 14,
+              "color": "@color-always-light",
+              "tracking": 1.43
+            }
+          ]
+        }
+      ],
+      "name": "media/LiveBanner, subtitle, a title with no break in it"
     }
   ],
   "media/MediaCard": [
@@ -4151,6 +4258,23 @@
         }
       ],
       "name": "ui/Overline, color=\"accent\""
+    },
+    {
+      "t": "component",
+      "dir": "V",
+      "w": "hug",
+      "children": [
+        {
+          "t": "text",
+          "chars": "RECHERCHE ZU PFLEGEHEIMEN IN NORDRHEIN-WESTFALEN",
+          "w": 319,
+          "weight": "bold",
+          "size": 12,
+          "color": "@color-on-canvas-muted",
+          "tracking": 10
+        }
+      ],
+      "name": "ui/Overline, a kicker longer than the line"
     }
   ],
   "ui/SectionHeader": [

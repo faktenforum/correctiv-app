@@ -88,7 +88,37 @@ export function LiveBanner({ subtitle = '24/7 aus Bottrop' }: { subtitle?: strin
         <Typo variant="headline-s" color="always-light">
           Salon5 Radio
         </Typo>
-        <Typo variant="text-s" color="always-light" numberOfLines={2} className="opacity-70">
+        {/*
+          ONE LINE, and the one change in this file a reader will see on the phone:
+          a long now-playing title ellipsizes here instead of taking a second line.
+
+          It is a stream announcing titles nobody chose, and that is what makes the
+          second line expensive. A `Gtk.Label` breaks at word boundaries, so its
+          minimum width is its longest WORD — and the station announced a track as
+          "20260901_Gamescom_Laberpocast_Sophie_Amelie", one token with no break in
+          it. At two lines that minimum became the card's, and the card's became
+          the window's, so the window could not be made narrower than the filename;
+          at one line ellipsizing is allowed to do the work instead. It is not the
+          length, it is that the token has no space in it. Measured on the host
+          [ADR 0012](../../../../../adr/0012-a-list-virtualizer-for-the-unbounded-lists.md)
+          names as a reason, and the pixels are in that host's README on the
+          `desktop` branch rather than repeated here.
+
+          On the phone this brings the line into agreement with the other place
+          the app shows what is playing rather than what is on offer:
+          `MiniPlayer`'s title is one line. `EpisodeRow` keeps two, and that is
+          the distinction — an episode title is a thing somebody chose from a
+          list, a track announcement is whatever the stream said.
+
+          In the browser it swaps `react-native-web`'s two-line rule for its
+          one-line one, eighteen computed properties including `-webkit-line-clamp`
+          and `display`. Read off the running target: at 393px only the specimen
+          with the unbreakable title changes box, from two lines to one. At 320px
+          the ordinary `Sondersendung aus Bottrop` ellipsizes as well, because 25
+          characters no longer fit a line at that width. That is the trade, at the
+          width where it bites.
+        */}
+        <Typo variant="text-s" color="always-light" numberOfLines={1} className="opacity-70">
           {line}
         </Typo>
       </View>
