@@ -27,7 +27,7 @@ import { router, Stack, usePathname } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
 import { useFonts } from 'expo-font';
 import * as SplashScreen from 'expo-splash-screen';
-import { useEffect, useRef, useState } from 'react';
+import { Component, useEffect, useRef, useState, type ReactNode } from 'react';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import { Provider } from 'react-redux';
 
@@ -58,6 +58,7 @@ import {
 import { close as closeVideo } from '@correctiv/app-core/stores/video';
 
 import { LoginGate } from '@/components/gate/LoginGate';
+import { RecoveryScreen } from '@/components/recovery/RecoveryScreen';
 import { stop as stopAudio } from '@/lib/audio/player';
 import { coreStore, useAppStore, useIsAdmitted } from '@/lib/store/core';
 import { fontAssets, useAppearance, useIsDark } from '@/lib/theme';
@@ -105,11 +106,113 @@ function registerPersistence(): Promise<void> {
 /** A pushed route keeps the tabs underneath it, even when it is the entry point. */
 export const unstable_settings = { anchor: '(tabs)' };
 
+/**
+ * This host's error boundary, because its router has none to offer.
+ *
+ * THE DIFFERENCE FROM THE PHONE, and it is the reason this class exists rather
+ * than a re-export. On the phone the catching is expo-router's: a route that also
+ * exports `ErrorBoundary` gets wrapped in `Try`
+ * (`expo-router/build/useScreens.js`, `fromImport`), and `apps/mobile/src/app/_layout.tsx`
+ * is that route. `src/shims/expo-router.ts` answers five names over
+ * `@gjsify/react-native/router` and `Try` is not one of them —
+ * `@gjsify/react-native`'s support table lists expo-router's `ErrorBoundary` as
+ * planned, tier P3. So the phone's export is INERT here: present, correct, and
+ * reached by nothing.
+ *
+ * That is the failure mode this host keeps producing. Nothing would have said the
+ * recovery screen was gone; the app would simply have died at the first refusal,
+ * the way it did when three `<Typo onPress>` rows in `(tabs)/profil.tsx` ended the
+ * whole tree and took `CORRECTIV_DESKTOP_ROUTE` with them — Home captured at
+ * 12 848 bytes where it had captured 92 125.
+ *
+ * A PLAIN REACT BOUNDARY IS ENOUGH, and that was measured rather than assumed. The
+ * support table's P3 entry is about expo-router's per-route screen and says a
+ * boundary "has to be reconciled" with the host rethrowing an uncaught error from
+ * `render()`. It does not need reconciling: React 19 only reaches that handler for
+ * an error NO boundary caught. With this class in the tree, `@gjsify/gtk-host/react`
+ * logs `an error boundary caught an error` through `onCaughtError` instead, the
+ * process survives, and `--screenshot` still writes a file. Verified on GTK 4.22.4
+ * against the `<Typo onPress>` refusal above.
+ *
+ * The screen is the phone's, from `@/components/recovery/RecoveryScreen`, which is
+ * where it lives precisely so a second host can draw it. What this class adds is
+ * what the phone's `ErrorBoundary` adds on that side: the report. The splash
+ * release is not repeated, because `src/shims/expo-splash-screen.ts` is a no-op
+ * here and says why.
+ *
+ * The screen's own docblock lists what it may depend on after the tree below has
+ * been unmounted, and both of its conditions are met on this host WITHOUT the
+ * mechanisms it names for the phone. `useColors()` reads `useUniwind()`, which
+ * `src/shims/uniwind.ts` answers from `Adw.StyleManager:dark` — a live read, no
+ * provider and no store. And `Screen`'s `SafeAreaView` needs no
+ * `SafeAreaProvider`, because `src/shims/react-native-safe-area-context.tsx`
+ * answers zero insets outright: a GTK window is a rectangle the compositor hands
+ * over whole. So this boundary wraps the `Provider` rather than sitting under it,
+ * which is what lets it catch a fault in the store's own construction.
+ */
+class RecoveryBoundaryClass extends Component<{ children: ReactNode }, { error: unknown }> {
+  state: { error: unknown } = { error: null };
+
+  static getDerivedStateFromError(error: unknown): { error: unknown } {
+    return { error };
+  }
+
+  componentDidCatch(error: unknown): void {
+    // THE PLACE AN ERROR REPORT LEAVES THIS HOST, and the phone's own comment about
+    // issue #95 applies: no crash reporter is chosen, so for now it goes to the log.
+    // `route-sweep` and `component-sweep` read that log, so a caught refusal is still
+    // a FAILING sweep rather than a screen that quietly says "stehen geblieben".
+    console.error('[desktop] render failed, showing the recovery screen:', error);
+  }
+
+  /** Clears the error so the tree below is built again, which is `retry`. */
+  private readonly retry = (): void => {
+    this.setState({ error: null });
+  };
+
+  render(): ReactNode {
+    const { error } = this.state;
+    if (error === null) return this.props.children;
+    // `error` is whatever was thrown, and a thrown string must not take the
+    // recovery screen down with it — the same normalisation the phone does.
+    const detail = error instanceof Error ? error.message : String(error);
+    return <RecoveryScreen detail={detail} onRetry={this.retry} />;
+  }
+}
+
+/**
+ * The same class, retyped so it may stand in a JSX tag position on this host.
+ *
+ * NOT A COSMETIC CAST, and worth the paragraph. `tsconfig.json` sets
+ * `jsxImportSource` to `@gjsify/gtk-host/react` so that an accidental `<div>` is a
+ * type error rather than a blank window — its own comment says why. That namespace
+ * declares `ElementType` as `keyof GtkReactIntrinsicElements | ((props: never) =>
+ * ReactNode)`: a GTK tag, or a FUNCTION component. A class component is neither, so
+ * `<RecoveryBoundaryClass>` is `TS2786: cannot be used as a JSX component`.
+ *
+ * That excludes every error boundary, because React has no functional one:
+ * `getDerivedStateFromError` and `componentDidCatch` are class-only, by design and
+ * still in React 19. So the types forbid what the RUNTIME supports — measured on
+ * this host, a plain boundary catches the layer's `PrimitiveError` and
+ * `@gjsify/gtk-host/react` reports it through `onCaughtError`, which is an option
+ * that only exists because boundaries are expected to work.
+ *
+ * The fix belongs upstream, in one line: `GtkElementType` should admit a component
+ * class the way React's own `ElementType` does. Until then this is the narrowest
+ * possible workaround — one cast, at one site, on a class this file owns — rather
+ * than giving up the boundary or giving up `jsxImportSource`.
+ */
+const RecoveryBoundary = RecoveryBoundaryClass as unknown as (props: {
+  children: ReactNode;
+}) => ReactNode;
+
 export default function RootLayout() {
   return (
-    <Provider store={coreStore}>
-      <AppShell />
-    </Provider>
+    <RecoveryBoundary>
+      <Provider store={coreStore}>
+        <AppShell />
+      </Provider>
+    </RecoveryBoundary>
   );
 }
 

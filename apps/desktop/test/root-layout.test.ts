@@ -117,6 +117,46 @@ describe('the desktop root layout puts the door at the root', () => {
   });
 });
 
+/**
+ * The recovery screen, and why this host needs a test for having one at all.
+ *
+ * On the phone the catching is expo-router's: a route that also exports
+ * `ErrorBoundary` is wrapped in `Try`, so the phone's export is the whole mechanism.
+ * This host's `expo-router` is a shim with no `Try`, so that export is INERT here and
+ * the boundary has to be built. Nothing about a missing one is visible: the app looks
+ * identical until the first refusal, and then it dies whole — which is exactly what
+ * happened when three `<Typo onPress>` rows ended the tree and took
+ * `CORRECTIV_DESKTOP_ROUTE` with them.
+ *
+ * Text assertions, for the reason this file's header gives about all of them: there is
+ * no React renderer in this workspace and `_layout.tsx` reaches `gi://Gtk` before it
+ * reaches a component.
+ */
+describe('the recovery screen', () => {
+  it('is caught for, because the router here catches nothing', () => {
+    expect(desktop).toContain('getDerivedStateFromError');
+    expect(desktop).toContain("from '@/components/recovery/RecoveryScreen'");
+  });
+
+  it('wraps the store, not just the screens under it', () => {
+    // ABOVE the Provider, which is what lets it catch a fault in the store's own
+    // construction or in `AppShell`'s hydration effect. Below it, the boundary would
+    // be inside the tree it is supposed to survive.
+    const boundary = desktop.indexOf('<RecoveryBoundary>');
+    const provider = desktop.indexOf('<Provider store={coreStore}>');
+    expect(boundary).toBeGreaterThan(-1);
+    expect(provider).toBeGreaterThan(boundary);
+  });
+
+  it("draws the phone's screen rather than a second copy of its German", () => {
+    // The screen lives in `apps/mobile/src/components/recovery/` precisely so both
+    // hosts render one copy. A desktop-local recovery screen would be a second place
+    // for the same three sentences to drift.
+    expect(desktop).toContain('<RecoveryScreen detail={detail} onRetry={this.retry} />');
+    expect(desktop).not.toContain('Die App ist stehen geblieben');
+  });
+});
+
 describe('the comparison this suite rests on', () => {
   it('finds the same door in the phone, so the shape above still describes one', () => {
     // Guards the oracle. If the phone moves the door — to a hook, a wrapper component,
