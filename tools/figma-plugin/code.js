@@ -148,9 +148,30 @@ function isToken(value) {
   return typeof value === 'string' && value.charAt(0) === '@';
 }
 
+/**
+ * `@color-always-dark/70` — a token at seventy per cent, the app's own spelling.
+ *
+ * Uniwind writes exactly this in the class it applies (`bg-always-dark/70`), and a
+ * component that dims a fill this way had no way across before: flattening it to a
+ * hex would have kept the colour and thrown away the token, which is the one thing a
+ * board is for. The alpha rides on the PAINT, not on the node, so a translucent
+ * surface does not fade the icon standing on it.
+ */
+function tokenName(value) {
+  return isToken(value) ? value.slice(1).split('/')[0] : value;
+}
+
+function tokenAlpha(value) {
+  if (!isToken(value)) return 1;
+  const cut = value.indexOf('/');
+  if (cut === -1) return 1;
+  const percent = Number(value.slice(cut + 1));
+  return Number.isFinite(percent) ? Math.min(100, Math.max(0, percent)) / 100 : 1;
+}
+
 function tokenValue(value) {
   if (!isToken(value)) return value;
-  const t = TOKENS[value.slice(1)];
+  const t = TOKENS[tokenName(value)];
   if (t === undefined) return '#ff00ff'; // loud on purpose: a typo must be visible
   return typeof t === 'object' ? t.light : t;
 }
@@ -243,7 +264,7 @@ function greyOf(hex) {
 function bind(hex, value) {
   const paintValue = { type: 'SOLID', color: rgb(hex) };
   if (!MODE.bindVariables || !isToken(value)) return paintValue;
-  const variable = VARS[value.slice(1)];
+  const variable = VARS[tokenName(value)];
   // Unreachable for anything the description wrote: `checkTokens` has already refused
   // a name the token table does not have. What is left is a variable that failed to
   // be CREATED, which no description can prevent — and an unbound paint is then the
@@ -255,7 +276,10 @@ function bind(hex, value) {
 
 function paint(value) {
   const c = toned(tokenValue(value));
-  return c ? [bind(c, value)] : [];
+  if (!c) return [];
+  const p = bind(c, value);
+  const alpha = tokenAlpha(value);
+  return [alpha === 1 ? p : Object.assign({}, p, { opacity: alpha })];
 }
 
 function paintText(value) {
@@ -854,7 +878,7 @@ function checkTokens(spec) {
     if (node === null || typeof node !== 'object') return;
     for (const key of ['fill', 'stroke', 'color']) {
       const value = node[key];
-      if (isToken(value) && known[value.slice(1)] === undefined) missing[value] = true;
+      if (isToken(value) && known[tokenName(value)] === undefined) missing[value] = true;
     }
     for (const value of Object.keys(node)) walk(node[value]);
   };

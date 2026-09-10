@@ -1,0 +1,291 @@
+{
+  "ui/Badge": {
+    "t": "variants",
+    "name": "ui/Badge",
+    "prop": "tone",
+    "options": [
+      {
+        "value": "emphasis",
+        "t": "frame",
+        "dir": "H",
+        "w": "hug",
+        "h": 25,
+        "pad": ["@spacing-2xs", "@spacing-2xs", "@spacing-4xs", "@spacing-4xs"],
+        "radius": "@radius-s",
+        "fill": "@color-accent",
+        "children": [
+          {
+            "t": "text",
+            "chars": "Projekt",
+            "size": 11,
+            "color": "@color-always-light",
+            "tracking": 3.64,
+            "transform": "uppercase"
+          }
+        ]
+      },
+      {
+        "value": "club",
+        "t": "frame",
+        "dir": "H",
+        "w": "hug",
+        "h": 25,
+        "pad": ["@spacing-2xs", "@spacing-2xs", "@spacing-4xs", "@spacing-4xs"],
+        "radius": "@radius-s",
+        "fill": "@color-accent-alternative",
+        "children": [
+          {
+            "t": "text",
+            "chars": "Projekt",
+            "size": 11,
+            "color": "@color-always-dark",
+            "tracking": 3.64,
+            "transform": "uppercase"
+          }
+        ]
+      },
+      {
+        "value": "neutral",
+        "t": "frame",
+        "dir": "H",
+        "w": "hug",
+        "h": 25,
+        "pad": ["@spacing-2xs", "@spacing-2xs", "@spacing-4xs", "@spacing-4xs"],
+        "radius": "@radius-s",
+        "fill": "@color-grey-250",
+        "children": [
+          {
+            "t": "text",
+            "chars": "Projekt",
+            "size": 11,
+            "color": "@color-on-canvas-muted",
+            "tracking": 3.64,
+            "transform": "uppercase"
+          }
+        ]
+      },
+      {
+        "value": "live",
+        "t": "frame",
+        "dir": "H",
+        "w": "hug",
+        "h": 25,
+        "pad": ["@spacing-2xs", "@spacing-2xs", "@spacing-4xs", "@spacing-4xs"],
+        "radius": "@radius-s",
+        "children": [
+          {
+            "t": "ellipse",
+            "w": 7,
+            "h": 7,
+            "fill": "@color-accent"
+          },
+          {
+            "t": "space",
+            "w": "@spacing-3xs"
+          },
+          {
+            "t": "text",
+            "chars": "Live",
+            "size": 11,
+            "color": "@color-on-canvas-accent",
+            "tracking": 3.64,
+            "transform": "uppercase"
+          }
+        ]
+      }
+    ]
+  },
+  "ui/SectionCard": [
+    {
+      "t": "frame",
+      "name": "ui/SectionCard, default, tone=\"outline\"",
+      "dir": "V",
+      "w": 319,
+      "h": 100,
+      "children": [
+        {
+          "t": "text",
+          "chars": "KONTO",
+          "weight": "bold",
+          "size": 12,
+          "color": "@color-on-canvas-muted",
+          "tracking": 10
+        },
+        {
+          "t": "space",
+          "h": "@spacing-2xs"
+        },
+        {
+          "t": "frame",
+          "dir": "V",
+          "w": "fill",
+          "h": 73,
+          "pad": ["@spacing-m", "@spacing-m", "@spacing-m", "@spacing-m"],
+          "radius": "@radius-md",
+          "fill": "@color-canvas",
+          "stroke": "@color-stroke",
+          "strokeWeight": 1,
+          "children": [
+            {
+              "t": "text",
+              "style": "text-m",
+              "chars": "alex.beispiel@example.org",
+              "size": 15,
+              "color": "@color-on-canvas",
+              "tracking": 0.67
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "t": "frame",
+      "name": "ui/SectionCard, tone=\"surface\"",
+      "dir": "V",
+      "w": 319,
+      "h": 98,
+      "children": [
+        {
+          "t": "text",
+          "chars": "BENACHRICHTIGUNGEN",
+          "weight": "bold",
+          "size": 12,
+          "color": "@color-on-canvas-muted",
+          "tracking": 10
+        },
+        {
+          "t": "space",
+          "h": "@spacing-2xs"
+        },
+        {
+          "t": "frame",
+          "dir": "V",
+          "w": "fill",
+          "h": 71,
+          "pad": ["@spacing-m", "@spacing-m", "@spacing-m", "@spacing-m"],
+          "radius": "@radius-md",
+          "fill": "@color-surface",
+          "children": [
+            {
+              "t": "text",
+              "style": "text-m",
+              "chars": "Push-Mitteilungen",
+              "size": 15,
+              "color": "@color-on-canvas",
+              "tracking": 0.67
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "media/MediaCard": [
+    {
+      "t": "frame",
+      "name": "media/MediaCard",
+      "dir": "V",
+      "w": 176,
+      "h": 168,
+      "children": [
+        {
+          "t": "frame",
+          "dir": "V",
+          "w": "fill",
+          "h": 168,
+          "children": [
+            {
+              "t": "frame",
+              "w": "fill",
+              "h": 99,
+              "radius": "@radius-md",
+              "fill": "@color-grey-300",
+              "children": [
+                {
+                  "t": "frame",
+                  "dir": "V",
+                  "w": "fill",
+                  "h": 99,
+                  "children": [
+                    {
+                      "t": "text",
+                      "chars": "◎",
+                      "font": "sans",
+                      "size": 26,
+                      "color": "@color-stroke"
+                    }
+                  ]
+                },
+                {
+                  "t": "frame",
+                  "w": "fill",
+                  "h": 99,
+                  "x": 0,
+                  "y": 0,
+                  "children": [
+                    {
+                      "t": "frame",
+                      "dir": "V",
+                      "w": 52,
+                      "h": 52,
+                      "radius": 26,
+                      "fill": "@color-always-dark/70",
+                      "children": [
+                        {
+                          "t": "text",
+                          "chars": "◎",
+                          "font": "sans",
+                          "size": 22,
+                          "color": "@color-always-light"
+                        }
+                      ]
+                    },
+                    {
+                      "t": "frame",
+                      "dir": "V",
+                      "w": 28,
+                      "h": 21,
+                      "x": 142,
+                      "y": 72,
+                      "pad": ["@spacing-3xs", "@spacing-3xs", 0, 0],
+                      "radius": "@radius-s",
+                      "fill": "@color-always-dark/80",
+                      "children": [
+                        {
+                          "t": "text",
+                          "chars": "8:32",
+                          "size": 11,
+                          "color": "@color-always-light",
+                          "tracking": 1.82
+                        }
+                      ]
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "t": "space",
+              "h": "@spacing-2xs"
+            },
+            {
+              "t": "text",
+              "chars": "FunFacts, Folge 12: Was kostet ein Windrad wirklich?",
+              "weight": "semibold",
+              "size": 14,
+              "color": "@color-on-canvas",
+              "tracking": 1.43
+            },
+            {
+              "t": "text",
+              "style": "text-s",
+              "chars": "28. August",
+              "size": 14,
+              "color": "@color-stroke-strong",
+              "tracking": 1.43
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

@@ -254,7 +254,8 @@ transcription of something else.
 
 **Geometry, exactly.** For `ui/Badge` the measurement reproduced the hand-written
 description without a difference: padding `[2xs, 2xs, 4xs, 4xs]`, `radius-s`, size
-11, tracking 0.4. Where the two disagreed the *kit* was wrong, see below.
+11, tracking 3.64 % — the same number `kit.mjs` computes as `0.4 / 11` — and the
+live tone's seven-pixel dot as an ellipse with `spacing-3xs` beside it.
 
 **The token that was asked for, not the colour that came out.** Uniwind writes the
 app's classes into the DOM unchanged, so `bg-accent` is there to read. That matters
@@ -263,23 +264,64 @@ only looked at pixels called the badge `@color-red-500` — the right colour and
 wrong word, and the difference between them is most of what a design system is. The
 classes decide, the computed values check them.
 
+**The variant axis, off the specimen labels.** The catalogue writes each label "in
+the props' own words", so `tone="club"` was already the variant and nobody had to
+say so twice. Four specimens on one prop become a variant set; one becomes a
+component; several on different props become one component each, and the run says
+so rather than inventing an axis.
+
 **Fill or hug, not a pixel width.** A row that fills its parent has no width of its
 own; measured in a 1280px window every such row came out 691 wide and the number
-said nothing. The reader compares against the parent's content box and emits `fill`.
+said nothing.
 
-### What it does not recover
+### The five rules, because each one is a decision
 
-- **An icon.** `NavCard.icon` is already a declared gap; a glyph from an icon font
-  reads back as an empty string, which is the same gap seen from the other side.
-- **A stacked overlay.** `media/MediaCard` puts its play button in `absolute
-  inset-0`. Auto-layout ignores x/y, so the translation needs a plain frame there,
-  and nothing in the measurement says which of the two a stack should become.
-- **A fill at part opacity.** `bg-always-dark/70` is a token and a number; the
-  spec's `fill` is a token reference and has nowhere to put the number.
-- **A margin.** The spec has no margins, only gaps and `space` nodes, so `mt-2xs`
-  between two children has to become one or the other, and which one is a judgement
-  about what the component means.
-- **A state.** `active:opacity-80` is in the class list and is not a drawing.
+Auto-layout has no word for any of these, and a decision that is not written down
+gets made again differently.
+
+1. **An icon** is a glyph from an icon font and reads back as the empty string, its
+   codepoint being private-use. Drawn as a placeholder and printed as a gap, which
+   is `NavCard.icon` seen from the other side.
+2. **A stack** is a child in `absolute inset-0`. Figma honours x/y only when the
+   parent is a plain frame, so the parent gives up its layout and the children carry
+   coordinates.
+3. **A fill at part opacity** is `bg-always-dark/70`. `code.js` now reads
+   `@color-x/NN` and puts the alpha on the paint rather than on the node, so a
+   translucent surface does not fade the icon standing on it, and the token survives.
+4. **A margin** has no equivalent: the spec has gaps, which belong to the parent, and
+   `space` nodes, which stand between two children. A margin belongs to one child, so
+   it becomes a `space` — along the axis the parent lays out on, since a row's
+   spacing is written `mr-3xs` and a column's `mt-2xs`.
+5. **A circle** is `rounded-full`, which the spec's numeric `radius` cannot take. An
+   empty round box is an ellipse; one with children keeps half its height as a
+   radius, which is the same drawing by another route.
+
+### Two schemes, or a role reads as a colour
+
+`always-dark` and `on-canvas` are the same hex in light and different in dark. One
+is a colour that must not follow the scheme, the other is the role of text on the
+page, and a light-only reading called every title `always-dark` — which would have
+made a dark board unreadable, the very fault the gallery draws two surfaces to
+catch. So each component is measured twice and a token has to match on both values.
+
+Where a pair matches no token the hex comes through unnamed and the run says which
+node it was. Guessing is the thing to avoid: a name that is confidently wrong reads
+as a decision somebody made.
+
+Two tokens can still share both values, and then the rank decides by what the colour
+paints — `stroke-strong` under a rule, `on-canvas-muted` under a date. `MediaCard`'s
+date is such a case: the app asks for `grey-500`, which is the deprecated tier ADR
+0022 retires, and `stroke-strong` carries the identical pair. The board gets the
+successor's name.
+
+### What it still does not recover
+
+- **A slot.** Unchanged from `kit.mjs`: an instance may override text and visibility
+  and can never be given children.
+- **A prop with no visual effect**, and every handler. Those are the call site's, and
+  the accounting for them stays where it is.
+- **Which German name a variant property should carry.** `tone` comes out; `Ton` is
+  a decision about the board's own language.
 
 ### The defect it found
 
@@ -293,6 +335,13 @@ and puts the weight in the family name — Android ignores `fontWeight` on a cus
 font, which is why. So the family is the only honest reading, and it says
 `SourceSans3_400Regular`. A measurement that trusted `font-weight` would have
 called the whole app regular and been right by accident here.
+
+### The output
+
+`--emit` writes `measured.json`, one entry per component, in the format the
+repository's own check wants so that a run does not turn `npm run check` red. It is
+committed for the same reason `spec.json` is: a diff then shows what changed in the
+app's rendering, which is a thing worth seeing in a review.
 
 ## Pointing the screens at the kit
 

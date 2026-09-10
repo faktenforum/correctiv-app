@@ -17,7 +17,7 @@
 //
 // Chrome has to be listening on 9222. `CHROME=...` overrides the endpoint.
 
-import { readFile } from 'node:fs/promises';
+import { readFile, writeFile } from 'node:fs/promises';
 import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
@@ -119,7 +119,8 @@ const READER = `(() => {
     const box = el.getBoundingClientRect();
     const parent = el.parentElement;
     let width = Math.round(box.width);
-    if (parent) {
+    if (getComputedStyle(el).alignSelf === 'flex-start') width = 'hug';
+    else if (parent) {
       const ps = getComputedStyle(parent);
       const inner =
         parent.getBoundingClientRect().width - parseFloat(ps.paddingLeft) - parseFloat(ps.paddingRight);
@@ -146,9 +147,21 @@ const READER = `(() => {
       strokeWeight: px(s.borderTopWidth),
       align: s.justifyContent,
       cross: s.alignItems,
+      self: s.alignSelf,
       opacity: s.opacity === '1' ? undefined : Number(s.opacity),
+      // Auto-layout has no word for either of these, so the caller has to translate.
+      position: s.position === 'absolute' ? 'absolute' : undefined,
+      margin: [px(s.marginLeft), px(s.marginRight), px(s.marginTop), px(s.marginBottom)],
     };
-    if (text) {
+    if (parent && s.position === 'absolute') {
+      const p = parent.getBoundingClientRect();
+      node.x = Math.round(box.left - p.left);
+      node.y = Math.round(box.top - p.top);
+    }
+    // A text node, which React Native Web marks with a class of its own. Without
+    // that marker every empty box read as empty text, and the badge's seven-pixel
+    // live dot arrived as a string.
+    if (text || [...el.classList].some((c) => c.startsWith('css-text-'))) {
       node.chars = text;
       node.font = s.fontFamily.split(',')[0].replace(/["']/g, '');
       node.size = px(s.fontSize);
@@ -171,13 +184,72 @@ const READER = `(() => {
 })()`;
 
 /** `#ff5064` back to `@color-accent`, in the scheme it was measured in. */
-function tokeniser(tokens, scheme) {
-  const colours = {};
+/**
+ * The order to prefer when several tokens share one value.
+ *
+ * `always-light` and `white` are the same hex, and so are `accent` and `red-500`.
+ * Which name to write is not a detail: AGENTS.md keeps `always-light` as the app's
+ * spelling and reserves the primitives for the places a colour must NOT follow the
+ * scheme. A class says which was meant and is preferred over any of this; these are
+ * the colours set in TypeScript, where there is no class to read.
+ */
+const PREFERRED = {
+  text: ['on-', 'accent', 'always-', 'canvas', 'surface', 'stroke'],
+  fill: ['accent', 'canvas', 'surface', 'always-', 'stroke', 'on-'],
+  stroke: ['stroke', 'accent', 'on-', 'always-', 'canvas', 'surface'],
+};
+
+function rank(name, role) {
+  const order = PREFERRED[role] ?? PREFERRED.fill;
+  const i = order.findIndex((p) => name.startsWith(`color-${p}`));
+  return i === -1 ? order.length : i;
+}
+
+function tokeniser(tokens, unnamed) {
+  /**
+   * Both schemes, which is what tells a role from a colour.
+   *
+   * `always-dark` and `on-canvas` are the same hex in light and different in dark:
+   * one is a colour that must not follow the scheme, the other is the role of text
+   * on the page. A light-only reading cannot tell them apart and named every title
+   * `always-dark`, which would have made a dark board unreadable — the very fault
+   * the gallery draws two surfaces to catch. So the measurement runs twice and a
+   * token has to match on both.
+   */
+  const pairs = { text: {}, fill: {}, stroke: {} };
+  const lightOnly = { text: {}, fill: {}, stroke: {} };
   for (const [name, value] of Object.entries(tokens)) {
     if (!name.startsWith('color-') || typeof value !== 'object') continue;
-    const hex = value[scheme];
-    if (hex && colours[hex] === undefined) colours[hex] = `@${name}`;
+    const { light, dark } = value;
+    if (!light) continue;
+    const both = `${light}|${dark ?? light}`;
+    // Per role, because what a colour should be CALLED depends on what it paints.
+    // The same hex is `stroke-strong` under a rule and `on-canvas-muted` under a
+    // date, and only one of those reads as a mistake in the other place.
+    for (const role of Object.keys(pairs)) {
+      if (
+        pairs[role][both] === undefined ||
+        rank(name, role) < rank(pairs[role][both].slice(1), role)
+      ) {
+        pairs[role][both] = `@${name}`;
+      }
+      if (
+        lightOnly[role][light] === undefined ||
+        rank(name, role) < rank(lightOnly[role][light].slice(1), role)
+      ) {
+        lightOnly[role][light] = `@${name}`;
+      }
+    }
   }
+  /**
+   * Exact on both schemes, or nothing.
+   *
+   * The light value alone was enough to guess with, and guessing is what this must
+   * not do: a name that is confidently wrong reads as a decision somebody made. A
+   * pair that matches no token comes through as the two hexes, and the run says
+   * which node it was — a question for a person rather than a silent answer.
+   */
+  const named = (hex, dark, role) => pairs[role][`${hex}|${dark ?? hex}`];
   const numbers = (prefix) =>
     Object.entries(tokens)
       .filter(([name, value]) => name.startsWith(prefix) && typeof value === 'number')
@@ -185,7 +257,13 @@ function tokeniser(tokens, scheme) {
   const spacing = numbers('spacing-');
   const radius = numbers('radius-');
   return {
-    colour: (hex) => (hex && hex !== 'none' ? (colours[hex] ?? hex) : null),
+    colour: (hex, dark, role = 'fill') => {
+      if (!hex || hex === 'none') return null;
+      const name = named(hex, dark, role);
+      if (name) return name;
+      unnamed.add(`${hex}${dark && dark !== hex ? ` / ${dark}` : ''} as a ${role}`);
+      return hex;
+    },
     spacing: (n) => (n === 0 ? 0 : (spacing[n] ?? n)),
     radius: (n) => (n === 0 ? 0 : (radius[n] ?? n)),
   };
@@ -214,53 +292,238 @@ function fromClasses(classes) {
   return asked;
 }
 
-/** The measured tree, with every number the token table knows named. */
-function tokenise(node, t) {
-  const out = { t: node.chars ? 'text' : 'frame' };
-  if (node.chars) {
+/**
+ * The app's font files back to the two things the spec says about type.
+ *
+ * `theme/fonts.ts` loads one file per cut, because Android ignores `fontWeight` on a
+ * custom font, so the family name is where the weight is. Reading `font-weight`
+ * instead calls every cut regular, and did: the badge's label was bold on the board
+ * for that reason and had never been bold in the app.
+ */
+function typeOf(font) {
+  const family = /merriweather/i.test(font ?? '') ? 'serif' : 'sans';
+  const weight = /bold/i.test(font ?? '')
+    ? /semibold/i.test(font)
+      ? 'semibold'
+      : 'bold'
+    : 'regular';
+  return { family, weight, icon: /ionicons/i.test(font ?? '') };
+}
+
+/**
+ * Which of the fifteen text styles this is, if it is one of them.
+ *
+ * A style rather than three numbers, because a style reaches every text node
+ * carrying it across every page, including nodes inside other components, which a
+ * component can never reach. `kit.mjs` makes the same argument at greater length.
+ */
+function styleNamer(tokens, specs) {
+  const byShape = {};
+  for (const [name, spec] of Object.entries(specs)) {
+    const size = tokens[`text-${String(spec.size).replace(/^text-/, '')}`];
+    const weight = spec.weight === 'normal' ? 'regular' : spec.weight;
+    byShape[`${spec.family}|${weight}|${size}`] ??= name;
+  }
+  return (font, size) => {
+    const { family, weight } = typeOf(font);
+    return byShape[`${family}|${weight}|${size}`];
+  };
+}
+
+/**
+ * The measured tree, in the spec's vocabulary, with the four things auto-layout has
+ * no word for translated on the way.
+ *
+ * Each rule is here rather than left for the reader of the output, because each one
+ * is a decision and a decision that is not written down gets made again differently.
+ * The gaps it cannot close are collected in `gaps` and printed, the way `kit.mjs`
+ * prints its own.
+ */
+function tokenise(node, t, style, gaps, name, twin) {
+  const out = { t: node.chars !== undefined ? 'text' : 'frame' };
+
+  if (node.chars !== undefined) {
+    const { family, weight, icon } = typeOf(node.font);
+    if (icon) {
+      // RULE 1, an icon. A glyph from an icon font reads back as the empty string,
+      // its codepoint being in a private-use area. `NavCard.icon` is already a
+      // declared gap in `kit.mjs`; this is the same gap seen from the other side.
+      gaps.add(`${name}: an icon font glyph, drawn as a placeholder until the spec learns vectors`);
+      return {
+        t: 'text',
+        chars: '◎',
+        font: 'sans',
+        size: node.size,
+        color: t.colour(node.color, twin?.color, 'text'),
+      };
+    }
     Object.assign(out, {
+      style: style(node.font, node.size),
       chars: node.chars,
+      font: family === 'sans' ? undefined : family,
+      weight: weight === 'regular' ? undefined : weight,
       size: node.size,
-      // The FAMILY carries the weight here, not `font-weight`. `theme/fonts.ts`
-      // loads one file per cut because Android ignores `fontWeight` on a custom
-      // font, so every cut computes as 400 and reading that alone calls the whole
-      // app regular.
-      font: node.font,
-      weight: node.weight,
-      color: t.colour(node.color),
-      tracking: node.tracking || undefined,
+      color: t.colour(node.color, twin?.color, 'text'),
+      // The spec takes tracking as a percentage of the size, which is what Figma
+      // takes; the browser reports pixels.
+      tracking: node.tracking ? Math.round((node.tracking / node.size) * 10000) / 100 : undefined,
       transform: node.transform,
     });
   } else {
     const asked = fromClasses(node.classes ?? []);
+    const stacked = (node.children ?? []).some((c) => c.position === 'absolute');
+
+    // RULE 5, a circle. `rounded-full` is a radius the spec cannot take, because
+    // its `radius` is a number; a box that is round and has nothing in it is an
+    // ellipse, which the vocabulary does have. One with children keeps its corners
+    // as half its height, which is the same drawing by another route.
+    if (asked.radius === 'full' && !node.children?.length) {
+      return {
+        t: 'ellipse',
+        w: node.w,
+        h: node.h,
+        x: node.x,
+        y: node.y,
+        fill: asked.fill !== undefined ? asked.fill : t.colour(node.fill, twin?.fill),
+      };
+    }
+    if (asked.radius === 'full') asked.radius = Math.round(node.h / 2);
     Object.assign(out, {
-      dir: node.dir,
+      // RULE 2, a stack. Figma honours x/y only when the parent is a plain frame and
+      // ignores them inside auto-layout, so a parent holding an absolute child has to
+      // give up its layout. That is the same rule the Plugin API has, so there is
+      // nothing extra to remember — but it has to be decided here, because nothing
+      // about the measurement says which of the two a stack should become.
+      dir: stacked ? undefined : node.dir,
       w: node.w,
       h: node.h,
+      x: node.x,
+      y: node.y,
       gap: node.gap ? (asked.gap ?? t.spacing(node.gap)) : undefined,
       pad: node.pad.some(Boolean) ? node.pad.map((n) => t.spacing(n)) : undefined,
       radius: node.radius ? (asked.radius ?? t.radius(node.radius)) : undefined,
-      // The class wins where there is one, because `bg-accent` and `bg-red-500`
-      // paint the same pixels and only one of them is what the component means.
-      fill: asked.fill !== undefined ? asked.fill : t.colour(node.fill),
-      stroke: asked.stroke ?? t.colour(node.stroke),
+      // RULE 3, a fill at part opacity. `bg-always-dark/70` survives as the class
+      // says it, because the interpreter now reads `@color-x/NN` and puts the alpha
+      // on the paint rather than on the node — so a translucent surface does not
+      // fade the icon standing on it.
+      fill: asked.fill !== undefined ? asked.fill : t.colour(node.fill, twin?.fill),
+      stroke: asked.stroke ?? t.colour(node.stroke, twin?.stroke, 'stroke'),
+      strokeWeight: node.stroke ? node.strokeWeight || undefined : undefined,
       opacity: node.opacity,
-      classes: node.classes?.length ? node.classes.join(' ') : undefined,
     });
   }
-  for (const key of Object.keys(out))
+
+  for (const key of Object.keys(out)) {
     if (out[key] === undefined || out[key] === null) delete out[key];
-  if (node.children) out.children = node.children.map((c) => tokenise(c, t));
+  }
+
+  if (node.children) {
+    const children = [];
+    const row = node.dir === 'H';
+    const last = node.children.length - 1;
+    for (const [i, child] of node.children.entries()) {
+      // RULE 4, a margin. The spec has no margins, only gaps and `space` nodes, and
+      // a gap belongs to the parent while a margin belongs to one child. A `space`
+      // is the honest translation: it says exactly what the margin said, between the
+      // two children it stood between. Along the axis the parent lays out on, since
+      // a row's spacing is written `mr-3xs` and a column's `mt-2xs`.
+      const [left, right, top, bottom] = child.margin ?? [0, 0, 0, 0];
+      const [before, after] = row ? [left, right] : [top, bottom];
+      const space = (n) =>
+        row ? { t: 'space', w: t.spacing(n) } : { t: 'space', h: t.spacing(n) };
+      if (before && !stackedIn(node)) children.push(space(before));
+      children.push(tokenise(child, t, style, gaps, name, twin?.children?.[i]));
+      if (after && i !== last && !stackedIn(node)) children.push(space(after));
+    }
+    out.children = children;
+  }
   return out;
 }
 
-const ids = process.argv.slice(2);
+function stackedIn(node) {
+  return (node.children ?? []).some((c) => c.position === 'absolute');
+}
+
+/**
+ * `tone="club"` — the specimen's own label, which is already the variant.
+ *
+ * The catalogue writes each label "in the props' own words", so the gallery has
+ * been carrying the variant axis all along. `default` and anything that does not
+ * parse are not variants: one specimen is a component, several unnamed ones are a
+ * component per specimen, and neither is a set.
+ */
+function variantOf(label) {
+  const pair = /^([A-Za-z][\w]*)="([^"]*)"$/.exec(label ?? '');
+  if (pair) return { prop: pair[1], value: pair[2] };
+  const bare = /^([A-Za-z][\w]*)$/.exec(label ?? '');
+  if (bare && bare[1] !== 'default') return { prop: bare[1], value: 'true' };
+  return null;
+}
+
+/** One component, from its specimens: a variant set, or a single component. */
+function assemble(id, boxes, dark, t, style, gaps) {
+  const name = id;
+  const drawn = boxes.map((box, i) => ({
+    variant: variantOf(box.label),
+    node: tokenise(box.root, t, style, gaps, name, dark[i]?.root),
+  }));
+
+  const props = new Set(drawn.map((d) => d.variant?.prop).filter(Boolean));
+  if (props.size === 1 && drawn.every((d) => d.variant)) {
+    const prop = [...props][0];
+    return {
+      t: 'variants',
+      name: name,
+      prop: prop,
+      options: drawn.map((d) => Object.assign({ value: d.variant.value }, d.node)),
+    };
+  }
+
+  if (drawn.length > 1) {
+    gaps.add(
+      `${name}: ${drawn.length} specimens on ${props.size} axes, so they are ${drawn.length} components rather than one set`,
+    );
+  }
+  return drawn.map((d, i) =>
+    Object.assign(
+      { t: 'component', name: drawn.length === 1 ? name : `${name}, ${boxes[i].label}` },
+      d.node,
+    ),
+  );
+}
+
+const args = process.argv.slice(2);
+const emit = args.includes('--emit');
+const ids = args.filter((a) => !a.startsWith('--'));
 if (ids.length === 0) throw new Error('name at least one component, for example ui/Badge');
 
-const { tokens } = JSON.parse(await readFile(join(HERE, 'spec.json'), 'utf8'));
-const t = tokeniser(tokens, 'light');
+const spec = JSON.parse(await readFile(join(HERE, 'spec.json'), 'utf8'));
+const unnamed = new Set();
+const t = tokeniser(spec.tokens, unnamed);
 
-for (const id of ids) {
+/**
+ * The typography specs, read out of the generated TypeScript rather than imported.
+ *
+ * This script runs in plain node and that file is a module of the app's toolchain;
+ * what is needed from it is one literal, and a regex reaches it without dragging in
+ * a compiler. It fails loudly if the shape ever changes, which is the point.
+ */
+const TYPOGRAPHY = await (async () => {
+  const source = await readFile(
+    join(HERE, '../../packages/design-tokens/src/typography.generated.ts'),
+    'utf8',
+  );
+  const body = /=\s*(\{[\s\S]*?\n\})/.exec(source);
+  if (!body) throw new Error('typography.generated.ts no longer holds one object literal');
+  return JSON.parse(body[1]);
+})();
+const style = styleNamer(spec.tokens, TYPOGRAPHY);
+
+const gaps = new Set();
+const measured = {};
+
+/** One pass over one component, in one scheme. */
+async function read(id, scheme) {
   const page = await connect(`${APP}/`);
   await page.send('Page.enable');
   await page.send('Runtime.enable');
@@ -273,10 +536,8 @@ for (const id of ids) {
     deviceScaleFactor: 1,
     mobile: true,
   });
-  // Light, because the board carries one mode: a second variable mode is a paid
-  // Figma feature, so the dark values have nowhere to go yet.
   await page.send('Emulation.setEmulatedMedia', {
-    features: [{ name: 'prefers-color-scheme', value: 'light' }],
+    features: [{ name: 'prefers-color-scheme', value: scheme }],
   });
   // The tab answers before it has left about:blank, and `localStorage` on that
   // document is not this origin's — reading it throws SecurityError rather than
@@ -291,21 +552,57 @@ for (const id of ids) {
   );
   await page.send('Page.navigate', { url: `${APP}/gallery?c=${id}&bare=1` });
 
-  let measured = [];
-  for (let tries = 0; tries < 40 && measured.length === 0; tries++) {
+  let boxes = [];
+  for (let tries = 0; tries < 40 && boxes.length === 0; tries++) {
     await new Promise((r) => setTimeout(r, 500));
-    measured = (await page.evaluate(READER)) ?? [];
+    boxes = (await page.evaluate(READER)) ?? [];
   }
   await page.close();
+  return boxes.filter((b) => b.surface === 'canvas');
+}
 
-  if (measured.length === 0) {
+for (const id of ids) {
+  // Twice, because one scheme cannot tell a role from a colour: see the tokeniser.
+  const light = await read(id, 'light');
+  if (light.length === 0) {
     console.error(`${id}: nothing drawn — is the app's dev server up, and does that name exist?`);
     continue;
   }
+  const dark = await read(id, 'dark');
 
-  console.log(`\n### ${id} — ${measured.length} boxes\n`);
-  for (const box of measured.filter((b) => b.surface === 'canvas')) {
-    console.log(`${box.label || '(no label)'}:`);
-    console.log(JSON.stringify(tokenise(box.root, t), null, 1));
+  measured[id] = assemble(id, light, dark, t, style, gaps);
+  if (!emit) {
+    console.log(`\n### ${id} — ${light.length} specimens\n`);
+    console.log(JSON.stringify(measured[id], null, 1));
   }
+}
+
+for (const gap of [...gaps].sort()) console.log(`  gap: ${gap}`);
+for (const colour of [...unnamed].sort()) {
+  console.log(`  unnamed: ${colour} — no token has that pair of values`);
+}
+
+/**
+ * `JSON.stringify` with short arrays kept on one line, which is what oxfmt wants.
+ *
+ * A generated file that fails the repository's own format check is a generated file
+ * somebody has to remember to format, and `npm run check` would go red on every run
+ * of this script. Four numbers of padding read better on one line anyway.
+ */
+function formatted(value) {
+  const wide = JSON.stringify(value, null, 2);
+  return wide.replace(
+    /\[\n\s+((?:"[^"\n]*"|-?[\d.]+)(?:,\n\s+(?:"[^"\n]*"|-?[\d.]+))*)\n\s+\]/g,
+    (all, body) => {
+      const line = `[${body.split(/,\n\s+/).join(', ')}]`;
+      return line.length <= 90 ? line : all;
+    },
+  );
+}
+
+if (emit) {
+  const out = join(HERE, 'measured.json');
+  await writeFile(out, `${formatted(measured)}\n`);
+  const count = Object.keys(measured).length;
+  console.log(`${count} component${count === 1 ? '' : 's'} written to ${out}`);
 }
