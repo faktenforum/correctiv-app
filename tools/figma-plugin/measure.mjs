@@ -286,7 +286,9 @@ function fromClasses(classes) {
     else if ((m = /^rounded-(.+)$/.exec(name)))
       asked.radius = m[1] === 'full' ? 'full' : `@radius-${m[1]}`;
     else if ((m = /^p([xy]?)-(.+)$/.exec(name))) asked[`pad${m[1] || 'a'}`] = `@spacing-${m[2]}`;
-    else if ((m = /^gap-(.+)$/.exec(name))) asked.gap = `@spacing-${m[1]}`;
+    // `gap-y-2xs` names the same scale step as `gap-2xs`, on one axis. The axis is
+    // the parent's business and auto-layout has one gap, so the letter goes.
+    else if ((m = /^gap(?:-[xy])?-(.+)$/.exec(name))) asked.gap = `@spacing-${m[1]}`;
     else if (name === 'flex-row') asked.dir = 'H';
   }
   return asked;
@@ -602,6 +604,14 @@ function formatted(value) {
 
 if (emit) {
   const out = join(HERE, 'measured.json');
+  // Merged, not replaced. This is a per-component tool: re-reading one after a fix
+  // must not drop the other thirty-six, and losing them is the kind of thing only
+  // the next full run would notice.
+  const before = await readFile(out, 'utf8')
+    .then((text) => JSON.parse(text))
+    .catch(() => ({}));
+  Object.assign(before, measured);
+  for (const key of Object.keys(before)) measured[key] = before[key];
   await writeFile(out, `${formatted(measured)}\n`);
   const count = Object.keys(measured).length;
   console.log(`${count} component${count === 1 ? '' : 's'} written to ${out}`);

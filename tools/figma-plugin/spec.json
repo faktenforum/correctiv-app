@@ -1762,9 +1762,111 @@
         },
         {
           "t": "frame",
-          "name": "ui/SectionCard, default, tone=\"outline\"",
+          "name": "feed/ArticleRow, default",
           "x": 460,
           "y": 0,
+          "dir": "V",
+          "w": 319,
+          "h": 101,
+          "pad": [
+            0,
+            0,
+            "@spacing-s",
+            "@spacing-s"
+          ],
+          "children": [
+            {
+              "t": "text",
+              "style": "headline-xs",
+              "chars": "Wem gehört die Stadt? Was die Grundbücher über Eigentum verraten",
+              "weight": "bold",
+              "size": 17,
+              "color": "@color-on-canvas",
+              "tracking": 1.18
+            },
+            {
+              "t": "space",
+              "h": "@spacing-3xs"
+            },
+            {
+              "t": "frame",
+              "dir": "H",
+              "w": "fill",
+              "h": 21,
+              "gap": "@spacing-2xs",
+              "children": [
+                {
+                  "t": "text",
+                  "style": "text-s",
+                  "chars": "Alex Beispiel",
+                  "size": 14,
+                  "color": "@color-on-canvas-muted",
+                  "tracking": 1.43
+                },
+                {
+                  "t": "text",
+                  "style": "text-s",
+                  "chars": "· 12. August 2026",
+                  "size": 14,
+                  "color": "@color-stroke-strong",
+                  "tracking": 1.43
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "t": "frame",
+          "name": "feed/ArticleRow, long title, no image",
+          "x": 460,
+          "y": 210,
+          "dir": "V",
+          "w": 319,
+          "h": 101,
+          "pad": [
+            0,
+            0,
+            "@spacing-s",
+            "@spacing-s"
+          ],
+          "children": [
+            {
+              "t": "text",
+              "style": "headline-xs",
+              "chars": "Ohne Bild und ohne Lesezeit, weil der RSS-Weg beides nicht kennt",
+              "weight": "bold",
+              "size": 17,
+              "color": "@color-on-canvas",
+              "tracking": 1.18
+            },
+            {
+              "t": "space",
+              "h": "@spacing-3xs"
+            },
+            {
+              "t": "frame",
+              "dir": "H",
+              "w": "fill",
+              "h": 21,
+              "gap": "@spacing-2xs",
+              "children": [
+                {
+                  "t": "text",
+                  "style": "text-s",
+                  "chars": "3. August 2026",
+                  "size": 14,
+                  "color": "@color-stroke-strong",
+                  "tracking": 1.43
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "t": "frame",
+          "name": "ui/SectionCard, default, tone=\"outline\"",
+          "x": 460,
+          "y": 420,
           "dir": "V",
           "w": 319,
           "h": 100,
@@ -1813,7 +1915,7 @@
           "t": "frame",
           "name": "ui/SectionCard, tone=\"surface\"",
           "x": 460,
-          "y": 210,
+          "y": 630,
           "dir": "V",
           "w": 319,
           "h": 98,
@@ -1860,7 +1962,7 @@
           "t": "frame",
           "name": "ui/Thumbnail, aspectRatio={16 / 9}, no uri",
           "x": 460,
-          "y": 420,
+          "y": 840,
           "dir": "V",
           "w": 319,
           "h": 179,
@@ -1887,7 +1989,7 @@
           "t": "frame",
           "name": "ui/Thumbnail, aspectRatio={1}, icon=\"mic-outline\"",
           "x": 460,
-          "y": 630,
+          "y": 1050,
           "dir": "V",
           "w": 116,
           "h": 116,
@@ -1922,7 +2024,7 @@
           "t": "frame",
           "name": "ui/Thumbnail, uri that cannot load, with an overlay",
           "x": 460,
-          "y": 840,
+          "y": 1260,
           "w": 319,
           "h": 179,
           "fill": "@color-grey-300",
@@ -1982,7 +2084,7 @@
           "t": "frame",
           "name": "feed/ArticleHero, with image and readingMinutes",
           "x": 460,
-          "y": 1050,
+          "y": 1470,
           "dir": "V",
           "w": 319,
           "h": 431,
@@ -2074,7 +2176,7 @@
           "t": "frame",
           "name": "feed/ArticleHero, imageUrl: null",
           "x": 460,
-          "y": 1260,
+          "y": 1680,
           "dir": "V",
           "w": 319,
           "h": 408,
@@ -2159,108 +2261,6 @@
               "size": 14,
               "color": "@color-stroke-strong",
               "tracking": 1.43
-            }
-          ]
-        },
-        {
-          "t": "frame",
-          "name": "feed/ArticleRow, default",
-          "x": 460,
-          "y": 1470,
-          "dir": "V",
-          "w": 319,
-          "h": 101,
-          "pad": [
-            0,
-            0,
-            "@spacing-s",
-            "@spacing-s"
-          ],
-          "children": [
-            {
-              "t": "text",
-              "style": "headline-xs",
-              "chars": "Wem gehört die Stadt? Was die Grundbücher über Eigentum verraten",
-              "weight": "bold",
-              "size": 17,
-              "color": "@color-on-canvas",
-              "tracking": 1.18
-            },
-            {
-              "t": "space",
-              "h": "@spacing-3xs"
-            },
-            {
-              "t": "frame",
-              "dir": "H",
-              "w": "fill",
-              "h": 21,
-              "gap": "@spacing-y-2xs",
-              "children": [
-                {
-                  "t": "text",
-                  "style": "text-s",
-                  "chars": "Alex Beispiel",
-                  "size": 14,
-                  "color": "@color-on-canvas-muted",
-                  "tracking": 1.43
-                },
-                {
-                  "t": "text",
-                  "style": "text-s",
-                  "chars": "· 12. August 2026",
-                  "size": 14,
-                  "color": "@color-stroke-strong",
-                  "tracking": 1.43
-                }
-              ]
-            }
-          ]
-        },
-        {
-          "t": "frame",
-          "name": "feed/ArticleRow, long title, no image",
-          "x": 460,
-          "y": 1680,
-          "dir": "V",
-          "w": 319,
-          "h": 101,
-          "pad": [
-            0,
-            0,
-            "@spacing-s",
-            "@spacing-s"
-          ],
-          "children": [
-            {
-              "t": "text",
-              "style": "headline-xs",
-              "chars": "Ohne Bild und ohne Lesezeit, weil der RSS-Weg beides nicht kennt",
-              "weight": "bold",
-              "size": 17,
-              "color": "@color-on-canvas",
-              "tracking": 1.18
-            },
-            {
-              "t": "space",
-              "h": "@spacing-3xs"
-            },
-            {
-              "t": "frame",
-              "dir": "H",
-              "w": "fill",
-              "h": 21,
-              "gap": "@spacing-y-2xs",
-              "children": [
-                {
-                  "t": "text",
-                  "style": "text-s",
-                  "chars": "3. August 2026",
-                  "size": 14,
-                  "color": "@color-stroke-strong",
-                  "tracking": 1.43
-                }
-              ]
             }
           ]
         },
@@ -7171,9 +7171,111 @@
         },
         {
           "t": "frame",
-          "name": "ui/SectionCard, default, tone=\"outline\"",
+          "name": "feed/ArticleRow, default",
           "x": 460,
           "y": 0,
+          "dir": "V",
+          "w": 319,
+          "h": 101,
+          "pad": [
+            0,
+            0,
+            "@spacing-s",
+            "@spacing-s"
+          ],
+          "children": [
+            {
+              "t": "text",
+              "style": "headline-xs",
+              "chars": "Wem gehört die Stadt? Was die Grundbücher über Eigentum verraten",
+              "weight": "bold",
+              "size": 17,
+              "color": "@color-on-canvas",
+              "tracking": 1.18
+            },
+            {
+              "t": "space",
+              "h": "@spacing-3xs"
+            },
+            {
+              "t": "frame",
+              "dir": "H",
+              "w": "fill",
+              "h": 21,
+              "gap": "@spacing-2xs",
+              "children": [
+                {
+                  "t": "text",
+                  "style": "text-s",
+                  "chars": "Alex Beispiel",
+                  "size": 14,
+                  "color": "@color-on-canvas-muted",
+                  "tracking": 1.43
+                },
+                {
+                  "t": "text",
+                  "style": "text-s",
+                  "chars": "· 12. August 2026",
+                  "size": 14,
+                  "color": "@color-stroke-strong",
+                  "tracking": 1.43
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "t": "frame",
+          "name": "feed/ArticleRow, long title, no image",
+          "x": 460,
+          "y": 210,
+          "dir": "V",
+          "w": 319,
+          "h": 101,
+          "pad": [
+            0,
+            0,
+            "@spacing-s",
+            "@spacing-s"
+          ],
+          "children": [
+            {
+              "t": "text",
+              "style": "headline-xs",
+              "chars": "Ohne Bild und ohne Lesezeit, weil der RSS-Weg beides nicht kennt",
+              "weight": "bold",
+              "size": 17,
+              "color": "@color-on-canvas",
+              "tracking": 1.18
+            },
+            {
+              "t": "space",
+              "h": "@spacing-3xs"
+            },
+            {
+              "t": "frame",
+              "dir": "H",
+              "w": "fill",
+              "h": 21,
+              "gap": "@spacing-2xs",
+              "children": [
+                {
+                  "t": "text",
+                  "style": "text-s",
+                  "chars": "3. August 2026",
+                  "size": 14,
+                  "color": "@color-stroke-strong",
+                  "tracking": 1.43
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "t": "frame",
+          "name": "ui/SectionCard, default, tone=\"outline\"",
+          "x": 460,
+          "y": 420,
           "dir": "V",
           "w": 319,
           "h": 100,
@@ -7222,7 +7324,7 @@
           "t": "frame",
           "name": "ui/SectionCard, tone=\"surface\"",
           "x": 460,
-          "y": 210,
+          "y": 630,
           "dir": "V",
           "w": 319,
           "h": 98,
@@ -7269,7 +7371,7 @@
           "t": "frame",
           "name": "ui/Thumbnail, aspectRatio={16 / 9}, no uri",
           "x": 460,
-          "y": 420,
+          "y": 840,
           "dir": "V",
           "w": 319,
           "h": 179,
@@ -7296,7 +7398,7 @@
           "t": "frame",
           "name": "ui/Thumbnail, aspectRatio={1}, icon=\"mic-outline\"",
           "x": 460,
-          "y": 630,
+          "y": 1050,
           "dir": "V",
           "w": 116,
           "h": 116,
@@ -7331,7 +7433,7 @@
           "t": "frame",
           "name": "ui/Thumbnail, uri that cannot load, with an overlay",
           "x": 460,
-          "y": 840,
+          "y": 1260,
           "w": 319,
           "h": 179,
           "fill": "@color-grey-300",
@@ -7391,7 +7493,7 @@
           "t": "frame",
           "name": "feed/ArticleHero, with image and readingMinutes",
           "x": 460,
-          "y": 1050,
+          "y": 1470,
           "dir": "V",
           "w": 319,
           "h": 431,
@@ -7483,7 +7585,7 @@
           "t": "frame",
           "name": "feed/ArticleHero, imageUrl: null",
           "x": 460,
-          "y": 1260,
+          "y": 1680,
           "dir": "V",
           "w": 319,
           "h": 408,
@@ -7568,108 +7670,6 @@
               "size": 14,
               "color": "@color-stroke-strong",
               "tracking": 1.43
-            }
-          ]
-        },
-        {
-          "t": "frame",
-          "name": "feed/ArticleRow, default",
-          "x": 460,
-          "y": 1470,
-          "dir": "V",
-          "w": 319,
-          "h": 101,
-          "pad": [
-            0,
-            0,
-            "@spacing-s",
-            "@spacing-s"
-          ],
-          "children": [
-            {
-              "t": "text",
-              "style": "headline-xs",
-              "chars": "Wem gehört die Stadt? Was die Grundbücher über Eigentum verraten",
-              "weight": "bold",
-              "size": 17,
-              "color": "@color-on-canvas",
-              "tracking": 1.18
-            },
-            {
-              "t": "space",
-              "h": "@spacing-3xs"
-            },
-            {
-              "t": "frame",
-              "dir": "H",
-              "w": "fill",
-              "h": 21,
-              "gap": "@spacing-y-2xs",
-              "children": [
-                {
-                  "t": "text",
-                  "style": "text-s",
-                  "chars": "Alex Beispiel",
-                  "size": 14,
-                  "color": "@color-on-canvas-muted",
-                  "tracking": 1.43
-                },
-                {
-                  "t": "text",
-                  "style": "text-s",
-                  "chars": "· 12. August 2026",
-                  "size": 14,
-                  "color": "@color-stroke-strong",
-                  "tracking": 1.43
-                }
-              ]
-            }
-          ]
-        },
-        {
-          "t": "frame",
-          "name": "feed/ArticleRow, long title, no image",
-          "x": 460,
-          "y": 1680,
-          "dir": "V",
-          "w": 319,
-          "h": 101,
-          "pad": [
-            0,
-            0,
-            "@spacing-s",
-            "@spacing-s"
-          ],
-          "children": [
-            {
-              "t": "text",
-              "style": "headline-xs",
-              "chars": "Ohne Bild und ohne Lesezeit, weil der RSS-Weg beides nicht kennt",
-              "weight": "bold",
-              "size": 17,
-              "color": "@color-on-canvas",
-              "tracking": 1.18
-            },
-            {
-              "t": "space",
-              "h": "@spacing-3xs"
-            },
-            {
-              "t": "frame",
-              "dir": "H",
-              "w": "fill",
-              "h": 21,
-              "gap": "@spacing-y-2xs",
-              "children": [
-                {
-                  "t": "text",
-                  "style": "text-s",
-                  "chars": "3. August 2026",
-                  "size": 14,
-                  "color": "@color-stroke-strong",
-                  "tracking": 1.43
-                }
-              ]
             }
           ]
         },

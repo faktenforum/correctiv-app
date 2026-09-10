@@ -1,4 +1,94 @@
 {
+  "feed/ArticleRow": [
+    {
+      "t": "frame",
+      "name": "feed/ArticleRow, default",
+      "dir": "V",
+      "w": 319,
+      "h": 101,
+      "pad": [0, 0, "@spacing-s", "@spacing-s"],
+      "children": [
+        {
+          "t": "text",
+          "style": "headline-xs",
+          "chars": "Wem gehört die Stadt? Was die Grundbücher über Eigentum verraten",
+          "weight": "bold",
+          "size": 17,
+          "color": "@color-on-canvas",
+          "tracking": 1.18
+        },
+        {
+          "t": "space",
+          "h": "@spacing-3xs"
+        },
+        {
+          "t": "frame",
+          "dir": "H",
+          "w": "fill",
+          "h": 21,
+          "gap": "@spacing-2xs",
+          "children": [
+            {
+              "t": "text",
+              "style": "text-s",
+              "chars": "Alex Beispiel",
+              "size": 14,
+              "color": "@color-on-canvas-muted",
+              "tracking": 1.43
+            },
+            {
+              "t": "text",
+              "style": "text-s",
+              "chars": "· 12. August 2026",
+              "size": 14,
+              "color": "@color-stroke-strong",
+              "tracking": 1.43
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "t": "frame",
+      "name": "feed/ArticleRow, long title, no image",
+      "dir": "V",
+      "w": 319,
+      "h": 101,
+      "pad": [0, 0, "@spacing-s", "@spacing-s"],
+      "children": [
+        {
+          "t": "text",
+          "style": "headline-xs",
+          "chars": "Ohne Bild und ohne Lesezeit, weil der RSS-Weg beides nicht kennt",
+          "weight": "bold",
+          "size": 17,
+          "color": "@color-on-canvas",
+          "tracking": 1.18
+        },
+        {
+          "t": "space",
+          "h": "@spacing-3xs"
+        },
+        {
+          "t": "frame",
+          "dir": "H",
+          "w": "fill",
+          "h": 21,
+          "gap": "@spacing-2xs",
+          "children": [
+            {
+              "t": "text",
+              "style": "text-s",
+              "chars": "3. August 2026",
+              "size": 14,
+              "color": "@color-stroke-strong",
+              "tracking": 1.43
+            }
+          ]
+        }
+      ]
+    }
+  ],
   "ui/Button": [
     {
       "t": "frame",
@@ -1025,96 +1115,6 @@
           "size": 14,
           "color": "@color-stroke-strong",
           "tracking": 1.43
-        }
-      ]
-    }
-  ],
-  "feed/ArticleRow": [
-    {
-      "t": "frame",
-      "name": "feed/ArticleRow, default",
-      "dir": "V",
-      "w": 319,
-      "h": 101,
-      "pad": [0, 0, "@spacing-s", "@spacing-s"],
-      "children": [
-        {
-          "t": "text",
-          "style": "headline-xs",
-          "chars": "Wem gehört die Stadt? Was die Grundbücher über Eigentum verraten",
-          "weight": "bold",
-          "size": 17,
-          "color": "@color-on-canvas",
-          "tracking": 1.18
-        },
-        {
-          "t": "space",
-          "h": "@spacing-3xs"
-        },
-        {
-          "t": "frame",
-          "dir": "H",
-          "w": "fill",
-          "h": 21,
-          "gap": "@spacing-y-2xs",
-          "children": [
-            {
-              "t": "text",
-              "style": "text-s",
-              "chars": "Alex Beispiel",
-              "size": 14,
-              "color": "@color-on-canvas-muted",
-              "tracking": 1.43
-            },
-            {
-              "t": "text",
-              "style": "text-s",
-              "chars": "· 12. August 2026",
-              "size": 14,
-              "color": "@color-stroke-strong",
-              "tracking": 1.43
-            }
-          ]
-        }
-      ]
-    },
-    {
-      "t": "frame",
-      "name": "feed/ArticleRow, long title, no image",
-      "dir": "V",
-      "w": 319,
-      "h": 101,
-      "pad": [0, 0, "@spacing-s", "@spacing-s"],
-      "children": [
-        {
-          "t": "text",
-          "style": "headline-xs",
-          "chars": "Ohne Bild und ohne Lesezeit, weil der RSS-Weg beides nicht kennt",
-          "weight": "bold",
-          "size": 17,
-          "color": "@color-on-canvas",
-          "tracking": 1.18
-        },
-        {
-          "t": "space",
-          "h": "@spacing-3xs"
-        },
-        {
-          "t": "frame",
-          "dir": "H",
-          "w": "fill",
-          "h": 21,
-          "gap": "@spacing-y-2xs",
-          "children": [
-            {
-              "t": "text",
-              "style": "text-s",
-              "chars": "3. August 2026",
-              "size": 14,
-              "color": "@color-stroke-strong",
-              "tracking": 1.43
-            }
-          ]
         }
       ]
     }

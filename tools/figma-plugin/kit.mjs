@@ -993,6 +993,47 @@ for (const [name, entry] of Object.entries(measured)) {
 const problems = [];
 const gaps = [];
 
+/**
+ * A scale name in a numeric position has to name a number.
+ *
+ * The interpreter resolves `@spacing-2xs` to six before it draws, and a name the
+ * table does not have resolves to nothing — which reaches Figma as a string where
+ * it wants a number and stops the draw dead, halfway down a page, with the console
+ * inside Figma as the only witness. `gap-y-2xs` produced exactly that: the class
+ * names an axis, the token does not, and `@spacing-y-2xs` is nobody.
+ *
+ * Cheap to check here and expensive to find there, which is the whole argument.
+ */
+const NUMERIC = ['w', 'h', 'x', 'y', 'gap', 'crossGap', 'radius', 'size', 'tracking', 'leading'];
+
+function checkScales(node, where) {
+  if (Array.isArray(node)) {
+    for (const [i, child] of node.entries()) checkScales(child, `${where}[${i}]`);
+    return;
+  }
+  if (node === null || typeof node !== 'object') return;
+  const named = (value) => typeof value === 'string' && value.charAt(0) === '@';
+  const number = (value) => {
+    // `px` throws on a name the stylesheet has not got, which is the answer here.
+    try {
+      return Number.isFinite(px(value.slice(1)));
+    } catch {
+      return false;
+    }
+  };
+  for (const key of NUMERIC) {
+    if (named(node[key]) && !number(node[key])) {
+      problems.push(`${node.name ?? where}.${key} is "${node[key]}", which names no number`);
+    }
+  }
+  for (const [i, one] of (Array.isArray(node.pad) ? node.pad : []).entries()) {
+    if (named(one) && !number(one)) {
+      problems.push(`${node.name ?? where}.pad[${i}] is "${one}", which names no number`);
+    }
+  }
+  for (const key of Object.keys(node)) checkScales(node[key], `${where}.${key}`);
+}
+
 for (const entry of KIT) {
   const plan = AUDIT[entry.name];
   if (plan === undefined) continue;
@@ -1058,6 +1099,8 @@ for (const entry of KIT) {
   screens.push(placed);
   y += height;
 }
+
+checkScales(KIT, 'kit');
 
 // Refuse BEFORE writing, for the same reason `use-kit.mjs` does: throwing after the
 // file is on disk stops the script and not the damage, and ADR 0021 claims this fails
