@@ -7,8 +7,8 @@
 // the gallery renders the real component with real props and this reads back what
 // the browser computed: box, padding, gap, radius, fill, and the type. What comes
 // out is the same vocabulary `spec.json` speaks, so the two can be compared line by
-// line — which is the whole point of this first version, and why it prints rather
-// than writes.
+// line. It prints that by default and writes `measured.json` under `--emit`, which is
+// what `kit.mjs` reads and checks its own thirteen against.
 //
 // **Not the board.** ADR 0021 and the plugin's README both warn against lifting a
 // component out of the drawn screens: those are transcribed from screenshots, so
@@ -101,6 +101,7 @@ const READER = `(() => {
   });
 
   const px = (v) => Math.round(parseFloat(v) || 0);
+  const gapOn = (v) => (v === 'normal' ? 0 : px(v));
 
   function rgb(value) {
     const m = /rgba?\\(([^)]+)\\)/.exec(value || '');
@@ -110,16 +111,27 @@ const READER = `(() => {
     return '#' + [r, g, b].map((n) => Math.round(n).toString(16).padStart(2, '0')).join('');
   }
 
+  // Left, right, top, bottom — the order the spec writes padding in, so a border and
+  // a padding read the same way round.
+  const SIDES = [['Left', 'left'], ['Right', 'right'], ['Top', 'top'], ['Bottom', 'bottom']];
+
   function walk(el, depth) {
     const s = getComputedStyle(el);
     const text = [...el.childNodes].filter((n) => n.nodeType === 3).map((n) => n.textContent).join('').trim();
     const kids = [...el.children].filter((c) => c.offsetParent !== null || c.getClientRects().length);
+    const isText = text !== '' || [...el.classList].some((c) => c.startsWith('css-text-'));
     // Fill or hug, which is what auto-layout takes, rather than the pixel width a
     // filling row happens to have in this window.
     const box = el.getBoundingClientRect();
     const parent = el.parentElement;
     let width = Math.round(box.width);
-    if (getComputedStyle(el).alignSelf === 'flex-start') width = 'hug';
+    const bordered = SIDES.filter((side) => px(s['border' + side[0] + 'Width']) > 0);
+    // HUG is a size taken from what is inside, so a box with nothing inside cannot
+    // have one: Figma leaves a childless auto-layout frame at the hundred pixels a
+    // fresh frame is born at. react-native-web's own switch thumb says
+    // \`align-self: flex-start\` and holds nothing, and arrived on the board a hundred
+    // pixels of white wide inside a forty-pixel switch.
+    if (s.alignSelf === 'flex-start' && (isText || kids.length)) width = 'hug';
     else if (parent) {
       const ps = getComputedStyle(parent);
       const inner =
@@ -143,12 +155,25 @@ const READER = `(() => {
       h: Math.round(box.height),
       display: s.display,
       dir: s.flexDirection === 'row' ? 'H' : 'V',
-      gap: px(s.rowGap === 'normal' ? 0 : s.rowGap) || px(s.columnGap === 'normal' ? 0 : s.columnGap),
+      // Auto-layout has one gap ALONG its axis and one ACROSS it; CSS has one per
+      // physical axis. Reading whichever was set and calling it the gap put six
+      // pixels between the two halves of \`ArticleRow\`'s byline, where the app writes
+      // \`gap-y-2xs\` and means the space between two wrapped LINES.
+      gap: gapOn(s.flexDirection === 'row' ? s.columnGap : s.rowGap),
+      crossGap: gapOn(s.flexDirection === 'row' ? s.rowGap : s.columnGap),
+      // A row that wraps. Figma has the word, and without it a byline that runs past
+      // its own width overflows instead of breaking.
+      wrap: s.flexWrap === 'wrap' ? true : undefined,
       pad: [px(s.paddingLeft), px(s.paddingRight), px(s.paddingTop), px(s.paddingBottom)],
       radius: px(s.borderTopLeftRadius),
       fill: rgb(s.backgroundColor),
-      stroke: px(s.borderTopWidth) > 0 ? rgb(s.borderTopColor) : null,
-      strokeWeight: px(s.borderTopWidth),
+      // WHICH sides, not just the top one. \`border-b\` is a rule under a row, and a
+      // box traced on all four sides is a different component: seven of the measured
+      // components wore one, because the only side ever read was the top and that is
+      // the side \`border-b\` leaves at zero.
+      sides: bordered.map((side) => side[1]),
+      stroke: bordered.length ? rgb(s['border' + bordered[0][0] + 'Color']) : null,
+      strokeWeight: bordered.length ? px(s['border' + bordered[0][0] + 'Width']) : 0,
       align: s.justifyContent,
       cross: s.alignItems,
       self: s.alignSelf,
@@ -161,7 +186,13 @@ const READER = `(() => {
       clip: s.overflowX !== 'visible' || s.overflowY !== 'visible' ? true : undefined,
       margin: [px(s.marginLeft), px(s.marginRight), px(s.marginTop), px(s.marginBottom)],
     };
-    if (parent && s.position === 'absolute') {
+    // Where it sits, for EVERY child and not only the absolute ones. A stack becomes
+    // a plain frame, and a plain frame lays nothing out — so a child that the app
+    // centred by \`items-center justify-center\` and that carries no coordinates of its
+    // own lands at the corner. \`MediaCard\`'s play button did: 52 pixels at 0,0 in a
+    // 176-pixel thumbnail it should have been in the middle of. Ignored by Figma
+    // inside auto-layout, so the caller passes them on only where they mean something.
+    if (parent) {
       const p = parent.getBoundingClientRect();
       node.x = Math.round(box.left - p.left);
       node.y = Math.round(box.top - p.top);
@@ -169,7 +200,7 @@ const READER = `(() => {
     // A text node, which React Native Web marks with a class of its own. Without
     // that marker every empty box read as empty text, and the badge's seven-pixel
     // live dot arrived as a string.
-    if (text || [...el.classList].some((c) => c.startsWith('css-text-'))) {
+    if (isText) {
       node.chars = text;
       node.font = s.fontFamily.split(',')[0].replace(/["']/g, '');
       node.size = px(s.fontSize);
@@ -178,6 +209,9 @@ const READER = `(() => {
       node.tracking = s.letterSpacing === 'normal' ? 0 : parseFloat(s.letterSpacing);
       node.color = rgb(s.color);
       node.transform = s.textTransform === 'none' ? undefined : s.textTransform;
+      // Which edge the line is set against. \`ImpactFooter\` sets both of its lines
+      // centred and had them drawn hard left.
+      node.textAlign = s.textAlign;
     }
     if (kids.length && depth < 12) node.children = kids.map((k) => walk(k, depth + 1));
     return node;
@@ -230,7 +264,6 @@ function tokeniser(tokens, unnamed) {
    * token has to match on both.
    */
   const pairs = { text: {}, fill: {}, stroke: {} };
-  const lightOnly = { text: {}, fill: {}, stroke: {} };
   for (const [name, value] of Object.entries(tokens)) {
     if (!name.startsWith('color-') || typeof value !== 'object') continue;
     const { light, dark } = value;
@@ -246,12 +279,6 @@ function tokeniser(tokens, unnamed) {
       ) {
         pairs[role][both] = `@${name}`;
       }
-      if (
-        lightOnly[role][light] === undefined ||
-        rank(name, role) < rank(lightOnly[role][light].slice(1), role)
-      ) {
-        lightOnly[role][light] = `@${name}`;
-      }
     }
   }
   /**
@@ -262,7 +289,7 @@ function tokeniser(tokens, unnamed) {
    * pair that matches no token comes through as the two hexes, and the run says
    * which node it was — a question for a person rather than a silent answer.
    */
-  const named = (hex, dark, role) => pairs[role][`${hex}|${dark ?? hex}`];
+  const named = (hex, dark, role) => pairs[role][`${hex}|${dark}`];
   const numbers = (prefix) =>
     Object.entries(tokens)
       .filter(([name, value]) => name.startsWith(prefix) && typeof value === 'number')
@@ -272,13 +299,25 @@ function tokeniser(tokens, unnamed) {
   return {
     colour: (hex, dark, role = 'fill') => {
       if (!hex || hex === 'none') return null;
+      // Both readings, or no name. `dark ?? hex` stood here and defeated the whole
+      // argument above: a node with no dark reading was looked up as if its colour
+      // were the same in both schemes, and the only tokens that match such a pair
+      // are the `always-*` ones — so a missing twin named every title
+      // `always-dark` and every card `always-light`, which is exactly the light-only
+      // reading this was built to refuse, arrived at by a different route.
+      if (!dark) {
+        unnamed.add(`${hex} as a ${role}, with no dark reading of that node`);
+        return hex;
+      }
       const name = named(hex, dark, role);
       if (name) return name;
-      unnamed.add(`${hex}${dark && dark !== hex ? ` / ${dark}` : ''} as a ${role}`);
+      unnamed.add(`${hex}${dark !== hex ? ` / ${dark}` : ''} as a ${role}`);
       return hex;
     },
     spacing: (n) => (n === 0 ? 0 : (spacing[n] ?? n)),
     radius: (n) => (n === 0 ? 0 : (radius[n] ?? n)),
+    /** Whether the token table has a name, so a class can be believed or ignored. */
+    knows: (name) => tokens[name] !== undefined,
   };
 }
 
@@ -290,20 +329,39 @@ function tokeniser(tokens, unnamed) {
  * shapes the kit needs are read; anything else stays in `classes` for a person to
  * look at.
  */
-function fromClasses(classes) {
+function fromClasses(classes, t) {
   const asked = {};
+  /**
+   * A token name, or nothing at all.
+   *
+   * The tail of a class is not always a token: `border-b` names a SIDE, and it read
+   * as `@color-b` — a name the interpreter refuses, so one reordered class list
+   * (`border-stroke border-b` rather than `border-b border-stroke`) would have taken
+   * the whole board down with "no such token". Anything the table does not have is
+   * left alone here and the measured value answers instead, which is the same
+   * fallback an unclassed colour already gets.
+   */
+  const token = (prefix, tail) => {
+    const known = t.knows(`${prefix}-${tail.split('/')[0]}`);
+    return known ? `@${prefix}-${tail}` : undefined;
+  };
   for (const name of classes) {
     let m;
-    if ((m = /^bg-(.+)$/.exec(name))) asked.fill = m[1] === 'transparent' ? null : `@color-${m[1]}`;
-    else if ((m = /^border-([a-z].*)$/.exec(name))) asked.stroke = `@color-${m[1]}`;
+    if ((m = /^bg-(.+)$/.exec(name)))
+      asked.fill = m[1] === 'transparent' ? null : token('color', m[1]);
+    else if ((m = /^border-([a-z].*)$/.exec(name))) asked.stroke = token('color', m[1]);
     else if ((m = /^rounded-(.+)$/.exec(name)))
-      asked.radius = m[1] === 'full' ? 'full' : `@radius-${m[1]}`;
-    else if ((m = /^p([xy]?)-(.+)$/.exec(name))) asked[`pad${m[1] || 'a'}`] = `@spacing-${m[2]}`;
-    // `gap-y-2xs` names the same scale step as `gap-2xs`, on one axis. The axis is
-    // the parent's business and auto-layout has one gap, so the letter goes.
-    else if ((m = /^gap(?:-[xy])?-(.+)$/.exec(name))) asked.gap = `@spacing-${m[1]}`;
+      asked.radius = m[1] === 'full' ? 'full' : token('radius', m[1]);
+    // Both axes or neither: `gap-y-2xs` names one, and which of the two words that
+    // is depends on the direction the parent lays out in. The measured number carries
+    // the same name anyway — `t.spacing(6)` is `@spacing-2xs` — so the axis case is
+    // left to it rather than guessed at here.
+    else if ((m = /^gap-(.+)$/.exec(name))) asked.gap = token('spacing', m[1]);
     else if (name === 'flex-row') asked.dir = 'H';
   }
+  // A class the table does not know leaves the key present and empty, which reads as
+  // "the app asked for nothing" rather than "the app asked for something unknown".
+  for (const key of Object.keys(asked)) if (asked[key] === undefined) delete asked[key];
   return asked;
 }
 
@@ -346,7 +404,50 @@ function styleNamer(tokens, specs) {
 }
 
 /**
- * The measured tree, in the spec's vocabulary, with the four things auto-layout has
+ * Where a box puts what is inside it, which auto-layout DOES have a word for.
+ *
+ * Read all along and dropped on the floor until 2026-09-10, so every one of the
+ * thirty-four `items-center` rows in the app drew against its top edge: an episode
+ * row's thumbnail, title and duration each sat at a different height than in the app.
+ * `space-around` and `space-evenly` have no Figma equivalent and are printed instead
+ * of being rounded down to the one that does.
+ */
+const ALIGN = { 'flex-end': 'MAX', end: 'MAX', center: 'CENTER', 'space-between': 'SPACE_BETWEEN' };
+const CROSS = { 'flex-end': 'MAX', end: 'MAX', center: 'CENTER', baseline: 'BASELINE' };
+const AT_START = ['flex-start', 'start', 'normal', 'stretch', 'left', 'auto'];
+
+/** A line's own edge, which the spec spells in lower case and Figma in upper. */
+const ALIGN_TEXT = { center: 'center', right: 'right', end: 'right', justify: 'justified' };
+
+/**
+ * Which sides carry the border, in the two spellings the spec has for it.
+ *
+ * `strokeSides` takes `top` or `bottom`, which is what the app writes: `border-b`
+ * under a row. All four sides is a frame's own default and needs no word. Anything
+ * else — one vertical edge, or two — has no spelling, so it is printed rather than
+ * drawn as the nearest thing.
+ */
+function sidesOf(sides, gaps, name) {
+  if (sides.length === 0 || sides.length === 4) return undefined;
+  if (sides.length === 1 && (sides[0] === 'top' || sides[0] === 'bottom')) return sides[0];
+  gaps.add(`${name}: a border on ${sides.join(' and ')} only, which the spec cannot say`);
+  return undefined;
+}
+
+function alignment(node, table, value, gaps, name) {
+  if (value === undefined || AT_START.includes(value)) return undefined;
+  const mapped = table[value];
+  if (mapped === undefined) {
+    gaps.add(`${name}: "${value}" is an alignment auto-layout has no word for`);
+    return undefined;
+  }
+  // BASELINE is a row's answer only, and Figma throws on it in a column.
+  if (mapped === 'BASELINE' && node.dir !== 'H') return 'CENTER';
+  return mapped;
+}
+
+/**
+ * The measured tree, in the spec's vocabulary, with the five things auto-layout has
  * no word for translated on the way.
  *
  * Each rule is here rather than left for the reader of the output, because each one
@@ -356,6 +457,16 @@ function styleNamer(tokens, specs) {
  */
 function tokenise(node, t, style, gaps, name, twin, inPlainFrame) {
   const out = { t: node.chars !== undefined ? 'text' : 'frame' };
+  // FILL and HUG mean nothing in a plain frame — they are auto-layout's words — and
+  // Figma leaves such a child at whatever size it was born with: two children of a
+  // stack came out 24 and 40 pixels wide inside a 319-pixel component, which is how
+  // this was found, and a childless frame that said HUG arrived a hundred wide.
+  // Coordinates are the other half of the same trade: a plain frame lays nothing out,
+  // so every child needs them, and auto-layout ignores them, so no child there should
+  // carry one.
+  const width = inPlainFrame ? node.wpx : node.w;
+  const x = inPlainFrame ? node.x : undefined;
+  const y = inPlainFrame ? node.y : undefined;
 
   if (node.chars !== undefined) {
     const { family, weight, icon } = typeOf(node.font);
@@ -369,6 +480,8 @@ function tokenise(node, t, style, gaps, name, twin, inPlainFrame) {
         chars: '◎',
         font: 'sans',
         size: node.size,
+        x: x,
+        y: y,
         color: t.colour(node.color, twin?.color, 'text'),
       };
     }
@@ -380,7 +493,9 @@ function tokenise(node, t, style, gaps, name, twin, inPlainFrame) {
       // stood beside it on the board — measured, and the first thing anyone noticed.
       // The app wraps at the phone width, and that width is exactly what the box
       // reports, so carrying it over reproduces the same break.
-      w: node.w,
+      w: width,
+      x: x,
+      y: y,
       font: family === 'sans' ? undefined : family,
       weight: weight === 'regular' ? undefined : weight,
       size: node.size,
@@ -388,10 +503,11 @@ function tokenise(node, t, style, gaps, name, twin, inPlainFrame) {
       // The spec takes tracking as a percentage of the size, which is what Figma
       // takes; the browser reports pixels.
       tracking: node.tracking ? Math.round((node.tracking / node.size) * 10000) / 100 : undefined,
+      align: ALIGN_TEXT[node.textAlign],
       transform: node.transform,
     });
   } else {
-    const asked = fromClasses(node.classes ?? []);
+    const asked = fromClasses(node.classes ?? [], t);
     const stacked = (node.children ?? []).some((c) => c.position === 'absolute');
 
     // RULE 5, a circle. `rounded-full` is a radius the spec cannot take, because
@@ -401,11 +517,16 @@ function tokenise(node, t, style, gaps, name, twin, inPlainFrame) {
     if (asked.radius === 'full' && !node.children?.length) {
       return {
         t: 'ellipse',
-        w: node.w,
+        w: width,
         h: node.h,
-        x: node.x,
-        y: node.y,
+        x: x,
+        y: y,
         fill: asked.fill !== undefined ? asked.fill : t.colour(node.fill, twin?.fill),
+        // A ring around an avatar is a stroke on an ellipse, and the interpreter
+        // paints one; leaving it out here lost it without a word.
+        stroke: node.sides.length
+          ? (asked.stroke ?? t.colour(node.stroke, twin?.stroke, 'stroke'))
+          : undefined,
       };
     }
     if (asked.radius === 'full') asked.radius = Math.round(node.h / 2);
@@ -416,14 +537,21 @@ function tokenise(node, t, style, gaps, name, twin, inPlainFrame) {
       // nothing extra to remember — but it has to be decided here, because nothing
       // about the measurement says which of the two a stack should become.
       dir: stacked ? undefined : node.dir,
-      // FILL and HUG mean nothing in a plain frame, and Figma leaves such a child at
-      // whatever width it was born with: two children of a stack came out 24 and 40
-      // pixels wide inside a 319-pixel component, which is how this was found.
-      w: inPlainFrame && node.w !== 'hug' ? node.wpx : node.w,
+      // Alignment belongs to a box that lays out; a stack has given that up, and
+      // Figma throws on `primaryAxisAlignItems` where there is no layout mode.
+      align: stacked ? undefined : alignment(node, ALIGN, node.align, gaps, name),
+      cross: stacked ? undefined : alignment(node, CROSS, node.cross, gaps, name),
+      w: width,
       h: node.h,
-      x: node.x,
-      y: node.y,
+      x: x,
+      y: y,
       gap: node.gap ? (asked.gap ?? t.spacing(node.gap)) : undefined,
+      // WRAP is a row's word in Figma, and a column that wraps has no equivalent.
+      wrap: !stacked && node.dir === 'H' ? node.wrap : undefined,
+      crossGap:
+        !stacked && node.dir === 'H' && node.wrap && node.crossGap
+          ? t.spacing(node.crossGap)
+          : undefined,
       pad: node.pad.some(Boolean) ? node.pad.map((n) => t.spacing(n)) : undefined,
       radius: node.radius ? (asked.radius ?? t.radius(node.radius)) : undefined,
       clip: node.clip,
@@ -432,8 +560,14 @@ function tokenise(node, t, style, gaps, name, twin, inPlainFrame) {
       // on the paint rather than on the node — so a translucent surface does not
       // fade the icon standing on it.
       fill: asked.fill !== undefined ? asked.fill : t.colour(node.fill, twin?.fill),
-      stroke: asked.stroke ?? t.colour(node.stroke, twin?.stroke, 'stroke'),
-      strokeWeight: node.stroke ? node.strokeWeight || undefined : undefined,
+      // No side drawn, no stroke. The class says the colour and the class also says
+      // the side: `border-b border-stroke` asked for `@color-stroke` and got a box
+      // traced on all four sides, because a stroke with no side was read as a stroke.
+      stroke: node.sides.length
+        ? (asked.stroke ?? t.colour(node.stroke, twin?.stroke, 'stroke'))
+        : undefined,
+      strokeWeight: node.sides.length ? node.strokeWeight || undefined : undefined,
+      strokeSides: sidesOf(node.sides, gaps, name),
       opacity: node.opacity,
     });
   }
@@ -496,10 +630,31 @@ function assemble(id, boxes, dark, t, style, gaps) {
   }
   boxes = drawable;
   if (boxes.length === 0) return [];
-  const drawn = boxes.map((box, i) => ({
-    variant: variantOf(box.label),
-    node: tokenise(box.root, t, style, gaps, name, dark[i]?.root),
-  }));
+  /**
+   * The dark reading of the SAME specimen, found by its label rather than its place.
+   *
+   * Two lists lined up by index part company as soon as one of them is filtered, and
+   * the line above filters one of them: a component with an empty specimen paired
+   * every later light specimen with the wrong dark one, and a colour compared against
+   * a foreign node's colour is a wrong name or a hex, silently either way.
+   */
+  const twins = new Map();
+  for (const box of dark) {
+    if (box.empty) continue;
+    twins.set(box.label, [...(twins.get(box.label) ?? []), box]);
+  }
+  const drawn = boxes.map((box) => {
+    const twin = (twins.get(box.label) ?? []).shift();
+    if (twin === undefined) {
+      gaps.add(
+        `${name}: no dark reading of the specimen "${box.label}", so its colours are unnamed`,
+      );
+    }
+    return {
+      variant: variantOf(box.label),
+      node: tokenise(box.root, t, style, gaps, name, twin?.root),
+    };
+  });
 
   const props = new Set(drawn.map((d) => d.variant?.prop).filter(Boolean));
   // Two or more, because a variant set with one variant is a set nobody can switch.
@@ -617,6 +772,15 @@ for (const id of ids) {
     continue;
   }
   const dark = await read(id, 'dark');
+  // Nothing at all from the dark pass is not a component with no colours, it is a
+  // pass that did not happen — a slow first paint, a name that stopped resolving. A
+  // token has to match on both values, so every colour would come through unnamed
+  // and the entry would be written as a page of hex. Refuse it and keep whatever
+  // `measured.json` already says about this component.
+  if (dark.length === 0) {
+    console.error(`${id}: the dark reading came back empty, so nothing was written for it`);
+    continue;
+  }
 
   measured[id] = assemble(id, light, dark, t, style, gaps);
   if (!emit) {

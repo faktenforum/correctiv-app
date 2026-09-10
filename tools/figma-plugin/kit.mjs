@@ -921,7 +921,31 @@ for (const entry of KIT) byHand[entry.name] = entry;
  * descriptions say the same thing in different words and comparing them reports a
  * difference on every row.
  */
-const COMPARED = ['dir', 'pad', 'radius', 'fill', 'stroke'];
+const COMPARED = ['dir', 'pad', 'radius', 'fill', 'stroke', 'strokeSides'];
+
+/**
+ * What a node SAYS, in one shape, so two descriptions of it can be held side by side.
+ *
+ * A `line` spells its colour `color` where a frame spells it `fill`, and a box with
+ * nothing in it lays nothing out, so its `dir` says nothing about the drawing either.
+ * Normalising both sides once is what keeps this about values rather than spellings.
+ */
+function fields(node) {
+  const leaf = (node.children ?? []).length === 0;
+  return {
+    dir: leaf ? undefined : node.dir,
+    pad: node.pad,
+    radius: node.radius,
+    fill: node.fill ?? node.color,
+    stroke: node.stroke,
+    strokeSides: node.strokeSides,
+  };
+}
+
+/** A text node and a box have no field in common worth comparing. */
+function kind(node) {
+  return (node.t ?? 'frame') === 'text' ? 'text' : 'box';
+}
 
 /**
  * `@spacing-2xs` and `6` are the same padding, so compare values and not spellings.
@@ -938,14 +962,23 @@ function resolved(value) {
 }
 
 function differences(hand, seen, where, out) {
-  // A frame and a text node have nothing to compare; the hand-written entry wraps
-  // some components in a ground the app does not paint, and that is the board's
-  // affordance rather than a difference in the component.
-  if ((hand.t ?? 'frame') !== (seen.t ?? 'frame')) return;
+  // Step through a ground the app does not paint. `ui/Hairline` is described here as
+  // a `line` inside a 280px frame the colour of the page, because a component that
+  // IS one pixel of `stroke` cannot be picked up on the board; the app's Hairline is
+  // that line and nothing else, so the measurement's root is the line. Comparing the
+  // two roots reported the ground's colour as drift in the component, which is worse
+  // than reporting nothing: a line that is wrong teaches the reader to skip the ones
+  // that are not.
+  if ((seen.children ?? []).length === 0 && (hand.children ?? []).length === 1) {
+    hand = hand.children[0];
+  }
+  if (kind(hand) !== kind(seen)) return;
+  const ours = fields(hand);
+  const theirs = fields(seen);
   for (const key of COMPARED) {
-    if (key === 'fill' && hand[key] !== undefined && seen[key] === undefined) continue;
-    const a = JSON.stringify(resolved(hand[key]));
-    const b = JSON.stringify(resolved(seen[key]));
+    if (key === 'fill' && ours[key] !== undefined && theirs[key] === undefined) continue;
+    const a = JSON.stringify(resolved(ours[key]));
+    const b = JSON.stringify(resolved(theirs[key]));
     if (a !== b) out.push(`${where}.${key}: drawn ${a ?? 'nothing'}, measured ${b ?? 'nothing'}`);
   }
   const handText = (hand.children || []).filter((c) => c.t === 'text');
@@ -1003,7 +1036,22 @@ const gaps = [];
  *
  * Cheap to check here and expensive to find there, which is the whole argument.
  */
-const NUMERIC = ['w', 'h', 'x', 'y', 'gap', 'crossGap', 'radius', 'size', 'tracking', 'leading'];
+// The same positions `resolveScales` resolves in `code.js`, and the two lists have to
+// stay the same list: a position the interpreter resolves and this does not check is
+// a position where a bad name reaches Figma, which is the failure this exists to stop.
+const NUMERIC = [
+  'w',
+  'h',
+  'x',
+  'y',
+  'gap',
+  'crossGap',
+  'radius',
+  'size',
+  'tracking',
+  'leading',
+  'strokeWeight',
+];
 
 function checkScales(node, where) {
   if (Array.isArray(node)) {
@@ -1106,7 +1154,10 @@ const board = {
   children: KIT,
 };
 
-checkScales(KIT, 'kit');
+// The board and not only its children, so the frame that packs them is checked too,
+// and the text styles, whose `size` is a numeric position outside any page.
+checkScales(board, 'kit');
+checkScales(TEXT_STYLES, 'textStyles');
 
 /**
  * A kit entry has to BE a component, or nothing on the board can point at it.

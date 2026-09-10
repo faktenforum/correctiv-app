@@ -128,8 +128,9 @@ where #e6e6e6 was nearly not there.
 
 ## The vocabulary
 
-    t: 'frame'     dir V|H, pad, gap, fill, stroke, strokeSides, radius, w, h, align,
-                   cross, clip, dash, children
+    t: 'frame'     dir V|H, pad, gap, wrap, crossGap, fill, stroke, strokeWeight,
+                   strokeSides, radius, w, h, align, cross, clip, dash, opacity,
+                   children
     t: 'text'      chars, size, font sans|serif, weight, color, w, tracking, align,
                    style
     t: 'rect'      w, h, fill, stroke, radius
@@ -147,6 +148,16 @@ there is nothing extra to remember.
 A page entry takes `owned` — a list of frame names, or `'*'` for the whole page —
 and the document takes `focus`, the page the file should open on. Without `focus`
 that is whichever page was drawn last, and the kit has to be drawn first.
+
+**A component is registered by its caller, not by its name.** Only a component in the
+registry can be instanced, and a variant has to stay out of it: it belongs to its set
+under the set's name, not under `Ton=club`. That used to be decided by looking for an
+`=` in the name, and the measured components are named after their specimen labels,
+which the catalogue writes "in the props' own words" — so `discover/SampleHitRow,
+kind="podcast"` and eight more were drawn on the board and registered nowhere.
+Nothing could ever point at them, they passed every check there is because they *are*
+components, and the only visible trace was a count in the summary that nobody reads
+against anything.
 
 ## The kit, from the app
 
@@ -227,10 +238,10 @@ answer to that question rather than a finished generator.
     npm run web                                    # the app's dev server
     node tools/figma-plugin/measure.mjs ui/Badge
 
-It opens the gallery at one component, in light, at 393px, and walks the rendered
-specimen: box, padding, gap, radius, fill, stroke, and the type. What comes out is
-the vocabulary `spec.json` speaks, so it can be held against the hand-written
-description line by line.
+It opens the gallery at one component at 393px, once in light and once in dark, and
+walks the rendered specimen: box, padding, gap, radius, fill, stroke and its sides,
+alignment, and the type. What comes out is the vocabulary `spec.json` speaks, so it
+can be held against the hand-written description line by line.
 
 **This is not lifting from the board.** The warning above, against matching names
 against the drawn screens, stands: those screens are transcribed from screenshots,
@@ -260,7 +271,36 @@ so rather than inventing an axis.
 
 **Fill or hug, not a pixel width.** A row that fills its parent has no width of its
 own; measured in a 1280px window every such row came out 691 wide and the number
-said nothing.
+said nothing. Both words are auto-layout's, so neither survives a plain frame, and
+a child of one takes the pixel number instead. HUG is the half that was missed: it
+is a size taken from what is inside, so a box with nothing inside cannot have one,
+and react-native-web's switch thumb says `align-self: flex-start` and holds nothing.
+It arrived on the board a hundred pixels of white wide, inside a forty-pixel switch,
+because a childless auto-layout frame keeps whatever a fresh frame is born at.
+
+**Where a box puts what is in it.** `items-center`, `justify-between` and
+`text-center` are read and mapped onto `cross`, `align` and a text node's own
+`align`. They were read and dropped until 2026-09-10, so all thirty-four
+`items-center` rows in the app drew against their top edge and `HomeHeader`'s date
+sat against its own title instead of the far margin. `space-around` and
+`space-evenly` have no Figma equivalent; they are printed rather than rounded to the
+one that does.
+
+**Which gap, and whether the row wraps.** Auto-layout has one gap along its axis and
+one across it; CSS has one per physical axis, and reading whichever was set put six
+pixels between the two halves of `ArticleRow`'s byline, where the app writes
+`gap-y-2xs` and means the space between two wrapped lines. `flex-wrap` comes over as
+`wrap` for a row, so a byline longer than its own width breaks instead of running out
+of the component.
+
+**Which sides the border is on.** `border-b` is a rule under a row, and a box traced
+on all four sides is a different component. Only `borderTopWidth` was read, which is
+the one side `border-b` leaves at zero, so seven measured components wore a full
+outline and none of them says so anywhere. The class is the other half of it: the
+tail of a class is not always a token, `border-b` names a *side*, and it read as
+`@color-b` — a name the interpreter refuses, so `border-stroke border-b` in the other
+order would have taken the whole board down with "no such token". Anything the token
+table does not have is now left alone, and the measured value answers instead.
 
 ### The five rules, because each one is a decision
 
@@ -271,8 +311,11 @@ gets made again differently.
    codepoint being private-use. Drawn as a placeholder and printed as a gap, which
    is `NavCard.icon` seen from the other side.
 2. **A stack** is a child in `absolute inset-0`. Figma honours x/y only when the
-   parent is a plain frame, so the parent gives up its layout and the children carry
-   coordinates.
+   parent is a plain frame, so the parent gives up its layout and **every** child
+   carries coordinates, not only the absolute one. A plain frame lays nothing out, so
+   a child the app had centred and that carries no coordinates of its own lands in
+   the corner: `MediaCard`'s play button did, 52 pixels at 0,0 in a thumbnail it
+   should have been in the middle of.
 3. **A fill at part opacity** is `bg-always-dark/70`. `code.js` now reads
    `@color-x/NN` and puts the alpha on the paint rather than on the node, so a
    translucent surface does not fade the icon standing on it, and the token survives.
@@ -282,7 +325,9 @@ gets made again differently.
    spacing is written `mr-3xs` and a column's `mt-2xs`.
 5. **A circle** is `rounded-full`, which the spec's numeric `radius` cannot take. An
    empty round box is an ellipse; one with children keeps half its height as a
-   radius, which is the same drawing by another route.
+   radius, which is the same drawing by another route. Only the class, though: a
+   `borderRadius: 100` written in TypeScript stays a number, and Figma clamps it to
+   half the shorter side, which is the same circle as long as the box is square.
 
 ### Two schemes, or a role reads as a colour
 
@@ -295,6 +340,18 @@ catch. So each component is measured twice and a token has to match on both valu
 Where a pair matches no token the hex comes through unnamed and the run says which
 node it was. Guessing is the thing to avoid: a name that is confidently wrong reads
 as a decision somebody made.
+
+**A pair, or no name.** The first version of that check read `dark ?? hex`, which
+undid the whole argument by a side door: a node with no dark reading was looked up as
+though its colour were the same in both schemes, and the only tokens that match such
+a pair are the `always-*` ones. So a missing twin named every title `always-dark` and
+every card `always-light` — the light-only reading again, arrived at another way, and
+nothing said so. One reading now names nothing and is reported. The dark pass is
+paired to the light one by the specimen's label rather than its place in the list,
+because the list is filtered for specimens that render nothing and two lists lined up
+by index part company the moment one of them is filtered. A dark pass that comes back
+with nothing at all is a pass that did not happen, and that component is refused
+rather than written as a page of hex.
 
 Two tokens can still share both values, and then the rank decides by what the colour
 paints — `stroke-strong` under a rule, `on-canvas-muted` under a date. `MediaCard`'s
@@ -312,6 +369,23 @@ successor's name.
   a decision about the board's own language.
 
 ### The defect it found
+
+`kit.mjs` reads `measured.json` and holds its own thirteen against it: direction,
+padding, radius, fill, stroke and which sides the stroke is on, plus the size and
+cut of each text child. Values, not spellings — `@spacing-2xs` and `6` are the same
+padding, so the scales are resolved before the comparison, while the colours stay
+names, because resolving those would make `accent` and `red-500` compare equal and
+that difference is the thing the measurement went to trouble to keep. `gap` is left
+out: the app writes the space between two children as a margin on one of them, which
+becomes a `space` node, so the two descriptions say the same thing in different words.
+
+It has to step through a ground the app does not paint. `ui/Hairline` is described
+here as a `line` inside a 280px frame the colour of the page, because a component
+that *is* one pixel of `stroke` cannot be picked up on the board, so the measurement's
+root is the line and the two descriptions sit at different depths. Comparing the two
+roots reported the ground's colour as drift in the component, which is worse than
+reporting nothing: a line that is wrong teaches the reader to skip the ones that are
+not.
 
 `ui/Badge`'s label was drawn **bold** on the board and has never been bold in the
 app: `Badge.tsx` applies `typography['text-s']` and overrides only size, tracking
@@ -406,6 +480,13 @@ questions with numbers for answers. Four defects were found that way on
 become one long line, two children of a stack at 24 and 40 pixels inside a
 319-pixel component, a variant set with one variant, and two components whose entire
 content was the word "canvas".
+
+Four more on 2026-09-10, from the same instrument and one arithmetic check: a play
+button at 0,0 in a 176-pixel thumbnail, a row wearing a border on all four sides
+where the app draws one under it, every `items-center` row against its top edge, and
+nine components drawn on the board that the interpreter had registered nowhere. The
+last one was found by subtracting: the summary said 41 components where the page held
+50, and nine is exactly how many measured names carry an `=`.
 
 **`get_screenshot` needs the Figma window visible.** Behind another window or
 minimised it returns nothing and the call times out; the canvas is WebGL, and an

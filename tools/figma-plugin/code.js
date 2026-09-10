@@ -358,7 +358,7 @@ function buildVariantSet(spec, parent) {
     for (const key of Object.keys(option)) {
       if (key !== 'value' && key !== 't') one[key] = option[key];
     }
-    made.push(build(one, parent, false));
+    made.push(build(one, parent, false, true));
   }
   const set = figma.combineAsVariants(made, parent);
   set.name = spec.name;
@@ -393,7 +393,7 @@ function applySizing(node, spec, parentIsAutoLayout) {
   if (numH) node.layoutSizingVertical = 'FIXED';
 }
 
-function build(spec, parent, parentIsAutoLayout) {
+function build(spec, parent, parentIsAutoLayout, asVariant) {
   let node = null;
   let missingComponent = false;
 
@@ -500,11 +500,16 @@ function build(spec, parent, parentIsAutoLayout) {
   else if (spec.name) node.name = spec.name;
   if (spec.stroke) {
     node.strokes = paint(spec.stroke);
+    // `strokeWeight` is in the list `resolveScales` resolves and was read by nothing,
+    // so a description that measured a two-pixel rule drew a one-pixel one. Before the
+    // per-side weights below, because assigning it sets all four and would undo them.
+    if (spec.strokeWeight) node.strokeWeight = spec.strokeWeight;
     if (spec.dash) node.dashPattern = spec.dash;
     if (spec.strokeSides === 'top' || spec.strokeSides === 'bottom') {
+      const weight = spec.strokeWeight || 1;
       const only = spec.strokeSides === 'top';
-      node.strokeTopWeight = only ? 1 : 0;
-      node.strokeBottomWeight = only ? 0 : 1;
+      node.strokeTopWeight = only ? weight : 0;
+      node.strokeBottomWeight = only ? 0 : weight;
       node.strokeLeftWeight = 0;
       node.strokeRightWeight = 0;
     }
@@ -527,8 +532,15 @@ function build(spec, parent, parentIsAutoLayout) {
   for (const child of spec.children || []) build(child, node, isAuto);
   if (spec.t === 'component') {
     defineProperties(node, spec, bindings.splice(bindMark));
-    // A variant registers under its set's name, not its own `Variante=club`.
-    if (spec.name && spec.name.indexOf('=') === -1) {
+    // A variant registers under its set's name, not its own `Variante=club`, and the
+    // caller is the only honest witness to which this is. It used to be read off the
+    // name — anything holding an '=' was taken for a variant — and the measured
+    // components are named after their specimen labels, which the catalogue writes
+    // "in the props' own words": nine of them, `discover/SampleHitRow, kind="podcast"`
+    // among them, were drawn on the board and registered nowhere, so nothing could
+    // ever instance them. They passed every check there was, because they ARE
+    // components; the interpreter simply never wrote them down.
+    if (spec.name && asVariant !== true) {
       COMPONENTS[spec.name] = node;
       recordProperties(spec.name, node);
     }
@@ -727,6 +739,11 @@ async function draw(spec) {
   // built, which is what needs numbers.
   resolveScales(spec.pages);
   resolveScales(spec.screens);
+  // The styles too. A text style's `size`, `leading` and `tracking` are numeric
+  // positions like any other, and this block was the one place the resolver did not
+  // reach: `size: "@text-m"` would have reached `createTextStyle` as a string, from
+  // outside any page, where nothing else in the document could explain it.
+  resolveScales(spec.textStyles);
   const styleCount = await syncTextStyles(spec.textStyles);
 
   // The kit before its users, for the same reason: an instance can only point at a
