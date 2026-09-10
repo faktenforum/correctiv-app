@@ -1,10 +1,11 @@
 import '@/global.css';
 
-import { router, Stack, usePathname } from 'expo-router';
+import { router, Stack, usePathname, type ErrorBoundaryProps } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
 import { useFonts } from 'expo-font';
 import * as SplashScreen from 'expo-splash-screen';
 import { useEffect, useRef, useState } from 'react';
+import { View } from 'react-native';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import { Provider } from 'react-redux';
 
@@ -35,6 +36,7 @@ import {
 import { close as closeVideo } from '@correctiv/app-core/stores/video';
 
 import { LoginGate } from '@/components/gate/LoginGate';
+import { Button, Overline, Screen, Typo } from '@/components/ui';
 import { expoAudio } from '@/lib/audio/backend';
 import { stop as stopAudio } from '@/lib/audio/player';
 import { expoPlatform } from '@/lib/platform/expo';
@@ -107,6 +109,103 @@ export default function RootLayout() {
 }
 
 /**
+ * Everything a person reads on the recovery screen, in one place.
+ *
+ * Written for someone whose app has just refused to start: it says what happened,
+ * offers the one action that can help, and says what to do when that action does
+ * not. The technical line is kept because until an error report is actually sent
+ * (see below) quoting it is the only way anyone can tell us what broke.
+ */
+const RECOVERY_COPY = {
+  overline: 'Fehler',
+  headline: 'Die App ist stehen geblieben',
+  lead: 'Die App konnte diesen Bildschirm nicht anzeigen. Bitte versuchen Sie es noch einmal. Bleibt der Fehler, schließen Sie die App und öffnen Sie sie neu.',
+  retry: 'Erneut versuchen',
+  detailHeading: 'Technische Meldung',
+};
+
+/**
+ * The app's only error boundary.
+ *
+ * expo-router wraps a route's default export in its `Try` whenever the file also
+ * exports `ErrorBoundary` (see expo-router/build/useScreens.js, `fromImport`), and
+ * this file is the root route, so this one boundary covers every render and every
+ * effect in the app: the Provider, the shell, the door and all of the screens under
+ * the Stack. There is no second one; `app/artikel.tsx` says why it does not have
+ * its own.
+ *
+ * **What it is allowed to depend on.** `Try` catches by unmounting the tree below
+ * it, and the tree below it is `RootLayout` — so when this renders, the Redux
+ * Provider is gone, `GestureHandlerRootView` is gone, and `useAppearance()` is no
+ * longer feeding Uniwind. Anything reading the store would therefore throw inside
+ * the boundary, which is unrecoverable. What it does use, and why each is safe:
+ *
+ *  - `Screen`, `Typo`, `Overline`, `Button` from the design system. Their only
+ *    dependency is `useColors()`, which reads `useUniwind()` and not the store, so
+ *    no provider is involved; with `useAppearance()` unmounted Uniwind falls back
+ *    to its adaptive default and the colours follow the device, which is the right
+ *    answer for a screen nobody configured.
+ *  - `Screen`'s `SafeAreaView`, because expo-router mounts `SafeAreaProvider` in
+ *    `ExpoRoot` ABOVE the root route, so its context outlives the unmount.
+ *  - Their `fontFamily`, which on the font-failure path names a face that is not
+ *    installed. Checked rather than assumed: React Native substitutes the system
+ *    font and logs at info level (`RCTLogInfo(@"Unrecognized font family '%@'")`,
+ *    react-native/React/Views/RCTFont.mm), and a browser falls back by CSS. So this
+ *    screen renders in the platform font at the design system's sizes, which is
+ *    exactly what it should do when the fonts are the thing that broke.
+ */
+export function ErrorBoundary({ error, retry }: ErrorBoundaryProps) {
+  useEffect(() => {
+    // The splash screen is held from module scope above and released only once the
+    // fonts and the store are ready, which is precisely what a fault before then
+    // prevents. expo-router's `Try` hides it too, in `getDerivedStateFromError`,
+    // but that is its internal behaviour and not this app's to lean on: without
+    // this line the recovery screen can end up rendering underneath a splash
+    // screen nobody can dismiss, which is the failure this boundary exists for.
+    SplashScreen.hideAsync();
+
+    // THE PLACE AN ERROR REPORT LEAVES THE APP. Issue #95 replaces this one line
+    // with the call to whichever crash reporter is chosen; no provider is picked
+    // yet, so for now it goes to the log and nowhere else.
+    console.error('[app] render failed, showing the recovery screen:', error);
+  }, [error]);
+
+  /**
+   * `error` is typed `Error`, but React hands over whatever was thrown, and a
+   * thrown string must not take the recovery screen down with it.
+   */
+  const detail = error?.message ?? String(error);
+
+  return (
+    <Screen scroll={false}>
+      <View className="flex-1 items-center justify-center">
+        <Overline label={RECOVERY_COPY.overline} color="accent" />
+        <Typo variant="headline-l" className="mt-2xs text-center">
+          {RECOVERY_COPY.headline}
+        </Typo>
+        <Typo variant="text-m" color="on-canvas-muted" className="mt-s text-center">
+          {RECOVERY_COPY.lead}
+        </Typo>
+        <Button
+          title={RECOVERY_COPY.retry}
+          className="mt-l self-center"
+          onPress={() => {
+            retry();
+          }}
+        />
+        {/* Bounded, so a long message cannot push the retry button off the screen. */}
+        <View className="mt-l self-stretch rounded-md border border-stroke bg-surface p-s">
+          <Overline label={RECOVERY_COPY.detailHeading} />
+          <Typo variant="text-s" color="on-canvas-muted" className="mt-2xs" numberOfLines={4}>
+            {detail}
+          </Typo>
+        </View>
+      </View>
+    </Screen>
+  );
+}
+
+/**
  * Everything that reads state lives below the Provider.
  *
  * `useAppearance()` selects the appearance setting, so it cannot run in the
@@ -114,7 +213,7 @@ export default function RootLayout() {
  * no context and throws at startup. Splitting the shell out is the whole fix.
  */
 function AppShell() {
-  const [fontsLoaded] = useFonts(fontAssets);
+  const [fontsLoaded, fontError] = useFonts(fontAssets);
   const [storeReady, setStoreReady] = useState(false);
   useAppearance();
   const palette = useColors();
@@ -190,6 +289,26 @@ function AppShell() {
     if (pathname !== '/') return;
     if (!store.getState().settings.onboardingDone) router.replace('/onboarding');
   }, [admitted, pathname, store, storeReady]);
+
+  /**
+   * The font failure, handed to the boundary above.
+   *
+   * `useFonts` never throws. It catches the load and returns the error, leaving
+   * `fontsLoaded` false for ever, so the early return below renders null and the
+   * splash screen this module put up is never taken down: no crash, no message, and
+   * a restart does the same thing again. Rethrowing is what turns that silent hang
+   * into a screen someone can act on, and it is the reason the recovery screen has
+   * to survive without the fonts it is telling you about.
+   *
+   * Deliberately not "carry on with the system font". The app's typography is the
+   * brand, so a build that quietly renders in Roboto is worse than one that says it
+   * failed, and `retry()` remounts this component and runs the load again, which is
+   * a real fix for a fetch that failed once on the web target.
+   *
+   * After every hook, so the render that throws has the same hook order as the ones
+   * before it.
+   */
+  if (fontError) throw fontError;
 
   if (!fontsLoaded || !storeReady) return null;
 
