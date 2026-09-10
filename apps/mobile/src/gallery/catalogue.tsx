@@ -116,13 +116,14 @@ export interface Entry {
  * The handbook's reference and this gallery are two views of one list, and a link
  * between them is only as good as the agreement on what a component is called.
  * `folder/name` is that agreement: it is what `src/components` already calls a
- * component, and the handbook derives its own anchor from the same two parts
- * (`nav.ts`, `componentId`).
+ * component, and it is what `?c=` carries in both directions.
  *
  * The platform suffix is deliberately not part of it. `ReaderView` and
  * `ReaderView.web` are one entry here, because the gallery draws whichever the
  * bundler picked, and asking for the other one is a question this page cannot
- * answer.
+ * answer. Which is why the reference resolves the name to its own rows rather than
+ * being handed one of their ids: it has two where this has one, and it knows that
+ * and this does not (`pages/Components.tsx`, `useAskedFor`).
  */
 export function componentId(folder: string, name: string): string {
   return `${folder}/${name}`;

@@ -40,6 +40,13 @@ const SPECIMEN_COUNT = CATALOGUE.reduce(
   0,
 );
 
+/** What the page says about itself, in each of the three states an address can ask for. */
+const BLURB = {
+  all: `${COMPONENT_COUNT} components from src/components, ${SPECIMEN_COUNT} specimens, grouped by folder. A page for developers, published like any other route.`,
+  one: 'One component of the catalogue. The reference has its props.',
+  none: 'No component of that name. The link that sent you here is out of date.',
+};
+
 /**
  * The appearance setting, and what it currently resolves to.
  *
@@ -126,6 +133,54 @@ function SpecimenBlock({ specimen }: { specimen: Specimen }) {
 }
 
 /**
+ * One way out of a filtered view, as the same pressable text either way.
+ *
+ * `accessibilityRole` is spelled out at the call sites rather than shortened to
+ * `role`, which is the HTML attribute and makes oxlint ask for a `<button>` this
+ * file has no way to render.
+ */
+function Action({
+  label,
+  accessibilityRole,
+  onPress,
+}: {
+  label: string;
+  accessibilityRole: 'button' | 'link';
+  onPress: () => void;
+}) {
+  return (
+    <Pressable
+      onPress={onPress}
+      accessibilityRole={accessibilityRole}
+      className="active:opacity-60"
+    >
+      <Typo variant="text-s" weight="semibold" color="accent">
+        {label}
+      </Typo>
+    </Pressable>
+  );
+}
+
+/**
+ * Leaves the app for a page beside it, from inside a frame as well as outside one.
+ *
+ * Relative, so the address resolves under whatever base the site is served from,
+ * and neither base is written down anywhere: `/app/gallery` gives `/components`
+ * locally, `/correctiv-app/app/gallery` gives `/correctiv-app/components` on Pages.
+ *
+ * Resolved against THIS window and assigned to the TOP one, and both halves of that
+ * matter. In the workbench this page is an iframe, so navigating the frame renders
+ * the whole handbook, activity bar and status bar and all, inside a 393px device
+ * frame — and the workbench's route poll then writes `/components` into its own
+ * address as if the app were on that route. Resolving against the top window instead
+ * would drop the base path, because the shell sits one directory above the app.
+ */
+function leaveApp(relative: string): void {
+  const target = new URL(relative, globalThis.location.href).href;
+  (globalThis.top ?? globalThis).location.href = target;
+}
+
+/**
  * The two ways out of a filtered view, and the seam this page sits on.
  *
  * The gallery draws the components and the handbook's reference describes them, and
@@ -133,35 +188,34 @@ function SpecimenBlock({ specimen }: { specimen: Specimen }) {
  * one half of the way; `pages/Components.tsx` is the other.
  *
  * **Back to the reference is web-only, and that is not a shortcut.** The handbook is
- * a website: on the device there is nothing at the other end of that link. Reaching
- * it as `../components` rather than an absolute path is what makes it work in both
- * places it does exist — `/app/gallery` locally resolves to `/components`, and
- * `/correctiv-app/app/gallery` on Pages to `/correctiv-app/components`, without
- * either being written down.
+ * a website: on the device there is nothing at the other end of that link. It leads
+ * somewhere wrong in exactly one place that does have a browser, the app's own dev
+ * server, which serves the app and not the handbook, so `../components` is the app's
+ * unmatched route there. The address bar says why.
  *
- * It does not resolve on the app's own dev server, which serves the app and not the
- * handbook. That is the one case where this link goes nowhere, and the address bar
- * says why.
+ * The component travels as a query and not as the row's anchor. An anchor has to
+ * name the platform (`nav.ts`, `componentId`) and this page cannot say which half of
+ * a split component the bundler handed it, so `#c-media-VideoFrame` matched no row
+ * at all. `?c=media/VideoFrame` is the same agreement as this page's own address,
+ * and the reference resolves it against the rows it actually has.
  */
-function Links({ only }: { only?: string }) {
-  if (!only) return null;
-  const reference = Platform.OS === 'web' ? `../components#c-${only.replace('/', '-')}` : null;
+function Links({ only, found }: { only: string; found: boolean }) {
   return (
     <View className="mt-s flex-row flex-wrap gap-m">
-      <Pressable onPress={() => router.setParams({ c: undefined })} className="active:opacity-60">
-        <Typo variant="text-s" weight="semibold" color="accent">
-          All components
-        </Typo>
-      </Pressable>
-      {reference ? (
-        <Pressable
-          onPress={() => globalThis.location?.assign(reference)}
-          className="active:opacity-60"
-        >
-          <Typo variant="text-s" weight="semibold" color="accent">
-            Its props, in the reference
-          </Typo>
-        </Pressable>
+      <Action
+        label="All components"
+        accessibilityRole="button"
+        onPress={() => router.setParams({ c: undefined })}
+      />
+      {/* Not offered when nothing matched: a name with no specimen has no props
+          either, and a link to them would be the second thing on the page
+          pretending the name is real. */}
+      {Platform.OS === 'web' && found ? (
+        <Action
+          label="Its props, in the reference"
+          accessibilityRole="link"
+          onPress={() => leaveApp(`../components?c=${only}`)}
+        />
       ) : null}
     </View>
   );
@@ -189,6 +243,7 @@ function shown(only: string | undefined): Folder[] {
 
 export function Gallery({ only }: { only?: string }) {
   const groups = shown(only);
+  const found = groups.length > 0;
   return (
     <SafeAreaView edges={['top']} className="flex-1 bg-canvas">
       <ScrollView
@@ -198,13 +253,9 @@ export function Gallery({ only }: { only?: string }) {
       >
         <Typo variant="headline-m">{only ?? 'Component gallery'}</Typo>
         <Typo variant="text-s" color="on-canvas-muted" className="mt-2xs">
-          {only
-            ? groups.length === 0
-              ? 'No component of that name. The link that sent you here is out of date.'
-              : 'One component of the catalogue. The reference has its props.'
-            : `${COMPONENT_COUNT} components from src/components, ${SPECIMEN_COUNT} specimens, grouped by folder. A page for developers, published like any other route.`}
+          {only ? (found ? BLURB.one : BLURB.none) : BLURB.all}
         </Typo>
-        <Links only={only} />
+        {only ? <Links only={only} found={found} /> : null}
         <Appearance />
 
         {groups.map((group, g) => (
