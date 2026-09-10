@@ -21,6 +21,31 @@ const { alias, groups, root } = api.components;
 const FRAME_LIMIT = 3;
 
 /**
+ * The open rows, in the order they were opened.
+ *
+ * A list and not a set, because which three rows get a frame is decided by
+ * recency. Exported with `framed` below because this page has no DOM in its
+ * tests, so the order is the one part of the cap that can be asserted at all.
+ */
+export function opened(prev: string[], id: string, isOpen: boolean): string[] {
+  const without = prev.filter((other) => other !== id);
+  return isOpen ? [...without, id] : without;
+}
+
+/** The three most recently opened of them, which are the ones drawn. */
+export function framed(open: string[]): Set<string> {
+  return new Set(open.slice(-FRAME_LIMIT));
+}
+
+/**
+ * What a row has where its frame would be: nothing, a note, or the app.
+ *
+ * `shut` is a state and not an absence, because a `details` keeps its panel in
+ * the DOM whether it is open or not, so the row still renders something.
+ */
+type RowState = 'shut' | 'waiting' | 'frame';
+
+/**
  * Which rows are open, and which of those get a frame.
  *
  * The order is the order they were opened in, so the frames go to the three most
@@ -29,19 +54,24 @@ const FRAME_LIMIT = 3;
  * about why nothing is drawn.
  *
  * The `details` elements own whether they are open, including when the search
- * palette opens one from the outside (`ui/Lookup.tsx`). This only mirrors it.
+ * palette opens one from the outside (`ui/Lookup.tsx`). This only mirrors it, and
+ * `Component` below reports the row's unmount as well as its toggles, which is
+ * the half that was missing: see the comment there for what that cost.
  */
 function useOpenRows() {
   const [open, setOpen] = useState<string[]>([]);
 
   const report = useCallback((id: string, isOpen: boolean) => {
-    setOpen((prev) => {
-      const without = prev.filter((other) => other !== id);
-      return isOpen ? [...without, id] : without;
-    });
+    setOpen((prev) => opened(prev, id, isOpen));
   }, []);
 
-  return { drawing: new Set(open.slice(-FRAME_LIMIT)), report };
+  const drawing = framed(open);
+  const stateOf = (id: string): RowState => {
+    if (drawing.has(id)) return 'frame';
+    return open.includes(id) ? 'waiting' : 'shut';
+  };
+
+  return { stateOf, report };
 }
 
 /**
@@ -106,7 +136,7 @@ function useAskedFor(): void {
  */
 export function Components() {
   const [query, setQuery] = useState('');
-  const { drawing, report } = useOpenRows();
+  const { stateOf, report } = useOpenRows();
   useAskedFor();
 
   /*
@@ -196,7 +226,7 @@ export function Components() {
                   <Component
                     group={group.name}
                     component={component}
-                    drawing={drawing}
+                    stateOf={stateOf}
                     report={report}
                   />
                 </li>
@@ -258,15 +288,20 @@ export function Components() {
  * the app's own router. What remains is the way into the tool, which is one address
  * in both builds.
  */
-function Drawn({ group, name, draw }: { group: string; name: string; draw: boolean }) {
+function Drawn({ group, name, state }: { group: string; name: string; state: RowState }) {
   // `bare`, because the gallery's own header would say what the page around this
   // frame already says, and would leave the component below the fold.
   const route = `/gallery?c=${group}/${name}&bare=1`;
 
-  if (!draw) {
+  // A shut row draws nothing and says nothing. Its panel is in the DOM either way
+  // (`ui/Lookup.tsx`), so the note below would otherwise stand in all 46 rows
+  // telling every one of them that three others are open.
+  if (state === 'shut') return null;
+
+  if (state === 'waiting') {
     return (
       <p className="mt-s text-s text-on-canvas-muted">
-        {`${FRAME_LIMIT} frames at a time, and there are ${FRAME_LIMIT} open. Close one of the other rows to draw this component.`}
+        {`${FRAME_LIMIT} frames at a time, and ${FRAME_LIMIT} rows were opened after this one. Close one of them to draw this component.`}
       </p>
     );
   }
@@ -275,9 +310,13 @@ function Drawn({ group, name, draw }: { group: string; name: string; draw: boole
     <>
       <AppFrame route={route} title={`${name}, drawn in the app`} />
       <p className="mt-2xs text-s">
+        {/* No fixture in that address. `applyFixture` wipes the app's storage,
+            and a link offered beside a drawing is not a request to clear the
+            reader's demo — the frame has already put a session there, so the
+            workbench opens the gallery without one. */}
         <a
           className="text-accent underline underline-offset-2"
-          href={`${href('/workbench')}#/gallery?d=pixel-8&s=onboarded`}
+          href={`${href('/workbench')}#/gallery?d=pixel-8`}
         >
           Open the gallery in the workbench
         </a>
@@ -291,16 +330,27 @@ function Drawn({ group, name, draw }: { group: string; name: string; draw: boole
 function Component({
   group,
   component,
-  drawing,
+  stateOf,
   report,
 }: {
   group: string;
   component: ApiComponent;
-  drawing: Set<string>;
+  stateOf: (id: string) => RowState;
   report: (id: string, open: boolean) => void;
 }) {
   const props = component.props;
   const id = componentId(group, component.name, component.platform);
+
+  /*
+   * A row can leave the page without shutting, and then nothing tells the page.
+   * The filter above unmounts it, no `toggle` event follows, and its id keeps one
+   * of the three frames for the rest of the visit. Measured on 2026-09-10: four
+   * rows opened, then a filter that left only the first — the one row on screen
+   * was open, had no frame, and asked the reader to close three rows that were
+   * not there. Clearing the filter then put a frame inside three SHUT rows, which
+   * is three whole app bundles booting where the design promises none.
+   */
+  useEffect(() => () => report(id, false), [id, report]);
 
   return (
     <Disclosure
@@ -329,7 +379,7 @@ function Component({
       <p className="break-words font-mono text-s text-on-canvas-muted">
         {`import { ${component.name} } from '${component.import}'`}
       </p>
-      <Drawn group={group} name={component.name} draw={drawing.has(id)} />
+      <Drawn group={group} name={component.name} state={stateOf(id)} />
       {component.doc && (
         <div
           className="prose prose-sm mt-s max-w-content"

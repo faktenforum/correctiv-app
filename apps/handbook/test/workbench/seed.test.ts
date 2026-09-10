@@ -175,4 +175,24 @@ describe('holding the door open', () => {
       expect(payload(store, 'session').entitlement).toMatchObject({ appAccess: true });
     }
   });
+
+  /**
+   * A browser with site data switched off throws on every accessor, and this is
+   * called from an effect: measured against such a store, `/components` rendered
+   * its error boundary and none of its 46 rows, because the write that answers a
+   * failed read sat in that read's own `catch`. A frame that draws the door is
+   * the correct outcome here, and it is only reachable if this returns.
+   */
+  it('says nothing when the store refuses both the read and the write', () => {
+    const blocked = {
+      getItem: () => {
+        throw new Error('The operation is insecure.');
+      },
+      setItem: () => {
+        throw new Error('The operation is insecure.');
+      },
+    } as unknown as Storage;
+
+    expect(() => holdTheDoorOpen(blocked)).not.toThrow();
+  });
 });

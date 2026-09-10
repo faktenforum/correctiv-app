@@ -10,11 +10,15 @@ import { loadedTheAddress, tookTheRoute } from '../../src/workbench/AppFrame';
  * lands on the app's 404. Which of those has happened cannot be asked of the
  * address in the obvious way, and the obvious way is what failed:
  *
- * - "the path is the one I asked for" is true from the instant the frame is
- *   pointed at it, while the document on screen is still the empty one it started
- *   with. `document.URL` is the document's own address and cannot lie about that.
+ * - "the document is complete" is true of `about:blank`, which is the document a
+ *   frame starts with, so it says nothing on its own. The address has to agree,
+ *   and it is read from `document.URL` — the document's own address rather than
+ *   the browsing context's.
  * - "the app took the route" is not a path being right but the base path being
  *   *gone*, because a development bundle does not put it back on a navigation.
+ *   And `about:blank`'s path is the bare string "blank", which carries no base
+ *   either: without the protocol test, a frame that has been nowhere reads as a
+ *   frame the app has taken over.
  *
  * Fake windows rather than a browser, because both functions are one line about a
  * pair of strings, and the strings are what was wrong.
@@ -48,14 +52,27 @@ describe('reading a frame’s address', () => {
     expect(tookTheRoute(null)).toBe(false);
   });
 
-  it('waits for the document, not for the address', () => {
-    // The frame reports the new path immediately; the empty document it is still
-    // showing reports "complete". Together they used to mean "done".
-    const midFlight = {
+  it('does not call an empty document loaded', () => {
+    // `about:blank` is "complete" from the first tick, so `readyState` alone
+    // called a frame that had loaded nothing done, stopped the poll, and left the
+    // app's 404 on screen.
+    const blank = {
+      document: { URL: 'about:blank', readyState: 'complete' },
+      location: { protocol: 'about:', pathname: 'blank' },
+    };
+    expect(loadedTheAddress(blank as unknown as Window)).toBe(false);
+    expect(loadedTheAddress(null)).toBe(false);
+  });
+
+  it('reads the document’s own address and not the browsing context’s', () => {
+    // The two agree in every browser measured, and this pins which one is asked:
+    // `document.URL` cannot be a pending address, and a reading built on
+    // `location` would go wrong silently in a browser where it can be.
+    const disagreeing = {
       document: { URL: 'about:blank', readyState: 'complete' },
       location: { protocol: 'http:', pathname: '/app/gallery' },
     };
-    expect(loadedTheAddress(midFlight as unknown as Window)).toBe(false);
+    expect(loadedTheAddress(disagreeing as unknown as Window)).toBe(false);
   });
 
   it('is loaded when the document at the address is', () => {

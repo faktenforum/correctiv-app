@@ -236,7 +236,18 @@ export function applyFixture(store: Storage, id: string): void {
  * dispatch through, which is the same argument the file header makes.
  *
  * `settings` is deliberately left alone: the onboarding redirect fires only from
- * `/`, and nothing this is used for starts there.
+ * `/`, and nothing this is used for starts there. What it writes does outlive the
+ * page, like every fixture — the next visit to `/workbench` that names no fixture
+ * finds this session rather than the door.
+ *
+ * **Two `try` blocks and not one.** A store that cannot be read is the ordinary
+ * case, and the answer to it is to write; a store that cannot be *written* is a
+ * browser with site data switched off, and there is no answer to it at all. One
+ * block put the write in the catch of the read, so a blocked store threw out of
+ * the effect that calls this and React unmounted the page: measured against a
+ * `localStorage` whose accessors throw `SecurityError`, `/components` rendered its
+ * error boundary and none of the 46 rows. A frame that draws the door is worse
+ * than one that draws a component and far better than no reference page.
  */
 export function holdTheDoorOpen(store: Storage): void {
   try {
@@ -245,10 +256,13 @@ export function holdTheDoorOpen(store: Storage): void {
       ? (JSON.parse(raw) as { entitlement?: { appAccess?: unknown } }).entitlement?.appAccess
       : false;
     if (held === true) return;
-    kv(store, 'session', SIGNED_IN);
   } catch {
     // Unparsable is the same as shut. `persist()` deletes a payload that is not
     // valid JSON, so writing over it loses nothing that would have survived.
+  }
+  try {
     kv(store, 'session', SIGNED_IN);
+  } catch {
+    // Site data switched off. Nothing can be seeded, and nothing may throw.
   }
 }

@@ -252,7 +252,12 @@ export function Gallery({ only, bare }: { only?: string; bare?: boolean }) {
     <SafeAreaView edges={['top']} className="flex-1 bg-canvas">
       <ScrollView
         className="flex-1"
-        contentContainerClassName={bare ? 'px-m pb-m' : 'px-m pt-m pb-3xl'}
+        // `pt-xs` and not nothing: the first entry's own top margin is dropped in
+        // this mode, and a component whose note is the first thing in the frame —
+        // 17 of the 44 have one — then began 2px under the frame's top border and
+        // read as cut off rather than as the top of the page. Measured in the
+        // frame at 393 × 520.
+        contentContainerClassName={bare ? 'px-m pt-xs pb-m' : 'px-m pt-m pb-3xl'}
         // Shown in a frame, hidden on the page. A 520px frame cannot hold both
         // surfaces of most components, and without the bar the second one looks
         // cut off rather than scrolled past.

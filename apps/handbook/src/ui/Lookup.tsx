@@ -74,7 +74,7 @@ export function Filter({
  *
  * `onOpenChange` is for a child that must not exist while the row is shut. A
  * `details` keeps its panel in the DOM and only hides it, so an iframe in there
- * would boot the app for all 44 rows at once; `pages/Components.tsx` mounts one
+ * would boot the app for all 46 rows at once; `pages/Components.tsx` mounts one
  * on this signal instead.
  *
  * `text-s` on the row is for a child that cannot state its own size: the kit's

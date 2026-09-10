@@ -185,26 +185,35 @@ equivalents for focus, liveness and errors.
   give up the inspector while you do, or serve a static export with
   `screens/tools/serve-clean.mjs`.
 
-  **Any other frame has to do the same, and three readings of the address are wrong.**
-  `/components` draws each component in its own frame (`workbench/AppFrame.tsx`), so
-  the mechanism above is shared rather than copied, and getting there cost three
-  measurements on 2026-09-10. A frame whose `src` is set by script fires
-  `about:blank`'s `load` before the app's, and even on the app's the handle can be on
-  the window while the router is not mounted yet: that first `navigate` is dropped in
-  silence, and the same call by hand twelve seconds later worked. Poll instead of
-  handling `load`. While the frame is still loading, `location` already reports the
-  new address and the empty document it is still showing reports `readyState`
-  "complete", which reads exactly like "loaded"; `document.URL` is the document's own
-  address and cannot disagree with it. And more than one `navigate` reaches the router
-  before a tick can see the first one arrive, so `keepFramePath` has to run for a few
-  ticks rather than once, or one frame in three keeps a base-less path.
+  **Any other frame has to do the same, and `about:blank` answers every question
+  wrongly on the way.** `/components` draws each component in its own frame
+  (`workbench/AppFrame.tsx`), so the mechanism above is shared rather than copied, and
+  getting there cost three measurements on 2026-09-10. A frame whose `src` is set by
+  script fires `about:blank`'s `load` before the app's, and even on the app's the
+  handle can be on the window while the router is not mounted yet: that first
+  `navigate` is dropped in silence, and the same call by hand twelve seconds later
+  worked. Poll instead of handling `load`. Then take neither reading of the address on
+  its own. An empty document reports `readyState` "complete" from the first tick, so
+  "complete" alone called a frame that had loaded nothing done and left the app's 404
+  standing; and `about:blank`'s *path* is the bare string `blank`, which carries no
+  base path, so "the base is gone" alone called a frame that had been nowhere a frame
+  the app had taken over. Each needs the other half beside it: the protocol, and the
+  address read from `document.URL`. `location` does not lie about the address in the
+  meantime, which was worth knowing and is not the trap — sampled every 4 ms through a
+  400 ms navigation, by `location.replace` and by `src` alike, `location.href` and
+  `document.URL` never disagreed, and a `Location` reflects the active document, so it
+  cannot. `document.URL` is asked because it is the reading that survives a browser
+  where one ever does. And more than one `navigate` reaches the router before a tick
+  can see the first one arrive, so `keepFramePath` has to run for a few ticks rather
+  than once, or one frame in three keeps a base-less path.
 
   **Do not probe the frame to find out which build it is.** The handle appears *after*
   the document is complete: measured with a warm bundle, `readyState` "complete" at
-  1,240 ms and `__correctiv` at 1,399 ms. For 159 ms, and for however long a cold
-  bundle takes, "no handle yet" and "no handle at all" are the same reading, so a frame
-  that asks calls the dev server a production export and gives up. Read it off this
-  site's own build (`import.meta.env.DEV`): the two halves are one deployment.
+  1,240 ms and `__correctiv` at 1,399 ms. Re-measured the same day the gap was 45 ms,
+  which is the point — it is a race, not a duration to wait out. For however long it
+  and a cold bundle take, "no handle yet" and "no handle at all" are the same reading,
+  so a frame that asks calls the dev server a production export and gives up. Read it
+  off this site's own build (`import.meta.env.DEV`): the two halves are one deployment.
 - **Serving a static export without clean URLs** makes Expo Router render its
   *unmatched route* page. That looks like an app bug and is a server bug. → Map `/artikel` →
   `artikel.html`. A plain `python3 -m http.server` will not do;
@@ -366,6 +375,23 @@ equivalents for focus, liveness and errors.
   by hand would be the new bug. **Check a colour change in all three settings, and
   check `'system'` against both device schemes**. That is four combinations, and only
   the fourth was broken.
+- **A framed app cannot see the appearance of the page around it, and the class on
+  `<html>` does not cross.** The site and the app share an origin here, so nearly
+  everything crosses (ADR 0014), and this is the exception: the scheme travels as a
+  class on the *document's* root element, and the framed app has a root element of its
+  own. Both sides default to `'system'`, so they agree until a reader picks light or
+  dark on one of them — and then `/components` drew a black phone on a white page,
+  which is the app's own default against a dark device and the combination this file
+  already calls the one that ships broken. There is no handle to dispatch through in
+  the published export, and seeding `settings` would clobber whatever the reader had
+  stored. → **`color-scheme` on the embedding element**, which is what
+  `prefers-color-scheme` resolves to inside the embedded document. Measured on
+  2026-09-10: setting that one property on the `<iframe>` moved the framed app's own
+  `light` / `dark` class within a tick, no reload, no handle, so it works in the export
+  too. `workbench/AppFrame.tsx` carries it as `scheme-light dark:scheme-dark`, which
+  puts the site's own three states behind it. The app stays the authority when its
+  setting is explicit, because Uniwind then writes the class from the setting and never
+  consults the query.
 - **`userInterfaceStyle` in `app.json` is a promise to the OS, and on iOS it is
   binding.** It was `"light"`, which `expo prebuild` writes into
   `ios/<name>/Info.plist` as `UIUserInterfaceStyle = Light`. iOS then reports light

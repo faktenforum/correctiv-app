@@ -22,8 +22,10 @@ const GIVE_UP = 6_000;
  * is a race. Measured on 2026-09-10 with a warm bundle: the frame's document
  * reports `readyState` "complete" at 1,240 ms and the handle appears at 1,399 ms,
  * so "no handle yet" and "no handle at all" look identical for 159 ms and for
- * however long a cold bundle takes. The two halves are one deployment: the dev
- * server proxies `/app` to Metro, and the Pages artifact carries an export.
+ * however long a cold bundle takes. Re-measured the same day the gap was 45 ms,
+ * which is the point: it is a race and not a duration to wait out. The two halves
+ * are one deployment: the dev server proxies `/app` to Metro, and the Pages
+ * artifact carries an export.
  */
 const DRIVES = import.meta.env.DEV;
 
@@ -58,19 +60,38 @@ export function tookTheRoute(win: Window | null): boolean {
  * same path, and merging them is how a frame that is still loading gets called
  * done.
  *
- * `document.URL` and not `location`, which is the whole of this function. A frame
- * pointed at a new address reports that address from `location` **immediately**,
- * while the document it is still showing is the empty one it started with — and an
- * empty document has `readyState` "complete". Measured: the first tick called a
- * frame that had loaded nothing finished, the poll stopped, and what stayed on
- * screen was the app's 404. `document.URL` is the document's own address, so the
- * two cannot disagree.
+ * `readyState` is not a reading on its own, which is the whole of this function.
+ * The document a frame starts with is `about:blank`, and an empty document is
+ * "complete" from the first tick: asked that alone, the poll called a frame that
+ * had loaded nothing finished, stopped, and left the app's 404 on screen. So the
+ * address has to agree, and it is taken from `document.URL` — the document's own
+ * address, which cannot be a pending one. `location` was suspected of reporting
+ * the pending address ahead of the document, and it does not: sampled every 4 ms
+ * through a 400 ms navigation on 2026-09-10, by `location.replace` and by `src`
+ * alike, the two never disagreed. `document.URL` is asked anyway, being the
+ * reading that survives a browser where they do.
  */
 export function loadedTheAddress(win: Window | null): boolean {
   try {
     return !!win && win.document.readyState === 'complete' && win.document.URL.includes(BASE);
   } catch {
     return false;
+  }
+}
+
+/**
+ * This origin's storage, or nothing.
+ *
+ * Reading the property is what throws when site data is switched off, so it
+ * cannot be done inside `holdTheDoorOpen` — and a page of 46 rows must not fail
+ * to render because one frame could not seed a session. `theme.ts` guards its own
+ * two calls for the same reason.
+ */
+function ownStorage(): Storage | null {
+  try {
+    return window.localStorage;
+  } catch {
+    return null;
   }
 }
 
@@ -90,7 +111,7 @@ export function loadedTheAddress(win: Window | null): boolean {
  * thing that can draw them, and an iframe is how this page borrows it.
  *
  * Mounted by the caller, only when something has asked for it. One frame boots
- * the whole app bundle, so a page with 44 rows on it must not hold 44.
+ * the whole app bundle, so a page with 46 rows on it must not hold 46.
  */
 export function AppFrame({
   route,
@@ -130,7 +151,8 @@ export function AppFrame({
     setState('booting');
     // Before the frame is pointed anywhere, because the app reads the session on
     // its first render and the gate replaces the whole router.
-    holdTheDoorOpen(window.localStorage);
+    const store = ownStorage();
+    if (store) holdTheDoorOpen(store);
     navigate(frame, route);
 
     const started = Date.now();
@@ -177,11 +199,15 @@ export function AppFrame({
       style={{ height }}
     >
       {state !== 'drawn' && (
-        <p className="absolute inset-0 grid place-items-center px-s text-center text-s text-on-canvas-muted">
+        // A live region, because the frame it covers is what a reader is waiting
+        // for and "did not load" arrives six seconds after they stopped looking.
+        // `output` and not `p role="status"`: oxlint asks for the element whose
+        // implicit role that is, and the two are the same announcement.
+        <output className="absolute inset-0 grid place-items-center px-s text-center text-s text-on-canvas-muted">
           {state === 'booting'
             ? 'Booting the app…'
             : 'The app did not load. The workbench has its console.'}
-        </p>
+        </output>
       )}
       {/* eslint-disable-next-line react/iframe-missing-sandbox */}
       <iframe
@@ -191,7 +217,19 @@ export function AppFrame({
            lines below to work at all, and with `allow-scripts` beside it on a
            same-origin document the attribute grants what it appears to withhold.
            `ui/Stage.tsx` carries the long version of this argument. */
-        className="block h-full w-full border-0"
+        /* The frame follows THIS page's appearance, which is the one thing about
+           it a reader can set and the app in it cannot see. `color-scheme` on an
+           embedding element is what `prefers-color-scheme` resolves to inside the
+           document, so these two classes reach across the origin the class on
+           `<html>` cannot: measured on 2026-09-10, flipping this property moved
+           the framed app's own `light`/`dark` class with no reload and no handle,
+           which is what makes it work in the published export too. The app stays
+           the authority when its own setting is explicit — Uniwind then writes the
+           class from the setting and ignores the query — and this decides the
+           default, `'system'`, which is what a reader of this page has. Without it
+           the reference drew a black phone on a white page whenever the two
+           disagreed, and that is the app's own default against a dark device. */
+        className="block h-full w-full border-0 scheme-light dark:scheme-dark"
       />
     </div>
   );
