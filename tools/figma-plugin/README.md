@@ -22,6 +22,16 @@ document crosses the wire, never anything executable.
 
     node tools/figma-plugin/server.mjs      # then run the plugin once, and leave it open
 
+Starting the server also **installs** the plugin's three files where Figma reads
+them, and says so when it had to. On Linux that is a copy outside this repository,
+because the flatpak can only read a granted directory, and a stale copy is an
+interpreter drawing a description with a vocabulary it does not have yet — silently.
+`fix-plugin-path.mjs` copies as well, and having to remember to run it is exactly
+what failed on 2026-09-10: three interpreter changes were committed, the copy was
+not refreshed, the plugin was restarted, and its summary still reported the old
+component count. A `code.js` change still needs the plugin closed and reopened,
+which only a person can do.
+
 ## The wireframe rendering, and why it went
 
 There were two renderings of one description: this one, and a hand-drawn wireframe in
