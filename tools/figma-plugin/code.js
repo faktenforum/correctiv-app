@@ -11,7 +11,7 @@
 //
 // The vocabulary is deliberately small, and covers exactly what the local MCP
 // server's write tools cannot: auto-layout with FILL children, ellipses, dash
-// patterns, components and instances, and vectors for the pencil outlines.
+// patterns, components and instances.
 //
 //   t: 'frame'    dir V|H, pad, gap, fill, stroke, radius, w, h, align, cross, clip,
 //                 dash, children
@@ -26,99 +26,29 @@
 // honours when the parent is a plain frame and ignores inside auto-layout — the same
 // rule the API itself has, so there is nothing to remember.
 
-// Two renderings of one description.
-//
-// 'replica' answers "what does the app look like": the app's own typefaces, the
-// colour tokens, the real copy.
-//
-// 'wireframe' answers "how is the app built": one neutral typeface, greys only,
-// media reduced to a labelled box. The COPY stays real in both, because a wireframe
-// full of lorem ipsum is one nobody can argue with.
-const MODES = {
-  replica: {
-    // Only the replica binds Figma variables. The wireframe deliberately ignores the
-    // brand, so binding it too would mean a change to the emphasis token repainted a
-    // pencil drawing — the one page that exists in order not to be about colour.
-    bindVariables: true,
-    fonts: {
-      sans: {
-        regular: { family: 'Source Sans 3', style: 'Regular' },
-        semibold: { family: 'Source Sans 3', style: 'SemiBold' },
-        bold: { family: 'Source Sans 3', style: 'Bold' },
-      },
-      serif: {
-        regular: { family: 'Merriweather', style: 'Regular' },
-        semibold: { family: 'Merriweather', style: 'Bold' },
-        bold: { family: 'Merriweather', style: 'Bold' },
-      },
-    },
+/**
+ * The app's typefaces, per family and cut.
+ *
+ * There used to be a second rendering beside this one, a pencil wireframe in Kalam
+ * with every colour flattened onto a grey ramp. It answered "how is the app built"
+ * where this answers "what does it look like", and it went on 2026-09-10 because
+ * the screens it was drawn for are settled and nobody was reading it. What it cost
+ * while it existed was not the ramp: it was that every page, component and instance
+ * carried a mode, and that a colour had to be asked twice — once for what it is and
+ * once for what it becomes.
+ */
+const FONTS = {
+  sans: {
+    regular: { family: 'Source Sans 3', style: 'Regular' },
+    semibold: { family: 'Source Sans 3', style: 'SemiBold' },
+    bold: { family: 'Source Sans 3', style: 'Bold' },
   },
-  wireframe: {
-    // Drawn by hand, on purpose. A pencil sketch invites "the order is wrong";
-    // something that looks finished invites "the red is wrong". Only one of those is
-    // the question this page asks.
-    sketch: true,
-    fonts: {
-      sans: {
-        regular: { family: 'Kalam', style: 'Regular' },
-        semibold: { family: 'Kalam', style: 'Bold' },
-        bold: { family: 'Kalam', style: 'Bold' },
-      },
-      // A wireframe has one voice. The serif collapses into it.
-      serif: {
-        regular: { family: 'Kalam', style: 'Regular' },
-        semibold: { family: 'Kalam', style: 'Bold' },
-        bold: { family: 'Kalam', style: 'Bold' },
-      },
-    },
-    // Every colour in the spec maps onto this ramp by its ROLE, not its hue, so the
-    // brand red and the club yellow both become "this is interactive" grey rather
-    // than two different greys that mean nothing.
-    // The screen stays paper-white; everything the app fills with colour becomes an
-    // empty box that the pencil outlines. Only a genuine surface keeps a tint, so a
-    // card still reads as sitting on the page rather than in it.
-    greys: {
-      '#ffffff': '#ffffff',
-      '#f4f4f6': '#f5f5f6',
-      '#e2e2e5': null,
-      // Brand and accent become nothing but an outline: a wireframe must not be able
-      // to start an argument about the red.
-      '#ff5064': null,
-      '#fde162': null,
-      '#e8e8fa': null,
-      '#cc2121': null,
-      // Media placeholders keep a tint, because "a picture goes here" is structure.
-      '#dadadd': '#efeff1',
-      '#d9d9db': '#efeff1',
-      // Tracks and switches: visible, but quieter than the boxes around them.
-      '#e5e5e8': '#eaeaec',
-      '#e0e0e3': '#eaeaec',
-      // Dark surfaces invert rather than turn into ink blocks.
-      '#141417': '#ededf0',
-      '#212124': '#ededf0',
-      '#333336': '#ededf0',
-      '#7a7a82': null,
-      '#a8a8b0': null,
-    },
-    fallback: null,
-    // Text follows a ramp of its own. Without this, white-on-brand becomes
-    // white-on-light-grey, and every button label disappears.
-    textGreys: {
-      '#ffffff': '#4a4a52',
-      '#212124': '#2a2a30',
-      '#7a7a82': '#76767e',
-      '#a8a8b0': '#9a9aa2',
-      '#ff5064': '#5a5a62',
-    },
-    textFallback: '#5a5a62',
+  serif: {
+    regular: { family: 'Merriweather', style: 'Regular' },
+    semibold: { family: 'Merriweather', style: 'Bold' },
+    bold: { family: 'Merriweather', style: 'Bold' },
   },
 };
-
-// Set per draw, from the page's `mode`.
-let MODE = MODES.replica;
-// Which of them, by name. Components are registered per mode, because a screen page
-// drawn as a sketch must instance the sketched kit and not the replica's.
-let MODE_NAME = 'replica';
 
 /** '#rrggbb' to Figma's 0–1 triple. Everything in the spec is written as hex. */
 function rgb(hex) {
@@ -148,9 +78,81 @@ function isToken(value) {
   return typeof value === 'string' && value.charAt(0) === '@';
 }
 
+/**
+ * `@color-always-dark/70` — a token at seventy per cent, the app's own spelling.
+ *
+ * Uniwind writes exactly this in the class it applies (`bg-always-dark/70`), and a
+ * component that dims a fill this way had no way across before: flattening it to a
+ * hex would have kept the colour and thrown away the token, which is the one thing a
+ * board is for. The alpha rides on the PAINT, not on the node, so a translucent
+ * surface does not fade the icon standing on it.
+ */
+function tokenName(value) {
+  return isToken(value) ? value.slice(1).split('/')[0] : value;
+}
+
+function tokenAlpha(value) {
+  if (!isToken(value)) return 1;
+  const cut = value.indexOf('/');
+  if (cut === -1) return 1;
+  const percent = Number(value.slice(cut + 1));
+  return Number.isFinite(percent) ? Math.min(100, Math.max(0, percent)) / 100 : 1;
+}
+
+/**
+ * The scale's names, turned into the numbers they stand for, once for the whole
+ * document.
+ *
+ * `measure.mjs` writes `@spacing-2xs` where it read six pixels, because a padding
+ * bound to the scale is the point of having a scale. Everything below wants a
+ * number, and the first run without this failed on the first `space` node —
+ * "Property height failed validation: Expected number, received string", raised
+ * inside Figma, with a half-drawn page left behind.
+ *
+ * Here rather than at each of the fourteen places that read one: a conversion that
+ * has to be remembered at a call site is one that will be forgotten at the
+ * fifteenth. `w` and `h` keep 'fill' and 'hug', which are not numbers and not
+ * tokens either.
+ */
+const NUMERIC = [
+  'w',
+  'h',
+  'x',
+  'y',
+  'gap',
+  'crossGap',
+  'radius',
+  'size',
+  'tracking',
+  'leading',
+  'strokeWeight',
+];
+
+function resolveScales(node) {
+  if (Array.isArray(node)) {
+    for (const child of node) resolveScales(child);
+    return;
+  }
+  if (node === null || typeof node !== 'object') return;
+  for (const key of NUMERIC) {
+    const value = node[key];
+    if (!isToken(value)) continue;
+    const t = TOKENS[tokenName(value)];
+    if (typeof t === 'number') node[key] = t;
+  }
+  if (Array.isArray(node.pad)) {
+    node.pad = node.pad.map((one) => {
+      if (!isToken(one)) return one;
+      const t = TOKENS[tokenName(one)];
+      return typeof t === 'number' ? t : one;
+    });
+  }
+  for (const key of Object.keys(node)) if (key !== 'tokens') resolveScales(node[key]);
+}
+
 function tokenValue(value) {
   if (!isToken(value)) return value;
-  const t = TOKENS[value.slice(1)];
+  const t = TOKENS[tokenName(value)];
   if (t === undefined) return '#ff00ff'; // loud on purpose: a typo must be visible
   return typeof t === 'object' ? t.light : t;
 }
@@ -214,36 +216,11 @@ async function syncVariables(tokens) {
   return names.length + (dark === null ? ' (light only, a second mode is a paid feature)' : '');
 }
 
-/**
- * In wireframe mode every colour is pulled onto the grey ramp before it is used.
- * A mapping to null means "no fill at all" — that is how a brand-red button becomes
- * an empty box with a pencil outline instead of a grey slab.
- */
-function toned(hex) {
-  if (!hex || MODE.greys === undefined) return hex;
-  const key = hex.toLowerCase();
-  if (Object.prototype.hasOwnProperty.call(MODE.greys, key)) return MODE.greys[key];
-  // Not in the table: fall back to a grey of the SAME lightness rather than to a
-  // fixed value. An unlisted colour then degrades instead of silently vanishing,
-  // which is what a hardcoded fallback did — and the table stays a list of
-  // deliberate exceptions rather than something that must be kept exhaustive.
-  return greyOf(hex);
-}
-
-/** Rec. 709 luminance, flattened to a grey and lifted so it never reads as ink. */
-function greyOf(hex) {
-  const c = rgb(hex);
-  const y = 0.2126 * c.r + 0.7152 * c.g + 0.0722 * c.b;
-  const lifted = Math.round((0.55 + y * 0.4) * 255);
-  const h = Math.min(255, Math.max(0, lifted)).toString(16).padStart(2, '0');
-  return '#' + h + h + h;
-}
-
-/** Binds rather than copies, when the spec names a token and the mode allows it. */
+/** Binds rather than copies, when the spec names a token. */
 function bind(hex, value) {
   const paintValue = { type: 'SOLID', color: rgb(hex) };
-  if (!MODE.bindVariables || !isToken(value)) return paintValue;
-  const variable = VARS[value.slice(1)];
+  if (!isToken(value)) return paintValue;
+  const variable = VARS[tokenName(value)];
   // Unreachable for anything the description wrote: `checkTokens` has already refused
   // a name the token table does not have. What is left is a variable that failed to
   // be CREATED, which no description can prevent — and an unbound paint is then the
@@ -254,19 +231,15 @@ function bind(hex, value) {
 }
 
 function paint(value) {
-  const c = toned(tokenValue(value));
-  return c ? [bind(c, value)] : [];
-}
-
-function paintText(value) {
-  if (MODE.textGreys === undefined) return paint(value);
-  const hex = tokenValue(value);
-  const c = MODE.textGreys[(hex || '').toLowerCase()] || MODE.textFallback;
-  return [{ type: 'SOLID', color: rgb(c) }];
+  const c = tokenValue(value);
+  if (!c) return [];
+  const p = bind(c, value);
+  const alpha = tokenAlpha(value);
+  return [alpha === 1 ? p : Object.assign({}, p, { opacity: alpha })];
 }
 
 function fontFor(node) {
-  const family = MODE.fonts[node.font || 'sans'] || MODE.fonts.sans;
+  const family = FONTS[node.font || 'sans'] || FONTS.sans;
   return family[node.weight || 'regular'] || family.regular;
 }
 
@@ -287,17 +260,6 @@ function collectFonts(node, out) {
   for (const n of node.options || []) collectFonts(n, out);
   return out;
 }
-
-// ---------------------------------------------------------------- pencil
-//
-// Sketch mode replaces a node's fill and border with a drawn outline: four edges,
-// each bowed off true by a small amount, and a corner that overshoots the way a hand
-// does. The wobble is seeded from the node's own name and size, so it is the SAME
-// wobble on every redraw — otherwise the whole board shimmers on each save and a real
-// change becomes impossible to spot.
-
-const PENCIL = '#6b6b73';
-let pending = [];
 
 // ------------------------------------------------------------- the component kit
 //
@@ -389,8 +351,14 @@ function buildVariantSet(spec, parent) {
   const made = [];
   for (const option of spec.options) {
     const one = { t: 'component', name: spec.prop + '=' + option.value, props: spec.props };
-    for (const key of Object.keys(option)) if (key !== 'value') one[key] = option[key];
-    made.push(build(one, parent, false));
+    // `t` is not the option's to set: `combineAsVariants` refuses a set whose
+    // children are anything but components, and a description that says `frame`
+    // here — every measured one does — took the whole page down with
+    // "A COMPONENT_SET node cannot have children of type other than COMPONENT".
+    for (const key of Object.keys(option)) {
+      if (key !== 'value' && key !== 't') one[key] = option[key];
+    }
+    made.push(build(one, parent, false, true));
   }
   const set = figma.combineAsVariants(made, parent);
   set.name = spec.name;
@@ -402,120 +370,9 @@ function buildVariantSet(spec, parent) {
   set.paddingBottom = 16;
   set.primaryAxisSizingMode = 'AUTO';
   set.counterAxisSizingMode = 'AUTO';
-  COMPONENTS[MODE_NAME + '/' + spec.name] = set.defaultVariant;
-  recordProperties(MODE_NAME + '/' + spec.name, set);
+  COMPONENTS[spec.name] = set.defaultVariant;
+  recordProperties(spec.name, set);
   return set;
-}
-
-function seedOf(text) {
-  let h = 2166136261;
-  for (let i = 0; i < text.length; i++) {
-    h ^= text.charCodeAt(i);
-    h = Math.imul(h, 16777619);
-  }
-  return h >>> 0;
-}
-
-/** mulberry32: small, fast, and identical across runs for a given seed. */
-function random(seed) {
-  let a = seed >>> 0;
-  return function () {
-    a = (a + 0x6d2b79f5) >>> 0;
-    let t = Math.imul(a ^ (a >>> 15), 1 | a);
-    t = (t + Math.imul(t ^ (t >>> 7), 61 | t)) ^ t;
-    return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
-  };
-}
-
-/** One edge as three points, bowed sideways by up to `wobble`. */
-function edge(from, to, rnd, wobble, out) {
-  const dx = to[0] - from[0];
-  const dy = to[1] - from[1];
-  const len = Math.sqrt(dx * dx + dy * dy) || 1;
-  const nx = -dy / len;
-  const ny = dx / len;
-  for (const at of [0.35, 0.7, 1]) {
-    const off = at === 1 ? 0 : (rnd() - 0.5) * 2 * wobble;
-    out.push([from[0] + dx * at + nx * off, from[1] + dy * at + ny * off]);
-  }
-}
-
-function sketchRect(w, h, seed) {
-  const rnd = random(seed);
-  const wobble = Math.min(1.4, Math.max(0.5, Math.min(w, h) / 60));
-  // Start a little inside, so the overshoot at the end reads as a pen lifted late.
-  const p0 = [rnd() * 1.2, rnd() * 1.2];
-  const pts = [p0];
-  edge(p0, [w - rnd() * 1.2, rnd() * 1.2], rnd, wobble, pts);
-  edge(pts[pts.length - 1], [w - rnd() * 1.2, h - rnd() * 1.2], rnd, wobble, pts);
-  edge(pts[pts.length - 1], [rnd() * 1.2, h - rnd() * 1.2], rnd, wobble, pts);
-  edge(pts[pts.length - 1], [p0[0] - 1 - rnd() * 2, p0[1] + rnd() * 1.5], rnd, wobble, pts);
-  return pts
-    .map((p, i) => (i === 0 ? 'M ' : ' L ') + p[0].toFixed(2) + ' ' + p[1].toFixed(2))
-    .join('');
-}
-
-function sketchLine(w, seed) {
-  const rnd = random(seed);
-  const pts = [[rnd(), 0.5]];
-  edge(pts[0], [w - rnd(), 0.5], rnd, 0.6, pts);
-  return pts
-    .map((p, i) => (i === 0 ? 'M ' : ' L ') + p[0].toFixed(2) + ' ' + p[1].toFixed(2))
-    .join('');
-}
-
-/** A box only earns an outline if the spec gave it a visible edge or body. */
-function wantsOutline(spec) {
-  if (spec.t === 'line') return true;
-  if (spec.t === 'text' || spec.t === 'space') return false;
-  // A row separated from the next by a single rule is not a box, and tracing it as
-  // one turns a list into a stack of crates. Its own 1px stroke, greyed by the mode,
-  // is already the right drawing.
-  if (spec.strokeSides) return false;
-  if (spec.stroke) return true;
-  // Any fill earns an edge. This used to exempt `#ffffff`, on the reasoning that a
-  // page-coloured surface needs no outline — but `sync-tokens.mjs` rewrote every
-  // white to a token name, so the exemption stopped firing and nobody noticed
-  // for two commits. Restoring it would be the wrong repair: among the shapes it
-  // covered are eleven white ellipses — the onboarding progress dots, one switch knob
-  // and the reader's floating buttons — and the outline is the only reason any of
-  // them is visible on a white page.
-  return Boolean(spec.fill);
-}
-
-function addOutline(node, spec) {
-  const w = node.width;
-  const h = node.height;
-  if (w < 2 || h < 1) return;
-
-  // A rectangle or an ellipse cannot hold children, so the wobble has nowhere to
-  // live. These are the small parts anyway — tab dots, toggle knobs, a progress bar
-  // — and at that size a drawn edge would read as noise. They get a plain stroke.
-  if (typeof node.appendChild !== 'function') {
-    node.strokes = [{ type: 'SOLID', color: rgb(PENCIL) }];
-    node.strokeWeight = 1;
-    return;
-  }
-  const seed = seedOf((spec.name || spec.t || 'x') + ':' + Math.round(w) + 'x' + Math.round(h));
-  const v = figma.createVector();
-  v.name = 'Skizze';
-  v.vectorPaths = [
-    { windingRule: 'NONE', data: spec.t === 'line' ? sketchLine(w, seed) : sketchRect(w, h, seed) },
-  ];
-  v.strokes = [{ type: 'SOLID', color: rgb(PENCIL) }];
-  v.strokeWeight = spec.t === 'line' ? 0.9 : 1.1;
-  v.fills = [];
-  node.appendChild(v);
-  // ABSOLUTE first, or an auto-layout parent counts the outline as a child and grows.
-  if (node.layoutMode && node.layoutMode !== 'NONE') v.layoutPositioning = 'ABSOLUTE';
-  v.x = 0;
-  v.y = 0;
-  // And it has to follow its frame. An instance gets no outline of its own — an
-  // instance takes no children — so it shows the one drawn inside the component, at
-  // the width the COMPONENT had. `ui/Button` hugs its label, so every button stretched
-  // to fill a column wore a pencil box that stopped short of its own right edge.
-  // Stretching scales the wobble a little, which is cheaper than the alternative.
-  v.constraints = { horizontal: 'STRETCH', vertical: 'STRETCH' };
 }
 
 function applySizing(node, spec, parentIsAutoLayout) {
@@ -536,7 +393,7 @@ function applySizing(node, spec, parentIsAutoLayout) {
   if (numH) node.layoutSizingVertical = 'FIXED';
 }
 
-function build(spec, parent, parentIsAutoLayout) {
+function build(spec, parent, parentIsAutoLayout, asVariant) {
   let node = null;
   let missingComponent = false;
 
@@ -545,7 +402,7 @@ function build(spec, parent, parentIsAutoLayout) {
     node.fontName = fontFor(spec);
     node.characters = spec.chars;
     node.fontSize = spec.size || 12;
-    node.fills = paintText(spec.color || '#212124');
+    node.fills = paint(spec.color || '#212124');
     node.lineHeight = { unit: 'PERCENT', value: spec.leading || 140 };
     if (spec.tracking !== undefined) {
       node.letterSpacing = { unit: 'PERCENT', value: spec.tracking };
@@ -553,7 +410,7 @@ function build(spec, parent, parentIsAutoLayout) {
     if (spec.align) node.textAlignHorizontal = spec.align.toUpperCase();
     // The style AFTER the literal values, so it wins where it applies and the raw
     // numbers stay as the wireframe's fallback. Colour is not part of it.
-    const style = MODE.bindVariables && spec.style ? TEXT_STYLES[spec.style] : undefined;
+    const style = spec.style ? TEXT_STYLES[spec.style] : undefined;
     if (style !== undefined) node.textStyleId = style.id;
     if (typeof spec.w === 'number') {
       // A wrapping block needs HEIGHT auto-resize AND an explicit width; the default
@@ -574,7 +431,7 @@ function build(spec, parent, parentIsAutoLayout) {
     node = figma.createEllipse();
     node.fills = paint(spec.fill);
   } else if (spec.t === 'instance') {
-    const main = COMPONENTS[MODE_NAME + '/' + spec.of];
+    const main = COMPONENTS[spec.of];
     if (main === undefined) {
       // Magenta, not nothing. An instance of a component that does not exist is a
       // typo in the spec, and a silently missing row is far harder to find than a
@@ -585,7 +442,7 @@ function build(spec, parent, parentIsAutoLayout) {
       missingComponent = true;
     } else {
       node = main.createInstance();
-      const ids = PROP_IDS[MODE_NAME + '/' + spec.of] || {};
+      const ids = PROP_IDS[spec.of] || {};
       const set = {};
       for (const key of Object.keys(spec.set || {})) {
         if (ids[key] !== undefined) set[ids[key]] = spec.set[key];
@@ -643,11 +500,16 @@ function build(spec, parent, parentIsAutoLayout) {
   else if (spec.name) node.name = spec.name;
   if (spec.stroke) {
     node.strokes = paint(spec.stroke);
+    // `strokeWeight` is in the list `resolveScales` resolves and was read by nothing,
+    // so a description that measured a two-pixel rule drew a one-pixel one. Before the
+    // per-side weights below, because assigning it sets all four and would undo them.
+    if (spec.strokeWeight) node.strokeWeight = spec.strokeWeight;
     if (spec.dash) node.dashPattern = spec.dash;
     if (spec.strokeSides === 'top' || spec.strokeSides === 'bottom') {
+      const weight = spec.strokeWeight || 1;
       const only = spec.strokeSides === 'top';
-      node.strokeTopWeight = only ? 1 : 0;
-      node.strokeBottomWeight = only ? 0 : 1;
+      node.strokeTopWeight = only ? weight : 0;
+      node.strokeBottomWeight = only ? 0 : weight;
       node.strokeLeftWeight = 0;
       node.strokeRightWeight = 0;
     }
@@ -670,10 +532,17 @@ function build(spec, parent, parentIsAutoLayout) {
   for (const child of spec.children || []) build(child, node, isAuto);
   if (spec.t === 'component') {
     defineProperties(node, spec, bindings.splice(bindMark));
-    // A variant registers under its set's name, not its own `Variante=club`.
-    if (spec.name && spec.name.indexOf('=') === -1) {
-      COMPONENTS[MODE_NAME + '/' + spec.name] = node;
-      recordProperties(MODE_NAME + '/' + spec.name, node);
+    // A variant registers under its set's name, not its own `Variante=club`, and the
+    // caller is the only honest witness to which this is. It used to be read off the
+    // name — anything holding an '=' was taken for a variant — and the measured
+    // components are named after their specimen labels, which the catalogue writes
+    // "in the props' own words": nine of them, `discover/SampleHitRow, kind="podcast"`
+    // among them, were drawn on the board and registered nowhere, so nothing could
+    // ever instance them. They passed every check there was, because they ARE
+    // components; the interpreter simply never wrote them down.
+    if (spec.name && asVariant !== true) {
+      COMPONENTS[spec.name] = node;
+      recordProperties(spec.name, node);
     }
   }
   if (spec.bind) bindings.push({ node: node, name: spec.bind });
@@ -705,7 +574,6 @@ function build(spec, parent, parentIsAutoLayout) {
 
   // Outlines are drawn in a second pass: a node's final size is only known once its
   // parents have finished laying out, and the pencil has to trace that size.
-  if (MODE.sketch && wantsOutline(spec)) pending.push({ node: node, spec: spec });
   return node;
 }
 
@@ -723,15 +591,13 @@ function build(spec, parent, parentIsAutoLayout) {
  * carries the fill. Putting both in the style would make every coloured headline its
  * own style.
  *
- * Built from the replica's typefaces whatever the current mode is. A style is
- * file-global while a mode is per page, and the wireframe exists in order not to be
- * about the brand — so it draws from the numbers in the spec and ignores these.
+ * File-global, like every style in Figma, and named by the app's own variant.
  */
 async function syncTextStyles(list) {
   TEXT_STYLES = {};
   if (!list || list.length === 0) return 0;
 
-  const fonts = MODES.replica.fonts;
+  const fonts = FONTS;
   const wanted = {};
   for (const entry of list) {
     const f = fonts[entry.font || 'sans'][entry.weight || 'regular'];
@@ -758,10 +624,6 @@ async function syncTextStyles(list) {
 }
 
 async function drawPage(entry, screens) {
-  MODE_NAME = MODES[entry.mode] === undefined ? 'replica' : entry.mode;
-  MODE = MODES[MODE_NAME];
-
-  // Fonts resolve through MODE, so they can only be collected once it is set.
   //
   // A family the environment lacks stops the whole run, deliberately. Carrying on
   // would only move the failure: `createText` throws the moment it is handed a font
@@ -804,19 +666,14 @@ async function drawPage(entry, screens) {
     for (const n of page.children.slice()) if (owned[n.name]) n.remove();
   }
 
-  pending = [];
   for (const screen of screens) build(screen, page, false);
-  for (const item of pending) addOutline(item.node, item.spec);
-  pending = [];
 
   return { name: entry.name, screens: screens.length };
 }
 
-/** How many components the kit has, counted once however many modes drew them. */
+/** How many components the kit has. */
 function distinctComponents() {
-  const seen = {};
-  for (const key of Object.keys(COMPONENTS)) seen[key.slice(key.indexOf('/') + 1)] = true;
-  return Object.keys(seen).length;
+  return Object.keys(COMPONENTS).length;
 }
 
 function definesComponents(node) {
@@ -854,7 +711,7 @@ function checkTokens(spec) {
     if (node === null || typeof node !== 'object') return;
     for (const key of ['fill', 'stroke', 'color']) {
       const value = node[key];
-      if (isToken(value) && known[value.slice(1)] === undefined) missing[value] = true;
+      if (isToken(value) && known[tokenName(value)] === undefined) missing[value] = true;
     }
     for (const value of Object.keys(node)) walk(node[value]);
   };
@@ -869,7 +726,7 @@ function checkTokens(spec) {
 async function draw(spec) {
   // One description, rendered once per page. `screens` may live on the page entry or,
   // when both pages show the same thing, once at the top for all of them.
-  const pages = spec.pages || [{ name: spec.page, mode: spec.mode, owned: spec.owned }];
+  const pages = spec.pages || [{ name: spec.page, owned: spec.owned }];
 
   // Before anything is drawn: a name the token table does not have would otherwise
   // slip through as a plain colour and the board would look right while being stale.
@@ -877,6 +734,16 @@ async function draw(spec) {
 
   // Variables first: a fill can only bind to a variable that already exists.
   const tokenCount = await syncVariables(spec.tokens);
+
+  // After `syncVariables`, which is what fills `TOKENS`, and before anything is
+  // built, which is what needs numbers.
+  resolveScales(spec.pages);
+  resolveScales(spec.screens);
+  // The styles too. A text style's `size`, `leading` and `tracking` are numeric
+  // positions like any other, and this block was the one place the resolver did not
+  // reach: `size: "@text-m"` would have reached `createTextStyle` as a string, from
+  // outside any page, where nothing else in the document could explain it.
+  resolveScales(spec.textStyles);
   const styleCount = await syncTextStyles(spec.textStyles);
 
   // The kit before its users, for the same reason: an instance can only point at a
