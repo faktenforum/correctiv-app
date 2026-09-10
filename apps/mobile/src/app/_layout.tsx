@@ -5,7 +5,6 @@ import { StatusBar } from 'expo-status-bar';
 import { useFonts } from 'expo-font';
 import * as SplashScreen from 'expo-splash-screen';
 import { useEffect, useRef, useState } from 'react';
-import { View } from 'react-native';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import { Provider } from 'react-redux';
 
@@ -36,7 +35,7 @@ import {
 import { close as closeVideo } from '@correctiv/app-core/stores/video';
 
 import { LoginGate } from '@/components/gate/LoginGate';
-import { Button, Overline, Screen, Typo } from '@/components/ui';
+import { RecoveryScreen } from '@/components/recovery/RecoveryScreen';
 import { expoAudio } from '@/lib/audio/backend';
 import { stop as stopAudio } from '@/lib/audio/player';
 import { expoPlatform } from '@/lib/platform/expo';
@@ -109,21 +108,6 @@ export default function RootLayout() {
 }
 
 /**
- * Everything a person reads on the recovery screen, in one place.
- *
- * The technical line is part of the copy on purpose: until an error report actually
- * leaves the app (see below), quoting it is the only way anyone can tell us what
- * broke.
- */
-const RECOVERY_COPY = {
-  overline: 'Fehler',
-  headline: 'Die App ist stehen geblieben',
-  lead: 'Die App konnte diesen Bildschirm nicht anzeigen. Bitte versuchen Sie es noch einmal. Bleibt der Fehler, schließen Sie die App und öffnen Sie sie neu.',
-  retry: 'Erneut versuchen',
-  detailHeading: 'Technische Meldung',
-};
-
-/**
  * The app's only error boundary.
  *
  * expo-router wraps a route's default export in its `Try` whenever the file also
@@ -133,26 +117,11 @@ const RECOVERY_COPY = {
  * the Stack. There is no second one; `app/artikel.tsx` says why it does not have
  * its own.
  *
- * **What it is allowed to depend on.** `Try` catches by unmounting the tree below
- * it, and the tree below it is `RootLayout` — so when this renders, the Redux
- * Provider is gone, `GestureHandlerRootView` is gone, and `useAppearance()` is no
- * longer feeding Uniwind. Anything reading the store would therefore throw inside
- * the boundary, which is unrecoverable. What it does use, and why each is safe:
- *
- *  - `Screen`, `Typo`, `Overline`, `Button` from the design system. Their only
- *    dependency is `useColors()`, which reads `useUniwind()` and not the store, so
- *    no provider is involved. Uniwind holds the appearance as module state, not as
- *    context, so whatever `useAppearance()` last set survives its own unmount, and
- *    a fault before it ever ran leaves Uniwind on its own default, which follows
- *    the device. Either way the screen is painted in the right scheme.
- *  - `Screen`'s `SafeAreaView`, because expo-router mounts `SafeAreaProvider` in
- *    `ExpoRoot` ABOVE the root route, so its context outlives the unmount.
- *  - Their `fontFamily`, which on the font-failure path names a face that is not
- *    installed. Checked rather than assumed: React Native substitutes the system
- *    font and logs at info level (`RCTLogInfo(@"Unrecognized font family '%@'")`,
- *    react-native/React/Views/RCTFont.mm), and a browser falls back by CSS. So this
- *    screen renders in the platform font at the design system's sizes, which is
- *    exactly what it should do when the fonts are the thing that broke.
+ * The screen it shows is `recovery/RecoveryScreen.tsx`, and what this function adds
+ * to it is the two things only the catching side can do: releasing the splash
+ * screen, and reporting. That file carries the German and the argument about what a
+ * screen rendered after an unmount is allowed to depend on, because those hold
+ * wherever it is rendered from, and it is rendered from a second host as well.
  */
 export function ErrorBoundary({ error, retry }: ErrorBoundaryProps) {
   useEffect(() => {
@@ -172,30 +141,7 @@ export function ErrorBoundary({ error, retry }: ErrorBoundaryProps) {
 
   // `error` is typed `Error`, but React hands over whatever was thrown, and a
   // thrown string must not take the recovery screen down with it.
-  const detail = error?.message ?? String(error);
-
-  return (
-    <Screen scroll={false}>
-      <View className="flex-1 items-center justify-center">
-        <Overline label={RECOVERY_COPY.overline} color="accent" />
-        <Typo variant="headline-l" className="mt-2xs text-center">
-          {RECOVERY_COPY.headline}
-        </Typo>
-        <Typo variant="text-m" color="on-canvas-muted" className="mt-s text-center">
-          {RECOVERY_COPY.lead}
-        </Typo>
-        <Button title={RECOVERY_COPY.retry} className="mt-l self-center" onPress={retry} />
-        <View className="mt-l self-stretch rounded-md border border-stroke bg-surface p-s">
-          <Overline label={RECOVERY_COPY.detailHeading} />
-          {/* Bounded: the screen is centred and does not scroll, so an unbounded
-              message would push the retry button off the top. */}
-          <Typo variant="text-s" color="on-canvas-muted" className="mt-2xs" numberOfLines={4}>
-            {detail}
-          </Typo>
-        </View>
-      </View>
-    </Screen>
-  );
+  return <RecoveryScreen detail={error?.message ?? String(error)} onRetry={retry} />;
 }
 
 /**

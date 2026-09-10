@@ -182,3 +182,12 @@ export const READER_HTML = [
 
 /** A YouTube embed for `VideoFrame`, in the shape `app/video.tsx` builds. */
 export const EMBED_URI = 'https://www.youtube-nocookie.com/embed/aqz-KE-bpKQ?playsinline=1&rel=0';
+
+/**
+ * A technical message with no line breaks and no short words, which is what a
+ * minified stack actually looks like. The recovery screen caps it at four lines so
+ * the retry control cannot be pushed off the top, and this is the specimen that
+ * shows the cap doing something.
+ */
+export const LONG_ERROR =
+  "TypeError: Cannot read properties of undefined (reading 'entitlement') at useIsAdmitted (session.ts:118:24) at AppShell (_layout.tsx:241:19) at renderWithHooks (react-dom.production.min.js:4312:16)";

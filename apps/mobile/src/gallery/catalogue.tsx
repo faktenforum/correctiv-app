@@ -45,6 +45,7 @@ import { ClubCard } from '@/components/profile/ClubCard';
 import { NavCard } from '@/components/profile/NavCard';
 import { SettingRow } from '@/components/profile/SettingRow';
 import { ReaderView } from '@/components/reader/ReaderView';
+import { RecoveryScreen } from '@/components/recovery/RecoveryScreen';
 import {
   Badge,
   Bleed,
@@ -72,6 +73,7 @@ import {
   EMBED_URI,
   FACTCHECKS,
   FORM_FIELDS,
+  LONG_ERROR,
   PROJECT,
   READER_HTML,
   SAMPLE_HITS,
@@ -757,6 +759,39 @@ export const CATALOGUE: Folder[] = [
         name: 'LoginGate',
         note: 'The door, which the root layout draws instead of the router. Boxed here.',
         specimens: [{ label: 'signed out', height: 420, ownSurface: true, node: <LoginGate /> }],
+      },
+    ],
+  },
+  {
+    folder: 'recovery',
+    entries: [
+      {
+        name: 'RecoveryScreen',
+        // The only place anybody looks at this screen on purpose. In the app it
+        // appears when a render has already failed, so nobody chooses to see it and
+        // nobody notices when it drifts out of the scheme.
+        note: 'What the error boundary shows. The app draws it only after a render failed.',
+        specimens: [
+          {
+            label: 'a thrown Error',
+            height: 460,
+            ownSurface: true,
+            node: (
+              <RecoveryScreen
+                detail="TypeError: Cannot read properties of undefined"
+                onRetry={noop}
+              />
+            ),
+          },
+          {
+            // The bounded case the screen's own markup is about: four lines, then
+            // the retry button has to stay on screen.
+            label: 'a message longer than the box',
+            height: 460,
+            ownSurface: true,
+            node: <RecoveryScreen detail={LONG_ERROR} onRetry={noop} />,
+          },
+        ],
       },
     ],
   },
