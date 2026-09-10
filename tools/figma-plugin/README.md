@@ -229,6 +229,71 @@ variant per colour), `ScreenHeader.children` (a slot) and `NavCard.icon` (an Ion
 drawn as a glyph until the spec learns vectors). A gap that is written down is a decision; a gap that
 is merely absent is a bug waiting to be found by eye.
 
+## Measuring the app instead of describing it
+
+`kit.mjs` describes thirteen components by hand. The app has forty-four, and the
+other thirty-one are thirty-one more descriptions. So the question is whether a
+description can be *read off* the app rather than typed, and `measure.mjs` is the
+answer to that question rather than a finished generator.
+
+    npm run web                                    # the app's dev server
+    node tools/figma-plugin/measure.mjs ui/Badge
+
+It opens the gallery at one component, in light, at 393px, and walks the rendered
+specimen: box, padding, gap, radius, fill, stroke, and the type. What comes out is
+the vocabulary `spec.json` speaks, so it can be held against the hand-written
+description line by line.
+
+**This is not lifting from the board.** The warning above, against matching names
+against the drawn screens, stands: those screens are transcribed from screenshots,
+so what comes back is a usage wearing a component's name. The app's own rendering is
+the opposite direction, and the only rendering in this repository that is not a
+transcription of something else.
+
+### What it recovers, measured on 2026-09-10
+
+**Geometry, exactly.** For `ui/Badge` the measurement reproduced the hand-written
+description without a difference: padding `[2xs, 2xs, 4xs, 4xs]`, `radius-s`, size
+11, tracking 0.4. Where the two disagreed the *kit* was wrong, see below.
+
+**The token that was asked for, not the colour that came out.** Uniwind writes the
+app's classes into the DOM unchanged, so `bg-accent` is there to read. That matters
+more than it sounds: `accent` and `red-500` are the same hex, so a measurement that
+only looked at pixels called the badge `@color-red-500` — the right colour and the
+wrong word, and the difference between them is most of what a design system is. The
+classes decide, the computed values check them.
+
+**Fill or hug, not a pixel width.** A row that fills its parent has no width of its
+own; measured in a 1280px window every such row came out 691 wide and the number
+said nothing. The reader compares against the parent's content box and emits `fill`.
+
+### What it does not recover
+
+- **An icon.** `NavCard.icon` is already a declared gap; a glyph from an icon font
+  reads back as an empty string, which is the same gap seen from the other side.
+- **A stacked overlay.** `media/MediaCard` puts its play button in `absolute
+  inset-0`. Auto-layout ignores x/y, so the translation needs a plain frame there,
+  and nothing in the measurement says which of the two a stack should become.
+- **A fill at part opacity.** `bg-always-dark/70` is a token and a number; the
+  spec's `fill` is a token reference and has nowhere to put the number.
+- **A margin.** The spec has no margins, only gaps and `space` nodes, so `mt-2xs`
+  between two children has to become one or the other, and which one is a judgement
+  about what the component means.
+- **A state.** `active:opacity-80` is in the class list and is not a drawing.
+
+### The defect it found
+
+`ui/Badge`'s label was drawn **bold** on the board and has never been bold in the
+app: `Badge.tsx` applies `typography['text-s']` and overrides only size, tracking
+and case, so the cut is `text-s`'s own, which is regular.
+
+Reading that off the app takes one more step than it looks. On web every cut
+computes as `font-weight: 400`, because `theme/fonts.ts` loads one file per weight
+and puts the weight in the family name — Android ignores `fontWeight` on a custom
+font, which is why. So the family is the only honest reading, and it says
+`SourceSans3_400Regular`. A measurement that trusted `font-weight` would have
+called the whole app regular and been right by accident here.
+
 ## Pointing the screens at the kit
 
 `use-kit.mjs` replaces each recognised subtree in the screens with an instance.

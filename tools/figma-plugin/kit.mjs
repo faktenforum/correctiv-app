@@ -218,10 +218,20 @@ const CLAIM_TONES = [
 /** A chevron, a switch, an icon: glyphs until the spec learns to carry vectors. */
 const CHEVRON = '›';
 
+/**
+ * The label, at the size and tracking `Badge.tsx` overrides, and NOT in bold.
+ *
+ * It said bold until 2026-09-10, and the app never has: `Badge.tsx` applies
+ * `typography['text-s']` and overrides only size, tracking and case, so the cut is
+ * `text-s`'s own, which is regular. Measured off the app's rendering rather than
+ * read off this file, and worth saying how: on web every cut computes as
+ * `font-weight: 400` because `theme/fonts.ts` loads one file per weight and puts
+ * the weight in the FAMILY name, so the family is the only honest reading. It is
+ * `SourceSans3_400Regular`.
+ */
 function badgeLabel(color) {
   return ty('text-s', {
     chars: 'CLUB',
-    weight: 'bold',
     size: 11,
     tracking: Math.round((0.4 / 11) * 10000) / 100,
     color: color,
