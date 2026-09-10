@@ -178,8 +178,15 @@ export function Components() {
 function Drawn({ group, name }: { group: string; name: string }) {
   return (
     <p className="mt-s text-s">
+      {/* `data-external`, because this is the one link on the page that must NOT be
+          taken by the shell's router. The app is proxied under this origin, so the
+          interceptor sees a same-origin path and would handle it — landing on the
+          handbook's own "No page at /app/gallery" without a request ever reaching
+          the proxy. It also rebuilds the address as `pathname + hash`, which drops
+          the `?c=` this link is entirely about (`router.tsx`, `useLinkInterception`). */}
       <a
         className="text-accent underline underline-offset-2"
+        data-external="true"
         href={`${BASE}/gallery?c=${group}/${name}`}
       >
         See it drawn, in the app's gallery

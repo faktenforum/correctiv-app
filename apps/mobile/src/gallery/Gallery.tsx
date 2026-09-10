@@ -21,7 +21,6 @@
  * exactly one of the two, and looks right on both in light mode. Two surfaces and
  * the appearance control below are between them the cheapest way to see it.
  */
-import { Fragment } from 'react';
 import { router } from 'expo-router';
 import { Platform, Pressable, ScrollView, View } from 'react-native';
 
@@ -116,7 +115,7 @@ function SpecimenBlock({ specimen }: { specimen: Specimen }) {
   );
 
   return (
-    <View className="mt-s">
+    <View className="mt-ml">
       <Typo variant="text-s" weight="semibold" color="on-canvas-muted">
         {specimen.label}
       </Typo>
@@ -208,15 +207,19 @@ export function Gallery({ only }: { only?: string }) {
         <Links only={only} />
         <Appearance />
 
-        {groups.map((group) => (
-          <View key={group.folder} className="mt-xl">
+        {groups.map((group, g) => (
+          // The first folder sits under the page's own header, which is already a
+          // break; the gap that separates two folders would read as a hole there.
+          <View key={group.folder} className={g === 0 ? 'mt-l' : 'mt-4xl'}>
             <Hairline />
             <Overline label={`components/${group.folder}`} color="accent" className="mt-s" />
-            {group.entries.map((entry) => (
-              <Fragment key={entry.name}>
-                <Typo variant="headline-s" className="mt-m">
-                  {entry.name}
-                </Typo>
+            {group.entries.map((entry, i) => (
+              <View key={entry.name} className={i === 0 ? 'mt-l' : 'mt-4xl'}>
+                {/* A rule above every component but the first of its folder. The
+                    folder already has one, and two hairlines with nothing between
+                    them read as a mistake rather than as a boundary. */}
+                {i === 0 ? null : <Hairline className="mb-l" />}
+                <Typo variant="headline-s">{entry.name}</Typo>
                 {entry.note ? (
                   <Typo variant="text-s" color="on-canvas-muted" className="mt-4xs">
                     {entry.note}
@@ -225,7 +228,7 @@ export function Gallery({ only }: { only?: string }) {
                 {entry.specimens.map((specimen) => (
                   <SpecimenBlock key={specimen.label} specimen={specimen} />
                 ))}
-              </Fragment>
+              </View>
             ))}
           </View>
         ))}
