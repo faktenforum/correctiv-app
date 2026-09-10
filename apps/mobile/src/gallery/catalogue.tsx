@@ -1,0 +1,706 @@
+/**
+ * Every component in `src/components`, grouped by its folder, in the variants its
+ * props allow.
+ *
+ * The list is written out rather than discovered. A `require.context` over the
+ * folder would keep itself up to date and could not know what to pass a component
+ * — and a gallery that renders `<ArticleHero>` with no item shows an empty box,
+ * which is worse than no entry at all. The cost is that a new component does not
+ * appear here on its own; `__tests__/gallery-catalogue.test.ts` fails when one is
+ * missing, so the list cannot drift without saying so.
+ *
+ * Specimens are plain elements, built once at module scope. The frame renders each
+ * of them twice, on `canvas` and on `surface`, so a colour that does not follow
+ * the scheme is visible rather than merely wrong.
+ */
+import type { ReactNode } from 'react';
+import { View } from 'react-native';
+
+import { ProjectRow } from '@/components/discover/ProjectRow';
+import { SampleHitRow } from '@/components/discover/SampleHitRow';
+import { SearchEntry } from '@/components/discover/SearchEntry';
+import { TopicRail } from '@/components/discover/TopicRail';
+import { ArticleHero } from '@/components/feed/ArticleHero';
+import { ArticleRow } from '@/components/feed/ArticleRow';
+import { FaktencheckRail } from '@/components/feed/FaktencheckRail';
+import { LoginGate } from '@/components/gate/LoginGate';
+import { BackstageTeaser } from '@/components/home/BackstageTeaser';
+import { CalloutTeaser } from '@/components/home/CalloutTeaser';
+import { EarlyAccessCard } from '@/components/home/EarlyAccessCard';
+import { HomeHeader } from '@/components/home/HomeHeader';
+import { ImpactFooter } from '@/components/home/ImpactFooter';
+import { MediathekReihe } from '@/components/home/MediathekReihe';
+import { SpotlightBriefing } from '@/components/home/SpotlightBriefing';
+import { EpisodeRow } from '@/components/media/EpisodeRow';
+import { LiveBanner } from '@/components/media/LiveBanner';
+import { MediaCard } from '@/components/media/MediaCard';
+import { SeriesTile } from '@/components/media/SeriesTile';
+import { VideoFrame } from '@/components/media/VideoFrame';
+import { CalloutCard } from '@/components/participate/CalloutCard';
+import { ClaimStatusTag } from '@/components/participate/ClaimStatusTag';
+import { FormField } from '@/components/participate/FormField';
+import { MiniPlayer } from '@/components/player/MiniPlayer';
+import { ProgressBar } from '@/components/player/ProgressBar';
+import { ClubCard } from '@/components/profile/ClubCard';
+import { NavCard } from '@/components/profile/NavCard';
+import { SettingRow } from '@/components/profile/SettingRow';
+import { ReaderView } from '@/components/reader/ReaderView';
+import {
+  Badge,
+  Bleed,
+  Button,
+  Card,
+  Chip,
+  Hairline,
+  Overline,
+  Rail,
+  SafeAreaView,
+  Screen,
+  ScreenHeader,
+  SectionHeader,
+  Thumbnail,
+  Typo,
+} from '@/components/ui';
+import { sizes, typography, type TypoVariant } from '@/lib/theme';
+
+import {
+  ARTICLE,
+  ARTICLE_BARE,
+  CLAIMS,
+  CROWDNEWSROOM,
+  EMBED_URI,
+  FACTCHECKS,
+  FORM_FIELDS,
+  PROJECT,
+  READER_HTML,
+  SAMPLE_HITS,
+  SERIES,
+  SURVEY,
+  VIDEO,
+} from './fixtures';
+
+/** Every handler in the gallery. Nothing here navigates or plays. */
+const noop = () => {};
+/** `onNavigate` must answer whether the embedded document may follow a link. */
+const block = () => false;
+
+export interface Specimen {
+  /** What is varied, in the props' own words: `tone="club"`, `selected`. */
+  label: string;
+  node: ReactNode;
+  /**
+   * Boxed to this many dp. For a component that fills a screen, which would
+   * otherwise collapse to nothing inside a scroll view or push the next entry
+   * off the end of it.
+   */
+  height?: number;
+  /**
+   * Shown on `canvas` only, because the component paints its own page surface and
+   * the second copy would say nothing.
+   */
+  ownSurface?: boolean;
+}
+
+export interface Entry {
+  /** The component's exported name, which is also its file name. */
+  name: string;
+  /** One line, only where the specimen alone would mislead. */
+  note?: string;
+  specimens: Specimen[];
+}
+
+export interface Folder {
+  /** The directory under `src/components`. */
+  folder: string;
+  entries: Entry[];
+}
+
+/** A visible block, for the components whose own size is zero. */
+const filler = (label: string) => (
+  <View className="items-center justify-center bg-accent" style={{ height: 56 }}>
+    <Typo variant="text-s" color="always-light">
+      {label}
+    </Typo>
+  </View>
+);
+
+const TYPO_VARIANTS = Object.keys(typography) as TypoVariant[];
+
+export const CATALOGUE: Folder[] = [
+  {
+    folder: 'ui',
+    entries: [
+      {
+        name: 'Typo',
+        note: 'Every variant in typography.css, then the colour and weight axes on their own.',
+        specimens: [
+          ...TYPO_VARIANTS.map((variant) => ({
+            label: `variant="${variant}"`,
+            node: <Typo variant={variant}>Wem gehört die Stadt</Typo>,
+          })),
+          {
+            label: 'color="on-canvas-muted"',
+            node: (
+              <Typo variant="text-m" color="on-canvas-muted">
+                Gedämpfter Text
+              </Typo>
+            ),
+          },
+          {
+            label: 'color="accent"',
+            node: (
+              <Typo variant="text-m" color="accent">
+                Akzentfarbe
+              </Typo>
+            ),
+          },
+          {
+            label: 'weight="bold" and family="serif"',
+            node: (
+              <Typo variant="text-m" weight="bold" family="serif">
+                Serif, fett
+              </Typo>
+            ),
+          },
+          {
+            label: 'color="always-light" on bg-accent',
+            node: (
+              <View className="bg-accent p-s">
+                <Typo variant="text-m" color="always-light">
+                  Weiß auf der Markenfarbe, in beiden Schemata
+                </Typo>
+              </View>
+            ),
+          },
+        ],
+      },
+      {
+        name: 'Button',
+        specimens: [
+          ...(['primary', 'secondary', 'outline', 'club'] as const).map((variant) => ({
+            label: `variant="${variant}"`,
+            node: <Button title="Jetzt mitmachen" variant={variant} onPress={noop} />,
+          })),
+          {
+            label: 'variant="onEmphasis", on bg-accent',
+            node: (
+              <View className="bg-accent p-s">
+                <Button title="Mitglied werden" variant="onEmphasis" onPress={noop} />
+              </View>
+            ),
+          },
+          { label: 'disabled', node: <Button title="Gesperrt" disabled onPress={noop} /> },
+          {
+            label: 'fullWidth',
+            node: <Button title="Über die ganze Breite" fullWidth onPress={noop} />,
+          },
+        ],
+      },
+      {
+        name: 'Badge',
+        specimens: (['emphasis', 'club', 'neutral', 'live'] as const).map((tone) => ({
+          label: `tone="${tone}"`,
+          node: <Badge label={tone === 'live' ? 'Live' : 'Projekt'} tone={tone} />,
+        })),
+      },
+      {
+        name: 'Chip',
+        specimens: [
+          { label: 'default', node: <Chip label="Klima" onPress={noop} /> },
+          { label: 'selected', node: <Chip label="Klima" selected onPress={noop} /> },
+        ],
+      },
+      {
+        name: 'Card',
+        specimens: (['outline', 'surface'] as const).map((tone) => ({
+          label: `tone="${tone}"`,
+          node: (
+            <Card tone={tone}>
+              <Typo variant="text-m">Inhalt der Karte</Typo>
+            </Card>
+          ),
+        })),
+      },
+      {
+        name: 'Overline',
+        specimens: [
+          { label: 'default', node: <Overline label="Junge Formate" /> },
+          { label: 'color="accent"', node: <Overline label="Faktencheck" color="accent" /> },
+        ],
+      },
+      {
+        name: 'SectionHeader',
+        specimens: [
+          { label: 'title only', node: <SectionHeader title="Aus dem Backstage" /> },
+          {
+            label: 'with actionLabel',
+            node: <SectionHeader title="Aus dem Backstage" actionLabel="Alles →" onAction={noop} />,
+          },
+        ],
+      },
+      {
+        name: 'Hairline',
+        note: 'One dp in `stroke`. Visible against both surfaces, which is the point of it.',
+        specimens: [{ label: 'default', node: <Hairline /> }],
+      },
+      {
+        name: 'Rail',
+        specimens: (['xs', 's'] as const).map((gap) => ({
+          label: `gap="${gap}"`,
+          node: (
+            <Rail gap={gap}>
+              {['Klima', 'Lokal', 'Faktenchecks', 'Russland', 'Gesundheit'].map((label) => (
+                <Chip key={label} label={label} onPress={noop} />
+              ))}
+            </Rail>
+          ),
+        })),
+      },
+      {
+        name: 'Bleed',
+        note: 'Escapes the screen padding. Here the red block runs wider than the label above it.',
+        specimens: [{ label: 'default', node: <Bleed>{filler('edge to edge')}</Bleed> }],
+      },
+      {
+        name: 'Thumbnail',
+        specimens: [
+          {
+            label: 'aspectRatio={16 / 9}, no uri',
+            node: <Thumbnail aspectRatio={16 / 9} />,
+          },
+          {
+            label: 'aspectRatio={1}, icon="mic-outline"',
+            node: (
+              <View style={{ width: sizes.railTile }}>
+                <Thumbnail aspectRatio={1} icon="mic-outline" />
+              </View>
+            ),
+          },
+          {
+            label: 'uri that cannot load, with an overlay',
+            node: (
+              <Thumbnail
+                aspectRatio={16 / 9}
+                uri="https://example.invalid/missing.jpg"
+                overlay={<Badge label="Video" tone="emphasis" />}
+              />
+            ),
+          },
+        ],
+      },
+      {
+        name: 'Screen',
+        note: 'The page scaffold. Boxed here; in the app it fills the window.',
+        specimens: [
+          {
+            label: 'scroll (default)',
+            height: 160,
+            ownSurface: true,
+            node: (
+              <Screen>
+                <Typo variant="headline-m">Scrollender Inhalt</Typo>
+                <Typo variant="text-m" className="mt-s">
+                  Mit der voreingestellten Polsterung px-m.
+                </Typo>
+              </Screen>
+            ),
+          },
+          {
+            label: 'scroll={false} noPadding',
+            height: 160,
+            ownSurface: true,
+            node: (
+              <Screen scroll={false} noPadding>
+                {filler('noPadding')}
+              </Screen>
+            ),
+          },
+        ],
+      },
+      {
+        name: 'ScreenHeader',
+        specimens: [
+          { label: 'default', height: 72, ownSurface: true, node: <ScreenHeader onBack={noop} /> },
+          {
+            label: 'backLabel="Abbrechen"',
+            height: 72,
+            ownSurface: true,
+            node: <ScreenHeader backLabel="Abbrechen" onBack={noop} />,
+          },
+          {
+            label: 'with children, so back shrinks to the chevron',
+            height: 72,
+            ownSurface: true,
+            node: (
+              <ScreenHeader onBack={noop}>
+                <SearchEntry onPress={noop} />
+              </ScreenHeader>
+            ),
+          },
+        ],
+      },
+      {
+        name: 'SafeAreaView',
+        note: 'react-native-safe-area-context, wrapped so a className reaches it. In the frame the inset is zero.',
+        specimens: [
+          {
+            label: "edges={['top']}",
+            height: 80,
+            ownSurface: true,
+            node: (
+              <SafeAreaView edges={['top']} className="flex-1 bg-surface">
+                <Typo variant="text-s" className="p-s">
+                  Inside the safe area
+                </Typo>
+              </SafeAreaView>
+            ),
+          },
+        ],
+      },
+    ],
+  },
+  {
+    folder: 'feed',
+    entries: [
+      {
+        name: 'ArticleHero',
+        note: 'The lead item. Reads the reading time off the item, and falls back to a fetch when it is missing.',
+        specimens: [
+          {
+            label: 'with image and readingMinutes',
+            node: <ArticleHero item={ARTICLE} onPress={noop} />,
+          },
+          { label: 'imageUrl: null', node: <ArticleHero item={ARTICLE_BARE} onPress={noop} /> },
+        ],
+      },
+      {
+        name: 'ArticleRow',
+        specimens: [
+          { label: 'default', node: <ArticleRow item={ARTICLE} onPress={noop} /> },
+          {
+            label: 'long title, no image',
+            node: <ArticleRow item={ARTICLE_BARE} onPress={noop} />,
+          },
+        ],
+      },
+      {
+        name: 'FaktencheckRail',
+        specimens: [
+          { label: 'three items', node: <FaktencheckRail items={FACTCHECKS} onPress={noop} /> },
+          { label: 'items={[]}', node: <FaktencheckRail items={[]} onPress={noop} /> },
+        ],
+      },
+    ],
+  },
+  {
+    folder: 'home',
+    entries: [
+      { name: 'HomeHeader', specimens: [{ label: 'default', node: <HomeHeader /> }] },
+      {
+        name: 'SpotlightBriefing',
+        note: 'Loads the newsletter archive on first render, so this entry makes a request.',
+        specimens: [{ label: 'default', node: <SpotlightBriefing onOpenArchive={noop} /> }],
+      },
+      {
+        name: 'MediathekReihe',
+        note: 'Loads a video channel on first render, so this entry makes a request.',
+        specimens: [{ label: 'default', node: <MediathekReihe onOpenMediathek={noop} /> }],
+      },
+      {
+        name: 'BackstageTeaser',
+        specimens: [
+          {
+            label: 'default',
+            node: <BackstageTeaser onOpenDiary={noop} onOpenBackstage={noop} />,
+          },
+        ],
+      },
+      {
+        name: 'CalloutTeaser',
+        specimens: [
+          {
+            label: 'kind="crowdnewsroom"',
+            node: <CalloutTeaser callout={CROWDNEWSROOM} onPress={noop} />,
+          },
+          { label: 'kind="survey"', node: <CalloutTeaser callout={SURVEY} onPress={noop} /> },
+        ],
+      },
+      {
+        name: 'EarlyAccessCard',
+        specimens: [
+          { label: 'onPress', node: <EarlyAccessCard onPress={noop} /> },
+          { label: 'without onPress', node: <EarlyAccessCard /> },
+        ],
+      },
+      { name: 'ImpactFooter', specimens: [{ label: 'default', node: <ImpactFooter /> }] },
+    ],
+  },
+  {
+    folder: 'discover',
+    entries: [
+      {
+        name: 'SearchEntry',
+        specimens: [{ label: 'default', node: <SearchEntry onPress={noop} /> }],
+      },
+      {
+        name: 'TopicRail',
+        specimens: [{ label: 'default', node: <TopicRail onOpenTopic={noop} /> }],
+      },
+      {
+        name: 'ProjectRow',
+        specimens: [{ label: 'default', node: <ProjectRow project={PROJECT} onPress={noop} /> }],
+      },
+      {
+        name: 'SampleHitRow',
+        note: 'One row per kind, which is what picks the icon.',
+        specimens: [
+          ...SAMPLE_HITS.map((hit) => ({
+            label: `kind="${hit.kind}"`,
+            node: <SampleHitRow hit={hit} onPress={noop} />,
+          })),
+          {
+            label: 'without onPress, so no chevron and no link role',
+            node: <SampleHitRow hit={SAMPLE_HITS[0]} />,
+          },
+        ],
+      },
+    ],
+  },
+  {
+    folder: 'media',
+    entries: [
+      {
+        name: 'LiveBanner',
+        note: 'Asks the station what is on air, so this entry makes a request.',
+        specimens: [
+          { label: 'default subtitle', node: <LiveBanner /> },
+          { label: 'subtitle', node: <LiveBanner subtitle="Sondersendung aus Bottrop" /> },
+        ],
+      },
+      {
+        name: 'MediaCard',
+        specimens: [
+          {
+            label: 'default',
+            node: (
+              <View style={{ width: sizes.railCardMedia }}>
+                <MediaCard video={VIDEO} onPress={noop} />
+              </View>
+            ),
+          },
+        ],
+      },
+      {
+        name: 'SeriesTile',
+        specimens: [{ label: 'default', node: <SeriesTile series={SERIES} onPress={noop} /> }],
+      },
+      {
+        name: 'EpisodeRow',
+        specimens: [
+          {
+            label: 'default',
+            node: (
+              <EpisodeRow
+                episodeId="gallery-ep-1"
+                title="Pausenbrot, Folge 214"
+                meta="12. August · 8 Min"
+                onPress={noop}
+              />
+            ),
+          },
+          {
+            label: 'club',
+            node: (
+              <EpisodeRow
+                episodeId="gallery-ep-2"
+                title="Nur für Mitglieder mit Beitrag"
+                meta="3. August · 22 Min"
+                club
+                onPress={noop}
+              />
+            ),
+          },
+        ],
+      },
+      {
+        name: 'VideoFrame',
+        note: 'A foreign embed: an iframe on web, a WebView on native. This entry loads YouTube.',
+        specimens: [
+          {
+            label: 'uri',
+            height: 200,
+            ownSurface: true,
+            node: <VideoFrame uri={EMBED_URI} className="flex-1" />,
+          },
+        ],
+      },
+    ],
+  },
+  {
+    folder: 'participate',
+    entries: [
+      {
+        name: 'CalloutCard',
+        specimens: [
+          {
+            label: 'kind="crowdnewsroom"',
+            node: <CalloutCard callout={CROWDNEWSROOM} onPress={noop} />,
+          },
+          { label: 'kind="survey"', node: <CalloutCard callout={SURVEY} onPress={noop} /> },
+        ],
+      },
+      {
+        name: 'ClaimStatusTag',
+        specimens: CLAIMS.map((claim) => ({
+          label: `status="${claim.status}"`,
+          node: <ClaimStatusTag claim={claim} />,
+        })),
+      },
+      {
+        name: 'FormField',
+        note: 'One field per component type in the callout schema. Nothing here submits.',
+        specimens: FORM_FIELDS.map((component) => ({
+          label: `type="${component.type}"`,
+          node: (
+            <FormField
+              component={component}
+              choice={component.type === 'radio' ? ['taeglich'] : []}
+              text={component.type === 'textarea' ? 'Mehr Lokales.' : ''}
+              fileAttached={false}
+              onSelect={noop}
+              onText={noop}
+              onToggleFile={noop}
+            />
+          ),
+        })),
+      },
+    ],
+  },
+  {
+    folder: 'player',
+    entries: [
+      {
+        name: 'ProgressBar',
+        specimens: [
+          {
+            label: 'at the start',
+            node: <ProgressBar positionSec={0} durationSec={600} onSeek={noop} />,
+          },
+          {
+            label: 'part way through',
+            node: <ProgressBar positionSec={252} durationSec={600} onSeek={noop} />,
+          },
+          {
+            label: 'durationSec={0}, before anything is known',
+            node: <ProgressBar positionSec={0} durationSec={0} onSeek={noop} />,
+          },
+        ],
+      },
+      {
+        name: 'MiniPlayer',
+        note: 'Draws nothing unless something is playing, so an empty box here is correct.',
+        specimens: [{ label: 'default', node: <MiniPlayer /> }],
+      },
+    ],
+  },
+  {
+    folder: 'profile',
+    entries: [
+      {
+        name: 'ClubCard',
+        specimens: [
+          {
+            label: 'with memberSince',
+            node: (
+              <ClubCard
+                name="Alex Beispiel"
+                tierLabel="Mitglied mit Beitrag"
+                memberSince="2026-03-04T09:12:00.000Z"
+              />
+            ),
+          },
+          {
+            label: 'memberSince={null}',
+            node: <ClubCard name="Alex Beispiel" tierLabel="Testphase" memberSince={null} />,
+          },
+        ],
+      },
+      {
+        name: 'NavCard',
+        specimens: [
+          {
+            label: 'default',
+            node: (
+              <NavCard
+                icon="bookmark-outline"
+                title="Gespeichert"
+                subtitle="Artikel für später"
+                onPress={noop}
+              />
+            ),
+          },
+          {
+            label: 'club',
+            node: (
+              <NavCard
+                icon="ticket-outline"
+                title="Backstage"
+                subtitle="Nur für Mitglieder"
+                club
+                onPress={noop}
+              />
+            ),
+          },
+        ],
+      },
+      {
+        name: 'SettingRow',
+        note: 'The switch reads two different props for its thumb on web; see TROUBLESHOOTING.md.',
+        specimens: [
+          {
+            label: 'value={false}',
+            node: <SettingRow label="Push-Nachrichten" value={false} onValueChange={noop} />,
+          },
+          {
+            label: 'value with description',
+            node: (
+              <SettingRow
+                label="Spotlight"
+                description="Der Newsletter, jeden Freitag."
+                value
+                onValueChange={noop}
+              />
+            ),
+          },
+        ],
+      },
+    ],
+  },
+  {
+    folder: 'reader',
+    entries: [
+      {
+        name: 'ReaderView',
+        note: 'A sandboxed document: an iframe on web, a WebView on native.',
+        specimens: [
+          {
+            label: 'html',
+            height: 220,
+            ownSurface: true,
+            node: <ReaderView html={READER_HTML} onNavigate={block} onScroll={noop} />,
+          },
+        ],
+      },
+    ],
+  },
+  {
+    folder: 'gate',
+    entries: [
+      {
+        name: 'LoginGate',
+        note: 'The door, which the root layout draws instead of the router. Boxed here.',
+        specimens: [{ label: 'signed out', height: 420, ownSurface: true, node: <LoginGate /> }],
+      },
+    ],
+  },
+];
