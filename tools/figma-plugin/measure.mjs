@@ -477,7 +477,13 @@ function tokenise(node, t, style, gaps, name, twin, inPlainFrame) {
       gaps.add(`${name}: an icon font glyph, drawn as a placeholder until the spec learns vectors`);
       return {
         t: 'text',
-        chars: '◎',
+        // U+25C9, and the codepoint is not a free choice: the placeholder is set in
+        // the board's own sans, so the FAMILY has to have the glyph or Figma
+        // substitutes a font nobody chose and a machine without one draws a box. The
+        // obvious `◎` U+25CE is in no cut of either family, which is the same trap as
+        // the emoji twins one section up and has no check either — the font check
+        // catches a missing family, never a missing glyph.
+        chars: '◉',
         font: 'sans',
         size: node.size,
         x: x,

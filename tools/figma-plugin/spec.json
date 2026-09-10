@@ -1712,6 +1712,2440 @@
               "t": "component",
               "dir": "V",
               "w": 319,
+              "h": 179,
+              "clip": true,
+              "fill": "@color-grey-300",
+              "children": [
+                {
+                  "t": "frame",
+                  "dir": "V",
+                  "align": "CENTER",
+                  "cross": "CENTER",
+                  "w": "fill",
+                  "h": 179,
+                  "children": [
+                    {
+                      "t": "text",
+                      "chars": "◉",
+                      "font": "sans",
+                      "size": 26,
+                      "color": "@color-stroke"
+                    }
+                  ]
+                }
+              ],
+              "name": "ui/Thumbnail, aspectRatio={16 / 9}, no uri"
+            },
+            {
+              "t": "component",
+              "dir": "V",
+              "w": 116,
+              "h": 116,
+              "children": [
+                {
+                  "t": "frame",
+                  "dir": "V",
+                  "w": "fill",
+                  "h": 116,
+                  "clip": true,
+                  "fill": "@color-grey-300",
+                  "children": [
+                    {
+                      "t": "frame",
+                      "dir": "V",
+                      "align": "CENTER",
+                      "cross": "CENTER",
+                      "w": "fill",
+                      "h": 116,
+                      "children": [
+                        {
+                          "t": "text",
+                          "chars": "◉",
+                          "font": "sans",
+                          "size": 26,
+                          "color": "@color-stroke"
+                        }
+                      ]
+                    }
+                  ]
+                }
+              ],
+              "name": "ui/Thumbnail, aspectRatio={1}, icon=\"mic-outline\""
+            },
+            {
+              "t": "component",
+              "w": 319,
+              "h": 179,
+              "clip": true,
+              "fill": "@color-grey-300",
+              "children": [
+                {
+                  "t": "frame",
+                  "dir": "V",
+                  "align": "CENTER",
+                  "cross": "CENTER",
+                  "w": 319,
+                  "h": 179,
+                  "x": 0,
+                  "y": 0,
+                  "children": [
+                    {
+                      "t": "text",
+                      "chars": "◉",
+                      "font": "sans",
+                      "size": 26,
+                      "color": "@color-stroke"
+                    }
+                  ]
+                },
+                {
+                  "t": "frame",
+                  "dir": "V",
+                  "align": "CENTER",
+                  "cross": "CENTER",
+                  "w": 319,
+                  "h": 179,
+                  "x": 0,
+                  "y": 0,
+                  "children": [
+                    {
+                      "t": "frame",
+                      "dir": "H",
+                      "cross": "CENTER",
+                      "w": "hug",
+                      "h": 25,
+                      "pad": [
+                        "@spacing-2xs",
+                        "@spacing-2xs",
+                        "@spacing-4xs",
+                        "@spacing-4xs"
+                      ],
+                      "radius": "@radius-s",
+                      "fill": "@color-accent",
+                      "children": [
+                        {
+                          "t": "text",
+                          "chars": "Video",
+                          "w": "fill",
+                          "size": 11,
+                          "color": "@color-always-light",
+                          "tracking": 3.64,
+                          "transform": "uppercase"
+                        }
+                      ]
+                    }
+                  ]
+                }
+              ],
+              "name": "ui/Thumbnail, uri that cannot load, with an overlay"
+            },
+            {
+              "t": "component",
+              "dir": "V",
+              "w": 319,
+              "h": 431,
+              "children": [
+                {
+                  "t": "frame",
+                  "dir": "V",
+                  "w": 367,
+                  "h": 206,
+                  "children": [
+                    {
+                      "t": "frame",
+                      "dir": "V",
+                      "w": "fill",
+                      "h": 206,
+                      "clip": true,
+                      "fill": "@color-grey-300",
+                      "children": [
+                        {
+                          "t": "frame",
+                          "dir": "V",
+                          "align": "CENTER",
+                          "cross": "CENTER",
+                          "w": "fill",
+                          "h": 206,
+                          "children": [
+                            {
+                              "t": "text",
+                              "chars": "◉",
+                              "font": "sans",
+                              "size": 26,
+                              "color": "@color-stroke"
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  ]
+                },
+                {
+                  "t": "space",
+                  "h": "@spacing-s"
+                },
+                {
+                  "t": "text",
+                  "chars": "RECHERCHE",
+                  "w": "fill",
+                  "weight": "bold",
+                  "size": 12,
+                  "color": "@color-on-canvas-accent",
+                  "tracking": 10
+                },
+                {
+                  "t": "space",
+                  "h": "@spacing-2xs"
+                },
+                {
+                  "t": "text",
+                  "style": "headline-l",
+                  "chars": "Wem gehört die Stadt? Was die Grundbücher über Eigentum verraten",
+                  "w": "fill",
+                  "weight": "bold",
+                  "size": 23,
+                  "color": "@color-on-canvas",
+                  "tracking": -0.43
+                },
+                {
+                  "t": "space",
+                  "h": "@spacing-2xs"
+                },
+                {
+                  "t": "text",
+                  "style": "text-m",
+                  "chars": "Zehntausende Wohnungen, wenige Eigentümer. Eine Recherche über Konzerne, Briefkastenfirmen und die Frage, wer eine Stadt eigentlich besitzt.",
+                  "w": "fill",
+                  "size": 15,
+                  "color": "@color-on-canvas-muted",
+                  "tracking": 0.67
+                },
+                {
+                  "t": "space",
+                  "h": "@spacing-2xs"
+                },
+                {
+                  "t": "text",
+                  "style": "text-s",
+                  "chars": "Alex Beispiel · 12. August · 9 Min. Lesezeit",
+                  "w": "fill",
+                  "size": 14,
+                  "color": "@color-stroke-strong",
+                  "tracking": 1.43
+                }
+              ],
+              "name": "feed/ArticleHero, with image and readingMinutes"
+            },
+            {
+              "t": "component",
+              "dir": "V",
+              "w": 319,
+              "h": 408,
+              "children": [
+                {
+                  "t": "frame",
+                  "dir": "V",
+                  "w": 367,
+                  "h": 206,
+                  "children": [
+                    {
+                      "t": "frame",
+                      "dir": "V",
+                      "w": "fill",
+                      "h": 206,
+                      "clip": true,
+                      "fill": "@color-grey-300",
+                      "children": [
+                        {
+                          "t": "frame",
+                          "dir": "V",
+                          "align": "CENTER",
+                          "cross": "CENTER",
+                          "w": "fill",
+                          "h": 206,
+                          "children": [
+                            {
+                              "t": "text",
+                              "chars": "◉",
+                              "font": "sans",
+                              "size": 26,
+                              "color": "@color-stroke"
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  ]
+                },
+                {
+                  "t": "space",
+                  "h": "@spacing-s"
+                },
+                {
+                  "t": "text",
+                  "chars": "KLIMA",
+                  "w": "fill",
+                  "weight": "bold",
+                  "size": 12,
+                  "color": "@color-on-canvas-accent",
+                  "tracking": 10
+                },
+                {
+                  "t": "space",
+                  "h": "@spacing-2xs"
+                },
+                {
+                  "t": "text",
+                  "style": "headline-l",
+                  "chars": "Ohne Bild und ohne Lesezeit, weil der RSS-Weg beides nicht kennt",
+                  "w": "fill",
+                  "weight": "bold",
+                  "size": 23,
+                  "color": "@color-on-canvas",
+                  "tracking": -0.43
+                },
+                {
+                  "t": "space",
+                  "h": "@spacing-2xs"
+                },
+                {
+                  "t": "text",
+                  "style": "text-m",
+                  "chars": "Der Fallback-Pfad liefert nur Titel, Teaser und Datum.",
+                  "w": "fill",
+                  "size": 15,
+                  "color": "@color-on-canvas-muted",
+                  "tracking": 0.67
+                },
+                {
+                  "t": "space",
+                  "h": "@spacing-2xs"
+                },
+                {
+                  "t": "text",
+                  "style": "text-s",
+                  "chars": "3. August",
+                  "w": "fill",
+                  "size": 14,
+                  "color": "@color-stroke-strong",
+                  "tracking": 1.43
+                }
+              ],
+              "name": "feed/ArticleHero, imageUrl: null"
+            },
+            {
+              "t": "component",
+              "dir": "H",
+              "w": 319,
+              "h": 177,
+              "gap": "@spacing-s",
+              "children": [
+                {
+                  "t": "frame",
+                  "dir": "V",
+                  "w": 142,
+                  "h": 177,
+                  "radius": "@radius-md",
+                  "clip": true,
+                  "fill": "@color-surface",
+                  "children": [
+                    {
+                      "t": "frame",
+                      "w": "fill",
+                      "h": 80,
+                      "clip": true,
+                      "fill": "@color-grey-300",
+                      "children": [
+                        {
+                          "t": "frame",
+                          "dir": "V",
+                          "w": 142,
+                          "h": 80,
+                          "x": 0,
+                          "y": 0,
+                          "clip": true,
+                          "children": [
+                            {
+                              "t": "frame",
+                              "w": "fill",
+                              "h": 0,
+                              "children": [
+                                {
+                                  "t": "frame",
+                                  "dir": "H",
+                                  "w": 142,
+                                  "h": 80,
+                                  "x": 0,
+                                  "y": 0,
+                                  "clip": true
+                                }
+                              ]
+                            }
+                          ]
+                        },
+                        {
+                          "t": "frame",
+                          "dir": "V",
+                          "align": "CENTER",
+                          "cross": "CENTER",
+                          "w": 142,
+                          "h": 80,
+                          "x": 0,
+                          "y": 0,
+                          "children": [
+                            {
+                              "t": "frame",
+                              "dir": "V",
+                              "align": "CENTER",
+                              "cross": "CENTER",
+                              "w": 52,
+                              "h": 52,
+                              "radius": 26,
+                              "fill": "@color-always-dark/70",
+                              "children": [
+                                {
+                                  "t": "text",
+                                  "chars": "◉",
+                                  "font": "sans",
+                                  "size": 22,
+                                  "color": "@color-always-light"
+                                }
+                              ]
+                            }
+                          ]
+                        }
+                      ]
+                    },
+                    {
+                      "t": "frame",
+                      "dir": "V",
+                      "w": "fill",
+                      "h": 97,
+                      "pad": [
+                        "@spacing-s",
+                        "@spacing-s",
+                        "@spacing-s",
+                        "@spacing-s"
+                      ],
+                      "children": [
+                        {
+                          "t": "frame",
+                          "dir": "H",
+                          "cross": "CENTER",
+                          "w": "hug",
+                          "h": 25,
+                          "pad": [
+                            "@spacing-2xs",
+                            "@spacing-2xs",
+                            "@spacing-4xs",
+                            "@spacing-4xs"
+                          ],
+                          "radius": "@radius-s",
+                          "fill": "@color-accent",
+                          "children": [
+                            {
+                              "t": "text",
+                              "chars": "FunFacts",
+                              "w": "fill",
+                              "size": 11,
+                              "color": "@color-always-light",
+                              "tracking": 3.64,
+                              "transform": "uppercase"
+                            }
+                          ]
+                        },
+                        {
+                          "t": "space",
+                          "h": "@spacing-2xs"
+                        },
+                        {
+                          "t": "text",
+                          "chars": "Das hilft gegen Rechtsextremismus | mit Benjamin Fredrich von KATAPULT",
+                          "w": "fill",
+                          "weight": "semibold",
+                          "size": 14,
+                          "color": "@color-on-canvas",
+                          "tracking": 1.43
+                        }
+                      ]
+                    }
+                  ]
+                },
+                {
+                  "t": "frame",
+                  "dir": "V",
+                  "align": "SPACE_BETWEEN",
+                  "w": 166,
+                  "h": 177,
+                  "pad": [
+                    "@spacing-s",
+                    "@spacing-s",
+                    "@spacing-s",
+                    "@spacing-s"
+                  ],
+                  "radius": "@radius-md",
+                  "fill": "@color-surface",
+                  "children": [
+                    {
+                      "t": "frame",
+                      "dir": "H",
+                      "cross": "CENTER",
+                      "w": "hug",
+                      "h": 25,
+                      "pad": [
+                        "@spacing-2xs",
+                        "@spacing-2xs",
+                        "@spacing-4xs",
+                        "@spacing-4xs"
+                      ],
+                      "radius": "@radius-s",
+                      "children": [
+                        {
+                          "t": "ellipse",
+                          "w": 7,
+                          "h": 7,
+                          "fill": "@color-accent"
+                        },
+                        {
+                          "t": "space",
+                          "w": "@spacing-3xs"
+                        },
+                        {
+                          "t": "text",
+                          "chars": "Live",
+                          "w": 21,
+                          "size": 11,
+                          "color": "@color-on-canvas-accent",
+                          "tracking": 3.64,
+                          "transform": "uppercase"
+                        }
+                      ]
+                    },
+                    {
+                      "t": "frame",
+                      "dir": "V",
+                      "w": "fill",
+                      "h": 95,
+                      "children": [
+                        {
+                          "t": "text",
+                          "chars": "◉",
+                          "font": "sans",
+                          "size": 24,
+                          "color": "@color-on-canvas-muted"
+                        },
+                        {
+                          "t": "space",
+                          "h": "@spacing-2xs"
+                        },
+                        {
+                          "t": "text",
+                          "chars": "Salon5 Radio läuft",
+                          "w": "fill",
+                          "weight": "semibold",
+                          "size": 14,
+                          "color": "@color-on-canvas",
+                          "tracking": 1.43
+                        },
+                        {
+                          "t": "text",
+                          "style": "text-s",
+                          "chars": "24/7 aus Bottrop · Tippen zum Hören",
+                          "w": "fill",
+                          "size": 14,
+                          "color": "@color-on-canvas-muted",
+                          "tracking": 1.43
+                        }
+                      ]
+                    }
+                  ]
+                }
+              ],
+              "name": "home/MediathekReihe"
+            },
+            {
+              "t": "component",
+              "dir": "V",
+              "w": 319,
+              "h": 297,
+              "radius": "@radius-md",
+              "clip": true,
+              "stroke": "@color-accent-alternative",
+              "strokeWeight": 1,
+              "children": [
+                {
+                  "t": "frame",
+                  "dir": "V",
+                  "w": 317,
+                  "h": 157,
+                  "pad": [
+                    "@spacing-m",
+                    "@spacing-m",
+                    "@spacing-m",
+                    "@spacing-m"
+                  ],
+                  "children": [
+                    {
+                      "t": "frame",
+                      "dir": "H",
+                      "cross": "CENTER",
+                      "w": "hug",
+                      "h": 25,
+                      "pad": [
+                        "@spacing-2xs",
+                        "@spacing-2xs",
+                        "@spacing-4xs",
+                        "@spacing-4xs"
+                      ],
+                      "radius": "@radius-s",
+                      "fill": "@color-accent-alternative",
+                      "children": [
+                        {
+                          "t": "text",
+                          "chars": "Backstage",
+                          "w": "fill",
+                          "size": 11,
+                          "color": "@color-always-dark",
+                          "tracking": 3.64,
+                          "transform": "uppercase"
+                        }
+                      ]
+                    },
+                    {
+                      "t": "space",
+                      "h": "@spacing-2xs"
+                    },
+                    {
+                      "t": "text",
+                      "style": "headline-xs",
+                      "chars": "Woche 3: Die Spur führt nach Bern",
+                      "w": "fill",
+                      "weight": "bold",
+                      "size": 17,
+                      "color": "@color-on-canvas",
+                      "tracking": 1.18
+                    },
+                    {
+                      "t": "space",
+                      "h": "@spacing-2xs"
+                    },
+                    {
+                      "t": "text",
+                      "style": "text-m",
+                      "chars": "Ein anonymer Hinweis, ein Aktenordner und eine Adresse in der Bundesstadt. Wie wir den Verbindungen der Fonds nachgegangen sind.",
+                      "w": "fill",
+                      "size": 15,
+                      "color": "@color-on-canvas-muted",
+                      "tracking": 0.67
+                    }
+                  ]
+                },
+                {
+                  "t": "frame",
+                  "dir": "H",
+                  "cross": "CENTER",
+                  "w": 269,
+                  "h": 66,
+                  "pad": [
+                    "@spacing-s",
+                    "@spacing-s",
+                    "@spacing-s",
+                    "@spacing-s"
+                  ],
+                  "radius": "@radius-md",
+                  "fill": "@color-surface",
+                  "children": [
+                    {
+                      "t": "text",
+                      "chars": "◉",
+                      "font": "sans",
+                      "size": 20,
+                      "color": "@color-on-canvas-muted"
+                    },
+                    {
+                      "t": "space",
+                      "w": "@spacing-s"
+                    },
+                    {
+                      "t": "text",
+                      "chars": "Bonusfolge: Wie wir an die Pensionskassen-Daten kamen",
+                      "w": 213,
+                      "weight": "semibold",
+                      "size": 14,
+                      "color": "@color-on-canvas",
+                      "tracking": 1.43
+                    }
+                  ]
+                },
+                {
+                  "t": "space",
+                  "h": "@spacing-m"
+                },
+                {
+                  "t": "frame",
+                  "dir": "V",
+                  "w": 269,
+                  "h": 24,
+                  "children": [
+                    {
+                      "t": "text",
+                      "style": "button",
+                      "chars": "Alles aus dem Backstage →",
+                      "w": "fill",
+                      "weight": "bold",
+                      "size": 16,
+                      "color": "@color-on-canvas-accent",
+                      "tracking": 1.25
+                    }
+                  ]
+                }
+              ],
+              "name": "home/BackstageTeaser"
+            },
+            {
+              "t": "variants",
+              "name": "home/CalloutTeaser",
+              "prop": "kind",
+              "options": [
+                {
+                  "value": "crowdnewsroom",
+                  "dir": "V",
+                  "w": 319,
+                  "h": 269,
+                  "pad": [
+                    "@spacing-m",
+                    "@spacing-m",
+                    "@spacing-m",
+                    "@spacing-m"
+                  ],
+                  "radius": "@radius-md",
+                  "fill": "@color-always-dark",
+                  "children": [
+                    {
+                      "t": "text",
+                      "chars": "MITMACHEN · CROWDNEWSROOM",
+                      "w": "fill",
+                      "weight": "bold",
+                      "size": 12,
+                      "color": "@color-always-light",
+                      "tracking": 10
+                    },
+                    {
+                      "t": "space",
+                      "h": "@spacing-2xs"
+                    },
+                    {
+                      "t": "text",
+                      "style": "headline-xs",
+                      "chars": "Wem gehört die Stadt?",
+                      "w": "fill",
+                      "weight": "bold",
+                      "size": 17,
+                      "color": "@color-always-light",
+                      "tracking": 1.18
+                    },
+                    {
+                      "t": "space",
+                      "h": "@spacing-2xs"
+                    },
+                    {
+                      "t": "text",
+                      "style": "text-m",
+                      "chars": "Steigende Mieten, anonyme Eigentümer: Helfen Sie uns aufzudecken, wem die Häuser in Ihrer Nachbarschaft gehören.",
+                      "w": "fill",
+                      "size": 15,
+                      "color": "@color-always-light",
+                      "tracking": 0.67
+                    },
+                    {
+                      "t": "space",
+                      "h": "@spacing-s"
+                    },
+                    {
+                      "t": "frame",
+                      "dir": "H",
+                      "cross": "CENTER",
+                      "w": "fill",
+                      "h": 21,
+                      "opacity": 0.7,
+                      "children": [
+                        {
+                          "t": "text",
+                          "chars": "◉",
+                          "font": "sans",
+                          "size": 16,
+                          "color": "@color-always-light"
+                        },
+                        {
+                          "t": "space",
+                          "w": "@spacing-2xs"
+                        },
+                        {
+                          "t": "text",
+                          "style": "text-s",
+                          "chars": "1.857 Beiträge bisher",
+                          "w": 126,
+                          "size": 14,
+                          "color": "@color-always-light",
+                          "tracking": 1.43
+                        }
+                      ]
+                    },
+                    {
+                      "t": "space",
+                      "h": "@spacing-s"
+                    },
+                    {
+                      "t": "frame",
+                      "dir": "V",
+                      "align": "CENTER",
+                      "cross": "CENTER",
+                      "w": "hug",
+                      "h": 48,
+                      "pad": [
+                        "@spacing-m",
+                        "@spacing-m",
+                        "@spacing-s",
+                        "@spacing-s"
+                      ],
+                      "radius": "@radius-md",
+                      "fill": "@color-accent",
+                      "children": [
+                        {
+                          "t": "text",
+                          "style": "button",
+                          "chars": "Mitmachen",
+                          "w": "fill",
+                          "weight": "bold",
+                          "size": 16,
+                          "color": "@color-always-light",
+                          "tracking": 1.25
+                        }
+                      ]
+                    }
+                  ]
+                },
+                {
+                  "value": "survey",
+                  "dir": "V",
+                  "w": 319,
+                  "h": 295,
+                  "pad": [
+                    "@spacing-m",
+                    "@spacing-m",
+                    "@spacing-m",
+                    "@spacing-m"
+                  ],
+                  "radius": "@radius-md",
+                  "fill": "@color-always-dark",
+                  "children": [
+                    {
+                      "t": "text",
+                      "chars": "MITMACHEN · UMFRAGE",
+                      "w": "fill",
+                      "weight": "bold",
+                      "size": 12,
+                      "color": "@color-always-light",
+                      "tracking": 10
+                    },
+                    {
+                      "t": "space",
+                      "h": "@spacing-2xs"
+                    },
+                    {
+                      "t": "text",
+                      "style": "headline-xs",
+                      "chars": "Die Zukunft von CORRECTIV: Wir fragen Sie",
+                      "w": "fill",
+                      "weight": "bold",
+                      "size": 17,
+                      "color": "@color-always-light",
+                      "tracking": 1.18
+                    },
+                    {
+                      "t": "space",
+                      "h": "@spacing-2xs"
+                    },
+                    {
+                      "t": "text",
+                      "style": "text-m",
+                      "chars": "CORRECTIV verändert sich, und Sie gestalten mit. Was sollen wir recherchieren, welche Formate fehlen Ihnen?",
+                      "w": "fill",
+                      "size": 15,
+                      "color": "@color-always-light",
+                      "tracking": 0.67
+                    },
+                    {
+                      "t": "space",
+                      "h": "@spacing-s"
+                    },
+                    {
+                      "t": "frame",
+                      "dir": "H",
+                      "cross": "CENTER",
+                      "w": "fill",
+                      "h": 21,
+                      "opacity": 0.7,
+                      "children": [
+                        {
+                          "t": "text",
+                          "chars": "◉",
+                          "font": "sans",
+                          "size": 16,
+                          "color": "@color-always-light"
+                        },
+                        {
+                          "t": "space",
+                          "w": "@spacing-2xs"
+                        },
+                        {
+                          "t": "text",
+                          "style": "text-s",
+                          "chars": "2.143 Teilnahmen bisher",
+                          "w": 147,
+                          "size": 14,
+                          "color": "@color-always-light",
+                          "tracking": 1.43
+                        }
+                      ]
+                    },
+                    {
+                      "t": "space",
+                      "h": "@spacing-s"
+                    },
+                    {
+                      "t": "frame",
+                      "dir": "V",
+                      "align": "CENTER",
+                      "cross": "CENTER",
+                      "w": "hug",
+                      "h": 48,
+                      "pad": [
+                        "@spacing-m",
+                        "@spacing-m",
+                        "@spacing-s",
+                        "@spacing-s"
+                      ],
+                      "radius": "@radius-md",
+                      "fill": "@color-accent",
+                      "children": [
+                        {
+                          "t": "text",
+                          "style": "button",
+                          "chars": "Teilnehmen",
+                          "w": "fill",
+                          "weight": "bold",
+                          "size": 16,
+                          "color": "@color-always-light",
+                          "tracking": 1.25
+                        }
+                      ]
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "t": "component",
+              "dir": "H",
+              "cross": "CENTER",
+              "w": 319,
+              "h": 44,
+              "pad": [
+                "@spacing-s",
+                "@spacing-s",
+                0,
+                0
+              ],
+              "radius": "@radius-md",
+              "fill": "@color-surface",
+              "children": [
+                {
+                  "t": "text",
+                  "chars": "◉",
+                  "font": "sans",
+                  "size": 18,
+                  "color": "@color-on-canvas-muted"
+                },
+                {
+                  "t": "space",
+                  "w": "@spacing-xs"
+                },
+                {
+                  "t": "text",
+                  "style": "text-m",
+                  "chars": "Recherchen, Faktenchecks, Projekte …",
+                  "w": 246,
+                  "size": 15,
+                  "color": "@color-stroke-strong",
+                  "tracking": 0.67
+                }
+              ],
+              "name": "discover/SearchEntry"
+            },
+            {
+              "t": "component",
+              "dir": "V",
+              "w": 319,
+              "h": 71,
+              "children": [
+                {
+                  "t": "frame",
+                  "dir": "H",
+                  "cross": "CENTER",
+                  "w": "fill",
+                  "h": 71,
+                  "pad": [
+                    0,
+                    0,
+                    "@spacing-s",
+                    "@spacing-s"
+                  ],
+                  "stroke": "@color-stroke",
+                  "strokeWeight": 1,
+                  "strokeSides": "bottom",
+                  "children": [
+                    {
+                      "t": "text",
+                      "chars": "◉",
+                      "font": "sans",
+                      "size": 20,
+                      "color": "@color-on-canvas-muted"
+                    },
+                    {
+                      "t": "space",
+                      "w": "@spacing-s"
+                    },
+                    {
+                      "t": "frame",
+                      "dir": "V",
+                      "w": 271,
+                      "h": 46,
+                      "children": [
+                        {
+                          "t": "text",
+                          "chars": "Pausenbrot, der Nachrichten-Snack",
+                          "w": "fill",
+                          "weight": "bold",
+                          "size": 15,
+                          "color": "@color-on-canvas",
+                          "tracking": 0.67
+                        },
+                        {
+                          "t": "space",
+                          "h": "@spacing-4xs"
+                        },
+                        {
+                          "t": "text",
+                          "style": "text-s",
+                          "chars": "Salon5 · Podcast-Serie",
+                          "w": "fill",
+                          "size": 14,
+                          "color": "@color-stroke-strong",
+                          "tracking": 1.43
+                        }
+                      ]
+                    },
+                    {
+                      "t": "text",
+                      "chars": "◉",
+                      "font": "sans",
+                      "size": 16,
+                      "color": "@color-stroke-strong"
+                    }
+                  ]
+                }
+              ],
+              "name": "discover/SampleHitRow, kind=\"podcast\""
+            },
+            {
+              "t": "component",
+              "dir": "V",
+              "w": 319,
+              "h": 94,
+              "children": [
+                {
+                  "t": "frame",
+                  "dir": "H",
+                  "cross": "CENTER",
+                  "w": "fill",
+                  "h": 94,
+                  "pad": [
+                    0,
+                    0,
+                    "@spacing-s",
+                    "@spacing-s"
+                  ],
+                  "stroke": "@color-stroke",
+                  "strokeWeight": 1,
+                  "strokeSides": "bottom",
+                  "children": [
+                    {
+                      "t": "text",
+                      "chars": "◉",
+                      "font": "sans",
+                      "size": 20,
+                      "color": "@color-on-canvas-muted"
+                    },
+                    {
+                      "t": "space",
+                      "w": "@spacing-s"
+                    },
+                    {
+                      "t": "frame",
+                      "dir": "V",
+                      "w": 271,
+                      "h": 69,
+                      "children": [
+                        {
+                          "t": "text",
+                          "chars": "Die Zukunft von CORRECTIV: Wir fragen Sie",
+                          "w": "fill",
+                          "weight": "bold",
+                          "size": 15,
+                          "color": "@color-on-canvas",
+                          "tracking": 0.67
+                        },
+                        {
+                          "t": "space",
+                          "h": "@spacing-4xs"
+                        },
+                        {
+                          "t": "text",
+                          "style": "text-s",
+                          "chars": "CrowdNewsroom · Aufruf",
+                          "w": "fill",
+                          "size": 14,
+                          "color": "@color-stroke-strong",
+                          "tracking": 1.43
+                        }
+                      ]
+                    },
+                    {
+                      "t": "text",
+                      "chars": "◉",
+                      "font": "sans",
+                      "size": 16,
+                      "color": "@color-stroke-strong"
+                    }
+                  ]
+                }
+              ],
+              "name": "discover/SampleHitRow, kind=\"callout\""
+            },
+            {
+              "t": "component",
+              "dir": "V",
+              "w": 319,
+              "h": 71,
+              "children": [
+                {
+                  "t": "frame",
+                  "dir": "H",
+                  "cross": "CENTER",
+                  "w": "fill",
+                  "h": 71,
+                  "pad": [
+                    0,
+                    0,
+                    "@spacing-s",
+                    "@spacing-s"
+                  ],
+                  "stroke": "@color-stroke",
+                  "strokeWeight": 1,
+                  "strokeSides": "bottom",
+                  "children": [
+                    {
+                      "t": "text",
+                      "chars": "◉",
+                      "font": "sans",
+                      "size": 20,
+                      "color": "@color-on-canvas-muted"
+                    },
+                    {
+                      "t": "space",
+                      "w": "@spacing-s"
+                    },
+                    {
+                      "t": "frame",
+                      "dir": "V",
+                      "w": 271,
+                      "h": 46,
+                      "children": [
+                        {
+                          "t": "text",
+                          "chars": "Woche 3: Die Spur führt nach Bern",
+                          "w": "fill",
+                          "weight": "bold",
+                          "size": 15,
+                          "color": "@color-on-canvas",
+                          "tracking": 0.67
+                        },
+                        {
+                          "t": "space",
+                          "h": "@spacing-4xs"
+                        },
+                        {
+                          "t": "text",
+                          "style": "text-s",
+                          "chars": "Backstage · Recherchetagebuch",
+                          "w": "fill",
+                          "size": 14,
+                          "color": "@color-stroke-strong",
+                          "tracking": 1.43
+                        }
+                      ]
+                    },
+                    {
+                      "t": "text",
+                      "chars": "◉",
+                      "font": "sans",
+                      "size": 16,
+                      "color": "@color-stroke-strong"
+                    }
+                  ]
+                }
+              ],
+              "name": "discover/SampleHitRow, kind=\"backstage\""
+            },
+            {
+              "t": "component",
+              "dir": "V",
+              "w": 319,
+              "h": 71,
+              "children": [
+                {
+                  "t": "frame",
+                  "dir": "H",
+                  "cross": "CENTER",
+                  "w": "fill",
+                  "h": 71,
+                  "pad": [
+                    0,
+                    0,
+                    "@spacing-s",
+                    "@spacing-s"
+                  ],
+                  "stroke": "@color-stroke",
+                  "strokeWeight": 1,
+                  "strokeSides": "bottom",
+                  "children": [
+                    {
+                      "t": "text",
+                      "chars": "◉",
+                      "font": "sans",
+                      "size": 20,
+                      "color": "@color-on-canvas-muted"
+                    },
+                    {
+                      "t": "space",
+                      "w": "@spacing-s"
+                    },
+                    {
+                      "t": "frame",
+                      "dir": "V",
+                      "w": 271,
+                      "h": 46,
+                      "children": [
+                        {
+                          "t": "text",
+                          "chars": "Akten des Missbrauchs",
+                          "w": "fill",
+                          "weight": "bold",
+                          "size": 15,
+                          "color": "@color-on-canvas",
+                          "tracking": 0.67
+                        },
+                        {
+                          "t": "space",
+                          "h": "@spacing-4xs"
+                        },
+                        {
+                          "t": "text",
+                          "style": "text-s",
+                          "chars": "CORRECTIV Verlag · Buch",
+                          "w": "fill",
+                          "size": 14,
+                          "color": "@color-stroke-strong",
+                          "tracking": 1.43
+                        }
+                      ]
+                    },
+                    {
+                      "t": "text",
+                      "chars": "◉",
+                      "font": "sans",
+                      "size": 16,
+                      "color": "@color-stroke-strong"
+                    }
+                  ]
+                }
+              ],
+              "name": "discover/SampleHitRow, kind=\"verlag\""
+            },
+            {
+              "t": "component",
+              "dir": "H",
+              "cross": "CENTER",
+              "w": 319,
+              "h": 71,
+              "pad": [
+                0,
+                0,
+                "@spacing-s",
+                "@spacing-s"
+              ],
+              "stroke": "@color-stroke",
+              "strokeWeight": 1,
+              "strokeSides": "bottom",
+              "children": [
+                {
+                  "t": "text",
+                  "chars": "◉",
+                  "font": "sans",
+                  "size": 20,
+                  "color": "@color-on-canvas-muted"
+                },
+                {
+                  "t": "space",
+                  "w": "@spacing-s"
+                },
+                {
+                  "t": "frame",
+                  "dir": "V",
+                  "w": 287,
+                  "h": 46,
+                  "children": [
+                    {
+                      "t": "text",
+                      "chars": "Pausenbrot, der Nachrichten-Snack",
+                      "w": "fill",
+                      "weight": "bold",
+                      "size": 15,
+                      "color": "@color-on-canvas",
+                      "tracking": 0.67
+                    },
+                    {
+                      "t": "space",
+                      "h": "@spacing-4xs"
+                    },
+                    {
+                      "t": "text",
+                      "style": "text-s",
+                      "chars": "Salon5 · Podcast-Serie",
+                      "w": "fill",
+                      "size": 14,
+                      "color": "@color-stroke-strong",
+                      "tracking": 1.43
+                    }
+                  ]
+                }
+              ],
+              "name": "discover/SampleHitRow, without onPress, so no chevron and no link role"
+            },
+            {
+              "t": "component",
+              "dir": "H",
+              "cross": "CENTER",
+              "w": 319,
+              "h": 98,
+              "pad": [
+                "@spacing-s",
+                "@spacing-s",
+                "@spacing-s",
+                "@spacing-s"
+              ],
+              "radius": "@radius-md",
+              "fill": "@color-always-dark",
+              "children": [
+                {
+                  "t": "frame",
+                  "dir": "V",
+                  "align": "CENTER",
+                  "cross": "CENTER",
+                  "w": 48,
+                  "h": 48,
+                  "radius": 24,
+                  "fill": "@color-accent",
+                  "children": [
+                    {
+                      "t": "text",
+                      "chars": "◉",
+                      "font": "sans",
+                      "size": 24,
+                      "color": "@color-always-light"
+                    }
+                  ]
+                },
+                {
+                  "t": "space",
+                  "w": "@spacing-s"
+                },
+                {
+                  "t": "frame",
+                  "dir": "V",
+                  "w": 235,
+                  "h": 74,
+                  "children": [
+                    {
+                      "t": "frame",
+                      "dir": "H",
+                      "cross": "CENTER",
+                      "w": "fill",
+                      "h": 25,
+                      "gap": "@spacing-2xs",
+                      "children": [
+                        {
+                          "t": "frame",
+                          "dir": "H",
+                          "cross": "CENTER",
+                          "w": "hug",
+                          "h": 25,
+                          "pad": [
+                            "@spacing-2xs",
+                            "@spacing-2xs",
+                            "@spacing-4xs",
+                            "@spacing-4xs"
+                          ],
+                          "radius": "@radius-s",
+                          "children": [
+                            {
+                              "t": "ellipse",
+                              "w": 7,
+                              "h": 7,
+                              "fill": "@color-accent"
+                            },
+                            {
+                              "t": "space",
+                              "w": "@spacing-3xs"
+                            },
+                            {
+                              "t": "text",
+                              "chars": "Live",
+                              "w": 21,
+                              "size": 11,
+                              "color": "@color-on-canvas-accent",
+                              "tracking": 3.64,
+                              "transform": "uppercase"
+                            }
+                          ]
+                        }
+                      ]
+                    },
+                    {
+                      "t": "space",
+                      "h": "@spacing-4xs"
+                    },
+                    {
+                      "t": "text",
+                      "style": "headline-xs",
+                      "chars": "Salon5 Radio",
+                      "w": "fill",
+                      "weight": "bold",
+                      "size": 17,
+                      "color": "@color-always-light",
+                      "tracking": 1.18
+                    },
+                    {
+                      "t": "text",
+                      "style": "text-s",
+                      "chars": "24/7 aus Bottrop",
+                      "w": "fill",
+                      "size": 14,
+                      "color": "@color-always-light",
+                      "tracking": 1.43
+                    }
+                  ]
+                }
+              ],
+              "name": "media/LiveBanner, default subtitle"
+            },
+            {
+              "t": "component",
+              "dir": "H",
+              "cross": "CENTER",
+              "w": 319,
+              "h": 98,
+              "pad": [
+                "@spacing-s",
+                "@spacing-s",
+                "@spacing-s",
+                "@spacing-s"
+              ],
+              "radius": "@radius-md",
+              "fill": "@color-always-dark",
+              "children": [
+                {
+                  "t": "frame",
+                  "dir": "V",
+                  "align": "CENTER",
+                  "cross": "CENTER",
+                  "w": 48,
+                  "h": 48,
+                  "radius": 24,
+                  "fill": "@color-accent",
+                  "children": [
+                    {
+                      "t": "text",
+                      "chars": "◉",
+                      "font": "sans",
+                      "size": 24,
+                      "color": "@color-always-light"
+                    }
+                  ]
+                },
+                {
+                  "t": "space",
+                  "w": "@spacing-s"
+                },
+                {
+                  "t": "frame",
+                  "dir": "V",
+                  "w": 235,
+                  "h": 74,
+                  "children": [
+                    {
+                      "t": "frame",
+                      "dir": "H",
+                      "cross": "CENTER",
+                      "w": "fill",
+                      "h": 25,
+                      "gap": "@spacing-2xs",
+                      "children": [
+                        {
+                          "t": "frame",
+                          "dir": "H",
+                          "cross": "CENTER",
+                          "w": "hug",
+                          "h": 25,
+                          "pad": [
+                            "@spacing-2xs",
+                            "@spacing-2xs",
+                            "@spacing-4xs",
+                            "@spacing-4xs"
+                          ],
+                          "radius": "@radius-s",
+                          "children": [
+                            {
+                              "t": "ellipse",
+                              "w": 7,
+                              "h": 7,
+                              "fill": "@color-accent"
+                            },
+                            {
+                              "t": "space",
+                              "w": "@spacing-3xs"
+                            },
+                            {
+                              "t": "text",
+                              "chars": "Live",
+                              "w": 21,
+                              "size": 11,
+                              "color": "@color-on-canvas-accent",
+                              "tracking": 3.64,
+                              "transform": "uppercase"
+                            }
+                          ]
+                        }
+                      ]
+                    },
+                    {
+                      "t": "space",
+                      "h": "@spacing-4xs"
+                    },
+                    {
+                      "t": "text",
+                      "style": "headline-xs",
+                      "chars": "Salon5 Radio",
+                      "w": "fill",
+                      "weight": "bold",
+                      "size": 17,
+                      "color": "@color-always-light",
+                      "tracking": 1.18
+                    },
+                    {
+                      "t": "text",
+                      "style": "text-s",
+                      "chars": "Sondersendung aus Bottrop",
+                      "w": "fill",
+                      "size": 14,
+                      "color": "@color-always-light",
+                      "tracking": 1.43
+                    }
+                  ]
+                }
+              ],
+              "name": "media/LiveBanner, subtitle"
+            },
+            {
+              "t": "component",
+              "dir": "V",
+              "w": 176,
+              "h": 168,
+              "children": [
+                {
+                  "t": "frame",
+                  "dir": "V",
+                  "w": "fill",
+                  "h": 168,
+                  "children": [
+                    {
+                      "t": "frame",
+                      "w": "fill",
+                      "h": 99,
+                      "radius": "@radius-md",
+                      "clip": true,
+                      "fill": "@color-grey-300",
+                      "children": [
+                        {
+                          "t": "frame",
+                          "dir": "V",
+                          "align": "CENTER",
+                          "cross": "CENTER",
+                          "w": 176,
+                          "h": 99,
+                          "x": 0,
+                          "y": 0,
+                          "children": [
+                            {
+                              "t": "text",
+                              "chars": "◉",
+                              "font": "sans",
+                              "size": 26,
+                              "color": "@color-stroke"
+                            }
+                          ]
+                        },
+                        {
+                          "t": "frame",
+                          "w": 176,
+                          "h": 99,
+                          "x": 0,
+                          "y": 0,
+                          "children": [
+                            {
+                              "t": "frame",
+                              "dir": "V",
+                              "align": "CENTER",
+                              "cross": "CENTER",
+                              "w": 52,
+                              "h": 52,
+                              "x": 62,
+                              "y": 24,
+                              "radius": 26,
+                              "fill": "@color-always-dark/70",
+                              "children": [
+                                {
+                                  "t": "text",
+                                  "chars": "◉",
+                                  "font": "sans",
+                                  "size": 22,
+                                  "color": "@color-always-light"
+                                }
+                              ]
+                            },
+                            {
+                              "t": "frame",
+                              "dir": "V",
+                              "w": 28,
+                              "h": 21,
+                              "x": 142,
+                              "y": 72,
+                              "pad": [
+                                "@spacing-3xs",
+                                "@spacing-3xs",
+                                0,
+                                0
+                              ],
+                              "radius": "@radius-s",
+                              "fill": "@color-always-dark/80",
+                              "children": [
+                                {
+                                  "t": "text",
+                                  "chars": "8:32",
+                                  "w": "fill",
+                                  "size": 11,
+                                  "color": "@color-always-light",
+                                  "tracking": 1.82
+                                }
+                              ]
+                            }
+                          ]
+                        }
+                      ]
+                    },
+                    {
+                      "t": "space",
+                      "h": "@spacing-2xs"
+                    },
+                    {
+                      "t": "text",
+                      "chars": "FunFacts, Folge 12: Was kostet ein Windrad wirklich?",
+                      "w": "fill",
+                      "weight": "semibold",
+                      "size": 14,
+                      "color": "@color-on-canvas",
+                      "tracking": 1.43
+                    },
+                    {
+                      "t": "text",
+                      "style": "text-s",
+                      "chars": "28. August",
+                      "w": "fill",
+                      "size": 14,
+                      "color": "@color-stroke-strong",
+                      "tracking": 1.43
+                    }
+                  ]
+                }
+              ],
+              "name": "media/MediaCard"
+            },
+            {
+              "t": "component",
+              "dir": "V",
+              "w": 116,
+              "h": 185,
+              "children": [
+                {
+                  "t": "frame",
+                  "dir": "V",
+                  "w": "fill",
+                  "h": 116,
+                  "radius": "@radius-md",
+                  "clip": true,
+                  "fill": "@color-grey-300",
+                  "children": [
+                    {
+                      "t": "frame",
+                      "dir": "V",
+                      "align": "CENTER",
+                      "cross": "CENTER",
+                      "w": "fill",
+                      "h": 116,
+                      "children": [
+                        {
+                          "t": "text",
+                          "chars": "◉",
+                          "font": "sans",
+                          "size": 26,
+                          "color": "@color-stroke"
+                        }
+                      ]
+                    }
+                  ]
+                },
+                {
+                  "t": "space",
+                  "h": "@spacing-2xs"
+                },
+                {
+                  "t": "text",
+                  "chars": "CORRECTIV Podcast",
+                  "w": "fill",
+                  "weight": "semibold",
+                  "size": 14,
+                  "color": "@color-on-canvas",
+                  "tracking": 1.43
+                },
+                {
+                  "t": "text",
+                  "style": "text-s",
+                  "chars": "CORRECTIV",
+                  "w": "fill",
+                  "size": 14,
+                  "color": "@color-stroke-strong",
+                  "tracking": 1.43
+                }
+              ],
+              "name": "media/SeriesTile"
+            },
+            {
+              "t": "component",
+              "dir": "H",
+              "cross": "CENTER",
+              "w": 319,
+              "h": 71,
+              "pad": [
+                0,
+                0,
+                "@spacing-s",
+                "@spacing-s"
+              ],
+              "stroke": "@color-stroke",
+              "strokeWeight": 1,
+              "strokeSides": "bottom",
+              "children": [
+                {
+                  "t": "frame",
+                  "dir": "V",
+                  "align": "CENTER",
+                  "cross": "CENTER",
+                  "w": 36,
+                  "h": 36,
+                  "radius": 18,
+                  "fill": "@color-surface",
+                  "children": [
+                    {
+                      "t": "text",
+                      "chars": "◉",
+                      "font": "sans",
+                      "size": 16,
+                      "color": "@color-on-canvas"
+                    }
+                  ]
+                },
+                {
+                  "t": "space",
+                  "w": "@spacing-s"
+                },
+                {
+                  "t": "frame",
+                  "dir": "V",
+                  "w": 271,
+                  "h": 46,
+                  "pad": [
+                    0,
+                    "@spacing-s",
+                    0,
+                    0
+                  ],
+                  "children": [
+                    {
+                      "t": "text",
+                      "chars": "Pausenbrot, Folge 214",
+                      "w": "fill",
+                      "weight": "semibold",
+                      "size": 15,
+                      "color": "@color-on-canvas",
+                      "tracking": 0.67
+                    },
+                    {
+                      "t": "space",
+                      "h": "@spacing-4xs"
+                    },
+                    {
+                      "t": "text",
+                      "style": "text-s",
+                      "chars": "12. August · 8 Min",
+                      "w": "fill",
+                      "size": 14,
+                      "color": "@color-stroke-strong",
+                      "tracking": 1.43
+                    }
+                  ]
+                }
+              ],
+              "name": "media/EpisodeRow, default"
+            },
+            {
+              "t": "component",
+              "dir": "H",
+              "cross": "CENTER",
+              "w": 319,
+              "h": 71,
+              "pad": [
+                0,
+                0,
+                "@spacing-s",
+                "@spacing-s"
+              ],
+              "stroke": "@color-stroke",
+              "strokeWeight": 1,
+              "strokeSides": "bottom",
+              "children": [
+                {
+                  "t": "frame",
+                  "dir": "V",
+                  "align": "CENTER",
+                  "cross": "CENTER",
+                  "w": 36,
+                  "h": 36,
+                  "radius": 18,
+                  "fill": "@color-surface",
+                  "children": [
+                    {
+                      "t": "text",
+                      "chars": "◉",
+                      "font": "sans",
+                      "size": 16,
+                      "color": "@color-on-canvas"
+                    }
+                  ]
+                },
+                {
+                  "t": "space",
+                  "w": "@spacing-s"
+                },
+                {
+                  "t": "frame",
+                  "dir": "V",
+                  "w": 233,
+                  "h": 46,
+                  "pad": [
+                    0,
+                    "@spacing-s",
+                    0,
+                    0
+                  ],
+                  "children": [
+                    {
+                      "t": "text",
+                      "chars": "Nur für Mitglieder mit Beitrag",
+                      "w": "fill",
+                      "weight": "semibold",
+                      "size": 15,
+                      "color": "@color-on-canvas",
+                      "tracking": 0.67
+                    },
+                    {
+                      "t": "space",
+                      "h": "@spacing-4xs"
+                    },
+                    {
+                      "t": "text",
+                      "style": "text-s",
+                      "chars": "3. August · 22 Min",
+                      "w": "fill",
+                      "size": 14,
+                      "color": "@color-stroke-strong",
+                      "tracking": 1.43
+                    }
+                  ]
+                },
+                {
+                  "t": "frame",
+                  "dir": "H",
+                  "cross": "CENTER",
+                  "w": "hug",
+                  "h": 25,
+                  "pad": [
+                    "@spacing-2xs",
+                    "@spacing-2xs",
+                    "@spacing-4xs",
+                    "@spacing-4xs"
+                  ],
+                  "radius": "@radius-s",
+                  "fill": "@color-accent-alternative",
+                  "children": [
+                    {
+                      "t": "text",
+                      "chars": "Club",
+                      "w": "fill",
+                      "size": 11,
+                      "color": "@color-always-dark",
+                      "tracking": 3.64,
+                      "transform": "uppercase"
+                    }
+                  ]
+                }
+              ],
+              "name": "media/EpisodeRow, club"
+            },
+            {
+              "t": "variants",
+              "name": "participate/FormField",
+              "prop": "type",
+              "options": [
+                {
+                  "value": "radio",
+                  "dir": "V",
+                  "w": 319,
+                  "h": 230,
+                  "children": [
+                    {
+                      "t": "text",
+                      "style": "headline-xs",
+                      "chars": "Wie oft lesen Sie CORRECTIV?",
+                      "w": "fill",
+                      "weight": "bold",
+                      "size": 17,
+                      "color": "@color-on-canvas",
+                      "tracking": 1.18
+                    },
+                    {
+                      "t": "space",
+                      "h": "@spacing-2xs"
+                    },
+                    {
+                      "t": "text",
+                      "style": "text-s",
+                      "chars": "Eine Antwort.",
+                      "w": "fill",
+                      "size": 14,
+                      "color": "@color-on-canvas-muted",
+                      "tracking": 1.43
+                    },
+                    {
+                      "t": "space",
+                      "h": "@spacing-s"
+                    },
+                    {
+                      "t": "frame",
+                      "dir": "V",
+                      "w": "fill",
+                      "h": 165,
+                      "children": [
+                        {
+                          "t": "frame",
+                          "dir": "H",
+                          "cross": "CENTER",
+                          "w": "fill",
+                          "h": 49,
+                          "pad": [
+                            "@spacing-s",
+                            "@spacing-s",
+                            "@spacing-s",
+                            "@spacing-s"
+                          ],
+                          "radius": "@radius-md",
+                          "fill": "@color-surface",
+                          "stroke": "@color-accent",
+                          "strokeWeight": 1,
+                          "children": [
+                            {
+                              "t": "text",
+                              "chars": "◉",
+                              "font": "sans",
+                              "size": 20,
+                              "color": "@color-on-canvas-accent"
+                            },
+                            {
+                              "t": "space",
+                              "w": "@spacing-s"
+                            },
+                            {
+                              "t": "text",
+                              "style": "text-m",
+                              "chars": "Täglich",
+                              "w": 261,
+                              "size": 15,
+                              "color": "@color-on-canvas",
+                              "tracking": 0.67
+                            }
+                          ]
+                        },
+                        {
+                          "t": "space",
+                          "h": "@spacing-2xs"
+                        },
+                        {
+                          "t": "frame",
+                          "dir": "H",
+                          "cross": "CENTER",
+                          "w": "fill",
+                          "h": 49,
+                          "pad": [
+                            "@spacing-s",
+                            "@spacing-s",
+                            "@spacing-s",
+                            "@spacing-s"
+                          ],
+                          "radius": "@radius-md",
+                          "fill": "@color-canvas",
+                          "stroke": "@color-stroke",
+                          "strokeWeight": 1,
+                          "children": [
+                            {
+                              "t": "text",
+                              "chars": "◉",
+                              "font": "sans",
+                              "size": 20,
+                              "color": "@color-stroke"
+                            },
+                            {
+                              "t": "space",
+                              "w": "@spacing-s"
+                            },
+                            {
+                              "t": "text",
+                              "style": "text-m",
+                              "chars": "Wöchentlich",
+                              "w": 261,
+                              "size": 15,
+                              "color": "@color-on-canvas",
+                              "tracking": 0.67
+                            }
+                          ]
+                        },
+                        {
+                          "t": "space",
+                          "h": "@spacing-2xs"
+                        },
+                        {
+                          "t": "frame",
+                          "dir": "H",
+                          "cross": "CENTER",
+                          "w": "fill",
+                          "h": 49,
+                          "pad": [
+                            "@spacing-s",
+                            "@spacing-s",
+                            "@spacing-s",
+                            "@spacing-s"
+                          ],
+                          "radius": "@radius-md",
+                          "fill": "@color-canvas",
+                          "stroke": "@color-stroke",
+                          "strokeWeight": 1,
+                          "children": [
+                            {
+                              "t": "text",
+                              "chars": "◉",
+                              "font": "sans",
+                              "size": 20,
+                              "color": "@color-stroke"
+                            },
+                            {
+                              "t": "space",
+                              "w": "@spacing-s"
+                            },
+                            {
+                              "t": "text",
+                              "style": "text-m",
+                              "chars": "Seltener",
+                              "w": 261,
+                              "size": 15,
+                              "color": "@color-on-canvas",
+                              "tracking": 0.67
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  ]
+                },
+                {
+                  "value": "selectboxes",
+                  "dir": "V",
+                  "w": 319,
+                  "h": 230,
+                  "children": [
+                    {
+                      "t": "text",
+                      "style": "headline-xs",
+                      "chars": "Welche Themen interessieren Sie?",
+                      "w": "fill",
+                      "weight": "bold",
+                      "size": 17,
+                      "color": "@color-on-canvas",
+                      "tracking": 1.18
+                    },
+                    {
+                      "t": "space",
+                      "h": "@spacing-2xs"
+                    },
+                    {
+                      "t": "text",
+                      "style": "text-s",
+                      "chars": "Mehrere Antworten möglich.",
+                      "w": "fill",
+                      "size": 14,
+                      "color": "@color-on-canvas-muted",
+                      "tracking": 1.43
+                    },
+                    {
+                      "t": "space",
+                      "h": "@spacing-s"
+                    },
+                    {
+                      "t": "frame",
+                      "dir": "V",
+                      "w": "fill",
+                      "h": 165,
+                      "children": [
+                        {
+                          "t": "frame",
+                          "dir": "H",
+                          "cross": "CENTER",
+                          "w": "fill",
+                          "h": 49,
+                          "pad": [
+                            "@spacing-s",
+                            "@spacing-s",
+                            "@spacing-s",
+                            "@spacing-s"
+                          ],
+                          "radius": "@radius-md",
+                          "fill": "@color-canvas",
+                          "stroke": "@color-stroke",
+                          "strokeWeight": 1,
+                          "children": [
+                            {
+                              "t": "text",
+                              "chars": "◉",
+                              "font": "sans",
+                              "size": 20,
+                              "color": "@color-stroke"
+                            },
+                            {
+                              "t": "space",
+                              "w": "@spacing-s"
+                            },
+                            {
+                              "t": "text",
+                              "style": "text-m",
+                              "chars": "Klima",
+                              "w": 261,
+                              "size": 15,
+                              "color": "@color-on-canvas",
+                              "tracking": 0.67
+                            }
+                          ]
+                        },
+                        {
+                          "t": "space",
+                          "h": "@spacing-2xs"
+                        },
+                        {
+                          "t": "frame",
+                          "dir": "H",
+                          "cross": "CENTER",
+                          "w": "fill",
+                          "h": 49,
+                          "pad": [
+                            "@spacing-s",
+                            "@spacing-s",
+                            "@spacing-s",
+                            "@spacing-s"
+                          ],
+                          "radius": "@radius-md",
+                          "fill": "@color-canvas",
+                          "stroke": "@color-stroke",
+                          "strokeWeight": 1,
+                          "children": [
+                            {
+                              "t": "text",
+                              "chars": "◉",
+                              "font": "sans",
+                              "size": 20,
+                              "color": "@color-stroke"
+                            },
+                            {
+                              "t": "space",
+                              "w": "@spacing-s"
+                            },
+                            {
+                              "t": "text",
+                              "style": "text-m",
+                              "chars": "Lokal",
+                              "w": 261,
+                              "size": 15,
+                              "color": "@color-on-canvas",
+                              "tracking": 0.67
+                            }
+                          ]
+                        },
+                        {
+                          "t": "space",
+                          "h": "@spacing-2xs"
+                        },
+                        {
+                          "t": "frame",
+                          "dir": "H",
+                          "cross": "CENTER",
+                          "w": "fill",
+                          "h": 49,
+                          "pad": [
+                            "@spacing-s",
+                            "@spacing-s",
+                            "@spacing-s",
+                            "@spacing-s"
+                          ],
+                          "radius": "@radius-md",
+                          "fill": "@color-canvas",
+                          "stroke": "@color-stroke",
+                          "strokeWeight": 1,
+                          "children": [
+                            {
+                              "t": "text",
+                              "chars": "◉",
+                              "font": "sans",
+                              "size": 20,
+                              "color": "@color-stroke"
+                            },
+                            {
+                              "t": "space",
+                              "w": "@spacing-s"
+                            },
+                            {
+                              "t": "text",
+                              "style": "text-m",
+                              "chars": "Faktenchecks",
+                              "w": 261,
+                              "size": 15,
+                              "color": "@color-on-canvas",
+                              "tracking": 0.67
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  ]
+                },
+                {
+                  "value": "textfield",
+                  "dir": "V",
+                  "w": 319,
+                  "h": 87,
+                  "children": [
+                    {
+                      "t": "text",
+                      "style": "headline-xs",
+                      "chars": "Ihre Stadt",
+                      "w": "fill",
+                      "weight": "bold",
+                      "size": 17,
+                      "color": "@color-on-canvas",
+                      "tracking": 1.18
+                    },
+                    {
+                      "t": "space",
+                      "h": "@spacing-s"
+                    },
+                    {
+                      "t": "frame",
+                      "dir": "H",
+                      "w": "fill",
+                      "h": 49,
+                      "pad": [
+                        "@spacing-s",
+                        "@spacing-s",
+                        "@spacing-s",
+                        "@spacing-s"
+                      ],
+                      "radius": "@radius-md",
+                      "clip": true,
+                      "fill": "@color-canvas",
+                      "stroke": "@color-stroke",
+                      "strokeWeight": 1
+                    }
+                  ]
+                },
+                {
+                  "value": "textarea",
+                  "dir": "V",
+                  "w": 319,
+                  "h": 161,
+                  "children": [
+                    {
+                      "t": "text",
+                      "style": "headline-xs",
+                      "chars": "Was sollten wir recherchieren?",
+                      "w": "fill",
+                      "weight": "bold",
+                      "size": 17,
+                      "color": "@color-on-canvas",
+                      "tracking": 1.18
+                    },
+                    {
+                      "t": "space",
+                      "h": "@spacing-2xs"
+                    },
+                    {
+                      "t": "text",
+                      "style": "text-s",
+                      "chars": "So genau, wie Sie möchten.",
+                      "w": "fill",
+                      "size": 14,
+                      "color": "@color-on-canvas-muted",
+                      "tracking": 1.43
+                    },
+                    {
+                      "t": "space",
+                      "h": "@spacing-s"
+                    },
+                    {
+                      "t": "text",
+                      "style": "text-m",
+                      "chars": "Mehr Lokales.",
+                      "w": "fill",
+                      "size": 15,
+                      "color": "@color-on-canvas",
+                      "tracking": 0.67
+                    }
+                  ]
+                },
+                {
+                  "value": "file",
+                  "dir": "V",
+                  "w": 319,
+                  "h": 114,
+                  "children": [
+                    {
+                      "t": "text",
+                      "style": "headline-xs",
+                      "chars": "Dokument anhängen",
+                      "w": "fill",
+                      "weight": "bold",
+                      "size": 17,
+                      "color": "@color-on-canvas",
+                      "tracking": 1.18
+                    },
+                    {
+                      "t": "space",
+                      "h": "@spacing-2xs"
+                    },
+                    {
+                      "t": "text",
+                      "style": "text-s",
+                      "chars": "PDF oder Foto.",
+                      "w": "fill",
+                      "size": 14,
+                      "color": "@color-on-canvas-muted",
+                      "tracking": 1.43
+                    },
+                    {
+                      "t": "space",
+                      "h": "@spacing-s"
+                    },
+                    {
+                      "t": "frame",
+                      "dir": "H",
+                      "cross": "CENTER",
+                      "w": "fill",
+                      "h": 49,
+                      "pad": [
+                        "@spacing-s",
+                        "@spacing-s",
+                        "@spacing-s",
+                        "@spacing-s"
+                      ],
+                      "radius": "@radius-md",
+                      "fill": "@color-surface",
+                      "stroke": "@color-stroke",
+                      "strokeWeight": 1,
+                      "children": [
+                        {
+                          "t": "text",
+                          "chars": "◉",
+                          "font": "sans",
+                          "size": 20,
+                          "color": "@color-on-canvas-muted"
+                        },
+                        {
+                          "t": "space",
+                          "w": "@spacing-s"
+                        },
+                        {
+                          "t": "text",
+                          "style": "text-s",
+                          "chars": "Foto oder Dokument auswählen (simuliert)",
+                          "w": 261,
+                          "size": 14,
+                          "color": "@color-on-canvas-muted",
+                          "tracking": 1.43
+                        }
+                      ]
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "t": "component",
+              "dir": "V",
+              "w": 319,
               "h": 239,
               "radius": "@radius-md",
               "clip": true,
@@ -1963,44 +4397,6 @@
             },
             {
               "t": "component",
-              "dir": "H",
-              "cross": "CENTER",
-              "w": 319,
-              "h": 44,
-              "pad": [
-                "@spacing-s",
-                "@spacing-s",
-                0,
-                0
-              ],
-              "radius": "@radius-md",
-              "fill": "@color-surface",
-              "children": [
-                {
-                  "t": "text",
-                  "chars": "◎",
-                  "font": "sans",
-                  "size": 18,
-                  "color": "@color-on-canvas-muted"
-                },
-                {
-                  "t": "space",
-                  "w": "@spacing-xs"
-                },
-                {
-                  "t": "text",
-                  "style": "text-m",
-                  "chars": "Recherchen, Faktenchecks, Projekte …",
-                  "w": 246,
-                  "size": 15,
-                  "color": "@color-stroke-strong",
-                  "tracking": 0.67
-                }
-              ],
-              "name": "discover/SearchEntry"
-            },
-            {
-              "t": "component",
               "dir": "V",
               "w": 367,
               "h": 35,
@@ -2139,965 +4535,6 @@
                 }
               ],
               "name": "discover/TopicRail"
-            },
-            {
-              "t": "component",
-              "dir": "V",
-              "w": 319,
-              "h": 71,
-              "children": [
-                {
-                  "t": "frame",
-                  "dir": "H",
-                  "cross": "CENTER",
-                  "w": "fill",
-                  "h": 71,
-                  "pad": [
-                    0,
-                    0,
-                    "@spacing-s",
-                    "@spacing-s"
-                  ],
-                  "stroke": "@color-stroke",
-                  "strokeWeight": 1,
-                  "strokeSides": "bottom",
-                  "children": [
-                    {
-                      "t": "text",
-                      "chars": "◎",
-                      "font": "sans",
-                      "size": 20,
-                      "color": "@color-on-canvas-muted"
-                    },
-                    {
-                      "t": "space",
-                      "w": "@spacing-s"
-                    },
-                    {
-                      "t": "frame",
-                      "dir": "V",
-                      "w": 271,
-                      "h": 46,
-                      "children": [
-                        {
-                          "t": "text",
-                          "chars": "Pausenbrot, der Nachrichten-Snack",
-                          "w": "fill",
-                          "weight": "bold",
-                          "size": 15,
-                          "color": "@color-on-canvas",
-                          "tracking": 0.67
-                        },
-                        {
-                          "t": "space",
-                          "h": "@spacing-4xs"
-                        },
-                        {
-                          "t": "text",
-                          "style": "text-s",
-                          "chars": "Salon5 · Podcast-Serie",
-                          "w": "fill",
-                          "size": 14,
-                          "color": "@color-stroke-strong",
-                          "tracking": 1.43
-                        }
-                      ]
-                    },
-                    {
-                      "t": "text",
-                      "chars": "◎",
-                      "font": "sans",
-                      "size": 16,
-                      "color": "@color-stroke-strong"
-                    }
-                  ]
-                }
-              ],
-              "name": "discover/SampleHitRow, kind=\"podcast\""
-            },
-            {
-              "t": "component",
-              "dir": "V",
-              "w": 319,
-              "h": 94,
-              "children": [
-                {
-                  "t": "frame",
-                  "dir": "H",
-                  "cross": "CENTER",
-                  "w": "fill",
-                  "h": 94,
-                  "pad": [
-                    0,
-                    0,
-                    "@spacing-s",
-                    "@spacing-s"
-                  ],
-                  "stroke": "@color-stroke",
-                  "strokeWeight": 1,
-                  "strokeSides": "bottom",
-                  "children": [
-                    {
-                      "t": "text",
-                      "chars": "◎",
-                      "font": "sans",
-                      "size": 20,
-                      "color": "@color-on-canvas-muted"
-                    },
-                    {
-                      "t": "space",
-                      "w": "@spacing-s"
-                    },
-                    {
-                      "t": "frame",
-                      "dir": "V",
-                      "w": 271,
-                      "h": 69,
-                      "children": [
-                        {
-                          "t": "text",
-                          "chars": "Die Zukunft von CORRECTIV: Wir fragen Sie",
-                          "w": "fill",
-                          "weight": "bold",
-                          "size": 15,
-                          "color": "@color-on-canvas",
-                          "tracking": 0.67
-                        },
-                        {
-                          "t": "space",
-                          "h": "@spacing-4xs"
-                        },
-                        {
-                          "t": "text",
-                          "style": "text-s",
-                          "chars": "CrowdNewsroom · Aufruf",
-                          "w": "fill",
-                          "size": 14,
-                          "color": "@color-stroke-strong",
-                          "tracking": 1.43
-                        }
-                      ]
-                    },
-                    {
-                      "t": "text",
-                      "chars": "◎",
-                      "font": "sans",
-                      "size": 16,
-                      "color": "@color-stroke-strong"
-                    }
-                  ]
-                }
-              ],
-              "name": "discover/SampleHitRow, kind=\"callout\""
-            },
-            {
-              "t": "component",
-              "dir": "V",
-              "w": 319,
-              "h": 71,
-              "children": [
-                {
-                  "t": "frame",
-                  "dir": "H",
-                  "cross": "CENTER",
-                  "w": "fill",
-                  "h": 71,
-                  "pad": [
-                    0,
-                    0,
-                    "@spacing-s",
-                    "@spacing-s"
-                  ],
-                  "stroke": "@color-stroke",
-                  "strokeWeight": 1,
-                  "strokeSides": "bottom",
-                  "children": [
-                    {
-                      "t": "text",
-                      "chars": "◎",
-                      "font": "sans",
-                      "size": 20,
-                      "color": "@color-on-canvas-muted"
-                    },
-                    {
-                      "t": "space",
-                      "w": "@spacing-s"
-                    },
-                    {
-                      "t": "frame",
-                      "dir": "V",
-                      "w": 271,
-                      "h": 46,
-                      "children": [
-                        {
-                          "t": "text",
-                          "chars": "Woche 3: Die Spur führt nach Bern",
-                          "w": "fill",
-                          "weight": "bold",
-                          "size": 15,
-                          "color": "@color-on-canvas",
-                          "tracking": 0.67
-                        },
-                        {
-                          "t": "space",
-                          "h": "@spacing-4xs"
-                        },
-                        {
-                          "t": "text",
-                          "style": "text-s",
-                          "chars": "Backstage · Recherchetagebuch",
-                          "w": "fill",
-                          "size": 14,
-                          "color": "@color-stroke-strong",
-                          "tracking": 1.43
-                        }
-                      ]
-                    },
-                    {
-                      "t": "text",
-                      "chars": "◎",
-                      "font": "sans",
-                      "size": 16,
-                      "color": "@color-stroke-strong"
-                    }
-                  ]
-                }
-              ],
-              "name": "discover/SampleHitRow, kind=\"backstage\""
-            },
-            {
-              "t": "component",
-              "dir": "V",
-              "w": 319,
-              "h": 71,
-              "children": [
-                {
-                  "t": "frame",
-                  "dir": "H",
-                  "cross": "CENTER",
-                  "w": "fill",
-                  "h": 71,
-                  "pad": [
-                    0,
-                    0,
-                    "@spacing-s",
-                    "@spacing-s"
-                  ],
-                  "stroke": "@color-stroke",
-                  "strokeWeight": 1,
-                  "strokeSides": "bottom",
-                  "children": [
-                    {
-                      "t": "text",
-                      "chars": "◎",
-                      "font": "sans",
-                      "size": 20,
-                      "color": "@color-on-canvas-muted"
-                    },
-                    {
-                      "t": "space",
-                      "w": "@spacing-s"
-                    },
-                    {
-                      "t": "frame",
-                      "dir": "V",
-                      "w": 271,
-                      "h": 46,
-                      "children": [
-                        {
-                          "t": "text",
-                          "chars": "Akten des Missbrauchs",
-                          "w": "fill",
-                          "weight": "bold",
-                          "size": 15,
-                          "color": "@color-on-canvas",
-                          "tracking": 0.67
-                        },
-                        {
-                          "t": "space",
-                          "h": "@spacing-4xs"
-                        },
-                        {
-                          "t": "text",
-                          "style": "text-s",
-                          "chars": "CORRECTIV Verlag · Buch",
-                          "w": "fill",
-                          "size": 14,
-                          "color": "@color-stroke-strong",
-                          "tracking": 1.43
-                        }
-                      ]
-                    },
-                    {
-                      "t": "text",
-                      "chars": "◎",
-                      "font": "sans",
-                      "size": 16,
-                      "color": "@color-stroke-strong"
-                    }
-                  ]
-                }
-              ],
-              "name": "discover/SampleHitRow, kind=\"verlag\""
-            },
-            {
-              "t": "component",
-              "dir": "H",
-              "cross": "CENTER",
-              "w": 319,
-              "h": 71,
-              "pad": [
-                0,
-                0,
-                "@spacing-s",
-                "@spacing-s"
-              ],
-              "stroke": "@color-stroke",
-              "strokeWeight": 1,
-              "strokeSides": "bottom",
-              "children": [
-                {
-                  "t": "text",
-                  "chars": "◎",
-                  "font": "sans",
-                  "size": 20,
-                  "color": "@color-on-canvas-muted"
-                },
-                {
-                  "t": "space",
-                  "w": "@spacing-s"
-                },
-                {
-                  "t": "frame",
-                  "dir": "V",
-                  "w": 287,
-                  "h": 46,
-                  "children": [
-                    {
-                      "t": "text",
-                      "chars": "Pausenbrot, der Nachrichten-Snack",
-                      "w": "fill",
-                      "weight": "bold",
-                      "size": 15,
-                      "color": "@color-on-canvas",
-                      "tracking": 0.67
-                    },
-                    {
-                      "t": "space",
-                      "h": "@spacing-4xs"
-                    },
-                    {
-                      "t": "text",
-                      "style": "text-s",
-                      "chars": "Salon5 · Podcast-Serie",
-                      "w": "fill",
-                      "size": 14,
-                      "color": "@color-stroke-strong",
-                      "tracking": 1.43
-                    }
-                  ]
-                }
-              ],
-              "name": "discover/SampleHitRow, without onPress, so no chevron and no link role"
-            },
-            {
-              "t": "component",
-              "dir": "H",
-              "cross": "CENTER",
-              "w": 319,
-              "h": 98,
-              "pad": [
-                "@spacing-s",
-                "@spacing-s",
-                "@spacing-s",
-                "@spacing-s"
-              ],
-              "radius": "@radius-md",
-              "fill": "@color-always-dark",
-              "children": [
-                {
-                  "t": "frame",
-                  "dir": "V",
-                  "align": "CENTER",
-                  "cross": "CENTER",
-                  "w": 48,
-                  "h": 48,
-                  "radius": 24,
-                  "fill": "@color-accent",
-                  "children": [
-                    {
-                      "t": "text",
-                      "chars": "◎",
-                      "font": "sans",
-                      "size": 24,
-                      "color": "@color-always-light"
-                    }
-                  ]
-                },
-                {
-                  "t": "space",
-                  "w": "@spacing-s"
-                },
-                {
-                  "t": "frame",
-                  "dir": "V",
-                  "w": 235,
-                  "h": 74,
-                  "children": [
-                    {
-                      "t": "frame",
-                      "dir": "H",
-                      "cross": "CENTER",
-                      "w": "fill",
-                      "h": 25,
-                      "gap": "@spacing-2xs",
-                      "children": [
-                        {
-                          "t": "frame",
-                          "dir": "H",
-                          "cross": "CENTER",
-                          "w": "hug",
-                          "h": 25,
-                          "pad": [
-                            "@spacing-2xs",
-                            "@spacing-2xs",
-                            "@spacing-4xs",
-                            "@spacing-4xs"
-                          ],
-                          "radius": "@radius-s",
-                          "children": [
-                            {
-                              "t": "ellipse",
-                              "w": 7,
-                              "h": 7,
-                              "fill": "@color-accent"
-                            },
-                            {
-                              "t": "space",
-                              "w": "@spacing-3xs"
-                            },
-                            {
-                              "t": "text",
-                              "chars": "Live",
-                              "w": 21,
-                              "size": 11,
-                              "color": "@color-on-canvas-accent",
-                              "tracking": 3.64,
-                              "transform": "uppercase"
-                            }
-                          ]
-                        }
-                      ]
-                    },
-                    {
-                      "t": "space",
-                      "h": "@spacing-4xs"
-                    },
-                    {
-                      "t": "text",
-                      "style": "headline-xs",
-                      "chars": "Salon5 Radio",
-                      "w": "fill",
-                      "weight": "bold",
-                      "size": 17,
-                      "color": "@color-always-light",
-                      "tracking": 1.18
-                    },
-                    {
-                      "t": "text",
-                      "style": "text-s",
-                      "chars": "24/7 aus Bottrop",
-                      "w": "fill",
-                      "size": 14,
-                      "color": "@color-always-light",
-                      "tracking": 1.43
-                    }
-                  ]
-                }
-              ],
-              "name": "media/LiveBanner, default subtitle"
-            },
-            {
-              "t": "component",
-              "dir": "H",
-              "cross": "CENTER",
-              "w": 319,
-              "h": 98,
-              "pad": [
-                "@spacing-s",
-                "@spacing-s",
-                "@spacing-s",
-                "@spacing-s"
-              ],
-              "radius": "@radius-md",
-              "fill": "@color-always-dark",
-              "children": [
-                {
-                  "t": "frame",
-                  "dir": "V",
-                  "align": "CENTER",
-                  "cross": "CENTER",
-                  "w": 48,
-                  "h": 48,
-                  "radius": 24,
-                  "fill": "@color-accent",
-                  "children": [
-                    {
-                      "t": "text",
-                      "chars": "◎",
-                      "font": "sans",
-                      "size": 24,
-                      "color": "@color-always-light"
-                    }
-                  ]
-                },
-                {
-                  "t": "space",
-                  "w": "@spacing-s"
-                },
-                {
-                  "t": "frame",
-                  "dir": "V",
-                  "w": 235,
-                  "h": 74,
-                  "children": [
-                    {
-                      "t": "frame",
-                      "dir": "H",
-                      "cross": "CENTER",
-                      "w": "fill",
-                      "h": 25,
-                      "gap": "@spacing-2xs",
-                      "children": [
-                        {
-                          "t": "frame",
-                          "dir": "H",
-                          "cross": "CENTER",
-                          "w": "hug",
-                          "h": 25,
-                          "pad": [
-                            "@spacing-2xs",
-                            "@spacing-2xs",
-                            "@spacing-4xs",
-                            "@spacing-4xs"
-                          ],
-                          "radius": "@radius-s",
-                          "children": [
-                            {
-                              "t": "ellipse",
-                              "w": 7,
-                              "h": 7,
-                              "fill": "@color-accent"
-                            },
-                            {
-                              "t": "space",
-                              "w": "@spacing-3xs"
-                            },
-                            {
-                              "t": "text",
-                              "chars": "Live",
-                              "w": 21,
-                              "size": 11,
-                              "color": "@color-on-canvas-accent",
-                              "tracking": 3.64,
-                              "transform": "uppercase"
-                            }
-                          ]
-                        }
-                      ]
-                    },
-                    {
-                      "t": "space",
-                      "h": "@spacing-4xs"
-                    },
-                    {
-                      "t": "text",
-                      "style": "headline-xs",
-                      "chars": "Salon5 Radio",
-                      "w": "fill",
-                      "weight": "bold",
-                      "size": 17,
-                      "color": "@color-always-light",
-                      "tracking": 1.18
-                    },
-                    {
-                      "t": "text",
-                      "style": "text-s",
-                      "chars": "Sondersendung aus Bottrop",
-                      "w": "fill",
-                      "size": 14,
-                      "color": "@color-always-light",
-                      "tracking": 1.43
-                    }
-                  ]
-                }
-              ],
-              "name": "media/LiveBanner, subtitle"
-            },
-            {
-              "t": "component",
-              "dir": "V",
-              "w": 176,
-              "h": 168,
-              "children": [
-                {
-                  "t": "frame",
-                  "dir": "V",
-                  "w": "fill",
-                  "h": 168,
-                  "children": [
-                    {
-                      "t": "frame",
-                      "w": "fill",
-                      "h": 99,
-                      "radius": "@radius-md",
-                      "clip": true,
-                      "fill": "@color-grey-300",
-                      "children": [
-                        {
-                          "t": "frame",
-                          "dir": "V",
-                          "align": "CENTER",
-                          "cross": "CENTER",
-                          "w": 176,
-                          "h": 99,
-                          "x": 0,
-                          "y": 0,
-                          "children": [
-                            {
-                              "t": "text",
-                              "chars": "◎",
-                              "font": "sans",
-                              "size": 26,
-                              "color": "@color-stroke"
-                            }
-                          ]
-                        },
-                        {
-                          "t": "frame",
-                          "w": 176,
-                          "h": 99,
-                          "x": 0,
-                          "y": 0,
-                          "children": [
-                            {
-                              "t": "frame",
-                              "dir": "V",
-                              "align": "CENTER",
-                              "cross": "CENTER",
-                              "w": 52,
-                              "h": 52,
-                              "x": 62,
-                              "y": 24,
-                              "radius": 26,
-                              "fill": "@color-always-dark/70",
-                              "children": [
-                                {
-                                  "t": "text",
-                                  "chars": "◎",
-                                  "font": "sans",
-                                  "size": 22,
-                                  "color": "@color-always-light"
-                                }
-                              ]
-                            },
-                            {
-                              "t": "frame",
-                              "dir": "V",
-                              "w": 28,
-                              "h": 21,
-                              "x": 142,
-                              "y": 72,
-                              "pad": [
-                                "@spacing-3xs",
-                                "@spacing-3xs",
-                                0,
-                                0
-                              ],
-                              "radius": "@radius-s",
-                              "fill": "@color-always-dark/80",
-                              "children": [
-                                {
-                                  "t": "text",
-                                  "chars": "8:32",
-                                  "w": "fill",
-                                  "size": 11,
-                                  "color": "@color-always-light",
-                                  "tracking": 1.82
-                                }
-                              ]
-                            }
-                          ]
-                        }
-                      ]
-                    },
-                    {
-                      "t": "space",
-                      "h": "@spacing-2xs"
-                    },
-                    {
-                      "t": "text",
-                      "chars": "FunFacts, Folge 12: Was kostet ein Windrad wirklich?",
-                      "w": "fill",
-                      "weight": "semibold",
-                      "size": 14,
-                      "color": "@color-on-canvas",
-                      "tracking": 1.43
-                    },
-                    {
-                      "t": "text",
-                      "style": "text-s",
-                      "chars": "28. August",
-                      "w": "fill",
-                      "size": 14,
-                      "color": "@color-stroke-strong",
-                      "tracking": 1.43
-                    }
-                  ]
-                }
-              ],
-              "name": "media/MediaCard"
-            },
-            {
-              "t": "component",
-              "dir": "V",
-              "w": 116,
-              "h": 185,
-              "children": [
-                {
-                  "t": "frame",
-                  "dir": "V",
-                  "w": "fill",
-                  "h": 116,
-                  "radius": "@radius-md",
-                  "clip": true,
-                  "fill": "@color-grey-300",
-                  "children": [
-                    {
-                      "t": "frame",
-                      "dir": "V",
-                      "align": "CENTER",
-                      "cross": "CENTER",
-                      "w": "fill",
-                      "h": 116,
-                      "children": [
-                        {
-                          "t": "text",
-                          "chars": "◎",
-                          "font": "sans",
-                          "size": 26,
-                          "color": "@color-stroke"
-                        }
-                      ]
-                    }
-                  ]
-                },
-                {
-                  "t": "space",
-                  "h": "@spacing-2xs"
-                },
-                {
-                  "t": "text",
-                  "chars": "CORRECTIV Podcast",
-                  "w": "fill",
-                  "weight": "semibold",
-                  "size": 14,
-                  "color": "@color-on-canvas",
-                  "tracking": 1.43
-                },
-                {
-                  "t": "text",
-                  "style": "text-s",
-                  "chars": "CORRECTIV",
-                  "w": "fill",
-                  "size": 14,
-                  "color": "@color-stroke-strong",
-                  "tracking": 1.43
-                }
-              ],
-              "name": "media/SeriesTile"
-            },
-            {
-              "t": "component",
-              "dir": "H",
-              "cross": "CENTER",
-              "w": 319,
-              "h": 71,
-              "pad": [
-                0,
-                0,
-                "@spacing-s",
-                "@spacing-s"
-              ],
-              "stroke": "@color-stroke",
-              "strokeWeight": 1,
-              "strokeSides": "bottom",
-              "children": [
-                {
-                  "t": "frame",
-                  "dir": "V",
-                  "align": "CENTER",
-                  "cross": "CENTER",
-                  "w": 36,
-                  "h": 36,
-                  "radius": 18,
-                  "fill": "@color-surface",
-                  "children": [
-                    {
-                      "t": "text",
-                      "chars": "◎",
-                      "font": "sans",
-                      "size": 16,
-                      "color": "@color-on-canvas"
-                    }
-                  ]
-                },
-                {
-                  "t": "space",
-                  "w": "@spacing-s"
-                },
-                {
-                  "t": "frame",
-                  "dir": "V",
-                  "w": 271,
-                  "h": 46,
-                  "pad": [
-                    0,
-                    "@spacing-s",
-                    0,
-                    0
-                  ],
-                  "children": [
-                    {
-                      "t": "text",
-                      "chars": "Pausenbrot, Folge 214",
-                      "w": "fill",
-                      "weight": "semibold",
-                      "size": 15,
-                      "color": "@color-on-canvas",
-                      "tracking": 0.67
-                    },
-                    {
-                      "t": "space",
-                      "h": "@spacing-4xs"
-                    },
-                    {
-                      "t": "text",
-                      "style": "text-s",
-                      "chars": "12. August · 8 Min",
-                      "w": "fill",
-                      "size": 14,
-                      "color": "@color-stroke-strong",
-                      "tracking": 1.43
-                    }
-                  ]
-                }
-              ],
-              "name": "media/EpisodeRow, default"
-            },
-            {
-              "t": "component",
-              "dir": "H",
-              "cross": "CENTER",
-              "w": 319,
-              "h": 71,
-              "pad": [
-                0,
-                0,
-                "@spacing-s",
-                "@spacing-s"
-              ],
-              "stroke": "@color-stroke",
-              "strokeWeight": 1,
-              "strokeSides": "bottom",
-              "children": [
-                {
-                  "t": "frame",
-                  "dir": "V",
-                  "align": "CENTER",
-                  "cross": "CENTER",
-                  "w": 36,
-                  "h": 36,
-                  "radius": 18,
-                  "fill": "@color-surface",
-                  "children": [
-                    {
-                      "t": "text",
-                      "chars": "◎",
-                      "font": "sans",
-                      "size": 16,
-                      "color": "@color-on-canvas"
-                    }
-                  ]
-                },
-                {
-                  "t": "space",
-                  "w": "@spacing-s"
-                },
-                {
-                  "t": "frame",
-                  "dir": "V",
-                  "w": 233,
-                  "h": 46,
-                  "pad": [
-                    0,
-                    "@spacing-s",
-                    0,
-                    0
-                  ],
-                  "children": [
-                    {
-                      "t": "text",
-                      "chars": "Nur für Mitglieder mit Beitrag",
-                      "w": "fill",
-                      "weight": "semibold",
-                      "size": 15,
-                      "color": "@color-on-canvas",
-                      "tracking": 0.67
-                    },
-                    {
-                      "t": "space",
-                      "h": "@spacing-4xs"
-                    },
-                    {
-                      "t": "text",
-                      "style": "text-s",
-                      "chars": "3. August · 22 Min",
-                      "w": "fill",
-                      "size": 14,
-                      "color": "@color-stroke-strong",
-                      "tracking": 1.43
-                    }
-                  ]
-                },
-                {
-                  "t": "frame",
-                  "dir": "H",
-                  "cross": "CENTER",
-                  "w": "hug",
-                  "h": 25,
-                  "pad": [
-                    "@spacing-2xs",
-                    "@spacing-2xs",
-                    "@spacing-4xs",
-                    "@spacing-4xs"
-                  ],
-                  "radius": "@radius-s",
-                  "fill": "@color-accent-alternative",
-                  "children": [
-                    {
-                      "t": "text",
-                      "chars": "Club",
-                      "w": "fill",
-                      "size": 11,
-                      "color": "@color-always-dark",
-                      "tracking": 3.64,
-                      "transform": "uppercase"
-                    }
-                  ]
-                }
-              ],
-              "name": "media/EpisodeRow, club"
             },
             {
               "t": "component",
@@ -3367,506 +4804,6 @@
               ]
             },
             {
-              "t": "variants",
-              "name": "participate/FormField",
-              "prop": "type",
-              "options": [
-                {
-                  "value": "radio",
-                  "dir": "V",
-                  "w": 319,
-                  "h": 230,
-                  "children": [
-                    {
-                      "t": "text",
-                      "style": "headline-xs",
-                      "chars": "Wie oft lesen Sie CORRECTIV?",
-                      "w": "fill",
-                      "weight": "bold",
-                      "size": 17,
-                      "color": "@color-on-canvas",
-                      "tracking": 1.18
-                    },
-                    {
-                      "t": "space",
-                      "h": "@spacing-2xs"
-                    },
-                    {
-                      "t": "text",
-                      "style": "text-s",
-                      "chars": "Eine Antwort.",
-                      "w": "fill",
-                      "size": 14,
-                      "color": "@color-on-canvas-muted",
-                      "tracking": 1.43
-                    },
-                    {
-                      "t": "space",
-                      "h": "@spacing-s"
-                    },
-                    {
-                      "t": "frame",
-                      "dir": "V",
-                      "w": "fill",
-                      "h": 165,
-                      "children": [
-                        {
-                          "t": "frame",
-                          "dir": "H",
-                          "cross": "CENTER",
-                          "w": "fill",
-                          "h": 49,
-                          "pad": [
-                            "@spacing-s",
-                            "@spacing-s",
-                            "@spacing-s",
-                            "@spacing-s"
-                          ],
-                          "radius": "@radius-md",
-                          "fill": "@color-surface",
-                          "stroke": "@color-accent",
-                          "strokeWeight": 1,
-                          "children": [
-                            {
-                              "t": "text",
-                              "chars": "◎",
-                              "font": "sans",
-                              "size": 20,
-                              "color": "@color-on-canvas-accent"
-                            },
-                            {
-                              "t": "space",
-                              "w": "@spacing-s"
-                            },
-                            {
-                              "t": "text",
-                              "style": "text-m",
-                              "chars": "Täglich",
-                              "w": 261,
-                              "size": 15,
-                              "color": "@color-on-canvas",
-                              "tracking": 0.67
-                            }
-                          ]
-                        },
-                        {
-                          "t": "space",
-                          "h": "@spacing-2xs"
-                        },
-                        {
-                          "t": "frame",
-                          "dir": "H",
-                          "cross": "CENTER",
-                          "w": "fill",
-                          "h": 49,
-                          "pad": [
-                            "@spacing-s",
-                            "@spacing-s",
-                            "@spacing-s",
-                            "@spacing-s"
-                          ],
-                          "radius": "@radius-md",
-                          "fill": "@color-canvas",
-                          "stroke": "@color-stroke",
-                          "strokeWeight": 1,
-                          "children": [
-                            {
-                              "t": "text",
-                              "chars": "◎",
-                              "font": "sans",
-                              "size": 20,
-                              "color": "@color-stroke"
-                            },
-                            {
-                              "t": "space",
-                              "w": "@spacing-s"
-                            },
-                            {
-                              "t": "text",
-                              "style": "text-m",
-                              "chars": "Wöchentlich",
-                              "w": 261,
-                              "size": 15,
-                              "color": "@color-on-canvas",
-                              "tracking": 0.67
-                            }
-                          ]
-                        },
-                        {
-                          "t": "space",
-                          "h": "@spacing-2xs"
-                        },
-                        {
-                          "t": "frame",
-                          "dir": "H",
-                          "cross": "CENTER",
-                          "w": "fill",
-                          "h": 49,
-                          "pad": [
-                            "@spacing-s",
-                            "@spacing-s",
-                            "@spacing-s",
-                            "@spacing-s"
-                          ],
-                          "radius": "@radius-md",
-                          "fill": "@color-canvas",
-                          "stroke": "@color-stroke",
-                          "strokeWeight": 1,
-                          "children": [
-                            {
-                              "t": "text",
-                              "chars": "◎",
-                              "font": "sans",
-                              "size": 20,
-                              "color": "@color-stroke"
-                            },
-                            {
-                              "t": "space",
-                              "w": "@spacing-s"
-                            },
-                            {
-                              "t": "text",
-                              "style": "text-m",
-                              "chars": "Seltener",
-                              "w": 261,
-                              "size": 15,
-                              "color": "@color-on-canvas",
-                              "tracking": 0.67
-                            }
-                          ]
-                        }
-                      ]
-                    }
-                  ]
-                },
-                {
-                  "value": "selectboxes",
-                  "dir": "V",
-                  "w": 319,
-                  "h": 230,
-                  "children": [
-                    {
-                      "t": "text",
-                      "style": "headline-xs",
-                      "chars": "Welche Themen interessieren Sie?",
-                      "w": "fill",
-                      "weight": "bold",
-                      "size": 17,
-                      "color": "@color-on-canvas",
-                      "tracking": 1.18
-                    },
-                    {
-                      "t": "space",
-                      "h": "@spacing-2xs"
-                    },
-                    {
-                      "t": "text",
-                      "style": "text-s",
-                      "chars": "Mehrere Antworten möglich.",
-                      "w": "fill",
-                      "size": 14,
-                      "color": "@color-on-canvas-muted",
-                      "tracking": 1.43
-                    },
-                    {
-                      "t": "space",
-                      "h": "@spacing-s"
-                    },
-                    {
-                      "t": "frame",
-                      "dir": "V",
-                      "w": "fill",
-                      "h": 165,
-                      "children": [
-                        {
-                          "t": "frame",
-                          "dir": "H",
-                          "cross": "CENTER",
-                          "w": "fill",
-                          "h": 49,
-                          "pad": [
-                            "@spacing-s",
-                            "@spacing-s",
-                            "@spacing-s",
-                            "@spacing-s"
-                          ],
-                          "radius": "@radius-md",
-                          "fill": "@color-canvas",
-                          "stroke": "@color-stroke",
-                          "strokeWeight": 1,
-                          "children": [
-                            {
-                              "t": "text",
-                              "chars": "◎",
-                              "font": "sans",
-                              "size": 20,
-                              "color": "@color-stroke"
-                            },
-                            {
-                              "t": "space",
-                              "w": "@spacing-s"
-                            },
-                            {
-                              "t": "text",
-                              "style": "text-m",
-                              "chars": "Klima",
-                              "w": 261,
-                              "size": 15,
-                              "color": "@color-on-canvas",
-                              "tracking": 0.67
-                            }
-                          ]
-                        },
-                        {
-                          "t": "space",
-                          "h": "@spacing-2xs"
-                        },
-                        {
-                          "t": "frame",
-                          "dir": "H",
-                          "cross": "CENTER",
-                          "w": "fill",
-                          "h": 49,
-                          "pad": [
-                            "@spacing-s",
-                            "@spacing-s",
-                            "@spacing-s",
-                            "@spacing-s"
-                          ],
-                          "radius": "@radius-md",
-                          "fill": "@color-canvas",
-                          "stroke": "@color-stroke",
-                          "strokeWeight": 1,
-                          "children": [
-                            {
-                              "t": "text",
-                              "chars": "◎",
-                              "font": "sans",
-                              "size": 20,
-                              "color": "@color-stroke"
-                            },
-                            {
-                              "t": "space",
-                              "w": "@spacing-s"
-                            },
-                            {
-                              "t": "text",
-                              "style": "text-m",
-                              "chars": "Lokal",
-                              "w": 261,
-                              "size": 15,
-                              "color": "@color-on-canvas",
-                              "tracking": 0.67
-                            }
-                          ]
-                        },
-                        {
-                          "t": "space",
-                          "h": "@spacing-2xs"
-                        },
-                        {
-                          "t": "frame",
-                          "dir": "H",
-                          "cross": "CENTER",
-                          "w": "fill",
-                          "h": 49,
-                          "pad": [
-                            "@spacing-s",
-                            "@spacing-s",
-                            "@spacing-s",
-                            "@spacing-s"
-                          ],
-                          "radius": "@radius-md",
-                          "fill": "@color-canvas",
-                          "stroke": "@color-stroke",
-                          "strokeWeight": 1,
-                          "children": [
-                            {
-                              "t": "text",
-                              "chars": "◎",
-                              "font": "sans",
-                              "size": 20,
-                              "color": "@color-stroke"
-                            },
-                            {
-                              "t": "space",
-                              "w": "@spacing-s"
-                            },
-                            {
-                              "t": "text",
-                              "style": "text-m",
-                              "chars": "Faktenchecks",
-                              "w": 261,
-                              "size": 15,
-                              "color": "@color-on-canvas",
-                              "tracking": 0.67
-                            }
-                          ]
-                        }
-                      ]
-                    }
-                  ]
-                },
-                {
-                  "value": "textfield",
-                  "dir": "V",
-                  "w": 319,
-                  "h": 87,
-                  "children": [
-                    {
-                      "t": "text",
-                      "style": "headline-xs",
-                      "chars": "Ihre Stadt",
-                      "w": "fill",
-                      "weight": "bold",
-                      "size": 17,
-                      "color": "@color-on-canvas",
-                      "tracking": 1.18
-                    },
-                    {
-                      "t": "space",
-                      "h": "@spacing-s"
-                    },
-                    {
-                      "t": "frame",
-                      "dir": "H",
-                      "w": "fill",
-                      "h": 49,
-                      "pad": [
-                        "@spacing-s",
-                        "@spacing-s",
-                        "@spacing-s",
-                        "@spacing-s"
-                      ],
-                      "radius": "@radius-md",
-                      "clip": true,
-                      "fill": "@color-canvas",
-                      "stroke": "@color-stroke",
-                      "strokeWeight": 1
-                    }
-                  ]
-                },
-                {
-                  "value": "textarea",
-                  "dir": "V",
-                  "w": 319,
-                  "h": 161,
-                  "children": [
-                    {
-                      "t": "text",
-                      "style": "headline-xs",
-                      "chars": "Was sollten wir recherchieren?",
-                      "w": "fill",
-                      "weight": "bold",
-                      "size": 17,
-                      "color": "@color-on-canvas",
-                      "tracking": 1.18
-                    },
-                    {
-                      "t": "space",
-                      "h": "@spacing-2xs"
-                    },
-                    {
-                      "t": "text",
-                      "style": "text-s",
-                      "chars": "So genau, wie Sie möchten.",
-                      "w": "fill",
-                      "size": 14,
-                      "color": "@color-on-canvas-muted",
-                      "tracking": 1.43
-                    },
-                    {
-                      "t": "space",
-                      "h": "@spacing-s"
-                    },
-                    {
-                      "t": "text",
-                      "style": "text-m",
-                      "chars": "Mehr Lokales.",
-                      "w": "fill",
-                      "size": 15,
-                      "color": "@color-on-canvas",
-                      "tracking": 0.67
-                    }
-                  ]
-                },
-                {
-                  "value": "file",
-                  "dir": "V",
-                  "w": 319,
-                  "h": 114,
-                  "children": [
-                    {
-                      "t": "text",
-                      "style": "headline-xs",
-                      "chars": "Dokument anhängen",
-                      "w": "fill",
-                      "weight": "bold",
-                      "size": 17,
-                      "color": "@color-on-canvas",
-                      "tracking": 1.18
-                    },
-                    {
-                      "t": "space",
-                      "h": "@spacing-2xs"
-                    },
-                    {
-                      "t": "text",
-                      "style": "text-s",
-                      "chars": "PDF oder Foto.",
-                      "w": "fill",
-                      "size": 14,
-                      "color": "@color-on-canvas-muted",
-                      "tracking": 1.43
-                    },
-                    {
-                      "t": "space",
-                      "h": "@spacing-s"
-                    },
-                    {
-                      "t": "frame",
-                      "dir": "H",
-                      "cross": "CENTER",
-                      "w": "fill",
-                      "h": 49,
-                      "pad": [
-                        "@spacing-s",
-                        "@spacing-s",
-                        "@spacing-s",
-                        "@spacing-s"
-                      ],
-                      "radius": "@radius-md",
-                      "fill": "@color-surface",
-                      "stroke": "@color-stroke",
-                      "strokeWeight": 1,
-                      "children": [
-                        {
-                          "t": "text",
-                          "chars": "◎",
-                          "font": "sans",
-                          "size": 20,
-                          "color": "@color-on-canvas-muted"
-                        },
-                        {
-                          "t": "space",
-                          "w": "@spacing-s"
-                        },
-                        {
-                          "t": "text",
-                          "style": "text-s",
-                          "chars": "Foto oder Dokument auswählen (simuliert)",
-                          "w": 261,
-                          "size": 14,
-                          "color": "@color-on-canvas-muted",
-                          "tracking": 1.43
-                        }
-                      ]
-                    }
-                  ]
-                }
-              ]
-            },
-            {
               "t": "component",
               "dir": "V",
               "align": "CENTER",
@@ -4063,331 +5000,6 @@
                 }
               ],
               "name": "ui/SectionCard, tone=\"surface\""
-            },
-            {
-              "t": "component",
-              "dir": "V",
-              "w": 319,
-              "h": 179,
-              "clip": true,
-              "fill": "@color-grey-300",
-              "children": [
-                {
-                  "t": "frame",
-                  "dir": "V",
-                  "align": "CENTER",
-                  "cross": "CENTER",
-                  "w": "fill",
-                  "h": 179,
-                  "children": [
-                    {
-                      "t": "text",
-                      "chars": "◎",
-                      "font": "sans",
-                      "size": 26,
-                      "color": "@color-stroke"
-                    }
-                  ]
-                }
-              ],
-              "name": "ui/Thumbnail, aspectRatio={16 / 9}, no uri"
-            },
-            {
-              "t": "component",
-              "dir": "V",
-              "w": 116,
-              "h": 116,
-              "children": [
-                {
-                  "t": "frame",
-                  "dir": "V",
-                  "w": "fill",
-                  "h": 116,
-                  "clip": true,
-                  "fill": "@color-grey-300",
-                  "children": [
-                    {
-                      "t": "frame",
-                      "dir": "V",
-                      "align": "CENTER",
-                      "cross": "CENTER",
-                      "w": "fill",
-                      "h": 116,
-                      "children": [
-                        {
-                          "t": "text",
-                          "chars": "◎",
-                          "font": "sans",
-                          "size": 26,
-                          "color": "@color-stroke"
-                        }
-                      ]
-                    }
-                  ]
-                }
-              ],
-              "name": "ui/Thumbnail, aspectRatio={1}, icon=\"mic-outline\""
-            },
-            {
-              "t": "component",
-              "w": 319,
-              "h": 179,
-              "clip": true,
-              "fill": "@color-grey-300",
-              "children": [
-                {
-                  "t": "frame",
-                  "dir": "V",
-                  "align": "CENTER",
-                  "cross": "CENTER",
-                  "w": 319,
-                  "h": 179,
-                  "x": 0,
-                  "y": 0,
-                  "children": [
-                    {
-                      "t": "text",
-                      "chars": "◎",
-                      "font": "sans",
-                      "size": 26,
-                      "color": "@color-stroke"
-                    }
-                  ]
-                },
-                {
-                  "t": "frame",
-                  "dir": "V",
-                  "align": "CENTER",
-                  "cross": "CENTER",
-                  "w": 319,
-                  "h": 179,
-                  "x": 0,
-                  "y": 0,
-                  "children": [
-                    {
-                      "t": "frame",
-                      "dir": "H",
-                      "cross": "CENTER",
-                      "w": "hug",
-                      "h": 25,
-                      "pad": [
-                        "@spacing-2xs",
-                        "@spacing-2xs",
-                        "@spacing-4xs",
-                        "@spacing-4xs"
-                      ],
-                      "radius": "@radius-s",
-                      "fill": "@color-accent",
-                      "children": [
-                        {
-                          "t": "text",
-                          "chars": "Video",
-                          "w": "fill",
-                          "size": 11,
-                          "color": "@color-always-light",
-                          "tracking": 3.64,
-                          "transform": "uppercase"
-                        }
-                      ]
-                    }
-                  ]
-                }
-              ],
-              "name": "ui/Thumbnail, uri that cannot load, with an overlay"
-            },
-            {
-              "t": "component",
-              "dir": "V",
-              "w": 319,
-              "h": 431,
-              "children": [
-                {
-                  "t": "frame",
-                  "dir": "V",
-                  "w": 367,
-                  "h": 206,
-                  "children": [
-                    {
-                      "t": "frame",
-                      "dir": "V",
-                      "w": "fill",
-                      "h": 206,
-                      "clip": true,
-                      "fill": "@color-grey-300",
-                      "children": [
-                        {
-                          "t": "frame",
-                          "dir": "V",
-                          "align": "CENTER",
-                          "cross": "CENTER",
-                          "w": "fill",
-                          "h": 206,
-                          "children": [
-                            {
-                              "t": "text",
-                              "chars": "◎",
-                              "font": "sans",
-                              "size": 26,
-                              "color": "@color-stroke"
-                            }
-                          ]
-                        }
-                      ]
-                    }
-                  ]
-                },
-                {
-                  "t": "space",
-                  "h": "@spacing-s"
-                },
-                {
-                  "t": "text",
-                  "chars": "RECHERCHE",
-                  "w": "fill",
-                  "weight": "bold",
-                  "size": 12,
-                  "color": "@color-on-canvas-accent",
-                  "tracking": 10
-                },
-                {
-                  "t": "space",
-                  "h": "@spacing-2xs"
-                },
-                {
-                  "t": "text",
-                  "style": "headline-l",
-                  "chars": "Wem gehört die Stadt? Was die Grundbücher über Eigentum verraten",
-                  "w": "fill",
-                  "weight": "bold",
-                  "size": 23,
-                  "color": "@color-on-canvas",
-                  "tracking": -0.43
-                },
-                {
-                  "t": "space",
-                  "h": "@spacing-2xs"
-                },
-                {
-                  "t": "text",
-                  "style": "text-m",
-                  "chars": "Zehntausende Wohnungen, wenige Eigentümer. Eine Recherche über Konzerne, Briefkastenfirmen und die Frage, wer eine Stadt eigentlich besitzt.",
-                  "w": "fill",
-                  "size": 15,
-                  "color": "@color-on-canvas-muted",
-                  "tracking": 0.67
-                },
-                {
-                  "t": "space",
-                  "h": "@spacing-2xs"
-                },
-                {
-                  "t": "text",
-                  "style": "text-s",
-                  "chars": "Alex Beispiel · 12. August · 9 Min. Lesezeit",
-                  "w": "fill",
-                  "size": 14,
-                  "color": "@color-stroke-strong",
-                  "tracking": 1.43
-                }
-              ],
-              "name": "feed/ArticleHero, with image and readingMinutes"
-            },
-            {
-              "t": "component",
-              "dir": "V",
-              "w": 319,
-              "h": 408,
-              "children": [
-                {
-                  "t": "frame",
-                  "dir": "V",
-                  "w": 367,
-                  "h": 206,
-                  "children": [
-                    {
-                      "t": "frame",
-                      "dir": "V",
-                      "w": "fill",
-                      "h": 206,
-                      "clip": true,
-                      "fill": "@color-grey-300",
-                      "children": [
-                        {
-                          "t": "frame",
-                          "dir": "V",
-                          "align": "CENTER",
-                          "cross": "CENTER",
-                          "w": "fill",
-                          "h": 206,
-                          "children": [
-                            {
-                              "t": "text",
-                              "chars": "◎",
-                              "font": "sans",
-                              "size": 26,
-                              "color": "@color-stroke"
-                            }
-                          ]
-                        }
-                      ]
-                    }
-                  ]
-                },
-                {
-                  "t": "space",
-                  "h": "@spacing-s"
-                },
-                {
-                  "t": "text",
-                  "chars": "KLIMA",
-                  "w": "fill",
-                  "weight": "bold",
-                  "size": 12,
-                  "color": "@color-on-canvas-accent",
-                  "tracking": 10
-                },
-                {
-                  "t": "space",
-                  "h": "@spacing-2xs"
-                },
-                {
-                  "t": "text",
-                  "style": "headline-l",
-                  "chars": "Ohne Bild und ohne Lesezeit, weil der RSS-Weg beides nicht kennt",
-                  "w": "fill",
-                  "weight": "bold",
-                  "size": 23,
-                  "color": "@color-on-canvas",
-                  "tracking": -0.43
-                },
-                {
-                  "t": "space",
-                  "h": "@spacing-2xs"
-                },
-                {
-                  "t": "text",
-                  "style": "text-m",
-                  "chars": "Der Fallback-Pfad liefert nur Titel, Teaser und Datum.",
-                  "w": "fill",
-                  "size": 15,
-                  "color": "@color-on-canvas-muted",
-                  "tracking": 0.67
-                },
-                {
-                  "t": "space",
-                  "h": "@spacing-2xs"
-                },
-                {
-                  "t": "text",
-                  "style": "text-s",
-                  "chars": "3. August",
-                  "w": "fill",
-                  "size": 14,
-                  "color": "@color-stroke-strong",
-                  "tracking": 1.43
-                }
-              ],
-              "name": "feed/ArticleHero, imageUrl: null"
             },
             {
               "t": "component",
@@ -4959,618 +5571,6 @@
                 }
               ],
               "name": "home/SpotlightBriefing"
-            },
-            {
-              "t": "component",
-              "dir": "H",
-              "w": 319,
-              "h": 177,
-              "gap": "@spacing-s",
-              "children": [
-                {
-                  "t": "frame",
-                  "dir": "V",
-                  "w": 142,
-                  "h": 177,
-                  "radius": "@radius-md",
-                  "clip": true,
-                  "fill": "@color-surface",
-                  "children": [
-                    {
-                      "t": "frame",
-                      "w": "fill",
-                      "h": 80,
-                      "clip": true,
-                      "fill": "@color-grey-300",
-                      "children": [
-                        {
-                          "t": "frame",
-                          "dir": "V",
-                          "w": 142,
-                          "h": 80,
-                          "x": 0,
-                          "y": 0,
-                          "clip": true,
-                          "children": [
-                            {
-                              "t": "frame",
-                              "w": "fill",
-                              "h": 0,
-                              "children": [
-                                {
-                                  "t": "frame",
-                                  "dir": "H",
-                                  "w": 142,
-                                  "h": 80,
-                                  "x": 0,
-                                  "y": 0,
-                                  "clip": true
-                                }
-                              ]
-                            }
-                          ]
-                        },
-                        {
-                          "t": "frame",
-                          "dir": "V",
-                          "align": "CENTER",
-                          "cross": "CENTER",
-                          "w": 142,
-                          "h": 80,
-                          "x": 0,
-                          "y": 0,
-                          "children": [
-                            {
-                              "t": "frame",
-                              "dir": "V",
-                              "align": "CENTER",
-                              "cross": "CENTER",
-                              "w": 52,
-                              "h": 52,
-                              "radius": 26,
-                              "fill": "@color-always-dark/70",
-                              "children": [
-                                {
-                                  "t": "text",
-                                  "chars": "◎",
-                                  "font": "sans",
-                                  "size": 22,
-                                  "color": "@color-always-light"
-                                }
-                              ]
-                            }
-                          ]
-                        }
-                      ]
-                    },
-                    {
-                      "t": "frame",
-                      "dir": "V",
-                      "w": "fill",
-                      "h": 97,
-                      "pad": [
-                        "@spacing-s",
-                        "@spacing-s",
-                        "@spacing-s",
-                        "@spacing-s"
-                      ],
-                      "children": [
-                        {
-                          "t": "frame",
-                          "dir": "H",
-                          "cross": "CENTER",
-                          "w": "hug",
-                          "h": 25,
-                          "pad": [
-                            "@spacing-2xs",
-                            "@spacing-2xs",
-                            "@spacing-4xs",
-                            "@spacing-4xs"
-                          ],
-                          "radius": "@radius-s",
-                          "fill": "@color-accent",
-                          "children": [
-                            {
-                              "t": "text",
-                              "chars": "FunFacts",
-                              "w": "fill",
-                              "size": 11,
-                              "color": "@color-always-light",
-                              "tracking": 3.64,
-                              "transform": "uppercase"
-                            }
-                          ]
-                        },
-                        {
-                          "t": "space",
-                          "h": "@spacing-2xs"
-                        },
-                        {
-                          "t": "text",
-                          "chars": "Das hilft gegen Rechtsextremismus | mit Benjamin Fredrich von KATAPULT",
-                          "w": "fill",
-                          "weight": "semibold",
-                          "size": 14,
-                          "color": "@color-on-canvas",
-                          "tracking": 1.43
-                        }
-                      ]
-                    }
-                  ]
-                },
-                {
-                  "t": "frame",
-                  "dir": "V",
-                  "align": "SPACE_BETWEEN",
-                  "w": 166,
-                  "h": 177,
-                  "pad": [
-                    "@spacing-s",
-                    "@spacing-s",
-                    "@spacing-s",
-                    "@spacing-s"
-                  ],
-                  "radius": "@radius-md",
-                  "fill": "@color-surface",
-                  "children": [
-                    {
-                      "t": "frame",
-                      "dir": "H",
-                      "cross": "CENTER",
-                      "w": "hug",
-                      "h": 25,
-                      "pad": [
-                        "@spacing-2xs",
-                        "@spacing-2xs",
-                        "@spacing-4xs",
-                        "@spacing-4xs"
-                      ],
-                      "radius": "@radius-s",
-                      "children": [
-                        {
-                          "t": "ellipse",
-                          "w": 7,
-                          "h": 7,
-                          "fill": "@color-accent"
-                        },
-                        {
-                          "t": "space",
-                          "w": "@spacing-3xs"
-                        },
-                        {
-                          "t": "text",
-                          "chars": "Live",
-                          "w": 21,
-                          "size": 11,
-                          "color": "@color-on-canvas-accent",
-                          "tracking": 3.64,
-                          "transform": "uppercase"
-                        }
-                      ]
-                    },
-                    {
-                      "t": "frame",
-                      "dir": "V",
-                      "w": "fill",
-                      "h": 95,
-                      "children": [
-                        {
-                          "t": "text",
-                          "chars": "◎",
-                          "font": "sans",
-                          "size": 24,
-                          "color": "@color-on-canvas-muted"
-                        },
-                        {
-                          "t": "space",
-                          "h": "@spacing-2xs"
-                        },
-                        {
-                          "t": "text",
-                          "chars": "Salon5 Radio läuft",
-                          "w": "fill",
-                          "weight": "semibold",
-                          "size": 14,
-                          "color": "@color-on-canvas",
-                          "tracking": 1.43
-                        },
-                        {
-                          "t": "text",
-                          "style": "text-s",
-                          "chars": "24/7 aus Bottrop · Tippen zum Hören",
-                          "w": "fill",
-                          "size": 14,
-                          "color": "@color-on-canvas-muted",
-                          "tracking": 1.43
-                        }
-                      ]
-                    }
-                  ]
-                }
-              ],
-              "name": "home/MediathekReihe"
-            },
-            {
-              "t": "component",
-              "dir": "V",
-              "w": 319,
-              "h": 297,
-              "radius": "@radius-md",
-              "clip": true,
-              "stroke": "@color-accent-alternative",
-              "strokeWeight": 1,
-              "children": [
-                {
-                  "t": "frame",
-                  "dir": "V",
-                  "w": 317,
-                  "h": 157,
-                  "pad": [
-                    "@spacing-m",
-                    "@spacing-m",
-                    "@spacing-m",
-                    "@spacing-m"
-                  ],
-                  "children": [
-                    {
-                      "t": "frame",
-                      "dir": "H",
-                      "cross": "CENTER",
-                      "w": "hug",
-                      "h": 25,
-                      "pad": [
-                        "@spacing-2xs",
-                        "@spacing-2xs",
-                        "@spacing-4xs",
-                        "@spacing-4xs"
-                      ],
-                      "radius": "@radius-s",
-                      "fill": "@color-accent-alternative",
-                      "children": [
-                        {
-                          "t": "text",
-                          "chars": "Backstage",
-                          "w": "fill",
-                          "size": 11,
-                          "color": "@color-always-dark",
-                          "tracking": 3.64,
-                          "transform": "uppercase"
-                        }
-                      ]
-                    },
-                    {
-                      "t": "space",
-                      "h": "@spacing-2xs"
-                    },
-                    {
-                      "t": "text",
-                      "style": "headline-xs",
-                      "chars": "Woche 3: Die Spur führt nach Bern",
-                      "w": "fill",
-                      "weight": "bold",
-                      "size": 17,
-                      "color": "@color-on-canvas",
-                      "tracking": 1.18
-                    },
-                    {
-                      "t": "space",
-                      "h": "@spacing-2xs"
-                    },
-                    {
-                      "t": "text",
-                      "style": "text-m",
-                      "chars": "Ein anonymer Hinweis, ein Aktenordner und eine Adresse in der Bundesstadt. Wie wir den Verbindungen der Fonds nachgegangen sind.",
-                      "w": "fill",
-                      "size": 15,
-                      "color": "@color-on-canvas-muted",
-                      "tracking": 0.67
-                    }
-                  ]
-                },
-                {
-                  "t": "frame",
-                  "dir": "H",
-                  "cross": "CENTER",
-                  "w": 269,
-                  "h": 66,
-                  "pad": [
-                    "@spacing-s",
-                    "@spacing-s",
-                    "@spacing-s",
-                    "@spacing-s"
-                  ],
-                  "radius": "@radius-md",
-                  "fill": "@color-surface",
-                  "children": [
-                    {
-                      "t": "text",
-                      "chars": "◎",
-                      "font": "sans",
-                      "size": 20,
-                      "color": "@color-on-canvas-muted"
-                    },
-                    {
-                      "t": "space",
-                      "w": "@spacing-s"
-                    },
-                    {
-                      "t": "text",
-                      "chars": "Bonusfolge: Wie wir an die Pensionskassen-Daten kamen",
-                      "w": 213,
-                      "weight": "semibold",
-                      "size": 14,
-                      "color": "@color-on-canvas",
-                      "tracking": 1.43
-                    }
-                  ]
-                },
-                {
-                  "t": "space",
-                  "h": "@spacing-m"
-                },
-                {
-                  "t": "frame",
-                  "dir": "V",
-                  "w": 269,
-                  "h": 24,
-                  "children": [
-                    {
-                      "t": "text",
-                      "style": "button",
-                      "chars": "Alles aus dem Backstage →",
-                      "w": "fill",
-                      "weight": "bold",
-                      "size": 16,
-                      "color": "@color-on-canvas-accent",
-                      "tracking": 1.25
-                    }
-                  ]
-                }
-              ],
-              "name": "home/BackstageTeaser"
-            },
-            {
-              "t": "variants",
-              "name": "home/CalloutTeaser",
-              "prop": "kind",
-              "options": [
-                {
-                  "value": "crowdnewsroom",
-                  "dir": "V",
-                  "w": 319,
-                  "h": 269,
-                  "pad": [
-                    "@spacing-m",
-                    "@spacing-m",
-                    "@spacing-m",
-                    "@spacing-m"
-                  ],
-                  "radius": "@radius-md",
-                  "fill": "@color-always-dark",
-                  "children": [
-                    {
-                      "t": "text",
-                      "chars": "MITMACHEN · CROWDNEWSROOM",
-                      "w": "fill",
-                      "weight": "bold",
-                      "size": 12,
-                      "color": "@color-always-light",
-                      "tracking": 10
-                    },
-                    {
-                      "t": "space",
-                      "h": "@spacing-2xs"
-                    },
-                    {
-                      "t": "text",
-                      "style": "headline-xs",
-                      "chars": "Wem gehört die Stadt?",
-                      "w": "fill",
-                      "weight": "bold",
-                      "size": 17,
-                      "color": "@color-always-light",
-                      "tracking": 1.18
-                    },
-                    {
-                      "t": "space",
-                      "h": "@spacing-2xs"
-                    },
-                    {
-                      "t": "text",
-                      "style": "text-m",
-                      "chars": "Steigende Mieten, anonyme Eigentümer: Helfen Sie uns aufzudecken, wem die Häuser in Ihrer Nachbarschaft gehören.",
-                      "w": "fill",
-                      "size": 15,
-                      "color": "@color-always-light",
-                      "tracking": 0.67
-                    },
-                    {
-                      "t": "space",
-                      "h": "@spacing-s"
-                    },
-                    {
-                      "t": "frame",
-                      "dir": "H",
-                      "cross": "CENTER",
-                      "w": "fill",
-                      "h": 21,
-                      "opacity": 0.7,
-                      "children": [
-                        {
-                          "t": "text",
-                          "chars": "◎",
-                          "font": "sans",
-                          "size": 16,
-                          "color": "@color-always-light"
-                        },
-                        {
-                          "t": "space",
-                          "w": "@spacing-2xs"
-                        },
-                        {
-                          "t": "text",
-                          "style": "text-s",
-                          "chars": "1.857 Beiträge bisher",
-                          "w": 126,
-                          "size": 14,
-                          "color": "@color-always-light",
-                          "tracking": 1.43
-                        }
-                      ]
-                    },
-                    {
-                      "t": "space",
-                      "h": "@spacing-s"
-                    },
-                    {
-                      "t": "frame",
-                      "dir": "V",
-                      "align": "CENTER",
-                      "cross": "CENTER",
-                      "w": "hug",
-                      "h": 48,
-                      "pad": [
-                        "@spacing-m",
-                        "@spacing-m",
-                        "@spacing-s",
-                        "@spacing-s"
-                      ],
-                      "radius": "@radius-md",
-                      "fill": "@color-accent",
-                      "children": [
-                        {
-                          "t": "text",
-                          "style": "button",
-                          "chars": "Mitmachen",
-                          "w": "fill",
-                          "weight": "bold",
-                          "size": 16,
-                          "color": "@color-always-light",
-                          "tracking": 1.25
-                        }
-                      ]
-                    }
-                  ]
-                },
-                {
-                  "value": "survey",
-                  "dir": "V",
-                  "w": 319,
-                  "h": 295,
-                  "pad": [
-                    "@spacing-m",
-                    "@spacing-m",
-                    "@spacing-m",
-                    "@spacing-m"
-                  ],
-                  "radius": "@radius-md",
-                  "fill": "@color-always-dark",
-                  "children": [
-                    {
-                      "t": "text",
-                      "chars": "MITMACHEN · UMFRAGE",
-                      "w": "fill",
-                      "weight": "bold",
-                      "size": 12,
-                      "color": "@color-always-light",
-                      "tracking": 10
-                    },
-                    {
-                      "t": "space",
-                      "h": "@spacing-2xs"
-                    },
-                    {
-                      "t": "text",
-                      "style": "headline-xs",
-                      "chars": "Die Zukunft von CORRECTIV: Wir fragen Sie",
-                      "w": "fill",
-                      "weight": "bold",
-                      "size": 17,
-                      "color": "@color-always-light",
-                      "tracking": 1.18
-                    },
-                    {
-                      "t": "space",
-                      "h": "@spacing-2xs"
-                    },
-                    {
-                      "t": "text",
-                      "style": "text-m",
-                      "chars": "CORRECTIV verändert sich, und Sie gestalten mit. Was sollen wir recherchieren, welche Formate fehlen Ihnen?",
-                      "w": "fill",
-                      "size": 15,
-                      "color": "@color-always-light",
-                      "tracking": 0.67
-                    },
-                    {
-                      "t": "space",
-                      "h": "@spacing-s"
-                    },
-                    {
-                      "t": "frame",
-                      "dir": "H",
-                      "cross": "CENTER",
-                      "w": "fill",
-                      "h": 21,
-                      "opacity": 0.7,
-                      "children": [
-                        {
-                          "t": "text",
-                          "chars": "◎",
-                          "font": "sans",
-                          "size": 16,
-                          "color": "@color-always-light"
-                        },
-                        {
-                          "t": "space",
-                          "w": "@spacing-2xs"
-                        },
-                        {
-                          "t": "text",
-                          "style": "text-s",
-                          "chars": "2.143 Teilnahmen bisher",
-                          "w": 147,
-                          "size": 14,
-                          "color": "@color-always-light",
-                          "tracking": 1.43
-                        }
-                      ]
-                    },
-                    {
-                      "t": "space",
-                      "h": "@spacing-s"
-                    },
-                    {
-                      "t": "frame",
-                      "dir": "V",
-                      "align": "CENTER",
-                      "cross": "CENTER",
-                      "w": "hug",
-                      "h": 48,
-                      "pad": [
-                        "@spacing-m",
-                        "@spacing-m",
-                        "@spacing-s",
-                        "@spacing-s"
-                      ],
-                      "radius": "@radius-md",
-                      "fill": "@color-accent",
-                      "children": [
-                        {
-                          "t": "text",
-                          "style": "button",
-                          "chars": "Teilnehmen",
-                          "w": "fill",
-                          "weight": "bold",
-                          "size": 16,
-                          "color": "@color-always-light",
-                          "tracking": 1.25
-                        }
-                      ]
-                    }
-                  ]
-                }
-              ]
             }
           ]
         }

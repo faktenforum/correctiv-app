@@ -46,6 +46,19 @@ colour. `♥` U+2665 arrived red and `▶` U+25B6 as a blue play button; both ha
 `Emoji_Presentation=No`, so nothing warns you, and U+FE0E does not persuade Figma
 otherwise. The board still uses their non-emoji twins, `♡` U+2661 and `►` U+25BA.
 
+**And a family that has no such glyph is the other half of that.** Kalam went, so the
+board is set in Source Sans 3 and Merriweather throughout, and a codepoint neither of
+them carries is substituted from a font nobody chose — a different weight on this
+machine and a box on one with nothing to substitute. There is no check for it: the
+font check catches a missing *family*, never a missing glyph. Read off the `cmap` of
+every cut of both families: `►` U+25BA is in the sans and not in the serif, which is
+where it is used and where it stays; `♡` U+2661 is in the serif only, so the one
+heart on the board, in `ClubCard`, is substituted today. Both candidates for it trip
+something written down here — `♥` U+2665 is an emoji codepoint and `◉` is not a heart
+— so it is left as it is and said out loud instead. The icon placeholder was `◎`
+U+25CE, which is in neither family, and is now `◉` U+25C9, which is in every cut of
+both.
+
 **The pencil outline had to stretch.** An instance takes no children, so it showed
 the outline drawn inside its component, at the width the component had. `ui/Button`
 hugs its label, so without that every button stretched to fill a column wore a box
@@ -309,7 +322,9 @@ gets made again differently.
 
 1. **An icon** is a glyph from an icon font and reads back as the empty string, its
    codepoint being private-use. Drawn as a placeholder and printed as a gap, which
-   is `NavCard.icon` seen from the other side.
+   is `NavCard.icon` seen from the other side. The placeholder is `◉` U+25C9 because
+   the board's own families carry it; see the missing-glyph note above for why that
+   is not a free choice.
 2. **A stack** is a child in `absolute inset-0`. Figma honours x/y only when the
    parent is a plain frame, so the parent gives up its layout and **every** child
    carries coordinates, not only the absolute one. A plain frame lays nothing out, so
