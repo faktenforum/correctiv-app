@@ -18,11 +18,27 @@ export type OverlineProps = {
  *
  * **One line, and it does not shrink.** Both are declared rather than left to a
  * default, and both are answers to the same property of a layout engine that
- * derives a label's minimum width from its own text: a letter-spaced mark with a
- * space in it is allocated its natural width, breaks there, and loses the second
- * line to the height its parent already committed. Padding cannot fix it, because
- * padding raises the natural width and the text's budget by the same pixel; a
- * single-word mark ("RECHERCHE") has no break opportunity and was never affected.
+ * derives a label's minimum width from its own text: a letter-spaced mark is
+ * allocated its natural width, which the text engine finds about the letter-spacing
+ * short of what it needs, and it spends the shortfall on a second line the parent
+ * has committed no height for. Padding cannot fix it, because padding raises the
+ * natural width and the text's budget by the same pixel.
+ *
+ * **AND ONE LINE DOES NOT FIX IT EITHER; IT MOVES IT.** With no second line to
+ * spend the shortfall on, the engine spends it on the last glyph instead. Seen on
+ * the GTK host after this declaration landed there: the two-word `Backstage · Früher
+ * lesen` stopped wrapping, and the SINGLE-WORD `Spotlight` in `home/SpotlightBriefing`
+ * started reading `SPOTLIG…` where it had been whole. An earlier version of this
+ * docblock said a single-word mark "has no break opportunity and was never
+ * affected" — true of the wrapping, and wrong about the remedy, because it was
+ * written from a measurement that only looked at the two-word case.
+ *
+ * `flexShrink: 0` does not save it: that `Spotlight` sits in a `justify-between` row
+ * beside a link and is still the label that gives. The real remedy is the pixel the
+ * natural width is short by, which is the layout engine's and not this component's.
+ * What is kept here is the trade, chosen deliberately: on the phone and in the
+ * browser one line is what this mark already was, and on a host that clips, a
+ * truncated word is a smaller lie than a half-visible second line.
  *
  * The engine is GTK4/Adwaita, through `@gjsify/react-native`, on the host
  * [ADR 0012](../../../../../adr/0012-a-list-virtualizer-for-the-unbounded-lists.md)
