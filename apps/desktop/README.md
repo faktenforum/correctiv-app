@@ -79,10 +79,10 @@ handler only for an error NO boundary caught, and with the class in the tree
 `onCaughtError` instead, the process survives, and a capture still gets written.
 
 **WHAT IT DOES NOT CATCH**, measured by the first full `component-sweep` rather than
-predicted: the whole catalogue in one page throws
-`<View> expand — carries layout that cannot be resolved at this position`, and the log
-says `React hit an error no boundary caught`. So at least one class of refusal reaches
-the root past this boundary. Which class, and why, is open.
+predicted: the `<View> expand` refusal described below reaches the root past it, and
+the log says `React hit an error no boundary caught`. The `<Typo onPress>` class is
+caught and this one is not, and why they differ is open. Until that is understood, the
+boundary is a partial answer rather than the answer.
 
 **A cast, and it is not cosmetic.** `tsconfig.json` points `jsxImportSource` at
 `@gjsify/gtk-host/react` so that an accidental `<div>` is a type error rather than a
@@ -170,6 +170,56 @@ and the chip row still wraps into three lines at 560 px.
 ordinary React Native the whole time, every screenshot of it was right, and
 `npm run check` was green for the entire life of the defect. A screenshot proves a
 tree rendered; it says nothing about what the render cost.
+
+### Two components that cannot render here, and the sweep that had to exist to say so
+
+`participate/FormField` and `player/ProgressBar` both throw on GTK:
+
+    <View> expand — carries layout that cannot be resolved at this position. These
+    need a parent to resolve against — `flex-1` and `self-*` need the parent
+    orientation, `absolute` needs the parent to be an overlay — and this element is
+    the root of its tree, or its parent is not a box.
+
+The shape is the same in both, and it is ordinary React Native markup:
+
+```tsx
+<Pressable className="mb-2xs flex-row items-center rounded-md border px-s py-s">
+  <Ionicons name={…} size={20} />
+  <Typo variant="text-m" className="ml-s flex-1">{value.label}</Typo>
+</Pressable>
+```
+
+A `Pressable` is a `Gtk.Button`, which is a BIN and not a box, so `flex-row` on it
+establishes no row for its children to resolve against and the `flex-1` beside it has
+no parent orientation. The layer's own comment at the throw says this used to be a
+silent drop and is now loud on purpose, which is the right trade and is what surfaced
+it here.
+
+**WHY NO SCREEN SWEEP WOULD EVER HAVE FOUND IT**, and this is the argument for
+`component-sweep` in one measurement rather than in the abstract. Both components have
+a route, and `route-sweep` reports both routes `ok`:
+
+| route | what the sweep photographs | what it never draws |
+| --- | --- | --- |
+| `/player` | „Es läuft gerade nichts." | `ProgressBar` |
+| `/formular` | „Dieses Formular gibt es nicht" | `FormField` |
+
+Nothing is playing in a swept process and no callout is passed to the form, so each
+screen renders a legitimate empty state and passes. Driven at a route that actually
+reaches the component — `/formular?slug=wem-gehoert-die-stadt` — the same process
+throws, the tree ends, and the window falls back to `/` with a 12 779-byte capture,
+which is the dead-tree size this README already documents once.
+
+`route-sweep.mjs`'s own header warns about this for `[param]` routes: "a route that
+404s inside its own screen renders a legitimate empty state and would pass for the
+wrong reason". It is true of these two non-param routes as well, and nothing about the
+`ok` lines says so.
+
+**Not fixed here.** The remedy is the one the refusal names — wrap the label in a
+`<View>` and move the utility onto it — and it belongs in `apps/mobile`, where both
+components live and where it is right for every host. That is a change to the phone's
+own components and takes its own pull request against `main`, the same way the
+one-line labels did.
 
 ### The deep-link loop, fixed upstream and now measured
 
