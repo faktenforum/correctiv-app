@@ -169,6 +169,57 @@ function tokenAlpha(value) {
   return Number.isFinite(percent) ? Math.min(100, Math.max(0, percent)) / 100 : 1;
 }
 
+/**
+ * The scale's names, turned into the numbers they stand for, once for the whole
+ * document.
+ *
+ * `measure.mjs` writes `@spacing-2xs` where it read six pixels, because a padding
+ * bound to the scale is the point of having a scale. Everything below wants a
+ * number, and the first run without this failed on the first `space` node —
+ * "Property height failed validation: Expected number, received string", raised
+ * inside Figma, with a half-drawn page left behind.
+ *
+ * Here rather than at each of the fourteen places that read one: a conversion that
+ * has to be remembered at a call site is one that will be forgotten at the
+ * fifteenth. `w` and `h` keep 'fill' and 'hug', which are not numbers and not
+ * tokens either.
+ */
+const NUMERIC = [
+  'w',
+  'h',
+  'x',
+  'y',
+  'gap',
+  'crossGap',
+  'radius',
+  'size',
+  'tracking',
+  'leading',
+  'strokeWeight',
+];
+
+function resolveScales(node) {
+  if (Array.isArray(node)) {
+    for (const child of node) resolveScales(child);
+    return;
+  }
+  if (node === null || typeof node !== 'object') return;
+  for (const key of NUMERIC) {
+    const value = node[key];
+    if (!isToken(value)) continue;
+    const t = TOKENS[tokenName(value)];
+    if (typeof t === 'number') node[key] = t;
+  }
+  if (Array.isArray(node.pad)) {
+    node.pad = node.pad.map((one) => {
+      if (!isToken(one)) return one;
+      const t = TOKENS[tokenName(one)];
+      return typeof t === 'number' ? t : one;
+    });
+  }
+  for (const key of Object.keys(node)) if (key !== 'tokens') resolveScales(node[key]);
+}
+
 function tokenValue(value) {
   if (!isToken(value)) return value;
   const t = TOKENS[tokenName(value)];
@@ -901,6 +952,11 @@ async function draw(spec) {
 
   // Variables first: a fill can only bind to a variable that already exists.
   const tokenCount = await syncVariables(spec.tokens);
+
+  // After `syncVariables`, which is what fills `TOKENS`, and before anything is
+  // built, which is what needs numbers.
+  resolveScales(spec.pages);
+  resolveScales(spec.screens);
   const styleCount = await syncTextStyles(spec.textStyles);
 
   // The kit before its users, for the same reason: an instance can only point at a
