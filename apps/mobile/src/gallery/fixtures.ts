@@ -180,5 +180,5 @@ export const READER_HTML = [
   '</body></html>',
 ].join('');
 
-/** A YouTube embed for `VideoFrame`. The URL is the one the media screen builds. */
-export const EMBED_URI = 'https://www.youtube-nocookie.com/embed/aqz-KE-bpKQ';
+/** A YouTube embed for `VideoFrame`, in the shape `app/video.tsx` builds. */
+export const EMBED_URI = 'https://www.youtube-nocookie.com/embed/aqz-KE-bpKQ?playsinline=1&rel=0';

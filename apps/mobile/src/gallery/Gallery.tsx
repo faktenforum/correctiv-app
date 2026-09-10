@@ -135,7 +135,7 @@ export function Gallery() {
       >
         <Typo variant="headline-m">Component gallery</Typo>
         <Typo variant="text-s" color="on-canvas-muted" className="mt-2xs">
-          {`${COMPONENT_COUNT} components from src/components, ${SPECIMEN_COUNT} specimens, grouped by folder. Development only, never in the published export.`}
+          {`${COMPONENT_COUNT} components from src/components, ${SPECIMEN_COUNT} specimens, grouped by folder. A page for developers, published like any other route.`}
         </Typo>
         <Appearance />
 

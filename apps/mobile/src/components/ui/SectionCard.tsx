@@ -10,7 +10,7 @@ export type SectionCardProps = {
   labelColor?: OverlineProps['color'];
   /** Passed to the `Card`. */
   tone?: CardProps['tone'];
-  /** Space to whatever is above, `mt-l` for the first section on a screen, `mt-m` after. */
+  /** Space to whatever is above. Every call site passes one: `mt-m`, or `mt-l` for a bigger break. */
   className?: string;
   children?: ReactNode;
 };

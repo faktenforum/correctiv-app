@@ -70,10 +70,12 @@ too generous. `TROUBLESHOOTING.md`, "The web target", carries the measurement.
 ## A route that is not published, measured because somebody will want one
 
 The component gallery asked this question on 2026-09-10 and then did not need the
-answer, because publishing it turned out to cost 21,464 bytes on a 4.4 MB bundle: every
-component it draws is already in the bundle, so the page adds its catalogue and nothing
-else. It is a published route like any other. But the measurements are worth keeping,
-because the next dev-only screen will not be so lucky.
+answer, because publishing it turned out to cost almost nothing: every component it
+draws is already in the bundle, since real screens use them, so the page adds its
+catalogue and nothing else. Measured by exporting twice, with the route and without:
+21,560 bytes on a 4.4 MB bundle, plus the 19,915-byte `gallery.html` that any
+pre-rendered route costs. It is a published route like any other. But the measurements
+are worth keeping, because the next dev-only screen will not be so lucky.
 
 **Guarding the component is not enough.** A route whose component returns `null` unless
 `__DEV__` is still pre-rendered. One throwaway route in that shape produced a 19 KB
@@ -95,7 +97,8 @@ because Metro collects dependencies from the syntax tree. Only the module-scope 
 `__DEV__ ? require(…) : null` and `if (__DEV__) { require(…) }`, are folded away first.
 `lib/store/core.ts` uses the surviving shape and its debugger stays out regardless, but
 by `redux-devtools-expo-dev-plugin`'s own module-scope guard rather than by the call
-site. That comment is the one to fix, not the code.
+site. The comment there claimed the call site did it, and now says this instead; the
+code is unchanged.
 
 ## What the inspector needs, which is not this
 

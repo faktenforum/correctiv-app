@@ -244,7 +244,7 @@ export const CATALOGUE: Folder[] = [
         note: 'The group label over one card, which four screens are a stack of. Named on 2026-09-10; ADR 0021 records the sixteen call sites that used to write it out.',
         specimens: [
           {
-            label: 'default',
+            label: 'default, tone="outline"',
             node: (
               <SectionCard label="Konto">
                 <Typo variant="text-m">alex.beispiel@example.org</Typo>
@@ -252,9 +252,9 @@ export const CATALOGUE: Folder[] = [
             ),
           },
           {
-            label: 'tone="outline"',
+            label: 'tone="surface"',
             node: (
-              <SectionCard label="Benachrichtigungen" tone="outline">
+              <SectionCard label="Benachrichtigungen" tone="surface">
                 <Typo variant="text-m">Push-Mitteilungen</Typo>
               </SectionCard>
             ),

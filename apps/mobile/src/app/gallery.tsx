@@ -4,8 +4,9 @@
  * A page for developers and designers rather than for readers, and it is
  * published like any other route. That was measured rather than assumed: the
  * components it draws are already in the bundle, because real screens use them,
- * so the page costs the catalogue and its fixtures and nothing else. 21,673
- * bytes on 2026-09-10, on a 4.4 MB bundle.
+ * so the page costs its catalogue and its fixtures and nothing else. ADR 0025
+ * carries the figure, and is the only place it is written down, because a
+ * measurement typed twice is a measurement that goes wrong in one of them.
  *
  * **In the workbench frame it renders only from the published build.** A
  * development bundle does not apply `experiments.baseUrl` when it matches
