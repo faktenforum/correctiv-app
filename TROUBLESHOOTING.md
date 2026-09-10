@@ -392,6 +392,14 @@ equivalents for focus, liveness and errors.
   puts the site's own three states behind it. The app stays the authority when its
   setting is explicit, because Uniwind then writes the class from the setting and never
   consults the query.
+
+  **Do not check this with `Emulation.setEmulatedMedia`.** It forces the feature in
+  every frame of the page, so `prefers-color-scheme` inside the frame answers the
+  emulator rather than the embedding element, and the propagation looks inert.
+  Measured both ways on 2026-09-10: emulated, a light site framed a dark app and the
+  class appeared to do nothing; with the machine's own scheme left alone and only the
+  site switched, the framed app followed the site in all three of its settings. Set the
+  site's appearance and use the real device scheme.
 - **`userInterfaceStyle` in `app.json` is a promise to the OS, and on iOS it is
   binding.** It was `"light"`, which `expo prebuild` writes into
   `ios/<name>/Info.plist` as `UIUserInterfaceStyle = Light`. iOS then reports light
