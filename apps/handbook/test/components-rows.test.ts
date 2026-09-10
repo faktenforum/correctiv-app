@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 
-import { framed, opened } from '../src/pages/Components';
+import { framed, opened } from '../src/lib/rows';
 
 /**
  * The three-frame cap on `/components`, as the list underneath it.

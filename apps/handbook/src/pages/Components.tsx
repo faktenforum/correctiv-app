@@ -6,36 +6,11 @@ import { componentId } from '../nav';
 import { href } from '../router';
 import { Badge } from '../ui/kit/badge';
 import { Disclosure, Filter, Source } from '../ui/Lookup';
+import { FRAME_LIMIT, framed, opened } from '../lib/rows';
 import { Page } from '../ui/Page';
 import { AppFrame } from '../workbench/AppFrame';
 
 const { alias, groups, root } = api.components;
-
-/**
- * How many app frames this page may hold at once.
- *
- * Each one boots the whole app bundle. Three is enough to compare two components
- * with a third open by accident, and few enough that a reader who works down the
- * page with the keyboard does not end up with a dozen running apps in a tab.
- */
-const FRAME_LIMIT = 3;
-
-/**
- * The open rows, in the order they were opened.
- *
- * A list and not a set, because which three rows get a frame is decided by
- * recency. Exported with `framed` below because this page has no DOM in its
- * tests, so the order is the one part of the cap that can be asserted at all.
- */
-export function opened(prev: string[], id: string, isOpen: boolean): string[] {
-  const without = prev.filter((other) => other !== id);
-  return isOpen ? [...without, id] : without;
-}
-
-/** The three most recently opened of them, which are the ones drawn. */
-export function framed(open: string[]): Set<string> {
-  return new Set(open.slice(-FRAME_LIMIT));
-}
 
 /**
  * What a row has where its frame would be: nothing, a note, or the app.
