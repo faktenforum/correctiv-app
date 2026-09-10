@@ -1140,29 +1140,37 @@ The real remedy is upstream, in the pixel the natural width is short by. Until t
 this host shows a truncated `SPOTLIGHT` where it used to show a whole one, and that
 is worth more than a clipped `LESEN` only because the band is what a reader notices.
 
-### The branch is red on CI, and it had stopped being watched
+### CI had not looked since August, and the pin was a minor behind
 
-`npm run check` passes here and fails on CI, and both are correct. This host is
-developed against a gjsify WORKING COPY (see below), CI installs the published
-`@gjsify/*`, and the two disagree about what exists. Today that is one error:
+`npm run check` passed here and failed on CI, and the reason was not the one it
+looked like. The manifest pinned `^0.47.0`; a caret on a `0.x` version holds the
+MINOR, so CI installed 0.47.0 while `@gjsify/react-native` 0.48.0 had been on npm
+for weeks. Two failures, one cause:
 
-    src/app/(tabs)/_layout.tsx: Property 'bottomBar' does not exist on type 'TabsProps'
+- `test/prop-gate.test.ts` reported the four accessibility props "refused again, so
+  the ledger is wrong". They are answered in 0.48 and refused in 0.47, so the ledger
+  was right and the installed layer was old.
+- `src/app/(tabs)/_layout.tsx` could not typecheck `<Tabs bottomBar>`.
 
-`bottomBar` is the seam the mini player sits in. It exists in the working copy and
-is not in 0.47.0, so the tab layout cannot typecheck against the published package
-until gjsify releases it.
+The pin is `^0.48.0` now, and the check passes against BOTH the published package and
+the working copy, which is the pair that matters here.
 
-**What is worth recording is not the error but how long nobody saw it.** The last CI
-run on this branch was 2026-08-31, at `fca1c59`. The mini player arrived after that,
-in `13bf905`, and the branch head has never been through CI at all — it was pushed
-without a pull request, so nothing ran. The first run against the current head was
-the pull request that added this paragraph, six weeks later.
+**`bottomBar` still needs a cast**, and this is where the release line actually falls.
+It is in the working copy (`0.48.0-48-g…`, forty-eight commits past the tag) and not
+in the 0.48.0 release, so the tab layout carries one cast with a note to delete it on
+the release that brings the prop. That is a typed hole somebody wrote down rather than
+a red branch, and the reason for preferring that is below.
 
-So the branch has two states and only one of them was ever checked: green against the
-working copy, on this machine, by hand; and unknown against the published package,
-until something opens a pull request. A host developed against an unreleased library
-will have that gap by construction. What it should not have is the gap going
-unnoticed, and the answer is a pull request per change rather than a push.
+**WHAT IS WORTH RECORDING IS HOW LONG NOBODY SAW ANY OF IT.** The last CI run on this
+branch was 2026-08-31, at `fca1c59`. The mini player arrived after that, in `13bf905`,
+and the branch head had never been through CI: it was pushed without a pull request,
+so nothing ran. The first run against the current head was the pull request that added
+this paragraph, six weeks later, and it found a stale pin, a version-skewed ledger and
+a type error in one go.
+
+A host developed against an unreleased library has a gap between what passes here and
+what passes there. That gap is narrow and manageable. What it should not have is
+nobody looking, and the answer is a pull request per change rather than a push.
 
 ### Against a gjsify working copy
 
