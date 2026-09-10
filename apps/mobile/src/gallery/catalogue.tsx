@@ -57,6 +57,7 @@ import {
   SafeAreaView,
   Screen,
   ScreenHeader,
+  SectionCard,
   SectionHeader,
   Thumbnail,
   Typo,
@@ -235,6 +236,28 @@ export const CATALOGUE: Folder[] = [
           {
             label: 'with actionLabel',
             node: <SectionHeader title="Aus dem Backstage" actionLabel="Alles →" onAction={noop} />,
+          },
+        ],
+      },
+      {
+        name: 'SectionCard',
+        note: 'The group label over one card, which four screens are a stack of. Named on 2026-09-10; ADR 0021 records the sixteen call sites that used to write it out.',
+        specimens: [
+          {
+            label: 'default',
+            node: (
+              <SectionCard label="Konto">
+                <Typo variant="text-m">alex.beispiel@example.org</Typo>
+              </SectionCard>
+            ),
+          },
+          {
+            label: 'tone="outline"',
+            node: (
+              <SectionCard label="Benachrichtigungen" tone="outline">
+                <Typo variant="text-m">Push-Mitteilungen</Typo>
+              </SectionCard>
+            ),
           },
         ],
       },
