@@ -6,8 +6,9 @@ import { Button } from '../../ui/kit/button';
 import { Segmented } from '../../ui/kit/segmented';
 import { Separator } from '../../ui/kit/separator';
 import { Tooltip, TooltipContent, TooltipTrigger } from '../../ui/kit/tooltip';
+import { Pages } from './Pages';
 import { DEVICES, HOST_DEVICE } from '../devices';
-import { PAGES, ROUTES } from '../routes';
+import { ROUTES } from '../routes';
 import { frameSize, writeHash, type PreviewState } from '../state';
 import type { Status } from '../api';
 
@@ -177,37 +178,7 @@ export function Toolbar({ state, routeField, onRouteField, onChange, onReload, o
         </select>
       )}
 
-      {/*
-        The pages worth reaching, beside the field rather than inside it. The
-        `datalist` below still completes a path somebody starts typing, but it has
-        no groups, it only narrows as it is typed into, and what it draws is the
-        browser's business — so the labels and notes `routes.ts` carries need
-        options of their own to be read at all.
-      */}
-      <select
-        /*
-          Capped, because a `select` takes the width of its widest option and the
-          longest note here is a sentence. Uncapped it was 640px on a 1700px bar
-          and left the route field a stump — seen in a screenshot, not in a check.
-        */
-        className={cn(FIELD, 'w-[9rem] shrink-0')}
-        aria-label="Go to a page"
-        value=""
-        onChange={(e) => {
-          if (e.target.value) onChange({ route: e.target.value });
-        }}
-      >
-        <option value="">Pages…</option>
-        {PAGES.map((group) => (
-          <optgroup key={group.group} label={group.group}>
-            {group.pages.map((page) => (
-              <option key={page.route} value={page.route}>
-                {page.note ? `${page.label}, ${page.note}` : page.label}
-              </option>
-            ))}
-          </optgroup>
-        ))}
-      </select>
+      <Pages onPick={(route) => onChange({ route })} />
 
       <input
         className={cn(FIELD, 'min-w-[8rem] flex-1 font-mono')}
