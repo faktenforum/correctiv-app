@@ -17,9 +17,9 @@ import { SafeAreaProvider } from 'react-native-safe-area-context';
  *     false condition and the only caller left is the boundary.
  *  2. **A font failure reaches the boundary at all.** `useFonts` does not throw. It
  *     returns the error and leaves `fontsLoaded` false for ever, which is a silent
- *     hang rather than a caught error, so the layout has to rethrow it. The pair of
- *     tests below separates that from "the fonts are merely still loading", which
- *     must keep rendering null behind the splash.
+ *     hang rather than a caught error, so the layout has to rethrow it. Separated
+ *     below from "the fonts are merely still loading", which must keep rendering
+ *     null behind the splash.
  *
  * The tree is mounted through the real `Try` — the component expo-router itself
  * wraps a route's default export in when the file also exports `ErrorBoundary` — so
@@ -148,6 +148,7 @@ import { findPressable, METRICS, renderedText } from './support/rendering';
 const hideAsync = jest.mocked(SplashScreen.hideAsync);
 
 const HEADLINE = 'Die App ist stehen geblieben';
+const FONT_ERROR = new Error('the fonts did not load');
 
 const mounted: ReactTestRenderer[] = [];
 let logged: jest.SpyInstance;
@@ -245,54 +246,40 @@ describe('a screen that throws', () => {
   });
 });
 
-describe('the splash screen', () => {
-  it('comes down, in the case where the shell cannot have taken it down', async () => {
-    // No fonts, so the shell's own `hideAsync()` is behind a false condition and
-    // the boundary is the only caller left. This is the hang the issue was filed
-    // for, asserted at its narrowest.
-    mockFontState = [false, mockFontError()];
+describe('a font failure', () => {
+  // The door is innocent in all three: the only fault here is the fonts.
+  beforeEach(() => {
     mockGateThrows = false;
+  });
+
+  it('reaches the boundary and gets a screen, although useFonts never throws', async () => {
+    // Without the layout rethrowing there is nothing for any boundary to catch, and
+    // the app sits on the splash screen with no crash and no message. The screen
+    // then has to survive the very thing it reports: nothing on it waits for
+    // `fontsLoaded`, and each platform substitutes a face it cannot find.
+    mockFontState = [false, FONT_ERROR];
+
+    const text = renderedText(await mount());
+    expect(text).toContain(HEADLINE);
+    expect(text).toContain('Erneut versuchen');
+    expect(text).toContain(FONT_ERROR.message);
+  });
+
+  it('takes the splash screen down, which the shell here cannot have done', async () => {
+    // The shell's own `hideAsync()` is behind `fontsLoaded`, so the boundary is the
+    // only caller left. This is the hang the issue was filed for, at its narrowest.
+    mockFontState = [false, FONT_ERROR];
 
     expect(renderedText(await mount())).toContain(HEADLINE);
     expect(hideAsync).toHaveBeenCalled();
   });
 
-  it('stays up while the fonts are merely still loading', async () => {
+  it('is not the same as fonts that are merely still loading', async () => {
     // The difference the rethrow has to preserve: unloaded is not failed. The shell
     // renders null, the splash stays, and no error screen flashes at startup.
     mockFontState = [false, null];
-    mockGateThrows = false;
 
     expect(renderedText(await mount())).not.toContain(HEADLINE);
     expect(hideAsync).not.toHaveBeenCalled();
   });
 });
-
-describe('a font failure', () => {
-  it('reaches the boundary, although useFonts never throws', async () => {
-    // `useFonts` catches the load and returns the error, so without the layout
-    // rethrowing it there is nothing for any boundary to catch and the app sits on
-    // the splash screen with no crash and no message.
-    mockFontState = [false, mockFontError()];
-    mockGateThrows = false;
-
-    expect(renderedText(await mount())).toContain('the fonts did not load');
-  });
-
-  it('still shows a recovery screen, with no font loaded', async () => {
-    // The screen has to survive the very thing it is reporting. Nothing here is
-    // waiting on `fontsLoaded`, and React substitutes the platform font for a
-    // family it cannot find.
-    mockFontState = [false, mockFontError()];
-    mockGateThrows = false;
-
-    const text = renderedText(await mount());
-    expect(text).toContain(HEADLINE);
-    expect(text).toContain('Erneut versuchen');
-  });
-});
-
-/** A fresh error per test, so an identity assertion cannot pass by accident. */
-function mockFontError(): Error {
-  return new Error('the fonts did not load');
-}

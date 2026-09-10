@@ -111,10 +111,9 @@ export default function RootLayout() {
 /**
  * Everything a person reads on the recovery screen, in one place.
  *
- * Written for someone whose app has just refused to start: it says what happened,
- * offers the one action that can help, and says what to do when that action does
- * not. The technical line is kept because until an error report is actually sent
- * (see below) quoting it is the only way anyone can tell us what broke.
+ * The technical line is part of the copy on purpose: until an error report actually
+ * leaves the app (see below), quoting it is the only way anyone can tell us what
+ * broke.
  */
 const RECOVERY_COPY = {
   overline: 'Fehler',
@@ -142,9 +141,10 @@ const RECOVERY_COPY = {
  *
  *  - `Screen`, `Typo`, `Overline`, `Button` from the design system. Their only
  *    dependency is `useColors()`, which reads `useUniwind()` and not the store, so
- *    no provider is involved; with `useAppearance()` unmounted Uniwind falls back
- *    to its adaptive default and the colours follow the device, which is the right
- *    answer for a screen nobody configured.
+ *    no provider is involved. Uniwind holds the appearance as module state, not as
+ *    context, so whatever `useAppearance()` last set survives its own unmount, and
+ *    a fault before it ever ran leaves Uniwind on its own default, which follows
+ *    the device. Either way the screen is painted in the right scheme.
  *  - `Screen`'s `SafeAreaView`, because expo-router mounts `SafeAreaProvider` in
  *    `ExpoRoot` ABOVE the root route, so its context outlives the unmount.
  *  - Their `fontFamily`, which on the font-failure path names a face that is not
@@ -170,10 +170,8 @@ export function ErrorBoundary({ error, retry }: ErrorBoundaryProps) {
     console.error('[app] render failed, showing the recovery screen:', error);
   }, [error]);
 
-  /**
-   * `error` is typed `Error`, but React hands over whatever was thrown, and a
-   * thrown string must not take the recovery screen down with it.
-   */
+  // `error` is typed `Error`, but React hands over whatever was thrown, and a
+  // thrown string must not take the recovery screen down with it.
   const detail = error?.message ?? String(error);
 
   return (
@@ -186,16 +184,11 @@ export function ErrorBoundary({ error, retry }: ErrorBoundaryProps) {
         <Typo variant="text-m" color="on-canvas-muted" className="mt-s text-center">
           {RECOVERY_COPY.lead}
         </Typo>
-        <Button
-          title={RECOVERY_COPY.retry}
-          className="mt-l self-center"
-          onPress={() => {
-            retry();
-          }}
-        />
-        {/* Bounded, so a long message cannot push the retry button off the screen. */}
+        <Button title={RECOVERY_COPY.retry} className="mt-l self-center" onPress={retry} />
         <View className="mt-l self-stretch rounded-md border border-stroke bg-surface p-s">
           <Overline label={RECOVERY_COPY.detailHeading} />
+          {/* Bounded: the screen is centred and does not scroll, so an unbounded
+              message would push the retry button off the top. */}
           <Typo variant="text-s" color="on-canvas-muted" className="mt-2xs" numberOfLines={4}>
             {detail}
           </Typo>
@@ -296,14 +289,14 @@ function AppShell() {
    * `useFonts` never throws. It catches the load and returns the error, leaving
    * `fontsLoaded` false for ever, so the early return below renders null and the
    * splash screen this module put up is never taken down: no crash, no message, and
-   * a restart does the same thing again. Rethrowing is what turns that silent hang
-   * into a screen someone can act on, and it is the reason the recovery screen has
-   * to survive without the fonts it is telling you about.
+   * a restart does the same thing again. That is the hang, and it is also why the
+   * recovery screen has to survive without the fonts it is reporting.
    *
    * Deliberately not "carry on with the system font". The app's typography is the
-   * brand, so a build that quietly renders in Roboto is worse than one that says it
-   * failed, and `retry()` remounts this component and runs the load again, which is
-   * a real fix for a fetch that failed once on the web target.
+   * brand, and `retry()` remounts this component, which loads the fonts again for
+   * real: expo-font drops a failed load from `loadPromises` in a `finally`, so
+   * nothing caches the failure and a fetch that failed once on the web target gets
+   * a second chance.
    *
    * After every hook, so the render that throws has the same hook order as the ones
    * before it.
