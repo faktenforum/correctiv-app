@@ -333,7 +333,9 @@ const KIT = [
     // card off the profile screen; `Card.tsx` is twelve lines and holds no copy.
     // The dashed slot is what a Figma component cannot express: an instance may
     // override text and visibility, never add children. Cards that DO carry content
-    // are their own components in the app, or should be — seventeen are still inline.
+    // are their own components in the app: the group label over one card has been
+    // `SectionCard` since 2026-09-10, and sixteen call sites use it. The kit still
+    // cannot hold that component, for the reason above.
     t: 'variants',
     name: 'ui/Card',
     prop: 'Ton',

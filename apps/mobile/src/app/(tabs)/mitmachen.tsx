@@ -2,7 +2,7 @@ import { router } from 'expo-router';
 import { View } from 'react-native';
 
 import { CalloutCard } from '@/components/participate/CalloutCard';
-import { Button, Card, Overline, Screen, Typo } from '@/components/ui';
+import { Button, Overline, Screen, SectionCard, Typo } from '@/components/ui';
 import { callouts, type Callout } from '@correctiv/app-core/data/callouts';
 import { atlasStats } from '@correctiv/app-core/data/abriss-atlas';
 import { claims } from '@correctiv/app-core/data/claims';
@@ -38,55 +38,46 @@ export default function MitmachenScreen() {
         </View>
       </View>
 
-      <View className="mt-m">
-        <Overline label="Faktenforum" />
-        <Card tone="surface" className="mt-2xs">
-          <Typo variant="headline-xs">Behauptungen gemeinsam prüfen</Typo>
-          <Typo variant="text-s" color="on-canvas-muted" className="mt-2xs">
-            Die Community prüft Behauptungen aus dem Netz, angeleitet von der Redaktion. Gerade sind{' '}
-            {claims.length} Behauptungen in Arbeit.
-          </Typo>
-          <Button
-            title="Behauptungen ansehen"
-            variant="outline"
-            onPress={() => router.push('/faktenforum')}
-            className="mt-s"
-          />
-        </Card>
-      </View>
+      <SectionCard label="Faktenforum" tone="surface" className="mt-m">
+        <Typo variant="headline-xs">Behauptungen gemeinsam prüfen</Typo>
+        <Typo variant="text-s" color="on-canvas-muted" className="mt-2xs">
+          Die Community prüft Behauptungen aus dem Netz, angeleitet von der Redaktion. Gerade sind{' '}
+          {claims.length} Behauptungen in Arbeit.
+        </Typo>
+        <Button
+          title="Behauptungen ansehen"
+          variant="outline"
+          onPress={() => router.push('/faktenforum')}
+          className="mt-s"
+        />
+      </SectionCard>
 
-      <View className="mt-m">
-        <Overline label="Abriss-Atlas" />
-        <Card className="mt-2xs">
-          <Typo variant="headline-xs">Abrisse dokumentieren</Typo>
-          <Typo variant="text-s" color="on-canvas-muted" className="mt-2xs">
-            Welche Gebäude verschwinden? {formatNumberDe(atlasStats.totalReports)} Meldungen aus{' '}
-            {atlasStats.citiesCovered} Städten in Deutschland und der Schweiz.
-          </Typo>
-          <Button
-            title="Atlas ansehen"
-            variant="outline"
-            onPress={() => router.push('/atlas')}
-            className="mt-s"
-          />
-        </Card>
-      </View>
+      <SectionCard label="Abriss-Atlas" className="mt-m">
+        <Typo variant="headline-xs">Abrisse dokumentieren</Typo>
+        <Typo variant="text-s" color="on-canvas-muted" className="mt-2xs">
+          Welche Gebäude verschwinden? {formatNumberDe(atlasStats.totalReports)} Meldungen aus{' '}
+          {atlasStats.citiesCovered} Städten in Deutschland und der Schweiz.
+        </Typo>
+        <Button
+          title="Atlas ansehen"
+          variant="outline"
+          onPress={() => router.push('/atlas')}
+          className="mt-s"
+        />
+      </SectionCard>
 
-      <View className="mt-m">
-        <Overline label="Tipp geben" />
-        <Card tone="surface" className="mt-2xs">
-          <Typo variant="headline-xs">Faktencheck-Tipp per WhatsApp</Typo>
-          <Typo variant="text-s" color="on-canvas-muted" className="mt-2xs">
-            Verdächtige Behauptung gesehen? Schicken Sie sie direkt der Faktencheck-Redaktion.
-          </Typo>
-          <Button
-            title="WhatsApp öffnen"
-            variant="outline"
-            onPress={() => openExternal(WHATSAPP_TIP)}
-            className="mt-s"
-          />
-        </Card>
-      </View>
+      <SectionCard label="Tipp geben" tone="surface" className="mt-m">
+        <Typo variant="headline-xs">Faktencheck-Tipp per WhatsApp</Typo>
+        <Typo variant="text-s" color="on-canvas-muted" className="mt-2xs">
+          Verdächtige Behauptung gesehen? Schicken Sie sie direkt der Faktencheck-Redaktion.
+        </Typo>
+        <Button
+          title="WhatsApp öffnen"
+          variant="outline"
+          onPress={() => openExternal(WHATSAPP_TIP)}
+          className="mt-s"
+        />
+      </SectionCard>
 
       <Typo variant="text-s" color="grey-500" className="mt-l">
         Im Community-Bereich diskutieren Sie Recherchen mit anderen Mitgliedern, bald auch in der
