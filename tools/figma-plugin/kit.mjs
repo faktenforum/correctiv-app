@@ -358,7 +358,10 @@ const KIT = [
         value: value,
         dir: 'V',
         w: 280,
-        pad: [S.sm, S.sm, S.sm, S.sm],
+        // `spacing-m`, which is 24 and not the 16 this said until 2026-09-10.
+        // `Card.tsx` has always written `p-m`; the drift check against the measured
+        // rendering is what noticed, and nothing before it could have.
+        pad: [S.m, S.m, S.m, S.m],
         radius: R.md,
         fill: surface,
         children: [
@@ -892,6 +895,101 @@ function sourceProps(source, component) {
   return [...new Set(out)];
 }
 
+/**
+ * Everything `measure.mjs` read off the app, which is the rest of the kit.
+ *
+ * Thirteen components are described by hand above and stay that way, for one
+ * reason that is not sentiment: they carry Figma component properties, and the
+ * sixty-three instances `use-kit.mjs` put in the screens override text through
+ * them. A measured description has no properties — nothing in a rendering says
+ * which text a designer should be able to change — so swapping them out would
+ * leave every "Button, Anmelden" on the board without its label.
+ *
+ * What the measurement does for those thirteen instead is check them. The badge's
+ * label was bold here and regular in the app for as long as this file has existed,
+ * and nothing could have noticed.
+ */
+const measured = JSON.parse(await readFile(join(HERE, 'measured.json'), 'utf8'));
+
+const byHand = {};
+for (const entry of KIT) byHand[entry.name] = entry;
+
+/**
+ * The fields a difference in would be visible, and the ones a rendering can answer.
+ *
+ * `gap` is not among them: the app writes the space between two children as a margin
+ * on one of them, which the measurement turns into a `space` node, so the two
+ * descriptions say the same thing in different words and comparing them reports a
+ * difference on every row.
+ */
+const COMPARED = ['dir', 'pad', 'radius', 'fill', 'stroke'];
+
+/**
+ * `@spacing-2xs` and `6` are the same padding, so compare values and not spellings.
+ *
+ * Only the scales: a colour is a token name on both sides already, and resolving one
+ * to a hex would make `accent` and `red-500` compare equal, which is the difference
+ * the measurement went to some trouble to keep.
+ */
+function resolved(value) {
+  if (Array.isArray(value)) return value.map(resolved);
+  if (typeof value !== 'string' || value.charAt(0) !== '@') return value;
+  const name = value.slice(1);
+  return /^(spacing|radius)-/.test(name) ? px(name) : value;
+}
+
+function differences(hand, seen, where, out) {
+  // A frame and a text node have nothing to compare; the hand-written entry wraps
+  // some components in a ground the app does not paint, and that is the board's
+  // affordance rather than a difference in the component.
+  if ((hand.t ?? 'frame') !== (seen.t ?? 'frame')) return;
+  for (const key of COMPARED) {
+    if (key === 'fill' && hand[key] !== undefined && seen[key] === undefined) continue;
+    const a = JSON.stringify(resolved(hand[key]));
+    const b = JSON.stringify(resolved(seen[key]));
+    if (a !== b) out.push(`${where}.${key}: drawn ${a ?? 'nothing'}, measured ${b ?? 'nothing'}`);
+  }
+  const handText = (hand.children || []).filter((c) => c.t === 'text');
+  const seenText = (seen.children || []).filter((c) => c.t === 'text');
+  for (const [i, one] of handText.entries()) {
+    const other = seenText[i];
+    if (other === undefined) continue;
+    for (const key of ['size', 'weight']) {
+      const a = one[key] ?? (key === 'weight' ? 'regular' : undefined);
+      const b = other[key] ?? (key === 'weight' ? 'regular' : undefined);
+      if (a !== b) out.push(`${where} text ${i}.${key}: drawn ${a}, measured ${b}`);
+    }
+  }
+}
+
+const drift = [];
+for (const [name, entry] of Object.entries(measured)) {
+  const hand = byHand[name];
+  if (hand === undefined) continue;
+  const ours = hand.options ?? [hand];
+  const theirs = entry.options ?? (Array.isArray(entry) ? entry : [entry]);
+  // By variant value where there is one, because the hand-written order is this
+  // file's and the measured order is the catalogue's, and lining them up by index
+  // would report a difference for every option whenever the two disagree.
+  const seen = {};
+  for (const [i, one] of theirs.entries()) seen[one.value ?? i] = one;
+  for (const [i, one] of ours.entries()) {
+    const other = seen[one.value ?? i];
+    if (other !== undefined) differences(one, other, `${name}[${one.value ?? i}]`, drift);
+  }
+}
+
+// Everything the hand-written list does not already carry, drawn from what the app
+// actually renders.
+const fromMeasurement = [];
+for (const [name, entry] of Object.entries(measured)) {
+  if (byHand[name] !== undefined) continue;
+  for (const one of Array.isArray(entry) ? entry : [entry]) {
+    KIT.push(one);
+    fromMeasurement.push(one.name);
+  }
+}
+
 const problems = [];
 const gaps = [];
 
@@ -941,27 +1039,37 @@ for (const entry of KIT) {
 // options, so a column that fits `ui/Typo` (eleven of them) wastes a screen on
 // `ui/Hairline`. Three columns, each with its own running y.
 
-const COLUMN_X = [0, 460, 920];
-const columnY = [0, 0, 0];
-const HEADS = ['ui/Typo, Textstile', 'ui/Button', 'profile/NavCard'];
+const COLUMN_WIDTH = 460;
+const COLUMN_HEIGHT = 4200;
 
 const screens = [];
-let column = -1;
+let column = 0;
+let y = 0;
 for (const entry of KIT) {
-  if (HEADS.indexOf(entry.name) !== -1) column++;
-  const at = Math.max(column, 0);
-  const placed = { t: entry.t, name: entry.name, x: COLUMN_X[at], y: columnY[at] };
-  for (const key of Object.keys(entry)) if (key !== 't' && key !== 'name') placed[key] = entry[key];
-  screens.push(placed);
   // Enough room for the tallest variant set; the exact height is only known in Figma.
   const options = entry.options ? entry.options.length : 1;
-  columnY[at] += 120 + options * 90;
+  const height = 120 + options * 90;
+  if (y > 0 && y + height > COLUMN_HEIGHT) {
+    column += 1;
+    y = 0;
+  }
+  const placed = { t: entry.t, name: entry.name, x: column * COLUMN_WIDTH, y: y };
+  for (const key of Object.keys(entry)) if (key !== 't' && key !== 'name') placed[key] = entry[key];
+  screens.push(placed);
+  y += height;
 }
 
 // Refuse BEFORE writing, for the same reason `use-kit.mjs` does: throwing after the
 // file is on disk stops the script and not the damage, and ADR 0021 claims this fails
 // rather than emitting a kit that is quietly incomplete.
 for (const gap of gaps) console.log(`  gap: ${gap}`);
+for (const line of drift) console.log(`  drift: ${line}`);
+if (fromMeasurement.length > 0) {
+  console.log(
+    `  ${fromMeasurement.length} components drawn from the measurement, with no prop` +
+      ` accounting yet: ${fromMeasurement.join(', ')}`,
+  );
+}
 if (problems.length > 0) {
   for (const problem of problems) console.error(`  MISSING: ${problem}`);
   throw new Error(`${problems.length} prop(s) the kit does not account for`);

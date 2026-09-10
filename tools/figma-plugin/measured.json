@@ -1,4 +1,166 @@
 {
+  "ui/Button": [
+    {
+      "t": "frame",
+      "name": "ui/Button, variant=\"primary\"",
+      "dir": "V",
+      "w": "hug",
+      "h": 48,
+      "pad": ["@spacing-m", "@spacing-m", "@spacing-s", "@spacing-s"],
+      "radius": "@radius-md",
+      "fill": "@color-accent",
+      "children": [
+        {
+          "t": "text",
+          "style": "button",
+          "chars": "Jetzt mitmachen",
+          "weight": "bold",
+          "size": 16,
+          "color": "@color-always-light",
+          "tracking": 1.25
+        }
+      ]
+    },
+    {
+      "t": "frame",
+      "name": "ui/Button, variant=\"secondary\"",
+      "dir": "V",
+      "w": "hug",
+      "h": 48,
+      "pad": ["@spacing-m", "@spacing-m", "@spacing-s", "@spacing-s"],
+      "radius": "@radius-md",
+      "fill": "@color-surface",
+      "children": [
+        {
+          "t": "text",
+          "style": "button",
+          "chars": "Jetzt mitmachen",
+          "weight": "bold",
+          "size": 16,
+          "color": "@color-on-canvas",
+          "tracking": 1.25
+        }
+      ]
+    },
+    {
+      "t": "frame",
+      "name": "ui/Button, variant=\"outline\"",
+      "dir": "V",
+      "w": "hug",
+      "h": 50,
+      "pad": ["@spacing-m", "@spacing-m", "@spacing-s", "@spacing-s"],
+      "radius": "@radius-md",
+      "fill": "@color-canvas",
+      "stroke": "@color-stroke",
+      "strokeWeight": 1,
+      "children": [
+        {
+          "t": "text",
+          "style": "button",
+          "chars": "Jetzt mitmachen",
+          "weight": "bold",
+          "size": 16,
+          "color": "@color-on-canvas",
+          "tracking": 1.25
+        }
+      ]
+    },
+    {
+      "t": "frame",
+      "name": "ui/Button, variant=\"club\"",
+      "dir": "V",
+      "w": "hug",
+      "h": 48,
+      "pad": ["@spacing-m", "@spacing-m", "@spacing-s", "@spacing-s"],
+      "radius": "@radius-md",
+      "fill": "@color-accent-alternative",
+      "children": [
+        {
+          "t": "text",
+          "style": "button",
+          "chars": "Jetzt mitmachen",
+          "weight": "bold",
+          "size": 16,
+          "color": "@color-always-dark",
+          "tracking": 1.25
+        }
+      ]
+    },
+    {
+      "t": "frame",
+      "name": "ui/Button, variant=\"onEmphasis\", on bg-accent",
+      "dir": "V",
+      "w": 319,
+      "h": 72,
+      "pad": ["@spacing-s", "@spacing-s", "@spacing-s", "@spacing-s"],
+      "fill": "@color-accent",
+      "children": [
+        {
+          "t": "frame",
+          "dir": "V",
+          "w": "hug",
+          "h": 48,
+          "pad": ["@spacing-m", "@spacing-m", "@spacing-s", "@spacing-s"],
+          "radius": "@radius-md",
+          "fill": "@color-always-light",
+          "children": [
+            {
+              "t": "text",
+              "style": "button",
+              "chars": "Mitglied werden",
+              "weight": "bold",
+              "size": 16,
+              "color": "@color-always-dark",
+              "tracking": 1.25
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "t": "frame",
+      "name": "ui/Button, disabled",
+      "dir": "V",
+      "w": "hug",
+      "h": 48,
+      "pad": ["@spacing-m", "@spacing-m", "@spacing-s", "@spacing-s"],
+      "radius": "@radius-md",
+      "fill": "@color-accent",
+      "opacity": 0.4,
+      "children": [
+        {
+          "t": "text",
+          "style": "button",
+          "chars": "Gesperrt",
+          "weight": "bold",
+          "size": 16,
+          "color": "@color-always-light",
+          "tracking": 1.25
+        }
+      ]
+    },
+    {
+      "t": "frame",
+      "name": "ui/Button, fullWidth",
+      "dir": "V",
+      "w": 319,
+      "h": 48,
+      "pad": ["@spacing-m", "@spacing-m", "@spacing-s", "@spacing-s"],
+      "radius": "@radius-md",
+      "fill": "@color-accent",
+      "children": [
+        {
+          "t": "text",
+          "style": "button",
+          "chars": "Über die ganze Breite",
+          "weight": "bold",
+          "size": 16,
+          "color": "@color-always-light",
+          "tracking": 1.25
+        }
+      ]
+    }
+  ],
   "ui/Badge": {
     "t": "variants",
     "name": "ui/Badge",
@@ -95,6 +257,171 @@
       }
     ]
   },
+  "ui/Chip": [
+    {
+      "t": "frame",
+      "name": "ui/Chip, default",
+      "dir": "V",
+      "w": 319,
+      "h": 35,
+      "pad": ["@spacing-s", "@spacing-s", "@spacing-2xs", "@spacing-2xs"],
+      "radius": "@radius-md",
+      "fill": "@color-surface",
+      "stroke": "@color-stroke",
+      "strokeWeight": 1,
+      "children": [
+        {
+          "t": "text",
+          "chars": "Klima",
+          "weight": "semibold",
+          "size": 14,
+          "color": "@color-on-canvas",
+          "tracking": 1.43
+        }
+      ]
+    },
+    {
+      "t": "frame",
+      "name": "ui/Chip, selected",
+      "dir": "V",
+      "w": 319,
+      "h": 33,
+      "pad": ["@spacing-s", "@spacing-s", "@spacing-2xs", "@spacing-2xs"],
+      "radius": "@radius-md",
+      "fill": "@color-accent",
+      "children": [
+        {
+          "t": "text",
+          "chars": "Klima",
+          "weight": "semibold",
+          "size": 14,
+          "color": "@color-always-light",
+          "tracking": 1.43
+        }
+      ]
+    }
+  ],
+  "ui/Card": {
+    "t": "variants",
+    "name": "ui/Card",
+    "prop": "tone",
+    "options": [
+      {
+        "value": "outline",
+        "t": "frame",
+        "dir": "V",
+        "w": 319,
+        "h": 73,
+        "pad": ["@spacing-m", "@spacing-m", "@spacing-m", "@spacing-m"],
+        "radius": "@radius-md",
+        "fill": "@color-canvas",
+        "stroke": "@color-stroke",
+        "strokeWeight": 1,
+        "children": [
+          {
+            "t": "text",
+            "style": "text-m",
+            "chars": "Inhalt der Karte",
+            "size": 15,
+            "color": "@color-on-canvas",
+            "tracking": 0.67
+          }
+        ]
+      },
+      {
+        "value": "surface",
+        "t": "frame",
+        "dir": "V",
+        "w": 319,
+        "h": 71,
+        "pad": ["@spacing-m", "@spacing-m", "@spacing-m", "@spacing-m"],
+        "radius": "@radius-md",
+        "fill": "@color-surface",
+        "children": [
+          {
+            "t": "text",
+            "style": "text-m",
+            "chars": "Inhalt der Karte",
+            "size": 15,
+            "color": "@color-on-canvas",
+            "tracking": 0.67
+          }
+        ]
+      }
+    ]
+  },
+  "ui/Overline": [
+    {
+      "t": "text",
+      "name": "ui/Overline, default",
+      "chars": "JUNGE FORMATE",
+      "weight": "bold",
+      "size": 12,
+      "color": "@color-on-canvas-muted",
+      "tracking": 10
+    },
+    {
+      "t": "text",
+      "name": "ui/Overline, color=\"accent\"",
+      "chars": "FAKTENCHECK",
+      "weight": "bold",
+      "size": 12,
+      "color": "@color-on-canvas-accent",
+      "tracking": 10
+    }
+  ],
+  "ui/SectionHeader": [
+    {
+      "t": "frame",
+      "name": "ui/SectionHeader, title only",
+      "dir": "H",
+      "w": 319,
+      "h": 25,
+      "children": [
+        {
+          "t": "text",
+          "style": "headline-m",
+          "chars": "Aus dem Backstage",
+          "weight": "bold",
+          "size": 19,
+          "color": "@color-on-canvas"
+        }
+      ]
+    },
+    {
+      "t": "frame",
+      "name": "ui/SectionHeader, with actionLabel",
+      "dir": "H",
+      "w": 319,
+      "h": 25,
+      "children": [
+        {
+          "t": "text",
+          "style": "headline-m",
+          "chars": "Aus dem Backstage",
+          "weight": "bold",
+          "size": 19,
+          "color": "@color-on-canvas"
+        },
+        {
+          "t": "frame",
+          "dir": "V",
+          "w": 40,
+          "h": 21,
+          "children": [
+            {
+              "t": "text",
+              "style": "text-s",
+              "chars": "Alles →",
+              "size": 14,
+              "color": "@color-on-canvas-accent",
+              "tracking": 1.43
+            }
+          ]
+        }
+      ]
+    }
+  ],
   "ui/SectionCard": [
     {
       "t": "frame",
@@ -173,6 +500,2453 @@
               "size": 15,
               "color": "@color-on-canvas",
               "tracking": 0.67
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "ui/Hairline": [
+    {
+      "t": "frame",
+      "name": "ui/Hairline",
+      "dir": "V",
+      "w": 319,
+      "h": 1,
+      "fill": "@color-stroke"
+    }
+  ],
+  "ui/Thumbnail": [
+    {
+      "t": "frame",
+      "name": "ui/Thumbnail, aspectRatio={16 / 9}, no uri",
+      "dir": "V",
+      "w": 319,
+      "h": 179,
+      "fill": "@color-grey-300",
+      "children": [
+        {
+          "t": "frame",
+          "dir": "V",
+          "w": "fill",
+          "h": 179,
+          "children": [
+            {
+              "t": "text",
+              "chars": "◎",
+              "font": "sans",
+              "size": 26,
+              "color": "@color-stroke"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "t": "frame",
+      "name": "ui/Thumbnail, aspectRatio={1}, icon=\"mic-outline\"",
+      "dir": "V",
+      "w": 116,
+      "h": 116,
+      "children": [
+        {
+          "t": "frame",
+          "dir": "V",
+          "w": "fill",
+          "h": 116,
+          "fill": "@color-grey-300",
+          "children": [
+            {
+              "t": "frame",
+              "dir": "V",
+              "w": "fill",
+              "h": 116,
+              "children": [
+                {
+                  "t": "text",
+                  "chars": "◎",
+                  "font": "sans",
+                  "size": 26,
+                  "color": "@color-stroke"
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "t": "frame",
+      "name": "ui/Thumbnail, uri that cannot load, with an overlay",
+      "w": 319,
+      "h": 179,
+      "fill": "@color-grey-300",
+      "children": [
+        {
+          "t": "frame",
+          "dir": "V",
+          "w": "fill",
+          "h": 179,
+          "children": [
+            {
+              "t": "text",
+              "chars": "◎",
+              "font": "sans",
+              "size": 26,
+              "color": "@color-stroke"
+            }
+          ]
+        },
+        {
+          "t": "frame",
+          "dir": "V",
+          "w": "fill",
+          "h": 179,
+          "x": 0,
+          "y": 0,
+          "children": [
+            {
+              "t": "frame",
+              "dir": "H",
+              "w": "hug",
+              "h": 25,
+              "pad": ["@spacing-2xs", "@spacing-2xs", "@spacing-4xs", "@spacing-4xs"],
+              "radius": "@radius-s",
+              "fill": "@color-accent",
+              "children": [
+                {
+                  "t": "text",
+                  "chars": "Video",
+                  "size": 11,
+                  "color": "@color-always-light",
+                  "tracking": 3.64,
+                  "transform": "uppercase"
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "ui/ScreenHeader": [
+    {
+      "t": "frame",
+      "name": "ui/ScreenHeader, default",
+      "dir": "V",
+      "w": 319,
+      "h": 72,
+      "children": [
+        {
+          "t": "frame",
+          "dir": "V",
+          "w": "fill",
+          "h": 48,
+          "fill": "@color-canvas",
+          "children": [
+            {
+              "t": "frame",
+              "dir": "H",
+              "w": "fill",
+              "h": 47,
+              "pad": ["@spacing-s", "@spacing-s", "@spacing-2xs", "@spacing-2xs"],
+              "children": [
+                {
+                  "t": "frame",
+                  "dir": "H",
+                  "w": 67,
+                  "h": 35,
+                  "pad": [0, 0, "@spacing-2xs", "@spacing-2xs"],
+                  "children": [
+                    {
+                      "t": "text",
+                      "chars": "◎",
+                      "font": "sans",
+                      "size": 20,
+                      "color": "@color-on-canvas"
+                    },
+                    {
+                      "t": "space",
+                      "w": "@spacing-4xs"
+                    },
+                    {
+                      "t": "text",
+                      "chars": "Zurück",
+                      "weight": "semibold",
+                      "size": 15,
+                      "color": "@color-on-canvas",
+                      "tracking": 0.67
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "t": "frame",
+              "dir": "V",
+              "w": "fill",
+              "h": 1,
+              "fill": "@color-stroke"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "t": "frame",
+      "name": "ui/ScreenHeader, backLabel=\"Abbrechen\"",
+      "dir": "V",
+      "w": 319,
+      "h": 72,
+      "children": [
+        {
+          "t": "frame",
+          "dir": "V",
+          "w": "fill",
+          "h": 48,
+          "fill": "@color-canvas",
+          "children": [
+            {
+              "t": "frame",
+              "dir": "H",
+              "w": "fill",
+              "h": 47,
+              "pad": ["@spacing-s", "@spacing-s", "@spacing-2xs", "@spacing-2xs"],
+              "children": [
+                {
+                  "t": "frame",
+                  "dir": "H",
+                  "w": 93,
+                  "h": 35,
+                  "pad": [0, 0, "@spacing-2xs", "@spacing-2xs"],
+                  "children": [
+                    {
+                      "t": "text",
+                      "chars": "◎",
+                      "font": "sans",
+                      "size": 20,
+                      "color": "@color-on-canvas"
+                    },
+                    {
+                      "t": "space",
+                      "w": "@spacing-4xs"
+                    },
+                    {
+                      "t": "text",
+                      "chars": "Abbrechen",
+                      "weight": "semibold",
+                      "size": 15,
+                      "color": "@color-on-canvas",
+                      "tracking": 0.67
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "t": "frame",
+              "dir": "V",
+              "w": "fill",
+              "h": 1,
+              "fill": "@color-stroke"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "t": "frame",
+      "name": "ui/ScreenHeader, with children, so back shrinks to the chevron",
+      "dir": "V",
+      "w": 319,
+      "h": 72,
+      "children": [
+        {
+          "t": "frame",
+          "dir": "V",
+          "w": "fill",
+          "h": 57,
+          "fill": "@color-canvas",
+          "children": [
+            {
+              "t": "frame",
+              "dir": "H",
+              "w": "fill",
+              "h": 56,
+              "pad": ["@spacing-s", "@spacing-s", "@spacing-2xs", "@spacing-2xs"],
+              "children": [
+                {
+                  "t": "frame",
+                  "dir": "H",
+                  "w": 20,
+                  "h": 35,
+                  "pad": [0, 0, "@spacing-2xs", "@spacing-2xs"],
+                  "children": [
+                    {
+                      "t": "text",
+                      "chars": "◎",
+                      "font": "sans",
+                      "size": 20,
+                      "color": "@color-on-canvas"
+                    }
+                  ]
+                },
+                {
+                  "t": "space",
+                  "w": "@spacing-2xs"
+                },
+                {
+                  "t": "frame",
+                  "dir": "V",
+                  "w": 269,
+                  "h": 44,
+                  "children": [
+                    {
+                      "t": "frame",
+                      "dir": "H",
+                      "w": "fill",
+                      "h": 44,
+                      "pad": ["@spacing-s", "@spacing-s", 0, 0],
+                      "radius": "@radius-md",
+                      "fill": "@color-surface",
+                      "children": [
+                        {
+                          "t": "text",
+                          "chars": "◎",
+                          "font": "sans",
+                          "size": 18,
+                          "color": "@color-on-canvas-muted"
+                        },
+                        {
+                          "t": "space",
+                          "w": "@spacing-xs"
+                        },
+                        {
+                          "t": "text",
+                          "style": "text-m",
+                          "chars": "Recherchen, Faktenchecks, Projekte …",
+                          "size": 15,
+                          "color": "@color-stroke-strong",
+                          "tracking": 0.67
+                        }
+                      ]
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "t": "frame",
+              "dir": "V",
+              "w": "fill",
+              "h": 1,
+              "fill": "@color-stroke"
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "feed/ArticleHero": [
+    {
+      "t": "frame",
+      "name": "feed/ArticleHero, with image and readingMinutes",
+      "dir": "V",
+      "w": 319,
+      "h": 431,
+      "children": [
+        {
+          "t": "frame",
+          "dir": "V",
+          "w": 367,
+          "h": 206,
+          "children": [
+            {
+              "t": "frame",
+              "dir": "V",
+              "w": "fill",
+              "h": 206,
+              "fill": "@color-grey-300",
+              "children": [
+                {
+                  "t": "frame",
+                  "dir": "V",
+                  "w": "fill",
+                  "h": 206,
+                  "children": [
+                    {
+                      "t": "text",
+                      "chars": "◎",
+                      "font": "sans",
+                      "size": 26,
+                      "color": "@color-stroke"
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "t": "space",
+          "h": "@spacing-s"
+        },
+        {
+          "t": "text",
+          "chars": "RECHERCHE",
+          "weight": "bold",
+          "size": 12,
+          "color": "@color-on-canvas-accent",
+          "tracking": 10
+        },
+        {
+          "t": "space",
+          "h": "@spacing-2xs"
+        },
+        {
+          "t": "text",
+          "style": "headline-l",
+          "chars": "Wem gehört die Stadt? Was die Grundbücher über Eigentum verraten",
+          "weight": "bold",
+          "size": 23,
+          "color": "@color-on-canvas",
+          "tracking": -0.43
+        },
+        {
+          "t": "space",
+          "h": "@spacing-2xs"
+        },
+        {
+          "t": "text",
+          "style": "text-m",
+          "chars": "Zehntausende Wohnungen, wenige Eigentümer. Eine Recherche über Konzerne, Briefkastenfirmen und die Frage, wer eine Stadt eigentlich besitzt.",
+          "size": 15,
+          "color": "@color-on-canvas-muted",
+          "tracking": 0.67
+        },
+        {
+          "t": "space",
+          "h": "@spacing-2xs"
+        },
+        {
+          "t": "text",
+          "style": "text-s",
+          "chars": "Alex Beispiel · 12. August · 9 Min. Lesezeit",
+          "size": 14,
+          "color": "@color-stroke-strong",
+          "tracking": 1.43
+        }
+      ]
+    },
+    {
+      "t": "frame",
+      "name": "feed/ArticleHero, imageUrl: null",
+      "dir": "V",
+      "w": 319,
+      "h": 408,
+      "children": [
+        {
+          "t": "frame",
+          "dir": "V",
+          "w": 367,
+          "h": 206,
+          "children": [
+            {
+              "t": "frame",
+              "dir": "V",
+              "w": "fill",
+              "h": 206,
+              "fill": "@color-grey-300",
+              "children": [
+                {
+                  "t": "frame",
+                  "dir": "V",
+                  "w": "fill",
+                  "h": 206,
+                  "children": [
+                    {
+                      "t": "text",
+                      "chars": "◎",
+                      "font": "sans",
+                      "size": 26,
+                      "color": "@color-stroke"
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "t": "space",
+          "h": "@spacing-s"
+        },
+        {
+          "t": "text",
+          "chars": "KLIMA",
+          "weight": "bold",
+          "size": 12,
+          "color": "@color-on-canvas-accent",
+          "tracking": 10
+        },
+        {
+          "t": "space",
+          "h": "@spacing-2xs"
+        },
+        {
+          "t": "text",
+          "style": "headline-l",
+          "chars": "Ohne Bild und ohne Lesezeit, weil der RSS-Weg beides nicht kennt",
+          "weight": "bold",
+          "size": 23,
+          "color": "@color-on-canvas",
+          "tracking": -0.43
+        },
+        {
+          "t": "space",
+          "h": "@spacing-2xs"
+        },
+        {
+          "t": "text",
+          "style": "text-m",
+          "chars": "Der Fallback-Pfad liefert nur Titel, Teaser und Datum.",
+          "size": 15,
+          "color": "@color-on-canvas-muted",
+          "tracking": 0.67
+        },
+        {
+          "t": "space",
+          "h": "@spacing-2xs"
+        },
+        {
+          "t": "text",
+          "style": "text-s",
+          "chars": "3. August",
+          "size": 14,
+          "color": "@color-stroke-strong",
+          "tracking": 1.43
+        }
+      ]
+    }
+  ],
+  "feed/ArticleRow": [
+    {
+      "t": "frame",
+      "name": "feed/ArticleRow, default",
+      "dir": "V",
+      "w": 319,
+      "h": 101,
+      "pad": [0, 0, "@spacing-s", "@spacing-s"],
+      "children": [
+        {
+          "t": "text",
+          "style": "headline-xs",
+          "chars": "Wem gehört die Stadt? Was die Grundbücher über Eigentum verraten",
+          "weight": "bold",
+          "size": 17,
+          "color": "@color-on-canvas",
+          "tracking": 1.18
+        },
+        {
+          "t": "space",
+          "h": "@spacing-3xs"
+        },
+        {
+          "t": "frame",
+          "dir": "H",
+          "w": "fill",
+          "h": 21,
+          "gap": "@spacing-y-2xs",
+          "children": [
+            {
+              "t": "text",
+              "style": "text-s",
+              "chars": "Alex Beispiel",
+              "size": 14,
+              "color": "@color-on-canvas-muted",
+              "tracking": 1.43
+            },
+            {
+              "t": "text",
+              "style": "text-s",
+              "chars": "· 12. August 2026",
+              "size": 14,
+              "color": "@color-stroke-strong",
+              "tracking": 1.43
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "t": "frame",
+      "name": "feed/ArticleRow, long title, no image",
+      "dir": "V",
+      "w": 319,
+      "h": 101,
+      "pad": [0, 0, "@spacing-s", "@spacing-s"],
+      "children": [
+        {
+          "t": "text",
+          "style": "headline-xs",
+          "chars": "Ohne Bild und ohne Lesezeit, weil der RSS-Weg beides nicht kennt",
+          "weight": "bold",
+          "size": 17,
+          "color": "@color-on-canvas",
+          "tracking": 1.18
+        },
+        {
+          "t": "space",
+          "h": "@spacing-3xs"
+        },
+        {
+          "t": "frame",
+          "dir": "H",
+          "w": "fill",
+          "h": 21,
+          "gap": "@spacing-y-2xs",
+          "children": [
+            {
+              "t": "text",
+              "style": "text-s",
+              "chars": "3. August 2026",
+              "size": 14,
+              "color": "@color-stroke-strong",
+              "tracking": 1.43
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "feed/FaktencheckRail": [
+    {
+      "t": "frame",
+      "name": "feed/FaktencheckRail, three items",
+      "dir": "V",
+      "w": 367,
+      "h": 135,
+      "children": [
+        {
+          "t": "frame",
+          "dir": "H",
+          "w": "fill",
+          "h": 135,
+          "children": [
+            {
+              "t": "frame",
+              "dir": "H",
+              "w": 792,
+              "h": 135,
+              "gap": "@spacing-s",
+              "pad": ["@spacing-m", "@spacing-m", 0, 0],
+              "children": [
+                {
+                  "t": "frame",
+                  "dir": "V",
+                  "w": 240,
+                  "h": 135,
+                  "pad": ["@spacing-s", "@spacing-s", "@spacing-s", "@spacing-s"],
+                  "radius": "@radius-md",
+                  "fill": "@color-canvas",
+                  "stroke": "@color-stroke",
+                  "strokeWeight": 1,
+                  "children": [
+                    {
+                      "t": "frame",
+                      "dir": "H",
+                      "w": "hug",
+                      "h": 25,
+                      "pad": ["@spacing-2xs", "@spacing-2xs", "@spacing-4xs", "@spacing-4xs"],
+                      "radius": "@radius-s",
+                      "fill": "@color-accent",
+                      "children": [
+                        {
+                          "t": "text",
+                          "chars": "Faktencheck",
+                          "size": 11,
+                          "color": "@color-always-light",
+                          "tracking": 3.64,
+                          "transform": "uppercase"
+                        }
+                      ]
+                    },
+                    {
+                      "t": "space",
+                      "h": "@spacing-2xs"
+                    },
+                    {
+                      "t": "text",
+                      "style": "headline-xs",
+                      "chars": "Roboter greift Menschen an: Video ist inszeniert",
+                      "weight": "bold",
+                      "size": 17,
+                      "color": "@color-on-canvas",
+                      "tracking": 1.18
+                    }
+                  ]
+                },
+                {
+                  "t": "frame",
+                  "dir": "V",
+                  "w": 240,
+                  "h": 135,
+                  "pad": ["@spacing-s", "@spacing-s", "@spacing-s", "@spacing-s"],
+                  "radius": "@radius-md",
+                  "fill": "@color-canvas",
+                  "stroke": "@color-stroke",
+                  "strokeWeight": 1,
+                  "children": [
+                    {
+                      "t": "frame",
+                      "dir": "H",
+                      "w": "hug",
+                      "h": 25,
+                      "pad": ["@spacing-2xs", "@spacing-2xs", "@spacing-4xs", "@spacing-4xs"],
+                      "radius": "@radius-s",
+                      "fill": "@color-accent",
+                      "children": [
+                        {
+                          "t": "text",
+                          "chars": "Faktencheck",
+                          "size": 11,
+                          "color": "@color-always-light",
+                          "tracking": 3.64,
+                          "transform": "uppercase"
+                        }
+                      ]
+                    },
+                    {
+                      "t": "space",
+                      "h": "@spacing-2xs"
+                    },
+                    {
+                      "t": "text",
+                      "style": "headline-xs",
+                      "chars": "Zahl der Windräder: Der Vergleich hinkt, die Zahl stimmt aber",
+                      "weight": "bold",
+                      "size": 17,
+                      "color": "@color-on-canvas",
+                      "tracking": 1.18
+                    }
+                  ]
+                },
+                {
+                  "t": "frame",
+                  "dir": "V",
+                  "w": 240,
+                  "h": 135,
+                  "pad": ["@spacing-s", "@spacing-s", "@spacing-s", "@spacing-s"],
+                  "radius": "@radius-md",
+                  "fill": "@color-canvas",
+                  "stroke": "@color-stroke",
+                  "strokeWeight": 1,
+                  "children": [
+                    {
+                      "t": "frame",
+                      "dir": "H",
+                      "w": "hug",
+                      "h": 25,
+                      "pad": ["@spacing-2xs", "@spacing-2xs", "@spacing-4xs", "@spacing-4xs"],
+                      "radius": "@radius-s",
+                      "fill": "@color-accent",
+                      "children": [
+                        {
+                          "t": "text",
+                          "chars": "Faktencheck",
+                          "size": 11,
+                          "color": "@color-always-light",
+                          "tracking": 3.64,
+                          "transform": "uppercase"
+                        }
+                      ]
+                    },
+                    {
+                      "t": "space",
+                      "h": "@spacing-2xs"
+                    },
+                    {
+                      "t": "text",
+                      "style": "headline-xs",
+                      "chars": "Ein sehr langer Titel, der über drei Zeilen läuft und deshalb hier steht",
+                      "weight": "bold",
+                      "size": 17,
+                      "color": "@color-on-canvas",
+                      "tracking": 1.18
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "t": "text",
+      "name": "feed/FaktencheckRail, items={[]}",
+      "style": "text-s",
+      "chars": "canvas",
+      "size": 14,
+      "color": "@color-on-canvas-muted",
+      "tracking": 1.43
+    }
+  ],
+  "home/HomeHeader": [
+    {
+      "t": "frame",
+      "name": "home/HomeHeader",
+      "dir": "V",
+      "w": 319,
+      "h": 36,
+      "children": [
+        {
+          "t": "frame",
+          "dir": "H",
+          "w": "fill",
+          "h": 23,
+          "children": [
+            {
+              "t": "text",
+              "chars": "CORRECTIV",
+              "weight": "bold",
+              "size": 15,
+              "color": "@color-on-canvas",
+              "tracking": 10
+            },
+            {
+              "t": "text",
+              "style": "text-s",
+              "chars": "Donnerstag, 10. September 2026",
+              "size": 14,
+              "color": "@color-on-canvas-muted",
+              "tracking": 1.43
+            }
+          ]
+        },
+        {
+          "t": "space",
+          "h": "@spacing-s"
+        },
+        {
+          "t": "frame",
+          "dir": "V",
+          "w": "fill",
+          "h": 1,
+          "fill": "@color-stroke"
+        }
+      ]
+    }
+  ],
+  "home/SpotlightBriefing": [
+    {
+      "t": "frame",
+      "name": "home/SpotlightBriefing",
+      "dir": "V",
+      "w": 319,
+      "h": 282,
+      "pad": ["@spacing-m", "@spacing-m", "@spacing-m", "@spacing-m"],
+      "radius": "@radius-md",
+      "fill": "@color-surface",
+      "children": [
+        {
+          "t": "frame",
+          "dir": "H",
+          "w": "fill",
+          "h": 21,
+          "children": [
+            {
+              "t": "text",
+              "chars": "SPOTLIGHT",
+              "weight": "bold",
+              "size": 12,
+              "color": "@color-on-canvas",
+              "tracking": 10
+            },
+            {
+              "t": "frame",
+              "dir": "V",
+              "w": 101,
+              "h": 21,
+              "children": [
+                {
+                  "t": "text",
+                  "chars": "Alle Ausgaben →",
+                  "weight": "bold",
+                  "size": 14,
+                  "color": "@color-on-canvas-accent",
+                  "tracking": 1.43
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "t": "frame",
+          "dir": "V",
+          "w": "fill",
+          "h": 71,
+          "children": [
+            {
+              "t": "space",
+              "h": "@spacing-s"
+            },
+            {
+              "t": "frame",
+              "dir": "V",
+              "w": "fill",
+              "h": 1,
+              "fill": "@color-stroke"
+            },
+            {
+              "t": "frame",
+              "dir": "H",
+              "w": "fill",
+              "h": 58,
+              "gap": "@spacing-s",
+              "pad": [0, 0, "@spacing-s", 0],
+              "children": [
+                {
+                  "t": "text",
+                  "chars": "9. September",
+                  "weight": "bold",
+                  "size": 14,
+                  "color": "@color-on-canvas-muted",
+                  "tracking": 1.43
+                },
+                {
+                  "t": "text",
+                  "style": "text-m",
+                  "chars": "Wehren sich jetzt die Bürokraten?",
+                  "size": 15,
+                  "color": "@color-on-canvas",
+                  "tracking": 0.67
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "t": "frame",
+          "dir": "V",
+          "w": "fill",
+          "h": 71,
+          "children": [
+            {
+              "t": "space",
+              "h": "@spacing-s"
+            },
+            {
+              "t": "frame",
+              "dir": "V",
+              "w": "fill",
+              "h": 1,
+              "fill": "@color-stroke"
+            },
+            {
+              "t": "frame",
+              "dir": "H",
+              "w": "fill",
+              "h": 58,
+              "gap": "@spacing-s",
+              "pad": [0, 0, "@spacing-s", 0],
+              "children": [
+                {
+                  "t": "text",
+                  "chars": "8. September",
+                  "weight": "bold",
+                  "size": 14,
+                  "color": "@color-on-canvas-muted",
+                  "tracking": 1.43
+                },
+                {
+                  "t": "text",
+                  "style": "text-m",
+                  "chars": "Jetzt amtlich: Deutschland wird dümmer",
+                  "size": 15,
+                  "color": "@color-on-canvas",
+                  "tracking": 0.67
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "t": "frame",
+          "dir": "V",
+          "w": "fill",
+          "h": 71,
+          "children": [
+            {
+              "t": "space",
+              "h": "@spacing-s"
+            },
+            {
+              "t": "frame",
+              "dir": "V",
+              "w": "fill",
+              "h": 1,
+              "fill": "@color-stroke"
+            },
+            {
+              "t": "frame",
+              "dir": "H",
+              "w": "fill",
+              "h": 58,
+              "gap": "@spacing-s",
+              "pad": [0, 0, "@spacing-s", 0],
+              "children": [
+                {
+                  "t": "text",
+                  "chars": "7. September",
+                  "weight": "bold",
+                  "size": 14,
+                  "color": "@color-on-canvas-muted",
+                  "tracking": 1.43
+                },
+                {
+                  "t": "text",
+                  "style": "text-m",
+                  "chars": "Vorhang zu und alle Fragen offen",
+                  "size": 15,
+                  "color": "@color-on-canvas",
+                  "tracking": 0.67
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "home/MediathekReihe": [
+    {
+      "t": "frame",
+      "name": "home/MediathekReihe",
+      "dir": "H",
+      "w": 319,
+      "h": 177,
+      "gap": "@spacing-s",
+      "children": [
+        {
+          "t": "frame",
+          "dir": "V",
+          "w": 142,
+          "h": 177,
+          "radius": "@radius-md",
+          "fill": "@color-surface",
+          "children": [
+            {
+              "t": "frame",
+              "w": "fill",
+              "h": 80,
+              "fill": "@color-grey-300",
+              "children": [
+                {
+                  "t": "frame",
+                  "dir": "V",
+                  "w": "fill",
+                  "h": 80,
+                  "children": [
+                    {
+                      "t": "frame",
+                      "w": "fill",
+                      "h": 0,
+                      "children": [
+                        {
+                          "t": "frame",
+                          "dir": "H",
+                          "w": "fill",
+                          "h": 80,
+                          "x": 0,
+                          "y": 0,
+                          "opacity": 0.83336
+                        }
+                      ]
+                    }
+                  ]
+                },
+                {
+                  "t": "frame",
+                  "dir": "V",
+                  "w": "fill",
+                  "h": 80,
+                  "x": 0,
+                  "y": 0,
+                  "children": [
+                    {
+                      "t": "frame",
+                      "dir": "V",
+                      "w": 52,
+                      "h": 52,
+                      "radius": 26,
+                      "fill": "@color-always-dark/70",
+                      "children": [
+                        {
+                          "t": "text",
+                          "chars": "◎",
+                          "font": "sans",
+                          "size": 22,
+                          "color": "@color-always-light"
+                        }
+                      ]
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "t": "frame",
+              "dir": "V",
+              "w": "fill",
+              "h": 97,
+              "pad": ["@spacing-s", "@spacing-s", "@spacing-s", "@spacing-s"],
+              "children": [
+                {
+                  "t": "frame",
+                  "dir": "H",
+                  "w": "hug",
+                  "h": 25,
+                  "pad": ["@spacing-2xs", "@spacing-2xs", "@spacing-4xs", "@spacing-4xs"],
+                  "radius": "@radius-s",
+                  "fill": "@color-accent",
+                  "children": [
+                    {
+                      "t": "text",
+                      "chars": "FunFacts",
+                      "size": 11,
+                      "color": "@color-always-light",
+                      "tracking": 3.64,
+                      "transform": "uppercase"
+                    }
+                  ]
+                },
+                {
+                  "t": "space",
+                  "h": "@spacing-2xs"
+                },
+                {
+                  "t": "text",
+                  "chars": "Der Sommer 2026 war ein Fiebertraum | mit Leonie Sun",
+                  "weight": "semibold",
+                  "size": 14,
+                  "color": "@color-on-canvas",
+                  "tracking": 1.43
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "t": "frame",
+          "dir": "V",
+          "w": 166,
+          "h": 177,
+          "pad": ["@spacing-s", "@spacing-s", "@spacing-s", "@spacing-s"],
+          "radius": "@radius-md",
+          "fill": "@color-surface",
+          "children": [
+            {
+              "t": "frame",
+              "dir": "H",
+              "w": "hug",
+              "h": 25,
+              "pad": ["@spacing-2xs", "@spacing-2xs", "@spacing-4xs", "@spacing-4xs"],
+              "radius": "@radius-s",
+              "children": [
+                {
+                  "t": "ellipse",
+                  "w": 7,
+                  "h": 7,
+                  "fill": "@color-accent"
+                },
+                {
+                  "t": "space",
+                  "w": "@spacing-3xs"
+                },
+                {
+                  "t": "text",
+                  "chars": "Live",
+                  "size": 11,
+                  "color": "@color-on-canvas-accent",
+                  "tracking": 3.64,
+                  "transform": "uppercase"
+                }
+              ]
+            },
+            {
+              "t": "frame",
+              "dir": "V",
+              "w": "fill",
+              "h": 95,
+              "children": [
+                {
+                  "t": "text",
+                  "chars": "◎",
+                  "font": "sans",
+                  "size": 24,
+                  "color": "@color-on-canvas-muted"
+                },
+                {
+                  "t": "space",
+                  "h": "@spacing-2xs"
+                },
+                {
+                  "t": "text",
+                  "chars": "Salon5 Radio läuft",
+                  "weight": "semibold",
+                  "size": 14,
+                  "color": "@color-on-canvas",
+                  "tracking": 1.43
+                },
+                {
+                  "t": "text",
+                  "style": "text-s",
+                  "chars": "24/7 aus Bottrop · Tippen zum Hören",
+                  "size": 14,
+                  "color": "@color-on-canvas-muted",
+                  "tracking": 1.43
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "home/BackstageTeaser": [
+    {
+      "t": "frame",
+      "name": "home/BackstageTeaser",
+      "dir": "V",
+      "w": 319,
+      "h": 297,
+      "radius": "@radius-md",
+      "stroke": "@color-accent-alternative",
+      "strokeWeight": 1,
+      "children": [
+        {
+          "t": "frame",
+          "dir": "V",
+          "w": 317,
+          "h": 157,
+          "pad": ["@spacing-m", "@spacing-m", "@spacing-m", "@spacing-m"],
+          "children": [
+            {
+              "t": "frame",
+              "dir": "H",
+              "w": "hug",
+              "h": 25,
+              "pad": ["@spacing-2xs", "@spacing-2xs", "@spacing-4xs", "@spacing-4xs"],
+              "radius": "@radius-s",
+              "fill": "@color-accent-alternative",
+              "children": [
+                {
+                  "t": "text",
+                  "chars": "Backstage",
+                  "size": 11,
+                  "color": "@color-always-dark",
+                  "tracking": 3.64,
+                  "transform": "uppercase"
+                }
+              ]
+            },
+            {
+              "t": "space",
+              "h": "@spacing-2xs"
+            },
+            {
+              "t": "text",
+              "style": "headline-xs",
+              "chars": "Woche 3: Die Spur führt nach Bern",
+              "weight": "bold",
+              "size": 17,
+              "color": "@color-on-canvas",
+              "tracking": 1.18
+            },
+            {
+              "t": "space",
+              "h": "@spacing-2xs"
+            },
+            {
+              "t": "text",
+              "style": "text-m",
+              "chars": "Ein anonymer Hinweis, ein Aktenordner und eine Adresse in der Bundesstadt. Wie wir den Verbindungen der Fonds nachgegangen sind.",
+              "size": 15,
+              "color": "@color-on-canvas-muted",
+              "tracking": 0.67
+            }
+          ]
+        },
+        {
+          "t": "frame",
+          "dir": "H",
+          "w": 269,
+          "h": 66,
+          "pad": ["@spacing-s", "@spacing-s", "@spacing-s", "@spacing-s"],
+          "radius": "@radius-md",
+          "fill": "@color-surface",
+          "children": [
+            {
+              "t": "text",
+              "chars": "◎",
+              "font": "sans",
+              "size": 20,
+              "color": "@color-on-canvas-muted"
+            },
+            {
+              "t": "space",
+              "w": "@spacing-s"
+            },
+            {
+              "t": "text",
+              "chars": "Bonusfolge: Wie wir an die Pensionskassen-Daten kamen",
+              "weight": "semibold",
+              "size": 14,
+              "color": "@color-on-canvas",
+              "tracking": 1.43
+            }
+          ]
+        },
+        {
+          "t": "space",
+          "h": "@spacing-m"
+        },
+        {
+          "t": "frame",
+          "dir": "V",
+          "w": 269,
+          "h": 24,
+          "children": [
+            {
+              "t": "text",
+              "style": "button",
+              "chars": "Alles aus dem Backstage →",
+              "weight": "bold",
+              "size": 16,
+              "color": "@color-on-canvas-accent",
+              "tracking": 1.25
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "home/CalloutTeaser": {
+    "t": "variants",
+    "name": "home/CalloutTeaser",
+    "prop": "kind",
+    "options": [
+      {
+        "value": "crowdnewsroom",
+        "t": "frame",
+        "dir": "V",
+        "w": 319,
+        "h": 269,
+        "pad": ["@spacing-m", "@spacing-m", "@spacing-m", "@spacing-m"],
+        "radius": "@radius-md",
+        "fill": "@color-always-dark",
+        "children": [
+          {
+            "t": "text",
+            "chars": "MITMACHEN · CROWDNEWSROOM",
+            "weight": "bold",
+            "size": 12,
+            "color": "@color-always-light",
+            "tracking": 10
+          },
+          {
+            "t": "space",
+            "h": "@spacing-2xs"
+          },
+          {
+            "t": "text",
+            "style": "headline-xs",
+            "chars": "Wem gehört die Stadt?",
+            "weight": "bold",
+            "size": 17,
+            "color": "@color-always-light",
+            "tracking": 1.18
+          },
+          {
+            "t": "space",
+            "h": "@spacing-2xs"
+          },
+          {
+            "t": "text",
+            "style": "text-m",
+            "chars": "Steigende Mieten, anonyme Eigentümer: Helfen Sie uns aufzudecken, wem die Häuser in Ihrer Nachbarschaft gehören.",
+            "size": 15,
+            "color": "@color-always-light",
+            "tracking": 0.67
+          },
+          {
+            "t": "space",
+            "h": "@spacing-s"
+          },
+          {
+            "t": "frame",
+            "dir": "H",
+            "w": "fill",
+            "h": 21,
+            "opacity": 0.7,
+            "children": [
+              {
+                "t": "text",
+                "chars": "◎",
+                "font": "sans",
+                "size": 16,
+                "color": "@color-always-light"
+              },
+              {
+                "t": "space",
+                "w": "@spacing-2xs"
+              },
+              {
+                "t": "text",
+                "style": "text-s",
+                "chars": "1.857 Beiträge bisher",
+                "size": 14,
+                "color": "@color-always-light",
+                "tracking": 1.43
+              }
+            ]
+          },
+          {
+            "t": "space",
+            "h": "@spacing-s"
+          },
+          {
+            "t": "frame",
+            "dir": "V",
+            "w": "hug",
+            "h": 48,
+            "pad": ["@spacing-m", "@spacing-m", "@spacing-s", "@spacing-s"],
+            "radius": "@radius-md",
+            "fill": "@color-accent",
+            "children": [
+              {
+                "t": "text",
+                "style": "button",
+                "chars": "Mitmachen",
+                "weight": "bold",
+                "size": 16,
+                "color": "@color-always-light",
+                "tracking": 1.25
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "value": "survey",
+        "t": "frame",
+        "dir": "V",
+        "w": 319,
+        "h": 295,
+        "pad": ["@spacing-m", "@spacing-m", "@spacing-m", "@spacing-m"],
+        "radius": "@radius-md",
+        "fill": "@color-always-dark",
+        "children": [
+          {
+            "t": "text",
+            "chars": "MITMACHEN · UMFRAGE",
+            "weight": "bold",
+            "size": 12,
+            "color": "@color-always-light",
+            "tracking": 10
+          },
+          {
+            "t": "space",
+            "h": "@spacing-2xs"
+          },
+          {
+            "t": "text",
+            "style": "headline-xs",
+            "chars": "Die Zukunft von CORRECTIV: Wir fragen Sie",
+            "weight": "bold",
+            "size": 17,
+            "color": "@color-always-light",
+            "tracking": 1.18
+          },
+          {
+            "t": "space",
+            "h": "@spacing-2xs"
+          },
+          {
+            "t": "text",
+            "style": "text-m",
+            "chars": "CORRECTIV verändert sich, und Sie gestalten mit. Was sollen wir recherchieren, welche Formate fehlen Ihnen?",
+            "size": 15,
+            "color": "@color-always-light",
+            "tracking": 0.67
+          },
+          {
+            "t": "space",
+            "h": "@spacing-s"
+          },
+          {
+            "t": "frame",
+            "dir": "H",
+            "w": "fill",
+            "h": 21,
+            "opacity": 0.7,
+            "children": [
+              {
+                "t": "text",
+                "chars": "◎",
+                "font": "sans",
+                "size": 16,
+                "color": "@color-always-light"
+              },
+              {
+                "t": "space",
+                "w": "@spacing-2xs"
+              },
+              {
+                "t": "text",
+                "style": "text-s",
+                "chars": "2.143 Teilnahmen bisher",
+                "size": 14,
+                "color": "@color-always-light",
+                "tracking": 1.43
+              }
+            ]
+          },
+          {
+            "t": "space",
+            "h": "@spacing-s"
+          },
+          {
+            "t": "frame",
+            "dir": "V",
+            "w": "hug",
+            "h": 48,
+            "pad": ["@spacing-m", "@spacing-m", "@spacing-s", "@spacing-s"],
+            "radius": "@radius-md",
+            "fill": "@color-accent",
+            "children": [
+              {
+                "t": "text",
+                "style": "button",
+                "chars": "Teilnehmen",
+                "weight": "bold",
+                "size": 16,
+                "color": "@color-always-light",
+                "tracking": 1.25
+              }
+            ]
+          }
+        ]
+      }
+    ]
+  },
+  "home/EarlyAccessCard": [
+    {
+      "t": "frame",
+      "name": "home/EarlyAccessCard, onPress",
+      "dir": "V",
+      "w": 319,
+      "h": 239,
+      "radius": "@radius-md",
+      "stroke": "@color-stroke",
+      "strokeWeight": 1,
+      "children": [
+        {
+          "t": "frame",
+          "dir": "V",
+          "w": 317,
+          "h": 49,
+          "pad": ["@spacing-m", "@spacing-m", "@spacing-s", "@spacing-s"],
+          "fill": "@color-accent-alternative",
+          "children": [
+            {
+              "t": "frame",
+              "dir": "H",
+              "w": "hug",
+              "h": 25,
+              "pad": ["@spacing-2xs", "@spacing-2xs", "@spacing-4xs", "@spacing-4xs"],
+              "radius": "@radius-s",
+              "fill": "@color-accent-alternative",
+              "children": [
+                {
+                  "t": "text",
+                  "chars": "Backstage · Früher lesen",
+                  "size": 11,
+                  "color": "@color-always-dark",
+                  "tracking": 3.64,
+                  "transform": "uppercase"
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "t": "frame",
+          "dir": "V",
+          "w": 317,
+          "h": 188,
+          "pad": ["@spacing-m", "@spacing-m", "@spacing-m", "@spacing-m"],
+          "children": [
+            {
+              "t": "text",
+              "style": "headline-xs",
+              "chars": "Die Pensionskassen-Recherche, exklusiv vorab",
+              "weight": "bold",
+              "size": 17,
+              "color": "@color-on-canvas",
+              "tracking": 1.18
+            },
+            {
+              "t": "space",
+              "h": "@spacing-2xs"
+            },
+            {
+              "t": "text",
+              "style": "text-m",
+              "chars": "Sie lesen jetzt, drei Tage vor allen anderen.",
+              "size": 15,
+              "color": "@color-on-canvas-muted",
+              "tracking": 0.67
+            },
+            {
+              "t": "space",
+              "h": "@spacing-s"
+            },
+            {
+              "t": "text",
+              "style": "button",
+              "chars": "Jetzt lesen →",
+              "weight": "bold",
+              "size": 16,
+              "color": "@color-on-canvas-accent",
+              "tracking": 1.25
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "t": "frame",
+      "name": "home/EarlyAccessCard, without onPress",
+      "dir": "V",
+      "w": 319,
+      "h": 239,
+      "radius": "@radius-md",
+      "stroke": "@color-stroke",
+      "strokeWeight": 1,
+      "children": [
+        {
+          "t": "frame",
+          "dir": "V",
+          "w": 317,
+          "h": 49,
+          "pad": ["@spacing-m", "@spacing-m", "@spacing-s", "@spacing-s"],
+          "fill": "@color-accent-alternative",
+          "children": [
+            {
+              "t": "frame",
+              "dir": "H",
+              "w": "hug",
+              "h": 25,
+              "pad": ["@spacing-2xs", "@spacing-2xs", "@spacing-4xs", "@spacing-4xs"],
+              "radius": "@radius-s",
+              "fill": "@color-accent-alternative",
+              "children": [
+                {
+                  "t": "text",
+                  "chars": "Backstage · Früher lesen",
+                  "size": 11,
+                  "color": "@color-always-dark",
+                  "tracking": 3.64,
+                  "transform": "uppercase"
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "t": "frame",
+          "dir": "V",
+          "w": 317,
+          "h": 188,
+          "pad": ["@spacing-m", "@spacing-m", "@spacing-m", "@spacing-m"],
+          "children": [
+            {
+              "t": "text",
+              "style": "headline-xs",
+              "chars": "Die Pensionskassen-Recherche, exklusiv vorab",
+              "weight": "bold",
+              "size": 17,
+              "color": "@color-on-canvas",
+              "tracking": 1.18
+            },
+            {
+              "t": "space",
+              "h": "@spacing-2xs"
+            },
+            {
+              "t": "text",
+              "style": "text-m",
+              "chars": "Sie lesen jetzt, drei Tage vor allen anderen.",
+              "size": 15,
+              "color": "@color-on-canvas-muted",
+              "tracking": 0.67
+            },
+            {
+              "t": "space",
+              "h": "@spacing-s"
+            },
+            {
+              "t": "text",
+              "style": "button",
+              "chars": "Jetzt lesen →",
+              "weight": "bold",
+              "size": 16,
+              "color": "@color-on-canvas-accent",
+              "tracking": 1.25
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "home/ImpactFooter": [
+    {
+      "t": "frame",
+      "name": "home/ImpactFooter",
+      "dir": "V",
+      "w": 319,
+      "h": 199,
+      "pad": ["@spacing-l", "@spacing-l", "@spacing-l", "@spacing-l"],
+      "radius": "@radius-md",
+      "fill": "@color-surface",
+      "children": [
+        {
+          "t": "text",
+          "style": "headline-xs",
+          "chars": "Ermöglicht durch Unterstützer:innen wie Sie",
+          "weight": "bold",
+          "size": 17,
+          "color": "@color-on-canvas",
+          "tracking": 1.18
+        },
+        {
+          "t": "space",
+          "h": "@spacing-2xs"
+        },
+        {
+          "t": "text",
+          "style": "text-m",
+          "chars": "CORRECTIV ist gemeinnützig. Ihr Beitrag finanziert die Recherchen, die hier stehen.",
+          "size": 15,
+          "color": "@color-on-canvas-muted",
+          "tracking": 0.67
+        }
+      ]
+    }
+  ],
+  "discover/SearchEntry": [
+    {
+      "t": "frame",
+      "name": "discover/SearchEntry",
+      "dir": "H",
+      "w": 319,
+      "h": 44,
+      "pad": ["@spacing-s", "@spacing-s", 0, 0],
+      "radius": "@radius-md",
+      "fill": "@color-surface",
+      "children": [
+        {
+          "t": "text",
+          "chars": "◎",
+          "font": "sans",
+          "size": 18,
+          "color": "@color-on-canvas-muted"
+        },
+        {
+          "t": "space",
+          "w": "@spacing-xs"
+        },
+        {
+          "t": "text",
+          "style": "text-m",
+          "chars": "Recherchen, Faktenchecks, Projekte …",
+          "size": 15,
+          "color": "@color-stroke-strong",
+          "tracking": 0.67
+        }
+      ]
+    }
+  ],
+  "discover/TopicRail": [
+    {
+      "t": "frame",
+      "name": "discover/TopicRail",
+      "dir": "V",
+      "w": 367,
+      "h": 35,
+      "children": [
+        {
+          "t": "frame",
+          "dir": "H",
+          "w": "fill",
+          "h": 35,
+          "children": [
+            {
+              "t": "frame",
+              "dir": "H",
+              "w": 400,
+              "h": 35,
+              "gap": "@spacing-xs",
+              "pad": ["@spacing-m", "@spacing-m", 0, 0],
+              "children": [
+                {
+                  "t": "frame",
+                  "dir": "V",
+                  "w": 62,
+                  "h": 35,
+                  "pad": ["@spacing-s", "@spacing-s", "@spacing-2xs", "@spacing-2xs"],
+                  "radius": "@radius-md",
+                  "fill": "@color-surface",
+                  "stroke": "@color-stroke",
+                  "strokeWeight": 1,
+                  "children": [
+                    {
+                      "t": "text",
+                      "chars": "Klima",
+                      "weight": "semibold",
+                      "size": 14,
+                      "color": "@color-on-canvas",
+                      "tracking": 1.43
+                    }
+                  ]
+                },
+                {
+                  "t": "frame",
+                  "dir": "V",
+                  "w": 60,
+                  "h": 35,
+                  "pad": ["@spacing-s", "@spacing-s", "@spacing-2xs", "@spacing-2xs"],
+                  "radius": "@radius-md",
+                  "fill": "@color-surface",
+                  "stroke": "@color-stroke",
+                  "strokeWeight": 1,
+                  "children": [
+                    {
+                      "t": "text",
+                      "chars": "Lokal",
+                      "weight": "semibold",
+                      "size": 14,
+                      "color": "@color-on-canvas",
+                      "tracking": 1.43
+                    }
+                  ]
+                },
+                {
+                  "t": "frame",
+                  "dir": "V",
+                  "w": 77,
+                  "h": 35,
+                  "pad": ["@spacing-s", "@spacing-s", "@spacing-2xs", "@spacing-2xs"],
+                  "radius": "@radius-md",
+                  "fill": "@color-surface",
+                  "stroke": "@color-stroke",
+                  "strokeWeight": 1,
+                  "children": [
+                    {
+                      "t": "text",
+                      "chars": "Schweiz",
+                      "weight": "semibold",
+                      "size": 14,
+                      "color": "@color-on-canvas",
+                      "tracking": 1.43
+                    }
+                  ]
+                },
+                {
+                  "t": "frame",
+                  "dir": "V",
+                  "w": 130,
+                  "h": 35,
+                  "pad": ["@spacing-s", "@spacing-s", "@spacing-2xs", "@spacing-2xs"],
+                  "radius": "@radius-md",
+                  "fill": "@color-surface",
+                  "stroke": "@color-stroke",
+                  "strokeWeight": 1,
+                  "children": [
+                    {
+                      "t": "text",
+                      "chars": "Jugend & Salon5",
+                      "weight": "semibold",
+                      "size": 14,
+                      "color": "@color-on-canvas",
+                      "tracking": 1.43
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "discover/ProjectRow": [
+    {
+      "t": "frame",
+      "name": "discover/ProjectRow",
+      "dir": "H",
+      "w": 319,
+      "h": 71,
+      "pad": [0, 0, "@spacing-s", "@spacing-s"],
+      "stroke": "@color-stroke",
+      "children": [
+        {
+          "t": "frame",
+          "dir": "V",
+          "w": 303,
+          "h": 46,
+          "pad": [0, "@spacing-s", 0, 0],
+          "children": [
+            {
+              "t": "text",
+              "chars": "Recherchen",
+              "weight": "bold",
+              "size": 15,
+              "color": "@color-on-canvas",
+              "tracking": 0.67
+            },
+            {
+              "t": "space",
+              "h": "@spacing-4xs"
+            },
+            {
+              "t": "text",
+              "style": "text-s",
+              "chars": "Investigative Recherchen für die Gesellschaft.",
+              "size": 14,
+              "color": "@color-on-canvas-muted",
+              "tracking": 1.43
+            }
+          ]
+        },
+        {
+          "t": "text",
+          "chars": "◎",
+          "font": "sans",
+          "size": 16,
+          "color": "@color-stroke-strong"
+        }
+      ]
+    }
+  ],
+  "discover/SampleHitRow": [
+    {
+      "t": "frame",
+      "name": "discover/SampleHitRow, kind=\"podcast\"",
+      "dir": "V",
+      "w": 319,
+      "h": 71,
+      "children": [
+        {
+          "t": "frame",
+          "dir": "H",
+          "w": "fill",
+          "h": 71,
+          "pad": [0, 0, "@spacing-s", "@spacing-s"],
+          "stroke": "@color-stroke",
+          "children": [
+            {
+              "t": "text",
+              "chars": "◎",
+              "font": "sans",
+              "size": 20,
+              "color": "@color-on-canvas-muted"
+            },
+            {
+              "t": "space",
+              "w": "@spacing-s"
+            },
+            {
+              "t": "frame",
+              "dir": "V",
+              "w": 271,
+              "h": 46,
+              "children": [
+                {
+                  "t": "text",
+                  "chars": "Pausenbrot, der Nachrichten-Snack",
+                  "weight": "bold",
+                  "size": 15,
+                  "color": "@color-on-canvas",
+                  "tracking": 0.67
+                },
+                {
+                  "t": "space",
+                  "h": "@spacing-4xs"
+                },
+                {
+                  "t": "text",
+                  "style": "text-s",
+                  "chars": "Salon5 · Podcast-Serie",
+                  "size": 14,
+                  "color": "@color-stroke-strong",
+                  "tracking": 1.43
+                }
+              ]
+            },
+            {
+              "t": "text",
+              "chars": "◎",
+              "font": "sans",
+              "size": 16,
+              "color": "@color-stroke-strong"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "t": "frame",
+      "name": "discover/SampleHitRow, kind=\"callout\"",
+      "dir": "V",
+      "w": 319,
+      "h": 94,
+      "children": [
+        {
+          "t": "frame",
+          "dir": "H",
+          "w": "fill",
+          "h": 94,
+          "pad": [0, 0, "@spacing-s", "@spacing-s"],
+          "stroke": "@color-stroke",
+          "children": [
+            {
+              "t": "text",
+              "chars": "◎",
+              "font": "sans",
+              "size": 20,
+              "color": "@color-on-canvas-muted"
+            },
+            {
+              "t": "space",
+              "w": "@spacing-s"
+            },
+            {
+              "t": "frame",
+              "dir": "V",
+              "w": 271,
+              "h": 69,
+              "children": [
+                {
+                  "t": "text",
+                  "chars": "Die Zukunft von CORRECTIV: Wir fragen Sie",
+                  "weight": "bold",
+                  "size": 15,
+                  "color": "@color-on-canvas",
+                  "tracking": 0.67
+                },
+                {
+                  "t": "space",
+                  "h": "@spacing-4xs"
+                },
+                {
+                  "t": "text",
+                  "style": "text-s",
+                  "chars": "CrowdNewsroom · Aufruf",
+                  "size": 14,
+                  "color": "@color-stroke-strong",
+                  "tracking": 1.43
+                }
+              ]
+            },
+            {
+              "t": "text",
+              "chars": "◎",
+              "font": "sans",
+              "size": 16,
+              "color": "@color-stroke-strong"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "t": "frame",
+      "name": "discover/SampleHitRow, kind=\"backstage\"",
+      "dir": "V",
+      "w": 319,
+      "h": 71,
+      "children": [
+        {
+          "t": "frame",
+          "dir": "H",
+          "w": "fill",
+          "h": 71,
+          "pad": [0, 0, "@spacing-s", "@spacing-s"],
+          "stroke": "@color-stroke",
+          "children": [
+            {
+              "t": "text",
+              "chars": "◎",
+              "font": "sans",
+              "size": 20,
+              "color": "@color-on-canvas-muted"
+            },
+            {
+              "t": "space",
+              "w": "@spacing-s"
+            },
+            {
+              "t": "frame",
+              "dir": "V",
+              "w": 271,
+              "h": 46,
+              "children": [
+                {
+                  "t": "text",
+                  "chars": "Woche 3: Die Spur führt nach Bern",
+                  "weight": "bold",
+                  "size": 15,
+                  "color": "@color-on-canvas",
+                  "tracking": 0.67
+                },
+                {
+                  "t": "space",
+                  "h": "@spacing-4xs"
+                },
+                {
+                  "t": "text",
+                  "style": "text-s",
+                  "chars": "Backstage · Recherchetagebuch",
+                  "size": 14,
+                  "color": "@color-stroke-strong",
+                  "tracking": 1.43
+                }
+              ]
+            },
+            {
+              "t": "text",
+              "chars": "◎",
+              "font": "sans",
+              "size": 16,
+              "color": "@color-stroke-strong"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "t": "frame",
+      "name": "discover/SampleHitRow, kind=\"verlag\"",
+      "dir": "V",
+      "w": 319,
+      "h": 71,
+      "children": [
+        {
+          "t": "frame",
+          "dir": "H",
+          "w": "fill",
+          "h": 71,
+          "pad": [0, 0, "@spacing-s", "@spacing-s"],
+          "stroke": "@color-stroke",
+          "children": [
+            {
+              "t": "text",
+              "chars": "◎",
+              "font": "sans",
+              "size": 20,
+              "color": "@color-on-canvas-muted"
+            },
+            {
+              "t": "space",
+              "w": "@spacing-s"
+            },
+            {
+              "t": "frame",
+              "dir": "V",
+              "w": 271,
+              "h": 46,
+              "children": [
+                {
+                  "t": "text",
+                  "chars": "Akten des Missbrauchs",
+                  "weight": "bold",
+                  "size": 15,
+                  "color": "@color-on-canvas",
+                  "tracking": 0.67
+                },
+                {
+                  "t": "space",
+                  "h": "@spacing-4xs"
+                },
+                {
+                  "t": "text",
+                  "style": "text-s",
+                  "chars": "CORRECTIV Verlag · Buch",
+                  "size": 14,
+                  "color": "@color-stroke-strong",
+                  "tracking": 1.43
+                }
+              ]
+            },
+            {
+              "t": "text",
+              "chars": "◎",
+              "font": "sans",
+              "size": 16,
+              "color": "@color-stroke-strong"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "t": "frame",
+      "name": "discover/SampleHitRow, without onPress, so no chevron and no link role",
+      "dir": "H",
+      "w": 319,
+      "h": 71,
+      "pad": [0, 0, "@spacing-s", "@spacing-s"],
+      "stroke": "@color-stroke",
+      "children": [
+        {
+          "t": "text",
+          "chars": "◎",
+          "font": "sans",
+          "size": 20,
+          "color": "@color-on-canvas-muted"
+        },
+        {
+          "t": "space",
+          "w": "@spacing-s"
+        },
+        {
+          "t": "frame",
+          "dir": "V",
+          "w": 287,
+          "h": 46,
+          "children": [
+            {
+              "t": "text",
+              "chars": "Pausenbrot, der Nachrichten-Snack",
+              "weight": "bold",
+              "size": 15,
+              "color": "@color-on-canvas",
+              "tracking": 0.67
+            },
+            {
+              "t": "space",
+              "h": "@spacing-4xs"
+            },
+            {
+              "t": "text",
+              "style": "text-s",
+              "chars": "Salon5 · Podcast-Serie",
+              "size": 14,
+              "color": "@color-stroke-strong",
+              "tracking": 1.43
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "media/LiveBanner": [
+    {
+      "t": "frame",
+      "name": "media/LiveBanner, default subtitle",
+      "dir": "H",
+      "w": 319,
+      "h": 98,
+      "pad": ["@spacing-s", "@spacing-s", "@spacing-s", "@spacing-s"],
+      "radius": "@radius-md",
+      "fill": "@color-always-dark",
+      "children": [
+        {
+          "t": "frame",
+          "dir": "V",
+          "w": 48,
+          "h": 48,
+          "radius": 24,
+          "fill": "@color-accent",
+          "children": [
+            {
+              "t": "text",
+              "chars": "◎",
+              "font": "sans",
+              "size": 24,
+              "color": "@color-always-light"
+            }
+          ]
+        },
+        {
+          "t": "space",
+          "w": "@spacing-s"
+        },
+        {
+          "t": "frame",
+          "dir": "V",
+          "w": 235,
+          "h": 74,
+          "children": [
+            {
+              "t": "frame",
+              "dir": "H",
+              "w": "fill",
+              "h": 25,
+              "gap": "@spacing-2xs",
+              "children": [
+                {
+                  "t": "frame",
+                  "dir": "H",
+                  "w": "hug",
+                  "h": 25,
+                  "pad": ["@spacing-2xs", "@spacing-2xs", "@spacing-4xs", "@spacing-4xs"],
+                  "radius": "@radius-s",
+                  "children": [
+                    {
+                      "t": "ellipse",
+                      "w": 7,
+                      "h": 7,
+                      "fill": "@color-accent"
+                    },
+                    {
+                      "t": "space",
+                      "w": "@spacing-3xs"
+                    },
+                    {
+                      "t": "text",
+                      "chars": "Live",
+                      "size": 11,
+                      "color": "@color-on-canvas-accent",
+                      "tracking": 3.64,
+                      "transform": "uppercase"
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "t": "space",
+              "h": "@spacing-4xs"
+            },
+            {
+              "t": "text",
+              "style": "headline-xs",
+              "chars": "Salon5 Radio",
+              "weight": "bold",
+              "size": 17,
+              "color": "@color-always-light",
+              "tracking": 1.18
+            },
+            {
+              "t": "text",
+              "style": "text-s",
+              "chars": "24/7 aus Bottrop",
+              "size": 14,
+              "color": "@color-always-light",
+              "tracking": 1.43
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "t": "frame",
+      "name": "media/LiveBanner, subtitle",
+      "dir": "H",
+      "w": 319,
+      "h": 98,
+      "pad": ["@spacing-s", "@spacing-s", "@spacing-s", "@spacing-s"],
+      "radius": "@radius-md",
+      "fill": "@color-always-dark",
+      "children": [
+        {
+          "t": "frame",
+          "dir": "V",
+          "w": 48,
+          "h": 48,
+          "radius": 24,
+          "fill": "@color-accent",
+          "children": [
+            {
+              "t": "text",
+              "chars": "◎",
+              "font": "sans",
+              "size": 24,
+              "color": "@color-always-light"
+            }
+          ]
+        },
+        {
+          "t": "space",
+          "w": "@spacing-s"
+        },
+        {
+          "t": "frame",
+          "dir": "V",
+          "w": 235,
+          "h": 74,
+          "children": [
+            {
+              "t": "frame",
+              "dir": "H",
+              "w": "fill",
+              "h": 25,
+              "gap": "@spacing-2xs",
+              "children": [
+                {
+                  "t": "frame",
+                  "dir": "H",
+                  "w": "hug",
+                  "h": 25,
+                  "pad": ["@spacing-2xs", "@spacing-2xs", "@spacing-4xs", "@spacing-4xs"],
+                  "radius": "@radius-s",
+                  "children": [
+                    {
+                      "t": "ellipse",
+                      "w": 7,
+                      "h": 7,
+                      "fill": "@color-accent"
+                    },
+                    {
+                      "t": "space",
+                      "w": "@spacing-3xs"
+                    },
+                    {
+                      "t": "text",
+                      "chars": "Live",
+                      "size": 11,
+                      "color": "@color-on-canvas-accent",
+                      "tracking": 3.64,
+                      "transform": "uppercase"
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "t": "space",
+              "h": "@spacing-4xs"
+            },
+            {
+              "t": "text",
+              "style": "headline-xs",
+              "chars": "Salon5 Radio",
+              "weight": "bold",
+              "size": 17,
+              "color": "@color-always-light",
+              "tracking": 1.18
+            },
+            {
+              "t": "text",
+              "style": "text-s",
+              "chars": "Sondersendung aus Bottrop",
+              "size": 14,
+              "color": "@color-always-light",
+              "tracking": 1.43
             }
           ]
         }
@@ -282,6 +3056,1450 @@
               "size": 14,
               "color": "@color-stroke-strong",
               "tracking": 1.43
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "media/SeriesTile": [
+    {
+      "t": "frame",
+      "name": "media/SeriesTile",
+      "dir": "V",
+      "w": 116,
+      "h": 185,
+      "children": [
+        {
+          "t": "frame",
+          "dir": "V",
+          "w": "fill",
+          "h": 116,
+          "radius": "@radius-md",
+          "fill": "@color-grey-300",
+          "children": [
+            {
+              "t": "frame",
+              "dir": "V",
+              "w": "fill",
+              "h": 116,
+              "children": [
+                {
+                  "t": "text",
+                  "chars": "◎",
+                  "font": "sans",
+                  "size": 26,
+                  "color": "@color-stroke"
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "t": "space",
+          "h": "@spacing-2xs"
+        },
+        {
+          "t": "text",
+          "chars": "CORRECTIV Podcast",
+          "weight": "semibold",
+          "size": 14,
+          "color": "@color-on-canvas",
+          "tracking": 1.43
+        },
+        {
+          "t": "text",
+          "style": "text-s",
+          "chars": "CORRECTIV",
+          "size": 14,
+          "color": "@color-stroke-strong",
+          "tracking": 1.43
+        }
+      ]
+    }
+  ],
+  "media/EpisodeRow": [
+    {
+      "t": "frame",
+      "name": "media/EpisodeRow, default",
+      "dir": "H",
+      "w": 319,
+      "h": 71,
+      "pad": [0, 0, "@spacing-s", "@spacing-s"],
+      "stroke": "@color-stroke",
+      "children": [
+        {
+          "t": "frame",
+          "dir": "V",
+          "w": 36,
+          "h": 36,
+          "radius": 18,
+          "fill": "@color-surface",
+          "children": [
+            {
+              "t": "text",
+              "chars": "◎",
+              "font": "sans",
+              "size": 16,
+              "color": "@color-on-canvas"
+            }
+          ]
+        },
+        {
+          "t": "space",
+          "w": "@spacing-s"
+        },
+        {
+          "t": "frame",
+          "dir": "V",
+          "w": 271,
+          "h": 46,
+          "pad": [0, "@spacing-s", 0, 0],
+          "children": [
+            {
+              "t": "text",
+              "chars": "Pausenbrot, Folge 214",
+              "weight": "semibold",
+              "size": 15,
+              "color": "@color-on-canvas",
+              "tracking": 0.67
+            },
+            {
+              "t": "space",
+              "h": "@spacing-4xs"
+            },
+            {
+              "t": "text",
+              "style": "text-s",
+              "chars": "12. August · 8 Min",
+              "size": 14,
+              "color": "@color-stroke-strong",
+              "tracking": 1.43
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "t": "frame",
+      "name": "media/EpisodeRow, club",
+      "dir": "H",
+      "w": 319,
+      "h": 71,
+      "pad": [0, 0, "@spacing-s", "@spacing-s"],
+      "stroke": "@color-stroke",
+      "children": [
+        {
+          "t": "frame",
+          "dir": "V",
+          "w": 36,
+          "h": 36,
+          "radius": 18,
+          "fill": "@color-surface",
+          "children": [
+            {
+              "t": "text",
+              "chars": "◎",
+              "font": "sans",
+              "size": 16,
+              "color": "@color-on-canvas"
+            }
+          ]
+        },
+        {
+          "t": "space",
+          "w": "@spacing-s"
+        },
+        {
+          "t": "frame",
+          "dir": "V",
+          "w": 233,
+          "h": 46,
+          "pad": [0, "@spacing-s", 0, 0],
+          "children": [
+            {
+              "t": "text",
+              "chars": "Nur für Mitglieder mit Beitrag",
+              "weight": "semibold",
+              "size": 15,
+              "color": "@color-on-canvas",
+              "tracking": 0.67
+            },
+            {
+              "t": "space",
+              "h": "@spacing-4xs"
+            },
+            {
+              "t": "text",
+              "style": "text-s",
+              "chars": "3. August · 22 Min",
+              "size": 14,
+              "color": "@color-stroke-strong",
+              "tracking": 1.43
+            }
+          ]
+        },
+        {
+          "t": "frame",
+          "dir": "H",
+          "w": "hug",
+          "h": 25,
+          "pad": ["@spacing-2xs", "@spacing-2xs", "@spacing-4xs", "@spacing-4xs"],
+          "radius": "@radius-s",
+          "fill": "@color-accent-alternative",
+          "children": [
+            {
+              "t": "text",
+              "chars": "Club",
+              "size": 11,
+              "color": "@color-always-dark",
+              "tracking": 3.64,
+              "transform": "uppercase"
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "media/VideoFrame": {
+    "t": "variants",
+    "name": "media/VideoFrame",
+    "prop": "uri",
+    "options": [
+      {
+        "value": "true",
+        "t": "frame",
+        "dir": "V",
+        "w": 319,
+        "h": 200,
+        "children": [
+          {
+            "t": "frame",
+            "dir": "H",
+            "w": "fill",
+            "h": 200
+          }
+        ]
+      }
+    ]
+  },
+  "participate/CalloutCard": {
+    "t": "variants",
+    "name": "participate/CalloutCard",
+    "prop": "kind",
+    "options": [
+      {
+        "value": "crowdnewsroom",
+        "t": "frame",
+        "dir": "V",
+        "w": 319,
+        "h": 252,
+        "pad": ["@spacing-m", "@spacing-m", "@spacing-m", "@spacing-m"],
+        "radius": "@radius-md",
+        "fill": "@color-canvas",
+        "stroke": "@color-stroke",
+        "strokeWeight": 1,
+        "children": [
+          {
+            "t": "text",
+            "chars": "CROWDNEWSROOM",
+            "weight": "bold",
+            "size": 12,
+            "color": "@color-on-canvas-accent",
+            "tracking": 10
+          },
+          {
+            "t": "space",
+            "h": "@spacing-2xs"
+          },
+          {
+            "t": "text",
+            "style": "headline-xs",
+            "chars": "Wem gehört die Stadt?",
+            "weight": "bold",
+            "size": 17,
+            "color": "@color-on-canvas",
+            "tracking": 1.18
+          },
+          {
+            "t": "space",
+            "h": "@spacing-2xs"
+          },
+          {
+            "t": "text",
+            "style": "text-s",
+            "chars": "Steigende Mieten, anonyme Eigentümer: Helfen Sie uns aufzudecken, wem die Häuser in Ihrer Nachbarschaft gehören.",
+            "size": 14,
+            "color": "@color-on-canvas-muted",
+            "tracking": 1.43
+          },
+          {
+            "t": "space",
+            "h": "@spacing-s"
+          },
+          {
+            "t": "frame",
+            "dir": "V",
+            "w": 269,
+            "h": 4,
+            "radius": "@radius-s",
+            "fill": "@color-grey-250",
+            "children": [
+              {
+                "t": "frame",
+                "dir": "V",
+                "w": 167,
+                "h": 4,
+                "fill": "@color-on-surface"
+              }
+            ]
+          },
+          {
+            "t": "space",
+            "h": "@spacing-3xs"
+          },
+          {
+            "t": "text",
+            "style": "text-s",
+            "chars": "1.857 Beiträge",
+            "size": 14,
+            "color": "@color-stroke-strong",
+            "tracking": 1.43
+          },
+          {
+            "t": "space",
+            "h": "@spacing-s"
+          },
+          {
+            "t": "frame",
+            "dir": "V",
+            "w": "hug",
+            "h": 48,
+            "pad": ["@spacing-m", "@spacing-m", "@spacing-s", "@spacing-s"],
+            "radius": "@radius-md",
+            "fill": "@color-accent",
+            "children": [
+              {
+                "t": "text",
+                "style": "button",
+                "chars": "Mitmachen",
+                "weight": "bold",
+                "size": 16,
+                "color": "@color-always-light",
+                "tracking": 1.25
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "value": "survey",
+        "t": "frame",
+        "dir": "V",
+        "w": 319,
+        "h": 280,
+        "pad": ["@spacing-m", "@spacing-m", "@spacing-m", "@spacing-m"],
+        "radius": "@radius-md",
+        "fill": "@color-canvas",
+        "stroke": "@color-stroke",
+        "strokeWeight": 1,
+        "children": [
+          {
+            "t": "text",
+            "chars": "UMFRAGE",
+            "weight": "bold",
+            "size": 12,
+            "color": "@color-on-canvas-accent",
+            "tracking": 10
+          },
+          {
+            "t": "space",
+            "h": "@spacing-2xs"
+          },
+          {
+            "t": "text",
+            "style": "headline-xs",
+            "chars": "Die Zukunft von CORRECTIV: Wir fragen Sie",
+            "weight": "bold",
+            "size": 17,
+            "color": "@color-on-canvas",
+            "tracking": 1.18
+          },
+          {
+            "t": "space",
+            "h": "@spacing-2xs"
+          },
+          {
+            "t": "text",
+            "style": "text-s",
+            "chars": "CORRECTIV verändert sich, und Sie gestalten mit. Was sollen wir recherchieren, welche Formate fehlen Ihnen?",
+            "size": 14,
+            "color": "@color-on-canvas-muted",
+            "tracking": 1.43
+          },
+          {
+            "t": "space",
+            "h": "@spacing-s"
+          },
+          {
+            "t": "frame",
+            "dir": "V",
+            "w": 269,
+            "h": 4,
+            "radius": "@radius-s",
+            "fill": "@color-grey-250",
+            "children": [
+              {
+                "t": "frame",
+                "dir": "V",
+                "w": 191,
+                "h": 4,
+                "fill": "@color-on-surface"
+              }
+            ]
+          },
+          {
+            "t": "space",
+            "h": "@spacing-3xs"
+          },
+          {
+            "t": "text",
+            "style": "text-s",
+            "chars": "2.143 Teilnahmen",
+            "size": 14,
+            "color": "@color-stroke-strong",
+            "tracking": 1.43
+          },
+          {
+            "t": "space",
+            "h": "@spacing-s"
+          },
+          {
+            "t": "frame",
+            "dir": "V",
+            "w": "hug",
+            "h": 50,
+            "pad": ["@spacing-m", "@spacing-m", "@spacing-s", "@spacing-s"],
+            "radius": "@radius-md",
+            "fill": "@color-canvas",
+            "stroke": "@color-stroke",
+            "strokeWeight": 1,
+            "children": [
+              {
+                "t": "text",
+                "style": "button",
+                "chars": "Teilnehmen",
+                "weight": "bold",
+                "size": 16,
+                "color": "@color-on-canvas",
+                "tracking": 1.25
+              }
+            ]
+          }
+        ]
+      }
+    ]
+  },
+  "participate/ClaimStatusTag": {
+    "t": "variants",
+    "name": "participate/ClaimStatusTag",
+    "prop": "status",
+    "options": [
+      {
+        "value": "submitted",
+        "t": "frame",
+        "dir": "V",
+        "w": "hug",
+        "h": 25,
+        "pad": ["@spacing-2xs", "@spacing-2xs", "@spacing-4xs", "@spacing-4xs"],
+        "radius": "@radius-xs",
+        "fill": "@color-grey-250",
+        "children": [
+          {
+            "t": "text",
+            "chars": "Eingereicht",
+            "weight": "bold",
+            "size": 11,
+            "color": "@color-on-canvas-muted",
+            "tracking": 1.82
+          }
+        ]
+      },
+      {
+        "value": "checking",
+        "t": "frame",
+        "dir": "V",
+        "w": "hug",
+        "h": 27,
+        "pad": ["@spacing-2xs", "@spacing-2xs", "@spacing-4xs", "@spacing-4xs"],
+        "radius": "@radius-xs",
+        "fill": "@color-canvas",
+        "stroke": "@color-stroke",
+        "strokeWeight": 1,
+        "children": [
+          {
+            "t": "text",
+            "chars": "In Prüfung",
+            "weight": "bold",
+            "size": 11,
+            "color": "@color-on-canvas",
+            "tracking": 1.82
+          }
+        ]
+      },
+      {
+        "value": "checked",
+        "t": "frame",
+        "dir": "V",
+        "w": "hug",
+        "h": 25,
+        "pad": ["@spacing-2xs", "@spacing-2xs", "@spacing-4xs", "@spacing-4xs"],
+        "radius": "@radius-xs",
+        "fill": "@color-accent",
+        "children": [
+          {
+            "t": "text",
+            "chars": "Geprüft: Falsch",
+            "weight": "bold",
+            "size": 11,
+            "color": "@color-always-light",
+            "tracking": 1.82
+          }
+        ]
+      }
+    ]
+  },
+  "participate/FormField": {
+    "t": "variants",
+    "name": "participate/FormField",
+    "prop": "type",
+    "options": [
+      {
+        "value": "radio",
+        "t": "frame",
+        "dir": "V",
+        "w": 319,
+        "h": 230,
+        "children": [
+          {
+            "t": "text",
+            "style": "headline-xs",
+            "chars": "Wie oft lesen Sie CORRECTIV?",
+            "weight": "bold",
+            "size": 17,
+            "color": "@color-on-canvas",
+            "tracking": 1.18
+          },
+          {
+            "t": "space",
+            "h": "@spacing-2xs"
+          },
+          {
+            "t": "text",
+            "style": "text-s",
+            "chars": "Eine Antwort.",
+            "size": 14,
+            "color": "@color-on-canvas-muted",
+            "tracking": 1.43
+          },
+          {
+            "t": "space",
+            "h": "@spacing-s"
+          },
+          {
+            "t": "frame",
+            "dir": "V",
+            "w": "fill",
+            "h": 165,
+            "children": [
+              {
+                "t": "frame",
+                "dir": "H",
+                "w": "fill",
+                "h": 49,
+                "pad": ["@spacing-s", "@spacing-s", "@spacing-s", "@spacing-s"],
+                "radius": "@radius-md",
+                "fill": "@color-surface",
+                "stroke": "@color-accent",
+                "strokeWeight": 1,
+                "children": [
+                  {
+                    "t": "text",
+                    "chars": "◎",
+                    "font": "sans",
+                    "size": 20,
+                    "color": "@color-on-canvas-accent"
+                  },
+                  {
+                    "t": "space",
+                    "w": "@spacing-s"
+                  },
+                  {
+                    "t": "text",
+                    "style": "text-m",
+                    "chars": "Täglich",
+                    "size": 15,
+                    "color": "@color-on-canvas",
+                    "tracking": 0.67
+                  }
+                ]
+              },
+              {
+                "t": "space",
+                "h": "@spacing-2xs"
+              },
+              {
+                "t": "frame",
+                "dir": "H",
+                "w": "fill",
+                "h": 49,
+                "pad": ["@spacing-s", "@spacing-s", "@spacing-s", "@spacing-s"],
+                "radius": "@radius-md",
+                "fill": "@color-canvas",
+                "stroke": "@color-stroke",
+                "strokeWeight": 1,
+                "children": [
+                  {
+                    "t": "text",
+                    "chars": "◎",
+                    "font": "sans",
+                    "size": 20,
+                    "color": "@color-stroke"
+                  },
+                  {
+                    "t": "space",
+                    "w": "@spacing-s"
+                  },
+                  {
+                    "t": "text",
+                    "style": "text-m",
+                    "chars": "Wöchentlich",
+                    "size": 15,
+                    "color": "@color-on-canvas",
+                    "tracking": 0.67
+                  }
+                ]
+              },
+              {
+                "t": "space",
+                "h": "@spacing-2xs"
+              },
+              {
+                "t": "frame",
+                "dir": "H",
+                "w": "fill",
+                "h": 49,
+                "pad": ["@spacing-s", "@spacing-s", "@spacing-s", "@spacing-s"],
+                "radius": "@radius-md",
+                "fill": "@color-canvas",
+                "stroke": "@color-stroke",
+                "strokeWeight": 1,
+                "children": [
+                  {
+                    "t": "text",
+                    "chars": "◎",
+                    "font": "sans",
+                    "size": 20,
+                    "color": "@color-stroke"
+                  },
+                  {
+                    "t": "space",
+                    "w": "@spacing-s"
+                  },
+                  {
+                    "t": "text",
+                    "style": "text-m",
+                    "chars": "Seltener",
+                    "size": 15,
+                    "color": "@color-on-canvas",
+                    "tracking": 0.67
+                  }
+                ]
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "value": "selectboxes",
+        "t": "frame",
+        "dir": "V",
+        "w": 319,
+        "h": 230,
+        "children": [
+          {
+            "t": "text",
+            "style": "headline-xs",
+            "chars": "Welche Themen interessieren Sie?",
+            "weight": "bold",
+            "size": 17,
+            "color": "@color-on-canvas",
+            "tracking": 1.18
+          },
+          {
+            "t": "space",
+            "h": "@spacing-2xs"
+          },
+          {
+            "t": "text",
+            "style": "text-s",
+            "chars": "Mehrere Antworten möglich.",
+            "size": 14,
+            "color": "@color-on-canvas-muted",
+            "tracking": 1.43
+          },
+          {
+            "t": "space",
+            "h": "@spacing-s"
+          },
+          {
+            "t": "frame",
+            "dir": "V",
+            "w": "fill",
+            "h": 165,
+            "children": [
+              {
+                "t": "frame",
+                "dir": "H",
+                "w": "fill",
+                "h": 49,
+                "pad": ["@spacing-s", "@spacing-s", "@spacing-s", "@spacing-s"],
+                "radius": "@radius-md",
+                "fill": "@color-canvas",
+                "stroke": "@color-stroke",
+                "strokeWeight": 1,
+                "children": [
+                  {
+                    "t": "text",
+                    "chars": "◎",
+                    "font": "sans",
+                    "size": 20,
+                    "color": "@color-stroke"
+                  },
+                  {
+                    "t": "space",
+                    "w": "@spacing-s"
+                  },
+                  {
+                    "t": "text",
+                    "style": "text-m",
+                    "chars": "Klima",
+                    "size": 15,
+                    "color": "@color-on-canvas",
+                    "tracking": 0.67
+                  }
+                ]
+              },
+              {
+                "t": "space",
+                "h": "@spacing-2xs"
+              },
+              {
+                "t": "frame",
+                "dir": "H",
+                "w": "fill",
+                "h": 49,
+                "pad": ["@spacing-s", "@spacing-s", "@spacing-s", "@spacing-s"],
+                "radius": "@radius-md",
+                "fill": "@color-canvas",
+                "stroke": "@color-stroke",
+                "strokeWeight": 1,
+                "children": [
+                  {
+                    "t": "text",
+                    "chars": "◎",
+                    "font": "sans",
+                    "size": 20,
+                    "color": "@color-stroke"
+                  },
+                  {
+                    "t": "space",
+                    "w": "@spacing-s"
+                  },
+                  {
+                    "t": "text",
+                    "style": "text-m",
+                    "chars": "Lokal",
+                    "size": 15,
+                    "color": "@color-on-canvas",
+                    "tracking": 0.67
+                  }
+                ]
+              },
+              {
+                "t": "space",
+                "h": "@spacing-2xs"
+              },
+              {
+                "t": "frame",
+                "dir": "H",
+                "w": "fill",
+                "h": 49,
+                "pad": ["@spacing-s", "@spacing-s", "@spacing-s", "@spacing-s"],
+                "radius": "@radius-md",
+                "fill": "@color-canvas",
+                "stroke": "@color-stroke",
+                "strokeWeight": 1,
+                "children": [
+                  {
+                    "t": "text",
+                    "chars": "◎",
+                    "font": "sans",
+                    "size": 20,
+                    "color": "@color-stroke"
+                  },
+                  {
+                    "t": "space",
+                    "w": "@spacing-s"
+                  },
+                  {
+                    "t": "text",
+                    "style": "text-m",
+                    "chars": "Faktenchecks",
+                    "size": 15,
+                    "color": "@color-on-canvas",
+                    "tracking": 0.67
+                  }
+                ]
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "value": "textfield",
+        "t": "frame",
+        "dir": "V",
+        "w": 319,
+        "h": 87,
+        "children": [
+          {
+            "t": "text",
+            "style": "headline-xs",
+            "chars": "Ihre Stadt",
+            "weight": "bold",
+            "size": 17,
+            "color": "@color-on-canvas",
+            "tracking": 1.18
+          },
+          {
+            "t": "space",
+            "h": "@spacing-s"
+          },
+          {
+            "t": "frame",
+            "dir": "H",
+            "w": "fill",
+            "h": 49,
+            "pad": ["@spacing-s", "@spacing-s", "@spacing-s", "@spacing-s"],
+            "radius": "@radius-md",
+            "fill": "@color-canvas",
+            "stroke": "@color-stroke",
+            "strokeWeight": 1
+          }
+        ]
+      },
+      {
+        "value": "textarea",
+        "t": "frame",
+        "dir": "V",
+        "w": 319,
+        "h": 161,
+        "children": [
+          {
+            "t": "text",
+            "style": "headline-xs",
+            "chars": "Was sollten wir recherchieren?",
+            "weight": "bold",
+            "size": 17,
+            "color": "@color-on-canvas",
+            "tracking": 1.18
+          },
+          {
+            "t": "space",
+            "h": "@spacing-2xs"
+          },
+          {
+            "t": "text",
+            "style": "text-s",
+            "chars": "So genau, wie Sie möchten.",
+            "size": 14,
+            "color": "@color-on-canvas-muted",
+            "tracking": 1.43
+          },
+          {
+            "t": "space",
+            "h": "@spacing-s"
+          },
+          {
+            "t": "text",
+            "style": "text-m",
+            "chars": "Mehr Lokales.",
+            "size": 15,
+            "color": "@color-on-canvas",
+            "tracking": 0.67
+          }
+        ]
+      },
+      {
+        "value": "file",
+        "t": "frame",
+        "dir": "V",
+        "w": 319,
+        "h": 114,
+        "children": [
+          {
+            "t": "text",
+            "style": "headline-xs",
+            "chars": "Dokument anhängen",
+            "weight": "bold",
+            "size": 17,
+            "color": "@color-on-canvas",
+            "tracking": 1.18
+          },
+          {
+            "t": "space",
+            "h": "@spacing-2xs"
+          },
+          {
+            "t": "text",
+            "style": "text-s",
+            "chars": "PDF oder Foto.",
+            "size": 14,
+            "color": "@color-on-canvas-muted",
+            "tracking": 1.43
+          },
+          {
+            "t": "space",
+            "h": "@spacing-s"
+          },
+          {
+            "t": "frame",
+            "dir": "H",
+            "w": "fill",
+            "h": 49,
+            "pad": ["@spacing-s", "@spacing-s", "@spacing-s", "@spacing-s"],
+            "radius": "@radius-md",
+            "fill": "@color-surface",
+            "stroke": "@color-stroke",
+            "strokeWeight": 1,
+            "children": [
+              {
+                "t": "text",
+                "chars": "◎",
+                "font": "sans",
+                "size": 20,
+                "color": "@color-on-canvas-muted"
+              },
+              {
+                "t": "space",
+                "w": "@spacing-s"
+              },
+              {
+                "t": "text",
+                "style": "text-s",
+                "chars": "Foto oder Dokument auswählen (simuliert)",
+                "size": 14,
+                "color": "@color-on-canvas-muted",
+                "tracking": 1.43
+              }
+            ]
+          }
+        ]
+      }
+    ]
+  },
+  "player/ProgressBar": [
+    {
+      "t": "frame",
+      "name": "player/ProgressBar, at the start",
+      "dir": "V",
+      "w": 319,
+      "h": 16,
+      "pad": [0, 0, "@spacing-2xs", "@spacing-2xs"],
+      "children": [
+        {
+          "t": "frame",
+          "dir": "V",
+          "w": "fill",
+          "h": 4,
+          "radius": "@radius-s",
+          "fill": "@color-stroke",
+          "children": [
+            {
+              "t": "frame",
+              "dir": "V",
+              "w": 0,
+              "h": 4,
+              "fill": "@color-accent"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "t": "frame",
+      "name": "player/ProgressBar, part way through",
+      "dir": "V",
+      "w": 319,
+      "h": 16,
+      "pad": [0, 0, "@spacing-2xs", "@spacing-2xs"],
+      "children": [
+        {
+          "t": "frame",
+          "dir": "V",
+          "w": "fill",
+          "h": 4,
+          "radius": "@radius-s",
+          "fill": "@color-stroke",
+          "children": [
+            {
+              "t": "frame",
+              "dir": "V",
+              "w": 134,
+              "h": 4,
+              "fill": "@color-accent"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "t": "frame",
+      "name": "player/ProgressBar, durationSec={0}, before anything is known",
+      "dir": "V",
+      "w": 319,
+      "h": 16,
+      "pad": [0, 0, "@spacing-2xs", "@spacing-2xs"],
+      "children": [
+        {
+          "t": "frame",
+          "dir": "V",
+          "w": "fill",
+          "h": 4,
+          "radius": "@radius-s",
+          "fill": "@color-stroke",
+          "children": [
+            {
+              "t": "frame",
+              "dir": "V",
+              "w": 0,
+              "h": 4,
+              "fill": "@color-accent"
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "player/MiniPlayer": [
+    {
+      "t": "text",
+      "name": "player/MiniPlayer",
+      "style": "text-s",
+      "chars": "canvas",
+      "size": 14,
+      "color": "@color-on-canvas-muted",
+      "tracking": 1.43
+    }
+  ],
+  "profile/ClubCard": [
+    {
+      "t": "frame",
+      "name": "profile/ClubCard, with memberSince",
+      "dir": "V",
+      "w": 319,
+      "h": 144,
+      "pad": ["@spacing-m", "@spacing-m", "@spacing-m", "@spacing-m"],
+      "radius": "@radius-md",
+      "fill": "@color-accent-alternative",
+      "children": [
+        {
+          "t": "frame",
+          "dir": "H",
+          "w": "fill",
+          "h": 23,
+          "children": [
+            {
+              "t": "text",
+              "chars": "CORRECTIV CLUB",
+              "weight": "bold",
+              "size": 12,
+              "color": "@color-always-dark",
+              "tracking": 10
+            },
+            {
+              "t": "text",
+              "chars": "◎",
+              "font": "sans",
+              "size": 20,
+              "color": "@color-always-dark"
+            }
+          ]
+        },
+        {
+          "t": "space",
+          "h": "@spacing-m"
+        },
+        {
+          "t": "text",
+          "style": "headline-l",
+          "chars": "Alex Beispiel",
+          "weight": "bold",
+          "size": 23,
+          "color": "@color-always-dark",
+          "tracking": -0.43
+        },
+        {
+          "t": "text",
+          "style": "text-s",
+          "chars": "Mitglied mit Beitrag · seit 4. März",
+          "size": 14,
+          "color": "@color-always-dark",
+          "tracking": 1.43
+        }
+      ]
+    },
+    {
+      "t": "frame",
+      "name": "profile/ClubCard, memberSince={null}",
+      "dir": "V",
+      "w": 319,
+      "h": 144,
+      "pad": ["@spacing-m", "@spacing-m", "@spacing-m", "@spacing-m"],
+      "radius": "@radius-md",
+      "fill": "@color-accent-alternative",
+      "children": [
+        {
+          "t": "frame",
+          "dir": "H",
+          "w": "fill",
+          "h": 23,
+          "children": [
+            {
+              "t": "text",
+              "chars": "CORRECTIV CLUB",
+              "weight": "bold",
+              "size": 12,
+              "color": "@color-always-dark",
+              "tracking": 10
+            },
+            {
+              "t": "text",
+              "chars": "◎",
+              "font": "sans",
+              "size": 20,
+              "color": "@color-always-dark"
+            }
+          ]
+        },
+        {
+          "t": "space",
+          "h": "@spacing-m"
+        },
+        {
+          "t": "text",
+          "style": "headline-l",
+          "chars": "Alex Beispiel",
+          "weight": "bold",
+          "size": 23,
+          "color": "@color-always-dark",
+          "tracking": -0.43
+        },
+        {
+          "t": "text",
+          "style": "text-s",
+          "chars": "Testphase",
+          "size": 14,
+          "color": "@color-always-dark",
+          "tracking": 1.43
+        }
+      ]
+    }
+  ],
+  "profile/NavCard": [
+    {
+      "t": "frame",
+      "name": "profile/NavCard, default",
+      "dir": "H",
+      "w": 319,
+      "h": 71,
+      "pad": [0, 0, "@spacing-s", "@spacing-s"],
+      "stroke": "@color-stroke",
+      "children": [
+        {
+          "t": "text",
+          "chars": "◎",
+          "font": "sans",
+          "size": 20,
+          "color": "@color-on-canvas-muted"
+        },
+        {
+          "t": "space",
+          "w": "@spacing-s"
+        },
+        {
+          "t": "frame",
+          "dir": "V",
+          "w": 271,
+          "h": 46,
+          "children": [
+            {
+              "t": "frame",
+              "dir": "H",
+              "w": "fill",
+              "h": 23,
+              "children": [
+                {
+                  "t": "text",
+                  "chars": "Gespeichert",
+                  "weight": "bold",
+                  "size": 15,
+                  "color": "@color-on-canvas",
+                  "tracking": 0.67
+                }
+              ]
+            },
+            {
+              "t": "space",
+              "h": "@spacing-4xs"
+            },
+            {
+              "t": "text",
+              "style": "text-s",
+              "chars": "Artikel für später",
+              "size": 14,
+              "color": "@color-on-canvas-muted",
+              "tracking": 1.43
+            }
+          ]
+        },
+        {
+          "t": "text",
+          "chars": "◎",
+          "font": "sans",
+          "size": 16,
+          "color": "@color-stroke-strong"
+        }
+      ]
+    },
+    {
+      "t": "frame",
+      "name": "profile/NavCard, club",
+      "dir": "H",
+      "w": 319,
+      "h": 73,
+      "pad": [0, 0, "@spacing-s", "@spacing-s"],
+      "stroke": "@color-stroke",
+      "children": [
+        {
+          "t": "text",
+          "chars": "◎",
+          "font": "sans",
+          "size": 20,
+          "color": "@color-on-canvas-muted"
+        },
+        {
+          "t": "space",
+          "w": "@spacing-s"
+        },
+        {
+          "t": "frame",
+          "dir": "V",
+          "w": 271,
+          "h": 48,
+          "children": [
+            {
+              "t": "frame",
+              "dir": "H",
+              "w": "fill",
+              "h": 25,
+              "children": [
+                {
+                  "t": "text",
+                  "chars": "Backstage",
+                  "weight": "bold",
+                  "size": 15,
+                  "color": "@color-on-canvas",
+                  "tracking": 0.67
+                },
+                {
+                  "t": "space",
+                  "w": "@spacing-2xs"
+                },
+                {
+                  "t": "frame",
+                  "dir": "H",
+                  "w": "hug",
+                  "h": 25,
+                  "pad": ["@spacing-2xs", "@spacing-2xs", "@spacing-4xs", "@spacing-4xs"],
+                  "radius": "@radius-s",
+                  "fill": "@color-accent-alternative",
+                  "children": [
+                    {
+                      "t": "text",
+                      "chars": "Club",
+                      "size": 11,
+                      "color": "@color-always-dark",
+                      "tracking": 3.64,
+                      "transform": "uppercase"
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "t": "space",
+              "h": "@spacing-4xs"
+            },
+            {
+              "t": "text",
+              "style": "text-s",
+              "chars": "Nur für Mitglieder",
+              "size": 14,
+              "color": "@color-on-canvas-muted",
+              "tracking": 1.43
+            }
+          ]
+        },
+        {
+          "t": "text",
+          "chars": "◎",
+          "font": "sans",
+          "size": 16,
+          "color": "@color-stroke-strong"
+        }
+      ]
+    }
+  ],
+  "profile/SettingRow": [
+    {
+      "t": "frame",
+      "name": "profile/SettingRow, value={false}",
+      "dir": "H",
+      "w": 319,
+      "h": 35,
+      "pad": [0, 0, "@spacing-2xs", "@spacing-2xs"],
+      "children": [
+        {
+          "t": "frame",
+          "dir": "V",
+          "w": 279,
+          "h": 23,
+          "pad": [0, "@spacing-s", 0, 0],
+          "children": [
+            {
+              "t": "text",
+              "style": "text-m",
+              "chars": "Push-Nachrichten",
+              "size": 15,
+              "color": "@color-on-canvas",
+              "tracking": 0.67
+            }
+          ]
+        },
+        {
+          "t": "frame",
+          "w": 40,
+          "h": 20,
+          "children": [
+            {
+              "t": "frame",
+              "dir": "V",
+              "w": "fill",
+              "h": 14,
+              "x": 0,
+              "y": 3,
+              "radius": 10,
+              "fill": "@color-grey-300"
+            },
+            {
+              "t": "frame",
+              "dir": "V",
+              "w": "hug",
+              "h": 20,
+              "radius": 100,
+              "fill": "@color-always-light"
+            },
+            {
+              "t": "frame",
+              "dir": "H",
+              "w": "fill",
+              "h": 20,
+              "x": 0,
+              "y": 0
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "t": "frame",
+      "name": "profile/SettingRow, value with description",
+      "dir": "H",
+      "w": 319,
+      "h": 58,
+      "pad": [0, 0, "@spacing-2xs", "@spacing-2xs"],
+      "children": [
+        {
+          "t": "frame",
+          "dir": "V",
+          "w": 279,
+          "h": 46,
+          "pad": [0, "@spacing-s", 0, 0],
+          "children": [
+            {
+              "t": "text",
+              "style": "text-m",
+              "chars": "Spotlight",
+              "size": 15,
+              "color": "@color-on-canvas",
+              "tracking": 0.67
+            },
+            {
+              "t": "space",
+              "h": "@spacing-4xs"
+            },
+            {
+              "t": "text",
+              "style": "text-s",
+              "chars": "Der Newsletter, jeden Freitag.",
+              "size": 14,
+              "color": "@color-stroke-strong",
+              "tracking": 1.43
+            }
+          ]
+        },
+        {
+          "t": "frame",
+          "w": 40,
+          "h": 20,
+          "children": [
+            {
+              "t": "frame",
+              "dir": "V",
+              "w": "fill",
+              "h": 14,
+              "x": 0,
+              "y": 3,
+              "radius": 10,
+              "fill": "@color-accent"
+            },
+            {
+              "t": "frame",
+              "dir": "V",
+              "w": "hug",
+              "h": 20,
+              "radius": 100,
+              "fill": "@color-always-light"
+            },
+            {
+              "t": "frame",
+              "dir": "H",
+              "w": "fill",
+              "h": 20,
+              "x": 0,
+              "y": 0
             }
           ]
         }
