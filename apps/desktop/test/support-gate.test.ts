@@ -35,13 +35,23 @@
  * a consumer makes — `null` when the prop renders, the sentence a render would print
  * when it does not.
  *
- * So the hole is closable here, in a second, with no GTK. What it still needs is the
- * other half of the question: this app's shim ANSWERS 110 of the props the layer
- * refuses, so a test asserting `explainProp(...) === null` on the app's source would
- * fail on every one of them. The set the shim answers has to become data first — it is
- * a prose table in `src/shims/react-native.tsx`'s header today — and then this file can
- * assert the difference. Until then `npm run route-sweep` is the only oracle, and it
- * needs a GTK session, a built bundle and an admitted profile.
+ * So the hole is closable here, in a second, with no GTK. HALF OF IT NOW IS: the set
+ * this host answers is data, in `src/shims/answered-props.ts`, and
+ * `test/prop-gate.test.ts` holds every entry against `explainProp` in both
+ * directions. This paragraph used to say that set "has to become data first — it is a
+ * prose table in `src/shims/react-native.tsx`'s header today", and that stopped being
+ * true when `answered-props.ts` landed.
+ *
+ * WHAT IS STILL OPEN is the question about the app rather than about the shim: which
+ * props the app PASSES. That needs a parser and one level of forwarding analysis,
+ * because a component like `<Typo>` spreads `...rest` onto a primitive, which is how
+ * `<Typo onPress>` reached a `Gtk.Label`. `answered-props.ts`' own header names it.
+ *
+ * Until then the oracles are the two sweeps, and both need a GTK session, a built
+ * bundle and an admitted profile. `npm run route-sweep` opens the screens;
+ * `npm run component-sweep` opens the phone's component catalogue, which covers every
+ * component in `src/components` in the variants its props allow rather than the ones
+ * a screen happens to pass.
  * ([ADR 0027](../../../adr/0027-re-exported-screens-and-a-variant-where-the-host-refuses.md))
  */
 

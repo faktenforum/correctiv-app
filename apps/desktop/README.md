@@ -59,6 +59,41 @@ call the status listener synchronously, because a backend that emitted from insi
 minute into an episode ([ADR 0006](../../adr/0006-one-core-two-hosts.md)). The probe
 asserts the property rather than trusting the implementation.
 
+### The recovery screen, which this host had to build for itself
+
+The phone's error screen is reached through expo-router's `Try`, which wraps a route
+whose file also exports `ErrorBoundary`. This host's `expo-router` is a shim over
+`@gjsify/react-native/router` and has no `Try`, so that export was inert here: present,
+correct, and reached by nothing. Nothing said so, because a missing boundary has no
+symptom until the first refusal, and then the app dies whole — which is the profil
+crash below.
+
+It is a plain React class in `src/app/_layout.tsx`, wrapping the Redux `Provider` so it
+also covers a fault in the store's own construction, and it draws the phone's
+`components/recovery/RecoveryScreen` rather than a second copy of its German.
+`@gjsify/react-native`'s support table lists expo-router's `ErrorBoundary` as planned,
+tier P3, and says a boundary "has to be reconciled" with the host rethrowing an uncaught
+error from `render()`. Measured here, it needs no reconciling: React reaches that
+handler only for an error NO boundary caught, and with the class in the tree
+`@gjsify/gtk-host/react` logs `an error boundary caught an error` through
+`onCaughtError` instead, the process survives, and a capture still gets written.
+
+**WHAT IT DOES NOT CATCH**, measured by the first full `component-sweep` rather than
+predicted: the whole catalogue in one page throws
+`<View> expand — carries layout that cannot be resolved at this position`, and the log
+says `React hit an error no boundary caught`. So at least one class of refusal reaches
+the root past this boundary. Which class, and why, is open.
+
+**A cast, and it is not cosmetic.** `tsconfig.json` points `jsxImportSource` at
+`@gjsify/gtk-host/react` so that an accidental `<div>` is a type error rather than a
+blank window. That namespace declares `ElementType` as a GTK tag or a FUNCTION
+component, so a class component is `TS2786: cannot be used as a JSX component` — which
+excludes every error boundary, because React has no functional one and
+`getDerivedStateFromError` is class-only by design. The types forbid what the runtime
+supports. The fix belongs upstream in one line, `GtkElementType` admitting a component
+class the way React's own `ElementType` does; until then the class is retyped at one
+site with the reason written beside it.
+
 ### The profil crash, fixed
 
 Home did not render at all for one merge, and it took every route with it, because
@@ -1259,8 +1294,24 @@ give you.
 [TROUBLESHOOTING.md](../../TROUBLESHOOTING.md) opens with applies with more force here,
 because this host's refusals happen at RENDER time, per screen: a green check, a green
 typecheck and a successful build are all compatible with a screen that throws the moment
-it is opened. `npm run route-sweep` is the answer to that — it opens all 25 routes and
+it is opened. `npm run route-sweep` is the answer to that — it opens every route and
 reads the log — and it is how the three broken tab routes above were found.
+
+**`npm run component-sweep` is the other half of it, and the difference is variants
+rather than count.** The route sweep covers whichever components those screens happen
+to USE, in whichever variants they happen to PASS. The phone's
+`src/gallery/catalogue.tsx` covers every component in `src/components` in the variants
+its props allow, and `apps/mobile/__tests__/gallery-catalogue.test.ts` fails when one
+is missing, so the list cannot quietly shrink. `<Badge tone="live">` draws a dot the
+other three tones do not; `EpisodeRow` has a club form and a default one; `ProgressBar`
+has a `durationSec={0}` case for "nothing known yet". A screen passes one of each.
+Every prop refusal this host has hit was a prop some particular variant passes.
+
+It runs in two phases, because 44 components at the sweep's deadline would be eleven
+minutes: one process with the whole catalogue first, and only if that shows a refusal,
+one process per component — `?c=folder/Name` — so the log names the component rather
+than the primitive alone. `<Text> prop "onPress"` says what was refused; it does not
+say which of forty-four asked.
 
 ## What this does not prove
 
