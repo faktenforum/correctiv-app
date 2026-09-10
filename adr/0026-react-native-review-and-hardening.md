@@ -190,70 +190,74 @@ needs them, preference and payload policy in the core, and navigation stays the
 host's and respects the admission gate. Until then, keep the simulated wording and do
 not read `pushOptIn: true` as OS authorisation or as a successful registration.
 
-### 4. `react-native-mmkv` for the key/value store, and AsyncStorage keeps the blobs
+### 4. MMKV as the single storage engine, with a bounded cache
 
-Move `KeyValueStore` from AsyncStorage to `react-native-mmkv`. The reason is not the
-one usually given for it, and the difference matters enough to write down.
+Use `react-native-mmkv` for both `KeyValueStore` and `BlobStore`, replacing
+AsyncStorage: faster runtime access and one backend to maintain. Keep the existing
+async ports and separate namespaces for durable state and disposable cache. The
+adapter belongs in the host; no native imports or storage mirror belong in the core.
 
-**The port stays asynchronous.** MMKV's headline is a synchronous JSI API, and this
-codebase deliberately does not want one: `KeyValueStore` was synchronous once, which
-forced the host to keep an in-memory mirror, hydrate it before the first render, and
-warn twice about reading before hydration and then overwriting real state on the first
-write. `ports/index.ts` and `lib/platform/expo.ts` both carry that history. A
-synchronous backend under an asynchronous port needs no mirror at all — it resolves a
-value — so MMKV is compatible with the port while the argument for MMKV is not the
-port.
+**Revision, 2026-09-10:** ~~AsyncStorage stays for `BlobStore`.~~ Superseded by this
+single-engine decision: accept the measured memory cost and bound the cache rather
+than maintain two backends.
 
-**What it is worth, measured.** On an Android 16 (API 36) x86_64 emulator, debug
-build with a Metro-served bundle, five cold starts on 2026-09-09:
+**Measured runtime benefit.** On 2026-09-10, the same release-mode Android
+15/API 35 arm64 emulator build compared AsyncStorage 2.2.0 with MMKV 4.3.2.
+Synthetic actions used the unchanged `persist()` code: 30 writes per case across
+three alternating-backend rounds, 400 ms apart. Median API completion times,
+excluding serialization:
 
-| | |
-| --- | --- |
-| `persist()` total | 18–21 ms (19, 19, 19, 18, 21) |
-| first read, `store.settings` | 11–13 ms |
-| the four reads after it | 2–5 ms combined |
-
-So the cost is one initialisation — opening AsyncStorage's SQLite database — and not
-five round trips. Two conclusions follow. **Parallelising the five reads would save a
-few milliseconds, not most of them**, which retires the cheaper alternative to this
-decision and leaves the "Sequential on purpose" comment in `stores/persist.ts`
-standing on a measurement instead of an argument. And MMKV would remove most of the
-18–21 ms, because it has no database to open.
-
-**Whether that is visible is a different question, and the answer is sometimes not.**
-The splash lifts on `fontsLoaded && storeReady`, and in two runs of the same build:
-
-| | run 1 | run 2 |
+| Persisted payload | AsyncStorage | MMKV |
 | --- | --- | --- |
-| `storeReady` | 189 ms | 248 ms |
-| `fontsLoaded` | 272 ms | 183 ms |
-| splash hidden | 272 ms | 249 ms |
+| Settings, about 140 bytes | 5.86 ms | 0.07 ms |
+| 100 saved articles, about 26 KB | 5.68 ms | 0.10 ms |
+| 1,000 saved articles, about 264 KB | 6.88 ms | 1.37 ms |
 
-The two race, and in run 1 the store was ready 83 ms before the fonts, where saving
-19 ms saves nothing. **If cold start is the goal, `useFonts` is the larger item.**
+The 250 ms throttle stayed: end-to-end persistence improved by **about 5-7 ms**.
+Separate warm loops reduced settings reads from 0.242 to 0.006 ms, and 1 MiB blob
+writes from 7.989 to 2.599 ms. Redux selectors already read JS memory.
 
-**So the argument for this decision is directness and timing, not startup.** Directly:
-a memory-mapped file and a JSI call instead of a bridge hop and a SQLite query, and
-one fewer moving part in the only file that decides where state lives. Timing: the
-migration costs almost nothing today and grows with the first real install, so doing
-it later is the same work with users attached to it.
+Faster completion is not necessarily less blocking: a 1 MiB write occupied the JS
+thread for about 2.5-2.6 ms with either backend, plus 3.18 ms for `JSON.stringify`.
+Wrapping MMKV in an async port does not offload that work. These results establish
+neither whole-app responsiveness nor equal disk-flush durability.
 
-**AsyncStorage stays for `BlobStore`.** `ports/index.ts` describes a blob as "a
-megabyte of cached feeds", and `services/cache.service.ts` applies a TTL with no
-eviction and no size cap, so that store grows without bound. That does not belong in
-a memory-mapped file. This decision therefore **adds** a dependency and removes none;
-if the blobs ever move, it is to a second MMKV instance with its own file and on the
-strength of a measured cache size.
+The team's experience of larger AsyncStorage writes stalling other apps motivates
+this choice, but was not reproduced as a UI freeze here.
+[Tencent's Android benchmark](https://github.com/Tencent/MMKV/wiki/android_benchmark)
+supports the direction, not our ratios: it compares native MMKV with SQLite and
+SharedPreferences, not React Native AsyncStorage.
 
-Two more consequences worth stating. It is two native packages, not one:
-`react-native-mmkv` 4.3.2 takes `react-native-nitro-modules` as a peer. And it is
-**not** a platform split: 4.3.2 ships a web implementation (`createMMKV.web`, backed
-by `localStorage`), so `lib/platform/expo.ts` stays one file and the property its own
-comment names — unchanged on iOS, Android and web — survives.
+**Accept the memory cost.** Persisting 4 MiB already held in the JS cache added
+**4.55-4.56 MiB of settled process PSS with MMKV**, versus **0.49-0.50 MiB with
+AsyncStorage**, across three fresh processes per backend. The native representation
+is additional to JS objects. These are not peak figures: AsyncStorage showed
+transient spikes, and GC/page residency affect totals. Mapped pages are not
+necessarily permanently resident.
 
-Decide before the first line of code whether any install's state has to survive. If
-not, the migration path is not written and the old `kv:` keys are simply abandoned,
-which is one fewer failure mode than writing it.
+**Cap cached articles with either backend.** The current
+[`cache.service.ts`](../packages/app-core/src/services/cache.service.ts) has no count
+limit or eviction; the article reader's 24-hour TTL only controls freshness.
+Add an article-count limit, total byte budget and maximum entry size, with
+least-recently-used eviction from both the JS `Map` and persisted cache.
+Keep policy in the core and add deletion capability to `BlobStore`. Choose limits
+against representative content and offline needs before rollout. Cached bodies are
+not bookmarks: never silently evict user-selected bookmarks, settings or session state.
+
+AsyncStorage would require bounds too. Its
+[2.2.0 Android limits](https://github.com/react-native-async-storage/async-storage/blob/%40react-native-async-storage%2Fasync-storage%402.2.0/packages/website/docs/Limits.md)
+are a configurable **6 MB total database default** and an **approximately 2 MB
+per-entry read limit**. Raising the former does not fix the latter.
+
+**Adoption.** The app is unreleased, so no legacy-data migration is required.
+Replace AsyncStorage directly with MMKV and Nitro Modules, without a fallback;
+existing development/test data need not be carried over. Preserve web persistence
+through MMKV's `localStorage` implementation and surface quota/unavailable-storage
+failures.
+
+~~MMKV would remove most of the 18-21 ms.~~ Withdrawn: no A/B cold-start comparison
+was made. Fonts were the bottleneck in one earlier startup run; the measurements
+and platform limitations remain recorded below.
 
 ### 5. An error boundary, and an error report whose provider is not chosen yet
 
@@ -549,11 +553,15 @@ measurement without one expires invisibly.
 | --- | --- | --- |
 | `persist()` cold start | Android 16 (API 36), x86_64 emulator, debug build | 18–21 ms; first read 11–13 ms |
 | fonts against store | same | `fontsLoaded` 183–272 ms, `storeReady` 189–248 ms |
+| Ongoing persistence, 2026-09-10 | Pixel 8a Android 15/API 35 arm64 emulator on macOS arm64, release Hermes; AsyncStorage 2.2.0 / MMKV 4.3.2 + Nitro 0.37.1 | 30 writes per case; API timings and 5-7 ms action-to-completion improvement in section 4 |
+| Warm storage API, 2026-09-10 | Same release build and backends | Five alternating rounds; 500 reads/writes per case, 200 for 1 MiB; section 4 |
+| JS cache plus persistence, 2026-09-10 | Same release build; three fresh processes per backend, three PSS samples per stage | For 4 MiB already in JS cache, additional settled PSS: MMKV 4.55-4.56 MiB, AsyncStorage 0.49-0.50 MiB |
+| AsyncStorage Android limits, 2026-09-10 | 2.2.0 documentation and default Android configuration, not a runtime limit test | 6 MB total database default; approximately 2 MB per-entry read limit |
 | Hermes `Intl` surface | `hermes-android 250829098.0.17`, arm64 | Collator, DateTimeFormat, NumberFormat; no PluralRules |
 | network inspection | `react-native` 0.86.3, source | on by default, native capture |
 | error boundary | `expo-router` 57, source | `Try` + `{ error, retry }`, hides the splash |
 | native header on web | `react-native-screens` 4.26.2, source | header config and search bar are bare `View`s |
-| MMKV on web | `react-native-mmkv` 4.3.2, npm tarball, not installed here | web build present, `localStorage`-backed |
+| MMKV on web | `react-native-mmkv` 4.3.2, source inspection only | web build present, `localStorage`-backed; web persistence not runtime-tested |
 | Rozenite under `expo export` | `@rozenite/metro` 2.4.0, npm tarball, not installed here | on unless `isBundling()`; an explicit `enabled` skips that check |
 | `__DEV__` + `require` in a function | production web export | keeps the module; only module scope drops it |
 | `npm run check` | this machine | 17.2 s total, oxlint + oxfmt 0.72 s of it |
@@ -592,9 +600,9 @@ hardest on section 9, where a native header is most of the point, and on section
 where Hermes on Apple platforms was not checked at all.
 
 **The startup numbers are from a debug build with a Metro-served bundle.**
-`persist()`'s 18–21 ms is dominated by the native path and should hold in release; the
-183–272 ms font load will not, and it is the figure section 4 leans on to say the
-saving may be invisible.
+They remain specific to that build and emulator. Section 4's later release-mode
+comparison measures ongoing storage operations, not cold start, and does not
+establish how either startup figure transfers to release or physical devices.
 
 **`useFonts` is unexamined.** Section 4 found it on the critical path in one run of
 two and then went no further, which makes it the largest unclaimed startup item in
@@ -604,8 +612,13 @@ this record.
 here changed that, and dropping the search recommendation does not settle it either
 way.
 
-**MMKV and Rozenite were read, not run.** Neither is installed, so sections 1 and 4
-are argued from the published tarballs of `react-native-mmkv` 4.3.2 and
-`@rozenite/metro` 2.4.0 rather than from this tree. That is why both are pinned to a
-version here: the next reader has a different install and no way to tell which one
-these paragraphs describe. Nothing in either section has been observed running.
+**MMKV was benchmarked, not adopted.** MMKV 4.3.2 and Nitro Modules 0.37.1 were
+temporarily installed in a separate benchmark application ID, then removed with the
+instrumentation. Section 4 exercised the real core persistence and cache code with
+synthetic data, not screen rendering, navigation or scrolling. No physical-device,
+iOS, battery, peak-memory or power-loss-durability conclusion follows. The storage
+adapter replacement and bounded-cache policy remain implementation work.
+
+**Rozenite was read, not run.** Section 1 still relies on the published
+`@rozenite/metro` 2.4.0 tarball, not an installed integration. Its runtime behaviour
+in this app remains unobserved.
