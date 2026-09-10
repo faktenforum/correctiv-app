@@ -249,6 +249,26 @@ AsyncStorage would require bounds too. Its
 are a configurable **6 MB total database default** and an **approximately 2 MB
 per-entry read limit**. Raising the former does not fix the latter.
 
+**The file system was the alternative, and it is rejected.** One key/value store is
+the point of this decision, and a blob cache is not a key/value store in the same
+sense: `cache.service.ts` already hashes every key to `<djb2>.json`, which is a
+filename, and the thing it holds is a few dozen kilobytes of article HTML rather than
+a setting. Putting it in `expo-file-system` would satisfy "not two K/V stores" and
+avoid the memory cost measured above, since a file on disk is not a mapped page.
+
+It loses on one point, and the point is decisive: **the web target has no file
+system.** `BlobStore` would need a second implementation there, against localStorage
+or IndexedDB, so the uniformity this decision buys would be spent again immediately —
+and MMKV ships a web build backed by localStorage. One implementation on three
+platforms is worth the megabytes. Recorded because the argument is not obvious from
+the outcome, and the next reader will otherwise re-open it.
+
+**The bound is part of the migration, not a follow-up.** With AsyncStorage an
+unbounded cache is a disk that fills; with MMKV it is resident memory, so the same
+code becomes a leak with a TTL. `BlobStore` cannot evict at all today — the port is
+`read` and `write`, with no `delete` — so the capability, the policy and the limits
+land with the swap or the swap should wait for them.
+
 **Adoption.** The app is unreleased, so no legacy-data migration is required.
 Replace AsyncStorage directly with MMKV and Nitro Modules, without a fallback;
 existing development/test data need not be carried over. Preserve web persistence
