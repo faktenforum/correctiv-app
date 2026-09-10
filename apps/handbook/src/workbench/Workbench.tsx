@@ -17,7 +17,7 @@ import {
   type FrameInfo,
 } from './api';
 import { attachConsole } from './frame/console';
-import { BASE, applyTheme, driveRoute, frameRoute, keepFramePath, navigate } from './frame/handle';
+import { applyTheme, BASE, driveRoute, frameRoute, keepFramePath, navigate } from './frame/handle';
 import { armPicker, openInEditor, type Located } from './frame/locate';
 import { audit, setOutline, type Finding } from './frame/measure';
 import { waitReady } from './frame/ready';
@@ -115,11 +115,20 @@ export function useWorkbench(active: boolean) {
   }, [active, loaded, shape]);
 
   /**
-   * The frame's first navigation, and every one the route field causes.
+   * The frame's first navigation, every one the route field causes, and the route
+   * again after every load.
    *
    * A fixture has to be in storage before the app boots, so it is written here
    * rather than in an effect of its own: same-origin means this page's
    * `localStorage` IS the app's, and the app reads it while mounting.
+   *
+   * `loaded` is a dependency because of the development build. There the address
+   * cannot carry the route at all (`driveRoute` says why), so a frame that has just
+   * booted at `/app/gespeichert` is showing `+not-found` while its address claims
+   * it is exactly where the state wants it — and the address is all `frameRoute`
+   * below can see. Asking the router again after every load is what puts the app
+   * where the state says. In the published export there is no handle to ask, and
+   * the address was right to begin with.
    */
   const seeded = useRef<string | null>(null);
   useEffect(() => {
@@ -135,32 +144,19 @@ export function useWorkbench(active: boolean) {
       seeded.current = state.seed;
       reseed = true;
     }
-    if (reseed || frameRoute(frame.contentWindow) !== state.route) {
-      clearLogs();
-      // A reseed has to reload, because the fixture is read while the app mounts.
-      // Otherwise prefer the app's own router: in a development build the address
-      // cannot carry the route at all (`driveRoute` says why), and where it can,
-      // not reloading keeps the screen's state and is faster.
-      if (reseed || !driveRoute(frame.contentWindow, state.route)) {
-        document.body.dataset.state = 'loading';
-        navigate(frame, state.route);
-      }
-    }
-  }, [active, shape, state.route, state.seed]);
 
-  /**
-   * The route again, after every load, for the build whose address cannot carry it.
-   *
-   * A development bundle boots at `/app/<route>` and renders `+not-found`, and the
-   * address then says the frame is exactly where the state wants it — so the effect
-   * above is satisfied and nothing drives the router. This is what does, on the
-   * first load and on every reload after it, the same shape and the same reason as
-   * the appearance below. In the published export there is no handle, `driveRoute`
-   * returns false, and the address was right to begin with.
-   */
-  useEffect(() => {
-    if (active) driveRoute(win(), state.route);
-  }, [active, state.route, loaded]);
+    const moving = reseed || frameRoute(frame.contentWindow) !== state.route;
+    if (moving) clearLogs();
+
+    // A reseed has to reload, because the fixture is read while the app mounts.
+    // Everything else prefers the router: it keeps the screen's state, it is
+    // faster, and in a development build it is the only thing that works.
+    if (!reseed && driveRoute(frame.contentWindow, state.route)) return;
+    if (!moving) return;
+
+    document.body.dataset.state = 'loading';
+    navigate(frame, state.route);
+  }, [active, shape, state.route, state.seed, loaded]);
 
   /** The appearance setting, re-applied after every load because a reload resets it. */
   useEffect(() => {
@@ -205,19 +201,20 @@ export function useWorkbench(active: boolean) {
   /**
    * expo-router navigates with `pushState`, which fires no event an outer frame
    * can hear, so the route is polled. Cheap, and it also catches taps inside the
-   * app — the field always shows where the frame actually is. The same tick
+   * app — the field follows the frame wherever the app takes it. The same tick
    * re-reads the handle and both schemes, which a person can change in DevTools
    * at any moment.
    */
+  const seen = useRef<string | undefined>(undefined);
   useEffect(() => {
     if (!active) return;
     const id = window.setInterval(() => {
       const current = win();
 
-      // First in the tick, because everything below reads the frame's address and
-      // `driveRoute` leaves it without the base the frame was loaded under. It only
-      // touches a frame that is already running the app; `keepFramePath` says what
-      // happens when that condition is left out.
+      // First in the tick, because everything below reads the frame's address, and
+      // in a development build nothing that navigates writes the base: not
+      // `driveRoute`, and not a tap inside the app either. `keepFramePath` says why
+      // it insists on a handle before it touches anything.
       keepFramePath(current);
 
       // Also patched here, not only on load, because `load` is late: the app's
@@ -239,7 +236,17 @@ export function useWorkbench(active: boolean) {
       const wanted = getState().theme;
       if (wanted && info.appTheme && info.appTheme !== wanted) applyTheme(current, wanted);
 
-      if (route !== undefined && route !== getState().route) set({ route });
+      // Only a route the frame has MOVED to is written back, never one it is
+      // merely still on. `driveRoute` returns before the app has gone anywhere:
+      // `router.navigate` queues the action and the address follows up to 40 ms
+      // later, measured, so a tick landing inside that window reads the route the
+      // app is leaving — and writing that sends it straight back. Seen once, on
+      // `/mediathek`: the field snapped to `/`, the frame followed, and the whole
+      // navigation was undone by the poll that exists to observe it. A value this
+      // tick has already reported is an echo of our own command, not a move.
+      const moved = route !== seen.current;
+      seen.current = route;
+      if (moved && route !== undefined && route !== getState().route) set({ route });
     }, 300);
     return () => window.clearInterval(id);
   }, [active]);

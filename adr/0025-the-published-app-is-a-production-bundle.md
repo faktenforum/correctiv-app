@@ -58,9 +58,11 @@ holds on Pages: the device frame, the route field, the storage fixtures, the con
 the palette overrides and the measure checks.
 
 The same limit applies to the dev server, which is a development bundle by definition.
-Locally the frame reaches the app's first screen and no further, so the route field is
-a desktop convenience there rather than a way to walk the app. `TROUBLESHOOTING.md`,
-"The web target", carries the measurement.
+~~Locally the frame reaches the app's first screen and no further, so the route field is
+a desktop convenience there rather than a way to walk the app.~~ It applies to the
+*address*, and since 2026-09-10 the route field does not use the address there: it drives
+the app's own router over the dev handle instead, so locally the field walks the app.
+`TROUBLESHOOTING.md`, "The web target", carries both measurements.
 
 ## What the inspector needs, which is not this
 
@@ -71,11 +73,17 @@ whatever bundle is published there. That is worth saying plainly, because it is
 easy to read "the published site has no dev handle" as the reason the picker is
 quiet there, and it is not.
 
-Against the dev server the whole surface works except the route field, which
-reaches the app's first screen and no further, for the same base-path reason.
+~~Against the dev server the whole surface works except the route field, which
+reaches the app's first screen and no further, for the same base-path reason.~~
 Driving the app's own router instead of its address bar was tried on 2026-09-05,
-by putting `router` on the dev handle: it moves the URL and not the rendered
-tree, so it was not kept.
+by putting `router` on the dev handle: it moved the URL and not the rendered
+tree, ~~so it was not kept~~ — re-measured on 2026-09-10 it moves both, and the route
+field has driven the router since. What the attempt of 2026-09-05 was missing is not
+recorded; what the kept one needs is a second half, because the same upstream fork
+skips `appendBaseUrl` in development as well: the router writes a path without the
+base, and the shell has to put it back or the next reload of the frame leaves the app.
+Both halves are `apps/handbook/src/workbench/frame/handle.ts`. Against the dev server
+the whole surface works.
 
 ## What would change this
 

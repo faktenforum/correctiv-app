@@ -429,8 +429,8 @@ export interface DevHandle {
    *
    * Navigating this way leaves the address behind: the router writes `/gespeichert`,
    * which is a path on the HANDBOOK's origin, and a reload of the frame would then
-   * land on the handbook's own 404. The shell puts the address back afterwards. It
-   * is the one that knows what the frame's address is supposed to be.
+   * land on the handbook's own 404. The shell puts the address back from its poll,
+   * because it is the one that knows what the frame's address is supposed to be.
    */
   router: typeof router;
 }

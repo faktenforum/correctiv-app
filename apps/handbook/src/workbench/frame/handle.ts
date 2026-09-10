@@ -66,10 +66,12 @@ export function handleOf(win: Window | null): DevHandle | null {
 /**
  * Put the frame's own base back at the front of its address.
  *
- * `driveRoute` navigates through the app's router, and the router writes the path
- * itself, without the base the frame was loaded under: `/gespeichert`, which is a
- * path on the HANDBOOK's origin. Left there, reloading the frame leaves the app
- * entirely and renders the handbook inside it. Measured, both the fault and the fix.
+ * A development bundle writes the path without the base the frame was loaded under
+ * — `appendBaseUrl` skips development just as `stripBaseUrl` does, see `driveRoute`
+ * below — so the address ends up at `/gespeichert`, a path on the HANDBOOK's origin.
+ * Left there, reloading the frame leaves the app entirely and renders the handbook
+ * inside it. Measured, both the fault and the fix. It is not only `driveRoute` that
+ * causes this: a tap inside the framed app writes the same base-less path.
  *
  * **Only ever on a frame that is already running the app**, which is what the handle
  * proves. A first attempt left that condition out and cost an afternoon: on the tick
@@ -165,36 +167,45 @@ export function navigate(frame: HTMLIFrameElement, route: string): void {
 }
 
 /**
- * Send the frame to a route through the app's own router, and put the address back.
+ * Send the frame to a route through the app's own router.
  *
  * The address alone cannot do it in development, and the reason is upstream:
  * `expo-router`'s `stripBaseUrl` removes the base path only when
- * `NODE_ENV !== 'development'`, so a dev bundle framed at `/app/` matches
- * `/app/gespeichert` against its own routes, finds nothing, and renders
- * `+not-found`. Measured 2026-09-10 with both servers running: every framed route
- * did that, `/app/` included, which is worse than
+ * `NODE_ENV !== 'development'`
+ * (`expo-router/build/fork/getStateFromPath-forks.js`), so a dev bundle framed at
+ * `/app/` matches `/app/gespeichert` against its own routes, finds nothing, and
+ * renders `+not-found`. Measured 2026-09-10 with both servers running: every framed
+ * route did that, `/app/` included, which is worse than
  * [ADR 0025](../../../../../adr/0025-the-published-app-is-a-production-bundle.md)
  * had recorded.
  *
  * So the route travels the way everything else in this directory travels, by
- * same-origin property access ([ADR 0014](../../../../../adr/0014-the-preview-shell-as-a-package.md)),
- * and the address is restored immediately afterwards. Restoring it is not cosmetic:
- * the router writes `/gespeichert`, a path on the HANDBOOK's origin, and a reload of
- * the frame would then leave the app entirely and render the handbook's own 404
- * inside it. Measured, both the fault and the fix.
+ * same-origin property access
+ * ([ADR 0014](../../../../../adr/0014-the-preview-shell-as-a-package.md)).
  *
- * Returns whether it navigated. `false` means there is no handle, which is the
- * normal state of the published export — and the state in which the address works
- * by itself, because a production bundle does apply the base path. The two halves
- * cover the two builds exactly, which is why neither needs a flag.
+ * **This leaves the address behind, and cannot put it back itself.** `navigate`
+ * only queues a `ROUTER_LINK` action (`expo-router/build/global-state/router.js`,
+ * `linkTo`), so nothing has moved yet when this returns. `keepFramePath` repairs the
+ * address from the poll instead, which leaves a window in which reloading the frame
+ * lands on the handbook rather than on the app. Sampled every 50 ms on 2026-09-10,
+ * the base was back within 50 ms of a driven route and within 250 ms of a tap on a
+ * tab, both inside the one 300 ms tick. Closing it here would not close it, because
+ * a tap inside the app opens the same window and there is nothing to hook.
+ *
+ * Returns whether there was a router to ask, not whether the app arrived. `false` is
+ * the normal state of the published export — and the state in which the address
+ * works by itself, because a production bundle does apply the base path. The two
+ * halves cover the two builds exactly, which is why neither needs a flag.
  */
 export function driveRoute(win: Window | null, route: string): boolean {
   const handle = handleOf(win);
-  if (!win || !handle?.router) return false;
+  if (!handle?.router) return false;
   try {
     handle.router.navigate(route);
     return true;
   } catch {
-    return false; // a route the app does not have, say; the caller falls back
+    // Only reachable if the frame left this origin between the check and here. An
+    // unknown route does not come back this way: it is queued, and warns later.
+    return false;
   }
 }
