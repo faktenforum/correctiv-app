@@ -215,3 +215,54 @@ export function applyFixture(store: Storage, id: string): void {
   clearApp(store);
   chosen.write(store);
 }
+
+/**
+ * Opens the door, and touches nothing else.
+ *
+ * `applyFixture` above is for someone who asked for a state: it wipes first, so a
+ * fixture describes a whole state rather than a patch. That is wrong for a frame
+ * that appears because a reader opened a row on `/components` — they asked to see
+ * a button drawn, not to have the demo app's saved articles cleared.
+ *
+ * So: the session key, and only when the door is actually shut. Nothing else is
+ * read or written, and a reader who is already signed in keeps the account they
+ * signed in with.
+ *
+ * A frame does need this. The app's root layout renders the gate INSTEAD of the
+ * router until the session carries an entitlement, so a frame pointed at
+ * `/gallery` without one draws the sign-in form, which is what the link out of
+ * `/components` did for every reader of the published site. Storage is the only
+ * key that works there, because the static export carries no dev handle to
+ * dispatch through, which is the same argument the file header makes.
+ *
+ * `settings` is deliberately left alone: the onboarding redirect fires only from
+ * `/`, and nothing this is used for starts there. What it writes does outlive the
+ * page, like every fixture — the next visit to `/workbench` that names no fixture
+ * finds this session rather than the door.
+ *
+ * **Two `try` blocks and not one.** A store that cannot be read is the ordinary
+ * case, and the answer to it is to write; a store that cannot be *written* is a
+ * browser with site data switched off, and there is no answer to it at all. One
+ * block put the write in the catch of the read, so a blocked store threw out of
+ * the effect that calls this and React unmounted the page: measured against a
+ * `localStorage` whose accessors throw `SecurityError`, `/components` rendered its
+ * error boundary and none of the 46 rows. A frame that draws the door is worse
+ * than one that draws a component and far better than no reference page.
+ */
+export function holdTheDoorOpen(store: Storage): void {
+  try {
+    const raw = store.getItem('kv:store.session');
+    const held = raw
+      ? (JSON.parse(raw) as { entitlement?: { appAccess?: unknown } }).entitlement?.appAccess
+      : false;
+    if (held === true) return;
+  } catch {
+    // Unparsable is the same as shut. `persist()` deletes a payload that is not
+    // valid JSON, so writing over it loses nothing that would have survived.
+  }
+  try {
+    kv(store, 'session', SIGNED_IN);
+  } catch {
+    // Site data switched off. Nothing can be seeded, and nothing may throw.
+  }
+}

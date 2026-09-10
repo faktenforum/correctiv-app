@@ -1,6 +1,6 @@
 # Architecture decisions
 
-Twenty-five decisions shaped this repo. Read them when you want to know *why* something
+Twenty-seven decisions shaped this repo. Read them when you want to know *why* something
 is the way it is; [`../ARCHITECTURE.md`](../ARCHITECTURE.md) describes *what* it is.
 
 | | Decision | Status |
@@ -30,7 +30,8 @@ is the way it is; [`../ARCHITECTURE.md`](../ARCHITECTURE.md) describes *what* it
 | [0023](0023-the-host-constructs-the-store.md) | The host constructs the store | accepted; recorded after the fact, corrects one claim in `ARCHITECTURE.md` and four comments |
 | [0024](0024-the-handbook-owns-the-root.md) | The handbook owns the site root, and the app moves under it | accepted; retires two of 0014's, its argument untouched |
 | [0025](0025-the-published-app-is-a-production-bundle.md) | The published app is a production bundle, and the workbench gives up its handle | accepted; a capability measured and rejected |
-| [0026](0026-re-exported-screens-and-a-variant-where-the-host-refuses.md) | The desktop host re-exports the phone's screens, and varies one only where the host refuses | accepted; scoped to the experimental `apps/desktop`, retires one of 0012's. **Lives on the `desktop` branch only**, and has now been renumbered three times — it was 0020, then 0023, then 0024, each time because main took the number while this branch was away |
+| [0026](0026-react-native-review-and-hardening.md) | The React Native review, and which of it we are doing | accepted; nine decisions, three with a named open item, no ADR superseded, three comments and three sentences of `AGENTS.md` named for later |
+| [0027](0027-re-exported-screens-and-a-variant-where-the-host-refuses.md) | The desktop host re-exports the phone's screens, and varies one only where the host refuses | accepted; scoped to the experimental `apps/desktop`, retires one of 0012's. **Lives on the `desktop` branch only**, and has now been renumbered four times — it was 0020, then 0023, 0024, 0026, each time because main took the number while this branch was away |
 
 Eight notes for readers of the older ones:
 

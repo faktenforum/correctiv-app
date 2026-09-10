@@ -12,13 +12,53 @@
 // The manifest allows `http://localhost:8787`; Figma rejects a bare IP there.
 
 import { createServer } from 'node:http';
-import { readFile, stat } from 'node:fs/promises';
+import { copyFile, readFile, stat } from 'node:fs/promises';
+import { homedir } from 'node:os';
 import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
 const HERE = dirname(fileURLToPath(import.meta.url));
 const SPEC = join(HERE, 'spec.json');
 const PORT = Number(process.env.FIGMA_SPEC_PORT ?? 8787);
+
+/**
+ * The plugin's files, kept current where Figma reads them.
+ *
+ * On Linux the flatpak can only read a directory it was granted, so the plugin runs
+ * from a COPY outside this repository (`fix-plugin-path.mjs` says why). That copy
+ * goes stale in silence, and the plugin is an interpreter: a stale one draws a
+ * description with a vocabulary it does not have yet, and the symptom is a board
+ * that quietly misses whatever the new word said. It happened on 2026-09-10 — three
+ * interpreter changes were committed, the copy was not refreshed, the plugin was
+ * restarted, and its summary still reported the old component count.
+ *
+ * `fix-plugin-path.mjs` copies too, and having to remember to run it is what failed.
+ * This runs on the way to serving anything, which is the one thing nobody forgets.
+ * A `code.js` change still needs the plugin closed and reopened; the line below says
+ * so, because only a person can do that.
+ */
+async function installPlugin() {
+  const dir =
+    process.env.FIGMA_PLUGIN_DIR ?? join(homedir(), 'Dokumente/correctiv-figma-wireframes');
+  const copied = [];
+  for (const file of ['manifest.json', 'code.js', 'ui.html']) {
+    const from = join(HERE, file);
+    const to = join(dir, file);
+    const same = await readFile(to, 'utf8')
+      .then(async (there) => there === (await readFile(from, 'utf8')))
+      .catch(() => null);
+    // `null` is "no such directory", which is every host but this one.
+    if (same === null || same === true) continue;
+    await copyFile(from, to);
+    copied.push(file);
+  }
+  if (copied.length > 0) {
+    console.log(`installed ${copied.join(', ')} into ${dir}`);
+    if (copied.includes('code.js') || copied.includes('ui.html')) {
+      console.log('close the plugin and run it again: the interpreter is only read at start');
+    }
+  }
+}
 
 // The plugin's UI runs on null-origin, so it needs CORS to reach us at all.
 const CORS = {
@@ -79,6 +119,8 @@ const server = createServer(async (req, res) => {
 // Both loopbacks, because the plugin fetches http://localhost:8787 and Chromium may
 // resolve that to ::1 before 127.0.0.1. Binding the name itself would pick only one.
 // Nothing beyond loopback is bound, so this stays off the network.
+await installPlugin();
+
 server.listen(PORT, '127.0.0.1', () => {
   console.log(`spec server on http://127.0.0.1:${PORT} serving ${SPEC}`);
 });

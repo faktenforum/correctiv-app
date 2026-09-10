@@ -158,14 +158,62 @@ equivalents for focus, liveness and errors.
   handle is present, which is the tell for a `--dev` bundle. The published
   workbench therefore has no store handle, and it says so on the panels that
   need one. The same limit applies to the dev server, which is a `--dev` bundle
-  by definition: locally the route field reaches the app's first screen and no
-  further. Driving the app's own router instead of its address bar was tried on
-  2026-09-05, by putting `router` on the dev handle: it moves the URL and not
+  by definition, ~~so locally the route field reaches the app's first screen and no
+  further~~. Driving the app's own router instead of its address bar was tried on
+  2026-09-05, by putting `router` on the dev handle: it moved the URL and not
   the rendered tree, for `replace`, `navigate` and a group-qualified path alike,
-  so it is not the fix and was not kept. To walk the app's routes today, open
-  the app's own dev server directly at `localhost:8081/` and give up the
-  inspector while you do, or serve a static export with
+  ~~so it is not the fix and was not kept~~.
+
+  It is the fix, with a second half the 2026-09-05 attempt did not have.
+  Re-measured on 2026-09-10 against both servers: the route field walks the whole
+  app, and a reload inside the frame stays in it. `driveRoute` in
+  `apps/handbook/src/workbench/frame/handle.ts` sends the frame through the app's
+  router; `keepFramePath` puts the base back on the address afterwards, because the
+  **same fork skips `appendBaseUrl` in development too** — so every navigation, the
+  shell's and a tap in the app alike, writes a path on the *handbook's* origin, and
+  a reload from there leaves the app entirely. That base-less address stands for at
+  most one poll tick: sampled every 50 ms, the base was back within 50 ms of a driven
+  route and within 250 ms of a tap. Nothing closes that window from the app side,
+  because `router.navigate` only queues an action and the address has not moved yet
+  when the call returns. The poll must therefore ignore the route it reads inside the
+  window, or it writes the frame straight back to where it came from.
+
+  What still has no way in is a route opened in its own tab: `/app/entdecken` typed
+  into the address bar renders the app's own 404 against the dev server, which is
+  what the workbench's "open in a new tab" button does and what the Build panel now
+  says. For that, open the app's own dev server directly at `localhost:8081/` and
+  give up the inspector while you do, or serve a static export with
   `screens/tools/serve-clean.mjs`.
+
+  **Any other frame has to do the same, and `about:blank` answers every question
+  wrongly on the way.** `/components` draws each component in its own frame
+  (`workbench/AppFrame.tsx`), so the mechanism above is shared rather than copied, and
+  getting there cost three measurements on 2026-09-10. A frame whose `src` is set by
+  script fires `about:blank`'s `load` before the app's, and even on the app's the
+  handle can be on the window while the router is not mounted yet: that first
+  `navigate` is dropped in silence, and the same call by hand twelve seconds later
+  worked. Poll instead of handling `load`. Then take neither reading of the address on
+  its own. An empty document reports `readyState` "complete" from the first tick, so
+  "complete" alone called a frame that had loaded nothing done and left the app's 404
+  standing; and `about:blank`'s *path* is the bare string `blank`, which carries no
+  base path, so "the base is gone" alone called a frame that had been nowhere a frame
+  the app had taken over. Each needs the other half beside it: the protocol, and the
+  address read from `document.URL`. `location` does not lie about the address in the
+  meantime, which was worth knowing and is not the trap — sampled every 4 ms through a
+  400 ms navigation, by `location.replace` and by `src` alike, `location.href` and
+  `document.URL` never disagreed, and a `Location` reflects the active document, so it
+  cannot. `document.URL` is asked because it is the reading that survives a browser
+  where one ever does. And more than one `navigate` reaches the router before a tick
+  can see the first one arrive, so `keepFramePath` has to run for a few ticks rather
+  than once, or one frame in three keeps a base-less path.
+
+  **Do not probe the frame to find out which build it is.** The handle appears *after*
+  the document is complete: measured with a warm bundle, `readyState` "complete" at
+  1,240 ms and `__correctiv` at 1,399 ms. Re-measured the same day the gap was 45 ms,
+  which is the point — it is a race, not a duration to wait out. For however long it
+  and a cold bundle take, "no handle yet" and "no handle at all" are the same reading,
+  so a frame that asks calls the dev server a production export and gives up. Read it
+  off this site's own build (`import.meta.env.DEV`): the two halves are one deployment.
 - **Serving a static export without clean URLs** makes Expo Router render its
   *unmatched route* page. That looks like an app bug and is a server bug. → Map `/artikel` →
   `artikel.html`. A plain `python3 -m http.server` will not do;
@@ -327,6 +375,31 @@ equivalents for focus, liveness and errors.
   by hand would be the new bug. **Check a colour change in all three settings, and
   check `'system'` against both device schemes**. That is four combinations, and only
   the fourth was broken.
+- **A framed app cannot see the appearance of the page around it, and the class on
+  `<html>` does not cross.** The site and the app share an origin here, so nearly
+  everything crosses (ADR 0014), and this is the exception: the scheme travels as a
+  class on the *document's* root element, and the framed app has a root element of its
+  own. Both sides default to `'system'`, so they agree until a reader picks light or
+  dark on one of them — and then `/components` drew a black phone on a white page,
+  which is the app's own default against a dark device and the combination this file
+  already calls the one that ships broken. There is no handle to dispatch through in
+  the published export, and seeding `settings` would clobber whatever the reader had
+  stored. → **`color-scheme` on the embedding element**, which is what
+  `prefers-color-scheme` resolves to inside the embedded document. Measured on
+  2026-09-10: setting that one property on the `<iframe>` moved the framed app's own
+  `light` / `dark` class within a tick, no reload, no handle, so it works in the export
+  too. `workbench/AppFrame.tsx` carries it as `scheme-light dark:scheme-dark`, which
+  puts the site's own three states behind it. The app stays the authority when its
+  setting is explicit, because Uniwind then writes the class from the setting and never
+  consults the query.
+
+  **Do not check this with `Emulation.setEmulatedMedia`.** It forces the feature in
+  every frame of the page, so `prefers-color-scheme` inside the frame answers the
+  emulator rather than the embedding element, and the propagation looks inert.
+  Measured both ways on 2026-09-10: emulated, a light site framed a dark app and the
+  class appeared to do nothing; with the machine's own scheme left alone and only the
+  site switched, the framed app followed the site in all three of its settings. Set the
+  site's appearance and use the real device scheme.
 - **`userInterfaceStyle` in `app.json` is a promise to the OS, and on iOS it is
   binding.** It was `"light"`, which `expo prebuild` writes into
   `ios/<name>/Info.plist` as `UIUserInterfaceStyle = Light`. iOS then reports light

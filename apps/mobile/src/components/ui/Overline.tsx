@@ -16,16 +16,38 @@ export type OverlineProps = {
  * uppercases the label itself, because the capitals are part of the design and the
  * data arrives in title case ("Junge Formate").
  *
- * ONE LINE, declared rather than implied, and that is what keeps it readable on
- * GTK. MEASURED on GTK 4.22.4: a wrapping label whose text has a space in it
- * reports a natural width that is short of what Pango needs to set the text on one
- * line, by about the letter-spacing itself — 1 px at 0.4 and 1.2, 2 px at 2, 3 px
- * at 3. So the mark is allocated exactly its own natural width, wraps onto a second
- * line there, and the second line is clipped by the height the parent already
- * committed. `letter-spacing: 0` is the only value with no shortfall, and PADDING
- * CANNOT FIX IT: padding raises the natural width and the text's budget by the same
- * pixel. A single-word mark ("RECHERCHE") has no break opportunity and was never
- * affected, which is why this only ever showed on the two-word ones.
+ * **One line, and it does not shrink.** Both are declared rather than left to a
+ * default, and both are answers to the same property of a layout engine that
+ * derives a label's minimum width from its own text: a letter-spaced mark with a
+ * space in it is allocated its natural width, breaks there, and loses the second
+ * line to the height its parent already committed. Padding cannot fix it, because
+ * padding raises the natural width and the text's budget by the same pixel; a
+ * single-word mark ("RECHERCHE") has no break opportunity and was never affected.
+ *
+ * The engine is GTK4/Adwaita, through `@gjsify/react-native`, on the host
+ * [ADR 0012](../../../../../adr/0012-a-list-virtualizer-for-the-unbounded-lists.md)
+ * names as a reason for `FlatList`. **The pixels are recorded there and only
+ * there**, in that host's README on the `desktop` branch, for the reason
+ * `app/gallery.tsx` gives about its own figure: a measurement typed twice is a
+ * measurement that goes wrong in one of them, and nothing in `npm run check`
+ * could catch the copy going stale.
+ *
+ * WHAT THIS COSTS ON THE PHONE, because it is not nothing. **One call site is
+ * unbounded**: `article.kicker` in `gespeichert.tsx`, which is WordPress's
+ * `post::topline` and is written by an editor, so a topline long enough to have
+ * wrapped now ellipsizes instead. Every other label reaching this component comes
+ * from this repository and is short enough for one line at a phone's width. That
+ * ellipsis is the intended answer rather than a side effect: this mark is
+ * uppercase and letter-spaced, and a wrapped one reads as a fault on any host.
+ * The `a kicker longer than the line` specimen in `gallery/catalogue.tsx` is what
+ * it looks like.
+ *
+ * **`flexShrink` is in `style`, and layout belongs in a class in this app** — a
+ * deviation, so here is the reason. `__tests__/one-line-labels.test.tsx` asserts
+ * this declaration by flattening the style, which is what a platform receives.
+ * Uniwind's classes do not flatten in jest, so through `className="shrink-0"` the
+ * only available assertion is that the string appears in a `className` — a weaker
+ * oracle for a prop whose whole risk is being tidied away as noise.
  */
 export function Overline({ label, color = 'on-canvas-muted', className }: OverlineProps) {
   return (

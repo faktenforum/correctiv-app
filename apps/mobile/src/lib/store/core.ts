@@ -11,6 +11,7 @@
  * re-renders on every change to any field in that slice.
  */
 import { bindActionCreators, type StoreEnhancer } from '@reduxjs/toolkit';
+import type { router } from 'expo-router';
 import { useEffect, useMemo } from 'react';
 import { useDispatch, useSelector, useStore, type TypedUseSelectorHook } from 'react-redux';
 
@@ -87,9 +88,15 @@ import { videoActions } from '@correctiv/app-core/stores/video';
  * difference between reading logs and seeing what happened.
  *
  * `require` inside the `__DEV__` branch rather than a top-level import, so a
- * release build drops the whole thing instead of bundling a debugger. RTK's own
- * `devTools` integration is switched off in the same breath — the plugin replaces
- * it, and two of them fight over one connection.
+ * release build never runs the enhancer. It does still BUNDLE it: Metro collects
+ * a `require` from the syntax tree whatever condition stands around it, and only
+ * a module-scope guard folds one away, measured on 2026-09-10 in
+ * [ADR 0025](../../../../../adr/0025-the-published-app-is-a-production-bundle.md).
+ * What keeps the debugger itself out of the export is the package's own such
+ * guard: its entry resolves `./devtools` only when `NODE_ENV` is not production,
+ * so what arrives in the export is the no-op branch. RTK's own `devTools`
+ * integration is switched off in the same breath — the plugin replaces it, and
+ * two of them fight over one connection.
  */
 function devToolsEnhancers(): StoreEnhancer[] {
   // `__DEV__` is true under jest too, and the plugin ships ESM the test transform
@@ -413,6 +420,25 @@ export interface DevHandle {
   actions: CoreActions;
   /** Every slice back to its initial value, without rebuilding the store. */
   resetStore: typeof resetStore;
+  /**
+   * The imperative router, so the shell can send the frame to a route without
+   * going through the address.
+   *
+   * It has to, in development. `expo-router`'s `stripBaseUrl` removes the base
+   * path only when `NODE_ENV !== 'development'`
+   * (`expo-router/build/fork/getStateFromPath-forks.js`), so a dev bundle framed
+   * at `/app/` matches `/app/gespeichert` against its own routes, finds nothing,
+   * and renders `+not-found`. Measured 2026-09-10: every framed route did, `/app/`
+   * included. The published export has no such trouble and no handle either, so
+   * the shell falls back to the address there — see `driveRoute` in the
+   * handbook's `workbench/frame/handle.ts` for the pair.
+   *
+   * Navigating this way leaves the address behind: the router writes `/gespeichert`,
+   * which is a path on the HANDBOOK's origin, and a reload of the frame would then
+   * land on the handbook's own 404. The shell puts the address back from its poll,
+   * because it is the one that knows what the frame's address is supposed to be.
+   */
+  router: typeof router;
 }
 
 /**
@@ -443,6 +469,13 @@ function exposeDevHandle(): void {
     store: coreStore,
     actions: coreActions,
     resetStore,
+    // Required here rather than imported at the top, for the reason the enhancer
+    // above is: `expo-router` ships ESM the test transform does not cover, and a
+    // module-scope import took three suites down with "Cannot use import
+    // statement outside a module" — from files that had not changed. This branch
+    // never runs under jest, so the require never happens there.
+    // eslint-disable-next-line @typescript-eslint/no-require-imports
+    router: (require('expo-router') as typeof import('expo-router')).router,
   };
 }
 

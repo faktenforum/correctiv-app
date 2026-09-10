@@ -37,6 +37,23 @@ export interface VideoPlayer {
    */
   loop: boolean;
   /**
+   * ACCEPTED AND ALREADY TRUE, which is the opposite case to `loop` above.
+   *
+   * On the phone this is off by default and `app/video.tsx` turns it on to get the
+   * OS now-playing controls. This host publishes to MPRIS whenever a pipeline is
+   * created and there is a session bus to publish on — `video/backend.ts` calls
+   * `installVideoMpris` unless `mediaControls()` answered null — so the capability
+   * the phone is asking for is on before the property is written, and writing it
+   * changes nothing either way. Where there is no bus there is nothing for the
+   * property to turn on either, so it is still not a refusal.
+   *
+   * It is writable rather than `readonly` because the app assigns it and a type
+   * error would be the wrong signal: nothing is being refused here. The asymmetry
+   * worth knowing is that assigning `false` would NOT take the app off the bus, so
+   * a screen that wanted that would need a real seam. No screen wants it.
+   */
+  showNowPlayingNotification: boolean;
+  /**
    * READONLY on this host, deliberately. It is writable in `expo-video`, and here it
    * is a getter over `query_position` — so an assignment would throw at runtime rather
    * than seek. A type error at the call site is the earliest place to catch that, and
@@ -64,6 +81,7 @@ function unavailablePlayer(why: string): VideoPlayer {
     release: () => {},
     muted: false,
     loop: false,
+    showNowPlayingNotification: false,
     currentTime: 0,
     playing: false,
     paintable: null,
@@ -109,6 +127,9 @@ export function useVideoPlayer(
         backend.muted = value;
       },
       loop: false,
+      // Writable and unread: MPRIS is already installed by the time this can be
+      // assigned. The interface above says why that is an answer and not a stub.
+      showNowPlayingNotification: true,
       get currentTime() {
         return backend.currentTime;
       },

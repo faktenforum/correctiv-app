@@ -1,15 +1,16 @@
-# ADR 0026 — The desktop host re-exports the phone's screens, and varies one only where the host refuses
+# ADR 0027 — The desktop host re-exports the phone's screens, and varies one only where the host refuses
 
-> Renumbered from 0020 to 0023 to 0024 to 0026, most recently on 2026-09-05. This was
-> written on the `desktop` branch while main was still at 0019, and main has taken the
-> next number three times while this branch was away: 0020 for
+> Renumbered from 0020 to 0023 to 0024 to 0026 to 0027, most recently on 2026-09-11.
+> This was written on the `desktop` branch while main was still at 0019, and main has
+> taken the next number four times while this branch was away: 0020 for
 > [No contribution in the app](0020-no-contribution-in-the-app.md), 0023 for
-> [The host constructs the store](0023-the-host-constructs-the-store.md), and 0024 and
+> [The host constructs the store](0023-the-host-constructs-the-store.md), 0024 and
 > 0025 together for [the handbook at the root](0024-the-handbook-owns-the-root.md) and
-> [the production bundle](0025-the-published-app-is-a-production-bundle.md). Nothing
-> about the decision changed any of those times; only the number, and every reference
-> to it. That this keeps happening is the cost of a long-lived branch holding a record,
-> not an argument for holding the number.
+> [the production bundle](0025-the-published-app-is-a-production-bundle.md), and now
+> 0026 for [the React Native review](0026-react-native-review-and-hardening.md).
+> Nothing about the decision changed any of those times; only the number, and every
+> reference to it. That this keeps happening is the cost of a long-lived branch holding
+> a record, not an argument for holding the number.
 
 Status: accepted, 2026-09-02. Scoped to `apps/desktop`, which ships nothing and says so
 in its first sentence. The rule recorded here is the one thing about that host no file

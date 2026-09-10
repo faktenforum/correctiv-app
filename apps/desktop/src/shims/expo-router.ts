@@ -28,7 +28,10 @@
 // fixed upstream in gjsify: `router.push`/`replace`/`navigate` should accept
 // expo-router's object `Href` — remove `hrefOf` and the wrapper below on the next bump.
 
+import { CommonActions } from '@react-navigation/core';
+
 import {
+  navigationRef,
   router as gjsifyRouter,
   Stack,
   Tabs,
@@ -132,5 +135,41 @@ export const router = {
   dismissTo: (href: Href): void => {
     pushed = 0;
     gjsifyRouter.replace(hrefOf(href));
+  },
+  /**
+   * `setParams`, which the router below REFUSES, answered here for the one screen
+   * that calls it.
+   *
+   * `@gjsify/react-native/router` throws a `RouterError` on this name, and the
+   * reason it gives is real: params travel INTO a route through the pattern and back
+   * OUT through `useLocalSearchParams`, and an edit in place writes at neither end,
+   * so the URL could stop describing the screen. Its error names
+   * `router.replace({ pathname, params })` as the alternative.
+   *
+   * Why this host answers it anyway rather than taking that alternative. The caller
+   * is the gallery's "All components" control, which clears `?c=` — a filter, not a
+   * navigation, and `replace` would rebuild the page's whole tree to change one
+   * query parameter. And the refusal's own premise does not hold once you look at
+   * where the two halves read from: `useLocalSearchParams` is `useRoute().params`,
+   * and `usePathname` strips the query off the path it derives. React Navigation's
+   * own `SET_PARAMS` writes that same route object, so both halves keep agreeing.
+   *
+   * `source: route.key` and not a bare dispatch, because `BaseRouter` handles
+   * `SET_PARAMS` at whichever navigator sees it first — the root — and would set the
+   * params of the root navigator's current route. The key names the FOCUSED route,
+   * which is the one `useLocalSearchParams` is about, and is therefore right for a
+   * screen nested inside the tabs as well as for `/gallery` beside them.
+   */
+  setParams: (params: Params): void => {
+    if (!navigationRef.isReady()) return;
+    // CAST, because the container ref is typed against `ReactNavigation.RootParamList`
+    // and this app augments none — so the published types collapse `getCurrentRoute()`
+    // to `undefined`, and after the guard below TypeScript is left with `never`. It
+    // reads a `key` at runtime either way. Found by CI rather than here: the working
+    // copy this host is developed against types it wider, so the linked build accepted
+    // `route.key` and the published one did not.
+    const route = navigationRef.getCurrentRoute() as { key: string } | undefined;
+    if (route === undefined) return;
+    navigationRef.dispatch({ ...CommonActions.setParams(params), source: route.key });
   },
 };

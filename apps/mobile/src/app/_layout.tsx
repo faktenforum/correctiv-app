@@ -1,6 +1,6 @@
 import '@/global.css';
 
-import { router, Stack, usePathname } from 'expo-router';
+import { router, Stack, usePathname, type ErrorBoundaryProps } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
 import { useFonts } from 'expo-font';
 import * as SplashScreen from 'expo-splash-screen';
@@ -35,6 +35,7 @@ import {
 import { close as closeVideo } from '@correctiv/app-core/stores/video';
 
 import { LoginGate } from '@/components/gate/LoginGate';
+import { RecoveryScreen } from '@/components/recovery/RecoveryScreen';
 import { expoAudio } from '@/lib/audio/backend';
 import { stop as stopAudio } from '@/lib/audio/player';
 import { expoPlatform } from '@/lib/platform/expo';
@@ -107,6 +108,43 @@ export default function RootLayout() {
 }
 
 /**
+ * The app's only error boundary.
+ *
+ * expo-router wraps a route's default export in its `Try` whenever the file also
+ * exports `ErrorBoundary` (see expo-router/build/useScreens.js, `fromImport`), and
+ * this file is the root route, so this one boundary covers every render and every
+ * effect in the app: the Provider, the shell, the door and all of the screens under
+ * the Stack. There is no second one; `app/artikel.tsx` says why it does not have
+ * its own.
+ *
+ * The screen it shows is `recovery/RecoveryScreen.tsx`, and what this function adds
+ * to it is the two things only the catching side can do: releasing the splash
+ * screen, and reporting. That file carries the German and the argument about what a
+ * screen rendered after an unmount is allowed to depend on, because those hold
+ * wherever it is rendered from, and it is rendered from a second host as well.
+ */
+export function ErrorBoundary({ error, retry }: ErrorBoundaryProps) {
+  useEffect(() => {
+    // The splash screen is held from module scope above and released only once the
+    // fonts and the store are ready, which is precisely what a fault before then
+    // prevents. expo-router's `Try` hides it too, in `getDerivedStateFromError`,
+    // but that is its internal behaviour and not this app's to lean on: without
+    // this line the recovery screen can end up rendering underneath a splash
+    // screen nobody can dismiss, which is the failure this boundary exists for.
+    SplashScreen.hideAsync();
+
+    // THE PLACE AN ERROR REPORT LEAVES THE APP. Issue #95 replaces this one line
+    // with the call to whichever crash reporter is chosen; no provider is picked
+    // yet, so for now it goes to the log and nowhere else.
+    console.error('[app] render failed, showing the recovery screen:', error);
+  }, [error]);
+
+  // `error` is typed `Error`, but React hands over whatever was thrown, and a
+  // thrown string must not take the recovery screen down with it.
+  return <RecoveryScreen detail={error?.message ?? String(error)} onRetry={retry} />;
+}
+
+/**
  * Everything that reads state lives below the Provider.
  *
  * `useAppearance()` selects the appearance setting, so it cannot run in the
@@ -114,7 +152,7 @@ export default function RootLayout() {
  * no context and throws at startup. Splitting the shell out is the whole fix.
  */
 function AppShell() {
-  const [fontsLoaded] = useFonts(fontAssets);
+  const [fontsLoaded, fontError] = useFonts(fontAssets);
   const [storeReady, setStoreReady] = useState(false);
   useAppearance();
   const palette = useColors();
@@ -190,6 +228,26 @@ function AppShell() {
     if (pathname !== '/') return;
     if (!store.getState().settings.onboardingDone) router.replace('/onboarding');
   }, [admitted, pathname, store, storeReady]);
+
+  /**
+   * The font failure, handed to the boundary above.
+   *
+   * `useFonts` never throws. It catches the load and returns the error, leaving
+   * `fontsLoaded` false for ever, so the early return below renders null and the
+   * splash screen this module put up is never taken down: no crash, no message, and
+   * a restart does the same thing again. That is the hang, and it is also why the
+   * recovery screen has to survive without the fonts it is reporting.
+   *
+   * Deliberately not "carry on with the system font". The app's typography is the
+   * brand, and `retry()` remounts this component, which loads the fonts again for
+   * real: expo-font drops a failed load from `loadPromises` in a `finally`, so
+   * nothing caches the failure and a fetch that failed once on the web target gets
+   * a second chance.
+   *
+   * After every hook, so the render that throws has the same hook order as the ones
+   * before it.
+   */
+  if (fontError) throw fontError;
 
   if (!fontsLoaded || !storeReady) return null;
 

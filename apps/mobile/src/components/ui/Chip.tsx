@@ -12,13 +12,21 @@ export type ChipProps = {
 /**
  * Selection chip (onboarding interests, discover topics). Active = red fill.
  *
- * `flexShrink: 0` is React Native's own default written out, and it is load-bearing
- * on GTK: a `Gtk.Box` squeezes its children between their minimum and their natural
- * size, so in a narrow window the last chip in the rail was squeezed to 53 px, its
- * label wrapped onto three lines and the rail clipped them. Declared, the rail
- * overflows and scrolls instead, which is what a chip rail does on the phone.
- * `numberOfLines={1}` was measured as the alternative and is worse: it takes a
- * label's minimum width to one character, so every chip gets truncated.
+ * **The label does not shrink**, which is React Native's own default written out
+ * and therefore no change on the phone. It is load-bearing on the GTK4 host that
+ * [ADR 0012](../../../../../adr/0012-a-list-virtualizer-for-the-unbounded-lists.md)
+ * names as a reason: a `Gtk.Box` squeezes its children between their minimum and
+ * their natural size, so in a narrow window the last chip of a rail was squeezed
+ * far enough for its label to wrap onto three lines, which the rail then clipped.
+ * Declared, the rail overflows and scrolls instead, which is what a chip rail does
+ * on the phone. The widths are in that host's README on the `desktop` branch,
+ * which is the only place they are written down.
+ *
+ * **No `numberOfLines`, and that is the decision rather than an omission.** It was
+ * measured as the alternative and is worse: it takes a label's minimum width down
+ * to a single character, so every chip in the rail truncates instead of one being
+ * squeezed. `__tests__/one-line-labels.test.tsx` asserts the absence, so reaching
+ * for it means reading this first.
  */
 export function Chip({ label, selected = false, onPress, className }: ChipProps) {
   const colors = useColors();

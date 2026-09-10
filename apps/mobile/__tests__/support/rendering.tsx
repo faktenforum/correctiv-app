@@ -9,11 +9,9 @@ import { coreStore } from '@/lib/store/core';
  *
  * Not a `.test.tsx`, so jest's testMatch ignores it (`**\/__tests__/**\/*.test.*`).
  *
- * This started as a copy in every screen test, and the copies disagreed: joining
- * every string with a newline turns `Schritt {n} von {total}` — one Text with four
- * children — into four lines, so the obvious assertion fails on markup that is
- * perfectly correct. `renderedText` below joins within a Text and breaks only
- * between elements.
+ * Every helper here that reads a tree goes through `walkHostNodes`, because the
+ * copies that did their own walking disagreed with each other about what a
+ * component had rendered. Each function below says what it asks of the tree.
  */
 
 /**
@@ -55,27 +53,97 @@ export function render(element: React.ReactElement): ReactTestRenderer {
   return tree;
 }
 
-/** Everything the tree renders as text; one line per element, no split words. */
-export function renderedText(tree: ReactTestRenderer): string {
-  const parts: string[] = [];
-  const walk = (node: unknown): void => {
+/** One rendered host node: what the platform receives, not what a component was given. */
+export interface HostNode {
+  type: string;
+  props: Record<string, unknown>;
+  /**
+   * Everything under it, joined without breaks, so a split label reads whole.
+   *
+   * A getter, because `renderedText` below never reads it and would otherwise pay
+   * for a full subtree join at every node of the tree it is already walking.
+   */
+  readonly text: string;
+}
+
+/**
+ * One walk of `tree.toJSON()`, for the two questions the suites here ask of a tree.
+ *
+ * `toJSON()` and not `root.findAll`, and the difference is the point: `findAll`
+ * matches component instances, where a prop is whatever the caller wrote, and this
+ * answers for the nodes a PLATFORM receives, where a default has been applied and a
+ * style array has not yet been flattened.
+ *
+ * Three callbacks rather than one, because `renderedText` needs to know where an
+ * element ENDS and not only that it began: its line breaks go around an element and
+ * between two of them, which a flat visitor cannot express. `onString` fires for
+ * text wherever it sits, including inside a nested `Text`.
+ */
+export function walkHostNodes(
+  tree: ReactTestRenderer,
+  visit: {
+    onEnter?: (node: HostNode) => void;
+    onExit?: (node: HostNode) => void;
+    onString?: (text: string) => void;
+  },
+): void {
+  const step = (node: unknown): void => {
     if (typeof node === 'string') {
-      parts.push(node);
+      visit.onString?.(node);
       return;
     }
     if (Array.isArray(node)) {
-      for (const child of node) walk(child);
+      for (const child of node) step(child);
       return;
     }
-    if (node && typeof node === 'object' && 'children' in node) {
-      const element = node as { type?: string; children: unknown };
-      const isText = element.type === 'Text' || element.type === 'RCTText';
-      if (!isText) parts.push('\n');
-      walk(element.children);
-      if (!isText) parts.push('\n');
-    }
+    if (!node || typeof node !== 'object' || !('children' in node)) return;
+    const raw = node as { type?: string; props?: Record<string, unknown>; children: unknown };
+    const host: HostNode = {
+      type: raw.type ?? '',
+      props: raw.props ?? {},
+      get text() {
+        return flatText(raw.children);
+      },
+    };
+    visit.onEnter?.(host);
+    step(raw.children);
+    visit.onExit?.(host);
   };
-  walk(tree.toJSON());
+  step(tree.toJSON());
+}
+
+/** Every string under a node, joined with nothing. */
+function flatText(node: unknown): string {
+  if (typeof node === 'string') return node;
+  if (Array.isArray(node)) return node.map(flatText).join('');
+  if (node && typeof node === 'object' && 'children' in node) {
+    return flatText((node as { children: unknown }).children);
+  }
+  return '';
+}
+
+/** A `Text` holds its own children on one line; every other element gets a break. */
+const isText = (node: HostNode): boolean => node.type === 'Text' || node.type === 'RCTText';
+
+/**
+ * Everything the tree renders as text; one line per element, no split words.
+ *
+ * This started as a copy in every screen test, and the copies disagreed: joining
+ * every string with a newline turns `Schritt {n} von {total}` — one Text with four
+ * children — into four lines, so the obvious assertion fails on markup that is
+ * perfectly correct. This joins within a Text and breaks only between elements.
+ */
+export function renderedText(tree: ReactTestRenderer): string {
+  const parts: string[] = [];
+  walkHostNodes(tree, {
+    onString: (text) => parts.push(text),
+    onEnter: (node) => {
+      if (!isText(node)) parts.push('\n');
+    },
+    onExit: (node) => {
+      if (!isText(node)) parts.push('\n');
+    },
+  });
   return parts.join('');
 }
 

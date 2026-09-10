@@ -59,6 +59,41 @@ call the status listener synchronously, because a backend that emitted from insi
 minute into an episode ([ADR 0006](../../adr/0006-one-core-two-hosts.md)). The probe
 asserts the property rather than trusting the implementation.
 
+### The recovery screen, which this host had to build for itself
+
+The phone's error screen is reached through expo-router's `Try`, which wraps a route
+whose file also exports `ErrorBoundary`. This host's `expo-router` is a shim over
+`@gjsify/react-native/router` and has no `Try`, so that export was inert here: present,
+correct, and reached by nothing. Nothing said so, because a missing boundary has no
+symptom until the first refusal, and then the app dies whole — which is the profil
+crash below.
+
+It is a plain React class in `src/app/_layout.tsx`, wrapping the Redux `Provider` so it
+also covers a fault in the store's own construction, and it draws the phone's
+`components/recovery/RecoveryScreen` rather than a second copy of its German.
+`@gjsify/react-native`'s support table lists expo-router's `ErrorBoundary` as planned,
+tier P3, and says a boundary "has to be reconciled" with the host rethrowing an uncaught
+error from `render()`. Measured here, it needs no reconciling: React reaches that
+handler only for an error NO boundary caught, and with the class in the tree
+`@gjsify/gtk-host/react` logs `an error boundary caught an error` through
+`onCaughtError` instead, the process survives, and a capture still gets written.
+
+**WHAT IT DOES NOT CATCH**, measured by the first full `component-sweep` rather than
+predicted: the `<View> expand` refusal described below reaches the root past it, and
+the log says `React hit an error no boundary caught`. The `<Typo onPress>` class is
+caught and this one is not, and why they differ is open. Until that is understood, the
+boundary is a partial answer rather than the answer.
+
+**A cast, and it is not cosmetic.** `tsconfig.json` points `jsxImportSource` at
+`@gjsify/gtk-host/react` so that an accidental `<div>` is a type error rather than a
+blank window. That namespace declares `ElementType` as a GTK tag or a FUNCTION
+component, so a class component is `TS2786: cannot be used as a JSX component` — which
+excludes every error boundary, because React has no functional one and
+`getDerivedStateFromError` is class-only by design. The types forbid what the runtime
+supports. The fix belongs upstream in one line, `GtkElementType` admitting a component
+class the way React's own `ElementType` does; until then the class is retyped at one
+site with the reason written beside it.
+
 ### The profil crash, fixed
 
 Home did not render at all for one merge, and it took every route with it, because
@@ -135,6 +170,91 @@ and the chip row still wraps into three lines at 560 px.
 ordinary React Native the whole time, every screenshot of it was right, and
 `npm run check` was green for the entire life of the defect. A screenshot proves a
 tree rendered; it says nothing about what the render cost.
+
+### Two components that cannot render here, and the sweep that had to exist to say so
+
+`participate/FormField` and `player/ProgressBar` both throw on GTK:
+
+    <View> expand — carries layout that cannot be resolved at this position. These
+    need a parent to resolve against — `flex-1` and `self-*` need the parent
+    orientation, `absolute` needs the parent to be an overlay — and this element is
+    the root of its tree, or its parent is not a box.
+
+The two markups are NOT the same, and the shared part is the one that matters.
+`FormField` puts a label beside an icon:
+
+```tsx
+<Pressable className="mb-2xs flex-row items-center rounded-md border px-s py-s">
+  <Ionicons name={…} size={20} />
+  <Typo variant="text-m" className="ml-s flex-1">{value.label}</Typo>
+</Pressable>
+```
+
+`ProgressBar` has no row, no icon and no label — it is a bar inside a hit area:
+
+```tsx
+<Pressable className="justify-center py-2xs">
+  <View className="overflow-hidden rounded-s bg-stroke" style={{ height: 4 }}>
+    <View className="h-full w-full bg-accent" style={{ transform: [{ scaleX: ratio }] }} />
+  </View>
+</Pressable>
+```
+
+What they share is a `Pressable` parenting children that carry expand. A `Pressable`
+is a `Gtk.Button`, which is a BIN and not a box, so it establishes no orientation for
+anything under it to resolve against. The layer's own comment at the throw says this
+used to be a silent drop and is now loud on purpose, which is the right trade and is
+what surfaced it here.
+
+**WHY NO SCREEN SWEEP WOULD EVER HAVE FOUND IT**, and this is the argument for
+`component-sweep` in one measurement rather than in the abstract. Both components have
+a route, and `route-sweep` reports both routes `ok`:
+
+| route | sweep line | what it photographs | what it never draws |
+| --- | --- | --- | --- |
+| `/player` | `ok  [11829 byte capture]` | "Es läuft gerade nichts." | `ProgressBar` |
+| `/formular` | `ok  [18457 byte capture]` | "Dieses Formular gibt es nicht" | `FormField` |
+
+Nothing is playing in a swept process and no callout is passed to the form, so each
+screen renders a legitimate empty state and passes. Driven at a route that actually
+reaches the component — `/formular?slug=wem-gehoert-die-stadt` — the same bundle
+throws, the tree ends, and the window falls back to `/` with a 12 779-byte capture:
+the same shape as the profil crash above, which captured 12 848 where a live tree had
+captured 92 125.
+
+**The gallery route itself is now the sweep's one red line.** `route-sweep` reports
+24 of 25, and the failure is `/gallery` — the same refusal, because that page draws
+both components. That is the sweep telling the truth for the first time about
+components it had been rendering `ok` around.
+
+`route-sweep.mjs`'s own header warns about this for `[param]` routes: "a route that
+404s inside its own screen renders a legitimate empty state and would pass for the
+wrong reason". It is true of these two non-param routes as well, and nothing about the
+`ok` lines says so.
+
+**Not fixed here, and THE OBVIOUS REMEDY WAS TRIED AND DOES NOT WORK**, which is the
+more useful half of this entry. The refusal itself says "wrap it in a `<View>`, or
+move the utility to a child", so both components were rewritten that way — the
+`flex-row items-center` moved off `FormField`'s `Pressable` onto a `<View>` around its
+two children, and `justify-center` moved off `ProgressBar`'s onto a `<View>` around
+the bar. Built, swept, and both still refuse: `0 of 2`.
+
+So the cause is NOT simply a layout utility on a `Gtk.Button`, which is what the first
+reading of the message suggests. What is known:
+
+- `flex-1` is the only utility in either component that becomes an unresolved
+  `expand`. `layout.ts` turns it into `intent.expand = 'main-axis'`, while `w-full`
+  and `h-full` resolve straight to `hexpand`/`vexpand` and never reach the intent.
+- The refusal names the primitive `<View>`. Neither component has a `<View>` carrying
+  `flex-1`: `FormField`'s two are on a `<Typo>`, which is a `Text`, and `ProgressBar`
+  has none at all. So the element being refused is most likely one the layer or a
+  shim SYNTHESISES, not one this app wrote.
+- `hitSlop`, which `ProgressBar` passes, is dropped by the shim rather than wrapped,
+  so it is not the source of an extra box.
+
+That is where the next person should start, and it is worth saying that the message
+would have been enough on its own if it named the class list and the parent it could
+not resolve against.
 
 ### The deep-link loop, fixed upstream and now measured
 
@@ -222,7 +342,7 @@ facts a parent reads), and `Animated.View` renders through the `View` primitive,
 declares `overlayOnAbsoluteChild`. Measured here on 2026-09-05: the phone's header
 markup renders with no `PrimitiveError` and the 160 ms fade is restored on Linux and
 macOS. `src/app/artikel.tsx` is still a variant, for the Windows reason below and for
-nothing else — see [ADR 0026](../../adr/0026-re-exported-screens-and-a-variant-where-the-host-refuses.md).
+nothing else — see [ADR 0027](../../adr/0027-re-exported-screens-and-a-variant-where-the-host-refuses.md).
 
 **A colour-scheme change needs a restart.** Adwaita's chrome follows the setting
 immediately, but the app's own token colours are resolved when their CSS class is
@@ -991,6 +1111,67 @@ allocated less and is now clipped. Rasterising each widget and reading the PNG h
 is the workaround, and it reports the allocation without the request, so it says *that*
 a widget is the wrong size and never *whose* arithmetic made it so.
 
+### The one-line marks traded one defect for another, and only here
+
+`ui/Overline` carries `numberOfLines={1}` and `flexShrink: 0`, which this branch
+measured and `main` now carries with the argument written up (PR #123). On a phone
+and in a browser it changes no rectangle at all; that was measured on both targets.
+On THIS host it trades one visible defect for another, and the pair of screenshots
+says so:
+
+| | `screens/home.png`, 5 September, before the fix | after it |
+| --- | --- | --- |
+| `BACKSTAGE · FRÜHER LESEN` | wraps, and „LESEN" hangs clipped below the yellow band | one line, whole |
+| `SPOTLIGHT` | whole | `SPOTLIG…` |
+
+Both are the same underlying fault: a letter-spaced label is allocated its own
+natural width, which Pango finds about the letter-spacing short of what it needs.
+Wrapping spends the shortfall on a second line the parent has no height for;
+ellipsizing spends it on the last glyph. Neither avoids it, and `flexShrink: 0` does
+not either — `SPOTLIGHT` sits in a `justify-between` row beside "Alle Ausgaben", and
+it is still the one that gives.
+
+**So the claim in `Overline`'s own docblock that a single-word mark "has no break
+opportunity and was never affected" is true of the WRAPPING and not of the fix.**
+That sentence is on `main` and should say so; it was written from this branch's
+measurement, which only ever looked at the two-word case.
+
+The real remedy is upstream, in the pixel the natural width is short by. Until then
+this host shows a truncated `SPOTLIGHT` where it used to show a whole one, and that
+is worth more than a clipped `LESEN` only because the band is what a reader notices.
+
+### CI had not looked since August, and the pin was a minor behind
+
+`npm run check` passed here and failed on CI, and the reason was not the one it
+looked like. The manifest pinned `^0.47.0`; a caret on a `0.x` version holds the
+MINOR, so CI installed 0.47.0 while `@gjsify/react-native` 0.48.0 had been on npm
+for weeks. Two failures, one cause:
+
+- `test/prop-gate.test.ts` reported the four accessibility props "refused again, so
+  the ledger is wrong". They are answered in 0.48 and refused in 0.47, so the ledger
+  was right and the installed layer was old.
+- `src/app/(tabs)/_layout.tsx` could not typecheck `<Tabs bottomBar>`.
+
+The pin is `^0.48.0` now, and the check passes against BOTH the published package and
+the working copy, which is the pair that matters here.
+
+**`bottomBar` still needs a cast**, and this is where the release line actually falls.
+It is in the working copy (`0.48.0-48-g…`, forty-eight commits past the tag) and not
+in the 0.48.0 release, so the tab layout carries one cast with a note to delete it on
+the release that brings the prop. That is a typed hole somebody wrote down rather than
+a red branch, and the reason for preferring that is below.
+
+**WHAT IS WORTH RECORDING IS HOW LONG NOBODY SAW ANY OF IT.** The last CI run on this
+branch was 2026-08-31, at `fca1c59`. The mini player arrived after that, in `13bf905`,
+and the branch head had never been through CI: it was pushed without a pull request,
+so nothing ran. The first run against the current head was the pull request that added
+this paragraph, six weeks later, and it found a stale pin, a version-skewed ledger and
+a type error in one go.
+
+A host developed against an unreleased library has a gap between what passes here and
+what passes there. That gap is narrow and manageable. What it should not have is
+nobody looking, and the answer is a pull request per change rather than a push.
+
 ### Against a gjsify working copy
 
 Every defect this host has left is in gjsify rather than here, so the loop that matters
@@ -1168,7 +1349,7 @@ line. The three that differ — `_layout`, `(tabs)/_layout`, `artikel` — each 
 header saying why, and `test/route-tree.test.ts` fails if the phone grows a screen this
 host does not.
 
-[ADR 0026](../../adr/0026-re-exported-screens-and-a-variant-where-the-host-refuses.md)
+[ADR 0027](../../adr/0027-re-exported-screens-and-a-variant-where-the-host-refuses.md)
 is the rule behind that, and the part worth reading before adding a fourth variant: a
 file may differ for the ports, for a platform idiom an ADR already argues for, or for an
 import the support table refuses — and **never for a refused prop**. A prop is answered
@@ -1239,7 +1420,7 @@ give you.
   publishes the per-import ones. This test already reads the app's source; with that
   table beside it, a `<Typo onPress>` fails in a second instead of in a screenshot.
 - **`test/route-tree.test.ts`** fails when the two trees drift, in either direction
-  ([ADR 0026](../../adr/0026-re-exported-screens-and-a-variant-where-the-host-refuses.md)).
+  ([ADR 0027](../../adr/0027-re-exported-screens-and-a-variant-where-the-host-refuses.md)).
 - **`test/root-layout.test.ts`** fails if this host stops rendering `LoginGate` instead
   of the navigator. It went ten commits with the navigator mounted unconditionally,
   because a missing door has no symptom on the machine of whoever is already admitted —
@@ -1259,8 +1440,24 @@ give you.
 [TROUBLESHOOTING.md](../../TROUBLESHOOTING.md) opens with applies with more force here,
 because this host's refusals happen at RENDER time, per screen: a green check, a green
 typecheck and a successful build are all compatible with a screen that throws the moment
-it is opened. `npm run route-sweep` is the answer to that — it opens all 25 routes and
+it is opened. `npm run route-sweep` is the answer to that — it opens every route and
 reads the log — and it is how the three broken tab routes above were found.
+
+**`npm run component-sweep` is the other half of it, and the difference is variants
+rather than count.** The route sweep covers whichever components those screens happen
+to USE, in whichever variants they happen to PASS. The phone's
+`src/gallery/catalogue.tsx` covers every component in `src/components` in the variants
+its props allow, and `apps/mobile/__tests__/gallery-catalogue.test.ts` fails when one
+is missing, so the list cannot quietly shrink. `<Badge tone="live">` draws a dot the
+other three tones do not; `EpisodeRow` has a club form and a default one; `ProgressBar`
+has a `durationSec={0}` case for "nothing known yet". A screen passes one of each.
+Every prop refusal this host has hit was a prop some particular variant passes.
+
+It runs in two phases, because the whole catalogue at the sweep's deadline is over
+half an hour: one process with the whole catalogue first, and only if that shows a refusal,
+one process per component — `?c=folder/Name` — so the log names the component rather
+than the primitive alone. `<Text> prop "onPress"` says what was refused; it does not
+say which of forty-four asked.
 
 ## What this does not prove
 

@@ -101,17 +101,25 @@ can break is noise beside the ones they can.
 ## Language
 
 English for everything a developer reads: code, comments, test names, CLI output,
-commits, PRs, `.md`. German, formal *Sie*, for everything a user reads, and only
-there. The codebase is fully English as of 2026-08-12, so a German comment now is a
+commits, `.md`. German, formal *Sie*, for everything a user reads, and only there.
+The codebase is fully English as of 2026-08-12, so a German comment now is a
 regression, not a leftover.
+
+**A pull request is the exception, and German is the rule there.** Its title and body
+are an argument with the team about work that has not landed, and the people having
+that argument speak German. The line is the merge: what goes into the repository is
+English, what is said about it on the way in is not. A commit message is on the
+English side of that line, because it stays.
 
 User-facing text goes in one obvious place per screen, not interpolated through the
 markup. Multilingual support is under consideration.
 
-German typography, not English: quotation marks are „…“, and the em dash does not
-appear at all. Where a sentence wants a break, use a comma or a full stop; the
-Halbgeviertstrich – belongs only where neither will do. English prose quoting a
-German label takes straight quotes on both sides.
+German typography, not English, wherever German is written, a pull request included:
+quotation marks are „…“, and the em dash does not appear at all. Where a sentence
+wants a break, use a comma or a full stop; the Halbgeviertstrich – belongs only where
+neither will do. English prose quoting a German label takes straight quotes on both
+sides, and a German sentence leaves an identifier, a path and a command in their own
+spelling.
 
 ## Checks
 

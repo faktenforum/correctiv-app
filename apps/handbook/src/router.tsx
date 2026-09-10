@@ -5,8 +5,10 @@ import { useCallback, useEffect, useState } from 'react';
  *
  * Locally that directory is `/`; on Pages it is `/correctiv-app/`. Vite hands the
  * value over as `BASE_URL`, and every route in this app is written without it, so
- * exactly two functions know about the prefix: this one and `href` below. A third
- * place that knew would be the one that got it wrong.
+ * only `currentPath` and `href` below know about the prefix. One more place knows,
+ * and knows deliberately: `workbench/frame/handle.ts` adds `/app` to it, because
+ * where the app answers is not a route of this site. Anything that is a route goes
+ * through `href`.
  */
 const BASE = import.meta.env.BASE_URL.replace(/\/$/, '');
 

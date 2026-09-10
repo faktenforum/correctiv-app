@@ -276,16 +276,21 @@ describe('the impact card', () => {
   it('opens one in the reader', () => {
     mockFeedItems = [INVESTIGATION];
     const tree = render(<ProfilScreen />);
-    // Found by its ACCESSIBLE NAME rather than by its text, and the two are on
-    // different nodes: the title is a `Typo` inside a `Pressable` that carries the
-    // press and the label. This branch wraps them because the GTK host refuses
-    // `onPress` on a `Gtk.Label` — correctly, a label emits no `clicked` — and the
-    // wrap lives in the phone's screen rather than in a desktop variant because it is
-    // right on both hosts (ADR 0026). Searching for a node that has both the title as
-    // its children AND an `onPress` therefore finds nothing here.
+    // FOUND BY ITS ACCESSIBLE NAME, which is also the assertion: the title is a
+    // `Typo` inside a `Pressable` that carries the press, the name and the role, so
+    // the text and the name sit on different nodes and a search for "a node whose
+    // children are the title AND that has an onPress" finds nothing.
     const line = tree.root.find(
       (node) => node.props?.accessibilityLabel === INVESTIGATION.title && !!node.props?.onPress,
     );
+    // A LINK, not a paragraph that happens to be tappable. Measured before this
+    // wrap existed: the node carried `accessibilityRole` undefined and no
+    // `accessibilityLabel`, so a screen reader read the title out with nothing to
+    // say it opens anything.
+    expect(line.props.accessibilityRole).toBe('link');
+    // The SPACING moved onto the wrapper with the press, and a wrap that dropped it
+    // would collapse the three titles against each other with every test still green.
+    expect(line.props.className).toContain('mt-s');
     act(() => {
       line.props.onPress();
     });
