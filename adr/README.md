@@ -16,7 +16,7 @@ is the way it is; [`../ARCHITECTURE.md`](../ARCHITECTURE.md) describes *what* it
 | [0009](0009-redux-toolkit-for-the-cores-state.md) | Redux Toolkit for the core's state | accepted |
 | [0010](0010-design-tokens-as-a-shared-package.md) | The design tokens as a shared package | accepted |
 | [0011](0011-naming-the-app-for-release.md) | Naming the app for release, and letting the old host go | accepted; retires two of 0007's |
-| [0012](0012-a-list-virtualizer-for-the-unbounded-lists.md) | A list virtualizer, for the two lists that need one | accepted; search recommendation superseded by 0026, migration pending |
+| [0012](0012-a-list-virtualizer-for-the-unbounded-lists.md) | A list virtualizer, for the two lists that need one | accepted |
 | [0013](0013-native-tabs-and-a-web-tab-bar-of-its-own.md) | Native tabs on the phone, and a web tab bar of its own | accepted; verified on Android, iOS unrun |
 | [0014](0014-the-preview-shell-as-a-package.md) | The preview shell as a package that can reach the app | accepted; its package, its folder and its three costs retired by 0024, its same-origin argument intact |
 | [0015](0015-reading-correctiv-org-through-its-rest-api.md) | Reading correctiv.org through its REST API, not its RSS feeds | accepted; retires the CORS item in 0006, unopened in a browser |
@@ -30,7 +30,7 @@ is the way it is; [`../ARCHITECTURE.md`](../ARCHITECTURE.md) describes *what* it
 | [0023](0023-the-host-constructs-the-store.md) | The host constructs the store | accepted; recorded after the fact, corrects one claim in `ARCHITECTURE.md` and four comments |
 | [0024](0024-the-handbook-owns-the-root.md) | The handbook owns the site root, and the app moves under it | accepted; retires two of 0014's, its argument untouched |
 | [0025](0025-the-published-app-is-a-production-bundle.md) | The published app is a production bundle, and the workbench gives up its handle | accepted; a capability measured and rejected |
-| [0026](0026-react-native-review-and-hardening.md) | React Native review and the next hardening steps | accepted as follow-up direction; Rozenite recommended, keyboard work pending, notification delivery undecided |
+| [0026](0026-react-native-review-and-hardening.md) | The React Native review, and which of it we are doing | accepted; nine decisions, three with a named open item, no ADR superseded, three comments and three sentences of `AGENTS.md` named for later |
 
 Eight notes for readers of the older ones:
 

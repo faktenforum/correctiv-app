@@ -1,267 +1,611 @@
-# ADR 0026 - React Native review and the next hardening steps
+# ADR 0026 — The React Native review, and which of it we are doing
 
-Status: accepted as review and follow-up direction, 2026-09-07. Implementation is
-pending; tool suggestions and open product questions are not decisions to install
-dependencies.
+Status: accepted, 2026-09-10. All nine numbered sections are decisions. Three of them
+carry a named open item rather than a completed choice: who sends notifications (3),
+which provider receives an error report (5), and three details of the header split
+(9). Every measurement below names its host, and none was taken on iOS; the last
+section says what that costs.
 
 ## Context
 
-The React Native review on 2026-09-03 compared `apps/mobile` and
-`packages/app-core` with React Native / Expo best practices and the team's
-Expo template. The template is a second reference, not a specification this
-app must copy. Its Sentry integration, FormatJS workflow, MMKV-backed persistence,
-bundle analysis and store-release tooling are useful comparisons; its navigation,
-styling and repository tooling serve different requirements.
+A React Native review on 2026-09-03 compared `apps/mobile` and `packages/app-core`
+with React Native / Expo practice and with the team's Expo template. The template is
+a second reference, not a specification this app copies: its Sentry integration,
+FormatJS workflow, MMKV-backed persistence and store-release tooling are useful
+comparisons, and its navigation, styling and repository tooling answer different
+requirements.
 
-Completed work and obsolete findings are excluded. This ADR's source check is
-against `6d469c0`; it does not claim new device, memory, startup or accessibility
-measurements.
+The app the review found already holds the parts worth keeping: a platform-free core
+with a boundary test, typed routes and a published static web target, semantic colour
+tokens, the React Compiler, virtualized unbounded lists, narrow audio subscriptions,
+and CI assertions against the generated Android manifest and the web artifact. What
+it is missing is runtime reliability, input usability, diagnostics, and a few
+decisions nobody had made.
 
-The app already has foundations worth keeping: a platform-free core with boundary
-tests, typed routes and a static web target, semantic colour tokens, React Compiler,
-virtualized unbounded lists, narrow audio subscriptions, and CI assertions against
-the generated Android manifest and web artifact. The missing pieces are primarily
-runtime reliability, input usability, diagnostics and explicit delivery decisions.
+This record is the second half of that review: what the team decided to do about it.
+Nine of the reviewer's eleven items survive here, five of them with a different
+argument than the one they arrived with, and two were dropped — see *What this record
+drops*. One decision was not in the review at all, the tablet half of section 7, which
+is why the count of sections and the count of surviving items agree by coincidence.
+Where a finding turned out to be answerable by reading the source or running the app,
+it was, and the answer is in the section rather than in a follow-up.
 
 ## Decision
 
-Use the review to guide hardening without replacing the app's architecture with
-the template's stack. Make keyboard behaviour a usability requirement and
-recommend Rozenite as development-only tooling. Record notifications as an
-explicit dependency on a product and backend decision, rather than mistaking the
-existing preference switch for an integration.
+Use the review to harden the app without adopting the template's stack. Absence of
+manual memoization, custom `FlatList` settings or Reanimated usage is not by itself a
+defect, and a performance recommendation stays a measurement task until a runtime
+problem is demonstrated.
 
-Performance recommendations remain measurement tasks until a runtime problem is
-demonstrated. Absence of manual memoization, custom FlatList settings, MMKV or
-Reanimated usage is not, by itself, a defect.
+### 1. Rozenite, which replaces the Redux debugger rather than joining it
 
-### 1. Recommend Rozenite for developer and agent debugging
+Adopt [Rozenite](https://www.rozenite.dev/) as development-only tooling, for two
+capabilities React Native DevTools does not have on its own: an agent-facing CLI, and
+the Redux, Storage and React Navigation domains.
 
-Add [Rozenite](https://www.rozenite.dev/) to the development-tooling plan. It offers
-runtime inspection for developers and a session-based CLI for agents, allowing
-both to investigate the same running app rather than infer runtime state from
-source or screenshots alone.
+**Not for network inspection, which React Native already does.** In `react-native`
+0.86.3 both `enableNetworkEventReporting` and `fuseboxNetworkInspectionEnabled`
+default to `true` (`src/private/featureflags/ReactNativeFeatureFlags.js`), and the
+capture is native on both platforms: `Libraries/Network/RCTInspectorNetworkReporter.mm`
+wired from `RCTNetworking.mm`, and `InspectorNetworkReporter.kt` beside
+`NetworkingModule.kt`. The review named network tracking as the first use case, and it
+is the one item that needs no dependency at all.
 
-Network-request tracking is the first use case: reproduce a feed refresh or search,
-record traffic, inspect status, timing and errors, and inspect request or response
-bodies only when necessary. This can help distinguish a slow endpoint, a failed
-request and a cache or bundled-content path that made no request at all.
+What it does add is worth having on this state tree. `lib/store/core.ts` already
+argues that on a store taking an audio position tick twice a second and running four
+network cascades, a named action history is "the difference between reading logs and
+seeing what happened". That argument does not stop applying because the reader is an
+agent.
 
-Prefer Rozenite's built-in `network` domain when available. Evaluate
-`@rozenite/network-activity-plugin` if that domain is unavailable or does not work
-on the selected runtime, or if WebSocket/SSE inspection is needed. Do not install
-every plugin by default. Agent access is session-scoped: create a session from
-`apps/mobile`, reproduce the flow, inspect its requests, and stop the session when
-finished.
+**It is a swap, not an addition.** The app carries `redux-devtools-expo-dev-plugin`
+today, and `@rozenite/redux-devtools-plugin` occupies the same seat. Two debuggers
+fight over one connection, which `lib/store/core.ts` already says in as many words.
+The enhancer goes where the current one goes, into `devToolsEnhancers()`.
+[ADR 0023](0023-the-host-constructs-the-store.md) built that seam; this is the first
+thing to arrive through it that 0023 did not anticipate.
 
-This is a **recommendation, not an installed capability**. Its adoption must:
+**But not for the reason `core.ts` gives, and this one was measured.** That function's
+comment says its `__DEV__`-then-`require` shape means "a release build drops the whole
+thing instead of bundling a debugger". It does not. Metro collects dependencies from
+the syntax tree, so a `require` statement inside a function keeps its module however
+unreachable the call is; five variants were built into a production export on
+2026-09-10 and only the two written at MODULE scope
+(`__DEV__ ? require(…) : null` and `if (__DEV__) { require(…) }`) left their module
+out. The current debugger genuinely does stay out, but because
+`redux-devtools-expo-dev-plugin/build/index.js` carries
+`if (process.env.NODE_ENV !== "production")` at module scope, which Metro substitutes
+and then eliminates. `@rozenite/redux-devtools-plugin` 2.4.0 guards itself the same
+way, so the swap keeps the property. **The shape in `core.ts` is not what to copy for
+a local module**, which is why the agent-tools component below is selected at module
+scope.
 
-- Keep instrumentation and agent access development-only, out of shipped native
-  builds and the public production web export.
-- Compose with the existing Expo and Uniwind Metro configuration, preserving
-  Uniwind's required wrapper order rather than replacing the resolver wholesale.
-- Keep SDK-specific instrumentation in the host. A debugging tool is not a reason
-  to import React Native or a platform SDK into `packages/app-core`.
-- Use test accounts and minimise captured data. Do not retain credentials, tokens,
-  personal details or unpublished reporting in traces, and do not upload captures
-  to third-party services.
+**A developer and an agent cannot look at once.** Rozenite's own documentation states
+that React Native DevTools disconnects when an agent session begins, because the
+platform permits one debugger connection. Plan for alternating, not for both.
 
-Confirm which traffic the integration actually sees. JavaScript HTTP inspection
-does not establish visibility into WebView, native audio or video requests.
-Rozenite also does not replace production crash reporting or release-build
-profiling. [ADR 0025](0025-the-published-app-is-a-production-bundle.md)'s decision
-to publish a production app with no dev handle remains intact.
+`useReduxDevToolsAgentTools()` needs a different shape than the enhancer, because a
+hook cannot go inside an `if` and a top-level import stays in the bundle either way.
+Select the component at module load instead:
 
-### 2. Make inputs keyboard-aware
+```tsx
+const AgentTools = __DEV__ ? require('@/lib/devtools/AgentTools').default : () => null;
+```
 
-The reviewer observed inputs that were not keyboard-aware. The source matches
-that gap: [`LoginGate.tsx`](../apps/mobile/src/components/gate/LoginGate.tsx),
-[`formular.tsx`](../apps/mobile/src/app/formular.tsx), and
-[`suche.tsx`](../apps/mobile/src/app/suche.tsx) set tap or dismissal behaviour on
-ordinary scroll views, but do not configure keyboard avoidance or automatic
-keyboard insets. The participation form's action footer is outside its scroller.
+**The Metro side does not hold itself back, whatever the documentation says.**
+Rozenite's own getting-started page says it "is off by default, so it never runs in
+production by accident". `@rozenite/metro` 2.4.0 does not do that. With `enabled` left
+undefined it logs that being on by default is going away and then switches itself on
+anyway, unless `isBundling()` says otherwise — that function reads `process.argv` and
+recognises `expo export` and `react-native bundle`. Pass `enabled` explicitly and
+`isBundling()` is never consulted at all, so `true` reaches an `expo export` exactly
+as it reaches `expo start`. **So `npm run build:web` stays clean by our discipline, an
+environment variable nobody sets in CI, and not by construction.** That is the
+opposite of the promise, and it is why the assertion below is not optional.
 
-`keyboardShouldPersistTaps="handled"` lets a tap reach a control while the keyboard
-is open. It does **not** keep the focused field, validation message or submit
-button above that keyboard. Safe-area padding is not keyboard avoidance either.
-Android window resizing may help particular screens, but does not establish
-correct behaviour across both native platforms.
+**The config file changes shape.** `withRozenite` chains `resolveRequest` onto
+whatever is already there, so both resolver workarounds in `metro.config.js` survive.
+But it returns `() => Promise<config>`, and that file exports an object today. Uniwind
+stays outermost, as it must:
 
-Use React Native's `KeyboardAvoidingView` as the default keyboard-avoidance
-solution for sign-in and participation, and include search in the same pass.
-If the affected layouts require more complex handling, evaluate
-[React Native Keyboard Controller](https://kirillzyusko.github.io/react-native-keyboard-controller/).
-It is the suggested escalation, not a dependency to add by default.
-Ensure the footer and scrollable content are coordinated, avoid double-applying
-insets, and preserve the web layout.
+```js
+module.exports = async () =>
+  withUniwindConfig(await withRozenite(config, { enabled: !!process.env.ROZENITE })(), {
+    cssEntryFile: './src/global.css',
+  });
+```
 
-Completion means the focused field, caret, errors and next/submit controls remain
-reachable with the software keyboard open on small iOS and Android screens,
-including multiline input and large text. Exercise focus-next, submission,
-dismissal and returning to the screen. Existing focus-next handling in sign-in
-should be retained. This is a usability fix, not speculative TextInput performance
-work.
+Add the assertion beside the one it belongs with: `pages.yml` already fails the
+deploy when the published bundle carries `__correctiv`, the tell for a `--dev` export
+([ADR 0025](0025-the-published-app-is-a-production-bundle.md)). A second grep for a
+Rozenite marker is three lines, and it is what turns "development-only" from an
+intention into something that can fail. Note what has no counterpart: the CI asserts
+against the generated Android manifest before the build and against the signature
+afterwards, and about the JavaScript inside the release APK nothing at all, which is
+true of the current debugger too.
 
-### 3. Notification setup is missing; decide how notifications will be sent
+**Capture rules, because the Redux domain can write.** It lists and dispatches
+actions and drives rollback, and the network domain records request and response
+bodies. Use test accounts, keep captures local, and put none of them in the
+repository. Nothing here leaves the machine unless somebody shares a trace, and that
+is the line to hold.
 
-The existing UI is a simulation.
+Confirm what the session actually sees. The article reader is a WebView
+([ADR 0017](0017-native-rendering-as-the-rule-a-webview-for-the-exception.md)) and
+`expo-audio` and `expo-video` fetch through their own players, so JavaScript HTTP
+inspection says nothing about either.
+
+### 2. Keyboard-aware inputs, as a usability requirement
+
+Three screens set tap handling on an ordinary scroller, two of them dismissal as
+well, and none configures keyboard avoidance at all:
+[`LoginGate.tsx`](../apps/mobile/src/components/gate/LoginGate.tsx),
+[`formular.tsx`](../apps/mobile/src/app/formular.tsx) and
+[`suche.tsx`](../apps/mobile/src/app/suche.tsx). `KeyboardAvoidingView` appears
+nowhere in the repository, and the participation form's action footer is a sibling of
+its `ScrollView` rather than inside it.
+
+`keyboardShouldPersistTaps="handled"` lets a tap reach a control while the keyboard is
+open. It does **not** keep the focused field, its validation message or the submit
+button above that keyboard, and safe-area padding is not keyboard avoidance either.
+Android window resizing may rescue a particular screen and establishes nothing about
+the other platform.
+
+`KeyboardAvoidingView` is the default answer for sign-in and participation, with
+search in the same pass. If a layout needs more,
+[React Native Keyboard Controller](https://kirillzyusko.github.io/react-native-keyboard-controller/)
+is the escalation and not a dependency to add first. Coordinate the footer with the
+scroller, do not double-apply insets, and keep the web layout.
+
+Done means the focused field, the caret, errors and the next/submit control stay
+reachable with the software keyboard open on small iOS and Android screens, including
+multiline input and large text. Exercise submission, dismissal and returning to the
+screen; sign-in's existing focus-next handling stays and has to keep working.
+
+### 3. Notification delivery stays deferred until it is decided how they are sent
+
+The switch is a simulation and says so.
 [`stores/settings.ts`](../packages/app-core/src/stores/settings.ts) persists
-`pushOptIn`; onboarding and settings change that boolean and label the feature
-as simulated. There is no `expo-notifications` dependency or corresponding plugin
-in the app configuration, and no push-token registration or notification-response
-integration in the app.
+`pushOptIn`; onboarding and settings write that boolean and label the row
+"(simuliert)". There is no `expo-notifications` dependency, no plugin in the app
+configuration, no token registration and no notification-response handling. The audio
+player's system media notification is a different capability and provides no
+editorial push.
 
-The audio player's system media notification is a separate capability. It does
-not provide editorial push notifications.
+**This record chooses neither Expo Push Service nor direct APNs/FCM**, and does not
+assume a backend or an editorial tool already owns sending. The recommendation is to
+decide that first and to build the client and the sender as one end-to-end feature.
+The decision needs to name:
 
-**Open question:** should notification setup be implemented once the team has
-decided how notifications will be sent? The recommendation is to make that
-decision first and implement the client and sender as one end-to-end feature.
-This record chooses neither Expo Push Service nor direct APNs/FCM delivery, and
-does not assume a backend or editorial tool already owns sending.
+- Which events trigger a notification, which system owns targeting and delivery, and
+  on what transport, with whose credentials, and whether the public web target counts.
+- The difference between an app preference and an OS permission, both at first ask and
+  after a denial or a later revocation. That difference is the one the current switch
+  papers over, so it is the one most likely to be built wrong.
+- Token registration, rotation, removal and retention, and what sign-out does to them.
+- Tap handling from background and from a cold start, including denied access, an
+  expired session and content that no longer exists.
 
-The follow-up decision needs to identify:
+Afterwards, permission and token APIs belong in the host behind ports where the core
+needs them, preference and payload policy in the core, and navigation stays the
+host's and respects the admission gate. Until then, keep the simulated wording and do
+not read `pushOptIn: true` as OS authorisation or as a successful registration.
 
-- Which events trigger notifications, who sends them, and which backend or
-  editorial system owns targeting and delivery.
-- The transport/provider, credentials ownership, delivery-error handling and
-  whether the public web target is in scope.
-- The consent experience, topic preferences, and the distinction between an app
-  preference and actual OS permission, including denial and later revocation.
-- Token registration, rotation and removal, account association and sign-out
-  behaviour, with appropriate data retention.
-- Foreground presentation and tap handling from background or cold start,
-  including denied access, expired sessions and content that no longer exists.
+### 4. `react-native-mmkv` for the key/value store, and AsyncStorage keeps the blobs
 
-After that decision, platform permission and token APIs belong in the host behind
-ports where the core needs them; preference and payload policy belong in the
-core. Navigation stays with the host and must respect the existing admission
-gate. Until delivery is implemented, keep the simulated wording and do not treat
-`pushOptIn: true` as proof of OS authorisation or successful registration.
+Move `KeyValueStore` from AsyncStorage to `react-native-mmkv`. The reason is not the
+one usually given for it, and the difference matters enough to write down.
 
-### 4. Recommend MMKV for native persistence
+**The port stays asynchronous.** MMKV's headline is a synchronous JSI API, and this
+codebase deliberately does not want one: `KeyValueStore` was synchronous once, which
+forced the host to keep an in-memory mirror, hydrate it before the first render, and
+warn twice about reading before hydration and then overwriting real state on the first
+write. `ports/index.ts` and `lib/platform/expo.ts` both carry that history. A
+synchronous backend under an asynchronous port needs no mirror at all — it resolves a
+value — so MMKV is compatible with the port while the argument for MMKV is not the
+port.
 
-Use `react-native-mmkv` instead of AsyncStorage for native settings and persisted
-Redux state. Its memory-mapped storage and direct synchronous native API are
-designed for low-latency reads and writes, making it a good fit for frequent access
-to small values. Faster reads can also shorten startup hydration: the app restores
-persisted Redux slices before showing its first screen.
+**What it is worth, measured.** On an Android 16 (API 36) x86_64 emulator, debug
+build with a Metro-served bundle, five cold starts on 2026-09-09:
 
-Keep the integration in the host behind the existing asynchronous storage ports,
-preserve web storage, and migrate existing data safely. Leave the larger
-article/feed cache separate and confirm the startup benefit on-device before
-rollout.
+| | |
+| --- | --- |
+| `persist()` total | 18–21 ms (19, 19, 19, 18, 21) |
+| first read, `store.settings` | 11–13 ms |
+| the four reads after it | 2–5 ms combined |
 
-### 5. Add error tracking with a React error boundary
+So the cost is one initialisation — opening AsyncStorage's SQLite database — and not
+five round trips. Two conclusions follow. **Parallelising the five reads would save a
+few milliseconds, not most of them**, which retires the cheaper alternative to this
+decision and leaves the "Sequential on purpose" comment in `stores/persist.ts`
+standing on a measurement instead of an argument. And MMKV would remove most of the
+18–21 ms, because it has no database to open.
 
-Add production error tracking, for example AppSignal, together with
-`react-error-boundary`. Show a German recovery screen with a retry action and
-forward caught errors through the boundary's `onError` callback to the reporter.
+**Whether that is visible is a different question, and the answer is sometimes not.**
+The splash lifts on `fontsLoaded && storeReady`, and in two runs of the same build:
 
-Confirm the provider's React Native / Expo support before adoption. Handle
-asynchronous failures and native crashes separately, since a React error boundary
-does not catch them automatically. Keep reporting in the host and redact
-credentials, personal data and unpublished content.
+| | run 1 | run 2 |
+| --- | --- | --- |
+| `storeReady` | 189 ms | 248 ms |
+| `fontsLoaded` | 272 ms | 183 ms |
+| splash hidden | 272 ms | 249 ms |
 
-### 6. Add commit checks with Husky
+The two race, and in run 1 the store was ready 83 ms before the fonts, where saving
+19 ms saves nothing. **If cold start is the goal, `useFonts` is the larger item.**
 
-Add a Husky pre-commit hook with `lint-staged` for oxlint and oxfmt on staged files,
-plus a separate `npm run typecheck`. This gives feedback before a push.
+**So the argument for this decision is directness and timing, not startup.** Directly:
+a memory-mapped file and a JSI call instead of a bridge hop and a SQLite query, and
+one fewer moving part in the only file that decides where state lives. Timing: the
+migration costs almost nothing today and grows with the first real install, so doing
+it later is the same work with users attached to it.
 
-Keep the full `npm run check` in CI as the authoritative gate, since local hooks
-can be bypassed. Commit checks should not require native builds.
+**AsyncStorage stays for `BlobStore`.** `ports/index.ts` describes a blob as "a
+megabyte of cached feeds", and `services/cache.service.ts` applies a TTL with no
+eviction and no size cap, so that store grows without bound. That does not belong in
+a memory-mapped file. This decision therefore **adds** a dependency and removes none;
+if the blobs ever move, it is to a second MMKV instance with its own file and on the
+strength of a measured cache size.
 
-### 7. Resolve the missing app icon
+Two more consequences worth stating. It is two native packages, not one:
+`react-native-mmkv` 4.3.2 takes `react-native-nitro-modules` as a peer. And it is
+**not** a platform split: 4.3.2 ships a web implementation (`createMMKV.web`, backed
+by `localStorage`), so `lib/platform/expo.ts` stays one file and the property its own
+comment names — unchanged on iOS, Android and web — survives.
 
-Address the missing app icon reported in the review with the final CORRECTIV
-artwork for iOS and Android, including adaptive and monochrome Android variants.
-Expo already references icon assets; confirm the correct artwork reaches the
-installed release build and displays properly on the home screen and app launcher.
+Decide before the first line of code whether any install's state has to survive. If
+not, the migration path is not written and the old `kv:` keys are simply abandoned,
+which is one fewer failure mode than writing it.
 
-### 8. Extend FlatList use to other list screens
+### 5. An error boundary, and an error report whose provider is not chosen yet
 
-Use `FlatList` for `suche.tsx` and prefer it for other data-driven list screens.
-Even with only 15 results, most rows are outside a phone's visible area,
-especially with the keyboard open. A capped result count is not a reason to
-eagerly mount every row in a `ScrollView`.
+The review asked for production error tracking and a React error boundary. Both are
+wanted. They are separated here because one is buildable today and the other waits on
+a choice nobody has made.
 
-`FlatList` also makes the code cleaner: `data` and `renderItem` replace nested
-maps, while `ListEmptyComponent`, `ItemSeparatorComponent`, `ListHeaderComponent`
-and `ListFooterComponent` provide dedicated places for empty states, separators,
-headings and loading indicators. Preserve stable item keys and keyboard tap
-behaviour. This recommendation applies to search now, not only after pagination
-is added.
+**The boundary closes a live hole.** There is exactly one
+`SplashScreen.preventAutoHideAsync()` (`app/_layout.tsx:68`) and one `hideAsync()`,
+gated on `fontsLoaded && storeReady`. There is no error boundary anywhere in the app
+host and no global handler — no `ErrorUtils`, no `setGlobalHandler`. So a throw before
+both flags leaves the app on the splash screen for ever, with no crash, no message and
+nothing a restart improves. Hydration is covered, but by the host and not by the
+core: `persist()` swallows a failed read per slice, and the `.catch` around the
+host's own `start()` in `_layout.tsx` sets `storeReady` anyway when something else
+throws. `useFonts` and the gate's render have no such floor, and `LoginGate.tsx`
+contains no `try`.
 
-### 9. Improve accessibility
+**No new dependency for it.** `expo-router` ships the boundary: `Try`
+(`views/Try.js`) is a class component with `getDerivedStateFromError`, production-safe
+apart from a dev-only `MetroServerError` branch, and `ErrorBoundaryProps` is
+`{ error, retry: () => Promise<void> }` — the retry the review asked for. Better for
+this app: `getDerivedStateFromError` calls `SplashScreen.hideAsync()` itself, which is
+precisely the failure above. Export `ErrorBoundary` from `app/_layout.tsx`, which is
+the root route and so covers the tree, with a German recovery screen and a retry
+control. One note on the review's wording: `Try` has **no** `onError` callback, that
+belongs to `react-error-boundary`. Reporting therefore goes in an effect inside the
+boundary component, which is what keeps the two halves of this section one change
+apart.
 
-- Make touch targets at least **44 x 44 logical units**, not physical device
-  pixels; aim for **48 x 48 dp on Android**. Enlarge the pressable area or use
-  `hitSlop` without overlapping neighbouring controls or exceeding parent bounds.
-- Check dynamic font scaling at the largest system text sizes, including the
-  reader's own text-size setting. Fix clipped labels, overlapping controls and
-  fixed-height layouts; keep content reachable rather than disabling font scaling.
-- Add meaningful, localized `accessibilityLabel` values where needed, especially on
-  icon-only buttons. Name the action rather than the icon, expose the appropriate
-  role and state, and hide decorative icons from screen readers to avoid duplicate
-  announcements.
+**Reporting is decided; the provider is not**, and the choice carries more than a
+package name:
+
+- Which provider, and whether CORRECTIV already runs one for the website. An existing
+  contract answers this question and closes it.
+- Who signs off on transmitting reports to a third party. At a newsroom this is not a
+  formality: a breadcrumb can carry the URL of an unpublished article, and a stack
+  frame can carry a source's identifier.
+- What a report may never contain, written down before the first one is sent rather
+  than after.
+
+Confirm React Native / Expo support before adopting whatever is chosen. A React
+boundary catches neither asynchronous failures nor native crashes, so those need their
+own mechanism — a global handler and the provider's native SDK — and are not covered
+by the boundary above. Until the provider lands, the `console` domain from section 1
+is what team-internal testing has.
+
+### 6. German and English from the first string, and German is the only one that ships
+
+CORRECTIV publishes English on the web, and the app's user-facing strings are
+hardcoded German today. Prepare for a second language from the start rather than
+retrofitting one, because retrofitting means touching every screen twice: once to
+lift the string out, once to find that it sat inside a condition.
+
+**German is what ships.** The language is fixed and there is no user-facing switch;
+a developer-only switch belongs in the workbench, which already carries route,
+appearance and app state in its address, and not in the app's settings. `locale` is
+therefore a fixed value in the store rather than something read from the device, and
+`expo-localization` is not needed for this step.
+
+**Where things live.** Message descriptors are plain objects — `{ id, defaultMessage }`
+— so they live wherever the string lives, screens in the app and core-owned
+vocabulary in the core, and the core imports no React, which
+`packages/app-core/test/boundary.test.ts` enforces. The `intl` instance and the
+provider are the host's. Extraction runs over both workspaces and the compiled
+catalogues are build artifacts. For `packages/app-core/src/data/`, which holds around
+230 German strings, the line is: *would this string still exist if the content came
+from a CMS?* If yes it is UI vocabulary in data's clothing and goes in the catalogue;
+if no it is content and follows the same rule as articles, which this record does not
+translate.
+
+**Two checks, in the same commit as the first message.** An English catalogue that
+ships to nobody rots quietly, and "keep it current" cannot fail, so it enforces
+nothing. These can fail: every id present in both catalogues with a non-empty
+`defaultMessage`, and no `ä ö ü ß „ “` under `apps/mobile/src` outside the catalogue
+directory. The second is a partial net — "Suchen" slips through — and it costs about
+twenty lines, in the shape `packages/app-core/test/boundary.test.ts` already uses.
+
+**`Intl.PluralRules` is missing and this is not an English problem.** Measured against
+the Hermes actually in use, `hermes-android 250829098.0.17`, arm64: the VM exposes
+`Intl.Collator`, `Intl.DateTimeFormat`, `Intl.NumberFormat` and
+`Intl.getCanonicalLocales`, and **not** `PluralRules`, `RelativeTimeFormat`,
+`ListFormat`, `DisplayNames`, `Locale` or `Segmenter`. `react-intl` needs
+`PluralRules` for any plural message, so `@formatjs/intl-pluralrules` is required from
+the first German plural, not later for English. Budget for
+`@formatjs/intl-locale` beside it and for `@formatjs/intl-relativetimeformat` the
+first time a string says "vor drei Tagen".
+
+**The same measurement makes `lib/format.ts` smaller, not bigger.** Its twelve month
+names and seven weekday names exist because "The NS runtime has no German ICU", and
+NativeScript left this tree with [ADR 0007](0007-removing-the-nativescript-host.md) on
+2026-08-12. `Intl.DateTimeFormat` and `Intl.NumberFormat` are both present, so those
+tables are deletable rather than parameterisable. Confirm on a device first, and on
+iOS separately.
+
+**[AGENTS.md](../AGENTS.md) has to change with this**, because it currently says
+German "for everything a user reads, and only there" and that multilingual support is
+under consideration. Both stop being true the day the first descriptor lands.
+
+### 7. Tablet is in scope, and accessibility is the work beside it
+
+**Tablet layouts are in scope and the views become responsive.** This half was not in
+the review; it is the team's own addition, and it is the only decision here that
+arrived from outside it. The starting point is zero: no breakpoints in
+`apps/mobile/src/global.css`, no `sm:`/`md:`/`lg:` variant anywhere under
+`apps/mobile/src`, and no `useWindowDimensions` or `Dimensions.get` in either the app
+or the core. This is work from nothing rather than a polish pass.
+
+Two things follow immediately. Looking at it needs no device:
+`apps/handbook/src/workbench/devices.ts` already frames a tablet breakpoint at
+768 × 1024, an iPad mini at 744 × 1133 and an iPad Pro 11" at 834 × 1194. And it
+reaches [ADR 0013](0013-native-tabs-and-a-web-tab-bar-of-its-own.md): native tabs are
+Material 3's navigation bar, a tablet wants a navigation rail at the side, and 0013
+records that `unstable-native-tabs` is alpha, exposes no height and mounts all five
+tabs eagerly. A tablet layout is therefore not the same screens made wider, and where
+it lands is 0013's territory rather than this record's.
+
+Accessibility, on the same screens:
+
+- Touch targets at least **44 × 44 logical units** (not device pixels), aiming for
+  **48 × 48 dp on Android**. Prefer enlarging the pressable area to adding `hitSlop`:
+  a slop rectangle can overlap the control beside it, and unlike padding it does not
+  grow with the system font. It is also invisible in a screenshot, which is how this
+  repository checks layout, so the twelve current sites need a hand and a screen
+  reader rather than a lint.
+- Dynamic font scaling at the largest system sizes, including the reader's own
+  text-size setting. Fix clipped labels, overlapping controls and fixed heights, and
+  keep content reachable rather than switching scaling off. Nothing in the app sets
+  `allowFontScaling={false}` today, so this is about layout and not about undoing
+  something.
+- Meaningful `accessibilityLabel` values where they are missing, especially on
+  icon-only buttons: name the action rather than the glyph, expose role and state, and
+  hide decorative icons. Counted under `apps/mobile/src` on 2026-09-10: 44 labels, 39
+  roles and 5 states over 43 `<Pressable` sites, and none of the four anywhere in the
+  core. So this is incremental rather than absent.
 
 Walk the main flows with VoiceOver and TalkBack to confirm focus order, announced
 labels and operable controls.
 
-### 10. Add German and English localisation
+### 8. Commit hooks, which format rather than complain
 
-CORRECTIV already publishes web content in English. Support German and English
-in the app UI rather than keeping user-facing strings hardcoded.
+Decided: a Husky `pre-commit` hook that formats the staged files with oxfmt and
+re-stages them, and runs oxlint over them as a check; plus a `pre-push` hook running
+the whole `npm run check`.
 
-- Use `expo-localization` to read the device's preferred locales.
-- Use `react-intl` for translated messages, plurals, dates and numbers.
-- Use FormatJS tooling to extract messages and compile translation catalogues.
+Measured on 2026-09-09, over the whole repository:
 
-Keep German as the fallback and retain formal "Sie" in German copy. Include
-accessibility labels, validation and error messages in the catalogues. Locale
-detection and React providers belong in the host, not the platform-free core.
+| | |
+| --- | --- |
+| `typecheck` | 10 557 ms |
+| `test` | 5 793 ms |
+| `lint` (oxlint) | 363 ms |
+| `format:check` (oxfmt) | 360 ms |
+| `check` total | 17 181 ms |
 
-UI localisation does not translate articles: English editorial content needs
-appropriate source mapping and an explicit fallback when no translation exists.
+The review proposed `lint-staged` to narrow oxlint and oxfmt to staged files. On speed
+that buys nothing: those two take 0.72 s over the entire repository, four percent of
+the work, and the ten-second item cannot be narrowed because TypeScript needs the
+whole project.
 
-### 11. Prefer navigation headers for standard screens
+**`lint-staged` earns its place for a different reason.** A hook that *formats* writes
+files during the commit, and what it writes has to end up in that commit. Restricting
+the write to the staged files and re-staging them is exactly the job `lint-staged`
+does; running oxfmt across the repository from a commit hook would pull unstaged files
+into the commit. So the tool stays and the justification changes: it is there for
+correctness, not for speed.
 
-Use Expo Router's `Stack` header on standard detail screens instead of disabling
-headers globally and drawing each back bar inside the screen. Navigation headers
-provide platform-familiar back controls, title/action placement, safe-area handling
-and transitions, with less custom UI code.
+oxfmt writes, oxlint only reports. A formatting change is whitespace and safe to apply
+unseen; a lint fix is a change of meaning and should not happen silently. Typecheck and
+tests stay out of `pre-commit` — 16 s of the 17 — and run on `pre-push`, which is the
+moment the work starts to matter to somebody else.
 
-Configure localized titles and semantic theme colours through navigation options.
-Remove redundant screen headers and top insets when enabling them. Keep custom
-headers for deliberate exceptions, such as the immersive article reader, and
-preserve deep-link back behaviour and the web experience.
+One consequence to accept knowingly: a commit then contains a change its author did not
+look at. That is the price of formatting automatically, and it is a small price while
+the formatter is oxfmt and the diff is whitespace.
 
-## Consequences and order
+CI stays the authority either way. A hook exists only for whoever ran `npm install`,
+and `git commit --no-verify` skips it, so this is a convenience and never a gate.
 
-Keyboard awareness, Android back handling and recoverable errors are the next concrete
-usability/reliability work. Rozenite is the recommended diagnostic addition, not a
-production dependency. The iOS build and distribution gap remains visible rather
-than being inferred away from Android results.
+One figure to correct while the hooks land: [AGENTS.md](../AGENTS.md) says
+`npm run check` takes "about ten seconds", and it took 17.2 s here. That sentence sets
+the expectation the `pre-commit`/`pre-push` split is argued from, so it is part of
+this work rather than a note beside it.
 
-Notification delivery stays explicitly deferred until the sender, transport and
-product behaviour are decided. The error-tracking provider and tablet scope remain
-named decisions instead of accidental defaults. Husky adds earlier feedback while
-CI remains authoritative.
-MMKV is recommended for native key/value persistence, with startup measurements
-before rollout.
+### 9. Navigation headers: the platform's on iOS and Android, ours on web
 
-This costs setup and maintenance for diagnostic tooling and native delivery, and
-requires device evidence where source checks cannot answer the question. It
-avoids a much larger cost: importing the template wholesale or optimising a
-runtime problem that has not been demonstrated.
+Decided: three implementations behind one seam. The native stack header on iOS and on
+Android, each looking like the platform it runs on rather than like one drawing
+stretched over both, and the drawn bar on web. This is
+[ADR 0013](0013-native-tabs-and-a-web-tab-bar-of-its-own.md)'s pattern applied one
+level up, and it reverses the paragraph in `components/ui/ScreenHeader.tsx` that says
+the app builds its own bars everywhere.
 
-## What this replaces
+**Web keeps its own because nothing else renders there.** On web, `Stack` resolves
+through `Stack.web.js` and `BaseStack` to expo-router's vendored native-stack, which
+reaches `ScreenStackHeaderConfig` from `react-native-screens`, and in
+`lib/module/components/ScreenStackHeaderConfig.web.js` that component and its subviews
+are bare `View`s. The one exception proves the rest: the back-button image is a real
+`Image`, with no bar to sit in and nothing that positions it. No back control, no
+title, no layout. The claim in `ScreenHeader.tsx` was checked and holds. So on web this
+is not a preference between two good options, it is the only half that draws anything.
 
-This record supersedes [ADR 0012](0012-a-list-virtualizer-for-the-unbounded-lists.md)'s
-decision that "Every other list stays a mapped ScrollView" for `suche.tsx`.
-The search result cap remains unchanged; cleaner list code and off-screen rows
-justify the recommendation without waiting for more results. Other bounded
-screens remain candidates for review, not a blanket conversion.
+**The seam is one component, not fifteen screens.** `ScreenHeader.web.tsx` keeps
+today's drawn bar; `ScreenHeader.tsx` configures the stack header through
+`<Stack.Screen options>` instead. Fourteen of the sixteen call sites pass nothing at
+all and do not change; the two that pass anything are `suche.tsx`, with the search
+field as a child, and `formular.tsx`, with `backLabel`, which are the two exceptions
+argued below.
 
-The corresponding statement is marked in ADR 0012. Its original reasoning is
-preserved, and the search migration is still pending.
+Three details this decision does not settle, and the implementation ADR has to:
+
+- **The search field.** `SearchBar.web.js` is `const SearchBar = View`, so
+  `headerSearchBarOptions` renders nothing on web — which the split absorbs, since web
+  keeps the drawn bar. What is open is native: the platform search UI, or `suche.tsx`
+  as a named exception that keeps the drawn bar everywhere.
+- **`formular.tsx`'s `backLabel="Abbrechen"`**, which exists so that two controls named
+  "Zurück" cannot mean two things. `headerBackTitle` is iOS-only and Android's native
+  header shows no back title, so the label would disappear on Android. The form is
+  probably a second exception; say so rather than let it be discovered.
+- **The native back control does not route through `lib/navigation/goBack.ts`.** The
+  anchor in `app/_layout.tsx` covers the deep-link case and `goBack` is the floor under
+  it. Whether the floor is still needed is a ten-minute check with
+  `correctiv://gespeichert` and the native arrow.
+
+Lower risk than 0013 in one respect: native stack headers are the oldest path in
+react-navigation, not an alpha API. A cost worth naming: a title has to be written for
+each of the fifteen routes that use `ScreenHeader`, because no `Stack.Screen` sets one
+today, which is also the fix for every pushed route on the published web target
+sharing one browser-tab title. And the chevron's colour comes from `useColors()`
+rather than from a class, because `Ionicons` takes a colour prop and not a class name,
+so this is a change that has to be seen in both appearance settings and with "System"
+against a dark device.
+
+## What this record drops from the review
+
+**The app icon.** The review reported it missing; the repository contradicts that, and
+the team supplied the accurate finding: the assets present are AI-generated
+placeholders and are not approved artwork. That is a release task with a checklist,
+not an architecture decision, and it is
+[issue #90](https://github.com/faktenforum/correctiv-app/issues/90).
+
+**`FlatList` for `suche.tsx`, as stated.** Withdrawn, and search is left undecided
+rather than answered a different way.
+
+The review's argument was cleaner code and rows outside the viewport under the existing
+cap. Read against the screen it does not hold: `suche.tsx` renders two heterogeneous
+sections and three empty states, so `data`/`renderItem` replaces nothing — it needs a
+tagged array and a type switch, which is more code — and 0012's cost argument was store
+subscriptions per row, which `ArticleRow` does not have.
+
+But the reason not to do it is not that search is finished. Search is the least-built
+part of the app, the only content area without a slice — the root reducer holds twelve
+and search is not among them, and `stores/search.ts` is a thunk and a selector with no
+state of its own — and its sources sit in two places: the REST query and its feed
+fallback in that file, the project hits filtered in a `useMemo` inside the screen.
+Whether that matters depends on something nobody knows yet, which is how many
+sources search ends up with. **That question is not answered here, and answering it by
+implication would be worse than leaving it open.** A result model with per-source status
+is the right shape for several sources and speculative structure for one.
+
+One part does not wait, because it is the existing rule rather than a bet on the answer:
+the project-hit filter belongs in the core, where `searchLocalFeeds` already sits doing
+the same job on feeds. Ten lines, and it makes that path testable beside the two that
+already are.
+
+Two triggers reopen the rest, and they can fire independently:
+
+- **A second asynchronous source.** The screen's single `searching` flag is correct
+  today, because there is one async source and the project hits are filtered
+  synchronously with no loading state of their own. A second async source makes it
+  wrong rather than imprecise — two sources can finish at different times, and the
+  screen then says "Keine Treffer" too early or holds a spinner too long. That is when
+  a typed result model with per-source status earns itself, and when the scroller
+  question comes with it. It would be `SectionList` rather than `FlatList`, because a
+  list of groups is what `SectionList` takes, and it passes 0012's tie-breaker
+  equally: React Native's own export surface, and named in `@gjsify/react-native`
+  alongside `FlatList` and `VirtualizedList`, all three on `Gtk.ListView` +
+  `Gio.ListStore`.
+- **The first source that paginates**, which makes the list unbounded and is
+  [ADR 0012](0012-a-list-virtualizer-for-the-unbounded-lists.md)'s own written trigger
+  for a virtualizer plus an amendment to it. 0012 therefore stands unchanged here, and
+  its criterion stays intact for the other twenty-one lists it counts.
+
+**The iOS build and distribution gap**, which `RELEASE.md` already records under "iOS
+(not yet wired up)". Naming it twice does not make it smaller.
+
+## What it measured
+
+Taken 2026-09-09 unless stated, and the host is in the second column, because a
+measurement without one expires invisibly.
+
+| What | Host | Result |
+| --- | --- | --- |
+| `persist()` cold start | Android 16 (API 36), x86_64 emulator, debug build | 18–21 ms; first read 11–13 ms |
+| fonts against store | same | `fontsLoaded` 183–272 ms, `storeReady` 189–248 ms |
+| Hermes `Intl` surface | `hermes-android 250829098.0.17`, arm64 | Collator, DateTimeFormat, NumberFormat; no PluralRules |
+| network inspection | `react-native` 0.86.3, source | on by default, native capture |
+| error boundary | `expo-router` 57, source | `Try` + `{ error, retry }`, hides the splash |
+| native header on web | `react-native-screens` 4.26.2, source | header config and search bar are bare `View`s |
+| MMKV on web | `react-native-mmkv` 4.3.2, npm tarball, not installed here | web build present, `localStorage`-backed |
+| Rozenite under `expo export` | `@rozenite/metro` 2.4.0, npm tarball, not installed here | on unless `isBundling()`; an explicit `enabled` skips that check |
+| `__DEV__` + `require` in a function | production web export | keeps the module; only module scope drops it |
+| `npm run check` | this machine | 17.2 s total, oxlint + oxfmt 0.72 s of it |
+| responsive code | repository | none |
+
+## What this retires
+
+Nothing in another ADR. Three claims in the source, and none is struck here, because a
+claim is struck when the code that made it true changes and not when a record says it
+will:
+
+- The comment atop `packages/app-core/src/lib/format.ts` justifies hand-written German
+  month and weekday names with "The NS runtime has no German ICU". That runtime left
+  the tree with [ADR 0007](0007-removing-the-nativescript-host.md), and section 6
+  measured the replacement as present. Strike it when the formatters go.
+- The paragraph in `components/ui/ScreenHeader.tsx` explaining why the app draws its
+  own bars everywhere. Section 9 reverses it for iOS and Android and keeps its web half
+  intact. Strike the first half when the split lands, and leave the second standing,
+  because section 9 measured it and it is still the reason web keeps the drawn bar.
+- The sentence in `lib/store/core.ts` that credits its own `__DEV__`-then-`require`
+  shape with keeping the debugger out of a release build. The outcome is still true and
+  the mechanism is not, so nothing is broken and somebody copying the shape for a local
+  module would ship that module. Strike it when section 1 lands.
+
+And three sentences in [AGENTS.md](../AGENTS.md), which is a living document and so
+gets corrected rather than struck. Each correction belongs in the commit that makes it
+necessary, not in this one: German "for everything a user reads, and only there" and
+multilingual support being "under consideration" both stop being true with the first
+message descriptor (section 6), and `npm run check` taking "about ten seconds" is
+already 7 s out (section 8).
+
+## What this has not delivered
+
+**Nothing was measured on iOS**, and the app has never been built for it. That falls
+hardest on section 9, where a native header is most of the point, and on section 6,
+where Hermes on Apple platforms was not checked at all.
+
+**The startup numbers are from a debug build with a Metro-served bundle.**
+`persist()`'s 18–21 ms is dominated by the native path and should hold in release; the
+183–272 ms font load will not, and it is the figure section 4 leans on to say the
+saving may be invisible.
+
+**`useFonts` is unexamined.** Section 4 found it on the critical path in one run of
+two and then went no further, which makes it the largest unclaimed startup item in
+this record.
+
+**The other twenty-one lists in 0012 remain unmeasured**, as 0012 itself says. Nothing
+here changed that, and dropping the search recommendation does not settle it either
+way.
+
+**MMKV and Rozenite were read, not run.** Neither is installed, so sections 1 and 4
+are argued from the published tarballs of `react-native-mmkv` 4.3.2 and
+`@rozenite/metro` 2.4.0 rather than from this tree. That is why both are pinned to a
+version here: the next reader has a different install and no way to tell which one
+these paragraphs describe. Nothing in either section has been observed running.

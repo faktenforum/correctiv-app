@@ -1,8 +1,6 @@
 # ADR 0012 — A list virtualizer, for the two lists that need one
 
 Status: accepted, 2026-08-28.
-Search recommendation superseded by [ADR 0026](0026-react-native-review-and-hardening.md),
-2026-09-07; implementation pending.
 
 ## Context
 
@@ -45,11 +43,8 @@ episodes mounts two hundred store subscriptions to display about eight.
 
 ## Decision
 
-`FlatList` on `gespeichert.tsx` and `serie/[id].tsx`. ~~Every other list stays a mapped
-`ScrollView`.~~ Superseded for `suche.tsx` by
-[ADR 0026](0026-react-native-review-and-hardening.md), which recommends FlatList
-for cleaner code and off-screen results even with the existing cap. The search
-migration is pending; the other bounded lists remain unchanged.
+`FlatList` on `gespeichert.tsx` and `serie/[id].tsx`. Every other list stays a mapped
+`ScrollView`.
 
 **`FlatList`, not `FlashList` or `LegendList`, and the reason is not performance.**
 For lists of this size the three are indistinguishable: FlashList's advantage is row
