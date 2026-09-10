@@ -1111,6 +1111,35 @@ allocated less and is now clipped. Rasterising each widget and reading the PNG h
 is the workaround, and it reports the allocation without the request, so it says *that*
 a widget is the wrong size and never *whose* arithmetic made it so.
 
+### The one-line marks traded one defect for another, and only here
+
+`ui/Overline` carries `numberOfLines={1}` and `flexShrink: 0`, which this branch
+measured and `main` now carries with the argument written up (PR #123). On a phone
+and in a browser it changes no rectangle at all; that was measured on both targets.
+On THIS host it trades one visible defect for another, and the pair of screenshots
+says so:
+
+| | `screens/home.png`, 5 September, before the fix | after it |
+| --- | --- | --- |
+| `BACKSTAGE · FRÜHER LESEN` | wraps, and „LESEN" hangs clipped below the yellow band | one line, whole |
+| `SPOTLIGHT` | whole | `SPOTLIG…` |
+
+Both are the same underlying fault: a letter-spaced label is allocated its own
+natural width, which Pango finds about the letter-spacing short of what it needs.
+Wrapping spends the shortfall on a second line the parent has no height for;
+ellipsizing spends it on the last glyph. Neither avoids it, and `flexShrink: 0` does
+not either — `SPOTLIGHT` sits in a `justify-between` row beside "Alle Ausgaben", and
+it is still the one that gives.
+
+**So the claim in `Overline`'s own docblock that a single-word mark "has no break
+opportunity and was never affected" is true of the WRAPPING and not of the fix.**
+That sentence is on `main` and should say so; it was written from this branch's
+measurement, which only ever looked at the two-word case.
+
+The real remedy is upstream, in the pixel the natural width is short by. Until then
+this host shows a truncated `SPOTLIGHT` where it used to show a whole one, and that
+is worth more than a clipped `LESEN` only because the band is what a reader notices.
+
 ### The branch is red on CI, and it had stopped being watched
 
 `npm run check` passes here and fails on CI, and both are correct. This host is
