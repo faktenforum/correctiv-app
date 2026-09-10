@@ -29,7 +29,7 @@
  * source directory. In `packages/app-core` that is on purpose (ADR: subpath
  * imports, the root entry exposes only the ports) and every module is a subpath;
  * under `src/components` a component file simply IS its import path, except in
- * `ui/`, where `index.ts` is the barrel all 50 call sites go through.
+ * `ui/`, where `index.ts` is the barrel every call site goes through.
  */
 import { mkdirSync, readFileSync, writeFileSync } from 'node:fs';
 import { basename, dirname, join, relative } from 'node:path';
@@ -313,7 +313,7 @@ function platformOf(file) {
 /**
  * The app's components, grouped by the folder they live in.
  *
- * A group is a folder because that is what the app's own imports are: 50 of them
+ * A group is a folder because that is what the app's own imports are: 52 of them
  * write `@/components/ui`, and every other one writes the file's own path. So the
  * import line printed on a component is the barrel where the folder has one and
  * the file otherwise, which is the line a caller actually writes.
@@ -366,15 +366,31 @@ function componentGroups(project) {
     const bucket = group(folder);
 
     for (const child of module.children ?? []) {
+      const doc = commentText(child.comment ?? child.signatures?.[0]?.comment);
       const signature = componentSignature(child);
-      if (!signature) continue;
+
+      // Not a component: whatever else the file exports beside one, which is
+      // filtered below, once every props type is known.
+      if (!signature) {
+        const kind = KINDS[child.kind];
+        if (!kind) continue;
+        bucket.helpers.push({
+          name: child.name,
+          kind,
+          signature: signatureOf(child),
+          summary: firstSentence(doc),
+          doc: doc ? md.parse(doc) : '',
+          file,
+          line: child.sources?.[0]?.line ?? 0,
+        });
+        continue;
+      }
 
       const parameter = signature.parameters?.[0]?.type;
       if (parameter?.type === 'reference' && parameter.reflection) {
         propsTypes.add(`${fileOf(parameter.reflection)}#${parameter.name}`);
       }
       const { props, inherits } = propsOf(parameter);
-      const doc = commentText(child.comment ?? child.signatures?.[0]?.comment);
       const propsDoc = commentText(parameter?.reflection?.comment);
 
       bucket.components.push({
@@ -394,22 +410,6 @@ function componentGroups(project) {
           (a, b) => Number(a.optional) - Number(b.optional) || a.name.localeCompare(b.name),
         ),
         inherits,
-      });
-    }
-
-    // What else the file exports, filtered below once every props type is known.
-    for (const child of module.children ?? []) {
-      const kind = KINDS[child.kind];
-      if (!kind || componentSignature(child)) continue;
-      const doc = commentText(child.comment ?? child.signatures?.[0]?.comment);
-      bucket.helpers.push({
-        name: child.name,
-        kind,
-        signature: signatureOf(child),
-        summary: firstSentence(doc),
-        doc: doc ? md.parse(doc) : '',
-        file,
-        line: child.sources?.[0]?.line ?? 0,
       });
     }
   }

@@ -1,14 +1,11 @@
-import { ChevronRight, ExternalLink, Search as SearchIcon } from 'lucide-react';
 import { useMemo, useState } from 'react';
 
 import api from 'virtual:api';
 import type { ApiModule, ApiSymbol } from 'virtual:api';
-import docsModule from 'virtual:docs';
 import { symbolId } from '../nav';
 import { href } from '../router';
+import { Disclosure, Filter, Source } from '../ui/Lookup';
 import { Page } from '../ui/Page';
-
-const BLOB = `${docsModule.repo}/blob/${docsModule.commit}`;
 
 const { modules: MODULES, package: PACKAGE } = api.core;
 
@@ -30,7 +27,8 @@ const { modules: MODULES, package: PACKAGE } = api.core;
  * rendered by `pages/Components.tsx`, one route along, because they are not a
  * library: they are reached by the `@/components` alias inside `apps/mobile` and
  * from nowhere else, and a reader who took the two pages for one would look for
- * `ui/Button` under a package that has never held a component.
+ * `ui/Button` under a package that has never held a component. The furniture the
+ * two share is in `ui/Lookup.tsx`.
  *
  * A symbol with no prose is shown and marked rather than hidden. The gap is worth
  * seeing: 167 of the core's 327 exported symbols carry a doc comment, and the
@@ -75,34 +73,14 @@ export function Reference() {
           , which nothing outside <code className="font-mono">apps/mobile</code> can import.
         </p>
 
-        {/* The filter follows the reader down 53 modules, because a lookup surface
-            whose filter has scrolled away is a list. `top-0`, not an offset: the
-            scroller is the shell's main area, which begins below the header, so an
-            offset here would leave a gap the page scrolls through. */}
-        <div className="sticky top-0 z-10 mt-m mb-m border-b border-stroke bg-canvas py-s">
-          <div className="flex flex-wrap items-center gap-s">
-            <label htmlFor="ref-q" className="sr-only">
-              Filter modules and symbols
-            </label>
-            <div className="relative min-w-0 flex-1">
-              <SearchIcon
-                aria-hidden="true"
-                className="pointer-events-none absolute left-xs top-1/2 size-[1rem] -translate-y-1/2 text-on-canvas-muted"
-              />
-              <input
-                id="ref-q"
-                type="search"
-                placeholder="Filter, for example loadArticle or stores/"
-                value={query}
-                onChange={(event) => setQuery(event.target.value)}
-                className="h-[2.25rem] w-full rounded-md border border-stroke bg-canvas pl-l pr-s text-m text-on-canvas placeholder:text-on-canvas-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent"
-              />
-            </div>
-            <p aria-live="polite" className="text-s tabular-nums text-on-canvas-muted">
-              {modules.length} modules, {symbolCount} symbols
-            </p>
-          </div>
-        </div>
+        <Filter
+          id="ref-q"
+          label="Filter modules and symbols"
+          placeholder="Filter, for example loadArticle or stores/"
+          value={query}
+          onChange={setQuery}
+          summary={`${modules.length} modules, ${symbolCount} symbols`}
+        />
 
         {modules.length === 0 && (
           <p className="py-2xl text-center text-m text-on-canvas-muted">Nothing matches that.</p>
@@ -112,7 +90,7 @@ export function Reference() {
           <section className="mb-xl" key={module.subpath}>
             <h2
               id={`m-${module.subpath.replace(/\//g, '-')}`}
-              className="scroll-mt-[4.75rem] font-mono text-headline-m font-semibold leading-tight [overflow-wrap:anywhere]"
+              className="scroll-mt-[4.75rem] font-mono text-headline-m font-semibold leading-tight wrap-anywhere"
             >
               {module.subpath}
             </h2>
@@ -140,70 +118,33 @@ export function Reference() {
   );
 }
 
-/**
- * One symbol, as a disclosure the search palette can open from the outside.
- *
- * A native `details` rather than a scripted one, because `ui/Search.tsx` jumps to
- * a symbol by setting `open` on the element it finds by id. The React state here
- * only mirrors that back for `aria-expanded`; the element itself stays the owner
- * of whether it is open, so an open from the palette is not undone on the next
- * render.
- */
+/** One symbol: what kind of thing it is, its signature and its prose. */
 function Symbol({ module, symbol }: { module: ApiModule; symbol: ApiSymbol }) {
-  const [open, setOpen] = useState(false);
-
   return (
-    <details
+    <Disclosure
       id={symbolId(module.subpath, symbol.name)}
-      onToggle={(event) => setOpen(event.currentTarget.open)}
-      className="group scroll-mt-[4.75rem]"
+      summary={
+        <>
+          <span className="hidden w-[4.5rem] shrink-0 font-mono text-s text-on-canvas-muted sm:block">
+            {symbol.kind}
+          </span>
+          <span className="shrink-0 font-mono text-m font-semibold">{symbol.name}</span>
+          <span className="min-w-0 flex-1 truncate text-s text-on-canvas-muted">
+            {symbol.summary || <span className="italic">No doc comment.</span>}
+          </span>
+        </>
+      }
     >
-      <summary
-        aria-expanded={open}
-        className="flex cursor-pointer list-none items-center gap-xs px-s py-2xs hover:bg-surface focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-accent [&::-webkit-details-marker]:hidden"
-      >
-        <ChevronRight
-          aria-hidden="true"
-          className="size-[0.875rem] shrink-0 text-on-canvas-muted transition-transform group-open:rotate-90"
+      {symbol.signature && (
+        <p className="whitespace-pre-wrap break-words font-mono text-s">{symbol.signature}</p>
+      )}
+      {symbol.doc && (
+        <div
+          className="prose prose-sm mt-s max-w-content"
+          dangerouslySetInnerHTML={{ __html: symbol.doc }}
         />
-        <span className="hidden w-[4.5rem] shrink-0 font-mono text-s text-on-canvas-muted sm:block">
-          {symbol.kind}
-        </span>
-        <span className="shrink-0 font-mono text-m font-semibold">{symbol.name}</span>
-        <span className="min-w-0 flex-1 truncate text-s text-on-canvas-muted">
-          {symbol.summary || <span className="italic">No doc comment.</span>}
-        </span>
-      </summary>
-
-      <div className="border-t border-stroke bg-surface px-s py-s sm:pl-xl">
-        {symbol.signature && (
-          <p className="whitespace-pre-wrap break-words font-mono text-s">{symbol.signature}</p>
-        )}
-        {symbol.doc && (
-          <div
-            className="prose prose-sm mt-s max-w-content"
-            dangerouslySetInnerHTML={{ __html: symbol.doc }}
-          />
-        )}
-        {/*
-          `inline` rather than `inline-flex`, because a path is one word to a
-          browser and a flex box will not break one: at 375px this line was
-          335px wide inside a 262px box and took the panel sideways with it. As
-          inline text it wraps, and `overflow-wrap` gives it somewhere to do so.
-        */}
-        <a
-          href={`${BLOB}/${module.file}#L${symbol.line}`}
-          target="_blank"
-          rel="noreferrer noopener"
-          className="mt-s inline font-mono text-s text-on-canvas-muted underline decoration-accent underline-offset-2 [overflow-wrap:anywhere] hover:text-on-canvas"
-        >
-          {module.file}:{symbol.line}
-          <ExternalLink
-            aria-hidden="true"
-            className="ml-3xs inline size-[0.75rem] align-[-0.1em]"
-          />
-        </a>
-      </div>
-    </details>
+      )}
+      <Source file={module.file} line={symbol.line} />
+    </Disclosure>
   );
 }
