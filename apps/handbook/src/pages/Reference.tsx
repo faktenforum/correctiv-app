@@ -5,9 +5,12 @@ import api from 'virtual:api';
 import type { ApiModule, ApiSymbol } from 'virtual:api';
 import docsModule from 'virtual:docs';
 import { symbolId } from '../nav';
+import { href } from '../router';
 import { Page } from '../ui/Page';
 
 const BLOB = `${docsModule.repo}/blob/${docsModule.commit}`;
+
+const { modules: MODULES, package: PACKAGE } = api.core;
 
 /**
  * The core's API, as a place to look something up rather than a site to read.
@@ -23,6 +26,12 @@ const BLOB = `${docsModule.repo}/blob/${docsModule.commit}`;
  * caller writes. Each heading prints that line verbatim, because "which subpath
  * do I import" is the question this page most often answers.
  *
+ * The core only. The app's own components come out of the same script and are
+ * rendered by `pages/Components.tsx`, one route along, because they are not a
+ * library: they are reached by the `@/components` alias inside `apps/mobile` and
+ * from nowhere else, and a reader who took the two pages for one would look for
+ * `ui/Button` under a package that has never held a component.
+ *
  * A symbol with no prose is shown and marked rather than hidden. The gap is worth
  * seeing: 167 of the core's 327 exported symbols carry a doc comment, and the
  * ones that do carry real arguments rather than restatements of their signature.
@@ -36,16 +45,14 @@ export function Reference() {
 
   const modules = useMemo(() => {
     const q = query.trim().toLowerCase();
-    if (!q) return api.modules;
-    return api.modules
-      .map((module) => {
-        if (module.subpath.toLowerCase().includes(q)) return module;
-        const symbols = module.symbols.filter((s) =>
-          `${s.name} ${s.summary}`.toLowerCase().includes(q),
-        );
-        return symbols.length > 0 ? { ...module, symbols } : null;
-      })
-      .filter((m): m is (typeof api.modules)[number] => m !== null);
+    if (!q) return MODULES;
+    return MODULES.map((module) => {
+      if (module.subpath.toLowerCase().includes(q)) return module;
+      const symbols = module.symbols.filter((s) =>
+        `${s.name} ${s.summary}`.toLowerCase().includes(q),
+      );
+      return symbols.length > 0 ? { ...module, symbols } : null;
+    }).filter((m): m is ApiModule => m !== null);
   }, [query]);
 
   const symbolCount = modules.reduce((n, m) => n + m.symbols.length, 0);
@@ -57,7 +64,15 @@ export function Reference() {
         <p className="mt-xs max-w-content text-m leading-relaxed text-on-canvas-muted">
           Every exported symbol in <code className="font-mono">packages/app-core</code>, extracted
           from the source and its doc comments. The core has no barrel, so a module here is the
-          subpath you import. This is a lookup surface; the architecture pages are the way in.
+          subpath you import. This is a lookup surface; the architecture pages are the way in. The
+          app&apos;s own components are their own section:{' '}
+          <a
+            href={href('/components')}
+            className="text-on-canvas underline decoration-accent underline-offset-2"
+          >
+            Components
+          </a>
+          , which nothing outside <code className="font-mono">apps/mobile</code> can import.
         </p>
 
         {/* The filter follows the reader down 53 modules, because a lookup surface
@@ -102,7 +117,7 @@ export function Reference() {
               {module.subpath}
             </h2>
             <p className="mt-3xs break-words font-mono text-s text-on-canvas-muted">
-              {`import … from '@correctiv/app-core/${module.subpath}'`}
+              {`import … from '${PACKAGE}/${module.subpath}'`}
             </p>
             {module.doc && (
               <div
