@@ -41,9 +41,11 @@ export interface VideoPlayer {
    *
    * On the phone this is off by default and `app/video.tsx` turns it on to get the
    * OS now-playing controls. This host publishes to MPRIS whenever a pipeline is
-   * created — `video/backend.ts` installs `installVideoMpris` unconditionally — so
-   * the capability the phone is asking for is on before the property is written,
-   * and writing it changes nothing.
+   * created and there is a session bus to publish on — `video/backend.ts` calls
+   * `installVideoMpris` unless `mediaControls()` answered null — so the capability
+   * the phone is asking for is on before the property is written, and writing it
+   * changes nothing either way. Where there is no bus there is nothing for the
+   * property to turn on either, so it is still not a refusal.
    *
    * It is writable rather than `readonly` because the app assigns it and a type
    * error would be the wrong signal: nothing is being refused here. The asymmetry

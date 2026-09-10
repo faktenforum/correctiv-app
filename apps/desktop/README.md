@@ -180,7 +180,8 @@ tree rendered; it says nothing about what the render cost.
     orientation, `absolute` needs the parent to be an overlay — and this element is
     the root of its tree, or its parent is not a box.
 
-The shape is the same in both, and it is ordinary React Native markup:
+The two markups are NOT the same, and the shared part is the one that matters.
+`FormField` puts a label beside an icon:
 
 ```tsx
 <Pressable className="mb-2xs flex-row items-center rounded-md border px-s py-s">
@@ -189,26 +190,42 @@ The shape is the same in both, and it is ordinary React Native markup:
 </Pressable>
 ```
 
-A `Pressable` is a `Gtk.Button`, which is a BIN and not a box, so `flex-row` on it
-establishes no row for its children to resolve against and the `flex-1` beside it has
-no parent orientation. The layer's own comment at the throw says this used to be a
-silent drop and is now loud on purpose, which is the right trade and is what surfaced
-it here.
+`ProgressBar` has no row, no icon and no label — it is a bar inside a hit area:
+
+```tsx
+<Pressable className="justify-center py-2xs">
+  <View className="overflow-hidden rounded-s bg-stroke" style={{ height: 4 }}>
+    <View className="h-full w-full bg-accent" style={{ transform: [{ scaleX: ratio }] }} />
+  </View>
+</Pressable>
+```
+
+What they share is a `Pressable` parenting children that carry expand. A `Pressable`
+is a `Gtk.Button`, which is a BIN and not a box, so it establishes no orientation for
+anything under it to resolve against. The layer's own comment at the throw says this
+used to be a silent drop and is now loud on purpose, which is the right trade and is
+what surfaced it here.
 
 **WHY NO SCREEN SWEEP WOULD EVER HAVE FOUND IT**, and this is the argument for
 `component-sweep` in one measurement rather than in the abstract. Both components have
 a route, and `route-sweep` reports both routes `ok`:
 
-| route | what the sweep photographs | what it never draws |
-| --- | --- | --- |
-| `/player` | „Es läuft gerade nichts." | `ProgressBar` |
-| `/formular` | „Dieses Formular gibt es nicht" | `FormField` |
+| route | sweep line | what it photographs | what it never draws |
+| --- | --- | --- | --- |
+| `/player` | `ok  [11829 byte capture]` | "Es läuft gerade nichts." | `ProgressBar` |
+| `/formular` | `ok  [18457 byte capture]` | "Dieses Formular gibt es nicht" | `FormField` |
 
 Nothing is playing in a swept process and no callout is passed to the form, so each
 screen renders a legitimate empty state and passes. Driven at a route that actually
-reaches the component — `/formular?slug=wem-gehoert-die-stadt` — the same process
-throws, the tree ends, and the window falls back to `/` with a 12 779-byte capture,
-which is the dead-tree size this README already documents once.
+reaches the component — `/formular?slug=wem-gehoert-die-stadt` — the same bundle
+throws, the tree ends, and the window falls back to `/` with a 12 779-byte capture:
+the same shape as the profil crash above, which captured 12 848 where a live tree had
+captured 92 125.
+
+**The gallery route itself is now the sweep's one red line.** `route-sweep` reports
+24 of 25, and the failure is `/gallery` — the same refusal, because that page draws
+both components. That is the sweep telling the truth for the first time about
+components it had been rendering `ok` around.
 
 `route-sweep.mjs`'s own header warns about this for `[param]` routes: "a route that
 404s inside its own screen renders a legitimate empty state and would pass for the
@@ -1357,8 +1374,8 @@ other three tones do not; `EpisodeRow` has a club form and a default one; `Progr
 has a `durationSec={0}` case for "nothing known yet". A screen passes one of each.
 Every prop refusal this host has hit was a prop some particular variant passes.
 
-It runs in two phases, because 44 components at the sweep's deadline would be eleven
-minutes: one process with the whole catalogue first, and only if that shows a refusal,
+It runs in two phases, because the whole catalogue at the sweep's deadline is over
+half an hour: one process with the whole catalogue first, and only if that shows a refusal,
 one process per component — `?c=folder/Name` — so the log names the component rather
 than the primitive alone. `<Text> prop "onPress"` says what was refused; it does not
 say which of forty-four asked.

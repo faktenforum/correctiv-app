@@ -16,14 +16,16 @@
  * known yet. A screen passes one of each. The catalogue passes all of them, and
  * every prop-refusal this host has hit was a prop some particular variant passes.
  *
- * TWO PHASES, because 44 components at the deadline below would be eleven minutes.
+ * TWO PHASES, because the catalogue at the deadline below is over half an hour. The
+ * count is deliberately not written here: it was `44` for one commit, `main` added
+ * `ui/SectionCard`, and nothing failed. The script prints what it enumerated.
  *
  *   1. One process, `/gallery` unfiltered, every component in one tree. Clean means
  *      clean, and it costs one run.
  *   2. Only if that run shows a refusal: one process per component,
  *      `/gallery?c=folder/Name`, so the log names the component instead of the
  *      primitive alone. `<Text> prop "onPress"` says what was refused; it does not
- *      say which of 44 components asked.
+ *      say which component asked.
  *
  * `--each` forces phase 2 on its own. A component id narrows it further:
  *
@@ -164,6 +166,15 @@ mkdirSync(CAPTURES, { recursive: true });
 console.log(`component sweep [--host ${HOST_NAME}]: ${ids.length} components from the catalogue\n`);
 
 let perComponent = forceEach || args.length > 0;
+/**
+ * Did the whole catalogue in one page refuse?
+ *
+ * Carried to the exit code, and that is not bookkeeping. A refusal phase 1 sees and
+ * phase 2 does not is a REAL failure — it is the composition, not a component — and
+ * an early version of this script exited 0 on exactly that, printing "45 of 45" over
+ * a page that had thrown. The first full run of this sweep was that case.
+ */
+let wholePageRefused = false;
 
 if (!perComponent) {
   // PHASE 1. Every component in one tree, which is what the page does unfiltered.
@@ -178,6 +189,7 @@ if (!perComponent) {
   console.log('FAIL');
   for (const problem of problems) console.log(`        ${problem.trim().slice(0, 180)}`);
   console.log('\nOpening them one at a time, to name the component.\n');
+  wholePageRefused = true;
   perComponent = true;
 }
 
@@ -195,4 +207,10 @@ for (const id of ids) {
 }
 
 console.log(`\n${ids.length - failed} of ${ids.length} components rendered without a refusal.`);
-process.exit(failed === 0 ? 0 : 1);
+if (wholePageRefused && failed === 0) {
+  console.log(
+    'But the whole catalogue in ONE page refused, and no single component did. That is\n' +
+      'a fault in the composition rather than in a component, and it is still a failure.',
+  );
+}
+process.exit(failed === 0 && !wholePageRefused ? 0 : 1);

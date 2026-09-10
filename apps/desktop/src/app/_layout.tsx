@@ -150,11 +150,18 @@ export const unstable_settings = { anchor: '(tabs)' };
  * over whole. So this boundary wraps the `Provider` rather than sitting under it,
  * which is what lets it catch a fault in the store's own construction.
  */
-class RecoveryBoundaryClass extends Component<{ children: ReactNode }, { error: unknown }> {
-  state: { error: unknown } = { error: null };
+class RecoveryBoundaryClass extends Component<
+  { children: ReactNode },
+  { caught: boolean; error: unknown }
+> {
+  // A FLAG BESIDE THE VALUE, rather than `error: null` as the sentinel. React hands
+  // over whatever was thrown, and `throw null` is legal JavaScript — with the value
+  // alone as the test, that one case would render the children again, throw again,
+  // and loop. The flag costs a boolean and the sentinel costs a hang.
+  state: { caught: boolean; error: unknown } = { caught: false, error: null };
 
-  static getDerivedStateFromError(error: unknown): { error: unknown } {
-    return { error };
+  static getDerivedStateFromError(error: unknown): { caught: boolean; error: unknown } {
+    return { caught: true, error };
   }
 
   componentDidCatch(error: unknown): void {
@@ -167,12 +174,12 @@ class RecoveryBoundaryClass extends Component<{ children: ReactNode }, { error: 
 
   /** Clears the error so the tree below is built again, which is `retry`. */
   private readonly retry = (): void => {
-    this.setState({ error: null });
+    this.setState({ caught: false, error: null });
   };
 
   render(): ReactNode {
-    const { error } = this.state;
-    if (error === null) return this.props.children;
+    const { caught, error } = this.state;
+    if (!caught) return this.props.children;
     // `error` is whatever was thrown, and a thrown string must not take the
     // recovery screen down with it — the same normalisation the phone does.
     const detail = error instanceof Error ? error.message : String(error);
