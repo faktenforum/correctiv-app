@@ -63,9 +63,12 @@ That is the part that rots: change a headline in the app and nothing here notice
 Deriving it would mean rendering the app, which is what the screenshots already are.
 
 **A Figma instance takes no children and no colour override.** So a card that carries
-content cannot be a component, in Figma or in the kit. The same wall stands in the app,
+content cannot be a component, in Figma or in the kit. ~~The same wall stands in the app,
 where seventeen call sites write an `Overline` over a `Card` inline and that shape has
-no name.
+no name.~~ **Named on 2026-09-10**: a React component does take children, so the shape is
+`SectionCard` in `apps/mobile/src/components/ui` and sixteen of those call sites are it,
+the seventeenth being Backstage's "Termine", one label over a card per event, which the
+component cannot absorb and which stays inline.
 
 **A second Figma variable mode is a paid feature.** The tokens carry a light and a dark
 value; on a Starter plan `addMode` throws and the collection stays light-only.

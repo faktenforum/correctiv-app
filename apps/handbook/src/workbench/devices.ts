@@ -1,4 +1,14 @@
-/** Portrait CSS pixels. Kept verbatim from the shell this package replaces. */
+/**
+ * A frame's two sides in CSS pixels, written the way the thing is held.
+ *
+ * Which side is horizontal is the state's `landscape`, which swaps the pair, so
+ * nothing here has to pretend a laptop has a portrait. The toolbar names the
+ * orientation from the frame `frameSize` returns rather than from the flag,
+ * which is the only reading that stays true for both a phone and a laptop.
+ *
+ * The sizes are kept verbatim from the shell this package replaces, so a link
+ * written against it still resolves to the same rectangle.
+ */
 export interface Device {
   id: string;
   label: string;
@@ -22,6 +32,19 @@ export const DEVICES: Device[] = [
   { id: 'breakpoint', label: 'Tablet breakpoint (48rem)', w: 768, h: 1024 },
   { id: 'ipad-mini', label: 'iPad mini', w: 744, h: 1133 },
   { id: 'ipad-pro-11', label: 'iPad Pro 11"', w: 834, h: 1194 },
+  { id: 'ipad-pro-13', label: 'iPad Pro 13"', w: 1024, h: 1366 },
+  /*
+   * These two are written landscape-first, because that is how a laptop is used.
+   * Turning the orientation still turns them, and 800 × 1280 is a rectangle a
+   * large tablet is held in, so nothing is lost by it.
+   *
+   * They are in the list because the app has to work here too and today does not:
+   * there is no breakpoint anywhere in `apps/mobile/src` and no
+   * `useWindowDimensions`, so every one of these widths shows a phone layout
+   * stretched. That is the point of being able to select them.
+   */
+  { id: 'laptop', label: 'Laptop', w: 1280, h: 800 },
+  { id: 'desktop', label: 'Desktop', w: 1440, h: 900 },
   { id: 'custom', label: 'Custom', w: 0, h: 0 },
 ];
 
@@ -35,8 +58,8 @@ export const HOST_DEVICE = 'host';
  *
  * At 390 CSS pixels the frame fitted at 40%: an app rendered a quarter of its
  * intended size, inside a device frame, on a device. A tablet in portrait is 744
- * to 834 wide and has the same problem with less of it, so the line is above
- * both and below the narrowest desktop window anybody works in.
+ * to 1024 wide and has the same problem with less of it, so the line sits on the
+ * widest of them and below the narrowest desktop window anybody works in.
  */
 export const HOST_BELOW = 1024;
 

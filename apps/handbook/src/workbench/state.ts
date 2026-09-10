@@ -8,6 +8,12 @@ export type ThemeSetting = 'system' | 'light' | 'dark';
 export interface PreviewState {
   route: string;
   device: string;
+  /**
+   * The frame turned a quarter from the way its size is written down, which is
+   * landscape for everything written portrait-first and portrait for the two
+   * presets that are not. `o=l` in the address is this, and `Toolbar` names the
+   * orientation from `frameSize` rather than from here for that reason.
+   */
   landscape: boolean;
   zoom: 'fit' | number;
   /** Only meaningful while `device === 'custom'`. */

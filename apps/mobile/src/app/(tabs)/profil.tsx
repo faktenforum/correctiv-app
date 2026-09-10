@@ -4,7 +4,7 @@ import { Pressable, View } from 'react-native';
 import { ClubCard } from '@/components/profile/ClubCard';
 import { NavCard } from '@/components/profile/NavCard';
 import { SettingRow } from '@/components/profile/SettingRow';
-import { Button, Card, Hairline, Overline, Screen, Typo } from '@/components/ui';
+import { Button, Hairline, Overline, Screen, SectionCard, Typo } from '@/components/ui';
 import { formatDateShortDe } from '@correctiv/app-core/lib/format';
 import type { Entitlement } from '@correctiv/app-core/types/models';
 import { quarterlyReport } from '@correctiv/app-core/data/quartalsbericht';
@@ -110,62 +110,64 @@ export default function ProfilScreen() {
         memberSince={entitlement?.memberSince ?? null}
       />
 
-      <View className="mt-l">
-        <Overline label="Ihre Mitgliedschaft" />
-        <Card className="mt-2xs">
-          <Row label="Stufe" value={TIER_LABELS[entitlement?.tier ?? 'paid']} />
-          {entitlement?.source && (
-            <>
-              <Hairline className="my-2xs" />
-              <Row label="Zugang über" value={SOURCE_LABELS[entitlement.source]} />
-            </>
-          )}
-          {entitlement?.validUntil && (
-            <>
-              <Hairline className="my-2xs" />
-              <Row label="Läuft bis" value={formatDateShortDe(entitlement.validUntil)} />
-            </>
-          )}
-          {entitlement && entitlement.localAreas.length > 0 && (
-            <>
-              <Hairline className="my-2xs" />
-              <Row label="Lokale Newsletter" value={entitlement.localAreas.join(', ')} />
-            </>
-          )}
-          <Button
-            title="Konto verwalten"
-            variant="secondary"
-            fullWidth
-            onPress={() => openExternal(ACCOUNT_URL)}
-            className="mt-s"
-          />
-          <Typo variant="text-s" color="on-canvas-muted" className="mt-s">
-            Beitrag, Zahlungsweise und Ihre Daten verwalten Sie in Ihrem Konto auf correctiv.org.
-          </Typo>
-        </Card>
-      </View>
+      <SectionCard label="Ihre Mitgliedschaft" className="mt-l">
+        <Row label="Stufe" value={TIER_LABELS[entitlement?.tier ?? 'paid']} />
+        {entitlement?.source && (
+          <>
+            <Hairline className="my-2xs" />
+            <Row label="Zugang über" value={SOURCE_LABELS[entitlement.source]} />
+          </>
+        )}
+        {entitlement?.validUntil && (
+          <>
+            <Hairline className="my-2xs" />
+            <Row label="Läuft bis" value={formatDateShortDe(entitlement.validUntil)} />
+          </>
+        )}
+        {entitlement && entitlement.localAreas.length > 0 && (
+          <>
+            <Hairline className="my-2xs" />
+            <Row label="Lokale Newsletter" value={entitlement.localAreas.join(', ')} />
+          </>
+        )}
+        <Button
+          title="Konto verwalten"
+          variant="secondary"
+          fullWidth
+          onPress={() => openExternal(ACCOUNT_URL)}
+          className="mt-s"
+        />
+        <Typo variant="text-s" color="on-canvas-muted" className="mt-s">
+          Beitrag, Zahlungsweise und Ihre Daten verwalten Sie in Ihrem Konto auf correctiv.org.
+        </Typo>
+      </SectionCard>
 
-      <View className="mt-m">
-        <Overline label="Ihr Impact" />
-        <Card tone="surface" className="mt-2xs">
-          <Typo variant="text-m">
-            {impactLine(entitlement?.memberSince ?? null, impactArticles.length > 0)}
-          </Typo>
-          {impactArticles.map((article) => (
-            <Pressable
-              key={article.url}
-              onPress={() => openArticle(article)}
-              accessibilityRole="link"
-              accessibilityLabel={article.title}
-              className="mt-s active:opacity-70"
-            >
-              <Typo variant="text-m" weight="semibold" numberOfLines={2}>
-                {article.title}
-              </Typo>
-            </Pressable>
-          ))}
-        </Card>
-      </View>
+      <SectionCard label="Ihr Impact" tone="surface" className="mt-m">
+        <Typo variant="text-m">
+          {impactLine(entitlement?.memberSince ?? null, impactArticles.length > 0)}
+        </Typo>
+        {/*
+          A LINK, not a paragraph that happens to be tappable. `<Typo onPress>`
+          opens the reader, and MEASURED in the render tree it carried no
+          `accessibilityRole` and no `accessibilityLabel` — so TalkBack and
+          VoiceOver read the headline out with nothing to say it can be opened,
+          and a tap gave no feedback. The `Pressable` carries the role, the name
+          and the press state; the `Typo` keeps the type.
+        */}
+        {impactArticles.map((article) => (
+          <Pressable
+            key={article.url}
+            onPress={() => openArticle(article)}
+            accessibilityRole="link"
+            accessibilityLabel={article.title}
+            className="mt-s active:opacity-70"
+          >
+            <Typo variant="text-m" weight="semibold" numberOfLines={2}>
+              {article.title}
+            </Typo>
+          </Pressable>
+        ))}
+      </SectionCard>
 
       <View className="mt-m">
         <Overline label="Ihr Bereich" />
@@ -199,22 +201,19 @@ export default function ProfilScreen() {
         </View>
       </View>
 
-      <View className="mt-m">
-        <Overline label="Newsletter" />
-        <Card className="mt-2xs">
-          {NEWSLETTERS.map((newsletter, i) => (
-            <View key={newsletter.key}>
-              {i > 0 && <Hairline className="my-2xs" />}
-              <SettingRow
-                label={newsletter.label}
-                description={newsletter.description}
-                value={settings.newsletter[newsletter.key]}
-                onValueChange={(value) => actions.settings.setNewsletter(newsletter.key, value)}
-              />
-            </View>
-          ))}
-        </Card>
-      </View>
+      <SectionCard label="Newsletter" className="mt-m">
+        {NEWSLETTERS.map((newsletter, i) => (
+          <View key={newsletter.key}>
+            {i > 0 && <Hairline className="my-2xs" />}
+            <SettingRow
+              label={newsletter.label}
+              description={newsletter.description}
+              value={settings.newsletter[newsletter.key]}
+              onValueChange={(value) => actions.settings.setNewsletter(newsletter.key, value)}
+            />
+          </View>
+        ))}
+      </SectionCard>
     </Screen>
   );
 }

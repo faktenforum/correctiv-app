@@ -89,21 +89,34 @@ export function LiveBanner({ subtitle = '24/7 aus Bottrop' }: { subtitle?: strin
           Salon5 Radio
         </Typo>
         {/*
-          ONE LINE, because a stream announces titles nobody chose. MEASURED on GTK
-          4.22.4: a `Gtk.Label` wraps at word boundaries, so its minimum width is its
-          longest WORD, and a station that announced its track as
-          „20260901_Gamescom_Laberpocast_Sophie_Amelie" — one token, no break in it —
-          made that minimum 358 px at two lines and pinned this card, and with it the
-          whole window, open. At one line `ellipsize` is allowed to do the work and
-          the minimum is 13 px for any text at all: 13 against 358 for that token, 13
-          against 32 for an ordinary title.
+          ONE LINE, and the one change in this file a reader will see on the phone:
+          a long now-playing title ellipsizes here instead of taking a second line.
 
-          Seen in the running app as the station changed track: „Cleo Sol - Sweet Blue
-          (Official Video)" gave the page a minimum of 234 px, the filename above gave
-          it 439. It is not the LENGTH — it is that the token has no space in it.
+          It is a stream announcing titles nobody chose, and that is what makes the
+          second line expensive. A `Gtk.Label` breaks at word boundaries, so its
+          minimum width is its longest WORD — and the station announced a track as
+          "20260901_Gamescom_Laberpocast_Sophie_Amelie", one token with no break in
+          it. At two lines that minimum became the card's, and the card's became
+          the window's, so the window could not be made narrower than the filename;
+          at one line ellipsizing is allowed to do the work instead. It is not the
+          length, it is that the token has no space in it. Measured on the host
+          [ADR 0012](../../../../../adr/0012-a-list-virtualizer-for-the-unbounded-lists.md)
+          names as a reason, and the pixels are in that host's README on the
+          `desktop` branch rather than repeated here.
 
-          The cost is that a long ordinary title now ellipsizes instead of taking a
-          second line, which is what a now-playing line does everywhere else.
+          On the phone this brings the line into agreement with the other place
+          the app shows what is playing rather than what is on offer:
+          `MiniPlayer`'s title is one line. `EpisodeRow` keeps two, and that is
+          the distinction — an episode title is a thing somebody chose from a
+          list, a track announcement is whatever the stream said.
+
+          In the browser it swaps `react-native-web`'s two-line rule for its
+          one-line one, eighteen computed properties including `-webkit-line-clamp`
+          and `display`. Read off the running target: at 393px only the specimen
+          with the unbreakable title changes box, from two lines to one. At 320px
+          the ordinary `Sondersendung aus Bottrop` ellipsizes as well, because 25
+          characters no longer fit a line at that width. That is the trade, at the
+          width where it bites.
         */}
         <Typo variant="text-s" color="always-light" numberOfLines={1} className="opacity-70">
           {line}

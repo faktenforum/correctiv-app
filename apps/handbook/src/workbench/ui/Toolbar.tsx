@@ -6,6 +6,7 @@ import { Button } from '../../ui/kit/button';
 import { Segmented } from '../../ui/kit/segmented';
 import { Separator } from '../../ui/kit/separator';
 import { Tooltip, TooltipContent, TooltipTrigger } from '../../ui/kit/tooltip';
+import { Pages } from './Pages';
 import { DEVICES, HOST_DEVICE } from '../devices';
 import { ROUTES } from '../routes';
 import { frameSize, writeHash, type PreviewState } from '../state';
@@ -58,6 +59,15 @@ export function Toolbar({ state, routeField, onRouteField, onChange, onReload, o
    * anything are two rows of the app nobody can see.
    */
   const host = state.device === HOST_DEVICE;
+  /*
+   * Read off the frame, never off `state.landscape`. That flag swaps the two
+   * numbers, and it only reads as "landscape" while every pair is written
+   * portrait-first. Two things are not: a custom size is whatever was typed into
+   * the fields, and the presets above tablet size are written the way a laptop is
+   * used. Measured on `d=desktop` before this line existed, the control had
+   * "Portrait" lit beside a 1440 × 900 frame.
+   */
+  const landscape = size.w > size.h;
 
   return (
     <div
@@ -140,12 +150,14 @@ export function Toolbar({ state, routeField, onRouteField, onChange, onReload, o
           name="orientation"
           legend="Orientation"
           className="shrink-0"
-          value={state.landscape ? 'landscape' : 'portrait'}
+          value={landscape ? 'landscape' : 'portrait'}
           options={[
             { value: 'portrait', label: 'Portrait' },
             { value: 'landscape', label: 'Landscape' },
           ]}
-          onChange={(value) => onChange({ landscape: value === 'landscape' })}
+          // A radio group fires only when the value actually changes, so the one
+          // thing ever being asked for here is the other way round.
+          onChange={() => onChange({ landscape: !state.landscape })}
         />
       )}
 
@@ -165,6 +177,8 @@ export function Toolbar({ state, routeField, onRouteField, onChange, onReload, o
           ))}
         </select>
       )}
+
+      <Pages onPick={(route) => onChange({ route })} />
 
       <input
         className={cn(FIELD, 'min-w-[8rem] flex-1 font-mono')}

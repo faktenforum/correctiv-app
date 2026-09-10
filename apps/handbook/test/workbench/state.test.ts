@@ -1,6 +1,12 @@
 import { describe, expect, it } from 'vitest';
 
-import { INITIAL, parseHash, writeHash, type PreviewState } from '../../src/workbench/state';
+import {
+  frameSize,
+  INITIAL,
+  parseHash,
+  writeHash,
+  type PreviewState,
+} from '../../src/workbench/state';
 
 describe('the hash contract', () => {
   it('round-trips a full state, because a link is the shell only persistence', () => {
@@ -62,5 +68,30 @@ describe('the hash contract', () => {
 
   it('treats an empty hash as the default view', () => {
     expect(parseHash('')).toEqual(INITIAL);
+  });
+});
+
+/**
+ * `landscape` swaps the two numbers. It does not mean landscape.
+ *
+ * Those were the same sentence while every preset was written portrait-first,
+ * and they stopped being one when the presets above tablet size arrived written
+ * the way a laptop is used. The toolbar therefore names the orientation from what
+ * comes out of here, and this pins the half it reads: rewrite `desktop` as
+ * 900 × 1440 and the control it drives starts disagreeing with the frame again.
+ */
+describe('the frame that comes out of a preset', () => {
+  const at = (device: string, landscape = false) => frameSize({ ...INITIAL, device, landscape });
+
+  it('keeps the pair as written, and turns it when asked', () => {
+    expect(at('iphone-se')).toEqual({ w: 375, h: 667 });
+    expect(at('iphone-se', true)).toEqual({ w: 667, h: 375 });
+    expect(at('desktop')).toEqual({ w: 1440, h: 900 });
+    expect(at('desktop', true)).toEqual({ w: 900, h: 1440 });
+  });
+
+  /** Its size is the box the stage measures, which this function cannot see. */
+  it('answers zero for the host', () => {
+    expect(at('host')).toEqual({ w: 0, h: 0 });
   });
 });

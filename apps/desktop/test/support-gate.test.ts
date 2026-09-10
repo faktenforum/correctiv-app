@@ -42,7 +42,7 @@
  * a prose table in `src/shims/react-native.tsx`'s header today — and then this file can
  * assert the difference. Until then `npm run route-sweep` is the only oracle, and it
  * needs a GTK session, a built bundle and an admitted profile.
- * ([ADR 0026](../../../adr/0026-re-exported-screens-and-a-variant-where-the-host-refuses.md))
+ * ([ADR 0027](../../../adr/0027-re-exported-screens-and-a-variant-where-the-host-refuses.md))
  */
 
 import { readdirSync, readFileSync, statSync } from 'node:fs';
@@ -78,7 +78,7 @@ const DESKTOP_SRC = resolve(__dirname, '..', 'src');
  * passed. There is no oracle for it either: the published prop table answers "is this
  * prop accepted on this primitive" and nothing published answers "does this element
  * make its parent an overlay". The entry was re-checked because the whole 0.47 → 0.48
- * ledger was, and ADR 0026's second addendum says so rather than leaving it implied.
+ * ledger was, and ADR 0027's second addendum says so rather than leaving it implied.
  */
 const ANSWERED_BY_A_DESKTOP_VARIANT: Readonly<
   Record<string, { readonly where: string; readonly importableAnyway?: string }>

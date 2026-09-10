@@ -24,7 +24,6 @@ const HERE = dirname(fileURLToPath(import.meta.url));
 const ROOT = join(HERE, '../..');
 const SPEC = join(HERE, 'spec.json');
 const PAGE = 'Bausteine';
-const SKETCH_PAGE = 'Bausteine, Wireframe';
 
 // ---------------------------------------------------------------- the scales
 //
@@ -218,10 +217,20 @@ const CLAIM_TONES = [
 /** A chevron, a switch, an icon: glyphs until the spec learns to carry vectors. */
 const CHEVRON = '›';
 
+/**
+ * The label, at the size and tracking `Badge.tsx` overrides, and NOT in bold.
+ *
+ * It said bold until 2026-09-10, and the app never has: `Badge.tsx` applies
+ * `typography['text-s']` and overrides only size, tracking and case, so the cut is
+ * `text-s`'s own, which is regular. Measured off the app's rendering rather than
+ * read off this file, and worth saying how: on web every cut computes as
+ * `font-weight: 400` because `theme/fonts.ts` loads one file per weight and puts
+ * the weight in the FAMILY name, so the family is the only honest reading. It is
+ * `SourceSans3_400Regular`.
+ */
 function badgeLabel(color) {
   return ty('text-s', {
     chars: 'CLUB',
-    weight: 'bold',
     size: 11,
     tracking: Math.round((0.4 / 11) * 10000) / 100,
     color: color,
@@ -333,7 +342,9 @@ const KIT = [
     // card off the profile screen; `Card.tsx` is twelve lines and holds no copy.
     // The dashed slot is what a Figma component cannot express: an instance may
     // override text and visibility, never add children. Cards that DO carry content
-    // are their own components in the app, or should be — seventeen are still inline.
+    // are their own components in the app: the group label over one card has been
+    // `SectionCard` since 2026-09-10, and sixteen call sites use it. The kit still
+    // cannot hold that component, for the reason above.
     t: 'variants',
     name: 'ui/Card',
     prop: 'Ton',
@@ -346,7 +357,10 @@ const KIT = [
         value: value,
         dir: 'V',
         w: 280,
-        pad: [S.sm, S.sm, S.sm, S.sm],
+        // `spacing-m`, which is 24 and not the 16 this said until 2026-09-10.
+        // `Card.tsx` has always written `p-m`; the drift check against the measured
+        // rendering is what noticed, and nothing before it could have.
+        pad: [S.m, S.m, S.m, S.m],
         radius: R.md,
         fill: surface,
         children: [
@@ -880,8 +894,192 @@ function sourceProps(source, component) {
   return [...new Set(out)];
 }
 
+/**
+ * Everything `measure.mjs` read off the app, which is the rest of the kit.
+ *
+ * Thirteen components are described by hand above and stay that way, for one
+ * reason that is not sentiment: they carry Figma component properties, and the
+ * sixty-three instances `use-kit.mjs` put in the screens override text through
+ * them. A measured description has no properties — nothing in a rendering says
+ * which text a designer should be able to change — so swapping them out would
+ * leave every "Button, Anmelden" on the board without its label.
+ *
+ * What the measurement does for those thirteen instead is check them. The badge's
+ * label was bold here and regular in the app for as long as this file has existed,
+ * and nothing could have noticed.
+ */
+const measured = JSON.parse(await readFile(join(HERE, 'measured.json'), 'utf8'));
+
+const byHand = {};
+for (const entry of KIT) byHand[entry.name] = entry;
+
+/**
+ * The fields a difference in would be visible, and the ones a rendering can answer.
+ *
+ * `gap` is not among them: the app writes the space between two children as a margin
+ * on one of them, which the measurement turns into a `space` node, so the two
+ * descriptions say the same thing in different words and comparing them reports a
+ * difference on every row.
+ */
+const COMPARED = ['dir', 'pad', 'radius', 'fill', 'stroke', 'strokeSides'];
+
+/**
+ * What a node SAYS, in one shape, so two descriptions of it can be held side by side.
+ *
+ * A `line` spells its colour `color` where a frame spells it `fill`, and a box with
+ * nothing in it lays nothing out, so its `dir` says nothing about the drawing either.
+ * Normalising both sides once is what keeps this about values rather than spellings.
+ */
+function fields(node) {
+  const leaf = (node.children ?? []).length === 0;
+  return {
+    dir: leaf ? undefined : node.dir,
+    pad: node.pad,
+    radius: node.radius,
+    fill: node.fill ?? node.color,
+    stroke: node.stroke,
+    strokeSides: node.strokeSides,
+  };
+}
+
+/** A text node and a box have no field in common worth comparing. */
+function kind(node) {
+  return (node.t ?? 'frame') === 'text' ? 'text' : 'box';
+}
+
+/**
+ * `@spacing-2xs` and `6` are the same padding, so compare values and not spellings.
+ *
+ * Only the scales: a colour is a token name on both sides already, and resolving one
+ * to a hex would make `accent` and `red-500` compare equal, which is the difference
+ * the measurement went to some trouble to keep.
+ */
+function resolved(value) {
+  if (Array.isArray(value)) return value.map(resolved);
+  if (typeof value !== 'string' || value.charAt(0) !== '@') return value;
+  const name = value.slice(1);
+  return /^(spacing|radius)-/.test(name) ? px(name) : value;
+}
+
+function differences(hand, seen, where, out) {
+  // Step through a ground the app does not paint. `ui/Hairline` is described here as
+  // a `line` inside a 280px frame the colour of the page, because a component that
+  // IS one pixel of `stroke` cannot be picked up on the board; the app's Hairline is
+  // that line and nothing else, so the measurement's root is the line. Comparing the
+  // two roots reported the ground's colour as drift in the component, which is worse
+  // than reporting nothing: a line that is wrong teaches the reader to skip the ones
+  // that are not.
+  if ((seen.children ?? []).length === 0 && (hand.children ?? []).length === 1) {
+    hand = hand.children[0];
+  }
+  if (kind(hand) !== kind(seen)) return;
+  const ours = fields(hand);
+  const theirs = fields(seen);
+  for (const key of COMPARED) {
+    if (key === 'fill' && ours[key] !== undefined && theirs[key] === undefined) continue;
+    const a = JSON.stringify(resolved(ours[key]));
+    const b = JSON.stringify(resolved(theirs[key]));
+    if (a !== b) out.push(`${where}.${key}: drawn ${a ?? 'nothing'}, measured ${b ?? 'nothing'}`);
+  }
+  const handText = (hand.children || []).filter((c) => c.t === 'text');
+  const seenText = (seen.children || []).filter((c) => c.t === 'text');
+  for (const [i, one] of handText.entries()) {
+    const other = seenText[i];
+    if (other === undefined) continue;
+    for (const key of ['size', 'weight']) {
+      const a = one[key] ?? (key === 'weight' ? 'regular' : undefined);
+      const b = other[key] ?? (key === 'weight' ? 'regular' : undefined);
+      if (a !== b) out.push(`${where} text ${i}.${key}: drawn ${a}, measured ${b}`);
+    }
+  }
+}
+
+const drift = [];
+for (const [name, entry] of Object.entries(measured)) {
+  const hand = byHand[name];
+  if (hand === undefined) continue;
+  const ours = hand.options ?? [hand];
+  const theirs = entry.options ?? (Array.isArray(entry) ? entry : [entry]);
+  // By variant value where there is one, because the hand-written order is this
+  // file's and the measured order is the catalogue's, and lining them up by index
+  // would report a difference for every option whenever the two disagree.
+  const seen = {};
+  for (const [i, one] of theirs.entries()) seen[one.value ?? i] = one;
+  for (const [i, one] of ours.entries()) {
+    const other = seen[one.value ?? i];
+    if (other !== undefined) differences(one, other, `${name}[${one.value ?? i}]`, drift);
+  }
+}
+
+// Everything the hand-written list does not already carry, drawn from what the app
+// actually renders.
+const fromMeasurement = [];
+for (const [name, entry] of Object.entries(measured)) {
+  if (byHand[name] !== undefined) continue;
+  for (const one of Array.isArray(entry) ? entry : [entry]) {
+    KIT.push(one);
+    fromMeasurement.push(one.name);
+  }
+}
+
 const problems = [];
 const gaps = [];
+
+/**
+ * A scale name in a numeric position has to name a number.
+ *
+ * The interpreter resolves `@spacing-2xs` to six before it draws, and a name the
+ * table does not have resolves to nothing — which reaches Figma as a string where
+ * it wants a number and stops the draw dead, halfway down a page, with the console
+ * inside Figma as the only witness. `gap-y-2xs` produced exactly that: the class
+ * names an axis, the token does not, and `@spacing-y-2xs` is nobody.
+ *
+ * Cheap to check here and expensive to find there, which is the whole argument.
+ */
+// The same positions `resolveScales` resolves in `code.js`, and the two lists have to
+// stay the same list: a position the interpreter resolves and this does not check is
+// a position where a bad name reaches Figma, which is the failure this exists to stop.
+const NUMERIC = [
+  'w',
+  'h',
+  'x',
+  'y',
+  'gap',
+  'crossGap',
+  'radius',
+  'size',
+  'tracking',
+  'leading',
+  'strokeWeight',
+];
+
+function checkScales(node, where) {
+  if (Array.isArray(node)) {
+    for (const [i, child] of node.entries()) checkScales(child, `${where}[${i}]`);
+    return;
+  }
+  if (node === null || typeof node !== 'object') return;
+  const named = (value) => typeof value === 'string' && value.charAt(0) === '@';
+  const number = (value) => {
+    // `px` throws on a name the stylesheet has not got, which is the answer here.
+    try {
+      return Number.isFinite(px(value.slice(1)));
+    } catch {
+      return false;
+    }
+  };
+  for (const key of NUMERIC) {
+    if (named(node[key]) && !number(node[key])) {
+      problems.push(`${node.name ?? where}.${key} is "${node[key]}", which names no number`);
+    }
+  }
+  for (const [i, one] of (Array.isArray(node.pad) ? node.pad : []).entries()) {
+    if (named(one) && !number(one)) {
+      problems.push(`${node.name ?? where}.pad[${i}] is "${one}", which names no number`);
+    }
+  }
+  for (const key of Object.keys(node)) checkScales(node[key], `${where}.${key}`);
+}
 
 for (const entry of KIT) {
   const plan = AUDIT[entry.name];
@@ -929,27 +1127,66 @@ for (const entry of KIT) {
 // options, so a column that fits `ui/Typo` (eleven of them) wastes a screen on
 // `ui/Hairline`. Three columns, each with its own running y.
 
-const COLUMN_X = [0, 460, 920];
-const columnY = [0, 0, 0];
-const HEADS = ['ui/Typo, Textstile', 'ui/Button', 'profile/NavCard'];
+/**
+ * One wrapping row, and Figma does the packing.
+ *
+ * Three hand-set columns fitted thirteen entries. Then a run of guessed heights
+ * (`120 + options * 90`) tried to pack fifty-two and produced a page of components
+ * lying on top of one another, because the guess is nowhere near a real size: an
+ * `ArticleRow` is four hundred wide and the type sheet is a screen tall, and neither
+ * number exists before Figma has drawn them.
+ *
+ * So nothing here says where anything goes. The kit is one auto-layout frame with
+ * `WRAP`, a fixed width and generous gaps; every entry hugs its own content and
+ * Figma flows them. `owned: '*'` still sweeps the page, and now there is one child
+ * to sweep.
+ */
+const board = {
+  t: 'frame',
+  name: 'Kit',
+  dir: 'H',
+  wrap: true,
+  w: 4400,
+  gap: 72,
+  crossGap: 96,
+  cross: 'MIN',
+  pad: [64, 64, 64, 64],
+  children: KIT,
+};
 
-const screens = [];
-let column = -1;
+// The board and not only its children, so the frame that packs them is checked too,
+// and the text styles, whose `size` is a numeric position outside any page.
+checkScales(board, 'kit');
+checkScales(TEXT_STYLES, 'textStyles');
+
+/**
+ * A kit entry has to BE a component, or nothing on the board can point at it.
+ *
+ * `t` decides which constructor runs, and a frame draws exactly like a component
+ * until somebody tries to instance it. The measured entries said `frame` for a
+ * while and looked perfectly right on the page: fifty-two things that no screen
+ * could ever use. The variant sets said it too, and that one at least announced
+ * itself, with `combineAsVariants` refusing a set whose children are not
+ * components — halfway down the page, from inside Figma.
+ */
 for (const entry of KIT) {
-  if (HEADS.indexOf(entry.name) !== -1) column++;
-  const at = Math.max(column, 0);
-  const placed = { t: entry.t, name: entry.name, x: COLUMN_X[at], y: columnY[at] };
-  for (const key of Object.keys(entry)) if (key !== 't' && key !== 'name') placed[key] = entry[key];
-  screens.push(placed);
-  // Enough room for the tallest variant set; the exact height is only known in Figma.
-  const options = entry.options ? entry.options.length : 1;
-  columnY[at] += 120 + options * 90;
+  if (entry.t === 'component' || entry.t === 'variants') continue;
+  // The one deliberate exception, and it says so in its own name.
+  if (entry.name === 'ui/Typo, Textstile') continue;
+  problems.push(`${entry.name} is a "${entry.t}", so nothing can instance it`);
 }
 
 // Refuse BEFORE writing, for the same reason `use-kit.mjs` does: throwing after the
 // file is on disk stops the script and not the damage, and ADR 0021 claims this fails
 // rather than emitting a kit that is quietly incomplete.
 for (const gap of gaps) console.log(`  gap: ${gap}`);
+for (const line of drift) console.log(`  drift: ${line}`);
+if (fromMeasurement.length > 0) {
+  console.log(
+    `  ${fromMeasurement.length} components drawn from the measurement, with no prop` +
+      ` accounting yet: ${fromMeasurement.join(', ')}`,
+  );
+}
 if (problems.length > 0) {
   for (const problem of problems) console.error(`  MISSING: ${problem}`);
   throw new Error(`${problems.length} prop(s) the kit does not account for`);
@@ -957,32 +1194,25 @@ if (problems.length > 0) {
 
 const spec = JSON.parse(await readFile(SPEC, 'utf8'));
 spec.textStyles = TEXT_STYLES;
-spec.pages = (spec.pages || []).filter((p) => p.name !== PAGE && p.name !== SKETCH_PAGE);
 
-// One kit per rendering, from one description — the same trade the screens make.
-// A screen page drawn as a sketch has to instance a sketched kit, or the wireframe
-// fills with the app's real colours and stops being a wireframe. The components
-// carry the same names in both, and an instance resolves against the mode of the
-// page it lands on.
-for (const [name, mode] of [
-  [PAGE, 'replica'],
-  [SKETCH_PAGE, 'wireframe'],
-]) {
-  spec.pages.push({
-    name: name,
-    mode: mode,
-    // The kit is the only thing on these pages, so they sweep themselves rather than
-    // naming what they made: a component that loses its name would otherwise stay.
-    owned: '*',
-    screens: JSON.parse(JSON.stringify(screens)),
-  });
-}
+// The wireframe rendering went on 2026-09-10, and its two pages with it: this file
+// used to write the kit twice, once per mode, and `Wireframes` held the screens as a
+// pencil sketch. `code.js` no longer knows what a mode is.
+spec.pages = (spec.pages || []).filter((p) => p.name !== PAGE && p.mode !== 'wireframe');
+for (const page of spec.pages) delete page.mode;
+
+spec.pages.push({
+  name: PAGE,
+  // The kit is the only thing on this page, so it sweeps itself rather than naming
+  // what it made: a component that loses its name would otherwise stay.
+  owned: '*',
+  screens: [board],
+});
 await writeFile(SPEC, `${JSON.stringify(spec, null, 2)}\n`);
 
-const sets = screens.filter((s) => s.t === 'variants');
-console.log(`two kit pages: "${PAGE}" and "${SKETCH_PAGE}"`);
+const sets = board.children.filter((s) => s.t === 'variants');
 console.log(
-  `${screens.length - 1} components on "${PAGE}" (${sets.length} variant sets, ` +
+  `${board.children.length} components on "${PAGE}" (${sets.length} variant sets, ` +
     `${sets.reduce((n, s) => n + s.options.length, 0)} variants), ` +
     `${TEXT_STYLES.length} text styles`,
 );

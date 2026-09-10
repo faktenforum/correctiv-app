@@ -4,7 +4,7 @@ Three GitHub Actions workflows live in `.github/workflows/`:
 
 | Workflow | File | Trigger | What it does |
 | --- | --- | --- | --- |
-| **CI** | `ci.yml` | every PR, push to `main` | Checks, web export, and an Android release APK as a compile check. No secrets needed. |
+| **CI** | `ci.yml` | every PR, push to `main` | Checks and the web export, always. An Android release APK as a compile check, only when the change could reach it: the first job reads the changed files, and a change confined to the handbook, `tools/`, the ADRs, the screenshots or a root `.md` skips a quarter of an hour. No secrets needed. |
 | **Pages** | `pages.yml` | push to `main` (or manual) | Builds the handbook and the Expo web export, assembles them into one artifact, and publishes it to <https://faktenforum.github.io/correctiv-app/>. The handbook is the root; the app is at `/app/`. No secrets needed. |
 | **Release Android** | `release-android.yml` | push of a `v*` tag (or manual) | Builds the APK and signs it, with your upload key when the secrets are set and otherwise with the bundled **test key**. Attaches it to the GitHub Release. |
 
@@ -76,6 +76,13 @@ The tag also drives the app version: `vX.Y.Z` becomes `versionName X.Y.Z`, and t
 workflow run number becomes the `versionCode` (Play requires it to increase on every
 upload). `apps/mobile/app.json` is patched only inside CI. The change is not
 committed.
+
+That is also why a release builds the app again from nothing rather than picking up
+the APK `ci.yml` already built for the same commit: both numbers are compiled into
+the artifact, and the tag does not exist yet when CI runs. The release build is also
+the wider one, all four ABIs against CI's two, so the two are not the same APK even
+before the version. What can be saved is the build CI runs when it has nothing to
+say, and it now skips those.
 
 The APK is re-signed after Gradle builds it. Gradle signs the release variant with
 the Expo template's debug key, which is **generated per machine**: two builds of the

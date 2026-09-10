@@ -30,7 +30,7 @@
 // state machine would jump the article by the strip's own height on every change of
 // direction.
 //
-// That is cause 2 in [ADR 0026](../../../adr/0026-re-exported-screens-and-a-variant-where-the-host-refuses.md),
+// That is cause 2 in [ADR 0027](../../../adr/0027-re-exported-screens-and-a-variant-where-the-host-refuses.md),
 // a platform idiom an ADR already argues for, not cause 3, an import the support table
 // refuses. Cause 3 is struck through there.
 //

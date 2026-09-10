@@ -145,6 +145,17 @@
       }
     },
     {
+      // The frame's page list, and the same argument as the palette above, which
+      // is the interaction this repeats one bar down: the dialog is opened by an
+      // explicit click and exists for nothing but typing a page name, so focusing
+      // the field is what the click asked for. Only this one rule, because unlike
+      // the palette this list needs no role of its own — `cmdk` owns the options.
+      "files": ["apps/handbook/src/workbench/ui/Pages.tsx"],
+      "rules": {
+        "jsx-a11y/no-autofocus": "off"
+      }
+    },
+    {
       // The search screen exists for nothing but searching, and it is only ever
       // reached by an explicit tap on the search entry — so focusing the field is
       // what the user just asked for, and it saves a second tap plus a keyboard

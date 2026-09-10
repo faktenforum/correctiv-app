@@ -23,6 +23,17 @@ import { sizes, useColors, useIsDark } from '@/lib/theme';
  * Links are intercepted: a correctiv.org article pushes another reader, anything
  * else goes to the system browser. The rule itself is `readerNavigation`, which
  * carries the cases and their history.
+ *
+ * **No `ErrorBoundary` of its own**, deliberately, although a route file may export
+ * one. The root layout's covers this route like every other, and neither fault this
+ * screen actually has is one a React boundary could improve on: the load is caught
+ * below and answered in place, with a headline, a retry and a way into the browser,
+ * and whatever goes wrong inside the WebView's own document never surfaces as a
+ * React render error at all. A second boundary here would mean a third error
+ * presentation on this screen, reached by nothing, and the one nobody sees is the
+ * one that rots. Keeping the navigator alive through a screen fault is a different
+ * job, and `unstable_settings.screenErrorBoundary` on the root layout is where it
+ * would be done, for every screen at once rather than for this one.
  */
 export default function ArtikelScreen() {
   const colors = useColors();

@@ -19,6 +19,8 @@ export { Screen } from './Screen';
 export type { ScreenProps } from './Screen';
 export { ScreenHeader } from './ScreenHeader';
 export type { ScreenHeaderProps } from './ScreenHeader';
+export { SectionCard } from './SectionCard';
+export type { SectionCardProps } from './SectionCard';
 export { SectionHeader } from './SectionHeader';
 export type { SectionHeaderProps } from './SectionHeader';
 export { Thumbnail } from './Thumbnail';

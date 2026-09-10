@@ -45,7 +45,12 @@
           }
         }
       ],
-      "expo-video",
+      [
+        "expo-video",
+        {
+          "supportsBackgroundPlayback": true
+        }
+      ],
       "expo-font",
       "expo-image",
       "expo-status-bar",

@@ -10,7 +10,7 @@ import { fileKey } from '@correctiv/app-core/services/cache.service';
 import { PERSISTED_KEYS as SESSION_KEYS } from '@correctiv/app-core/stores/session';
 import { PERSISTED_KEYS as SETTINGS_KEYS } from '@correctiv/app-core/stores/settings';
 
-import { applyFixture, FIXTURES } from '../../src/workbench/frame/seed';
+import { applyFixture, FIXTURES, holdTheDoorOpen } from '../../src/workbench/frame/seed';
 
 /**
  * The shell writes the app's storage directly, so it has to know four things the
@@ -128,5 +128,71 @@ describe('the storage layout the shell copies', () => {
     applyFixture(store, 'fresh');
 
     expect(Object.keys(store)).toEqual([]);
+  });
+});
+
+/**
+ * The frame on `/components` opens the door for itself, and a wipe there would be
+ * a page that clears the reader's demo app because they opened a row. So this is
+ * the one writer in the file that must not use `clearApp`, and the assertion is
+ * about what it leaves standing rather than what it writes.
+ */
+describe('holding the door open', () => {
+  const OTHER = 'kv:store.savedArticles';
+
+  it('leaves every other key alone', () => {
+    const store = new FakeStorage() as unknown as Storage;
+    store.setItem(OTHER, JSON.stringify({ items: [{ url: 'https://example.org' }] }));
+    store.setItem('blob:feeds/abc.json', '{"data":[]}');
+
+    holdTheDoorOpen(store);
+
+    expect(store.getItem(OTHER)).toContain('example.org');
+    expect(store.getItem('blob:feeds/abc.json')).toBe('{"data":[]}');
+    expect(payload(store, 'session').entitlement).toMatchObject({ appAccess: true });
+  });
+
+  it('leaves a session that is already through the door as it is', () => {
+    const store = new FakeStorage() as unknown as Storage;
+    const mine = {
+      account: { email: 'me@example.org', name: 'Me' },
+      entitlement: { tier: 'paid', appAccess: true },
+    };
+    store.setItem('kv:store.session', JSON.stringify(mine));
+
+    holdTheDoorOpen(store);
+
+    expect(payload(store, 'session')).toEqual(mine);
+  });
+
+  it('writes over a session that is shut, or unreadable', () => {
+    for (const raw of [JSON.stringify({ entitlement: { appAccess: false } }), 'not json']) {
+      const store = new FakeStorage() as unknown as Storage;
+      store.setItem('kv:store.session', raw);
+
+      holdTheDoorOpen(store);
+
+      expect(payload(store, 'session').entitlement).toMatchObject({ appAccess: true });
+    }
+  });
+
+  /**
+   * A browser with site data switched off throws on every accessor, and this is
+   * called from an effect: measured against such a store, `/components` rendered
+   * its error boundary and none of its 46 rows, because the write that answers a
+   * failed read sat in that read's own `catch`. A frame that draws the door is
+   * the correct outcome here, and it is only reachable if this returns.
+   */
+  it('says nothing when the store refuses both the read and the write', () => {
+    const blocked = {
+      getItem: () => {
+        throw new Error('The operation is insecure.');
+      },
+      setItem: () => {
+        throw new Error('The operation is insecure.');
+      },
+    } as unknown as Storage;
+
+    expect(() => holdTheDoorOpen(blocked)).not.toThrow();
   });
 });

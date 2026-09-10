@@ -11,9 +11,10 @@ export const PAGE_TITLES: Record<string, string> = {
   '/': 'CORRECTIV app handbook',
   '/handbook': 'Handbook',
   ...Object.fromEntries(DIAGRAMS.map((d) => [`/diagrams/${d.id}`, d.title])),
+  '/components': 'Components, the app’s own',
   '/design': 'Design, the Figma file',
   '/diagrams': 'Architecture diagrams',
-  '/reference': 'Reference',
+  '/reference': 'Reference, the core',
   '/sources': 'Sources status board',
   '/workbench': 'Workbench',
 };
@@ -26,4 +27,15 @@ export const PAGE_TITLES: Record<string, string> = {
  */
 export function symbolId(subpath: string, name: string): string {
   return `s-${subpath.replace(/\//g, '-')}-${name}`;
+}
+
+/**
+ * The same, for a component, and the platform is part of it.
+ *
+ * `media/VideoFrame` is two components with one name, one for the device and one
+ * for the web, and an anchor that ignored the difference would send both halves
+ * of the palette to whichever row rendered first.
+ */
+export function componentId(group: string, name: string, platform: string | null): string {
+  return `c-${group}-${name}${platform ? `-${platform}` : ''}`;
 }
