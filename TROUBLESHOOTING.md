@@ -158,13 +158,31 @@ equivalents for focus, liveness and errors.
   handle is present, which is the tell for a `--dev` bundle. The published
   workbench therefore has no store handle, and it says so on the panels that
   need one. The same limit applies to the dev server, which is a `--dev` bundle
-  by definition: locally the route field reaches the app's first screen and no
-  further. Driving the app's own router instead of its address bar was tried on
-  2026-09-05, by putting `router` on the dev handle: it moves the URL and not
+  by definition, ~~so locally the route field reaches the app's first screen and no
+  further~~. Driving the app's own router instead of its address bar was tried on
+  2026-09-05, by putting `router` on the dev handle: it moved the URL and not
   the rendered tree, for `replace`, `navigate` and a group-qualified path alike,
-  so it is not the fix and was not kept. To walk the app's routes today, open
-  the app's own dev server directly at `localhost:8081/` and give up the
-  inspector while you do, or serve a static export with
+  ~~so it is not the fix and was not kept~~.
+
+  It is the fix, with a second half the 2026-09-05 attempt did not have.
+  Re-measured on 2026-09-10 against both servers: the route field walks the whole
+  app, and a reload inside the frame stays in it. `driveRoute` in
+  `apps/handbook/src/workbench/frame/handle.ts` sends the frame through the app's
+  router; `keepFramePath` puts the base back on the address afterwards, because the
+  **same fork skips `appendBaseUrl` in development too** — so every navigation, the
+  shell's and a tap in the app alike, writes a path on the *handbook's* origin, and
+  a reload from there leaves the app entirely. That base-less address stands for at
+  most one poll tick: sampled every 50 ms, the base was back within 50 ms of a driven
+  route and within 250 ms of a tap. Nothing closes that window from the app side,
+  because `router.navigate` only queues an action and the address has not moved yet
+  when the call returns. The poll must therefore ignore the route it reads inside the
+  window, or it writes the frame straight back to where it came from.
+
+  What still has no way in is a route opened in its own tab: `/app/entdecken` typed
+  into the address bar renders the app's own 404 against the dev server, which is
+  what the workbench's "open in a new tab" button does and what the Build panel now
+  says. For that, open the app's own dev server directly at `localhost:8081/` and
+  give up the inspector while you do, or serve a static export with
   `screens/tools/serve-clean.mjs`.
 - **Serving a static export without clean URLs** makes Expo Router render its
   *unmatched route* page. That looks like an app bug and is a server bug. → Map `/artikel` →

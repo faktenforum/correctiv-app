@@ -6,7 +6,7 @@ import type { Scheme } from './tokens';
  *
  * Structural on purpose: importing the real types would drag `apps/mobile`'s
  * React Native TypeScript project into this package, and this package is meant
- * to know nothing about React Native. What it needs is three verbs, and the
+ * to know nothing about React Native. What it needs is four verbs, and the
  * app's own doc comment (`apps/mobile/src/lib/store/core.ts`, `DevHandle`) is
  * the other side of this declaration.
  */
@@ -20,6 +20,12 @@ export interface DevHandle {
     settings: { setTheme(theme: ThemeSetting): unknown };
   } & Record<string, unknown>;
   resetStore: () => unknown;
+  /**
+   * The app's imperative router. Only `navigate` is declared, because it is the
+   * only one this package calls; `driveRoute` below says why the address cannot
+   * do the job on its own in a development build.
+   */
+  router: { navigate(route: string): void };
 }
 
 /**
@@ -54,6 +60,39 @@ export function handleOf(win: Window | null): DevHandle | null {
     return handle && typeof handle.store?.getState === 'function' ? handle : null;
   } catch {
     return null; // only reachable if the frame ever left this origin
+  }
+}
+
+/**
+ * Put the frame's own base back at the front of its address.
+ *
+ * A development bundle writes the path without the base the frame was loaded under
+ * — `appendBaseUrl` skips development just as `stripBaseUrl` does, see `driveRoute`
+ * below — so the address ends up at `/gespeichert`, a path on the HANDBOOK's origin.
+ * Left there, reloading the frame leaves the app entirely and renders the handbook
+ * inside it. Measured, both the fault and the fix. It is not only `driveRoute` that
+ * causes this: a tap inside the framed app writes the same base-less path.
+ *
+ * **Only ever on a frame that is already running the app**, which is what the handle
+ * proves. A first attempt left that condition out and cost an afternoon: on the tick
+ * before the frame has been sent anywhere it rewrote the address of an empty frame,
+ * `frameRoute` then reported a route the app was not on, the poll wrote that into the
+ * state, and the effect that navigates found the frame already where the state said
+ * it should be and never sent it anywhere. The frame stayed blank for ever. That is
+ * the same deadlock `frameRoute` guards against for `about:blank`, reached by a
+ * different door.
+ *
+ * Idempotent, so the poll can call it every tick: an address that already carries
+ * the base is left alone.
+ */
+export function keepFramePath(win: Window | null): void {
+  if (!BASE || !win || !handleOf(win)) return;
+  try {
+    const path = win.location.pathname;
+    if (path.startsWith(BASE)) return;
+    win.history.replaceState(null, '', BASE + path + win.location.search + win.location.hash);
+  } catch {
+    // only reachable if the frame ever left this origin
   }
 }
 
@@ -124,5 +163,49 @@ export function navigate(frame: HTMLIFrameElement, route: string): void {
     frame.contentWindow?.location.replace(target);
   } catch {
     frame.src = target;
+  }
+}
+
+/**
+ * Send the frame to a route through the app's own router.
+ *
+ * The address alone cannot do it in development, and the reason is upstream:
+ * `expo-router`'s `stripBaseUrl` removes the base path only when
+ * `NODE_ENV !== 'development'`
+ * (`expo-router/build/fork/getStateFromPath-forks.js`), so a dev bundle framed at
+ * `/app/` matches `/app/gespeichert` against its own routes, finds nothing, and
+ * renders `+not-found`. Measured 2026-09-10 with both servers running: every framed
+ * route did that, `/app/` included, which is worse than
+ * [ADR 0025](../../../../../adr/0025-the-published-app-is-a-production-bundle.md)
+ * had recorded.
+ *
+ * So the route travels the way everything else in this directory travels, by
+ * same-origin property access
+ * ([ADR 0014](../../../../../adr/0014-the-preview-shell-as-a-package.md)).
+ *
+ * **This leaves the address behind, and cannot put it back itself.** `navigate`
+ * only queues a `ROUTER_LINK` action (`expo-router/build/global-state/router.js`,
+ * `linkTo`), so nothing has moved yet when this returns. `keepFramePath` repairs the
+ * address from the poll instead, which leaves a window in which reloading the frame
+ * lands on the handbook rather than on the app. Sampled every 50 ms on 2026-09-10,
+ * the base was back within 50 ms of a driven route and within 250 ms of a tap on a
+ * tab, both inside the one 300 ms tick. Closing it here would not close it, because
+ * a tap inside the app opens the same window and there is nothing to hook.
+ *
+ * Returns whether there was a router to ask, not whether the app arrived. `false` is
+ * the normal state of the published export — and the state in which the address
+ * works by itself, because a production bundle does apply the base path. The two
+ * halves cover the two builds exactly, which is why neither needs a flag.
+ */
+export function driveRoute(win: Window | null, route: string): boolean {
+  const handle = handleOf(win);
+  if (!handle?.router) return false;
+  try {
+    handle.router.navigate(route);
+    return true;
+  } catch {
+    // Only reachable if the frame left this origin between the check and here. An
+    // unknown route does not come back this way: it is queued, and warns later.
+    return false;
   }
 }
