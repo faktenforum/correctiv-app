@@ -1,98 +1,7 @@
 {
-  "feed/ArticleRow": [
-    {
-      "t": "frame",
-      "name": "feed/ArticleRow, default",
-      "dir": "V",
-      "w": 319,
-      "h": 101,
-      "pad": [0, 0, "@spacing-s", "@spacing-s"],
-      "children": [
-        {
-          "t": "text",
-          "style": "headline-xs",
-          "chars": "Wem gehört die Stadt? Was die Grundbücher über Eigentum verraten",
-          "weight": "bold",
-          "size": 17,
-          "color": "@color-on-canvas",
-          "tracking": 1.18
-        },
-        {
-          "t": "space",
-          "h": "@spacing-3xs"
-        },
-        {
-          "t": "frame",
-          "dir": "H",
-          "w": "fill",
-          "h": 21,
-          "gap": "@spacing-2xs",
-          "children": [
-            {
-              "t": "text",
-              "style": "text-s",
-              "chars": "Alex Beispiel",
-              "size": 14,
-              "color": "@color-on-canvas-muted",
-              "tracking": 1.43
-            },
-            {
-              "t": "text",
-              "style": "text-s",
-              "chars": "· 12. August 2026",
-              "size": 14,
-              "color": "@color-stroke-strong",
-              "tracking": 1.43
-            }
-          ]
-        }
-      ]
-    },
-    {
-      "t": "frame",
-      "name": "feed/ArticleRow, long title, no image",
-      "dir": "V",
-      "w": 319,
-      "h": 101,
-      "pad": [0, 0, "@spacing-s", "@spacing-s"],
-      "children": [
-        {
-          "t": "text",
-          "style": "headline-xs",
-          "chars": "Ohne Bild und ohne Lesezeit, weil der RSS-Weg beides nicht kennt",
-          "weight": "bold",
-          "size": 17,
-          "color": "@color-on-canvas",
-          "tracking": 1.18
-        },
-        {
-          "t": "space",
-          "h": "@spacing-3xs"
-        },
-        {
-          "t": "frame",
-          "dir": "H",
-          "w": "fill",
-          "h": 21,
-          "gap": "@spacing-2xs",
-          "children": [
-            {
-              "t": "text",
-              "style": "text-s",
-              "chars": "3. August 2026",
-              "size": 14,
-              "color": "@color-stroke-strong",
-              "tracking": 1.43
-            }
-          ]
-        }
-      ]
-    }
-  ],
   "ui/Button": [
     {
-      "t": "frame",
-      "name": "ui/Button, variant=\"primary\"",
+      "t": "component",
       "dir": "V",
       "w": "hug",
       "h": 48,
@@ -104,16 +13,17 @@
           "t": "text",
           "style": "button",
           "chars": "Jetzt mitmachen",
+          "w": "fill",
           "weight": "bold",
           "size": 16,
           "color": "@color-always-light",
           "tracking": 1.25
         }
-      ]
+      ],
+      "name": "ui/Button, variant=\"primary\""
     },
     {
-      "t": "frame",
-      "name": "ui/Button, variant=\"secondary\"",
+      "t": "component",
       "dir": "V",
       "w": "hug",
       "h": 48,
@@ -125,16 +35,17 @@
           "t": "text",
           "style": "button",
           "chars": "Jetzt mitmachen",
+          "w": "fill",
           "weight": "bold",
           "size": 16,
           "color": "@color-on-canvas",
           "tracking": 1.25
         }
-      ]
+      ],
+      "name": "ui/Button, variant=\"secondary\""
     },
     {
-      "t": "frame",
-      "name": "ui/Button, variant=\"outline\"",
+      "t": "component",
       "dir": "V",
       "w": "hug",
       "h": 50,
@@ -148,16 +59,17 @@
           "t": "text",
           "style": "button",
           "chars": "Jetzt mitmachen",
+          "w": 123,
           "weight": "bold",
           "size": 16,
           "color": "@color-on-canvas",
           "tracking": 1.25
         }
-      ]
+      ],
+      "name": "ui/Button, variant=\"outline\""
     },
     {
-      "t": "frame",
-      "name": "ui/Button, variant=\"club\"",
+      "t": "component",
       "dir": "V",
       "w": "hug",
       "h": 48,
@@ -169,16 +81,17 @@
           "t": "text",
           "style": "button",
           "chars": "Jetzt mitmachen",
+          "w": "fill",
           "weight": "bold",
           "size": 16,
           "color": "@color-always-dark",
           "tracking": 1.25
         }
-      ]
+      ],
+      "name": "ui/Button, variant=\"club\""
     },
     {
-      "t": "frame",
-      "name": "ui/Button, variant=\"onEmphasis\", on bg-accent",
+      "t": "component",
       "dir": "V",
       "w": 319,
       "h": 72,
@@ -198,6 +111,7 @@
               "t": "text",
               "style": "button",
               "chars": "Mitglied werden",
+              "w": "fill",
               "weight": "bold",
               "size": 16,
               "color": "@color-always-dark",
@@ -205,11 +119,11 @@
             }
           ]
         }
-      ]
+      ],
+      "name": "ui/Button, variant=\"onEmphasis\", on bg-accent"
     },
     {
-      "t": "frame",
-      "name": "ui/Button, disabled",
+      "t": "component",
       "dir": "V",
       "w": "hug",
       "h": 48,
@@ -222,16 +136,17 @@
           "t": "text",
           "style": "button",
           "chars": "Gesperrt",
+          "w": "fill",
           "weight": "bold",
           "size": 16,
           "color": "@color-always-light",
           "tracking": 1.25
         }
-      ]
+      ],
+      "name": "ui/Button, disabled"
     },
     {
-      "t": "frame",
-      "name": "ui/Button, fullWidth",
+      "t": "component",
       "dir": "V",
       "w": 319,
       "h": 48,
@@ -243,12 +158,14 @@
           "t": "text",
           "style": "button",
           "chars": "Über die ganze Breite",
+          "w": 154,
           "weight": "bold",
           "size": 16,
           "color": "@color-always-light",
           "tracking": 1.25
         }
-      ]
+      ],
+      "name": "ui/Button, fullWidth"
     }
   ],
   "ui/Badge": {
@@ -258,7 +175,6 @@
     "options": [
       {
         "value": "emphasis",
-        "t": "frame",
         "dir": "H",
         "w": "hug",
         "h": 25,
@@ -269,6 +185,7 @@
           {
             "t": "text",
             "chars": "Projekt",
+            "w": "fill",
             "size": 11,
             "color": "@color-always-light",
             "tracking": 3.64,
@@ -278,7 +195,6 @@
       },
       {
         "value": "club",
-        "t": "frame",
         "dir": "H",
         "w": "hug",
         "h": 25,
@@ -289,6 +205,7 @@
           {
             "t": "text",
             "chars": "Projekt",
+            "w": "fill",
             "size": 11,
             "color": "@color-always-dark",
             "tracking": 3.64,
@@ -298,7 +215,6 @@
       },
       {
         "value": "neutral",
-        "t": "frame",
         "dir": "H",
         "w": "hug",
         "h": 25,
@@ -309,6 +225,7 @@
           {
             "t": "text",
             "chars": "Projekt",
+            "w": "fill",
             "size": 11,
             "color": "@color-on-canvas-muted",
             "tracking": 3.64,
@@ -318,7 +235,6 @@
       },
       {
         "value": "live",
-        "t": "frame",
         "dir": "H",
         "w": "hug",
         "h": 25,
@@ -338,6 +254,7 @@
           {
             "t": "text",
             "chars": "Live",
+            "w": 21,
             "size": 11,
             "color": "@color-on-canvas-accent",
             "tracking": 3.64,
@@ -349,8 +266,7 @@
   },
   "ui/Chip": [
     {
-      "t": "frame",
-      "name": "ui/Chip, default",
+      "t": "component",
       "dir": "V",
       "w": 319,
       "h": 35,
@@ -363,16 +279,17 @@
         {
           "t": "text",
           "chars": "Klima",
+          "w": 293,
           "weight": "semibold",
           "size": 14,
           "color": "@color-on-canvas",
           "tracking": 1.43
         }
-      ]
+      ],
+      "name": "ui/Chip, default"
     },
     {
-      "t": "frame",
-      "name": "ui/Chip, selected",
+      "t": "component",
       "dir": "V",
       "w": 319,
       "h": 33,
@@ -383,12 +300,14 @@
         {
           "t": "text",
           "chars": "Klima",
+          "w": "fill",
           "weight": "semibold",
           "size": 14,
           "color": "@color-always-light",
           "tracking": 1.43
         }
-      ]
+      ],
+      "name": "ui/Chip, selected"
     }
   ],
   "ui/Card": {
@@ -398,7 +317,6 @@
     "options": [
       {
         "value": "outline",
-        "t": "frame",
         "dir": "V",
         "w": 319,
         "h": 73,
@@ -412,6 +330,7 @@
             "t": "text",
             "style": "text-m",
             "chars": "Inhalt der Karte",
+            "w": 269,
             "size": 15,
             "color": "@color-on-canvas",
             "tracking": 0.67
@@ -420,7 +339,6 @@
       },
       {
         "value": "surface",
-        "t": "frame",
         "dir": "V",
         "w": 319,
         "h": 71,
@@ -432,6 +350,7 @@
             "t": "text",
             "style": "text-m",
             "chars": "Inhalt der Karte",
+            "w": "fill",
             "size": 15,
             "color": "@color-on-canvas",
             "tracking": 0.67
@@ -442,28 +361,43 @@
   },
   "ui/Overline": [
     {
-      "t": "text",
-      "name": "ui/Overline, default",
-      "chars": "JUNGE FORMATE",
-      "weight": "bold",
-      "size": 12,
-      "color": "@color-on-canvas-muted",
-      "tracking": 10
+      "t": "component",
+      "dir": "V",
+      "w": "hug",
+      "children": [
+        {
+          "t": "text",
+          "chars": "JUNGE FORMATE",
+          "w": 319,
+          "weight": "bold",
+          "size": 12,
+          "color": "@color-on-canvas-muted",
+          "tracking": 10
+        }
+      ],
+      "name": "ui/Overline, default"
     },
     {
-      "t": "text",
-      "name": "ui/Overline, color=\"accent\"",
-      "chars": "FAKTENCHECK",
-      "weight": "bold",
-      "size": 12,
-      "color": "@color-on-canvas-accent",
-      "tracking": 10
+      "t": "component",
+      "dir": "V",
+      "w": "hug",
+      "children": [
+        {
+          "t": "text",
+          "chars": "FAKTENCHECK",
+          "w": 319,
+          "weight": "bold",
+          "size": 12,
+          "color": "@color-on-canvas-accent",
+          "tracking": 10
+        }
+      ],
+      "name": "ui/Overline, color=\"accent\""
     }
   ],
   "ui/SectionHeader": [
     {
-      "t": "frame",
-      "name": "ui/SectionHeader, title only",
+      "t": "component",
       "dir": "H",
       "w": 319,
       "h": 25,
@@ -472,15 +406,16 @@
           "t": "text",
           "style": "headline-m",
           "chars": "Aus dem Backstage",
+          "w": 160,
           "weight": "bold",
           "size": 19,
           "color": "@color-on-canvas"
         }
-      ]
+      ],
+      "name": "ui/SectionHeader, title only"
     },
     {
-      "t": "frame",
-      "name": "ui/SectionHeader, with actionLabel",
+      "t": "component",
       "dir": "H",
       "w": 319,
       "h": 25,
@@ -489,6 +424,7 @@
           "t": "text",
           "style": "headline-m",
           "chars": "Aus dem Backstage",
+          "w": 160,
           "weight": "bold",
           "size": 19,
           "color": "@color-on-canvas"
@@ -503,19 +439,20 @@
               "t": "text",
               "style": "text-s",
               "chars": "Alles →",
+              "w": "fill",
               "size": 14,
               "color": "@color-on-canvas-accent",
               "tracking": 1.43
             }
           ]
         }
-      ]
+      ],
+      "name": "ui/SectionHeader, with actionLabel"
     }
   ],
   "ui/SectionCard": [
     {
-      "t": "frame",
-      "name": "ui/SectionCard, default, tone=\"outline\"",
+      "t": "component",
       "dir": "V",
       "w": 319,
       "h": 100,
@@ -523,6 +460,7 @@
         {
           "t": "text",
           "chars": "KONTO",
+          "w": "fill",
           "weight": "bold",
           "size": 12,
           "color": "@color-on-canvas-muted",
@@ -547,17 +485,18 @@
               "t": "text",
               "style": "text-m",
               "chars": "alex.beispiel@example.org",
+              "w": 269,
               "size": 15,
               "color": "@color-on-canvas",
               "tracking": 0.67
             }
           ]
         }
-      ]
+      ],
+      "name": "ui/SectionCard, default, tone=\"outline\""
     },
     {
-      "t": "frame",
-      "name": "ui/SectionCard, tone=\"surface\"",
+      "t": "component",
       "dir": "V",
       "w": 319,
       "h": 98,
@@ -565,6 +504,7 @@
         {
           "t": "text",
           "chars": "BENACHRICHTIGUNGEN",
+          "w": "fill",
           "weight": "bold",
           "size": 12,
           "color": "@color-on-canvas-muted",
@@ -587,32 +527,34 @@
               "t": "text",
               "style": "text-m",
               "chars": "Push-Mitteilungen",
+              "w": "fill",
               "size": 15,
               "color": "@color-on-canvas",
               "tracking": 0.67
             }
           ]
         }
-      ]
+      ],
+      "name": "ui/SectionCard, tone=\"surface\""
     }
   ],
   "ui/Hairline": [
     {
-      "t": "frame",
-      "name": "ui/Hairline",
+      "t": "component",
       "dir": "V",
       "w": 319,
       "h": 1,
-      "fill": "@color-stroke"
+      "fill": "@color-stroke",
+      "name": "ui/Hairline"
     }
   ],
   "ui/Thumbnail": [
     {
-      "t": "frame",
-      "name": "ui/Thumbnail, aspectRatio={16 / 9}, no uri",
+      "t": "component",
       "dir": "V",
       "w": 319,
       "h": 179,
+      "clip": true,
       "fill": "@color-grey-300",
       "children": [
         {
@@ -630,11 +572,11 @@
             }
           ]
         }
-      ]
+      ],
+      "name": "ui/Thumbnail, aspectRatio={16 / 9}, no uri"
     },
     {
-      "t": "frame",
-      "name": "ui/Thumbnail, aspectRatio={1}, icon=\"mic-outline\"",
+      "t": "component",
       "dir": "V",
       "w": 116,
       "h": 116,
@@ -644,6 +586,7 @@
           "dir": "V",
           "w": "fill",
           "h": 116,
+          "clip": true,
           "fill": "@color-grey-300",
           "children": [
             {
@@ -663,19 +606,20 @@
             }
           ]
         }
-      ]
+      ],
+      "name": "ui/Thumbnail, aspectRatio={1}, icon=\"mic-outline\""
     },
     {
-      "t": "frame",
-      "name": "ui/Thumbnail, uri that cannot load, with an overlay",
+      "t": "component",
       "w": 319,
       "h": 179,
+      "clip": true,
       "fill": "@color-grey-300",
       "children": [
         {
           "t": "frame",
           "dir": "V",
-          "w": "fill",
+          "w": 319,
           "h": 179,
           "children": [
             {
@@ -690,7 +634,7 @@
         {
           "t": "frame",
           "dir": "V",
-          "w": "fill",
+          "w": 319,
           "h": 179,
           "x": 0,
           "y": 0,
@@ -707,6 +651,7 @@
                 {
                   "t": "text",
                   "chars": "Video",
+                  "w": "fill",
                   "size": 11,
                   "color": "@color-always-light",
                   "tracking": 3.64,
@@ -716,13 +661,13 @@
             }
           ]
         }
-      ]
+      ],
+      "name": "ui/Thumbnail, uri that cannot load, with an overlay"
     }
   ],
   "ui/ScreenHeader": [
     {
-      "t": "frame",
-      "name": "ui/ScreenHeader, default",
+      "t": "component",
       "dir": "V",
       "w": 319,
       "h": 72,
@@ -762,6 +707,7 @@
                     {
                       "t": "text",
                       "chars": "Zurück",
+                      "w": 45,
                       "weight": "semibold",
                       "size": 15,
                       "color": "@color-on-canvas",
@@ -780,11 +726,11 @@
             }
           ]
         }
-      ]
+      ],
+      "name": "ui/ScreenHeader, default"
     },
     {
-      "t": "frame",
-      "name": "ui/ScreenHeader, backLabel=\"Abbrechen\"",
+      "t": "component",
       "dir": "V",
       "w": 319,
       "h": 72,
@@ -824,6 +770,7 @@
                     {
                       "t": "text",
                       "chars": "Abbrechen",
+                      "w": 71,
                       "weight": "semibold",
                       "size": 15,
                       "color": "@color-on-canvas",
@@ -842,11 +789,11 @@
             }
           ]
         }
-      ]
+      ],
+      "name": "ui/ScreenHeader, backLabel=\"Abbrechen\""
     },
     {
-      "t": "frame",
-      "name": "ui/ScreenHeader, with children, so back shrinks to the chevron",
+      "t": "component",
       "dir": "V",
       "w": 319,
       "h": 72,
@@ -915,6 +862,7 @@
                           "t": "text",
                           "style": "text-m",
                           "chars": "Recherchen, Faktenchecks, Projekte …",
+                          "w": 219,
                           "size": 15,
                           "color": "@color-stroke-strong",
                           "tracking": 0.67
@@ -934,13 +882,13 @@
             }
           ]
         }
-      ]
+      ],
+      "name": "ui/ScreenHeader, with children, so back shrinks to the chevron"
     }
   ],
   "feed/ArticleHero": [
     {
-      "t": "frame",
-      "name": "feed/ArticleHero, with image and readingMinutes",
+      "t": "component",
       "dir": "V",
       "w": 319,
       "h": 431,
@@ -956,6 +904,7 @@
               "dir": "V",
               "w": "fill",
               "h": 206,
+              "clip": true,
               "fill": "@color-grey-300",
               "children": [
                 {
@@ -984,6 +933,7 @@
         {
           "t": "text",
           "chars": "RECHERCHE",
+          "w": "fill",
           "weight": "bold",
           "size": 12,
           "color": "@color-on-canvas-accent",
@@ -997,6 +947,7 @@
           "t": "text",
           "style": "headline-l",
           "chars": "Wem gehört die Stadt? Was die Grundbücher über Eigentum verraten",
+          "w": "fill",
           "weight": "bold",
           "size": 23,
           "color": "@color-on-canvas",
@@ -1010,6 +961,7 @@
           "t": "text",
           "style": "text-m",
           "chars": "Zehntausende Wohnungen, wenige Eigentümer. Eine Recherche über Konzerne, Briefkastenfirmen und die Frage, wer eine Stadt eigentlich besitzt.",
+          "w": "fill",
           "size": 15,
           "color": "@color-on-canvas-muted",
           "tracking": 0.67
@@ -1022,15 +974,16 @@
           "t": "text",
           "style": "text-s",
           "chars": "Alex Beispiel · 12. August · 9 Min. Lesezeit",
+          "w": "fill",
           "size": 14,
           "color": "@color-stroke-strong",
           "tracking": 1.43
         }
-      ]
+      ],
+      "name": "feed/ArticleHero, with image and readingMinutes"
     },
     {
-      "t": "frame",
-      "name": "feed/ArticleHero, imageUrl: null",
+      "t": "component",
       "dir": "V",
       "w": 319,
       "h": 408,
@@ -1046,6 +999,7 @@
               "dir": "V",
               "w": "fill",
               "h": 206,
+              "clip": true,
               "fill": "@color-grey-300",
               "children": [
                 {
@@ -1074,6 +1028,7 @@
         {
           "t": "text",
           "chars": "KLIMA",
+          "w": "fill",
           "weight": "bold",
           "size": 12,
           "color": "@color-on-canvas-accent",
@@ -1087,6 +1042,7 @@
           "t": "text",
           "style": "headline-l",
           "chars": "Ohne Bild und ohne Lesezeit, weil der RSS-Weg beides nicht kennt",
+          "w": "fill",
           "weight": "bold",
           "size": 23,
           "color": "@color-on-canvas",
@@ -1100,6 +1056,7 @@
           "t": "text",
           "style": "text-m",
           "chars": "Der Fallback-Pfad liefert nur Titel, Teaser und Datum.",
+          "w": "fill",
           "size": 15,
           "color": "@color-on-canvas-muted",
           "tracking": 0.67
@@ -1112,17 +1069,113 @@
           "t": "text",
           "style": "text-s",
           "chars": "3. August",
+          "w": "fill",
           "size": 14,
           "color": "@color-stroke-strong",
           "tracking": 1.43
         }
-      ]
+      ],
+      "name": "feed/ArticleHero, imageUrl: null"
+    }
+  ],
+  "feed/ArticleRow": [
+    {
+      "t": "component",
+      "dir": "V",
+      "w": 319,
+      "h": 101,
+      "pad": [0, 0, "@spacing-s", "@spacing-s"],
+      "children": [
+        {
+          "t": "text",
+          "style": "headline-xs",
+          "chars": "Wem gehört die Stadt? Was die Grundbücher über Eigentum verraten",
+          "w": "fill",
+          "weight": "bold",
+          "size": 17,
+          "color": "@color-on-canvas",
+          "tracking": 1.18
+        },
+        {
+          "t": "space",
+          "h": "@spacing-3xs"
+        },
+        {
+          "t": "frame",
+          "dir": "H",
+          "w": "fill",
+          "h": 21,
+          "gap": "@spacing-2xs",
+          "children": [
+            {
+              "t": "text",
+              "style": "text-s",
+              "chars": "Alex Beispiel",
+              "w": 76,
+              "size": 14,
+              "color": "@color-on-canvas-muted",
+              "tracking": 1.43
+            },
+            {
+              "t": "text",
+              "style": "text-s",
+              "chars": "· 12. August 2026",
+              "w": 104,
+              "size": 14,
+              "color": "@color-stroke-strong",
+              "tracking": 1.43
+            }
+          ]
+        }
+      ],
+      "name": "feed/ArticleRow, default"
+    },
+    {
+      "t": "component",
+      "dir": "V",
+      "w": 319,
+      "h": 101,
+      "pad": [0, 0, "@spacing-s", "@spacing-s"],
+      "children": [
+        {
+          "t": "text",
+          "style": "headline-xs",
+          "chars": "Ohne Bild und ohne Lesezeit, weil der RSS-Weg beides nicht kennt",
+          "w": "fill",
+          "weight": "bold",
+          "size": 17,
+          "color": "@color-on-canvas",
+          "tracking": 1.18
+        },
+        {
+          "t": "space",
+          "h": "@spacing-3xs"
+        },
+        {
+          "t": "frame",
+          "dir": "H",
+          "w": "fill",
+          "h": 21,
+          "gap": "@spacing-2xs",
+          "children": [
+            {
+              "t": "text",
+              "style": "text-s",
+              "chars": "3. August 2026",
+              "w": 87,
+              "size": 14,
+              "color": "@color-stroke-strong",
+              "tracking": 1.43
+            }
+          ]
+        }
+      ],
+      "name": "feed/ArticleRow, long title, no image"
     }
   ],
   "feed/FaktencheckRail": [
     {
-      "t": "frame",
-      "name": "feed/FaktencheckRail, three items",
+      "t": "component",
       "dir": "V",
       "w": 367,
       "h": 135,
@@ -1132,6 +1185,7 @@
           "dir": "H",
           "w": "fill",
           "h": 135,
+          "clip": true,
           "children": [
             {
               "t": "frame",
@@ -1164,6 +1218,7 @@
                         {
                           "t": "text",
                           "chars": "Faktencheck",
+                          "w": "fill",
                           "size": 11,
                           "color": "@color-always-light",
                           "tracking": 3.64,
@@ -1179,6 +1234,7 @@
                       "t": "text",
                       "style": "headline-xs",
                       "chars": "Roboter greift Menschen an: Video ist inszeniert",
+                      "w": 214,
                       "weight": "bold",
                       "size": 17,
                       "color": "@color-on-canvas",
@@ -1209,6 +1265,7 @@
                         {
                           "t": "text",
                           "chars": "Faktencheck",
+                          "w": "fill",
                           "size": 11,
                           "color": "@color-always-light",
                           "tracking": 3.64,
@@ -1224,6 +1281,7 @@
                       "t": "text",
                       "style": "headline-xs",
                       "chars": "Zahl der Windräder: Der Vergleich hinkt, die Zahl stimmt aber",
+                      "w": 214,
                       "weight": "bold",
                       "size": 17,
                       "color": "@color-on-canvas",
@@ -1254,6 +1312,7 @@
                         {
                           "t": "text",
                           "chars": "Faktencheck",
+                          "w": "fill",
                           "size": 11,
                           "color": "@color-always-light",
                           "tracking": 3.64,
@@ -1269,6 +1328,7 @@
                       "t": "text",
                       "style": "headline-xs",
                       "chars": "Ein sehr langer Titel, der über drei Zeilen läuft und deshalb hier steht",
+                      "w": 214,
                       "weight": "bold",
                       "size": 17,
                       "color": "@color-on-canvas",
@@ -1280,22 +1340,13 @@
             }
           ]
         }
-      ]
-    },
-    {
-      "t": "text",
-      "name": "feed/FaktencheckRail, items={[]}",
-      "style": "text-s",
-      "chars": "canvas",
-      "size": 14,
-      "color": "@color-on-canvas-muted",
-      "tracking": 1.43
+      ],
+      "name": "feed/FaktencheckRail"
     }
   ],
   "home/HomeHeader": [
     {
-      "t": "frame",
-      "name": "home/HomeHeader",
+      "t": "component",
       "dir": "V",
       "w": 319,
       "h": 36,
@@ -1309,6 +1360,7 @@
             {
               "t": "text",
               "chars": "CORRECTIV",
+              "w": 88,
               "weight": "bold",
               "size": 15,
               "color": "@color-on-canvas",
@@ -1318,6 +1370,7 @@
               "t": "text",
               "style": "text-s",
               "chars": "Donnerstag, 10. September 2026",
+              "w": 195,
               "size": 14,
               "color": "@color-on-canvas-muted",
               "tracking": 1.43
@@ -1335,16 +1388,16 @@
           "h": 1,
           "fill": "@color-stroke"
         }
-      ]
+      ],
+      "name": "home/HomeHeader"
     }
   ],
   "home/SpotlightBriefing": [
     {
-      "t": "frame",
-      "name": "home/SpotlightBriefing",
+      "t": "component",
       "dir": "V",
       "w": 319,
-      "h": 282,
+      "h": 259,
       "pad": ["@spacing-m", "@spacing-m", "@spacing-m", "@spacing-m"],
       "radius": "@radius-md",
       "fill": "@color-surface",
@@ -1358,6 +1411,7 @@
             {
               "t": "text",
               "chars": "SPOTLIGHT",
+              "w": 71,
               "weight": "bold",
               "size": 12,
               "color": "@color-on-canvas",
@@ -1372,10 +1426,58 @@
                 {
                   "t": "text",
                   "chars": "Alle Ausgaben →",
+                  "w": "fill",
                   "weight": "bold",
                   "size": 14,
                   "color": "@color-on-canvas-accent",
                   "tracking": 1.43
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "t": "frame",
+          "dir": "V",
+          "w": "fill",
+          "h": 48,
+          "children": [
+            {
+              "t": "space",
+              "h": "@spacing-s"
+            },
+            {
+              "t": "frame",
+              "dir": "V",
+              "w": "fill",
+              "h": 1,
+              "fill": "@color-stroke"
+            },
+            {
+              "t": "frame",
+              "dir": "H",
+              "w": "fill",
+              "h": 35,
+              "gap": "@spacing-s",
+              "pad": [0, 0, "@spacing-s", 0],
+              "children": [
+                {
+                  "t": "text",
+                  "chars": "10. September",
+                  "w": 92,
+                  "weight": "bold",
+                  "size": 14,
+                  "color": "@color-on-canvas-muted",
+                  "tracking": 1.43
+                },
+                {
+                  "t": "text",
+                  "style": "text-m",
+                  "chars": "Hilfe, ein Brillenträger!",
+                  "w": 167,
+                  "size": 15,
+                  "color": "@color-on-canvas",
+                  "tracking": 0.67
                 }
               ]
             }
@@ -1409,6 +1511,7 @@
                 {
                   "t": "text",
                   "chars": "9. September",
+                  "w": 85,
                   "weight": "bold",
                   "size": 14,
                   "color": "@color-on-canvas-muted",
@@ -1418,6 +1521,7 @@
                   "t": "text",
                   "style": "text-m",
                   "chars": "Wehren sich jetzt die Bürokraten?",
+                  "w": 174,
                   "size": 15,
                   "color": "@color-on-canvas",
                   "tracking": 0.67
@@ -1454,6 +1558,7 @@
                 {
                   "t": "text",
                   "chars": "8. September",
+                  "w": 85,
                   "weight": "bold",
                   "size": 14,
                   "color": "@color-on-canvas-muted",
@@ -1463,51 +1568,7 @@
                   "t": "text",
                   "style": "text-m",
                   "chars": "Jetzt amtlich: Deutschland wird dümmer",
-                  "size": 15,
-                  "color": "@color-on-canvas",
-                  "tracking": 0.67
-                }
-              ]
-            }
-          ]
-        },
-        {
-          "t": "frame",
-          "dir": "V",
-          "w": "fill",
-          "h": 71,
-          "children": [
-            {
-              "t": "space",
-              "h": "@spacing-s"
-            },
-            {
-              "t": "frame",
-              "dir": "V",
-              "w": "fill",
-              "h": 1,
-              "fill": "@color-stroke"
-            },
-            {
-              "t": "frame",
-              "dir": "H",
-              "w": "fill",
-              "h": 58,
-              "gap": "@spacing-s",
-              "pad": [0, 0, "@spacing-s", 0],
-              "children": [
-                {
-                  "t": "text",
-                  "chars": "7. September",
-                  "weight": "bold",
-                  "size": 14,
-                  "color": "@color-on-canvas-muted",
-                  "tracking": 1.43
-                },
-                {
-                  "t": "text",
-                  "style": "text-m",
-                  "chars": "Vorhang zu und alle Fragen offen",
+                  "w": 174,
                   "size": 15,
                   "color": "@color-on-canvas",
                   "tracking": 0.67
@@ -1516,13 +1577,13 @@
             }
           ]
         }
-      ]
+      ],
+      "name": "home/SpotlightBriefing"
     }
   ],
   "home/MediathekReihe": [
     {
-      "t": "frame",
-      "name": "home/MediathekReihe",
+      "t": "component",
       "dir": "H",
       "w": 319,
       "h": 177,
@@ -1534,19 +1595,22 @@
           "w": 142,
           "h": 177,
           "radius": "@radius-md",
+          "clip": true,
           "fill": "@color-surface",
           "children": [
             {
               "t": "frame",
               "w": "fill",
               "h": 80,
+              "clip": true,
               "fill": "@color-grey-300",
               "children": [
                 {
                   "t": "frame",
                   "dir": "V",
-                  "w": "fill",
+                  "w": 142,
                   "h": 80,
+                  "clip": true,
                   "children": [
                     {
                       "t": "frame",
@@ -1556,11 +1620,11 @@
                         {
                           "t": "frame",
                           "dir": "H",
-                          "w": "fill",
+                          "w": 142,
                           "h": 80,
                           "x": 0,
                           "y": 0,
-                          "opacity": 0.83336
+                          "clip": true
                         }
                       ]
                     }
@@ -1569,7 +1633,7 @@
                 {
                   "t": "frame",
                   "dir": "V",
-                  "w": "fill",
+                  "w": 142,
                   "h": 80,
                   "x": 0,
                   "y": 0,
@@ -1614,6 +1678,7 @@
                     {
                       "t": "text",
                       "chars": "FunFacts",
+                      "w": "fill",
                       "size": 11,
                       "color": "@color-always-light",
                       "tracking": 3.64,
@@ -1627,7 +1692,8 @@
                 },
                 {
                   "t": "text",
-                  "chars": "Der Sommer 2026 war ein Fiebertraum | mit Leonie Sun",
+                  "chars": "Das hilft gegen Rechtsextremismus | mit Benjamin Fredrich von KATAPULT",
+                  "w": "fill",
                   "weight": "semibold",
                   "size": 14,
                   "color": "@color-on-canvas",
@@ -1667,6 +1733,7 @@
                 {
                   "t": "text",
                   "chars": "Live",
+                  "w": 21,
                   "size": 11,
                   "color": "@color-on-canvas-accent",
                   "tracking": 3.64,
@@ -1694,6 +1761,7 @@
                 {
                   "t": "text",
                   "chars": "Salon5 Radio läuft",
+                  "w": "fill",
                   "weight": "semibold",
                   "size": 14,
                   "color": "@color-on-canvas",
@@ -1703,6 +1771,7 @@
                   "t": "text",
                   "style": "text-s",
                   "chars": "24/7 aus Bottrop · Tippen zum Hören",
+                  "w": "fill",
                   "size": 14,
                   "color": "@color-on-canvas-muted",
                   "tracking": 1.43
@@ -1711,17 +1780,18 @@
             }
           ]
         }
-      ]
+      ],
+      "name": "home/MediathekReihe"
     }
   ],
   "home/BackstageTeaser": [
     {
-      "t": "frame",
-      "name": "home/BackstageTeaser",
+      "t": "component",
       "dir": "V",
       "w": 319,
       "h": 297,
       "radius": "@radius-md",
+      "clip": true,
       "stroke": "@color-accent-alternative",
       "strokeWeight": 1,
       "children": [
@@ -1744,6 +1814,7 @@
                 {
                   "t": "text",
                   "chars": "Backstage",
+                  "w": "fill",
                   "size": 11,
                   "color": "@color-always-dark",
                   "tracking": 3.64,
@@ -1759,6 +1830,7 @@
               "t": "text",
               "style": "headline-xs",
               "chars": "Woche 3: Die Spur führt nach Bern",
+              "w": "fill",
               "weight": "bold",
               "size": 17,
               "color": "@color-on-canvas",
@@ -1772,6 +1844,7 @@
               "t": "text",
               "style": "text-m",
               "chars": "Ein anonymer Hinweis, ein Aktenordner und eine Adresse in der Bundesstadt. Wie wir den Verbindungen der Fonds nachgegangen sind.",
+              "w": "fill",
               "size": 15,
               "color": "@color-on-canvas-muted",
               "tracking": 0.67
@@ -1801,6 +1874,7 @@
             {
               "t": "text",
               "chars": "Bonusfolge: Wie wir an die Pensionskassen-Daten kamen",
+              "w": 213,
               "weight": "semibold",
               "size": 14,
               "color": "@color-on-canvas",
@@ -1822,6 +1896,7 @@
               "t": "text",
               "style": "button",
               "chars": "Alles aus dem Backstage →",
+              "w": "fill",
               "weight": "bold",
               "size": 16,
               "color": "@color-on-canvas-accent",
@@ -1829,7 +1904,8 @@
             }
           ]
         }
-      ]
+      ],
+      "name": "home/BackstageTeaser"
     }
   ],
   "home/CalloutTeaser": {
@@ -1839,7 +1915,6 @@
     "options": [
       {
         "value": "crowdnewsroom",
-        "t": "frame",
         "dir": "V",
         "w": 319,
         "h": 269,
@@ -1850,6 +1925,7 @@
           {
             "t": "text",
             "chars": "MITMACHEN · CROWDNEWSROOM",
+            "w": "fill",
             "weight": "bold",
             "size": 12,
             "color": "@color-always-light",
@@ -1863,6 +1939,7 @@
             "t": "text",
             "style": "headline-xs",
             "chars": "Wem gehört die Stadt?",
+            "w": "fill",
             "weight": "bold",
             "size": 17,
             "color": "@color-always-light",
@@ -1876,6 +1953,7 @@
             "t": "text",
             "style": "text-m",
             "chars": "Steigende Mieten, anonyme Eigentümer: Helfen Sie uns aufzudecken, wem die Häuser in Ihrer Nachbarschaft gehören.",
+            "w": "fill",
             "size": 15,
             "color": "@color-always-light",
             "tracking": 0.67
@@ -1906,6 +1984,7 @@
                 "t": "text",
                 "style": "text-s",
                 "chars": "1.857 Beiträge bisher",
+                "w": 126,
                 "size": 14,
                 "color": "@color-always-light",
                 "tracking": 1.43
@@ -1929,6 +2008,7 @@
                 "t": "text",
                 "style": "button",
                 "chars": "Mitmachen",
+                "w": "fill",
                 "weight": "bold",
                 "size": 16,
                 "color": "@color-always-light",
@@ -1940,7 +2020,6 @@
       },
       {
         "value": "survey",
-        "t": "frame",
         "dir": "V",
         "w": 319,
         "h": 295,
@@ -1951,6 +2030,7 @@
           {
             "t": "text",
             "chars": "MITMACHEN · UMFRAGE",
+            "w": "fill",
             "weight": "bold",
             "size": 12,
             "color": "@color-always-light",
@@ -1964,6 +2044,7 @@
             "t": "text",
             "style": "headline-xs",
             "chars": "Die Zukunft von CORRECTIV: Wir fragen Sie",
+            "w": "fill",
             "weight": "bold",
             "size": 17,
             "color": "@color-always-light",
@@ -1977,6 +2058,7 @@
             "t": "text",
             "style": "text-m",
             "chars": "CORRECTIV verändert sich, und Sie gestalten mit. Was sollen wir recherchieren, welche Formate fehlen Ihnen?",
+            "w": "fill",
             "size": 15,
             "color": "@color-always-light",
             "tracking": 0.67
@@ -2007,6 +2089,7 @@
                 "t": "text",
                 "style": "text-s",
                 "chars": "2.143 Teilnahmen bisher",
+                "w": 147,
                 "size": 14,
                 "color": "@color-always-light",
                 "tracking": 1.43
@@ -2030,6 +2113,7 @@
                 "t": "text",
                 "style": "button",
                 "chars": "Teilnehmen",
+                "w": "fill",
                 "weight": "bold",
                 "size": 16,
                 "color": "@color-always-light",
@@ -2043,12 +2127,12 @@
   },
   "home/EarlyAccessCard": [
     {
-      "t": "frame",
-      "name": "home/EarlyAccessCard, onPress",
+      "t": "component",
       "dir": "V",
       "w": 319,
       "h": 239,
       "radius": "@radius-md",
+      "clip": true,
       "stroke": "@color-stroke",
       "strokeWeight": 1,
       "children": [
@@ -2072,6 +2156,7 @@
                 {
                   "t": "text",
                   "chars": "Backstage · Früher lesen",
+                  "w": "fill",
                   "size": 11,
                   "color": "@color-always-dark",
                   "tracking": 3.64,
@@ -2092,6 +2177,7 @@
               "t": "text",
               "style": "headline-xs",
               "chars": "Die Pensionskassen-Recherche, exklusiv vorab",
+              "w": "fill",
               "weight": "bold",
               "size": 17,
               "color": "@color-on-canvas",
@@ -2105,6 +2191,7 @@
               "t": "text",
               "style": "text-m",
               "chars": "Sie lesen jetzt, drei Tage vor allen anderen.",
+              "w": "fill",
               "size": 15,
               "color": "@color-on-canvas-muted",
               "tracking": 0.67
@@ -2117,6 +2204,7 @@
               "t": "text",
               "style": "button",
               "chars": "Jetzt lesen →",
+              "w": "fill",
               "weight": "bold",
               "size": 16,
               "color": "@color-on-canvas-accent",
@@ -2124,15 +2212,16 @@
             }
           ]
         }
-      ]
+      ],
+      "name": "home/EarlyAccessCard, onPress"
     },
     {
-      "t": "frame",
-      "name": "home/EarlyAccessCard, without onPress",
+      "t": "component",
       "dir": "V",
       "w": 319,
       "h": 239,
       "radius": "@radius-md",
+      "clip": true,
       "stroke": "@color-stroke",
       "strokeWeight": 1,
       "children": [
@@ -2156,6 +2245,7 @@
                 {
                   "t": "text",
                   "chars": "Backstage · Früher lesen",
+                  "w": "fill",
                   "size": 11,
                   "color": "@color-always-dark",
                   "tracking": 3.64,
@@ -2176,6 +2266,7 @@
               "t": "text",
               "style": "headline-xs",
               "chars": "Die Pensionskassen-Recherche, exklusiv vorab",
+              "w": "fill",
               "weight": "bold",
               "size": 17,
               "color": "@color-on-canvas",
@@ -2189,6 +2280,7 @@
               "t": "text",
               "style": "text-m",
               "chars": "Sie lesen jetzt, drei Tage vor allen anderen.",
+              "w": "fill",
               "size": 15,
               "color": "@color-on-canvas-muted",
               "tracking": 0.67
@@ -2201,6 +2293,7 @@
               "t": "text",
               "style": "button",
               "chars": "Jetzt lesen →",
+              "w": "fill",
               "weight": "bold",
               "size": 16,
               "color": "@color-on-canvas-accent",
@@ -2208,13 +2301,13 @@
             }
           ]
         }
-      ]
+      ],
+      "name": "home/EarlyAccessCard, without onPress"
     }
   ],
   "home/ImpactFooter": [
     {
-      "t": "frame",
-      "name": "home/ImpactFooter",
+      "t": "component",
       "dir": "V",
       "w": 319,
       "h": 199,
@@ -2226,6 +2319,7 @@
           "t": "text",
           "style": "headline-xs",
           "chars": "Ermöglicht durch Unterstützer:innen wie Sie",
+          "w": "fill",
           "weight": "bold",
           "size": 17,
           "color": "@color-on-canvas",
@@ -2239,17 +2333,18 @@
           "t": "text",
           "style": "text-m",
           "chars": "CORRECTIV ist gemeinnützig. Ihr Beitrag finanziert die Recherchen, die hier stehen.",
+          "w": "fill",
           "size": 15,
           "color": "@color-on-canvas-muted",
           "tracking": 0.67
         }
-      ]
+      ],
+      "name": "home/ImpactFooter"
     }
   ],
   "discover/SearchEntry": [
     {
-      "t": "frame",
-      "name": "discover/SearchEntry",
+      "t": "component",
       "dir": "H",
       "w": 319,
       "h": 44,
@@ -2272,17 +2367,18 @@
           "t": "text",
           "style": "text-m",
           "chars": "Recherchen, Faktenchecks, Projekte …",
+          "w": 246,
           "size": 15,
           "color": "@color-stroke-strong",
           "tracking": 0.67
         }
-      ]
+      ],
+      "name": "discover/SearchEntry"
     }
   ],
   "discover/TopicRail": [
     {
-      "t": "frame",
-      "name": "discover/TopicRail",
+      "t": "component",
       "dir": "V",
       "w": 367,
       "h": 35,
@@ -2292,6 +2388,7 @@
           "dir": "H",
           "w": "fill",
           "h": 35,
+          "clip": true,
           "children": [
             {
               "t": "frame",
@@ -2315,6 +2412,7 @@
                     {
                       "t": "text",
                       "chars": "Klima",
+                      "w": 36,
                       "weight": "semibold",
                       "size": 14,
                       "color": "@color-on-canvas",
@@ -2336,6 +2434,7 @@
                     {
                       "t": "text",
                       "chars": "Lokal",
+                      "w": 34,
                       "weight": "semibold",
                       "size": 14,
                       "color": "@color-on-canvas",
@@ -2357,6 +2456,7 @@
                     {
                       "t": "text",
                       "chars": "Schweiz",
+                      "w": 51,
                       "weight": "semibold",
                       "size": 14,
                       "color": "@color-on-canvas",
@@ -2378,6 +2478,7 @@
                     {
                       "t": "text",
                       "chars": "Jugend & Salon5",
+                      "w": 104,
                       "weight": "semibold",
                       "size": 14,
                       "color": "@color-on-canvas",
@@ -2389,13 +2490,13 @@
             }
           ]
         }
-      ]
+      ],
+      "name": "discover/TopicRail"
     }
   ],
   "discover/ProjectRow": [
     {
-      "t": "frame",
-      "name": "discover/ProjectRow",
+      "t": "component",
       "dir": "H",
       "w": 319,
       "h": 71,
@@ -2412,6 +2513,7 @@
             {
               "t": "text",
               "chars": "Recherchen",
+              "w": "fill",
               "weight": "bold",
               "size": 15,
               "color": "@color-on-canvas",
@@ -2425,6 +2527,7 @@
               "t": "text",
               "style": "text-s",
               "chars": "Investigative Recherchen für die Gesellschaft.",
+              "w": "fill",
               "size": 14,
               "color": "@color-on-canvas-muted",
               "tracking": 1.43
@@ -2438,13 +2541,13 @@
           "size": 16,
           "color": "@color-stroke-strong"
         }
-      ]
+      ],
+      "name": "discover/ProjectRow"
     }
   ],
   "discover/SampleHitRow": [
     {
-      "t": "frame",
-      "name": "discover/SampleHitRow, kind=\"podcast\"",
+      "t": "component",
       "dir": "V",
       "w": 319,
       "h": 71,
@@ -2477,6 +2580,7 @@
                 {
                   "t": "text",
                   "chars": "Pausenbrot, der Nachrichten-Snack",
+                  "w": "fill",
                   "weight": "bold",
                   "size": 15,
                   "color": "@color-on-canvas",
@@ -2490,6 +2594,7 @@
                   "t": "text",
                   "style": "text-s",
                   "chars": "Salon5 · Podcast-Serie",
+                  "w": "fill",
                   "size": 14,
                   "color": "@color-stroke-strong",
                   "tracking": 1.43
@@ -2505,11 +2610,11 @@
             }
           ]
         }
-      ]
+      ],
+      "name": "discover/SampleHitRow, kind=\"podcast\""
     },
     {
-      "t": "frame",
-      "name": "discover/SampleHitRow, kind=\"callout\"",
+      "t": "component",
       "dir": "V",
       "w": 319,
       "h": 94,
@@ -2542,6 +2647,7 @@
                 {
                   "t": "text",
                   "chars": "Die Zukunft von CORRECTIV: Wir fragen Sie",
+                  "w": "fill",
                   "weight": "bold",
                   "size": 15,
                   "color": "@color-on-canvas",
@@ -2555,6 +2661,7 @@
                   "t": "text",
                   "style": "text-s",
                   "chars": "CrowdNewsroom · Aufruf",
+                  "w": "fill",
                   "size": 14,
                   "color": "@color-stroke-strong",
                   "tracking": 1.43
@@ -2570,11 +2677,11 @@
             }
           ]
         }
-      ]
+      ],
+      "name": "discover/SampleHitRow, kind=\"callout\""
     },
     {
-      "t": "frame",
-      "name": "discover/SampleHitRow, kind=\"backstage\"",
+      "t": "component",
       "dir": "V",
       "w": 319,
       "h": 71,
@@ -2607,6 +2714,7 @@
                 {
                   "t": "text",
                   "chars": "Woche 3: Die Spur führt nach Bern",
+                  "w": "fill",
                   "weight": "bold",
                   "size": 15,
                   "color": "@color-on-canvas",
@@ -2620,6 +2728,7 @@
                   "t": "text",
                   "style": "text-s",
                   "chars": "Backstage · Recherchetagebuch",
+                  "w": "fill",
                   "size": 14,
                   "color": "@color-stroke-strong",
                   "tracking": 1.43
@@ -2635,11 +2744,11 @@
             }
           ]
         }
-      ]
+      ],
+      "name": "discover/SampleHitRow, kind=\"backstage\""
     },
     {
-      "t": "frame",
-      "name": "discover/SampleHitRow, kind=\"verlag\"",
+      "t": "component",
       "dir": "V",
       "w": 319,
       "h": 71,
@@ -2672,6 +2781,7 @@
                 {
                   "t": "text",
                   "chars": "Akten des Missbrauchs",
+                  "w": "fill",
                   "weight": "bold",
                   "size": 15,
                   "color": "@color-on-canvas",
@@ -2685,6 +2795,7 @@
                   "t": "text",
                   "style": "text-s",
                   "chars": "CORRECTIV Verlag · Buch",
+                  "w": "fill",
                   "size": 14,
                   "color": "@color-stroke-strong",
                   "tracking": 1.43
@@ -2700,11 +2811,11 @@
             }
           ]
         }
-      ]
+      ],
+      "name": "discover/SampleHitRow, kind=\"verlag\""
     },
     {
-      "t": "frame",
-      "name": "discover/SampleHitRow, without onPress, so no chevron and no link role",
+      "t": "component",
       "dir": "H",
       "w": 319,
       "h": 71,
@@ -2731,6 +2842,7 @@
             {
               "t": "text",
               "chars": "Pausenbrot, der Nachrichten-Snack",
+              "w": "fill",
               "weight": "bold",
               "size": 15,
               "color": "@color-on-canvas",
@@ -2744,19 +2856,20 @@
               "t": "text",
               "style": "text-s",
               "chars": "Salon5 · Podcast-Serie",
+              "w": "fill",
               "size": 14,
               "color": "@color-stroke-strong",
               "tracking": 1.43
             }
           ]
         }
-      ]
+      ],
+      "name": "discover/SampleHitRow, without onPress, so no chevron and no link role"
     }
   ],
   "media/LiveBanner": [
     {
-      "t": "frame",
-      "name": "media/LiveBanner, default subtitle",
+      "t": "component",
       "dir": "H",
       "w": 319,
       "h": 98,
@@ -2819,6 +2932,7 @@
                     {
                       "t": "text",
                       "chars": "Live",
+                      "w": 21,
                       "size": 11,
                       "color": "@color-on-canvas-accent",
                       "tracking": 3.64,
@@ -2836,6 +2950,7 @@
               "t": "text",
               "style": "headline-xs",
               "chars": "Salon5 Radio",
+              "w": "fill",
               "weight": "bold",
               "size": 17,
               "color": "@color-always-light",
@@ -2845,17 +2960,18 @@
               "t": "text",
               "style": "text-s",
               "chars": "24/7 aus Bottrop",
+              "w": "fill",
               "size": 14,
               "color": "@color-always-light",
               "tracking": 1.43
             }
           ]
         }
-      ]
+      ],
+      "name": "media/LiveBanner, default subtitle"
     },
     {
-      "t": "frame",
-      "name": "media/LiveBanner, subtitle",
+      "t": "component",
       "dir": "H",
       "w": 319,
       "h": 98,
@@ -2918,6 +3034,7 @@
                     {
                       "t": "text",
                       "chars": "Live",
+                      "w": 21,
                       "size": 11,
                       "color": "@color-on-canvas-accent",
                       "tracking": 3.64,
@@ -2935,6 +3052,7 @@
               "t": "text",
               "style": "headline-xs",
               "chars": "Salon5 Radio",
+              "w": "fill",
               "weight": "bold",
               "size": 17,
               "color": "@color-always-light",
@@ -2944,19 +3062,20 @@
               "t": "text",
               "style": "text-s",
               "chars": "Sondersendung aus Bottrop",
+              "w": "fill",
               "size": 14,
               "color": "@color-always-light",
               "tracking": 1.43
             }
           ]
         }
-      ]
+      ],
+      "name": "media/LiveBanner, subtitle"
     }
   ],
   "media/MediaCard": [
     {
-      "t": "frame",
-      "name": "media/MediaCard",
+      "t": "component",
       "dir": "V",
       "w": 176,
       "h": 168,
@@ -2972,12 +3091,13 @@
               "w": "fill",
               "h": 99,
               "radius": "@radius-md",
+              "clip": true,
               "fill": "@color-grey-300",
               "children": [
                 {
                   "t": "frame",
                   "dir": "V",
-                  "w": "fill",
+                  "w": 176,
                   "h": 99,
                   "children": [
                     {
@@ -2991,7 +3111,7 @@
                 },
                 {
                   "t": "frame",
-                  "w": "fill",
+                  "w": 176,
                   "h": 99,
                   "x": 0,
                   "y": 0,
@@ -3027,6 +3147,7 @@
                         {
                           "t": "text",
                           "chars": "8:32",
+                          "w": "fill",
                           "size": 11,
                           "color": "@color-always-light",
                           "tracking": 1.82
@@ -3044,6 +3165,7 @@
             {
               "t": "text",
               "chars": "FunFacts, Folge 12: Was kostet ein Windrad wirklich?",
+              "w": "fill",
               "weight": "semibold",
               "size": 14,
               "color": "@color-on-canvas",
@@ -3053,19 +3175,20 @@
               "t": "text",
               "style": "text-s",
               "chars": "28. August",
+              "w": "fill",
               "size": 14,
               "color": "@color-stroke-strong",
               "tracking": 1.43
             }
           ]
         }
-      ]
+      ],
+      "name": "media/MediaCard"
     }
   ],
   "media/SeriesTile": [
     {
-      "t": "frame",
-      "name": "media/SeriesTile",
+      "t": "component",
       "dir": "V",
       "w": 116,
       "h": 185,
@@ -3076,6 +3199,7 @@
           "w": "fill",
           "h": 116,
           "radius": "@radius-md",
+          "clip": true,
           "fill": "@color-grey-300",
           "children": [
             {
@@ -3102,6 +3226,7 @@
         {
           "t": "text",
           "chars": "CORRECTIV Podcast",
+          "w": "fill",
           "weight": "semibold",
           "size": 14,
           "color": "@color-on-canvas",
@@ -3111,17 +3236,18 @@
           "t": "text",
           "style": "text-s",
           "chars": "CORRECTIV",
+          "w": "fill",
           "size": 14,
           "color": "@color-stroke-strong",
           "tracking": 1.43
         }
-      ]
+      ],
+      "name": "media/SeriesTile"
     }
   ],
   "media/EpisodeRow": [
     {
-      "t": "frame",
-      "name": "media/EpisodeRow, default",
+      "t": "component",
       "dir": "H",
       "w": 319,
       "h": 71,
@@ -3159,6 +3285,7 @@
             {
               "t": "text",
               "chars": "Pausenbrot, Folge 214",
+              "w": "fill",
               "weight": "semibold",
               "size": 15,
               "color": "@color-on-canvas",
@@ -3172,17 +3299,18 @@
               "t": "text",
               "style": "text-s",
               "chars": "12. August · 8 Min",
+              "w": "fill",
               "size": 14,
               "color": "@color-stroke-strong",
               "tracking": 1.43
             }
           ]
         }
-      ]
+      ],
+      "name": "media/EpisodeRow, default"
     },
     {
-      "t": "frame",
-      "name": "media/EpisodeRow, club",
+      "t": "component",
       "dir": "H",
       "w": 319,
       "h": 71,
@@ -3220,6 +3348,7 @@
             {
               "t": "text",
               "chars": "Nur für Mitglieder mit Beitrag",
+              "w": "fill",
               "weight": "semibold",
               "size": 15,
               "color": "@color-on-canvas",
@@ -3233,6 +3362,7 @@
               "t": "text",
               "style": "text-s",
               "chars": "3. August · 22 Min",
+              "w": "fill",
               "size": 14,
               "color": "@color-stroke-strong",
               "tracking": 1.43
@@ -3251,6 +3381,7 @@
             {
               "t": "text",
               "chars": "Club",
+              "w": "fill",
               "size": 11,
               "color": "@color-always-dark",
               "tracking": 3.64,
@@ -3258,31 +3389,28 @@
             }
           ]
         }
-      ]
+      ],
+      "name": "media/EpisodeRow, club"
     }
   ],
-  "media/VideoFrame": {
-    "t": "variants",
-    "name": "media/VideoFrame",
-    "prop": "uri",
-    "options": [
-      {
-        "value": "true",
-        "t": "frame",
-        "dir": "V",
-        "w": 319,
-        "h": 200,
-        "children": [
-          {
-            "t": "frame",
-            "dir": "H",
-            "w": "fill",
-            "h": 200
-          }
-        ]
-      }
-    ]
-  },
+  "media/VideoFrame": [
+    {
+      "t": "component",
+      "dir": "V",
+      "w": 319,
+      "h": 200,
+      "children": [
+        {
+          "t": "frame",
+          "dir": "H",
+          "w": "fill",
+          "h": 200,
+          "clip": true
+        }
+      ],
+      "name": "media/VideoFrame"
+    }
+  ],
   "participate/CalloutCard": {
     "t": "variants",
     "name": "participate/CalloutCard",
@@ -3290,7 +3418,6 @@
     "options": [
       {
         "value": "crowdnewsroom",
-        "t": "frame",
         "dir": "V",
         "w": 319,
         "h": 252,
@@ -3303,6 +3430,7 @@
           {
             "t": "text",
             "chars": "CROWDNEWSROOM",
+            "w": 269,
             "weight": "bold",
             "size": 12,
             "color": "@color-on-canvas-accent",
@@ -3316,6 +3444,7 @@
             "t": "text",
             "style": "headline-xs",
             "chars": "Wem gehört die Stadt?",
+            "w": 269,
             "weight": "bold",
             "size": 17,
             "color": "@color-on-canvas",
@@ -3329,6 +3458,7 @@
             "t": "text",
             "style": "text-s",
             "chars": "Steigende Mieten, anonyme Eigentümer: Helfen Sie uns aufzudecken, wem die Häuser in Ihrer Nachbarschaft gehören.",
+            "w": 269,
             "size": 14,
             "color": "@color-on-canvas-muted",
             "tracking": 1.43
@@ -3343,6 +3473,7 @@
             "w": 269,
             "h": 4,
             "radius": "@radius-s",
+            "clip": true,
             "fill": "@color-grey-250",
             "children": [
               {
@@ -3362,6 +3493,7 @@
             "t": "text",
             "style": "text-s",
             "chars": "1.857 Beiträge",
+            "w": 269,
             "size": 14,
             "color": "@color-stroke-strong",
             "tracking": 1.43
@@ -3383,6 +3515,7 @@
                 "t": "text",
                 "style": "button",
                 "chars": "Mitmachen",
+                "w": "fill",
                 "weight": "bold",
                 "size": 16,
                 "color": "@color-always-light",
@@ -3394,7 +3527,6 @@
       },
       {
         "value": "survey",
-        "t": "frame",
         "dir": "V",
         "w": 319,
         "h": 280,
@@ -3407,6 +3539,7 @@
           {
             "t": "text",
             "chars": "UMFRAGE",
+            "w": 269,
             "weight": "bold",
             "size": 12,
             "color": "@color-on-canvas-accent",
@@ -3420,6 +3553,7 @@
             "t": "text",
             "style": "headline-xs",
             "chars": "Die Zukunft von CORRECTIV: Wir fragen Sie",
+            "w": 269,
             "weight": "bold",
             "size": 17,
             "color": "@color-on-canvas",
@@ -3433,6 +3567,7 @@
             "t": "text",
             "style": "text-s",
             "chars": "CORRECTIV verändert sich, und Sie gestalten mit. Was sollen wir recherchieren, welche Formate fehlen Ihnen?",
+            "w": 269,
             "size": 14,
             "color": "@color-on-canvas-muted",
             "tracking": 1.43
@@ -3447,6 +3582,7 @@
             "w": 269,
             "h": 4,
             "radius": "@radius-s",
+            "clip": true,
             "fill": "@color-grey-250",
             "children": [
               {
@@ -3466,6 +3602,7 @@
             "t": "text",
             "style": "text-s",
             "chars": "2.143 Teilnahmen",
+            "w": 269,
             "size": 14,
             "color": "@color-stroke-strong",
             "tracking": 1.43
@@ -3489,6 +3626,7 @@
                 "t": "text",
                 "style": "button",
                 "chars": "Teilnehmen",
+                "w": 85,
                 "weight": "bold",
                 "size": 16,
                 "color": "@color-on-canvas",
@@ -3507,7 +3645,6 @@
     "options": [
       {
         "value": "submitted",
-        "t": "frame",
         "dir": "V",
         "w": "hug",
         "h": 25,
@@ -3518,6 +3655,7 @@
           {
             "t": "text",
             "chars": "Eingereicht",
+            "w": "fill",
             "weight": "bold",
             "size": 11,
             "color": "@color-on-canvas-muted",
@@ -3527,7 +3665,6 @@
       },
       {
         "value": "checking",
-        "t": "frame",
         "dir": "V",
         "w": "hug",
         "h": 27,
@@ -3540,6 +3677,7 @@
           {
             "t": "text",
             "chars": "In Prüfung",
+            "w": 53,
             "weight": "bold",
             "size": 11,
             "color": "@color-on-canvas",
@@ -3549,7 +3687,6 @@
       },
       {
         "value": "checked",
-        "t": "frame",
         "dir": "V",
         "w": "hug",
         "h": 25,
@@ -3560,6 +3697,7 @@
           {
             "t": "text",
             "chars": "Geprüft: Falsch",
+            "w": "fill",
             "weight": "bold",
             "size": 11,
             "color": "@color-always-light",
@@ -3576,7 +3714,6 @@
     "options": [
       {
         "value": "radio",
-        "t": "frame",
         "dir": "V",
         "w": 319,
         "h": 230,
@@ -3585,6 +3722,7 @@
             "t": "text",
             "style": "headline-xs",
             "chars": "Wie oft lesen Sie CORRECTIV?",
+            "w": "fill",
             "weight": "bold",
             "size": 17,
             "color": "@color-on-canvas",
@@ -3598,6 +3736,7 @@
             "t": "text",
             "style": "text-s",
             "chars": "Eine Antwort.",
+            "w": "fill",
             "size": 14,
             "color": "@color-on-canvas-muted",
             "tracking": 1.43
@@ -3638,6 +3777,7 @@
                     "t": "text",
                     "style": "text-m",
                     "chars": "Täglich",
+                    "w": 261,
                     "size": 15,
                     "color": "@color-on-canvas",
                     "tracking": 0.67
@@ -3674,6 +3814,7 @@
                     "t": "text",
                     "style": "text-m",
                     "chars": "Wöchentlich",
+                    "w": 261,
                     "size": 15,
                     "color": "@color-on-canvas",
                     "tracking": 0.67
@@ -3710,6 +3851,7 @@
                     "t": "text",
                     "style": "text-m",
                     "chars": "Seltener",
+                    "w": 261,
                     "size": 15,
                     "color": "@color-on-canvas",
                     "tracking": 0.67
@@ -3722,7 +3864,6 @@
       },
       {
         "value": "selectboxes",
-        "t": "frame",
         "dir": "V",
         "w": 319,
         "h": 230,
@@ -3731,6 +3872,7 @@
             "t": "text",
             "style": "headline-xs",
             "chars": "Welche Themen interessieren Sie?",
+            "w": "fill",
             "weight": "bold",
             "size": 17,
             "color": "@color-on-canvas",
@@ -3744,6 +3886,7 @@
             "t": "text",
             "style": "text-s",
             "chars": "Mehrere Antworten möglich.",
+            "w": "fill",
             "size": 14,
             "color": "@color-on-canvas-muted",
             "tracking": 1.43
@@ -3784,6 +3927,7 @@
                     "t": "text",
                     "style": "text-m",
                     "chars": "Klima",
+                    "w": 261,
                     "size": 15,
                     "color": "@color-on-canvas",
                     "tracking": 0.67
@@ -3820,6 +3964,7 @@
                     "t": "text",
                     "style": "text-m",
                     "chars": "Lokal",
+                    "w": 261,
                     "size": 15,
                     "color": "@color-on-canvas",
                     "tracking": 0.67
@@ -3856,6 +4001,7 @@
                     "t": "text",
                     "style": "text-m",
                     "chars": "Faktenchecks",
+                    "w": 261,
                     "size": 15,
                     "color": "@color-on-canvas",
                     "tracking": 0.67
@@ -3868,7 +4014,6 @@
       },
       {
         "value": "textfield",
-        "t": "frame",
         "dir": "V",
         "w": 319,
         "h": 87,
@@ -3877,6 +4022,7 @@
             "t": "text",
             "style": "headline-xs",
             "chars": "Ihre Stadt",
+            "w": "fill",
             "weight": "bold",
             "size": 17,
             "color": "@color-on-canvas",
@@ -3893,6 +4039,7 @@
             "h": 49,
             "pad": ["@spacing-s", "@spacing-s", "@spacing-s", "@spacing-s"],
             "radius": "@radius-md",
+            "clip": true,
             "fill": "@color-canvas",
             "stroke": "@color-stroke",
             "strokeWeight": 1
@@ -3901,7 +4048,6 @@
       },
       {
         "value": "textarea",
-        "t": "frame",
         "dir": "V",
         "w": 319,
         "h": 161,
@@ -3910,6 +4056,7 @@
             "t": "text",
             "style": "headline-xs",
             "chars": "Was sollten wir recherchieren?",
+            "w": "fill",
             "weight": "bold",
             "size": 17,
             "color": "@color-on-canvas",
@@ -3923,6 +4070,7 @@
             "t": "text",
             "style": "text-s",
             "chars": "So genau, wie Sie möchten.",
+            "w": "fill",
             "size": 14,
             "color": "@color-on-canvas-muted",
             "tracking": 1.43
@@ -3935,6 +4083,7 @@
             "t": "text",
             "style": "text-m",
             "chars": "Mehr Lokales.",
+            "w": "fill",
             "size": 15,
             "color": "@color-on-canvas",
             "tracking": 0.67
@@ -3943,7 +4092,6 @@
       },
       {
         "value": "file",
-        "t": "frame",
         "dir": "V",
         "w": 319,
         "h": 114,
@@ -3952,6 +4100,7 @@
             "t": "text",
             "style": "headline-xs",
             "chars": "Dokument anhängen",
+            "w": "fill",
             "weight": "bold",
             "size": 17,
             "color": "@color-on-canvas",
@@ -3965,6 +4114,7 @@
             "t": "text",
             "style": "text-s",
             "chars": "PDF oder Foto.",
+            "w": "fill",
             "size": 14,
             "color": "@color-on-canvas-muted",
             "tracking": 1.43
@@ -3999,6 +4149,7 @@
                 "t": "text",
                 "style": "text-s",
                 "chars": "Foto oder Dokument auswählen (simuliert)",
+                "w": 261,
                 "size": 14,
                 "color": "@color-on-canvas-muted",
                 "tracking": 1.43
@@ -4011,8 +4162,7 @@
   },
   "player/ProgressBar": [
     {
-      "t": "frame",
-      "name": "player/ProgressBar, at the start",
+      "t": "component",
       "dir": "V",
       "w": 319,
       "h": 16,
@@ -4024,6 +4174,7 @@
           "w": "fill",
           "h": 4,
           "radius": "@radius-s",
+          "clip": true,
           "fill": "@color-stroke",
           "children": [
             {
@@ -4035,11 +4186,11 @@
             }
           ]
         }
-      ]
+      ],
+      "name": "player/ProgressBar, at the start"
     },
     {
-      "t": "frame",
-      "name": "player/ProgressBar, part way through",
+      "t": "component",
       "dir": "V",
       "w": 319,
       "h": 16,
@@ -4051,6 +4202,7 @@
           "w": "fill",
           "h": 4,
           "radius": "@radius-s",
+          "clip": true,
           "fill": "@color-stroke",
           "children": [
             {
@@ -4062,11 +4214,11 @@
             }
           ]
         }
-      ]
+      ],
+      "name": "player/ProgressBar, part way through"
     },
     {
-      "t": "frame",
-      "name": "player/ProgressBar, durationSec={0}, before anything is known",
+      "t": "component",
       "dir": "V",
       "w": 319,
       "h": 16,
@@ -4078,6 +4230,7 @@
           "w": "fill",
           "h": 4,
           "radius": "@radius-s",
+          "clip": true,
           "fill": "@color-stroke",
           "children": [
             {
@@ -4089,24 +4242,14 @@
             }
           ]
         }
-      ]
+      ],
+      "name": "player/ProgressBar, durationSec={0}, before anything is known"
     }
   ],
-  "player/MiniPlayer": [
-    {
-      "t": "text",
-      "name": "player/MiniPlayer",
-      "style": "text-s",
-      "chars": "canvas",
-      "size": 14,
-      "color": "@color-on-canvas-muted",
-      "tracking": 1.43
-    }
-  ],
+  "player/MiniPlayer": [],
   "profile/ClubCard": [
     {
-      "t": "frame",
-      "name": "profile/ClubCard, with memberSince",
+      "t": "component",
       "dir": "V",
       "w": 319,
       "h": 144,
@@ -4123,6 +4266,7 @@
             {
               "t": "text",
               "chars": "CORRECTIV CLUB",
+              "w": 107,
               "weight": "bold",
               "size": 12,
               "color": "@color-always-dark",
@@ -4145,6 +4289,7 @@
           "t": "text",
           "style": "headline-l",
           "chars": "Alex Beispiel",
+          "w": "fill",
           "weight": "bold",
           "size": 23,
           "color": "@color-always-dark",
@@ -4154,15 +4299,16 @@
           "t": "text",
           "style": "text-s",
           "chars": "Mitglied mit Beitrag · seit 4. März",
+          "w": "fill",
           "size": 14,
           "color": "@color-always-dark",
           "tracking": 1.43
         }
-      ]
+      ],
+      "name": "profile/ClubCard, with memberSince"
     },
     {
-      "t": "frame",
-      "name": "profile/ClubCard, memberSince={null}",
+      "t": "component",
       "dir": "V",
       "w": 319,
       "h": 144,
@@ -4179,6 +4325,7 @@
             {
               "t": "text",
               "chars": "CORRECTIV CLUB",
+              "w": 107,
               "weight": "bold",
               "size": 12,
               "color": "@color-always-dark",
@@ -4201,6 +4348,7 @@
           "t": "text",
           "style": "headline-l",
           "chars": "Alex Beispiel",
+          "w": "fill",
           "weight": "bold",
           "size": 23,
           "color": "@color-always-dark",
@@ -4210,17 +4358,18 @@
           "t": "text",
           "style": "text-s",
           "chars": "Testphase",
+          "w": "fill",
           "size": 14,
           "color": "@color-always-dark",
           "tracking": 1.43
         }
-      ]
+      ],
+      "name": "profile/ClubCard, memberSince={null}"
     }
   ],
   "profile/NavCard": [
     {
-      "t": "frame",
-      "name": "profile/NavCard, default",
+      "t": "component",
       "dir": "H",
       "w": 319,
       "h": 71,
@@ -4253,6 +4402,7 @@
                 {
                   "t": "text",
                   "chars": "Gespeichert",
+                  "w": 81,
                   "weight": "bold",
                   "size": 15,
                   "color": "@color-on-canvas",
@@ -4268,6 +4418,7 @@
               "t": "text",
               "style": "text-s",
               "chars": "Artikel für später",
+              "w": "fill",
               "size": 14,
               "color": "@color-on-canvas-muted",
               "tracking": 1.43
@@ -4281,11 +4432,11 @@
           "size": 16,
           "color": "@color-stroke-strong"
         }
-      ]
+      ],
+      "name": "profile/NavCard, default"
     },
     {
-      "t": "frame",
-      "name": "profile/NavCard, club",
+      "t": "component",
       "dir": "H",
       "w": 319,
       "h": 73,
@@ -4318,6 +4469,7 @@
                 {
                   "t": "text",
                   "chars": "Backstage",
+                  "w": 68,
                   "weight": "bold",
                   "size": 15,
                   "color": "@color-on-canvas",
@@ -4339,6 +4491,7 @@
                     {
                       "t": "text",
                       "chars": "Club",
+                      "w": "fill",
                       "size": 11,
                       "color": "@color-always-dark",
                       "tracking": 3.64,
@@ -4356,6 +4509,7 @@
               "t": "text",
               "style": "text-s",
               "chars": "Nur für Mitglieder",
+              "w": "fill",
               "size": 14,
               "color": "@color-on-canvas-muted",
               "tracking": 1.43
@@ -4369,13 +4523,13 @@
           "size": 16,
           "color": "@color-stroke-strong"
         }
-      ]
+      ],
+      "name": "profile/NavCard, club"
     }
   ],
   "profile/SettingRow": [
     {
-      "t": "frame",
-      "name": "profile/SettingRow, value={false}",
+      "t": "component",
       "dir": "H",
       "w": 319,
       "h": 35,
@@ -4392,6 +4546,7 @@
               "t": "text",
               "style": "text-m",
               "chars": "Push-Nachrichten",
+              "w": "fill",
               "size": 15,
               "color": "@color-on-canvas",
               "tracking": 0.67
@@ -4406,7 +4561,7 @@
             {
               "t": "frame",
               "dir": "V",
-              "w": "fill",
+              "w": 40,
               "h": 14,
               "x": 0,
               "y": 3,
@@ -4424,18 +4579,18 @@
             {
               "t": "frame",
               "dir": "H",
-              "w": "fill",
+              "w": 40,
               "h": 20,
               "x": 0,
               "y": 0
             }
           ]
         }
-      ]
+      ],
+      "name": "profile/SettingRow, value={false}"
     },
     {
-      "t": "frame",
-      "name": "profile/SettingRow, value with description",
+      "t": "component",
       "dir": "H",
       "w": 319,
       "h": 58,
@@ -4452,6 +4607,7 @@
               "t": "text",
               "style": "text-m",
               "chars": "Spotlight",
+              "w": "fill",
               "size": 15,
               "color": "@color-on-canvas",
               "tracking": 0.67
@@ -4464,6 +4620,7 @@
               "t": "text",
               "style": "text-s",
               "chars": "Der Newsletter, jeden Freitag.",
+              "w": "fill",
               "size": 14,
               "color": "@color-stroke-strong",
               "tracking": 1.43
@@ -4478,7 +4635,7 @@
             {
               "t": "frame",
               "dir": "V",
-              "w": "fill",
+              "w": 40,
               "h": 14,
               "x": 0,
               "y": 3,
@@ -4496,14 +4653,15 @@
             {
               "t": "frame",
               "dir": "H",
-              "w": "fill",
+              "w": 40,
               "h": 20,
               "x": 0,
               "y": 0
             }
           ]
         }
-      ]
+      ],
+      "name": "profile/SettingRow, value with description"
     }
   ]
 }

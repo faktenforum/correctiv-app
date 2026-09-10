@@ -136,6 +136,10 @@ const READER = `(() => {
       // most of what a design system is.
       classes: [...el.classList].filter((c) => !c.startsWith('css-')),
       w: width,
+      // The number as well as the word. Inside a plain frame there is no such thing
+      // as FILL — it is an auto-layout property — so a stacked child has to be given
+      // a width, and this is the only place that still knows it.
+      wpx: Math.round(box.width),
       h: Math.round(box.height),
       display: s.display,
       dir: s.flexDirection === 'row' ? 'H' : 'V',
@@ -151,6 +155,10 @@ const READER = `(() => {
       opacity: s.opacity === '1' ? undefined : Number(s.opacity),
       // Auto-layout has no word for either of these, so the caller has to translate.
       position: s.position === 'absolute' ? 'absolute' : undefined,
+      // A rail is wider than the screen and the app clips it. Figma does not unless
+      // it is told to, so a bleeding image or a horizontal rail hung 48px out of its
+      // own component and over whatever stood beside it.
+      clip: s.overflowX !== 'visible' || s.overflowY !== 'visible' ? true : undefined,
       margin: [px(s.marginLeft), px(s.marginRight), px(s.marginTop), px(s.marginBottom)],
     };
     if (parent && s.position === 'absolute') {
@@ -177,6 +185,11 @@ const READER = `(() => {
 
   return boxes.map((box) => ({
     surface: (box.firstElementChild.textContent || '').trim(),
+    // A specimen that renders nothing leaves the box holding only its own label,
+    // and reading \`lastElementChild\` then measures the word "canvas". Two
+    // components did exactly that — an empty rail and a player with no track — and
+    // arrived on the board as a component whose entire content was that word.
+    empty: box.childElementCount < 2,
     // The label of the specimen pair, which the gallery puts above the two boxes.
     label: (box.parentElement?.firstElementChild?.textContent || '').trim(),
     root: walk(box.lastElementChild, 0),
@@ -341,7 +354,7 @@ function styleNamer(tokens, specs) {
  * The gaps it cannot close are collected in `gaps` and printed, the way `kit.mjs`
  * prints its own.
  */
-function tokenise(node, t, style, gaps, name, twin) {
+function tokenise(node, t, style, gaps, name, twin, inPlainFrame) {
   const out = { t: node.chars !== undefined ? 'text' : 'frame' };
 
   if (node.chars !== undefined) {
@@ -362,6 +375,12 @@ function tokenise(node, t, style, gaps, name, twin) {
     Object.assign(out, {
       style: style(node.font, node.size),
       chars: node.chars,
+      // The width, which decides where it wraps. A Figma text node hugs by default,
+      // so without this every title became one long line and ran across whatever
+      // stood beside it on the board — measured, and the first thing anyone noticed.
+      // The app wraps at the phone width, and that width is exactly what the box
+      // reports, so carrying it over reproduces the same break.
+      w: node.w,
       font: family === 'sans' ? undefined : family,
       weight: weight === 'regular' ? undefined : weight,
       size: node.size,
@@ -397,13 +416,17 @@ function tokenise(node, t, style, gaps, name, twin) {
       // nothing extra to remember — but it has to be decided here, because nothing
       // about the measurement says which of the two a stack should become.
       dir: stacked ? undefined : node.dir,
-      w: node.w,
+      // FILL and HUG mean nothing in a plain frame, and Figma leaves such a child at
+      // whatever width it was born with: two children of a stack came out 24 and 40
+      // pixels wide inside a 319-pixel component, which is how this was found.
+      w: inPlainFrame && node.w !== 'hug' ? node.wpx : node.w,
       h: node.h,
       x: node.x,
       y: node.y,
       gap: node.gap ? (asked.gap ?? t.spacing(node.gap)) : undefined,
       pad: node.pad.some(Boolean) ? node.pad.map((n) => t.spacing(n)) : undefined,
       radius: node.radius ? (asked.radius ?? t.radius(node.radius)) : undefined,
+      clip: node.clip,
       // RULE 3, a fill at part opacity. `bg-always-dark/70` survives as the class
       // says it, because the interpreter now reads `@color-x/NN` and puts the alpha
       // on the paint rather than on the node — so a translucent surface does not
@@ -434,7 +457,7 @@ function tokenise(node, t, style, gaps, name, twin) {
       const space = (n) =>
         row ? { t: 'space', w: t.spacing(n) } : { t: 'space', h: t.spacing(n) };
       if (before && !stackedIn(node)) children.push(space(before));
-      children.push(tokenise(child, t, style, gaps, name, twin?.children?.[i]));
+      children.push(tokenise(child, t, style, gaps, name, twin?.children?.[i], stackedIn(node)));
       if (after && i !== last && !stackedIn(node)) children.push(space(after));
     }
     out.children = children;
@@ -465,19 +488,34 @@ function variantOf(label) {
 /** One component, from its specimens: a variant set, or a single component. */
 function assemble(id, boxes, dark, t, style, gaps) {
   const name = id;
+  const drawable = boxes.filter((box) => !box.empty);
+  if (drawable.length < boxes.length) {
+    gaps.add(
+      `${name}: ${boxes.length - drawable.length} specimen(s) render nothing, so there is nothing to draw`,
+    );
+  }
+  boxes = drawable;
+  if (boxes.length === 0) return [];
   const drawn = boxes.map((box, i) => ({
     variant: variantOf(box.label),
     node: tokenise(box.root, t, style, gaps, name, dark[i]?.root),
   }));
 
   const props = new Set(drawn.map((d) => d.variant?.prop).filter(Boolean));
-  if (props.size === 1 && drawn.every((d) => d.variant)) {
+  // Two or more, because a variant set with one variant is a set nobody can switch.
+  if (props.size === 1 && drawn.length > 1 && drawn.every((d) => d.variant)) {
     const prop = [...props][0];
     return {
       t: 'variants',
       name: name,
       prop: prop,
-      options: drawn.map((d) => Object.assign({ value: d.variant.value }, d.node)),
+      // Without the `t`: an option is always a component, whatever its measured
+      // root was, and a description that says `frame` here takes the page down with
+      // "A COMPONENT_SET node cannot have children of type other than COMPONENT".
+      options: drawn.map((d) => {
+        const { t: _shape, ...body } = d.node;
+        return { value: d.variant.value, ...body };
+      }),
     };
   }
 
@@ -486,12 +524,20 @@ function assemble(id, boxes, dark, t, style, gaps) {
       `${name}: ${drawn.length} specimens on ${props.size} axes, so they are ${drawn.length} components rather than one set`,
     );
   }
-  return drawn.map((d, i) =>
-    Object.assign(
-      { t: 'component', name: drawn.length === 1 ? name : `${name}, ${boxes[i].label}` },
-      d.node,
-    ),
-  );
+  // The measured node first and `t` after it, not the other way round: a spread that
+  // let the node's own `t` through made every one of these a plain frame, which
+  // draws the same and is not a component, so nothing on the board could instance
+  // it. A component also has to be a container, so a root that measured as a text
+  // node or an ellipse is wrapped in one.
+  return drawn.map((d, i) => {
+    const body =
+      d.node.t === 'frame' ? d.node : { t: 'frame', dir: 'V', w: 'hug', children: [d.node] };
+    return {
+      ...body,
+      t: 'component',
+      name: drawn.length === 1 ? name : `${name}, ${boxes[i].label}`,
+    };
+  });
 }
 
 const args = process.argv.slice(2);

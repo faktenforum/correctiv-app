@@ -1,8 +1,8 @@
 # @correctiv/figma-plugin
 
 The app's Figma plugin. It draws the app's screens onto a Figma board at 360x800 —
-the logical size of the Android screenshots in [`screens/`](../../screens) — in two
-renderings: a faithful **replica**, and a hand-drawn **wireframe**.
+the logical size of the Android screenshots in [`screens/`](../../screens) — and the
+components they are built from beside them.
 
 It is a **design tool, not a host**: nothing here ships, and the app does not depend
 on it. The name is deliberately not "wireframes": a plugin is the only channel with
@@ -22,45 +22,35 @@ document crosses the wire, never anything executable.
 
     node tools/figma-plugin/server.mjs      # then run the plugin once, and leave it open
 
-## Two renderings, one description
+## The wireframe rendering, and why it went
 
-A page picks its `mode`. The description is identical; only the rendering differs.
+There were two renderings of one description: this one, and a hand-drawn wireframe in
+Kalam with every colour flattened onto a grey ramp and every box traced by a
+seeded pencil wobble. It answered "how is the app built" where this one answers "what
+does it look like", and it was removed on 2026-09-10 because the screens it was drawn
+for are settled and nobody was reading it.
 
-| | `replica` | `wireframe` |
-| --- | --- | --- |
-| Type | Source Sans 3, Merriweather | Kalam, handwritten |
-| Colour | the real tokens | a grey ramp; brand fills become outlines |
-| Boxes | clean rectangles | drawn with a wobble, pencil-style |
-| Copy | real | real |
+What it cost while it existed is the part worth remembering, because it is what any
+second rendering costs. Every page, component and instance carried a `mode`.
+Components were registered per mode, since a sketched screen has to instance a
+sketched kit. Every colour was asked twice, once for what it is and once for what it
+becomes. And a text colour needed a ramp of its own, or white-on-brand became
+white-on-light-grey and every button label disappeared.
 
-**Nothing is overwritten.** `spec.json` names the real tokens (`@color-accent`,
-`@color-accent-alternative`) and the `tokens` block carries their values; the grey ramp is
-applied at draw time and only by a mode that has one.
-A colour the ramp does not list is converted by its own luminance rather than
-dropped, so the table stays a list of deliberate exceptions instead of something that
-must be kept exhaustive.
+Two smaller things went with it and are worth keeping written down:
 
-The pencil outline is an absolutely-positioned vector inside the frame it traces, and
-it **stretches**: an instance takes no children, so it shows the outline drawn inside
-its component, at the width the component had. `ui/Button` hugs its label, so without
-that every button stretched to fill a column wore a box stopping short of its own
-edge.
+**A glyph that Unicode lists as an emoji was a trap.** Kalam has almost no symbols,
+so the wireframe fell back to an emoji font, and any codepoint in `emoji-data.txt`
+came back as a colour picture on the one page that existed in order not to be about
+colour. `♥` U+2665 arrived red and `▶` U+25B6 as a blue play button; both have
+`Emoji_Presentation=No`, so nothing warns you, and U+FE0E does not persuade Figma
+otherwise. The board still uses their non-emoji twins, `♡` U+2661 and `►` U+25BA.
 
-**A glyph that Unicode lists as an emoji is a trap here.** Kalam has almost no
-symbols, so the wireframe falls back to an emoji font — and any codepoint in
-`emoji-data.txt` comes back as a colour picture on the one page that exists in order
-not to be about colour. `♥` U+2665 arrived red and `▶` U+25B6 as a blue play button;
-both have `Emoji_Presentation=No`, so nothing warns you, and U+FE0E does not persuade
-Figma otherwise. The board uses their non-emoji twins instead, `♡` U+2661 and `►`
-U+25BA, filled Ionicon or not. Before adding a symbol, check it against
-`emoji-data.txt` rather than against how it looks in your editor.
-
-The wobble is seeded from each node's name and size, so it is the *same* wobble on
-every redraw. Without that the whole board shimmers on each save and a real change
-becomes impossible to spot.
-
-The copy stays real in both, because a wireframe full of lorem ipsum is one nobody
-can argue with. What a wireframe drops is surface: colour, typeface, image content.
+**The pencil outline had to stretch.** An instance takes no children, so it showed
+the outline drawn inside its component, at the width the component had. `ui/Button`
+hugs its label, so without that every button stretched to fill a column wore a box
+stopping short of its own edge. Any future decoration drawn *inside* a component has
+the same problem.
 
 ## The app's tokens, as Figma variables
 
@@ -70,12 +60,13 @@ turns those into a Figma variable collection called **CORRECTIV** and **binds** 
 replica's fills to them, so changing a value in Figma repaints every screen that uses
 it.
 
-**The colours bind, the rest do not.** Thirty-five of the sixty-two tokens are
-colours and reach the board through `fill`, `stroke` and `color`. The other
-twenty-seven are
-the `spacing-*`, `radius-*` and `text-*` scales, and no property in the vocabulary
-accepts a token there: a `gap` or a `radius` is a plain number. They are synced so
-that a designer can read the scale in Figma, not so that editing one moves anything.
+**The colours bind; the scales resolve.** Thirty-five of the sixty-two tokens are
+colours and reach the board through `fill`, `stroke` and `color`, where a Figma
+variable can hold them. The other twenty-seven are the `spacing-*`, `radius-*` and
+`text-*` scales, and Figma has no variable a `gap` or a `cornerRadius` can bind to —
+so a description may write `@spacing-2xs` and the plugin turns it into six before it
+draws. The name is what `measure.mjs` reads off the app, and keeping it means a diff
+of the description says which step of the scale changed rather than which number.
 
     node tools/figma-plugin/sync-tokens.mjs      # after npm run tokens
 
@@ -88,9 +79,6 @@ is copied. The mapping from the board's palette to token names lives in `AS_TOKE
 and is deliberately **not** exhaustive: the media-placeholder greys, the YouTube red
 and the disabled tint stay literal, because giving them a token name would put a
 label on a decision nobody made.
-
-**Only the replica binds.** The wireframe exists in order not to be about colour, so
-binding it too would mean a change to the emphasis token repainted a pencil drawing.
 
 **A second variable mode is a paid Figma feature.** The tokens carry a light and a
 dark value, but on a Starter plan `addMode` throws and the collection stays
@@ -375,10 +363,13 @@ node types to swallow after the instance — the board separates its rows with
 `space, line, space` while the component brings its own hairline and padding, so all
 three go or every row ends up underlined twice.
 
-**The kit is drawn once per rendering.** A screen page drawn as a sketch has to
-instance a *sketched* kit, or the wireframe fills with the app's real colours and
-stops being a wireframe. Hence `Bausteine` and `Bausteine, Wireframe` from one
-description, and a registry keyed by mode.
+**The kit is one page and Figma lays it out.** Nothing in `kit.mjs` says where a
+component goes: they are the children of one auto-layout frame with `WRAP`, a fixed
+width and generous gaps. Three hand-set columns fitted thirteen entries, and the
+guessed heights that replaced them (`120 + options * 90`) packed fifty-two into a
+heap, because the guess is nowhere near a real size — an `ArticleRow` is four hundred
+wide and the type sheet is a screen tall, and neither number exists before Figma has
+drawn them.
 
 ## What the plugin does not do any more
 
@@ -397,8 +388,7 @@ Two other routes were tried first, and both have a ceiling this does not:
   That budget builds about thirteen screens, then stops until the next month.
 - **figma-linux-next's built-in MCP server** has no budget, but its write side is a
   fixed vocabulary: `create_frame`, `create_text`, `create_rectangle`, `update_node`,
-  `delete_node`, `reparent_node`, `set_variable`. No vectors, so no pencil outlines
-  and no arrowheads; no ellipses; no `layoutSizing* = FILL` on children; and
+  `delete_node`, `reparent_node`, `set_variable`. No vectors, so no arrowheads; no ellipses; no `layoutSizing* = FILL` on children; and
   `update_node` cannot change a font. It is also one HTTP round trip per node, and
   these screens run to hundreds of nodes each.
 
@@ -467,7 +457,7 @@ cannot reach the Keychain, cannot decrypt its cookie store, and drops the Figma 
 on the next start without saying anything.
 
 The emoji twins hold here too. `♡` U+2661 and `►` U+25BA draw as text on macOS, where
-the font the wireframe falls back to is Apple Color Emoji.
+the emoji font a missing glyph falls back to is Apple Color Emoji.
 
 ## Two things to know
 

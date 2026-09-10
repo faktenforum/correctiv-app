@@ -24,7 +24,6 @@ const HERE = dirname(fileURLToPath(import.meta.url));
 const ROOT = join(HERE, '../..');
 const SPEC = join(HERE, 'spec.json');
 const PAGE = 'Bausteine';
-const SKETCH_PAGE = 'Bausteine, Wireframe';
 
 // ---------------------------------------------------------------- the scales
 //
@@ -1080,27 +1079,51 @@ for (const entry of KIT) {
 // options, so a column that fits `ui/Typo` (eleven of them) wastes a screen on
 // `ui/Hairline`. Three columns, each with its own running y.
 
-const COLUMN_WIDTH = 460;
-const COLUMN_HEIGHT = 4200;
-
-const screens = [];
-let column = 0;
-let y = 0;
-for (const entry of KIT) {
-  // Enough room for the tallest variant set; the exact height is only known in Figma.
-  const options = entry.options ? entry.options.length : 1;
-  const height = 120 + options * 90;
-  if (y > 0 && y + height > COLUMN_HEIGHT) {
-    column += 1;
-    y = 0;
-  }
-  const placed = { t: entry.t, name: entry.name, x: column * COLUMN_WIDTH, y: y };
-  for (const key of Object.keys(entry)) if (key !== 't' && key !== 'name') placed[key] = entry[key];
-  screens.push(placed);
-  y += height;
-}
+/**
+ * One wrapping row, and Figma does the packing.
+ *
+ * Three hand-set columns fitted thirteen entries. Then a run of guessed heights
+ * (`120 + options * 90`) tried to pack fifty-two and produced a page of components
+ * lying on top of one another, because the guess is nowhere near a real size: an
+ * `ArticleRow` is four hundred wide and the type sheet is a screen tall, and neither
+ * number exists before Figma has drawn them.
+ *
+ * So nothing here says where anything goes. The kit is one auto-layout frame with
+ * `WRAP`, a fixed width and generous gaps; every entry hugs its own content and
+ * Figma flows them. `owned: '*'` still sweeps the page, and now there is one child
+ * to sweep.
+ */
+const board = {
+  t: 'frame',
+  name: 'Kit',
+  dir: 'H',
+  wrap: true,
+  w: 4400,
+  gap: 72,
+  crossGap: 96,
+  cross: 'MIN',
+  pad: [64, 64, 64, 64],
+  children: KIT,
+};
 
 checkScales(KIT, 'kit');
+
+/**
+ * A kit entry has to BE a component, or nothing on the board can point at it.
+ *
+ * `t` decides which constructor runs, and a frame draws exactly like a component
+ * until somebody tries to instance it. The measured entries said `frame` for a
+ * while and looked perfectly right on the page: fifty-two things that no screen
+ * could ever use. The variant sets said it too, and that one at least announced
+ * itself, with `combineAsVariants` refusing a set whose children are not
+ * components — halfway down the page, from inside Figma.
+ */
+for (const entry of KIT) {
+  if (entry.t === 'component' || entry.t === 'variants') continue;
+  // The one deliberate exception, and it says so in its own name.
+  if (entry.name === 'ui/Typo, Textstile') continue;
+  problems.push(`${entry.name} is a "${entry.t}", so nothing can instance it`);
+}
 
 // Refuse BEFORE writing, for the same reason `use-kit.mjs` does: throwing after the
 // file is on disk stops the script and not the damage, and ADR 0021 claims this fails
@@ -1120,32 +1143,25 @@ if (problems.length > 0) {
 
 const spec = JSON.parse(await readFile(SPEC, 'utf8'));
 spec.textStyles = TEXT_STYLES;
-spec.pages = (spec.pages || []).filter((p) => p.name !== PAGE && p.name !== SKETCH_PAGE);
 
-// One kit per rendering, from one description — the same trade the screens make.
-// A screen page drawn as a sketch has to instance a sketched kit, or the wireframe
-// fills with the app's real colours and stops being a wireframe. The components
-// carry the same names in both, and an instance resolves against the mode of the
-// page it lands on.
-for (const [name, mode] of [
-  [PAGE, 'replica'],
-  [SKETCH_PAGE, 'wireframe'],
-]) {
-  spec.pages.push({
-    name: name,
-    mode: mode,
-    // The kit is the only thing on these pages, so they sweep themselves rather than
-    // naming what they made: a component that loses its name would otherwise stay.
-    owned: '*',
-    screens: JSON.parse(JSON.stringify(screens)),
-  });
-}
+// The wireframe rendering went on 2026-09-10, and its two pages with it: this file
+// used to write the kit twice, once per mode, and `Wireframes` held the screens as a
+// pencil sketch. `code.js` no longer knows what a mode is.
+spec.pages = (spec.pages || []).filter((p) => p.name !== PAGE && p.mode !== 'wireframe');
+for (const page of spec.pages) delete page.mode;
+
+spec.pages.push({
+  name: PAGE,
+  // The kit is the only thing on this page, so it sweeps itself rather than naming
+  // what it made: a component that loses its name would otherwise stay.
+  owned: '*',
+  screens: [board],
+});
 await writeFile(SPEC, `${JSON.stringify(spec, null, 2)}\n`);
 
-const sets = screens.filter((s) => s.t === 'variants');
-console.log(`two kit pages: "${PAGE}" and "${SKETCH_PAGE}"`);
+const sets = board.children.filter((s) => s.t === 'variants');
 console.log(
-  `${screens.length - 1} components on "${PAGE}" (${sets.length} variant sets, ` +
+  `${board.children.length} components on "${PAGE}" (${sets.length} variant sets, ` +
     `${sets.reduce((n, s) => n + s.options.length, 0)} variants), ` +
     `${TEXT_STYLES.length} text styles`,
 );
