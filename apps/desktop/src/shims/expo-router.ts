@@ -162,7 +162,13 @@ export const router = {
    */
   setParams: (params: Params): void => {
     if (!navigationRef.isReady()) return;
-    const route = navigationRef.getCurrentRoute();
+    // CAST, because the container ref is typed against `ReactNavigation.RootParamList`
+    // and this app augments none — so the published types collapse `getCurrentRoute()`
+    // to `undefined`, and after the guard below TypeScript is left with `never`. It
+    // reads a `key` at runtime either way. Found by CI rather than here: the working
+    // copy this host is developed against types it wider, so the linked build accepted
+    // `route.key` and the published one did not.
+    const route = navigationRef.getCurrentRoute() as { key: string } | undefined;
     if (route === undefined) return;
     navigationRef.dispatch({ ...CommonActions.setParams(params), source: route.key });
   },

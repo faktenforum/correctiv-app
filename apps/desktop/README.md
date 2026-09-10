@@ -1111,6 +1111,30 @@ allocated less and is now clipped. Rasterising each widget and reading the PNG h
 is the workaround, and it reports the allocation without the request, so it says *that*
 a widget is the wrong size and never *whose* arithmetic made it so.
 
+### The branch is red on CI, and it had stopped being watched
+
+`npm run check` passes here and fails on CI, and both are correct. This host is
+developed against a gjsify WORKING COPY (see below), CI installs the published
+`@gjsify/*`, and the two disagree about what exists. Today that is one error:
+
+    src/app/(tabs)/_layout.tsx: Property 'bottomBar' does not exist on type 'TabsProps'
+
+`bottomBar` is the seam the mini player sits in. It exists in the working copy and
+is not in 0.47.0, so the tab layout cannot typecheck against the published package
+until gjsify releases it.
+
+**What is worth recording is not the error but how long nobody saw it.** The last CI
+run on this branch was 2026-08-31, at `fca1c59`. The mini player arrived after that,
+in `13bf905`, and the branch head has never been through CI at all — it was pushed
+without a pull request, so nothing ran. The first run against the current head was
+the pull request that added this paragraph, six weeks later.
+
+So the branch has two states and only one of them was ever checked: green against the
+working copy, on this machine, by hand; and unknown against the published package,
+until something opens a pull request. A host developed against an unreleased library
+will have that gap by construction. What it should not have is the gap going
+unnoticed, and the answer is a pull request per change rather than a push.
+
 ### Against a gjsify working copy
 
 Every defect this host has left is in gjsify rather than here, so the loop that matters
