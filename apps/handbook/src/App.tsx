@@ -2,6 +2,7 @@ import { Fragment, type ReactNode, useCallback, useEffect, useRef, useState } fr
 
 import docsModule from 'virtual:docs';
 import { DIAGRAMS } from './diagrams';
+import { Components } from './pages/Components';
 import { Design } from './pages/Design';
 import { DiagramIndex } from './pages/DiagramIndex';
 import { DiagramView } from './pages/DiagramView';
@@ -45,6 +46,7 @@ import { useLinkInterception, useRoute } from './router';
 const PAGES: Record<string, () => ReactNode> = {
   '/': Landing,
   '/handbook': Handbook,
+  '/components': Components,
   '/design': Design,
   '/diagrams': DiagramIndex,
   '/reference': Reference,
@@ -57,11 +59,11 @@ const APP_VIEW = '/workbench';
  * One application, not a site with a tool bolted to the side of it.
  *
  * Everything is a view of the same shell: a record, the sources board, the
- * drawings, the core's reference and the app itself in its frame. The rail on
- * the far left reaches any of them from any of them, the left sidebar holds what
- * is in the current section, and the right sidebar holds whatever the open view
- * has to say about itself, the inspector for the app and the contents for a
- * document.
+ * drawings, the core's reference, the app's components and the app itself in its
+ * frame. The rail on the far left reaches any of them from any of them, the left
+ * sidebar holds what is in the current section, and the right sidebar holds
+ * whatever the open view has to say about itself, the inspector for the app and
+ * the contents for a document.
  *
  * The workbench used to be a route with chrome of its own, which made it a second
  * site rather than a view. Its parts are now in the places this shell keeps for

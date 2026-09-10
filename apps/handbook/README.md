@@ -1,8 +1,8 @@
 # @correctiv/handbook
 
 The published site: this repository's own documentation, an inventory of what the
-app reads, the architecture drawn, a reference generated from the core, and the app
-itself in a device frame.
+app reads, the architecture drawn, a reference generated from the core and from the
+app's components, and the app itself in a device frame.
 
 It is what answers at the root of
 [faktenforum.github.io/correctiv-app](https://faktenforum.github.io/correctiv-app/).
@@ -16,6 +16,7 @@ It is what answers at the root of
 /decisions           the index · /decisions/0022 one record
 /diagrams            the core and its host, the records, the core's layers
 /reference           every exported symbol in packages/app-core
+/components          every component in apps/mobile/src/components, with its props
 /workbench           the app in a device frame, with the inspector
 /traps /conventions /readme /release
 ```
@@ -92,6 +93,12 @@ TypeDoc runs as a data extractor and never as a site generator. No HTML, no them
 This site's own components render the model. A generated documentation site would
 have arrived with its own navigation and its own design, and it would have become the
 front door by accident.
+
+Two runs, two halves, kept apart in the model under `core` and `components`. The core
+compiles under its own tsconfig and the app under Expo's, with JSX and the `@/*`
+aliases, so one run cannot cover both. They stay two sections on the site as well:
+the core is a library reached by subpath from `@correctiv/app-core`, and a component
+is reached by the `@/components` alias inside `apps/mobile` and from nowhere else.
 
 Not committed. It is derived, it is large, and `npm run build` regenerates it first.
 
