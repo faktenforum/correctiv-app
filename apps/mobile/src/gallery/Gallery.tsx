@@ -21,8 +21,8 @@
  * exactly one of the two, and looks right on both in light mode. Two surfaces and
  * the appearance control below are between them the cheapest way to see it.
  */
-import { Fragment } from 'react';
-import { Pressable, ScrollView, View } from 'react-native';
+import { router } from 'expo-router';
+import { Platform, Pressable, ScrollView, View } from 'react-native';
 
 import type { ThemePreference } from '@correctiv/app-core/stores/settings';
 
@@ -30,7 +30,7 @@ import { Hairline, Overline, SafeAreaView, Typo } from '@/components/ui';
 import { useCoreActions, useTheme } from '@/lib/store/core';
 import { useIsDark } from '@/lib/theme';
 
-import { CATALOGUE, type Specimen } from './catalogue';
+import { CATALOGUE, componentId, type Folder, type Specimen } from './catalogue';
 
 const SETTINGS: ThemePreference[] = ['system', 'light', 'dark'];
 
@@ -39,6 +39,13 @@ const SPECIMEN_COUNT = CATALOGUE.reduce(
   (n, group) => n + group.entries.reduce((m, entry) => m + entry.specimens.length, 0),
   0,
 );
+
+/** What the page says about itself, in each of the three states an address can ask for. */
+const BLURB = {
+  all: `${COMPONENT_COUNT} components from src/components, ${SPECIMEN_COUNT} specimens, grouped by folder. A page for developers, published like any other route.`,
+  one: 'One component of the catalogue. The reference has its props.',
+  none: 'No component of that name. The link that sent you here is out of date.',
+};
 
 /**
  * The appearance setting, and what it currently resolves to.
@@ -115,7 +122,7 @@ function SpecimenBlock({ specimen }: { specimen: Specimen }) {
   );
 
   return (
-    <View className="mt-s">
+    <View className="mt-ml">
       <Typo variant="text-s" weight="semibold" color="on-canvas-muted">
         {specimen.label}
       </Typo>
@@ -125,7 +132,118 @@ function SpecimenBlock({ specimen }: { specimen: Specimen }) {
   );
 }
 
-export function Gallery() {
+/**
+ * One way out of a filtered view, as the same pressable text either way.
+ *
+ * `accessibilityRole` is spelled out at the call sites rather than shortened to
+ * `role`, which is the HTML attribute and makes oxlint ask for a `<button>` this
+ * file has no way to render.
+ */
+function Action({
+  label,
+  accessibilityRole,
+  onPress,
+}: {
+  label: string;
+  accessibilityRole: 'button' | 'link';
+  onPress: () => void;
+}) {
+  return (
+    <Pressable
+      onPress={onPress}
+      accessibilityRole={accessibilityRole}
+      className="active:opacity-60"
+    >
+      <Typo variant="text-s" weight="semibold" color="accent">
+        {label}
+      </Typo>
+    </Pressable>
+  );
+}
+
+/**
+ * Leaves the app for a page beside it, from inside a frame as well as outside one.
+ *
+ * Relative, so the address resolves under whatever base the site is served from,
+ * and neither base is written down anywhere: `/app/gallery` gives `/components`
+ * locally, `/correctiv-app/app/gallery` gives `/correctiv-app/components` on Pages.
+ *
+ * Resolved against THIS window and assigned to the TOP one, and both halves of that
+ * matter. In the workbench this page is an iframe, so navigating the frame renders
+ * the whole handbook, activity bar and status bar and all, inside a 393px device
+ * frame — and the workbench's route poll then writes `/components` into its own
+ * address as if the app were on that route. Resolving against the top window instead
+ * would drop the base path, because the shell sits one directory above the app.
+ */
+function leaveApp(relative: string): void {
+  const target = new URL(relative, globalThis.location.href).href;
+  (globalThis.top ?? globalThis).location.href = target;
+}
+
+/**
+ * The two ways out of a filtered view, and the seam this page sits on.
+ *
+ * The gallery draws the components and the handbook's reference describes them, and
+ * for a long time those were two places with no way from one to the other. This is
+ * one half of the way; `pages/Components.tsx` is the other.
+ *
+ * **Back to the reference is web-only, and that is not a shortcut.** The handbook is
+ * a website: on the device there is nothing at the other end of that link. It leads
+ * somewhere wrong in exactly one place that does have a browser, the app's own dev
+ * server, which serves the app and not the handbook, so `../components` is the app's
+ * unmatched route there. The address bar says why.
+ *
+ * The component travels as a query and not as the row's anchor. An anchor has to
+ * name the platform (`nav.ts`, `componentId`) and this page cannot say which half of
+ * a split component the bundler handed it, so `#c-media-VideoFrame` matched no row
+ * at all. `?c=media/VideoFrame` is the same agreement as this page's own address,
+ * and the reference resolves it against the rows it actually has.
+ */
+function Links({ only, found }: { only: string; found: boolean }) {
+  return (
+    <View className="mt-s flex-row flex-wrap gap-m">
+      <Action
+        label="All components"
+        accessibilityRole="button"
+        onPress={() => router.setParams({ c: undefined })}
+      />
+      {/* Not offered when nothing matched: a name with no specimen has no props
+          either, and a link to them would be the second thing on the page
+          pretending the name is real. */}
+      {Platform.OS === 'web' && found ? (
+        <Action
+          label="Its props, in the reference"
+          accessibilityRole="link"
+          onPress={() => leaveApp(`../components?c=${only}`)}
+        />
+      ) : null}
+    </View>
+  );
+}
+
+/**
+ * The catalogue, or the one component the address asked for.
+ *
+ * Filtering rather than scrolling to an anchor, because the page this feeds is a
+ * frame the width of a phone: an anchor there leaves 100 specimens above and below
+ * the one somebody clicked, and the scroll position is the only thing saying which
+ * of them was meant.
+ *
+ * An id nothing matches yields an empty list rather than the whole catalogue. A
+ * link that has gone stale should say so, not quietly show everything and look
+ * like it worked.
+ */
+function shown(only: string | undefined): Folder[] {
+  if (!only) return CATALOGUE;
+  return CATALOGUE.map((group) => ({
+    ...group,
+    entries: group.entries.filter((entry) => componentId(group.folder, entry.name) === only),
+  })).filter((group) => group.entries.length > 0);
+}
+
+export function Gallery({ only }: { only?: string }) {
+  const groups = shown(only);
+  const found = groups.length > 0;
   return (
     <SafeAreaView edges={['top']} className="flex-1 bg-canvas">
       <ScrollView
@@ -133,21 +251,26 @@ export function Gallery() {
         contentContainerClassName="px-m pt-m pb-3xl"
         showsVerticalScrollIndicator={false}
       >
-        <Typo variant="headline-m">Component gallery</Typo>
+        <Typo variant="headline-m">{only ?? 'Component gallery'}</Typo>
         <Typo variant="text-s" color="on-canvas-muted" className="mt-2xs">
-          {`${COMPONENT_COUNT} components from src/components, ${SPECIMEN_COUNT} specimens, grouped by folder. A page for developers, published like any other route.`}
+          {only ? (found ? BLURB.one : BLURB.none) : BLURB.all}
         </Typo>
+        {only ? <Links only={only} found={found} /> : null}
         <Appearance />
 
-        {CATALOGUE.map((group) => (
-          <View key={group.folder} className="mt-xl">
+        {groups.map((group, g) => (
+          // The first folder sits under the page's own header, which is already a
+          // break; the gap that separates two folders would read as a hole there.
+          <View key={group.folder} className={g === 0 ? 'mt-l' : 'mt-4xl'}>
             <Hairline />
             <Overline label={`components/${group.folder}`} color="accent" className="mt-s" />
-            {group.entries.map((entry) => (
-              <Fragment key={entry.name}>
-                <Typo variant="headline-s" className="mt-m">
-                  {entry.name}
-                </Typo>
+            {group.entries.map((entry, i) => (
+              <View key={entry.name} className={i === 0 ? 'mt-l' : 'mt-4xl'}>
+                {/* A rule above every component but the first of its folder. The
+                    folder already has one, and two hairlines with nothing between
+                    them read as a mistake rather than as a boundary. */}
+                {i === 0 ? null : <Hairline className="mb-l" />}
+                <Typo variant="headline-s">{entry.name}</Typo>
                 {entry.note ? (
                   <Typo variant="text-s" color="on-canvas-muted" className="mt-4xs">
                     {entry.note}
@@ -156,7 +279,7 @@ export function Gallery() {
                 {entry.specimens.map((specimen) => (
                   <SpecimenBlock key={specimen.label} specimen={specimen} />
                 ))}
-              </Fragment>
+              </View>
             ))}
           </View>
         ))}

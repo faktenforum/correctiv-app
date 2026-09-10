@@ -17,8 +17,23 @@
  * the dev server without the base path so that route matching works, and open
  * `/gallery` there.
  */
+import { useLocalSearchParams } from 'expo-router';
+
 import { Gallery } from '@/gallery/Gallery';
 
+/**
+ * `?c=ui/SectionCard` narrows the page to one component.
+ *
+ * That parameter is what lets the handbook's reference link here, and what the way
+ * back is addressed with. `componentId` in `gallery/catalogue.tsx` is the shape of
+ * it, and the reference resolves the same two parts to its own rows.
+ *
+ * Sending a *frame* to one component is the step this is meant for and not one that
+ * works yet: the workbench carries the app's route in its own hash and cuts that
+ * hash at the first `?`, so the parameter does not survive the round trip
+ * (faktenforum/correctiv-app#109).
+ */
 export default function GalleryRoute() {
-  return <Gallery />;
+  const { c } = useLocalSearchParams<{ c?: string }>();
+  return <Gallery only={typeof c === 'string' && c ? c : undefined} />;
 }

@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 
 import api from 'virtual:api';
 import type { ApiComponent, ApiComponentGroup } from 'virtual:api';
@@ -7,8 +7,49 @@ import { href } from '../router';
 import { Badge } from '../ui/kit/badge';
 import { Disclosure, Filter, Source } from '../ui/Lookup';
 import { Page } from '../ui/Page';
+import { BASE } from '../workbench/frame/handle';
 
 const { alias, groups, root } = api.components;
+
+/**
+ * `?c=ui/SectionCard` opens the component the gallery came from.
+ *
+ * The app's gallery addresses a component the same way — `folder/name`, which is
+ * `gallery/catalogue.tsx`'s `componentId` — so one agreement carries a link in both
+ * directions and neither side has to know the other's URLs.
+ *
+ * A query and not this page's own row anchor, and that is the part that was got
+ * wrong first. An anchor here has to name the platform, because `media/VideoFrame`
+ * is two rows; the gallery draws whichever half the bundler kept and cannot say
+ * which, so a hash it built came out as `#c-media-VideoFrame` and matched nothing.
+ * Resolved here instead, against the rows that exist, which is why both halves open.
+ *
+ * Opened and not merely scrolled to, because a row's props live in a closed
+ * disclosure and landing on a shut one looks like the link found a heading and
+ * nothing else. `ui/Search.tsx` learnt that first.
+ *
+ * A name that matches nothing does nothing. This is the longer of the two lists, so
+ * that only happens to a hand-typed address, and the whole page is a fair answer.
+ */
+function useAskedFor(): void {
+  useEffect(() => {
+    const [group, name] = (new URLSearchParams(window.location.search).get('c') ?? '').split('/');
+    if (!group || !name) return;
+    const rows = groups.find((g) => g.name === group)?.components.filter((c) => c.name === name);
+    let first: HTMLDetailsElement | undefined;
+    for (const row of rows ?? []) {
+      const el = document.getElementById(componentId(group, name, row.platform));
+      if (!(el instanceof HTMLDetailsElement)) continue;
+      el.open = true;
+      first ??= el;
+    }
+    // `start`, not `center`: an open row is taller than the viewport, and centring
+    // one puts its summary — the name, the one thing that says you arrived — a
+    // couple of hundred pixels above the top of the page. `scroll-mt` on the
+    // disclosure is what keeps it clear of the sticky filter.
+    first?.scrollIntoView({ block: 'start' });
+  }, []);
+}
 
 /**
  * The app's components, which are the other half of the reference.
@@ -32,6 +73,7 @@ const { alias, groups, root } = api.components;
  */
 export function Components() {
   const [query, setQuery] = useState('');
+  useAskedFor();
 
   /*
    * A prop's name is part of what a component matches on. "onPress" is a real
@@ -157,7 +199,42 @@ export function Components() {
   );
 }
 
-/** One component: the line that imports it, its prose, and what it takes. */
+/**
+ * The way from a description to the thing it describes.
+ *
+ * This page says what a component takes and the app's `/gallery` draws it, and for
+ * a while those were two places with nothing between them. This is one half of the
+ * way across; `gallery/Gallery.tsx` carries the other, and `useAskedFor` above is
+ * what receives it coming back. The address is the app's, one directory below this
+ * site, and the component is the same `?c=folder/name` in both directions.
+ *
+ * A plain link and not a frame, deliberately, for now. A frame on this page would
+ * boot the whole app to answer "what props does Button take", which is what most
+ * readers came for. The frame belongs behind a control that asks for it.
+ */
+function Drawn({ group, name }: { group: string; name: string }) {
+  return (
+    <p className="mt-s text-s">
+      {/* `data-external`, because this is the one link on the page that must NOT be
+          taken by the shell's router. The app is proxied under this origin, so the
+          interceptor sees a same-origin path and would handle it — landing on the
+          handbook's own "No page at /app/gallery" without a request ever reaching
+          the proxy. It also rebuilds the address as `pathname + hash`, which drops
+          the `?c=` this link is entirely about (`router.tsx`, `useLinkInterception`).
+          It shipped without the attribute once, which is why `test/routes.test.ts`
+          asserts it rather than trusting this comment. */}
+      <a
+        className="text-accent underline underline-offset-2"
+        data-external="true"
+        href={`${BASE}/gallery?c=${group}/${name}`}
+      >
+        See it drawn, in the app's gallery
+      </a>
+    </p>
+  );
+}
+
+/** One component: the line that imports it, where to see it, its prose, and what it takes. */
 function Component({ group, component }: { group: string; component: ApiComponent }) {
   const props = component.props;
 
@@ -187,6 +264,7 @@ function Component({ group, component }: { group: string; component: ApiComponen
       <p className="break-words font-mono text-s text-on-canvas-muted">
         {`import { ${component.name} } from '${component.import}'`}
       </p>
+      <Drawn group={group} name={component.name} />
       {component.doc && (
         <div
           className="prose prose-sm mt-s max-w-content"
