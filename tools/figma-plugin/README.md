@@ -396,6 +396,24 @@ A plugin has the whole Plugin API and no quota. The read side of that same MCP s
 is still the right way to *check* the result, and that is how these screens were
 compared against `screens/android/`.
 
+## Reading the board back
+
+The MCP server's read side is the way to check what the plugin drew, and it is
+better than a screenshot for anything geometric: `get_metadata` returns every node's
+box, so "does this overflow", "did that text wrap" and "do these two overlap" are
+questions with numbers for answers. Four defects were found that way on
+2026-09-10 and none of them would have been settled by looking — a title that had
+become one long line, two children of a stack at 24 and 40 pixels inside a
+319-pixel component, a variant set with one variant, and two components whose entire
+content was the word "canvas".
+
+**`get_screenshot` needs the Figma window visible.** Behind another window or
+minimised it returns nothing and the call times out; the canvas is WebGL, and an
+Electron window that is not being composited has no pixels to export. It fails the
+same way whether the request comes from an MCP client or over HTTP, which is what
+makes it look like a broken export rather than a hidden window. Raise the window
+first, then export.
+
 ## Running it on Linux
 
 Needs a desktop client, which on Linux means
