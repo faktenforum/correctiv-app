@@ -110,6 +110,24 @@ export interface Entry {
   specimens: Specimen[];
 }
 
+/**
+ * One component's address, and the same string on both sides of the seam.
+ *
+ * The handbook's reference and this gallery are two views of one list, and a link
+ * between them is only as good as the agreement on what a component is called.
+ * `folder/name` is that agreement: it is what `src/components` already calls a
+ * component, and the handbook derives its own anchor from the same two parts
+ * (`nav.ts`, `componentId`).
+ *
+ * The platform suffix is deliberately not part of it. `ReaderView` and
+ * `ReaderView.web` are one entry here, because the gallery draws whichever the
+ * bundler picked, and asking for the other one is a question this page cannot
+ * answer.
+ */
+export function componentId(folder: string, name: string): string {
+  return `${folder}/${name}`;
+}
+
 export interface Folder {
   /** The directory under `src/components`. */
   folder: string;

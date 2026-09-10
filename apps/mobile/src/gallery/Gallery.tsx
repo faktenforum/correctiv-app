@@ -22,7 +22,8 @@
  * the appearance control below are between them the cheapest way to see it.
  */
 import { Fragment } from 'react';
-import { Pressable, ScrollView, View } from 'react-native';
+import { router } from 'expo-router';
+import { Platform, Pressable, ScrollView, View } from 'react-native';
 
 import type { ThemePreference } from '@correctiv/app-core/stores/settings';
 
@@ -30,7 +31,7 @@ import { Hairline, Overline, SafeAreaView, Typo } from '@/components/ui';
 import { useCoreActions, useTheme } from '@/lib/store/core';
 import { useIsDark } from '@/lib/theme';
 
-import { CATALOGUE, type Specimen } from './catalogue';
+import { CATALOGUE, componentId, type Folder, type Specimen } from './catalogue';
 
 const SETTINGS: ThemePreference[] = ['system', 'light', 'dark'];
 
@@ -125,7 +126,70 @@ function SpecimenBlock({ specimen }: { specimen: Specimen }) {
   );
 }
 
-export function Gallery() {
+/**
+ * The two ways out of a filtered view, and the seam this page sits on.
+ *
+ * The gallery draws the components and the handbook's reference describes them, and
+ * for a long time those were two places with no way from one to the other. This is
+ * one half of the way; `pages/Components.tsx` is the other.
+ *
+ * **Back to the reference is web-only, and that is not a shortcut.** The handbook is
+ * a website: on the device there is nothing at the other end of that link. Reaching
+ * it as `../components` rather than an absolute path is what makes it work in both
+ * places it does exist — `/app/gallery` locally resolves to `/components`, and
+ * `/correctiv-app/app/gallery` on Pages to `/correctiv-app/components`, without
+ * either being written down.
+ *
+ * It does not resolve on the app's own dev server, which serves the app and not the
+ * handbook. That is the one case where this link goes nowhere, and the address bar
+ * says why.
+ */
+function Links({ only }: { only?: string }) {
+  if (!only) return null;
+  const reference = Platform.OS === 'web' ? `../components#c-${only.replace('/', '-')}` : null;
+  return (
+    <View className="mt-s flex-row flex-wrap gap-m">
+      <Pressable onPress={() => router.setParams({ c: undefined })} className="active:opacity-60">
+        <Typo variant="text-s" weight="semibold" color="accent">
+          All components
+        </Typo>
+      </Pressable>
+      {reference ? (
+        <Pressable
+          onPress={() => globalThis.location?.assign(reference)}
+          className="active:opacity-60"
+        >
+          <Typo variant="text-s" weight="semibold" color="accent">
+            Its props, in the reference
+          </Typo>
+        </Pressable>
+      ) : null}
+    </View>
+  );
+}
+
+/**
+ * The catalogue, or the one component the address asked for.
+ *
+ * Filtering rather than scrolling to an anchor, because the page this feeds is a
+ * frame the width of a phone: an anchor there leaves 100 specimens above and below
+ * the one somebody clicked, and the scroll position is the only thing saying which
+ * of them was meant.
+ *
+ * An id nothing matches yields an empty list rather than the whole catalogue. A
+ * link that has gone stale should say so, not quietly show everything and look
+ * like it worked.
+ */
+function shown(only: string | undefined): Folder[] {
+  if (!only) return CATALOGUE;
+  return CATALOGUE.map((group) => ({
+    ...group,
+    entries: group.entries.filter((entry) => componentId(group.folder, entry.name) === only),
+  })).filter((group) => group.entries.length > 0);
+}
+
+export function Gallery({ only }: { only?: string }) {
+  const groups = shown(only);
   return (
     <SafeAreaView edges={['top']} className="flex-1 bg-canvas">
       <ScrollView
@@ -133,13 +197,18 @@ export function Gallery() {
         contentContainerClassName="px-m pt-m pb-3xl"
         showsVerticalScrollIndicator={false}
       >
-        <Typo variant="headline-m">Component gallery</Typo>
+        <Typo variant="headline-m">{only ?? 'Component gallery'}</Typo>
         <Typo variant="text-s" color="on-canvas-muted" className="mt-2xs">
-          {`${COMPONENT_COUNT} components from src/components, ${SPECIMEN_COUNT} specimens, grouped by folder. A page for developers, published like any other route.`}
+          {only
+            ? groups.length === 0
+              ? 'No component of that name. The link that sent you here is out of date.'
+              : 'One component of the catalogue. The reference has its props.'
+            : `${COMPONENT_COUNT} components from src/components, ${SPECIMEN_COUNT} specimens, grouped by folder. A page for developers, published like any other route.`}
         </Typo>
+        <Links only={only} />
         <Appearance />
 
-        {CATALOGUE.map((group) => (
+        {groups.map((group) => (
           <View key={group.folder} className="mt-xl">
             <Hairline />
             <Overline label={`components/${group.folder}`} color="accent" className="mt-s" />

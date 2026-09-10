@@ -6,6 +6,7 @@ import { componentId } from '../nav';
 import { href } from '../router';
 import { Badge } from '../ui/kit/badge';
 import { Disclosure, Filter, Source } from '../ui/Lookup';
+import { BASE } from '../workbench/frame/handle';
 import { Page } from '../ui/Page';
 
 const { alias, groups, root } = api.components;
@@ -157,6 +158,36 @@ export function Components() {
   );
 }
 
+/**
+ * The way from a description to the thing it describes.
+ *
+ * This page says what a component takes and the app's `/gallery` draws it, and for
+ * a while those were two places with nothing between them. This is one half of the
+ * way across; `gallery/Gallery.tsx` carries the other.
+ *
+ * The address is the app's, one directory below this site, and the component is a
+ * query rather than an anchor because the gallery filters to it: in a frame the
+ * width of a phone an anchor leaves a hundred specimens around the one that was
+ * meant. `folder/name` is the agreement on the name, and the gallery's
+ * `componentId` is the same two parts.
+ *
+ * A plain link and not a frame, deliberately, for now. A frame on this page would
+ * boot the whole app to answer "what props does Button take", which is what most
+ * readers came for. The frame belongs behind a control that asks for it.
+ */
+function Drawn({ group, name }: { group: string; name: string }) {
+  return (
+    <p className="mt-s text-s">
+      <a
+        className="text-accent underline underline-offset-2"
+        href={`${BASE}/gallery?c=${group}/${name}`}
+      >
+        See it drawn, in the app's gallery
+      </a>
+    </p>
+  );
+}
+
 /** One component: the line that imports it, its prose, and what it takes. */
 function Component({ group, component }: { group: string; component: ApiComponent }) {
   const props = component.props;
@@ -187,6 +218,7 @@ function Component({ group, component }: { group: string; component: ApiComponen
       <p className="break-words font-mono text-s text-on-canvas-muted">
         {`import { ${component.name} } from '${component.import}'`}
       </p>
+      <Drawn group={group} name={component.name} />
       {component.doc && (
         <div
           className="prose prose-sm mt-s max-w-content"

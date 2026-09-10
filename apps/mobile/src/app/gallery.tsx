@@ -17,8 +17,19 @@
  * the dev server without the base path so that route matching works, and open
  * `/gallery` there.
  */
+import { useLocalSearchParams } from 'expo-router';
+
 import { Gallery } from '@/gallery/Gallery';
 
+/**
+ * `?c=ui/SectionCard` narrows the page to one component.
+ *
+ * That parameter is what lets the handbook's reference link here, and what lets a
+ * frame be sent to a single component without reloading. `componentId` in
+ * `gallery/catalogue.tsx` is the shape of it, and the same two parts drive the
+ * handbook's own anchor.
+ */
 export default function GalleryRoute() {
-  return <Gallery />;
+  const { c } = useLocalSearchParams<{ c?: string }>();
+  return <Gallery only={typeof c === 'string' && c ? c : undefined} />;
 }
