@@ -22,6 +22,20 @@ export const DEVICES: Device[] = [
   { id: 'breakpoint', label: 'Tablet breakpoint (48rem)', w: 768, h: 1024 },
   { id: 'ipad-mini', label: 'iPad mini', w: 744, h: 1133 },
   { id: 'ipad-pro-11', label: 'iPad Pro 11"', w: 834, h: 1194 },
+  { id: 'ipad-pro-13', label: 'iPad Pro 13"', w: 1024, h: 1366 },
+  /*
+   * Above here the portrait convention stops describing anything. A laptop has no
+   * portrait, so these two carry their natural size and the orientation control
+   * turns them on their side rather than upright — which is still worth having,
+   * because a large tablet held that way is the same rectangle.
+   *
+   * They are in the list because the app has to work here too and today does not:
+   * there is no breakpoint anywhere in `apps/mobile/src` and no
+   * `useWindowDimensions`, so every one of these widths shows a phone layout
+   * stretched. That is the point of being able to select them.
+   */
+  { id: 'laptop', label: 'Laptop, 1280', w: 1280, h: 800 },
+  { id: 'desktop', label: 'Desktop, 1440', w: 1440, h: 900 },
   { id: 'custom', label: 'Custom', w: 0, h: 0 },
 ];
 

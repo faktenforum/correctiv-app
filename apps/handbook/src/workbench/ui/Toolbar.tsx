@@ -7,7 +7,7 @@ import { Segmented } from '../../ui/kit/segmented';
 import { Separator } from '../../ui/kit/separator';
 import { Tooltip, TooltipContent, TooltipTrigger } from '../../ui/kit/tooltip';
 import { DEVICES, HOST_DEVICE } from '../devices';
-import { ROUTES } from '../routes';
+import { PAGES, ROUTES } from '../routes';
 import { frameSize, writeHash, type PreviewState } from '../state';
 import type { Status } from '../api';
 
@@ -165,6 +165,43 @@ export function Toolbar({ state, routeField, onRouteField, onChange, onReload, o
           ))}
         </select>
       )}
+
+      {/*
+        The pages worth reaching, beside the field rather than inside it.
+        `datalist` below still autocompletes what somebody types, but it shows the
+        path alone, and a path is exactly what a person does not know:
+        `/behauptung/claim-001` is not a thing anybody guesses. So the notes from
+        `routes.ts` are in the option text, and the not-found page is in the list
+        as an address on purpose.
+
+        Not the recovery screen, although it belongs in a list like this. It has no
+        address: it is reached by something throwing, and a route that throws would
+        be published like any other. Giving it one is #112's kind of problem.
+      */}
+      <select
+        /*
+          Capped, because a `select` takes the width of its widest option and the
+          longest note here is a sentence. Uncapped it was 640px on a 1700px bar
+          and left the route field a stump — seen in a screenshot, not in a check.
+        */
+        className={cn(FIELD, 'w-[9rem] shrink-0')}
+        aria-label="Go to a page"
+        value=""
+        onChange={(e) => {
+          if (e.target.value) onChange({ route: e.target.value });
+        }}
+      >
+        <option value="">Pages…</option>
+        {PAGES.map((group) => (
+          <optgroup key={group.group} label={group.group}>
+            {group.pages.map((page) => (
+              <option key={page.route} value={page.route}>
+                {page.note ? `${page.label}, ${page.note}` : page.label}
+              </option>
+            ))}
+          </optgroup>
+        ))}
+      </select>
 
       <input
         className={cn(FIELD, 'min-w-[8rem] flex-1 font-mono')}
