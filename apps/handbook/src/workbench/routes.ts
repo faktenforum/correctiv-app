@@ -8,7 +8,7 @@
  * build, but the export has none, so a list that is honest in both places has to
  * come from the file tree at build time.
  *
- * Each entry carries a note, because the point of the picker is the pages nobody
+ * An entry can carry a note, because the point of the picker is the pages nobody
  * would guess the address of. `/behauptung/claim-001` is not a thing anybody types.
  */
 export interface Page {
@@ -63,6 +63,14 @@ export const PAGES: PageGroup[] = [
     ],
   },
   {
+    /*
+     * The not-found screen is in here as an address on purpose, because any
+     * address the app has no route for is one of them.
+     *
+     * Not the recovery screen, though it belongs in a group like this. It has no
+     * address: it is reached by something throwing, and a route that throws would
+     * be published like any other. Giving it one is #112's kind of problem.
+     */
     group: 'Worth being able to reach',
     pages: [
       {

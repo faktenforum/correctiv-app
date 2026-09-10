@@ -58,6 +58,15 @@ export function Toolbar({ state, routeField, onRouteField, onChange, onReload, o
    * anything are two rows of the app nobody can see.
    */
   const host = state.device === HOST_DEVICE;
+  /*
+   * Read off the frame, never off `state.landscape`. That flag swaps the two
+   * numbers, and it only reads as "landscape" while every pair is written
+   * portrait-first. Two things are not: a custom size is whatever was typed into
+   * the fields, and the presets above tablet size are written the way a laptop is
+   * used. Measured on `d=desktop` before this line existed, the control had
+   * "Portrait" lit beside a 1440 × 900 frame.
+   */
+  const landscape = size.w > size.h;
 
   return (
     <div
@@ -140,12 +149,14 @@ export function Toolbar({ state, routeField, onRouteField, onChange, onReload, o
           name="orientation"
           legend="Orientation"
           className="shrink-0"
-          value={state.landscape ? 'landscape' : 'portrait'}
+          value={landscape ? 'landscape' : 'portrait'}
           options={[
             { value: 'portrait', label: 'Portrait' },
             { value: 'landscape', label: 'Landscape' },
           ]}
-          onChange={(value) => onChange({ landscape: value === 'landscape' })}
+          // A radio group fires only when the value actually changes, so the one
+          // thing ever being asked for here is the other way round.
+          onChange={() => onChange({ landscape: !state.landscape })}
         />
       )}
 
@@ -167,16 +178,11 @@ export function Toolbar({ state, routeField, onRouteField, onChange, onReload, o
       )}
 
       {/*
-        The pages worth reaching, beside the field rather than inside it.
-        `datalist` below still autocompletes what somebody types, but it shows the
-        path alone, and a path is exactly what a person does not know:
-        `/behauptung/claim-001` is not a thing anybody guesses. So the notes from
-        `routes.ts` are in the option text, and the not-found page is in the list
-        as an address on purpose.
-
-        Not the recovery screen, although it belongs in a list like this. It has no
-        address: it is reached by something throwing, and a route that throws would
-        be published like any other. Giving it one is #112's kind of problem.
+        The pages worth reaching, beside the field rather than inside it. The
+        `datalist` below still completes a path somebody starts typing, but it has
+        no groups, it only narrows as it is typed into, and what it draws is the
+        browser's business — so the labels and notes `routes.ts` carries need
+        options of their own to be read at all.
       */}
       <select
         /*
