@@ -232,11 +232,29 @@ components it had been rendering `ok` around.
 wrong reason". It is true of these two non-param routes as well, and nothing about the
 `ok` lines says so.
 
-**Not fixed here.** The remedy is the one the refusal names — wrap the label in a
-`<View>` and move the utility onto it — and it belongs in `apps/mobile`, where both
-components live and where it is right for every host. That is a change to the phone's
-own components and takes its own pull request against `main`, the same way the
-one-line labels did.
+**Not fixed here, and THE OBVIOUS REMEDY WAS TRIED AND DOES NOT WORK**, which is the
+more useful half of this entry. The refusal itself says "wrap it in a `<View>`, or
+move the utility to a child", so both components were rewritten that way — the
+`flex-row items-center` moved off `FormField`'s `Pressable` onto a `<View>` around its
+two children, and `justify-center` moved off `ProgressBar`'s onto a `<View>` around
+the bar. Built, swept, and both still refuse: `0 of 2`.
+
+So the cause is NOT simply a layout utility on a `Gtk.Button`, which is what the first
+reading of the message suggests. What is known:
+
+- `flex-1` is the only utility in either component that becomes an unresolved
+  `expand`. `layout.ts` turns it into `intent.expand = 'main-axis'`, while `w-full`
+  and `h-full` resolve straight to `hexpand`/`vexpand` and never reach the intent.
+- The refusal names the primitive `<View>`. Neither component has a `<View>` carrying
+  `flex-1`: `FormField`'s two are on a `<Typo>`, which is a `Text`, and `ProgressBar`
+  has none at all. So the element being refused is most likely one the layer or a
+  shim SYNTHESISES, not one this app wrote.
+- `hitSlop`, which `ProgressBar` passes, is dropped by the shim rather than wrapped,
+  so it is not the source of an extra box.
+
+That is where the next person should start, and it is worth saying that the message
+would have been enough on its own if it named the class list and the parent it could
+not resolve against.
 
 ### The deep-link loop, fixed upstream and now measured
 
