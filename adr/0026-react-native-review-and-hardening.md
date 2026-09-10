@@ -1,10 +1,10 @@
 # ADR 0026 — The React Native review, and which of it we are doing
 
-Status: accepted, 2026-09-10. All nine sections are decisions. Three of them carry a
-named open item rather than a completed choice: who sends notifications (3), which
-provider receives an error report (5), and three details of the header split (9).
-Every measurement below names the host it was taken on, because none of them was
-taken on iOS.
+Status: accepted, 2026-09-10. All nine numbered sections are decisions. Three of them
+carry a named open item rather than a completed choice: who sends notifications (3),
+which provider receives an error report (5), and three details of the header split
+(9). Every measurement below names its host, and none was taken on iOS; the last
+section says what that costs.
 
 ## Context
 
@@ -25,8 +25,10 @@ decisions nobody had made.
 This record is the second half of that review: what the team decided to do about it.
 Nine of the reviewer's eleven items survive here, five of them with a different
 argument than the one they arrived with, and two were dropped — see *What this record
-drops*. Where a finding turned out to be answerable by reading the source or running
-the app, it was, and the answer is in the section rather than in a follow-up.
+drops*. One decision was not in the review at all, the tablet half of section 7, which
+is why the count of sections and the count of surviving items agree by coincidence.
+Where a finding turned out to be answerable by reading the source or running the app,
+it was, and the answer is in the section rather than in a follow-up.
 
 ## Decision
 
@@ -44,8 +46,9 @@ the Redux, Storage and React Navigation domains.
 **Not for network inspection, which React Native already does.** In `react-native`
 0.86.3 both `enableNetworkEventReporting` and `fuseboxNetworkInspectionEnabled`
 default to `true` (`src/private/featureflags/ReactNativeFeatureFlags.js`), and the
-capture is native: `Libraries/Network/RCTInspectorNetworkReporter.mm`, wired from
-`RCTNetworking.mm`. The review named network tracking as the first use case, and it
+capture is native on both platforms: `Libraries/Network/RCTInspectorNetworkReporter.mm`
+wired from `RCTNetworking.mm`, and `InspectorNetworkReporter.kt` beside
+`NetworkingModule.kt`. The review named network tracking as the first use case, and it
 is the one item that needs no dependency at all.
 
 What it does add is worth having on this state tree. `lib/store/core.ts` already
@@ -69,11 +72,11 @@ unreachable the call is; five variants were built into a production export on
 2026-09-10 and only the two written at MODULE scope
 (`__DEV__ ? require(…) : null` and `if (__DEV__) { require(…) }`) left their module
 out. The current debugger genuinely does stay out, but because
-`redux-devtools-expo-dev-plugin/build/index.js` opens with
+`redux-devtools-expo-dev-plugin/build/index.js` carries
 `if (process.env.NODE_ENV !== "production")` at module scope, which Metro substitutes
 and then eliminates. `@rozenite/redux-devtools-plugin` 2.4.0 guards itself the same
 way, so the swap keeps the property. **The shape in `core.ts` is not what to copy for
-a local module**, which is why the agent-tools component above is selected at module
+a local module**, which is why the agent-tools component below is selected at module
 scope.
 
 **A developer and an agent cannot look at once.** Rozenite's own documentation states
@@ -88,13 +91,21 @@ Select the component at module load instead:
 const AgentTools = __DEV__ ? require('@/lib/devtools/AgentTools').default : () => null;
 ```
 
-**The Metro side holds itself back, and the config file changes shape.** In
-`@rozenite/metro` 2.4.0 `enabled` defaults to `false`, and `isBundling()` reads
-`process.argv` and returns the config untouched under `expo export`, so
-`npm run build:web` is outside this by construction rather than by our discipline. It
-chains `resolveRequest` onto whatever is already there, so both resolver workarounds
-in `metro.config.js` survive. But `withRozenite` returns `() => Promise<config>`,
-and that file exports an object today. Uniwind stays outermost, as it must:
+**The Metro side does not hold itself back, whatever the documentation says.**
+Rozenite's own getting-started page says it "is off by default, so it never runs in
+production by accident". `@rozenite/metro` 2.4.0 does not do that. With `enabled` left
+undefined it logs that being on by default is going away and then switches itself on
+anyway, unless `isBundling()` says otherwise — that function reads `process.argv` and
+recognises `expo export` and `react-native bundle`. Pass `enabled` explicitly and
+`isBundling()` is never consulted at all, so `true` reaches an `expo export` exactly
+as it reaches `expo start`. **So `npm run build:web` stays clean by our discipline, an
+environment variable nobody sets in CI, and not by construction.** That is the
+opposite of the promise, and it is why the assertion below is not optional.
+
+**The config file changes shape.** `withRozenite` chains `resolveRequest` onto
+whatever is already there, so both resolver workarounds in `metro.config.js` survive.
+But it returns `() => Promise<config>`, and that file exports an object today. Uniwind
+stays outermost, as it must:
 
 ```js
 module.exports = async () =>
@@ -107,9 +118,10 @@ Add the assertion beside the one it belongs with: `pages.yml` already fails the
 deploy when the published bundle carries `__correctiv`, the tell for a `--dev` export
 ([ADR 0025](0025-the-published-app-is-a-production-bundle.md)). A second grep for a
 Rozenite marker is three lines, and it is what turns "development-only" from an
-intention into something that can fail. Note what has no counterpart: the CI builds a
-release APK and asserts nothing about its contents, which is true of the current
-debugger too.
+intention into something that can fail. Note what has no counterpart: the CI asserts
+against the generated Android manifest before the build and against the signature
+afterwards, and about the JavaScript inside the release APK nothing at all, which is
+true of the current debugger too.
 
 **Capture rules, because the Redux domain can write.** It lists and dispatches
 actions and drives rollback, and the network domain records request and response
@@ -124,8 +136,9 @@ inspection says nothing about either.
 
 ### 2. Keyboard-aware inputs, as a usability requirement
 
-Three screens set tap and dismissal behaviour on an ordinary scroller and configure
-no keyboard avoidance at all: [`LoginGate.tsx`](../apps/mobile/src/components/gate/LoginGate.tsx),
+Three screens set tap handling on an ordinary scroller, two of them dismissal as
+well, and none configures keyboard avoidance at all:
+[`LoginGate.tsx`](../apps/mobile/src/components/gate/LoginGate.tsx),
 [`formular.tsx`](../apps/mobile/src/app/formular.tsx) and
 [`suche.tsx`](../apps/mobile/src/app/suche.tsx). `KeyboardAvoidingView` appears
 nowhere in the repository, and the participation form's action footer is a sibling of
@@ -145,9 +158,8 @@ scroller, do not double-apply insets, and keep the web layout.
 
 Done means the focused field, the caret, errors and the next/submit control stay
 reachable with the software keyboard open on small iOS and Android screens, including
-multiline input and large text. Exercise focus-next, submission, dismissal and
-returning to the screen. The existing focus-next handling in sign-in stays. This is a
-usability fix and not speculative `TextInput` performance work.
+multiline input and large text. Exercise submission, dismissal and returning to the
+screen; sign-in's existing focus-next handling stays and has to keep working.
 
 ### 3. Notification delivery stays deferred until it is decided how they are sent
 
@@ -164,16 +176,14 @@ assume a backend or an editorial tool already owns sending. The recommendation i
 decide that first and to build the client and the sender as one end-to-end feature.
 The decision needs to name:
 
-- Which events trigger a notification, who sends it, and which system owns targeting
-  and delivery.
-- Transport and provider, credentials ownership, delivery-error handling, and whether
-  the public web target is in scope.
-- The consent experience, topic preferences, and the difference between an app
-  preference and an OS permission, including denial and later revocation.
-- Token registration, rotation and removal, account association, sign-out behaviour
-  and retention.
-- Foreground presentation, and tap handling from background and from a cold start,
-  including denied access, an expired session and content that no longer exists.
+- Which events trigger a notification, which system owns targeting and delivery, and
+  on what transport, with whose credentials, and whether the public web target counts.
+- The difference between an app preference and an OS permission, both at first ask and
+  after a denial or a later revocation. That difference is the one the current switch
+  papers over, so it is the one most likely to be built wrong.
+- Token registration, rotation, removal and retention, and what sign-out does to them.
+- Tap handling from background and from a cold start, including denied access, an
+  expired session and content that no longer exists.
 
 Afterwards, permission and token APIs belong in the host behind ports where the core
 needs them, preference and payload policy in the core, and navigation stays the
@@ -220,8 +230,7 @@ The splash lifts on `fontsLoaded && storeReady`, and in two runs of the same bui
 | splash hidden | 272 ms | 249 ms |
 
 The two race, and in run 1 the store was ready 83 ms before the fonts, where saving
-19 ms saves nothing. **If cold start is the goal, `useFonts` is the larger item**, and
-no section of this review looks at it.
+19 ms saves nothing. **If cold start is the goal, `useFonts` is the larger item.**
 
 **So the argument for this decision is directness and timing, not startup.** Directly:
 a memory-mapped file and a JSI call instead of a bridge hop and a SQLite query, and
@@ -257,8 +266,10 @@ a choice nobody has made.
 gated on `fontsLoaded && storeReady`. There is no error boundary anywhere in the app
 host and no global handler — no `ErrorUtils`, no `setGlobalHandler`. So a throw before
 both flags leaves the app on the splash screen for ever, with no crash, no message and
-nothing a restart improves. Hydration is covered, because `persist()`'s `.catch` sets
-`storeReady` anyway; `useFonts` and the gate's render are not, and `LoginGate.tsx`
+nothing a restart improves. Hydration is covered, but by the host and not by the
+core: `persist()` swallows a failed read per slice, and the `.catch` around the
+host's own `start()` in `_layout.tsx` sets `storeReady` anyway when something else
+throws. `useFonts` and the gate's render have no such floor, and `LoginGate.tsx`
 contains no `try`.
 
 **No new dependency for it.** `expo-router` ships the boundary: `Try`
@@ -269,12 +280,12 @@ this app: `getDerivedStateFromError` calls `SplashScreen.hideAsync()` itself, wh
 precisely the failure above. Export `ErrorBoundary` from `app/_layout.tsx`, which is
 the root route and so covers the tree, with a German recovery screen and a retry
 control. One note on the review's wording: `Try` has **no** `onError` callback, that
-belongs to `react-error-boundary`. Reporting goes in the boundary component's own
-effect, which is also what keeps the two halves of this section one change apart.
+belongs to `react-error-boundary`. Reporting therefore goes in an effect inside the
+boundary component, which is what keeps the two halves of this section one change
+apart.
 
-**Reporting is decided; the provider is not.** We want caught errors reported from
-production builds and will implement it. What is outstanding is the choice, and it
-carries more than a package name:
+**Reporting is decided; the provider is not**, and the choice carries more than a
+package name:
 
 - Which provider, and whether CORRECTIV already runs one for the website. An existing
   contract answers this question and closes it.
@@ -308,10 +319,11 @@ therefore a fixed value in the store rather than something read from the device,
 vocabulary in the core, and the core imports no React, which
 `packages/app-core/test/boundary.test.ts` enforces. The `intl` instance and the
 provider are the host's. Extraction runs over both workspaces and the compiled
-catalogues are build artifacts. For `src/data/`, which holds around 230 German
-strings, the line is: *would this string still exist if the content came from a CMS?*
-If yes it is UI vocabulary in data's clothing and goes in the catalogue; if no it is
-content and follows the same rule as articles, which this record does not translate.
+catalogues are build artifacts. For `packages/app-core/src/data/`, which holds around
+230 German strings, the line is: *would this string still exist if the content came
+from a CMS?* If yes it is UI vocabulary in data's clothing and goes in the catalogue;
+if no it is content and follows the same rule as articles, which this record does not
+translate.
 
 **Two checks, in the same commit as the first message.** An English catalogue that
 ships to nobody rots quietly, and "keep it current" cannot fail, so it enforces
@@ -343,32 +355,30 @@ under consideration. Both stop being true the day the first descriptor lands.
 
 ### 7. Tablet is in scope, and accessibility is the work beside it
 
-**Tablet layouts are in scope and the views become responsive.** The starting point is
-zero: no breakpoints in `apps/mobile/src/global.css`, no `sm:`/`md:`/`lg:` variant
-anywhere under `apps/mobile/src`, and no `useWindowDimensions` or `Dimensions.get` in
-either the app or the core. This is work from nothing rather than a polish pass.
+**Tablet layouts are in scope and the views become responsive.** This half was not in
+the review; it is the team's own addition, and it is the only decision here that
+arrived from outside it. The starting point is zero: no breakpoints in
+`apps/mobile/src/global.css`, no `sm:`/`md:`/`lg:` variant anywhere under
+`apps/mobile/src`, and no `useWindowDimensions` or `Dimensions.get` in either the app
+or the core. This is work from nothing rather than a polish pass.
 
 Two things follow immediately. Looking at it needs no device:
 `apps/handbook/src/workbench/devices.ts` already frames a tablet breakpoint at
 768 × 1024, an iPad mini at 744 × 1133 and an iPad Pro 11" at 834 × 1194. And it
 reaches [ADR 0013](0013-native-tabs-and-a-web-tab-bar-of-its-own.md): native tabs are
-Material's bottom navigation bar, a tablet wants a navigation rail at the side, and
-0013 records that `unstable-native-tabs` is alpha, exposes no height and mounts all
-five tabs eagerly. A tablet layout is therefore not the same screens made wider, and
-where it lands is 0013's territory rather than this record's.
+Material 3's navigation bar, a tablet wants a navigation rail at the side, and 0013
+records that `unstable-native-tabs` is alpha, exposes no height and mounts all five
+tabs eagerly. A tablet layout is therefore not the same screens made wider, and where
+it lands is 0013's territory rather than this record's.
 
 Accessibility, on the same screens:
 
 - Touch targets at least **44 × 44 logical units** (not device pixels), aiming for
-  **48 × 48 dp on Android**. Prefer enlarging the pressable area to adding `hitSlop`,
-  without overlapping a neighbour or exceeding the parent. Two properties `hitSlop`
-  does not have are worth checking per site: a slop rectangle can overlap the control
-  beside it, and it does not grow with the system font while padding does. It is also
-  invisible in a screenshot, which is how this repository checks layout, so the twelve
-  current sites need a hand and a screen reader rather than a lint. `hitSlop` is the
-  right tool on a touch screen and is dropped, deliberately and centrally, by the
-  desktop host on the `desktop` branch — a fingertip concession has nothing to
-  preserve against a mouse.
+  **48 × 48 dp on Android**. Prefer enlarging the pressable area to adding `hitSlop`:
+  a slop rectangle can overlap the control beside it, and unlike padding it does not
+  grow with the system font. It is also invisible in a screenshot, which is how this
+  repository checks layout, so the twelve current sites need a hand and a screen
+  reader rather than a lint.
 - Dynamic font scaling at the largest system sizes, including the reader's own
   text-size setting. Fix clipped labels, overlapping controls and fixed heights, and
   keep content reachable rather than switching scaling off. Nothing in the app sets
@@ -376,8 +386,9 @@ Accessibility, on the same screens:
   something.
 - Meaningful `accessibilityLabel` values where they are missing, especially on
   icon-only buttons: name the action rather than the glyph, expose role and state, and
-  hide decorative icons. The app has 46 labels, 41 roles and 5 states across 122
-  `Pressable`s, so this is incremental rather than absent.
+  hide decorative icons. Counted under `apps/mobile/src` on 2026-09-10: 44 labels, 39
+  roles and 5 states over 43 `<Pressable` sites, and none of the four anywhere in the
+  core. So this is incremental rather than absent.
 
 Walk the main flows with VoiceOver and TalkBack to confirm focus order, announced
 labels and operable controls.
@@ -422,8 +433,10 @@ the formatter is oxfmt and the diff is whitespace.
 CI stays the authority either way. A hook exists only for whoever ran `npm install`,
 and `git commit --no-verify` skips it, so this is a convenience and never a gate.
 
-Note in passing: AGENTS.md says `npm run check` takes "about ten seconds". It took
-17.2 s on this machine.
+One figure to correct while the hooks land: [AGENTS.md](../AGENTS.md) says
+`npm run check` takes "about ten seconds", and it took 17.2 s here. That sentence sets
+the expectation the `pre-commit`/`pre-push` split is argued from, so it is part of
+this work rather than a note beside it.
 
 ### 9. Navigation headers: the platform's on iOS and Android, ours on web
 
@@ -437,15 +450,18 @@ the app builds its own bars everywhere.
 **Web keeps its own because nothing else renders there.** On web, `Stack` resolves
 through `Stack.web.js` and `BaseStack` to expo-router's vendored native-stack, which
 reaches `ScreenStackHeaderConfig` from `react-native-screens`, and in
-`lib/module/components/ScreenStackHeaderConfig.web.js` that component and every subview
-of it is a bare `View`. No back control, no title, no layout. The claim in
-`ScreenHeader.tsx` was checked and holds. So on web this is not a preference between
-two good options, it is the only half that draws anything.
+`lib/module/components/ScreenStackHeaderConfig.web.js` that component and its subviews
+are bare `View`s. The one exception proves the rest: the back-button image is a real
+`Image`, with no bar to sit in and nothing that positions it. No back control, no
+title, no layout. The claim in `ScreenHeader.tsx` was checked and holds. So on web this
+is not a preference between two good options, it is the only half that draws anything.
 
 **The seam is one component, not fifteen screens.** `ScreenHeader.web.tsx` keeps
 today's drawn bar; `ScreenHeader.tsx` configures the stack header through
-`<Stack.Screen options>` instead. Thirteen of the sixteen call sites pass nothing at
-all and do not change.
+`<Stack.Screen options>` instead. Fourteen of the sixteen call sites pass nothing at
+all and do not change; the two that pass anything are `suche.tsx`, with the search
+field as a child, and `formular.tsx`, with `backLabel`, which are the two exceptions
+argued below.
 
 Three details this decision does not settle, and the implementation ADR has to:
 
@@ -463,11 +479,13 @@ Three details this decision does not settle, and the implementation ADR has to:
   `correctiv://gespeichert` and the native arrow.
 
 Lower risk than 0013 in one respect: native stack headers are the oldest path in
-react-navigation, not an alpha API. A cost worth naming: thirteen titles have to be
-written, which is also the fix for every pushed route on the published web target
-having no browser-tab title today. Header colours come from `useColors()` rather than
-from classes, so this is a change that has to be seen in both appearance settings and
-with "System" against a dark device.
+react-navigation, not an alpha API. A cost worth naming: a title has to be written for
+each of the fifteen routes that use `ScreenHeader`, because no `Stack.Screen` sets one
+today, which is also the fix for every pushed route on the published web target
+sharing one browser-tab title. And the chevron's colour comes from `useColors()`
+rather than from a class, because `Ionicons` takes a colour prop and not a class name,
+so this is a change that has to be seen in both appearance settings and with "System"
+against a dark device.
 
 ## What this record drops from the review
 
@@ -487,10 +505,11 @@ tagged array and a type switch, which is more code — and 0012's cost argument 
 subscriptions per row, which `ArticleRow` does not have.
 
 But the reason not to do it is not that search is finished. Search is the least-built
-part of the app, the only content area without a slice — the root reducer holds nine and
-search is not among them — and its sources sit in two places: the live query and the
-feed fallback in `stores/search.ts`, the project hits filtered in a `useMemo` inside the
-screen. Whether that matters depends on something nobody knows yet, which is how many
+part of the app, the only content area without a slice — the root reducer holds twelve
+and search is not among them, and `stores/search.ts` is a thunk and a selector with no
+state of its own — and its sources sit in two places: the REST query and its feed
+fallback in that file, the project hits filtered in a `useMemo` inside the screen.
+Whether that matters depends on something nobody knows yet, which is how many
 sources search ends up with. **That question is not answered here, and answering it by
 implication would be worse than leaving it open.** A result model with per-source status
 is the right shape for several sources and speculative structure for one.
@@ -502,27 +521,29 @@ already are.
 
 Two triggers reopen the rest, and they can fire independently:
 
-- **A second asynchronous source.** Today's single `searching` flag is correct, because
-  there is one async source and the project hits are filtered synchronously with no
-  loading state of their own. A second async source makes that flag wrong rather than
-  imprecise — two sources can finish at different times, and the screen then says "Keine
-  Treffer" too early or holds a spinner too long. That is when a typed result model with
-  per-source status earns itself, and when the scroller question comes with it. It would
-  be `SectionList` rather than `FlatList`, because a list of groups is what `SectionList`
-  takes, and it passes 0012's tie-breaker equally: React Native's own export surface, and
-  implemented by name in `@gjsify/react-native` on `Gtk.ListView` + `Gio.ListStore`.
+- **A second asynchronous source.** The screen's single `searching` flag is correct
+  today, because there is one async source and the project hits are filtered
+  synchronously with no loading state of their own. A second async source makes it
+  wrong rather than imprecise — two sources can finish at different times, and the
+  screen then says "Keine Treffer" too early or holds a spinner too long. That is when
+  a typed result model with per-source status earns itself, and when the scroller
+  question comes with it. It would be `SectionList` rather than `FlatList`, because a
+  list of groups is what `SectionList` takes, and it passes 0012's tie-breaker
+  equally: React Native's own export surface, and named in `@gjsify/react-native`
+  alongside `FlatList` and `VirtualizedList`, all three on `Gtk.ListView` +
+  `Gio.ListStore`.
 - **The first source that paginates**, which makes the list unbounded and is
   [ADR 0012](0012-a-list-virtualizer-for-the-unbounded-lists.md)'s own written trigger
   for a virtualizer plus an amendment to it. 0012 therefore stands unchanged here, and
-  its criterion stays intact for the other twenty bounded lists.
+  its criterion stays intact for the other twenty-one lists it counts.
 
 **The iOS build and distribution gap**, which `RELEASE.md` already records under "iOS
 (not yet wired up)". Naming it twice does not make it smaller.
 
 ## What it measured
 
-Every figure in here, with its host, because a measurement without one expires
-invisibly. Taken 2026-09-09 unless stated.
+Taken 2026-09-09 unless stated, and the host is in the second column, because a
+measurement without one expires invisibly.
 
 | What | Host | Result |
 | --- | --- | --- |
@@ -531,18 +552,18 @@ invisibly. Taken 2026-09-09 unless stated.
 | Hermes `Intl` surface | `hermes-android 250829098.0.17`, arm64 | Collator, DateTimeFormat, NumberFormat; no PluralRules |
 | network inspection | `react-native` 0.86.3, source | on by default, native capture |
 | error boundary | `expo-router` 57, source | `Try` + `{ error, retry }`, hides the splash |
-| native header on web | `react-native-screens`, source | header config and search bar are bare `View`s |
-| MMKV on web | `react-native-mmkv` 4.3.2, package | web build present, `localStorage`-backed |
-| Rozenite under `expo export` | `@rozenite/metro` 2.4.0, source | disabled by default, detects bundling |
+| native header on web | `react-native-screens` 4.26.2, source | header config and search bar are bare `View`s |
+| MMKV on web | `react-native-mmkv` 4.3.2, npm tarball, not installed here | web build present, `localStorage`-backed |
+| Rozenite under `expo export` | `@rozenite/metro` 2.4.0, npm tarball, not installed here | on unless `isBundling()`; an explicit `enabled` skips that check |
 | `__DEV__` + `require` in a function | production web export | keeps the module; only module scope drops it |
 | `npm run check` | this machine | 17.2 s total, oxlint + oxfmt 0.72 s of it |
 | responsive code | repository | none |
 
 ## What this retires
 
-Nothing in another ADR. Two claims in the source, and neither is struck here, because
-a claim is struck when the code that made it true changes and not when a record says
-it will:
+Nothing in another ADR. Three claims in the source, and none is struck here, because a
+claim is struck when the code that made it true changes and not when a record says it
+will:
 
 - The comment atop `packages/app-core/src/lib/format.ts` justifies hand-written German
   month and weekday names with "The NS runtime has no German ICU". That runtime left
@@ -553,11 +574,16 @@ it will:
   intact. Strike the first half when the split lands, and leave the second standing,
   because section 9 measured it and it is still the reason web keeps the drawn bar.
 - The sentence in `lib/store/core.ts` that credits its own `__DEV__`-then-`require`
-  shape with keeping the debugger out of a release build. Section 1 measured that the
-  shape does not do it and the package's own module-scope guard does. The outcome the
-  comment claims is still true, so nothing is broken; what is false is the mechanism,
-  and somebody copying it for a local module would ship that module. Strike it when
-  section 1 lands.
+  shape with keeping the debugger out of a release build. The outcome is still true and
+  the mechanism is not, so nothing is broken and somebody copying the shape for a local
+  module would ship that module. Strike it when section 1 lands.
+
+And three sentences in [AGENTS.md](../AGENTS.md), which is a living document and so
+gets corrected rather than struck. Each correction belongs in the commit that makes it
+necessary, not in this one: German "for everything a user reads, and only there" and
+multilingual support being "under consideration" both stop being true with the first
+message descriptor (section 6), and `npm run check` taking "about ten seconds" is
+already 7 s out (section 8).
 
 ## What this has not delivered
 
@@ -577,3 +603,9 @@ this record.
 **The other twenty-one lists in 0012 remain unmeasured**, as 0012 itself says. Nothing
 here changed that, and dropping the search recommendation does not settle it either
 way.
+
+**MMKV and Rozenite were read, not run.** Neither is installed, so sections 1 and 4
+are argued from the published tarballs of `react-native-mmkv` 4.3.2 and
+`@rozenite/metro` 2.4.0 rather than from this tree. That is why both are pinned to a
+version here: the next reader has a different install and no way to tell which one
+these paragraphs describe. Nothing in either section has been observed running.
