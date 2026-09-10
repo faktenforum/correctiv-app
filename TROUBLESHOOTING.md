@@ -184,6 +184,27 @@ equivalents for focus, liveness and errors.
   says. For that, open the app's own dev server directly at `localhost:8081/` and
   give up the inspector while you do, or serve a static export with
   `screens/tools/serve-clean.mjs`.
+
+  **Any other frame has to do the same, and three readings of the address are wrong.**
+  `/components` draws each component in its own frame (`workbench/AppFrame.tsx`), so
+  the mechanism above is shared rather than copied, and getting there cost three
+  measurements on 2026-09-10. A frame whose `src` is set by script fires
+  `about:blank`'s `load` before the app's, and even on the app's the handle can be on
+  the window while the router is not mounted yet: that first `navigate` is dropped in
+  silence, and the same call by hand twelve seconds later worked. Poll instead of
+  handling `load`. While the frame is still loading, `location` already reports the
+  new address and the empty document it is still showing reports `readyState`
+  "complete", which reads exactly like "loaded"; `document.URL` is the document's own
+  address and cannot disagree with it. And more than one `navigate` reaches the router
+  before a tick can see the first one arrive, so `keepFramePath` has to run for a few
+  ticks rather than once, or one frame in three keeps a base-less path.
+
+  **Do not probe the frame to find out which build it is.** The handle appears *after*
+  the document is complete: measured with a warm bundle, `readyState` "complete" at
+  1,240 ms and `__correctiv` at 1,399 ms. For 159 ms, and for however long a cold
+  bundle takes, "no handle yet" and "no handle at all" are the same reading, so a frame
+  that asks calls the dev server a production export and gives up. Read it off this
+  site's own build (`import.meta.env.DEV`): the two halves are one deployment.
 - **Serving a static export without clean URLs** makes Expo Router render its
   *unmatched route* page. That looks like an app bug and is a server bug. → Map `/artikel` →
   `artikel.html`. A plain `python3 -m http.server` will not do;

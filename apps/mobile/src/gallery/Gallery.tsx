@@ -241,36 +241,67 @@ function shown(only: string | undefined): Folder[] {
   })).filter((group) => group.entries.length > 0);
 }
 
-export function Gallery({ only }: { only?: string }) {
+/**
+ * @param only One component, as `folder/name`. Everything, when absent.
+ * @param bare Without the page's own furniture, for a frame that is 393px wide.
+ */
+export function Gallery({ only, bare }: { only?: string; bare?: boolean }) {
   const groups = shown(only);
   const found = groups.length > 0;
   return (
     <SafeAreaView edges={['top']} className="flex-1 bg-canvas">
       <ScrollView
         className="flex-1"
-        contentContainerClassName="px-m pt-m pb-3xl"
-        showsVerticalScrollIndicator={false}
+        contentContainerClassName={bare ? 'px-m pb-m' : 'px-m pt-m pb-3xl'}
+        // Shown in a frame, hidden on the page. A 520px frame cannot hold both
+        // surfaces of most components, and without the bar the second one looks
+        // cut off rather than scrolled past.
+        showsVerticalScrollIndicator={bare}
       >
-        <Typo variant="headline-m">{only ?? 'Component gallery'}</Typo>
-        <Typo variant="text-s" color="on-canvas-muted" className="mt-2xs">
-          {only ? (found ? BLURB.one : BLURB.none) : BLURB.all}
-        </Typo>
-        {only ? <Links only={only} found={found} /> : null}
-        <Appearance />
+        {/*
+          The furniture, and why a frame does without it. `bare` is for the
+          handbook's `/components`, where each row draws its own component in a
+          393px frame. Everything here is already on the page around that frame,
+          twice in the case of the two links: they point at the reference and at
+          this gallery, and the reader clicking them is on the reference looking
+          at this gallery. Measured in that frame, the header, the links and the
+          appearance control took 340 of 520 pixels and left the component itself
+          below the fold, which is the whole reason for the flag.
+        */}
+        {bare ? null : (
+          <>
+            <Typo variant="headline-m">{only ?? 'Component gallery'}</Typo>
+            <Typo variant="text-s" color="on-canvas-muted" className="mt-2xs">
+              {only ? (found ? BLURB.one : BLURB.none) : BLURB.all}
+            </Typo>
+            {only ? <Links only={only} found={found} /> : null}
+            <Appearance />
+          </>
+        )}
+
+        {bare && !found ? (
+          <Typo variant="text-s" color="on-canvas-muted">
+            {BLURB.none}
+          </Typo>
+        ) : null}
 
         {groups.map((group, g) => (
           // The first folder sits under the page's own header, which is already a
           // break; the gap that separates two folders would read as a hole there.
-          <View key={group.folder} className={g === 0 ? 'mt-l' : 'mt-4xl'}>
-            <Hairline />
-            <Overline label={`components/${group.folder}`} color="accent" className="mt-s" />
+          <View key={group.folder} className={g === 0 ? (bare ? '' : 'mt-l') : 'mt-4xl'}>
+            {bare ? null : (
+              <>
+                <Hairline />
+                <Overline label={`components/${group.folder}`} color="accent" className="mt-s" />
+              </>
+            )}
             {group.entries.map((entry, i) => (
-              <View key={entry.name} className={i === 0 ? 'mt-l' : 'mt-4xl'}>
+              <View key={entry.name} className={i === 0 ? (bare ? '' : 'mt-l') : 'mt-4xl'}>
                 {/* A rule above every component but the first of its folder. The
                     folder already has one, and two hairlines with nothing between
                     them read as a mistake rather than as a boundary. */}
                 {i === 0 ? null : <Hairline className="mb-l" />}
-                <Typo variant="headline-s">{entry.name}</Typo>
+                {bare ? null : <Typo variant="headline-s">{entry.name}</Typo>}
                 {entry.note ? (
                   <Typo variant="text-s" color="on-canvas-muted" className="mt-4xs">
                     {entry.note}

@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 
 import api from 'virtual:api';
 import type { ApiComponent, ApiComponentGroup } from 'virtual:api';
@@ -7,9 +7,42 @@ import { href } from '../router';
 import { Badge } from '../ui/kit/badge';
 import { Disclosure, Filter, Source } from '../ui/Lookup';
 import { Page } from '../ui/Page';
-import { BASE } from '../workbench/frame/handle';
+import { AppFrame } from '../workbench/AppFrame';
 
 const { alias, groups, root } = api.components;
+
+/**
+ * How many app frames this page may hold at once.
+ *
+ * Each one boots the whole app bundle. Three is enough to compare two components
+ * with a third open by accident, and few enough that a reader who works down the
+ * page with the keyboard does not end up with a dozen running apps in a tab.
+ */
+const FRAME_LIMIT = 3;
+
+/**
+ * Which rows are open, and which of those get a frame.
+ *
+ * The order is the order they were opened in, so the frames go to the three most
+ * recent. A row that loses its frame says so where the frame was, rather than
+ * going quiet: it is still open, and a reader who opened it is owed an answer
+ * about why nothing is drawn.
+ *
+ * The `details` elements own whether they are open, including when the search
+ * palette opens one from the outside (`ui/Lookup.tsx`). This only mirrors it.
+ */
+function useOpenRows() {
+  const [open, setOpen] = useState<string[]>([]);
+
+  const report = useCallback((id: string, isOpen: boolean) => {
+    setOpen((prev) => {
+      const without = prev.filter((other) => other !== id);
+      return isOpen ? [...without, id] : without;
+    });
+  }, []);
+
+  return { drawing: new Set(open.slice(-FRAME_LIMIT)), report };
+}
 
 /**
  * `?c=ui/SectionCard` opens the component the gallery came from.
@@ -73,6 +106,7 @@ function useAskedFor(): void {
  */
 export function Components() {
   const [query, setQuery] = useState('');
+  const { drawing, report } = useOpenRows();
   useAskedFor();
 
   /*
@@ -159,7 +193,12 @@ export function Components() {
             <ul className="mt-s divide-y divide-stroke overflow-hidden rounded-md border border-stroke">
               {group.components.map((component) => (
                 <li key={`${component.name}-${component.platform ?? ''}`}>
-                  <Component group={group.name} component={component} />
+                  <Component
+                    group={group.name}
+                    component={component}
+                    drawing={drawing}
+                    report={report}
+                  />
                 </li>
               ))}
             </ul>
@@ -203,44 +242,70 @@ export function Components() {
  * The way from a description to the thing it describes.
  *
  * This page says what a component takes and the app's `/gallery` draws it, and for
- * a while those were two places with nothing between them. This is one half of the
- * way across; `gallery/Gallery.tsx` carries the other, and `useAskedFor` above is
- * what receives it coming back. The address is the app's, one directory below this
- * site, and the component is the same `?c=folder/name` in both directions.
+ * a while those were two places with nothing between them. Now the drawing happens
+ * here, in the app's own bundle, in a frame the width of a phone.
  *
- * A plain link and not a frame, deliberately, for now. A frame on this page would
- * boot the whole app to answer "what props does Button take", which is what most
- * readers came for. The frame belongs behind a control that asks for it.
+ * It used to be a link, and the comment here used to argue for one: a frame on this
+ * page would boot the whole app to answer "what props does Button take", which is
+ * what most readers came for. That argument holds and this is not the exception to
+ * it. The disclosure is the control it asked for. A shut row has no frame, and a
+ * reader who opens none boots nothing.
+ *
+ * The link is gone rather than kept beside this, because it could not be made to
+ * work in both builds: in development the app has no page at `/app/gallery`, its
+ * base path being ignored while it matches routes (ADR 0025), so the reader landed
+ * on the app's 404. The frame gets past that the way the workbench does, through
+ * the app's own router. What remains is the way into the tool, which is one address
+ * in both builds.
  */
-function Drawn({ group, name }: { group: string; name: string }) {
+function Drawn({ group, name, draw }: { group: string; name: string; draw: boolean }) {
+  // `bare`, because the gallery's own header would say what the page around this
+  // frame already says, and would leave the component below the fold.
+  const route = `/gallery?c=${group}/${name}&bare=1`;
+
+  if (!draw) {
+    return (
+      <p className="mt-s text-s text-on-canvas-muted">
+        {`${FRAME_LIMIT} frames at a time, and there are ${FRAME_LIMIT} open. Close one of the other rows to draw this component.`}
+      </p>
+    );
+  }
+
   return (
-    <p className="mt-s text-s">
-      {/* `data-external`, because this is the one link on the page that must NOT be
-          taken by the shell's router. The app is proxied under this origin, so the
-          interceptor sees a same-origin path and would handle it — landing on the
-          handbook's own "No page at /app/gallery" without a request ever reaching
-          the proxy. It also rebuilds the address as `pathname + hash`, which drops
-          the `?c=` this link is entirely about (`router.tsx`, `useLinkInterception`).
-          It shipped without the attribute once, which is why `test/routes.test.ts`
-          asserts it rather than trusting this comment. */}
-      <a
-        className="text-accent underline underline-offset-2"
-        data-external="true"
-        href={`${BASE}/gallery?c=${group}/${name}`}
-      >
-        See it drawn, in the app's gallery
-      </a>
-    </p>
+    <>
+      <AppFrame route={route} title={`${name}, drawn in the app`} />
+      <p className="mt-2xs text-s">
+        <a
+          className="text-accent underline underline-offset-2"
+          href={`${href('/workbench')}#/gallery?d=pixel-8&s=onboarded`}
+        >
+          Open the gallery in the workbench
+        </a>
+        <span className="text-on-canvas-muted">, for a device size and an appearance.</span>
+      </p>
+    </>
   );
 }
 
 /** One component: the line that imports it, where to see it, its prose, and what it takes. */
-function Component({ group, component }: { group: string; component: ApiComponent }) {
+function Component({
+  group,
+  component,
+  drawing,
+  report,
+}: {
+  group: string;
+  component: ApiComponent;
+  drawing: Set<string>;
+  report: (id: string, open: boolean) => void;
+}) {
   const props = component.props;
+  const id = componentId(group, component.name, component.platform);
 
   return (
     <Disclosure
-      id={componentId(group, component.name, component.platform)}
+      id={id}
+      onOpenChange={(open) => report(id, open)}
       summary={
         <>
           <span className="shrink-0 font-mono text-m font-semibold">{component.name}</span>
@@ -264,7 +329,7 @@ function Component({ group, component }: { group: string; component: ApiComponen
       <p className="break-words font-mono text-s text-on-canvas-muted">
         {`import { ${component.name} } from '${component.import}'`}
       </p>
-      <Drawn group={group} name={component.name} />
+      <Drawn group={group} name={component.name} draw={drawing.has(id)} />
       {component.doc && (
         <div
           className="prose prose-sm mt-s max-w-content"

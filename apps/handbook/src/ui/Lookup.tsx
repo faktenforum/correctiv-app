@@ -72,6 +72,11 @@ export function Filter({
  * of whether it is open, so an open from the palette is not undone on the next
  * render.
  *
+ * `onOpenChange` is for a child that must not exist while the row is shut. A
+ * `details` keeps its panel in the DOM and only hides it, so an iframe in there
+ * would boot the app for all 44 rows at once; `pages/Components.tsx` mounts one
+ * on this signal instead.
+ *
  * `text-s` on the row is for a child that cannot state its own size: the kit's
  * badge carries one in the same tailwind-merge group as its colour, so `cn` keeps
  * the last of the two and a badge can have the colour or the size and not both.
@@ -81,18 +86,24 @@ export function Disclosure({
   id,
   summary,
   children,
+  onOpenChange,
 }: {
   id: string;
   /** The row, minus the chevron, which is this component's. */
   summary: ReactNode;
   children: ReactNode;
+  /** Told every time the row opens or shuts, including from the palette. */
+  onOpenChange?: (open: boolean) => void;
 }) {
   const [open, setOpen] = useState(false);
 
   return (
     <details
       id={id}
-      onToggle={(event) => setOpen(event.currentTarget.open)}
+      onToggle={(event) => {
+        setOpen(event.currentTarget.open);
+        onOpenChange?.(event.currentTarget.open);
+      }}
       className="group scroll-mt-[4.75rem]"
     >
       <summary
