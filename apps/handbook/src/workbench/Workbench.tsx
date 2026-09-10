@@ -17,7 +17,7 @@ import {
   type FrameInfo,
 } from './api';
 import { attachConsole } from './frame/console';
-import { BASE, applyTheme, driveRoute, frameRoute, navigate } from './frame/handle';
+import { BASE, applyTheme, driveRoute, frameRoute, keepFramePath, navigate } from './frame/handle';
 import { armPicker, openInEditor, type Located } from './frame/locate';
 import { audit, setOutline, type Finding } from './frame/measure';
 import { waitReady } from './frame/ready';
@@ -213,6 +213,12 @@ export function useWorkbench(active: boolean) {
     if (!active) return;
     const id = window.setInterval(() => {
       const current = win();
+
+      // First in the tick, because everything below reads the frame's address and
+      // `driveRoute` leaves it without the base the frame was loaded under. It only
+      // touches a frame that is already running the app; `keepFramePath` says what
+      // happens when that condition is left out.
+      keepFramePath(current);
 
       // Also patched here, not only on load, because `load` is late: the app's
       // first render happens before it, and a React warning from that render is

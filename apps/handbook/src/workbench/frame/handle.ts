@@ -64,6 +64,37 @@ export function handleOf(win: Window | null): DevHandle | null {
 }
 
 /**
+ * Put the frame's own base back at the front of its address.
+ *
+ * `driveRoute` navigates through the app's router, and the router writes the path
+ * itself, without the base the frame was loaded under: `/gespeichert`, which is a
+ * path on the HANDBOOK's origin. Left there, reloading the frame leaves the app
+ * entirely and renders the handbook inside it. Measured, both the fault and the fix.
+ *
+ * **Only ever on a frame that is already running the app**, which is what the handle
+ * proves. A first attempt left that condition out and cost an afternoon: on the tick
+ * before the frame has been sent anywhere it rewrote the address of an empty frame,
+ * `frameRoute` then reported a route the app was not on, the poll wrote that into the
+ * state, and the effect that navigates found the frame already where the state said
+ * it should be and never sent it anywhere. The frame stayed blank for ever. That is
+ * the same deadlock `frameRoute` guards against for `about:blank`, reached by a
+ * different door.
+ *
+ * Idempotent, so the poll can call it every tick: an address that already carries
+ * the base is left alone.
+ */
+export function keepFramePath(win: Window | null): void {
+  if (!BASE || !win || !handleOf(win)) return;
+  try {
+    const path = win.location.pathname;
+    if (path.startsWith(BASE)) return;
+    win.history.replaceState(null, '', BASE + path + win.location.search + win.location.hash);
+  } catch {
+    // only reachable if the frame ever left this origin
+  }
+}
+
+/**
  * What the *device* reports, measured inside the frame where it counts.
  *
  * `null` for a frame there is nothing to ask yet, rather than a cheerful
