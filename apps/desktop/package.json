@@ -30,6 +30,7 @@
     "video-probe": "gjsify build src/debug/video-probe.ts --app gjs --outfile dist/video-probe.gjs.mjs --exclude-globals navigator && node scripts/start.mjs --bundle dist/video-probe.gjs.mjs",
     "mpris-probe": "gjsify build src/debug/mpris-probe.ts --app gjs --outfile dist/mpris-probe.gjs.mjs --exclude-globals navigator && node scripts/start.mjs --bundle dist/mpris-probe.gjs.mjs",
     "accent-probe": "gjsify build src/debug/accent-probe.ts --app gjs --outfile dist/accent-probe.gjs.mjs --exclude-globals navigator && node scripts/start.mjs --bundle dist/accent-probe.gjs.mjs",
+    "gallery": "node scripts/start.mjs --route /gallery",
     "route-sweep": "node scripts/route-sweep.mjs",
     "component-sweep": "node scripts/component-sweep.mjs",
     "capture-diff": "node scripts/capture-diff.mjs"

@@ -64,6 +64,7 @@ import { stop as stopAudio } from '@/lib/audio/player';
 import { coreStore, useAppStore, useIsAdmitted } from '@/lib/store/core';
 import { fontAssets, useAppearance, useIsDark } from '@/lib/theme';
 
+import { installGalleryAction } from '../debug/gallery-action.js';
 import { applyDebugRoute, debugRouteRequested, noteCurrentPath } from '../debug/route.js';
 import { gstAudio } from '../audio/backend.js';
 import { gtkPlatform } from '../platform/index.js';
@@ -298,6 +299,14 @@ function AppShell() {
   // picture with no claim attached, and a picture of the WRONG screen is
   // indistinguishable from a picture of the right one.
   useEffect(() => noteCurrentPath(pathname), [pathname]);
+  // A way into the component gallery without a restart. Installed once the door is
+  // open, for the same reason the debug route waits: there is no navigator to push
+  // into until then. See `debug/gallery-action.ts`.
+  useEffect(() => {
+    if (!admitted) return;
+    installGalleryAction((href) => router.push(href));
+  }, [admitted]);
+
   const gated = useRef(false);
   useEffect(() => {
     if (!storeReady || !admitted || gated.current) return;

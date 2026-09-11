@@ -30,11 +30,16 @@ const HERE = dirname(fileURLToPath(import.meta.url));
 const APP = resolve(HERE, '..');
 
 function parseArgs(args) {
-  const out = { host: DEFAULT_HOST, bundle: null, screenshot: null, rest: [] };
+  const out = { host: DEFAULT_HOST, bundle: null, screenshot: null, route: null, rest: [] };
   for (let i = 0; i < args.length; i++) {
     const arg = args[i];
     if (arg === '--host') {
       out.host = args[++i];
+    } else if (arg === '--route') {
+      // The same thing `CORRECTIV_DESKTOP_ROUTE` does, as a flag, so a package script
+      // can carry it without an inline environment assignment. `npm run gallery` is
+      // the one that needs it.
+      out.route = args[++i];
     } else if (arg === '--bundle') {
       out.bundle = args[++i];
     } else if (arg === '--screenshot') {
@@ -77,6 +82,8 @@ const childEnv = {
   ...env,
   CORRECTIV_DESKTOP_ASSETS: resolve(APP, '..', 'mobile'),
 };
+if (opts.route !== null) childEnv.CORRECTIV_DESKTOP_ROUTE = opts.route;
+
 if (opts.screenshot !== null) {
   childEnv.CORRECTIV_DESKTOP_SCREENSHOT = isAbsolute(opts.screenshot)
     ? opts.screenshot

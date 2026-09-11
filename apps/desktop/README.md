@@ -178,6 +178,38 @@ ordinary React Native the whole time, every screenshot of it was right, and
 `npm run check` was green for the entire life of the defect. A screenshot proves a
 tree rendered; it says nothing about what the render cost.
 
+### Getting into the gallery, which used to need a restart
+
+`/gallery` is the phone's component catalogue, 45 components and 105 specimens, and on
+this host it is the most useful screen there is. Nothing in the app links to it,
+because it is a developer page and the phone does not put one in a tab bar. So the
+only way in was `CORRECTIV_DESKTOP_ROUTE=/gallery` and a restart, which is no way to
+compare two components.
+
+**`Ctrl+Shift+G` in the running window.** A `Gio.SimpleAction` on the application with
+an accelerator, which is how a GTK application offers a command —
+`src/debug/gallery-action.ts`, using the `AppRegistry.getApplication()` accessor
+gjsify #1455 added for exactly this. It `push`es, so Adwaita's own back button leads
+out again, and it is driveable from outside like any other action:
+
+```sh
+gdbus call --session --dest org.correctiv.AppDesktopExperimental   --object-path /org/correctiv/AppDesktopExperimental   --method org.gtk.Actions.Activate gallery '[]' '{}'
+```
+
+Not gated on an environment variable, unlike `CORRECTIV_DESKTOP_ROUTE`: that one
+REPLACES the initial route and has to be off unless asked for, and this one does
+nothing until somebody presses it.
+
+**`npm run gallery`** starts there directly, for when that is what you wanted anyway.
+It goes through `start.mjs --route`, which is the same thing the environment variable
+does as a flag, so a package script can carry it.
+
+**What the page gives you that a screenshot pair cannot**: its appearance control is
+live and writes the app's own setting, so light and dark are two key presses apart on
+one component, and the line under it prints both the setting and what it resolved to.
+"System" against a dark device is the combination AGENTS.md names as the one that has
+already shipped broken, and it is the page's default.
+
 ### What the first component sweep found, and the refusal that hid it
 
 The sweep's first run reported 43 of 45, with `participate/FormField` and
