@@ -103,7 +103,24 @@ export function Design({ onAddress, wide, full }: ShellProps) {
             title="CORRECTIV App, Aufbau, in Figma"
             src={FIGMA_EMBED}
             allowFullScreen
-            sandbox="allow-scripts allow-same-origin allow-popups allow-forms"
+            /*
+              `allow-storage-access-by-user-activation` is the one that makes the
+              difference for a reader who IS signed in. `allow-same-origin` gives
+              the frame its own origin, but a browser that partitions third-party
+              state gives it a partitioned jar anyway, so Figma's session cookie is
+              not in it and the frame draws the sign-in screen to somebody who is
+              signed in one tab over. Figma's answer is the Storage Access API, and
+              without this token the browser refuses the call before Figma can even
+              ask: "document.requestStorageAccess() may not be called in a sandboxed
+              iframe without allow-storage-access-by-user-activation". Reported from
+              a reader's console on 2026-09-11, under Firefox with dynamic state
+              partitioning on.
+
+              It grants nothing by itself. It lets the frame ASK, and the reader
+              answers. A reader with no Figma access still sees the sign-in screen,
+              which is a permission and not a fault.
+            */
+            sandbox="allow-scripts allow-same-origin allow-popups allow-forms allow-storage-access-by-user-activation"
             /* `bg-surface` while it loads, which is a role and so is the right
                colour in both schemes. A white flash under a dark page is the
                half second this covers. */
