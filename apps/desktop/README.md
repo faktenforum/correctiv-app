@@ -8,7 +8,7 @@ It can. The core did not move. What follows is what runs, what does not, and wha
 does not prove.
 
 The host is [gjsify](https://github.com/gjsify/gjsify)'s React-Native-on-GTK4 layer
-(`@gjsify/react-native`; the manifest pins `^0.47.0` and a working copy is what this is
+(`@gjsify/react-native`; the manifest pins `^0.48.0` and a working copy is what this is
 developed against, see *Against a gjsify working copy*), which renders React Native's
 view vocabulary onto GTK4 and Adwaita. [ADR 0012](../../adr/0012-a-list-virtualizer-for-the-unbounded-lists.md)
 and [ADR 0013](../../adr/0013-native-tabs-and-a-web-tab-bar-of-its-own.md) already named
@@ -20,7 +20,7 @@ this host as a reason for two decisions; this is that host, built.
 
 | | |
 | --- | --- |
-| **Routes** | 26 route files (25 openable hrefs + 2 layouts). **25 of 25 rendered** when last swept, 2026-09-11, on Linux under the GJS host. The three routes that used to loop on a deep link are among them; see [*The deep-link loop*](#the-deep-link-loop-fixed-upstream-and-now-measured). The last sweep of the node host was 2026-09-04 on macOS, at 24 of 24, which is also the only sweep of a non-Linux target. |
+| **Routes** | 27 route files (25 openable hrefs + 2 layouts). **25 of 25 rendered** when last swept, 2026-09-11, on Linux under the GJS host. The three routes that used to loop on a deep link are among them; see [*The deep-link loop*](#the-deep-link-loop-fixed-upstream-and-now-measured). The last sweep of the node host was 2026-09-04 on macOS, at 24 of 24, which is also the only sweep of a non-Linux target. |
 | **Components** | **45 of 45 rendered**, same day, same host. This is the phone's own catalogue opened here, and it is what found the four refusals below: the route sweep reported every one of those routes `ok`. |
 | **The vertical slice** | Start → Artikel → Reader, working, over WebKitGTK. |
 | **Audio** | Working, on GStreamer. Position advances, live streams are detected, and the port's re-entrancy contract holds. |
@@ -1421,7 +1421,7 @@ be coverage.
 ## Checks
 
 `npm run check` at the repo root covers this workspace: the typecheck, the lint, and
-five suites, thirty tests, in under a second. They are the guards a green build does not
+eight suites, 57 tests, in under a second. They are the guards a green build does not
 give you.
 
 - **`test/support-gate.test.ts`** reproduces the build-time support gate that
@@ -1475,6 +1475,79 @@ one process per component — `?c=folder/Name` — so the log names the componen
 than the primitive alone. `<Text> prop "onPress"` says what was refused; it does not
 say which of forty-four asked.
 
+## What a review of 2026-09-11 found and this host has not done yet
+
+Four agents read this host against `AGENTS.md`, against the library it is built on, and
+against every claim in this file. What they found that is FIXED is above; what is not is
+here, because a finding nobody wrote down is a finding that has to be made twice. Ranked
+by what it would cost to leave.
+
+**Five shims duplicate a surface the library now ships, and each duplicate is weaker.**
+`expo-font`, `expo-status-bar`, `expo-splash-screen`, `react-native-safe-area-context`
+and `react-native-gesture-handler` are hand-written here while
+`@gjsify/react-native/<surface>` exists: the local `isLoaded()` returns `true` blind
+where the surface reads `PangoCairo` families, the local `loadAsync` resolves where the
+surface refuses, `initialWindowMetrics` is `null` against a real object, and the surface
+refuses the WHOLE package rather than five hand-listed names. Deleting each one GAINS a
+capability. It is not done here because each deletion is a behaviour change to verify on
+three targets, and the sweep is the only oracle.
+
+**Two dead shim branches, one of them harmful.** `flattenFragments` runs BEFORE
+`childNodes`, which expands fragments itself now — so the library's key composition never
+sees them and two sibling fragments both yield key `.0`, the duplicate-key bug that code
+was added upstream to prevent. `withDefaultTextAlign` duplicates
+`widgetProps: { wrap: true, xalign: 0, yalign: 0 }` and says so in its own comment.
+
+**`hrefOf`, `pushed` and `canGoBack` in the router shim are dead and wrong.** The library
+takes the object `Href` now and reads `navigationRef.canGoBack()`; the local counter
+over-counts after a GTK-side pop and admits it. The shim also interpolates `''` for a
+missing path param where the library refuses it, so a bad link lands on `+not-found`
+silently.
+
+**The `Pressable` text-sink gate is defeated by its own spacers.** The spacer `<View>`s
+are inserted before `hasElementChild` is computed, so `<Pressable>text</Pressable>` gets
+an inner box and the string becomes an error — the exact failure the gate exists to
+prevent. Compute it on the pre-spacer children.
+
+**A fragment link in the reader is treated as a navigation.** `webview-scripts.ts`
+`preventDefault()`s every anchor with an `href`, `#footnote` included, and then classifies
+it as internal or external. One line before the `preventDefault` fixes it.
+
+**`onDebugRouteApplied` deadlocks after its deadline.** If the deadline fires, `navigated`
+stays false and `deadlineArmed` stays true, so every later registration parks forever —
+the hazard the `finally` in `applyDebugRoute` was written against.
+
+**Two MPRIS defects**, both in `media/mpris.ts`: `SetPosition`'s guard calls
+`trackPath(track.id)`, which BUMPS the serial and changes the published trackid with no
+`PropertiesChanged`; and `publish()` assigns `published = next` before emitting, so a
+throw from `emit_property_changed` loses that change permanently.
+
+**Dead code**: `MprisHandle.shutdown()` is unreachable, `resetGstAudio()` is "tests only"
+and no test imports it, and `GALLERY_SHORTCUT` exists "so the README and the log agree"
+while this file hardcodes the accelerator. `debug/audio-probe.ts` cites
+`test/audio-ticks.test.ts` as what `npm run check` owns for the re-entrancy contract; that
+file does not exist, so the contract is checked only by a probe outside `check`.
+
+**Counts in prose that nothing checks, and several are already wrong.** The table in
+`shims/react-native.tsx`' header gives `accessibilityRole` as 40, 41 and 39 in three
+places (42 literals today), and `accessibilityLabel` 45 against 47,
+`contentContainerClassName` 10 against 18, `justify-between` nine against 12. The same
+class as the component count that went wrong in the merge. The cheap answer is not to
+write them down: `route-sweep` and `component-sweep` both print their own, and
+`route-tree.test.ts` is the precedent for asserting a count as data.
+
+**What belongs upstream and is filed**: gjsify #1640, #1641 (both fixed in gjsify PR
+#1649) and #1648, the oracle defect that let a false entry into this host's own prop
+ledger. **Not yet filed, ranked**: `onLayout` — allocation is `vfunc_size_allocate`, a
+subclass override only the library can make, and its absence is what made a scrubber
+invisible here; pointer coordinates on a press, without which a tap cannot become a
+position; `aspectRatio`, which the shim already says belongs upstream; a picture's natural
+size sizing its parent, measured in two shims here; the `expo-image` decode pipeline,
+which is 25 lines here and a P2 gap there; `accessibilityValue` onto `Gtk.Accessible`; the
+`-outline`/`-sharp` icon suffix rule, which is 23 of this app's 39 names; a `Gtk.TextBuffer`
+binding for a multiline `TextInput`; and `media/mpris.ts` plus `arbiter.ts`, which are 529
+lines of generic MPRIS with nothing CORRECTIV in them but a bus name.
+
 ## What this does not prove
 
 - **Nobody has used it.** Every screen here was opened by a script and photographed. No
@@ -1482,11 +1555,26 @@ say which of forty-four asked.
   tabbed through a form. The tab switcher in particular has never been *clicked*: the
   deep-link failure above is the only thing known about selecting a tab, and clicking one
   goes through a different path entirely.
-- **Linux only.** ADR 0032 puts macOS and Windows on Node + `@gjsify/node-gi`, and the
-  reader there would need `@gjsify/webkit-native` (macOS) or a backend that does not exist
-  yet (Windows). Neither was attempted. The reader's WebKit shim is the file that would
-  have to grow that seam.
-- **No performance measurement of any kind**, on any screen.
+- ~~**Linux only.** … Neither was attempted.~~ Voided by the three-target measurement
+  above: both webview backends are declared and the reader loads on each. What is still
+  Linux-only is VIDEO, because the macOS and Windows runtime bundles ship `gstvideo` and
+  no decoder or sink.
+- ~~**No performance measurement of any kind**, on any screen.~~ Voided by the cold-start
+  work above: 12.7 s traced to one number in the layer, a `Gtk.FlowBox` cap table, and
+  13 510 ms down to 700. What is unmeasured is everything ELSE — no screen has been
+  profiled, and nothing is known about scrolling, switching a tab or resizing.
+- **Two capabilities are dropped and the loss is functional, not cosmetic.**
+  `accessibilityValue` reaches no screen reader from a `Pressable` here, so a scrubber is
+  a control with no position — except `player/ProgressBar`, whose override is a
+  `Gtk.LevelBar` and gets it from the toolkit instead. And `multiline` is dropped, so
+  `participate/FormField`'s textarea is ONE LINE TALL: it scrolls sideways rather than
+  wrapping. Both are in the refusals table above; they are repeated here because a table
+  of answers reads as a list of solved things.
+- **The boundary has a third level nobody has reached.** A refusal inside the recovery
+  screen itself was uncaught until it was wrapped, and that is fixed — but a refusal
+  inside the WRAPPED screen would still take the tree, and nothing exercises
+  `RecoveryBoundaryClass` in a test. `root-layout.test.ts` asserts its shape in the
+  file's text, which is not the same as catching something.
 - **The accessibility work is unverified.** Labels and states are applied through the
   right API; nobody has listened to Orca read a screen. Two things are known to be
   missing rather than unverified, and both are named in the shim: `accessibilityRole`,
