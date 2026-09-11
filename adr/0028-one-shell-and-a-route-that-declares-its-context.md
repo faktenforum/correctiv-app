@@ -497,11 +497,11 @@ and line heights are the app's and its typeface is the browser's fallback.~~ Voi
 loads the app's five font files, out of the app's own `fontAssets`, through the
 environment the app itself starts in.
 
-**A drawn component is 46 px wider than the framed one at the same device**, and that
-is left as it stands. Measured at the 393 px preset: the drawn specimen's box is
-367 px, the framed one's 321 px, because the frame is the app's gallery page and that
-page insets by a screen's own `px-m` before its outline's `p-s`, while this stage
-gives one `p-s`. It moves where lines break and nothing else. Matching it would mean
+**A drawn component is 48 px wider than the framed one at the same device**, and that
+is left as it stands. Measured at the 393 px preset: the drawn specimen's outermost
+box is 367 px and the framed one's is 319 px, because the frame is the app's gallery
+page and that page insets by a screen's own `px-m` before its outline's `p-s`, while
+this stage gives one `p-s`. It moves where lines break and nothing else. Matching it would mean
 the handbook reproducing the app's gallery furniture, which is the copy this record
 has just spent a section removing; the honest fix, if it is ever worth one, is for the
 stage to inset by the app's `Screen` padding rather than by the gallery's.
