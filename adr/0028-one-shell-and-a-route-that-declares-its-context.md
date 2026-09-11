@@ -135,7 +135,10 @@ of a 390px screen, and the app is what the link was for.
 ### The frame moves to the component's own page
 
 `/components` draws **no frames at all**. Each card draws the component itself, in
-this site's React tree, when the reader presses Draw.
+this site's React tree, ~~when the reader presses Draw~~. Voided by the section
+below, "Every card draws, and there is nothing to press": the button was decision 12
+of the redesign, settled while a preview still meant booting an app, and mounting all
+47 at once was measured only after it had shipped. It draws on arrival.
 
 The reason is a mechanism and not a taste. **A drawn component takes the space its
 content needs; a frame always carries a viewport.** A card of roughly 300px would
@@ -153,6 +156,71 @@ and its test are deleted.
 flakiest thing in CI, and a check that reddens without cause gets switched off. Where
 they disagree the app's bundle is right (ADR 0027), and the disagreement is a finding
 for a person.
+
+### Every card draws, and there is nothing to press
+
+The cards shipped with a Draw button on each of them, and it is gone.
+
+It was decision 12 of the redesign, and decision 12 was right about a different page.
+It was taken while every preview was a frame booting the whole app: mounting one cost
+an app boot, forty-seven of them was forty-seven app boots, and a control that made
+the reader ask for each one was the brake on a real cost. The frames left the page in
+this same change, and the brake outlived the thing it was braking.
+
+**What a drawing costs now is a React mount, and the bytes are already paid.**
+`src/components/direct.tsx` imports `apps/mobile`'s catalogue statically, so every
+one of the 47 components is in the chunk the page loads whether or not anybody
+presses anything. A button that gates a mount while the download has already
+happened does not save the reader the cost; it only tells them there is one. **A
+control that gates nothing misrepresents what it costs to look**, and it asks 47
+times.
+
+That is the argument, and it is not evidence, so the mount was measured before the
+button came off. Chrome for Testing 153 headless, the production build served the way
+Pages serves it, `Emulation.setCPUThrottlingRate` for the slow machine, on
+2026-09-11. Both columns are the same page and the difference is only whether the
+specimens are mounted: the left one is the page with every Draw button untouched.
+
+| at 1280, CPU throttled 4× | 47 cards empty | 47 cards drawn |
+|---|---|---|
+| first contentful paint | 908 ms | 1,339 ms |
+| the last task that blocked the main thread ends | 874 ms | 1,339 ms |
+| the longest single one of them | 451 ms | 723 ms |
+| scrolling the page end to end | 16.7 ms median, 16.8 ms worst, 0 frames over 32 ms | 16.7 ms median, 16.8 ms worst, 0 frames over 32 ms |
+| the page's height | 7,735 px | 7,735 px |
+
+Unthrottled the whole difference is 294 ms against 395 ms. At 390 px, where the grid
+is one column and the page is 17,360 px tall, it is 770 ms against 1,189 ms at 4×,
+and the 66 frames of a scroll from top to bottom are again all 16.7 ms. At 6× — a
+phone from several years ago — the drawn page is interactive at about 2.0 s.
+
+So: **about 100 ms of the first render, 460 ms on a CPU throttled four times, and
+nothing at all afterwards.** Paid once, on a page whose subject is what the
+components look like. The scroll is the number that would have decided it the other
+way and it does not move: 47 mounted React trees sit in the layout without costing a
+frame, because a card's preview area is `overflow: hidden` at a fixed height, so
+nothing in it is laid out against the page.
+
+**Therefore no `IntersectionObserver` either.** Mounting a card as it scrolls into
+view was the fallback if this had measured badly — invisible to a reader, and still
+no control — and the measurement did not ask for it. Deferring 460 ms that nobody can
+feel would buy nothing and would put a second lifecycle under every card, which is a
+place for a specimen to fail that the page does not otherwise have.
+
+**The reserved height stays, and it is what the button was accidentally providing.**
+47 specimens settle at their own speeds; a preview area sized by its content would
+reflow the grid under a reader who was already reading it. The height is `11rem`,
+fixed, the same number `/diagrams` gives its previews, and the last row of the table
+above is the check on it: the page is exactly as tall drawn as empty.
+
+**`NOT_DRAWN` and the card state behind it stay too**, though the list is empty and
+nothing reaches that branch. It is a list of exceptions, and it is how the next
+exception explains itself on the card instead of appearing as a blank one. Deleting
+a branch because nothing currently takes it is how the reason gets lost.
+
+The detail route is untouched by any of this: `/components/<group>/<name>` still
+offers `direct|bundle`, because there the two renderings are the question the page
+exists to answer, and the frame half of it really does boot an app.
 
 ### The registry's roster is the app's own catalogue
 
@@ -322,6 +390,15 @@ anything this page introduces, and it is a reason to read
 TROUBLESHOOTING.md's "Data sources" before reading the console on this page.
 
 ## What this retires
+
+**This record itself, one claim, struck in place.** "Each card draws the component
+itself, in this site's React tree, when the reader presses Draw", in "The frame moves
+to the component's own page". Voided by "Every card draws, and there is nothing to
+press" above, which is a section of this ADR rather than a record of its own because
+nothing else about the decision moved: the frames are still gone, the grid is still
+the grid, and what came off is a control inherited from the page this one replaced,
+measured and found to be gating nothing. Decision 12 of the redesign is withdrawn
+with it.
 
 [ADR 0027](0027-the-handbook-draws-the-apps-components.md), two claims, **struck in
 place**:

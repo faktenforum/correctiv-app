@@ -113,3 +113,46 @@ describe('the components the handbook draws', () => {
     expect(PREVIEW).toMatch(/<SafeAreaProvider initialMetrics=/);
   });
 });
+
+/**
+ * The overview's cards, and the one thing about them that is a decision.
+ *
+ * `/components` carried a Draw button on every card for one commit, inherited
+ * from the era when a preview meant booting the whole app in an iframe and
+ * mounting one cost an app boot. It costs a React mount now: `direct.tsx` imports
+ * the components statically, so the bytes are paid on arrival whether or not
+ * anybody presses anything, and all 47 together were measured at about 100 ms of
+ * the first render, 460 ms on a CPU throttled four times, with no frame over
+ * 17 ms while scrolling the page end to end. A control that gates nothing
+ * misrepresents what it costs to look, so there is none, and this is the check
+ * that keeps one from coming back by habit. ADR 0028 carries the numbers.
+ *
+ * Read as text for the same reason the registry is: asking whether a page mounts
+ * something on arrival by rendering it would need the app's whole toolchain,
+ * `react-native-web` and a DOM, to answer a question about a branch.
+ */
+describe('the components overview', () => {
+  const PAGE = readFileSync(join(HANDBOOK, 'src/pages/Components.tsx'), 'utf8');
+
+  it('draws every card’s specimen on arrival, with nothing to press', () => {
+    expect(PAGE).toContain('<DirectPreview');
+    // No control of any kind on a card: the grid's only interactive parts are
+    // links, and the filter and the segment above it, which are the shell's.
+    expect(PAGE).not.toMatch(/onClick|onDraw|\bPlay\b/);
+  });
+
+  it('reserves the preview area’s height rather than letting a specimen set it', () => {
+    // 47 specimens settle at their own speeds. A preview area sized by its
+    // content would reflow the grid under a reader who was already reading it,
+    // which is the failure the button used to hide by never drawing at all.
+    expect(PAGE).toMatch(/className="stage-grid relative h-\[11rem\] shrink-0/);
+  });
+
+  it('keeps the state a component this site cannot draw explains itself in', () => {
+    // `NOT_DRAWN` is empty today. It is the branch a future exception arrives
+    // through, and deleting it because nothing uses it is how the next exception
+    // ends up drawn as a blank card instead of a sentence.
+    expect(PAGE).toContain('NOT_DRAWN[id]');
+    expect(PAGE).toContain('entry === undefined');
+  });
+});

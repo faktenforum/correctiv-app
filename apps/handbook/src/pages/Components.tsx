@@ -1,4 +1,3 @@
-import { Play } from 'lucide-react';
 import { useEffect, useMemo, useState } from 'react';
 
 import api from 'virtual:api';
@@ -61,14 +60,17 @@ function useAskedFor(): void {
  * frame moved to `/components/<group>/<name>` where it has room to be a device
  * again (ADR 0028). The three-frame cap and the "load all" control went with it.
  *
- * Empty until asked, still. A link to this page must not mount every specimen of
- * every component on arrival, so the play control on each card is what mounts
- * one. It is page state and not address state for the same reason.
+ * **And nothing is asked for.** Every card draws on arrival. There was a Draw
+ * button on each of them for one commit, inherited from the era when a preview
+ * meant booting the app in a frame; `direct.tsx` imports the components
+ * statically, so the bytes are paid whether or not anybody presses anything.
+ * Measured on 2026-09-11: mounting all 47 adds about 100 ms to the first render,
+ * 460 ms on a CPU throttled four times, and the page still scrolls end to end at
+ * 60 frames a second with nothing over 17 ms. ADR 0028 carries the table.
  */
 export function Components() {
   const [query, setQuery] = useState('');
   const [only, setOnly] = useState<'all' | 'drawn'>('all');
-  const [drawn, setDrawn] = useState<ReadonlySet<string>>(() => new Set());
   useAskedFor();
 
   const sections = useSections('/components', true);
@@ -151,10 +153,10 @@ export function Components() {
           <p className="mt-xs max-w-content text-m leading-relaxed text-on-canvas-muted">
             Every component the app builds its screens from, taken out of{' '}
             <code className="font-mono">{root}</code> with its props, their types and whatever prose
-            the source carries. Press <b className="text-on-canvas">Draw</b> on a card and this site
-            renders the component itself, from the app&apos;s source, in its own React tree; the
-            component&apos;s own page has every specimen, the app&apos;s bundle beside it, and a
-            device size. The core&apos;s exports are a separate section:{' '}
+            the source carries. Every card draws its component, from the app&apos;s source, in this
+            site&apos;s own React tree; the component&apos;s own page has every specimen, the
+            app&apos;s bundle beside it, and a device size. The core&apos;s exports are a separate
+            section:{' '}
             <a
               href={href('/reference')}
               className="text-on-canvas underline decoration-accent underline-offset-2"
@@ -192,13 +194,7 @@ export function Components() {
                   const id = `${group.name}/${component.name}`;
                   return (
                     <li key={`${component.name}-${component.platform ?? ''}`} className="min-w-0">
-                      <ComponentCard
-                        id={id}
-                        group={group.name}
-                        component={component}
-                        drawn={drawn.has(id)}
-                        onDraw={() => setDrawn((current) => new Set(current).add(id))}
-                      />
+                      <ComponentCard id={id} group={group.name} component={component} />
                     </li>
                   );
                 })}
@@ -243,27 +239,28 @@ export function Components() {
 }
 
 /**
- * One card, in each of its three states, all of them the same shape.
+ * One card, in either of its two states, both of them the same shape.
  *
- * The preview area is the same height whether it holds a drawing, a play control
- * or a badge, and the head, the summary and the foot are identical in all three.
- * That is what keeps the minority state from reading as broken: with two
- * components undrawable the exceptions are a statement about where the drawing
- * is, and with forty of them undrawable it is the same statement forty times.
- * Nothing is dashed, greyed out, or shaped like a loading state.
+ * The preview area is the same height whether it holds a drawing or a badge, and
+ * the head, the summary and the foot are identical in both. That is what keeps
+ * the minority state from reading as broken: with two components undrawable the
+ * exceptions are a statement about where the drawing is, and with forty of them
+ * undrawable it is the same statement forty times. Nothing is dashed, greyed out,
+ * or shaped like a loading state.
+ *
+ * The height is fixed rather than measured, and that is the part of the shape
+ * that has to stay: 47 specimens settle at their own speeds, and a preview area
+ * sized by its content would reflow the grid under a reader who was already
+ * reading it.
  */
 function ComponentCard({
   id,
   group,
   component,
-  drawn,
-  onDraw,
 }: {
   id: string;
   group: string;
   component: ApiComponent;
-  drawn: boolean;
-  onDraw: () => void;
 }) {
   const entry = directEntry(id);
   const route = `/components/${group}/${component.name}`;
@@ -284,7 +281,7 @@ function ComponentCard({
               {NOT_DRAWN[id] ?? 'Its page draws it in the shipped app.'}
             </span>
           </a>
-        ) : drawn ? (
+        ) : (
           <>
             <div className="h-full overflow-hidden">
               <DirectPreview
@@ -302,13 +299,6 @@ function ComponentCard({
               <a href={href(route)}>All specimens</a>
             </Button>
           </>
-        ) : (
-          <div className="flex h-full items-center justify-center">
-            <Button variant="outline" size="sm" onClick={onDraw}>
-              <Play aria-hidden="true" />
-              Draw
-            </Button>
-          </div>
         )}
       </div>
 
