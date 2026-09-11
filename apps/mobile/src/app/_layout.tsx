@@ -40,7 +40,11 @@ import { expoAudio } from '@/lib/audio/backend';
 import { stop as stopAudio } from '@/lib/audio/player';
 import { expoPlatform } from '@/lib/platform/expo';
 import { coreStore, useAppStore, useIsAdmitted } from '@/lib/store/core';
-import { fontAssets, useAppearance, useColors, useIsDark } from '@/lib/theme';
+import { useAppearance, useColors, useIsDark } from '@/lib/theme';
+// By path, and the one import in the app that is. `lib/theme`'s barrel leaves the
+// font files out so that a component importing a colour hook does not pull Expo's
+// font loader in behind it; see `lib/theme/font-assets.ts` and ADR 0027.
+import { fontAssets } from '@/lib/theme/font-assets';
 
 // Hand the core its platform capabilities before anything reads a store. Storage
 // and bundled content come from the adapter; the audio backend is composed in
