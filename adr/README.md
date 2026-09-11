@@ -1,6 +1,10 @@
 # Architecture decisions
 
+<<<<<<< HEAD
 Twenty-seven decisions shaped this repo. Read them when you want to know *why* something
+=======
+Twenty-six decisions shaped this repo. Read them when you want to know *why* something
+>>>>>>> origin/main
 is the way it is; [`../ARCHITECTURE.md`](../ARCHITECTURE.md) describes *what* it is.
 
 | | Decision | Status |
@@ -31,7 +35,10 @@ is the way it is; [`../ARCHITECTURE.md`](../ARCHITECTURE.md) describes *what* it
 | [0024](0024-the-handbook-owns-the-root.md) | The handbook owns the site root, and the app moves under it | accepted; retires two of 0014's, its argument untouched |
 | [0025](0025-the-published-app-is-a-production-bundle.md) | The published app is a production bundle, and the workbench gives up its handle | accepted; a capability measured and rejected |
 | [0026](0026-react-native-review-and-hardening.md) | The React Native review, and which of it we are doing | accepted; nine decisions, three with a named open item, no ADR superseded, three comments and three sentences of `AGENTS.md` named for later |
+<<<<<<< HEAD
 | [0027](0027-re-exported-screens-and-a-variant-where-the-host-refuses.md) | The desktop host re-exports the phone's screens, and varies one only where the host refuses | accepted; scoped to the experimental `apps/desktop`, retires one of 0012's. **Lives on the `desktop` branch only**, and has now been renumbered four times — it was 0020, then 0023, 0024, 0026, each time because main took the number while this branch was away |
+=======
+>>>>>>> origin/main
 
 Eight notes for readers of the older ones:
 
