@@ -23,9 +23,17 @@ const API_FILE = join(ROOT, 'apps/handbook/content/api.generated.json');
  */
 export function docsPlugin(): Plugin {
   let watched: string[] = [];
+  // Taken from the resolved config rather than from `process.env.HANDBOOK_BASE`,
+  // which is where `vite.config.ts` reads it. One source, so the prefix in a
+  // document's links cannot disagree with the prefix Vite puts on everything else.
+  let base = '/';
 
   return {
     name: 'handbook-docs',
+
+    configResolved(config) {
+      base = config.base;
+    },
 
     resolveId(id) {
       if (id === MODULE_ID) return `\0${MODULE_ID}`;
@@ -48,7 +56,7 @@ export function docsPlugin(): Plugin {
         return `export default ${readFileSync(API_FILE, 'utf8')};`;
       }
       if (id !== `\0${MODULE_ID}`) return null;
-      const { module, files } = collectDocs();
+      const { module, files } = collectDocs(base);
       watched = files;
       // Declared rather than inferred: these files are outside this package and
       // Vite has no other way to know the virtual module depends on them.
