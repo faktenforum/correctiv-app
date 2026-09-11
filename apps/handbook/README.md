@@ -102,9 +102,26 @@ is reached by the `@/components` alias inside `apps/mobile` and from nowhere els
 
 Not committed. It is derived, it is large, and `npm run build` regenerates it first.
 
+## Drawing the app's components here
+
+`src/components/direct.tsx` imports components out of `apps/mobile` and renders them
+in this site's own React tree, beside the same component drawn by the app's bundle in
+the frame. `vite.app.mjs` holds what that takes — `vite-plugin-rnw`, `uniwind/vite`,
+Metro's `.web.*` extension order — and is shared with the measurement so the two
+cannot drift.
+
+```bash
+npm run measure-direct -w @correctiv/handbook   # one vite build per component, prints built / failed
+```
+
+It is a script and not a test: the number moves when `react-native`, `expo` or
+Rolldown move, and a check that reddens for an upstream release gets switched off.
+[ADR 0027](../../adr/0027-the-handbook-draws-the-apps-components.md) carries the
+result, the recipe, and the dark-mode trap that comes with it.
+
 ## The tests, and what they are for
 
-Four of them exist because of a failure that had already happened and that no other
+Six of them exist because of a failure that had already happened and that no other
 check could see.
 
 | File | Catches |
@@ -113,6 +130,8 @@ check could see.
 | `test/sources.test.ts` | a file added to `packages/app-core/src/data/` with no entry in the manifest, so sample data reaches a screen and not the inventory |
 | `test/routes.test.ts` | a page shadowing a document, which removes it from the site with no error |
 | `test/styles.test.ts` | a colour value written here instead of taken from `packages/design-tokens`, which forks the palette invisibly, and the entry stylesheet importing the theme without the variants that choose between light and dark |
+| `test/toolchain.test.ts` | the repository root hoisting a Vite older than this package's, which makes a plugin configure the wrong bundler and say nothing useful about it |
+| `test/direct.test.ts` | a drawn component that no longer exists, one reached through a barrel that drags Expo in behind it, a plugin order that leaves every drawing unpainted, and the two ways the appearance setting stops reaching a drawing — no `Uniwind.setTheme` call at all, or one fed from the class Uniwind itself writes |
 
 ## Colour
 

@@ -233,6 +233,23 @@ equivalents for focus, liveness and errors.
   ```
   `pages.yml` greps the built `index.html` for the prefix, because this failure has
   no other symptom before it is public.
+- **Two Vites in one tree, and a plugin reading the wrong one.** `apps/handbook`
+  builds with Vite 8 and Rolldown. `vitest` has `vite` as a regular dependency,
+  range `^5 || ^6 || ^7`, so npm used to hoist **7.3.6** to `node_modules/vite` and
+  leave the handbook's 8 in `apps/handbook/node_modules/vite`. A *plugin* resolves
+  `vite` from where the plugin is installed, which is the root — so `uniwind/vite`'s
+  own `require('vite/package.json')` reported 7 and it configured a Vite 8 build for
+  esbuild. Everything still built; it was simply the wrong half of the plugin.
+  → The tell is a warning that names a plugin: `` `optimizeDeps.esbuildOptions`
+  option was specified by "uniwind" plugin ``. A `resolve.alias` `customResolver`
+  deprecation is **not** the tell, because Uniwind emits that on both code paths.
+  The check is `npm ls vite` from the repository root, and what it must show is
+  8 at the top and vitest's 7 nested under `node_modules/vitest/node_modules/vite`.
+  → The fix is `vite` in the **root** `package.json`'s devDependencies, which is
+  what makes npm hoist the right one. Not `overrides`: that would force vitest onto
+  a major it does not declare. `apps/handbook/test/toolchain.test.ts` fails if the
+  root ever hands out a 7 again.
+  ([ADR 0027](adr/0027-the-handbook-draws-the-apps-components.md))
 - **`react-native-web`'s `Switch` reads a different prop for the ON thumb.** Its
   `thumbColor` covers the OFF state only; ON comes from `activeThumbColor`, whose
   default is Material teal `#009688` (`exports/Switch/index.js`). So every enabled

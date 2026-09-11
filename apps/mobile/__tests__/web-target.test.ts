@@ -132,6 +132,35 @@ describe('web target', () => {
     expect(offenders.map((f) => relative(SRC, f))).toEqual([]);
   });
 
+  it('keeps the font files out of the theme barrel', () => {
+    // `lib/theme` is the app's most-imported module: a component asks it for
+    // `useColors` and, through `export * from './fonts'`, used to get
+    // `@expo-google-fonts/*` with it — five `require()`s of a `.ttf` in the import
+    // graph of every component in the app. Metro dedupes those into its asset
+    // registry, so nothing on a phone notices; a plain bundler emits every cut the
+    // package re-exports, which measured 19,828 kB against 424 kB for a single
+    // `<Typo>` built outside Metro (ADR 0027). The families a component actually
+    // wants are plain strings in `lib/theme/fonts.ts`; the files are in
+    // `font-assets.ts`, and `app/_layout.tsx` is the only module that has any use
+    // for them.
+    const barrel = readFileSync(resolve(SRC, 'lib/theme/index.ts'), 'utf8');
+    expect(barrel).not.toMatch(/font-assets/);
+
+    const expoFonts = files.filter((file) => {
+      const rel = relative(SRC, file).replaceAll('\\', '/');
+      if (rel === 'lib/theme/font-assets.ts') return false;
+      return /from\s+'@expo-google-fonts\//.test(readFileSync(file, 'utf8'));
+    });
+    expect(expoFonts.map((f) => relative(SRC, f))).toEqual([]);
+
+    const importers = files.filter((file) => {
+      const rel = relative(SRC, file).replaceAll('\\', '/');
+      if (rel === 'app/_layout.tsx') return false;
+      return /from\s+'[^']*theme\/font-assets'/.test(readFileSync(file, 'utf8'));
+    });
+    expect(importers.map((f) => relative(SRC, f))).toEqual([]);
+  });
+
   it('routes both reader implementations through one shared props type', () => {
     // If these drift apart the platforms can diverge silently, so both must
     // import the contract rather than declare their own props inline.

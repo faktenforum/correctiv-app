@@ -1,10 +1,10 @@
 import { fileURLToPath } from 'node:url';
 
 import tailwind from '@tailwindcss/vite';
-import react from '@vitejs/plugin-react';
 import { defineConfig } from 'vite';
 
 import { docsPlugin } from './plugin/index.ts';
+import { appPlugins, appResolve } from './vite.app.mjs';
 
 /**
  * The app's dev server, which this one borrows rather than replaces.
@@ -42,7 +42,24 @@ const APP_DEV_SERVER = process.env.APP_DEV_SERVER || 'http://localhost:8081';
  */
 export default defineConfig(({ command }) => ({
   base: process.env.HANDBOOK_BASE?.trim() || '/',
-  plugins: [docsPlugin(), tailwind(), react()],
+  /*
+   * `resolve` at this level rather than from a plugin, and that is not a style
+   * choice: a plugin's `config()` result is merged AFTER the user's and array
+   * values are concatenated, so `.web.*` only comes first if it is written here.
+   * `vite.app.mjs` explains what the order is for.
+   */
+  resolve: appResolve,
+  /*
+   * `appPlugins()` is what lets this build compile a component out of
+   * `apps/mobile`: Flow stripped, `react-native` aliased, Uniwind's classes
+   * generated from the app's own stylesheet. It is shared with
+   * `scripts/measure-direct.mjs`, so the number in ADR 0027 is about this build
+   * and not about a second one that merely looks like it.
+   *
+   * No `@vitejs/plugin-react` of this package's own any more: `rnw()` ends with
+   * one, and two React plugins transform every file twice.
+   */
+  plugins: [docsPlugin(), ...appPlugins(), tailwind()],
   build: {
     outDir: fileURLToPath(new URL('./dist', import.meta.url)),
     emptyOutDir: true,

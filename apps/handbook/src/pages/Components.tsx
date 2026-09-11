@@ -2,6 +2,9 @@ import { useCallback, useEffect, useMemo, useState } from 'react';
 
 import api from 'virtual:api';
 import type { ApiComponent, ApiComponentGroup } from 'virtual:api';
+import { DIRECT } from '../components/direct';
+import { isDirect } from '../components/direct-ids';
+import { DirectPreview } from '../components/DirectPreview';
 import { componentId } from '../nav';
 import { href } from '../router';
 import { Badge } from '../ui/kit/badge';
@@ -315,6 +318,10 @@ function Component({
 }) {
   const props = component.props;
   const id = componentId(group, component.name, component.platform);
+  /* The app's own address for a component, which the registry and the gallery
+     both use. `id` above is this page's anchor and carries the platform; this
+     one does not, because a platform split is one component drawn twice. */
+  const directId = `${group}/${component.name}`;
 
   /*
    * A row can leave the page without shutting, and then nothing tells the page.
@@ -354,6 +361,19 @@ function Component({
       <p className="break-words font-mono text-s text-on-canvas-muted">
         {`import { ${component.name} } from '${component.import}'`}
       </p>
+      {/* Drawn by this site, in this React tree, beside the same component drawn
+          by the app's own bundle in the frame below. Two renderings of one
+          component: a disagreement between them is a finding, and nothing checks
+          them against each other on purpose (ADR 0027). Only two components are
+          in the registry yet; the page that is built around it is not this PR. */}
+      {isDirect(directId) && (
+        <div className="mt-s">
+          <p className="mb-2xs text-s font-semibold uppercase tracking-wider text-on-canvas-muted">
+            Drawn by the handbook
+          </p>
+          <DirectPreview specimens={DIRECT[directId]} ground="canvas" />
+        </div>
+      )}
       <Drawn group={group} name={component.name} state={stateOf(id)} />
       {component.doc && (
         <div
