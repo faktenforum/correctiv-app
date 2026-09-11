@@ -936,8 +936,8 @@ export function Sources() {
             not. The page then scrolls sideways by their reach with nothing visible
             out there. Measured at a 1024px window: the box scrolled its 936px table
             inside 719px correctly and the window still scrolled 105px. This is the
-            second time that has happened here, and it is why the kit's
-            `ScrollArea` is written `relative overflow-hidden` too.
+            second time that has happened here, and `relative` on the box is what
+            stops it: a positioned ancestor is what the spans then resolve against.
           */}
             <div className="relative mt-s min-w-0 overflow-x-auto rounded-md border border-stroke">
               <table className="w-full min-w-[44rem] border-collapse text-left">
