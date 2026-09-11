@@ -7,9 +7,12 @@ Status: accepted, 2026-09-11.
 `/components` in the handbook lists all 47 components of `apps/mobile` with their
 props, their prose and their source link, and shows none of them. To see one, a
 reader opens a row and the page boots the **whole app** in an iframe, at phone width,
-three at a time ([`src/lib/rows.ts`](../apps/handbook/src/lib/rows.ts) says why three).
+~~three at a time (`src/lib/rows.ts` says why three)~~. Voided by
+[ADR 0028](0028-one-shell-and-a-route-that-declares-its-context.md): there are no
+frames on that page at all any more, and the file with the cap in it is deleted.
 A frame always carries a viewport, so what a reader gets for `Hairline` — a one-pixel
-line — is a 393 px phone with a line somewhere on it.
+line — is a 393 px phone with a line somewhere on it. That observation is the reason
+for both records and is untouched.
 
 The obvious alternative is for the handbook to import the component and render it in
 its own React tree. The handbook is Vite and React; the app is Expo, React Native and
@@ -128,8 +131,13 @@ are emitted whatever a component asked for. Measured the same day by building
 constant — so that was every component in the app, to reach a colour token. What a
 component actually wants from that module is a family *name*, which is a plain
 string. So `fonts.ts` keeps the names and `fontFamilyFor()`, a new `font-assets.ts`
-holds the five files, the barrel does not re-export it, and `app/_layout.tsx` — the
-only consumer of `fontAssets`, verified against the whole tree — imports it by path.
+holds the five files, the barrel does not re-export it, and ~~`app/_layout.tsx` — the
+only consumer of `fontAssets`, verified against the whole tree — imports it by path.~~
+`lib/env/fonts.ts` is the only consumer, and `app/_layout.tsx` reaches the files
+through it; voided by [ADR 0028](0028-one-shell-and-a-route-that-declares-its-context.md),
+"The environment is the app's, and it was short by five things", where the second host
+loads the same five files by loading the app's own environment. There is still exactly
+one importer, which is the fact this paragraph is about.
 `__tests__/web-target.test.ts` fails if any of those three facts stops being true.
 
 Nothing about this reaches the app: Metro deduped the cuts already, so the phone
@@ -185,9 +193,15 @@ fails `vite build`, so there is no manifest to keep in step. `direct-ids.ts` bes
 it holds the ids as plain data, and typing the registry as `Record<DirectId, …>` is
 what stops the two from drifting.
 
-`ui/Card` and `ui/Hairline` ship in it, which is the proof and nothing more. The
+~~`ui/Card` and `ui/Hairline` ship in it, which is the proof and nothing more.~~ ~~The
 components page that is built around this — cards, a detail route, the switch between
-the two renderings — is the next change and is not here.
+the two renderings — is the next change and is not here.~~ Both voided by
+[ADR 0028](0028-one-shell-and-a-route-that-declares-its-context.md), which is that
+change: the registry's roster is the app's own `gallery/catalogue.tsx` now, so all 45
+entries are drawn rather than two, and `direct.tsx` holds the exceptions instead of
+the members. The argument above it — that the registry is the measurement rather than
+a description of one — is why the exceptions are a list and not a manifest, and is
+untouched.
 
 **Where the two renderings disagree, the app's is right.** The handbook's is a second
 build of the same source with a different bundler; it exists so a reader can see a
@@ -298,12 +312,21 @@ about the build it claims to be about.
 family-name strings, and breaking the chain out of the barrel has the same effect
 without a stub: the families are *applied* — `fontFamilyFor()` returns
 `Merriweather_400Regular` and `<Typo>` sets it — and no font file is loaded, because
-loading one is `expo-font`'s job and there is no Expo here. So a drawn component's
+loading one is `expo-font`'s job and there is no Expo here. ~~So a drawn component's
 sizes, weights and line heights are the app's and its typeface is the browser's
 fallback, which is visible in the handbook beside the framed app and looks like what
 it is. How the handbook loads Merriweather and Source Sans 3 for a directly drawn
 component is unresolved; the reader font subsets in
-`lib/theme/readerFonts.generated.ts` are one candidate and were not tried.
+`lib/theme/readerFonts.generated.ts` are one candidate and were not tried.~~ Voided by
+[ADR 0028](0028-one-shell-and-a-route-that-declares-its-context.md), "The environment
+is the app's, and it was short by five things": the handbook loads the five files with
+`expo-font`, out of the app's own `fontAssets`, because it wraps every specimen in the
+app's environment and that is where the app loads them too. Neither candidate above
+was the answer, and the reasoning that led to them is why the fix is one import: it
+was never a missing name, only a missing loader. The fallback was also worse than this
+paragraph guessed — Chrome substitutes its *standard* face for an unmatched family,
+which is a serif, so the whole interface drew in Times and every bold string drew at
+regular weight, this app having one loaded family per cut.
 
 **`vite-plugin-rnw` is pre-1.0** and has one maintainer, and it is now in the path of
 every published build of this site, not only of the drawings. `^0.0.12` is an exact

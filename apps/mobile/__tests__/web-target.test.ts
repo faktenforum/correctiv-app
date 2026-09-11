@@ -141,8 +141,10 @@ describe('web target', () => {
     // package re-exports, which measured 19,828 kB against 424 kB for a single
     // `<Typo>` built outside Metro (ADR 0027). The families a component actually
     // wants are plain strings in `lib/theme/fonts.ts`; the files are in
-    // `font-assets.ts`, and `app/_layout.tsx` is the only module that has any use
-    // for them.
+    // `font-assets.ts`, and `lib/env/fonts.ts` is the only module that has any use
+    // for them — one importer, so that the second host loads the app's five cuts by
+    // loading the app's environment rather than by transcribing a list of names
+    // (ADR 0028).
     const barrel = readFileSync(resolve(SRC, 'lib/theme/index.ts'), 'utf8');
     expect(barrel).not.toMatch(/font-assets/);
 
@@ -155,7 +157,7 @@ describe('web target', () => {
 
     const importers = files.filter((file) => {
       const rel = relative(SRC, file).replaceAll('\\', '/');
-      if (rel === 'app/_layout.tsx') return false;
+      if (rel === 'lib/env/fonts.ts') return false;
       return /from\s+'[^']*theme\/font-assets'/.test(readFileSync(file, 'utf8'));
     });
     expect(importers.map((f) => relative(SRC, f))).toEqual([]);

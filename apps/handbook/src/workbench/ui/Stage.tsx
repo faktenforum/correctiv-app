@@ -1,6 +1,7 @@
 import { useEffect, useRef, type RefObject } from 'react';
 
 import { cn } from '../../lib/cn';
+import { OUTLINE } from '../AppFrame';
 import { HOST_DEVICE } from '../devices';
 import type { PreviewState } from '../state';
 
@@ -17,6 +18,14 @@ interface Props {
   frameRef: RefObject<HTMLIFrameElement | null>;
   onResize: (size: { w: number; h: number }) => void;
   onLoad: () => void;
+  /**
+   * Whether to print the sentence under the frame that says what this view is.
+   *
+   * The demo audience's, and not the inspector audience's. It used to be read off
+   * `state.tools` and `state.full`, which are the shell's now and not the frame's,
+   * so the page that knows both decides and this one draws.
+   */
+  hint: boolean;
 }
 
 type Axes = 'x' | 'y' | 'xy';
@@ -35,12 +44,19 @@ type Axes = 'x' | 'y' | 'xy';
  * 393px, the app reports `innerWidth` 393 and `clientWidth` 393, so no desktop
  * scrollbar is eating layout width and there is nothing to compensate for.
  *
+ * That is true of the frame and it was not true of the box around it. Tailwind's
+ * preflight makes every box `border-box`, so the device's 1px outline came out of
+ * the width it was given: measured on 2026-09-11 on the built site, a frame
+ * reading `393 × 852` handed the app `innerWidth` 391. `OUTLINE` in
+ * `workbench/AppFrame.tsx` says the rest; the outline is added to the stated size
+ * here for the same reason.
+ *
  * The graph-paper ground is `stage-grid`, the one piece of decoration in
  * `styles/app.css`. It is there so the frame reads as a thing standing on a
  * surface rather than a white box on a white page, which is what it looked like
  * without it.
  */
-export function Stage({ state, size, scale, stageRef, frameRef, onResize, onLoad }: Props) {
+export function Stage({ state, size, scale, stageRef, frameRef, onResize, onLoad, hint }: Props) {
   const { w, h } = size;
   const host = state.device === HOST_DEVICE;
   const right = useRef<HTMLDivElement>(null);
@@ -95,7 +111,10 @@ export function Stage({ state, size, scale, stageRef, frameRef, onResize, onLoad
         container puts the top out of reach.
       */}
       <div ref={stageRef} className="relative flex min-h-0 flex-1 overflow-auto p-m">
-        <div className="relative m-auto shrink-0" style={{ width: w * scale, height: h * scale }}>
+        <div
+          className="relative m-auto shrink-0"
+          style={{ width: (w + OUTLINE) * scale, height: (h + OUTLINE) * scale }}
+        >
           {/*
           The ground behind the app while it boots. Only a pinned dark setting is
           known here without reading the frame, and reading the frame is the
@@ -110,8 +129,8 @@ export function Stage({ state, size, scale, stageRef, frameRef, onResize, onLoad
             className="overflow-hidden rounded-md border border-stroke-strong bg-white text-neutral-700 shadow-lg"
             data-app-scheme={state.theme === 'dark' ? 'dark' : undefined}
             style={{
-              width: w,
-              height: h,
+              width: w + OUTLINE,
+              height: h + OUTLINE,
               transform: `scale(${scale})`,
               transformOrigin: 'top left',
             }}
@@ -173,7 +192,7 @@ export function Stage({ state, size, scale, stageRef, frameRef, onResize, onLoad
         phone-sized screen is a third of the room the app has, spent explaining
         controls that are one tap away.
       */}
-      {!state.tools && !state.full && (
+      {hint && (
         <p className="mx-auto hidden max-w-[42rem] shrink-0 px-m pb-m text-center text-m text-on-canvas-muted lg:block">
           This is the app at device size. Pick a device or a route in the bar above; the address in
           the status line reproduces exactly what you see. Open the Tools sidebar, ⌘J, for the

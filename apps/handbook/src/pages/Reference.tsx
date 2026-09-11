@@ -4,8 +4,11 @@ import api from 'virtual:api';
 import type { ApiModule, ApiSymbol } from 'virtual:api';
 import { symbolId } from '../nav';
 import { href } from '../router';
+import { Slot } from '../shell/slots';
 import { Disclosure, Filter, Source } from '../ui/Lookup';
 import { Page } from '../ui/Page';
+import { Toc } from '../ui/Toc';
+import { useSections } from '../ui/useSections';
 
 const { modules: MODULES, package: PACKAGE } = api.core;
 
@@ -40,6 +43,7 @@ const { modules: MODULES, package: PACKAGE } = api.core;
  */
 export function Reference() {
   const [query, setQuery] = useState('');
+  const sections = useSections('/reference', true);
 
   const modules = useMemo(() => {
     const q = query.trim().toLowerCase();
@@ -56,23 +60,8 @@ export function Reference() {
   const symbolCount = modules.reduce((n, m) => n + m.symbols.length, 0);
 
   return (
-    <Page>
-      <article className="min-w-0">
-        <h1 className="text-headline-xl font-bold leading-tight tracking-tight">Reference</h1>
-        <p className="mt-xs max-w-content text-m leading-relaxed text-on-canvas-muted">
-          Every exported symbol in <code className="font-mono">packages/app-core</code>, extracted
-          from the source and its doc comments. The core has no barrel, so a module here is the
-          subpath you import. This is a lookup surface; the architecture pages are the way in. The
-          app&apos;s own components are their own section:{' '}
-          <a
-            href={href('/components')}
-            className="text-on-canvas underline decoration-accent underline-offset-2"
-          >
-            Components
-          </a>
-          , which nothing outside <code className="font-mono">apps/mobile</code> can import.
-        </p>
-
+    <>
+      <Slot id="context-bar">
         <Filter
           id="ref-q"
           label="Filter modules and symbols"
@@ -81,40 +70,66 @@ export function Reference() {
           onChange={setQuery}
           summary={`${modules.length} modules, ${symbolCount} symbols`}
         />
+      </Slot>
 
-        {modules.length === 0 && (
-          <p className="py-2xl text-center text-m text-on-canvas-muted">Nothing matches that.</p>
-        )}
+      <Slot id="contents">
+        <Toc headings={sections} />
+      </Slot>
 
-        {modules.map((module) => (
-          <section className="mb-xl" key={module.subpath}>
-            <h2
-              id={`m-${module.subpath.replace(/\//g, '-')}`}
-              className="scroll-mt-[4.75rem] font-mono text-headline-m font-semibold leading-tight wrap-anywhere"
+      <Page>
+        <article className="min-w-0">
+          <h1 className="text-headline-xl font-bold leading-tight tracking-tight">Reference</h1>
+          <p className="mt-xs max-w-content text-m leading-relaxed text-on-canvas-muted">
+            Every exported symbol in <code className="font-mono">packages/app-core</code>, extracted
+            from the source and its doc comments. The core has no barrel, so a module here is the
+            subpath you import. This is a lookup surface; the architecture pages are the way in. The
+            app&apos;s own components are their own section:{' '}
+            <a
+              href={href('/components')}
+              className="text-on-canvas underline decoration-accent underline-offset-2"
             >
-              {module.subpath}
-            </h2>
-            <p className="mt-3xs break-words font-mono text-s text-on-canvas-muted">
-              {`import … from '${PACKAGE}/${module.subpath}'`}
-            </p>
-            {module.doc && (
-              <div
-                className="prose prose-sm mt-s max-w-content"
-                dangerouslySetInnerHTML={{ __html: module.doc }}
-              />
-            )}
+              Components
+            </a>
+            , which nothing outside <code className="font-mono">apps/mobile</code> can import.
+          </p>
 
-            <ul className="mt-s divide-y divide-stroke overflow-hidden rounded-md border border-stroke">
-              {module.symbols.map((symbol) => (
-                <li key={symbol.name}>
-                  <Symbol module={module} symbol={symbol} />
-                </li>
-              ))}
-            </ul>
-          </section>
-        ))}
-      </article>
-    </Page>
+          {modules.length === 0 && (
+            <p className="py-2xl text-center text-m text-on-canvas-muted">Nothing matches that.</p>
+          )}
+
+          {modules.map((module) => (
+            /* `mt`, not `mb`: the filter used to sit between the lede and the
+             first module and carried the space with it. It is in the header now,
+             so the first section has to bring its own. */
+            <section className="mt-xl" key={module.subpath}>
+              <h2
+                id={`m-${module.subpath.replace(/\//g, '-')}`}
+                className="scroll-mt-[4.75rem] font-mono text-headline-m font-semibold leading-tight wrap-anywhere"
+              >
+                {module.subpath}
+              </h2>
+              <p className="mt-3xs break-words font-mono text-s text-on-canvas-muted">
+                {`import … from '${PACKAGE}/${module.subpath}'`}
+              </p>
+              {module.doc && (
+                <div
+                  className="prose prose-sm mt-s max-w-content"
+                  dangerouslySetInnerHTML={{ __html: module.doc }}
+                />
+              )}
+
+              <ul className="mt-s divide-y divide-stroke overflow-hidden rounded-md border border-stroke">
+                {module.symbols.map((symbol) => (
+                  <li key={symbol.name}>
+                    <Symbol module={module} symbol={symbol} />
+                  </li>
+                ))}
+              </ul>
+            </section>
+          ))}
+        </article>
+      </Page>
+    </>
   );
 }
 

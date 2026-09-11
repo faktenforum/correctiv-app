@@ -5,7 +5,7 @@ import { useMemo } from 'react';
 import api from 'virtual:api';
 import docsModule from 'virtual:docs';
 import { navigate } from '../router';
-import { componentId, PAGE_TITLES, symbolId } from '../nav';
+import { PAGE_TITLES, symbolId } from '../nav';
 
 interface Entry {
   route: string;
@@ -52,7 +52,9 @@ function buildIndex(): Entry[] {
   for (const group of api.components.groups) {
     for (const component of group.components) {
       entries.push({
-        route: `/components#${componentId(group.name, component.name, component.platform)}`,
+        // The component's own page, not an anchor on the overview: there is one
+        // per component now, and it is where the props and both renderings are.
+        route: `/components/${group.name}/${component.name}`,
         title: component.name,
         // The folder, and the platform where the folder holds a split: two rows
         // called `VideoFrame` are otherwise one row typed twice.

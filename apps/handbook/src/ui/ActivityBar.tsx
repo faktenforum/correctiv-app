@@ -26,7 +26,7 @@ interface Props {
  * sidebars are shut, which is what a link handed to somebody who just wants to
  * see the app opens into.
  */
-const ITEMS = [
+export const ITEMS = [
   { route: '/', label: 'Overview', Icon: House, match: (r: string) => r === '/' },
   /*
    * Second, and before everything written down. This site is the app's
@@ -66,7 +66,10 @@ const ITEMS = [
     route: '/design',
     label: 'Design',
     Icon: PenTool,
-    match: (r: string) => r === '/design',
+    // `startsWith`, because the plugin's own documentation is published at
+    // `/design/plugin` and a rail that lit nothing there would say the reader had
+    // left the section they are still in.
+    match: (r: string) => r.startsWith('/design'),
   },
   {
     route: '/reference',
@@ -86,9 +89,21 @@ const ITEMS = [
     route: '/components',
     label: 'Components',
     Icon: Component,
-    match: (r: string) => r === '/components',
+    // And again for `/components/<group>/<name>`, one page per component.
+    match: (r: string) => r.startsWith('/components'),
   },
 ];
+
+/**
+ * Which section a route is in, in the rail's own words.
+ *
+ * `pages/Document.tsx` used to hard-code "Handbook" in its breadcrumb, which was
+ * true while every document was one. `/design/plugin` is a document of the design
+ * section, so the breadcrumb asks the rail rather than asserting.
+ */
+export function sectionOf(route: string): string {
+  return ITEMS.find((item) => item.route !== '/' && item.match(route))?.label ?? 'Handbook';
+}
 
 export function ActivityBar({ route }: Props) {
   return (

@@ -25,7 +25,10 @@ import { Segmented } from '../ui/kit/segmented';
 import { Button } from '../ui/kit/button';
 import { cn } from '../lib/cn';
 import { ageInWords, isStale, STALE_AFTER_DAYS } from '../lib/measured';
+import { Slot } from '../shell/slots';
 import { Page } from '../ui/Page';
+import { Toc } from '../ui/Toc';
+import { useSections } from '../ui/useSections';
 
 type Severity = 'stale' | 'broken';
 /** The five marks the board draws: three product states, two health overlays. */
@@ -567,6 +570,7 @@ export function Sources() {
   const [attentionOnly, setAttentionOnly] = useState(false);
   const [groupBy, setGroupBy] = useState<GroupBy>('state');
   const [open, setOpen] = useState<ReadonlySet<string>>(() => new Set());
+  const sections = useSections('/sources', true);
 
   const revealRow = useCallback((rowId: string) => {
     const row = ROW_BY_ID.get(rowId);
@@ -610,303 +614,314 @@ export function Sources() {
       : KIND_ORDER.map((kind) => ({ key: kind, label: KIND_LABEL[kind] }));
 
   return (
-    <Page className="text-m">
-      {/* No cap of its own any more: the page shell is the column, and the board
+    <>
+      <Slot id="contents">
+        <Toc headings={sections} />
+      </Slot>
+
+      <Page className="text-m">
+        {/* No cap of its own any more: the page shell is the column, and the board
           is seven columns wide with a file path in one of them. Prose inside
           still takes `max-w-content`, so nothing here is read at this width. */}
-      <div className="flex min-w-0 flex-col gap-2xl">
-        <header className="min-w-0">
-          <p className="text-s uppercase tracking-wider text-on-canvas-muted">
-            CORRECTIV community app · internal documentation
-          </p>
-          <h1 className="mt-2xs text-headline-xxl font-bold leading-tight tracking-tight">
-            Sources status board
-          </h1>
-          <p className="mt-s max-w-content text-l leading-normal text-on-canvas-muted">
-            For every kind of content the app shows: is it live data, sample data standing in for an
-            API that does not exist yet, or a wanted feature with nothing to read.
-          </p>
-
-          <div
-            role="note"
-            aria-label="How these figures were measured"
-            className="mt-m max-w-content space-y-xs rounded-md border border-stroke border-l-2 border-l-accent bg-surface p-sm text-m text-on-canvas-muted"
-          >
-            <p>
-              <strong className="font-semibold text-on-canvas">
-                Every figure on this page was measured by hand on{' '}
-                <span className={FIGURE}>{MEASURED_ON}</span>, {ageInWords(MEASURED_ON)}
-              </strong>
-              , against the live sources, and typed into the manifest. This page cannot re-measure
-              them. The RSS feeds send no CORS header, so a browser cannot fetch them, and nothing
-              here refreshes on its own.
+        <div className="flex min-w-0 flex-col gap-2xl">
+          <header className="min-w-0">
+            <p className="text-s uppercase tracking-wider text-on-canvas-muted">
+              CORRECTIV community app · internal documentation
             </p>
-            {/*
+            <h1 className="mt-2xs text-headline-xxl font-bold leading-tight tracking-tight">
+              Sources status board
+            </h1>
+            <p className="mt-s max-w-content text-l leading-normal text-on-canvas-muted">
+              For every kind of content the app shows: is it live data, sample data standing in for
+              an API that does not exist yet, or a wanted feature with nothing to read.
+            </p>
+
+            <div
+              role="note"
+              aria-label="How these figures were measured"
+              className="mt-m max-w-content space-y-xs rounded-md border border-stroke border-l-2 border-l-accent bg-surface p-sm text-m text-on-canvas-muted"
+            >
+              <p>
+                <strong className="font-semibold text-on-canvas">
+                  Every figure on this page was measured by hand on{' '}
+                  <span className={FIGURE}>{MEASURED_ON}</span>, {ageInWords(MEASURED_ON)}
+                </strong>
+                , against the live sources, and typed into the manifest. This page cannot re-measure
+                them. The RSS feeds send no CORS header, so a browser cannot fetch them, and nothing
+                here refreshes on its own.
+              </p>
+              {/*
               The age is worked out in the browser, not at build time. This page is
               published and then sits there, and a figure nobody has questioned for
               a quarter looks exactly like one taken this morning.
             */}
-            {isStale(MEASURED_ON) && (
-              <p className="font-semibold text-on-canvas">
-                That is more than {STALE_AFTER_DAYS} days ago. The article feeds publish weekly at
-                best, so the post counts and the newest-post dates below have almost certainly
-                moved. Measure again before quoting any of them.
+              {isStale(MEASURED_ON) && (
+                <p className="font-semibold text-on-canvas">
+                  That is more than {STALE_AFTER_DAYS} days ago. The article feeds publish weekly at
+                  best, so the post counts and the newest-post dates below have almost certainly
+                  moved. Measure again before quoting any of them.
+                </p>
+              )}
+              <p>
+                If a figure looks wrong, measure again and edit the manifest. It is a record of one
+                day, not a monitor.
               </p>
-            )}
-            <p>
-              If a figure looks wrong, measure again and edit the manifest. It is a record of one
-              day, not a monitor.
-            </p>
-          </div>
-        </header>
+            </div>
+          </header>
 
-        {/*
+          {/*
           A heading beside the legend, not instead of it. The legend names the
           group for the browser and the group needs one; the heading is what puts
           this block in the outline, which it was not in while it was painted at
           heading size and was not a heading.
         */}
-        <fieldset className="min-w-0" aria-labelledby="h-show">
-          <legend className="sr-only">Show which rows</legend>
-          <h2 id="h-show" className={SECTION_HEAD}>
-            Show
-          </h2>
-          <div className="mt-s grid gap-xs sm:grid-cols-2 xl:grid-cols-4">
-            <Tile
-              value="all"
-              name="All rows"
-              count={ROWS.length}
-              checked={stateFilter === 'all'}
-              onSelect={() => setStateFilter('all')}
-            >
-              {ROWS.length} rows over {SOURCES.length} manifest entries, with the article family
-              drawn as its {FEEDS.length} feeds.
-            </Tile>
+          <fieldset className="min-w-0" aria-labelledby="h-show">
+            <legend className="sr-only">Show which rows</legend>
+            <h2 id="h-show" className={SECTION_HEAD}>
+              Show
+            </h2>
+            <div className="mt-s grid gap-xs sm:grid-cols-2 xl:grid-cols-4">
+              <Tile
+                value="all"
+                name="All rows"
+                count={ROWS.length}
+                checked={stateFilter === 'all'}
+                onSelect={() => setStateFilter('all')}
+              >
+                {ROWS.length} rows over {SOURCES.length} manifest entries, with the article family
+                drawn as its {FEEDS.length} feeds.
+              </Tile>
 
-            <Tile
-              value="live"
-              name="Live"
-              mark="live"
-              count={LIVE_ROWS}
-              checked={stateFilter === 'live'}
-              onSelect={() => setStateFilter('live')}
-            >
-              {LIVE_ROWS - COUNTS.stale - COUNTS.broken} reading as expected, {COUNTS.stale} stale,{' '}
-              {COUNTS.broken} broken. The last two are the bad news below.
-            </Tile>
+              <Tile
+                value="live"
+                name="Live"
+                mark="live"
+                count={LIVE_ROWS}
+                checked={stateFilter === 'live'}
+                onSelect={() => setStateFilter('live')}
+              >
+                {LIVE_ROWS - COUNTS.stale - COUNTS.broken} reading as expected, {COUNTS.stale}{' '}
+                stale, {COUNTS.broken} broken. The last two are the bad news below.
+              </Tile>
 
-            <Tile
-              value="sample"
-              name="Sample data"
-              mark="sample"
-              count={COUNTS.sample}
-              checked={stateFilter === 'sample'}
-              onSelect={() => setStateFilter('sample')}
-            >
-              {COUNTS.sample} files typed in the shape of the API that will replace them. On screen
-              they look like live content.
-            </Tile>
+              <Tile
+                value="sample"
+                name="Sample data"
+                mark="sample"
+                count={COUNTS.sample}
+                checked={stateFilter === 'sample'}
+                onSelect={() => setStateFilter('sample')}
+              >
+                {COUNTS.sample} files typed in the shape of the API that will replace them. On
+                screen they look like live content.
+              </Tile>
 
-            <Tile
-              value="no-source"
-              name="No source"
-              mark="no-source"
-              count={COUNTS.noSource}
-              checked={stateFilter === 'no-source'}
-              onSelect={() => setStateFilter('no-source')}
-            >
-              {COUNTS.noSource} wanted features with nothing to read. {MVP_WANTED} of them are MVP.
-            </Tile>
-          </div>
-        </fieldset>
+              <Tile
+                value="no-source"
+                name="No source"
+                mark="no-source"
+                count={COUNTS.noSource}
+                checked={stateFilter === 'no-source'}
+                onSelect={() => setStateFilter('no-source')}
+              >
+                {COUNTS.noSource} wanted features with nothing to read. {MVP_WANTED} of them are
+                MVP.
+              </Tile>
+            </div>
+          </fieldset>
 
-        <section className="min-w-0" aria-labelledby="h-findings">
-          <h2 id="h-findings" className={SECTION_HEAD}>
-            Bad news first
-          </h2>
-          <p className={SECTION_LEDE}>
-            A sample file is honest about what it is. A live feed that has stopped, or points at
-            nothing, is not, because the app presents it as content. {AILING.length} of the{' '}
-            {FEEDS.length} article feeds are in that state.
-          </p>
+          <section className="min-w-0" aria-labelledby="h-findings">
+            <h2 id="h-findings" className={SECTION_HEAD}>
+              Bad news first
+            </h2>
+            <p className={SECTION_LEDE}>
+              A sample file is honest about what it is. A live feed that has stopped, or points at
+              nothing, is not, because the app presents it as content. {AILING.length} of the{' '}
+              {FEEDS.length} article feeds are in that state.
+            </p>
 
-          <ul className="mt-s grid gap-xs lg:grid-cols-3">
-            {AILING.map((feed) => {
-              const rowId = `row-${slug(feed.label)}`;
-              const row = ROW_BY_ID.get(rowId);
-              const severity: Severity = feed.health === 'broken' ? 'broken' : 'stale';
-              return (
-                <li
-                  key={feed.label}
-                  className={cn(
-                    'flex min-w-0 flex-col gap-xs rounded-md border border-stroke border-l-2 bg-surface p-sm',
-                    severity === 'broken' ? 'border-l-accent' : 'border-l-accent-alternative',
-                  )}
-                >
-                  <p className="flex flex-wrap items-center gap-xs">
-                    <StateMark mark={severity} />
-                    <span className="font-semibold text-on-canvas">{feed.label}</span>
-                  </p>
-                  <p className="text-m text-on-canvas-muted">
-                    {feed.category}: <span className={FIGURE}>{feed.posts}</span>, newest{' '}
-                    <span className={FIGURE}>{feed.newest}</span>.
-                  </p>
-                  {feed.note && <p className="text-m text-on-canvas-muted">{prose(feed.note)}</p>}
-                  <p className="mt-auto flex flex-wrap gap-sm pt-2xs text-m">
-                    {row && (
-                      <a className={LINK} href={`#${rowId}`} onClick={() => revealRow(rowId)}>
-                        Row
-                      </a>
+            <ul className="mt-s grid gap-xs lg:grid-cols-3">
+              {AILING.map((feed) => {
+                const rowId = `row-${slug(feed.label)}`;
+                const row = ROW_BY_ID.get(rowId);
+                const severity: Severity = feed.health === 'broken' ? 'broken' : 'stale';
+                return (
+                  <li
+                    key={feed.label}
+                    className={cn(
+                      'flex min-w-0 flex-col gap-xs rounded-md border border-stroke border-l-2 bg-surface p-sm',
+                      severity === 'broken' ? 'border-l-accent' : 'border-l-accent-alternative',
                     )}
-                    {(row?.questions ?? []).map((n) => (
-                      <a className={LINK} href={`#q${n}`} key={n}>
-                        Open question {n}
-                      </a>
-                    ))}
-                  </p>
-                </li>
-              );
-            })}
-          </ul>
-
-          <p className="mt-s max-w-content text-m text-on-canvas-muted">
-            The other {FEEDS.length - AILING.length} article feeds were reading as expected on{' '}
-            <span className={FIGURE}>{MEASURED_ON}</span>. A feed can be stale for a good reason,
-            which is what the note on each card is for.
-          </p>
-        </section>
-
-        <section className="min-w-0" aria-labelledby="h-gaps">
-          <h2 id="h-gaps" className={SECTION_HEAD}>
-            Connected but unused
-          </h2>
-          <p className={SECTION_LEDE}>
-            {UNUSED.length} sources are live and reachable, and the app reads a fraction of each.
-            This is neither a broken source nor a missing one. It is a decision nobody has taken.
-            Filled dots are what the app shows.
-          </p>
-
-          <ul className="mt-s grid gap-xs sm:grid-cols-2 xl:grid-cols-4">
-            {UNUSED.map((gap) => {
-              const sourceId = SOURCE_BY_GAP.get(gap.label);
-              return (
-                <li
-                  key={gap.label}
-                  className="flex min-w-0 flex-col gap-2xs rounded-md border border-stroke bg-surface p-sm"
-                >
-                  <p className="font-semibold text-on-canvas">{gap.label}</p>
-                  <p className="text-m text-on-canvas-muted">
-                    <span className={cn(FIGURE, 'text-l font-bold text-on-canvas')}>
-                      {gap.used}
-                    </span>{' '}
-                    of <span className={FIGURE}>{gap.available}</span> used
-                  </p>
-                  <div className="flex flex-wrap gap-3xs py-3xs" aria-hidden="true">
-                    {Array.from({ length: gap.available }, (_, index) => (
-                      <span
-                        key={index}
-                        className={cn(
-                          'size-[0.5rem] rounded-full border',
-                          index < gap.used
-                            ? 'border-on-canvas bg-on-canvas'
-                            : 'border-stroke-strong bg-canvas',
-                        )}
-                      />
-                    ))}
-                  </div>
-                  <p className="text-s leading-normal text-on-canvas-muted">
-                    {prose(gap.note)}
-                    {sourceId && (
-                      <>
-                        {' '}
-                        <a
-                          className={LINK}
-                          href={`#row-${sourceId}`}
-                          onClick={() => revealRow(`row-${sourceId}`)}
-                        >
+                  >
+                    <p className="flex flex-wrap items-center gap-xs">
+                      <StateMark mark={severity} />
+                      <span className="font-semibold text-on-canvas">{feed.label}</span>
+                    </p>
+                    <p className="text-m text-on-canvas-muted">
+                      {feed.category}: <span className={FIGURE}>{feed.posts}</span>, newest{' '}
+                      <span className={FIGURE}>{feed.newest}</span>.
+                    </p>
+                    {feed.note && <p className="text-m text-on-canvas-muted">{prose(feed.note)}</p>}
+                    <p className="mt-auto flex flex-wrap gap-sm pt-2xs text-m">
+                      {row && (
+                        <a className={LINK} href={`#${rowId}`} onClick={() => revealRow(rowId)}>
                           Row
                         </a>
-                      </>
-                    )}
-                  </p>
-                </li>
-              );
-            })}
-          </ul>
-        </section>
+                      )}
+                      {(row?.questions ?? []).map((n) => (
+                        <a className={LINK} href={`#q${n}`} key={n}>
+                          Open question {n}
+                        </a>
+                      ))}
+                    </p>
+                  </li>
+                );
+              })}
+            </ul>
 
-        <section className="min-w-0" aria-labelledby="h-board">
-          <h2 id="h-board" className={SECTION_HEAD}>
-            The board
-          </h2>
-          <p className={SECTION_LEDE}>
-            One row per source, per article feed, or per wanted source. A row expands to its full
-            detail; nothing on this page is truncated. The state tiles above filter the board as
-            well.
-          </p>
+            <p className="mt-s max-w-content text-m text-on-canvas-muted">
+              The other {FEEDS.length - AILING.length} article feeds were reading as expected on{' '}
+              <span className={FIGURE}>{MEASURED_ON}</span>. A feed can be stale for a good reason,
+              which is what the note on each card is for.
+            </p>
+          </section>
 
-          <div className="mt-s flex flex-wrap items-end gap-sm rounded-md border border-stroke bg-surface p-s">
-            <div className="min-w-0 flex-1 basis-[16rem]">
-              <label
-                htmlFor="sources-query"
-                className="mb-3xs block text-s font-medium text-on-canvas-muted"
-              >
-                Filter rows
+          <section className="min-w-0" aria-labelledby="h-gaps">
+            <h2 id="h-gaps" className={SECTION_HEAD}>
+              Connected but unused
+            </h2>
+            <p className={SECTION_LEDE}>
+              {UNUSED.length} sources are live and reachable, and the app reads a fraction of each.
+              This is neither a broken source nor a missing one. It is a decision nobody has taken.
+              Filled dots are what the app shows.
+            </p>
+
+            <ul className="mt-s grid gap-xs sm:grid-cols-2 xl:grid-cols-4">
+              {UNUSED.map((gap) => {
+                const sourceId = SOURCE_BY_GAP.get(gap.label);
+                return (
+                  <li
+                    key={gap.label}
+                    className="flex min-w-0 flex-col gap-2xs rounded-md border border-stroke bg-surface p-sm"
+                  >
+                    <p className="font-semibold text-on-canvas">{gap.label}</p>
+                    <p className="text-m text-on-canvas-muted">
+                      <span className={cn(FIGURE, 'text-l font-bold text-on-canvas')}>
+                        {gap.used}
+                      </span>{' '}
+                      of <span className={FIGURE}>{gap.available}</span> used
+                    </p>
+                    <div className="flex flex-wrap gap-3xs py-3xs" aria-hidden="true">
+                      {Array.from({ length: gap.available }, (_, index) => (
+                        <span
+                          key={index}
+                          className={cn(
+                            'size-[0.5rem] rounded-full border',
+                            index < gap.used
+                              ? 'border-on-canvas bg-on-canvas'
+                              : 'border-stroke-strong bg-canvas',
+                          )}
+                        />
+                      ))}
+                    </div>
+                    <p className="text-s leading-normal text-on-canvas-muted">
+                      {prose(gap.note)}
+                      {sourceId && (
+                        <>
+                          {' '}
+                          <a
+                            className={LINK}
+                            href={`#row-${sourceId}`}
+                            onClick={() => revealRow(`row-${sourceId}`)}
+                          >
+                            Row
+                          </a>
+                        </>
+                      )}
+                    </p>
+                  </li>
+                );
+              })}
+            </ul>
+          </section>
+
+          <section className="min-w-0" aria-labelledby="h-board">
+            <h2 id="h-board" className={SECTION_HEAD}>
+              The board
+            </h2>
+            <p className={SECTION_LEDE}>
+              One row per source, per article feed, or per wanted source. A row expands to its full
+              detail; nothing on this page is truncated. The state tiles above filter the board as
+              well.
+            </p>
+
+            <div className="mt-s flex flex-wrap items-end gap-sm rounded-md border border-stroke bg-surface p-s">
+              <div className="min-w-0 flex-1 basis-[16rem]">
+                <label
+                  htmlFor="sources-query"
+                  className="mb-3xs block text-s font-medium text-on-canvas-muted"
+                >
+                  Filter rows
+                </label>
+                <input
+                  type="search"
+                  id="sources-query"
+                  placeholder="name, endpoint, file, question"
+                  autoComplete="off"
+                  value={query}
+                  onChange={(event) => setQuery(event.target.value)}
+                  className="h-[2.25rem] w-full rounded-md border border-stroke bg-canvas px-xs text-m text-on-canvas placeholder:text-on-canvas-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent"
+                />
+              </div>
+
+              <Segmented
+                name="group"
+                legend="Group by"
+                showLegend
+                className="min-w-0"
+                value={groupBy}
+                options={[
+                  { value: 'state', label: 'State' },
+                  { value: 'kind', label: 'Content kind' },
+                ]}
+                onChange={(value) => setGroupBy(value as GroupBy)}
+              />
+
+              <label className="flex items-center gap-xs text-m text-on-canvas-muted">
+                <input
+                  type="checkbox"
+                  checked={attentionOnly}
+                  onChange={(event) => setAttentionOnly(event.target.checked)}
+                  className="size-[1rem] accent-accent focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent"
+                />
+                Only rows with a finding: stale, broken, unused, invented
               </label>
-              <input
-                type="search"
-                id="sources-query"
-                placeholder="name, endpoint, file, question"
-                autoComplete="off"
-                value={query}
-                onChange={(event) => setQuery(event.target.value)}
-                className="h-[2.25rem] w-full rounded-md border border-stroke bg-canvas px-xs text-m text-on-canvas placeholder:text-on-canvas-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent"
-              />
+
+              <div className="flex items-center gap-2xs">
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="sm"
+                  onClick={() => setOpen(new Set(ROWS.map((row) => row.id)))}
+                >
+                  Expand all
+                </Button>
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="sm"
+                  onClick={() => setOpen(new Set())}
+                >
+                  Collapse all
+                </Button>
+              </div>
+
+              <output className="text-m tabular-nums text-on-canvas-muted">
+                Showing {visible.length} of {ROWS.length} rows
+              </output>
             </div>
 
-            <Segmented
-              name="group"
-              legend="Group by"
-              showLegend
-              className="min-w-0"
-              value={groupBy}
-              options={[
-                { value: 'state', label: 'State' },
-                { value: 'kind', label: 'Content kind' },
-              ]}
-              onChange={(value) => setGroupBy(value as GroupBy)}
-            />
-
-            <label className="flex items-center gap-xs text-m text-on-canvas-muted">
-              <input
-                type="checkbox"
-                checked={attentionOnly}
-                onChange={(event) => setAttentionOnly(event.target.checked)}
-                className="size-[1rem] accent-accent focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent"
-              />
-              Only rows with a finding: stale, broken, unused, invented
-            </label>
-
-            <div className="flex items-center gap-2xs">
-              <Button
-                type="button"
-                variant="outline"
-                size="sm"
-                onClick={() => setOpen(new Set(ROWS.map((row) => row.id)))}
-              >
-                Expand all
-              </Button>
-              <Button type="button" variant="outline" size="sm" onClick={() => setOpen(new Set())}>
-                Collapse all
-              </Button>
-            </div>
-
-            <output className="text-m tabular-nums text-on-canvas-muted">
-              Showing {visible.length} of {ROWS.length} rows
-            </output>
-          </div>
-
-          {/*
+            {/*
             The board is wider than the rail leaves, so it scrolls inside this box.
             Two classes here are load-bearing and neither is obvious.
 
@@ -924,218 +939,223 @@ export function Sources() {
             second time that has happened here, and it is why the kit's
             `ScrollArea` is written `relative overflow-hidden` too.
           */}
-          <div className="relative mt-s min-w-0 overflow-x-auto rounded-md border border-stroke">
-            <table className="w-full min-w-[44rem] border-collapse text-left">
-              <caption className="border-b border-stroke bg-surface px-s py-xs text-left text-s text-on-canvas-muted">
-                Every content source the app reads, stands in for, or still wants. Figures measured
-                by hand on <span className={FIGURE}>{MEASURED_ON}</span>.
-              </caption>
-              <thead>
-                <tr className="border-b border-stroke-strong">
-                  {/* The width on "Reads from" is a preference, not a rule: auto
+            <div className="relative mt-s min-w-0 overflow-x-auto rounded-md border border-stroke">
+              <table className="w-full min-w-[44rem] border-collapse text-left">
+                <caption className="border-b border-stroke bg-surface px-s py-xs text-left text-s text-on-canvas-muted">
+                  Every content source the app reads, stands in for, or still wants. Figures
+                  measured by hand on <span className={FIGURE}>{MEASURED_ON}</span>.
+                </caption>
+                <thead>
+                  <tr className="border-b border-stroke-strong">
+                    {/* The width on "Reads from" is a preference, not a rule: auto
                       table layout honours it only where there is room. It is here
                       because that column holds the module paths, and without it
                       the spare width lands on the source names and the paths break
                       mid-word. */}
-                  {[
-                    { head: 'State' },
-                    { head: 'Kind' },
-                    { head: 'Source' },
-                    { head: 'Reads from', width: 'w-[17rem]' },
-                  ].map((column) => (
-                    <th
-                      key={column.head}
-                      scope="col"
-                      className={cn(
-                        'px-s py-xs text-s font-semibold uppercase tracking-wider text-on-canvas-muted',
-                        column.width,
-                      )}
-                    >
-                      {column.head}
-                    </th>
-                  ))}
-                  <th
-                    scope="col"
-                    className="px-s py-xs text-s font-semibold uppercase tracking-wider text-on-canvas-muted"
-                  >
-                    Measured
-                    <span className={cn(FIGURE, 'block font-normal normal-case')}>
-                      {MEASURED_ON}
-                    </span>
-                  </th>
-                  <th
-                    scope="col"
-                    className="px-s py-xs text-s font-semibold uppercase tracking-wider text-on-canvas-muted"
-                  >
-                    Flags
-                  </th>
-                  <th scope="col" className="px-s py-xs">
-                    <span className="sr-only">Details</span>
-                  </th>
-                </tr>
-              </thead>
-
-              {groups.map((group) => {
-                const members = ROWS.filter(
-                  (row) => (groupBy === 'state' ? row.status : row.kind) === group.key,
-                );
-                if (members.length === 0) return null;
-                const shown = members.filter((row) => visibleIds.has(row.id));
-
-                return (
-                  <tbody key={group.key} hidden={shown.length === 0}>
-                    <tr>
+                    {[
+                      { head: 'State' },
+                      { head: 'Kind' },
+                      { head: 'Source' },
+                      { head: 'Reads from', width: 'w-[17rem]' },
+                    ].map((column) => (
                       <th
-                        scope="rowgroup"
-                        colSpan={7}
-                        className="border-y border-stroke bg-surface px-s py-2xs text-m font-semibold text-on-canvas"
+                        key={column.head}
+                        scope="col"
+                        className={cn(
+                          'px-s py-xs text-s font-semibold uppercase tracking-wider text-on-canvas-muted',
+                          column.width,
+                        )}
                       >
-                        {group.label}
-                        <span className="ml-xs font-normal text-s text-on-canvas-muted">
-                          {groupMeta(members, shown, groupBy)}
-                        </span>
+                        {column.head}
                       </th>
-                    </tr>
-                    {members.map((row) => {
-                      const isVisible = visibleIds.has(row.id);
-                      const isOpen = open.has(row.id);
-                      return (
-                        <Fragment key={row.id}>
-                          <tr
-                            id={row.id}
-                            hidden={!isVisible}
-                            className={cn(
-                              'align-top target:bg-surface',
-                              isOpen ? 'bg-surface' : 'border-b border-stroke',
-                            )}
-                          >
-                            <td
+                    ))}
+                    <th
+                      scope="col"
+                      className="px-s py-xs text-s font-semibold uppercase tracking-wider text-on-canvas-muted"
+                    >
+                      Measured
+                      <span className={cn(FIGURE, 'block font-normal normal-case')}>
+                        {MEASURED_ON}
+                      </span>
+                    </th>
+                    <th
+                      scope="col"
+                      className="px-s py-xs text-s font-semibold uppercase tracking-wider text-on-canvas-muted"
+                    >
+                      Flags
+                    </th>
+                    <th scope="col" className="px-s py-xs">
+                      <span className="sr-only">Details</span>
+                    </th>
+                  </tr>
+                </thead>
+
+                {groups.map((group) => {
+                  const members = ROWS.filter(
+                    (row) => (groupBy === 'state' ? row.status : row.kind) === group.key,
+                  );
+                  if (members.length === 0) return null;
+                  const shown = members.filter((row) => visibleIds.has(row.id));
+
+                  return (
+                    <tbody key={group.key} hidden={shown.length === 0}>
+                      <tr>
+                        <th
+                          scope="rowgroup"
+                          colSpan={7}
+                          className="border-y border-stroke bg-surface px-s py-2xs text-m font-semibold text-on-canvas"
+                        >
+                          {group.label}
+                          <span className="ml-xs font-normal text-s text-on-canvas-muted">
+                            {groupMeta(members, shown, groupBy)}
+                          </span>
+                        </th>
+                      </tr>
+                      {members.map((row) => {
+                        const isVisible = visibleIds.has(row.id);
+                        const isOpen = open.has(row.id);
+                        return (
+                          <Fragment key={row.id}>
+                            <tr
+                              id={row.id}
+                              hidden={!isVisible}
                               className={cn(
-                                'px-s py-xs border-l-2',
-                                row.severity === 'broken'
-                                  ? 'border-l-accent'
-                                  : row.severity === 'stale'
-                                    ? 'border-l-accent-alternative'
-                                    : 'border-l-transparent',
+                                'align-top target:bg-surface',
+                                isOpen ? 'bg-surface' : 'border-b border-stroke',
                               )}
                             >
-                              <StateMark mark={markOf(row)} />
-                            </td>
-                            <td className="whitespace-nowrap px-s py-xs text-m text-on-canvas-muted">
-                              {KIND_LABEL[row.kind]}
-                            </td>
-                            <td className="min-w-0 px-s py-xs">
-                              <span className="block font-medium text-on-canvas">{row.name}</span>
-                              {row.sub && (
-                                <span className="block text-s text-on-canvas-muted">{row.sub}</span>
-                              )}
-                            </td>
-                            <td className="min-w-0 px-s py-xs">{row.reads}</td>
-                            <td className="px-s py-xs">{row.measured}</td>
-                            <td className="px-s py-xs">
-                              <div className="flex flex-wrap items-center gap-2xs">{row.chips}</div>
-                            </td>
-                            <td className="px-s py-xs text-right">
-                              <Button
-                                type="button"
-                                variant="outline"
-                                size="sm"
-                                aria-expanded={isOpen}
-                                aria-controls={row.detailId}
-                                onClick={() => toggle(row.id)}
+                              <td
+                                className={cn(
+                                  'px-s py-xs border-l-2',
+                                  row.severity === 'broken'
+                                    ? 'border-l-accent'
+                                    : row.severity === 'stale'
+                                      ? 'border-l-accent-alternative'
+                                      : 'border-l-transparent',
+                                )}
                               >
-                                {isOpen ? 'Hide' : 'Details'}
-                                {/* Thirty of these on the page, and a reader
+                                <StateMark mark={markOf(row)} />
+                              </td>
+                              <td className="whitespace-nowrap px-s py-xs text-m text-on-canvas-muted">
+                                {KIND_LABEL[row.kind]}
+                              </td>
+                              <td className="min-w-0 px-s py-xs">
+                                <span className="block font-medium text-on-canvas">{row.name}</span>
+                                {row.sub && (
+                                  <span className="block text-s text-on-canvas-muted">
+                                    {row.sub}
+                                  </span>
+                                )}
+                              </td>
+                              <td className="min-w-0 px-s py-xs">{row.reads}</td>
+                              <td className="px-s py-xs">{row.measured}</td>
+                              <td className="px-s py-xs">
+                                <div className="flex flex-wrap items-center gap-2xs">
+                                  {row.chips}
+                                </div>
+                              </td>
+                              <td className="px-s py-xs text-right">
+                                <Button
+                                  type="button"
+                                  variant="outline"
+                                  size="sm"
+                                  aria-expanded={isOpen}
+                                  aria-controls={row.detailId}
+                                  onClick={() => toggle(row.id)}
+                                >
+                                  {isOpen ? 'Hide' : 'Details'}
+                                  {/* Thirty of these on the page, and a reader
                                     listing its controls heard "Details" thirty
                                     times. The row's own name is what tells them
                                     apart, so it goes in the accessible name and
                                     stays out of the visible one. */}
-                                <span className="sr-only">, {row.name}</span>
-                              </Button>
-                            </td>
-                          </tr>
-                          <tr
-                            id={row.detailId}
-                            hidden={!isVisible || !isOpen}
-                            className="border-b border-stroke bg-surface"
+                                  <span className="sr-only">, {row.name}</span>
+                                </Button>
+                              </td>
+                            </tr>
+                            <tr
+                              id={row.detailId}
+                              hidden={!isVisible || !isOpen}
+                              className="border-b border-stroke bg-surface"
+                            >
+                              <td colSpan={7} className="px-s pb-sm pt-0">
+                                <div className="max-w-content space-y-xs text-m leading-normal text-on-canvas-muted">
+                                  {row.detail}
+                                </div>
+                              </td>
+                            </tr>
+                          </Fragment>
+                        );
+                      })}
+                    </tbody>
+                  );
+                })}
+              </table>
+            </div>
+          </section>
+
+          <section className="min-w-0" aria-labelledby="h-questions">
+            <h2 id="h-questions" className={SECTION_HEAD}>
+              {COUNTS.questions} open editorial questions
+            </h2>
+            <p className={SECTION_LEDE}>
+              This page exists to get these answered. Each one is raised by a row above, and each
+              row carries its question as a Q chip.
+            </p>
+
+            <ol className="mt-s space-y-xs">
+              {QUESTIONS.map((question, index) => {
+                const n = index + 1;
+                const raisedBy = ROWS.filter((row) => row.questions.includes(n));
+                return (
+                  <li
+                    id={`q${n}`}
+                    key={question}
+                    className="flex min-w-0 gap-s rounded-md border border-stroke bg-surface p-sm target:border-accent"
+                  >
+                    <span
+                      className={cn(
+                        FIGURE,
+                        'flex size-[1.75rem] shrink-0 items-center justify-center rounded-full border border-stroke-strong text-s font-semibold text-on-canvas',
+                      )}
+                    >
+                      Q{n}
+                    </span>
+                    <div className="min-w-0">
+                      <p className="text-m leading-normal text-on-canvas">{prose(question)}</p>
+                      <p className="mt-2xs flex flex-wrap gap-sm text-m">
+                        {raisedBy.map((row) => (
+                          <a
+                            className={LINK}
+                            href={`#${row.id}`}
+                            key={row.id}
+                            onClick={() => revealRow(row.id)}
                           >
-                            <td colSpan={7} className="px-s pb-sm pt-0">
-                              <div className="max-w-content space-y-xs text-m leading-normal text-on-canvas-muted">
-                                {row.detail}
-                              </div>
-                            </td>
-                          </tr>
-                        </Fragment>
-                      );
-                    })}
-                  </tbody>
+                            {row.name}
+                          </a>
+                        ))}
+                      </p>
+                    </div>
+                  </li>
                 );
               })}
-            </table>
-          </div>
-        </section>
+            </ol>
+          </section>
 
-        <section className="min-w-0" aria-labelledby="h-questions">
-          <h2 id="h-questions" className={SECTION_HEAD}>
-            {COUNTS.questions} open editorial questions
-          </h2>
-          <p className={SECTION_LEDE}>
-            This page exists to get these answered. Each one is raised by a row above, and each row
-            carries its question as a Q chip.
-          </p>
-
-          <ol className="mt-s space-y-xs">
-            {QUESTIONS.map((question, index) => {
-              const n = index + 1;
-              const raisedBy = ROWS.filter((row) => row.questions.includes(n));
-              return (
-                <li
-                  id={`q${n}`}
-                  key={question}
-                  className="flex min-w-0 gap-s rounded-md border border-stroke bg-surface p-sm target:border-accent"
-                >
-                  <span
-                    className={cn(
-                      FIGURE,
-                      'flex size-[1.75rem] shrink-0 items-center justify-center rounded-full border border-stroke-strong text-s font-semibold text-on-canvas',
-                    )}
-                  >
-                    Q{n}
-                  </span>
-                  <div className="min-w-0">
-                    <p className="text-m leading-normal text-on-canvas">{prose(question)}</p>
-                    <p className="mt-2xs flex flex-wrap gap-sm text-m">
-                      {raisedBy.map((row) => (
-                        <a
-                          className={LINK}
-                          href={`#${row.id}`}
-                          key={row.id}
-                          onClick={() => revealRow(row.id)}
-                        >
-                          {row.name}
-                        </a>
-                      ))}
-                    </p>
-                  </div>
-                </li>
-              );
-            })}
-          </ol>
-        </section>
-
-        <footer className="min-w-0 space-y-xs border-t border-stroke pt-sm text-m text-on-canvas-muted">
-          <p className="max-w-content">
-            Measured by hand on <span className={FIGURE}>{MEASURED_ON}</span>. The browser that
-            renders this page has not checked a single source, and cannot, because the RSS feeds
-            send no CORS header.
-          </p>
-          <p className="max-w-content">
-            Every row, count and figure above is read from{' '}
-            <code className={CODE}>apps/handbook/content/sources.manifest.ts</code>, which a test
-            checks against the core&apos;s data directory. When a figure changes, change it there.
-          </p>
-        </footer>
-      </div>
-    </Page>
+          <footer className="min-w-0 space-y-xs border-t border-stroke pt-sm text-m text-on-canvas-muted">
+            <p className="max-w-content">
+              Measured by hand on <span className={FIGURE}>{MEASURED_ON}</span>. The browser that
+              renders this page has not checked a single source, and cannot, because the RSS feeds
+              send no CORS header.
+            </p>
+            <p className="max-w-content">
+              Every row, count and figure above is read from{' '}
+              <code className={CODE}>apps/handbook/content/sources.manifest.ts</code>, which a test
+              checks against the core&apos;s data directory. When a figure changes, change it there.
+            </p>
+          </footer>
+        </div>
+      </Page>
+    </>
   );
 }

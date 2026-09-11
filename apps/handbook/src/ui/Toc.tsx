@@ -38,7 +38,14 @@ export function Toc({ headings }: Props) {
     return () => observer.disconnect();
   }, [shown]);
 
-  if (shown.length < 2) return null;
+  /*
+   * A map of one heading is not a map. The section still exists, because the
+   * route declared it, so it says what it has rather than leaving an empty box
+   * behind a title.
+   */
+  if (shown.length < 2) {
+    return <p className="p-s text-s text-on-canvas-muted">No headings on this page.</p>;
+  }
 
   return (
     <nav aria-label="On this page" className="p-s">

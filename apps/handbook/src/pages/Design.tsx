@@ -1,10 +1,13 @@
-import { Download, ExternalLink } from 'lucide-react';
+import { Download, ExternalLink, Maximize2, RotateCw } from 'lucide-react';
 import { useState } from 'react';
 
 import docsModule from 'virtual:docs';
 import { cn } from '../lib/cn';
 import { href } from '../router';
-import { Page } from '../ui/Page';
+import { Slot } from '../shell/slots';
+import type { ShellProps } from '../shell/address';
+import { Button } from '../ui/kit/button';
+import { Tooltip, TooltipContent, TooltipTrigger } from '../ui/kit/tooltip';
 
 /** The file this project is designed in. One place, so nothing here is a copy. */
 const FIGMA_FILE = 'https://www.figma.com/design/9n7x4eWzdZXVlRej7jWJHx/CORRECTIV-App--Aufbau';
@@ -15,13 +18,15 @@ const FIGMA_FILE = 'https://www.figma.com/design/9n7x4eWzdZXVlRej7jWJHx/CORRECTI
  */
 const FIGMA_EMBED = `https://embed.figma.com/design/9n7x4eWzdZXVlRej7jWJHx/CORRECTIV-App--Aufbau?embed-host=correctiv-handbook`;
 
+/** What the reader is told will be fetched, in the address bar's own words. */
+const FIGMA_EMBED_SHORT = 'embed.figma.com/design/9n7x…/CORRECTIV-App--Aufbau';
+
 const LINK =
   'font-medium text-on-canvas underline decoration-accent underline-offset-2 hover:text-on-canvas-accent';
 
-const CARD = 'rounded-md border border-stroke bg-surface p-sm';
-
-/** Where the plugin's own documentation lives, at the commit this page was built from. */
-const PLUGIN_README = `${docsModule.repo}/blob/${docsModule.commit}/tools/figma-plugin/README.md`;
+/** The panel's card, which is the workbench's readout card: `canvas` on `canvas`. */
+const CARD = 'rounded-md border border-stroke bg-canvas p-xs';
+const NOTE = 'text-s leading-relaxed text-on-canvas-muted';
 
 /**
  * The desktop client, per platform.
@@ -46,213 +51,269 @@ const CLIENTS: { label: string; note: string; href: string }[] = [
 ];
 
 /**
- * The design file, framed, and the three places this repository already touches it.
+ * The design file, framed full-bleed, and the pointers beside it.
  *
  * Framed rather than only linked, because the question this view answers is "what
  * is the screen supposed to look like", and an answer behind a click in another
  * tab is one nobody checks against the running app. The app itself is one view
  * away, at the same size, which is the comparison worth making.
  *
- * The embed is loaded on request rather than on arrival. It is a third-party
- * frame that fetches a design file, and mounting it for every reader of a
- * documentation site, most of whom came for something else, spends their
- * bandwidth on a picture they did not ask for.
+ * **The frame is loaded on a button press, and the surface it will fill carries
+ * the explanation until then.** Not a placeholder and nothing dashed: a reader
+ * who never presses the button has read what the button does, why a Figma
+ * sign-in screen may follow, and where the rest of this page is. The press is
+ * what makes the one request to figma.com, so no reader of a documentation site
+ * fetches a third-party design file they did not ask for, and there is nothing
+ * to ask consent for.
  */
-export function Design() {
+export function Design({ onAddress, wide, full }: ShellProps) {
+  /*
+   * Page state and deliberately not in the address. `full=1` is shareable
+   * because chrome is a preference; "the Figma file is loaded" must not be,
+   * because a link that fetched a third-party frame on arrival is exactly what
+   * the button exists to prevent.
+   */
   const [framed, setFramed] = useState(false);
+  const [reloads, setReloads] = useState(0);
+
+  /** Narrow and not full: the sections are the page, so the frame gets a door. */
+  const asPage = !wide && !full;
 
   return (
-    <Page>
-      <article className="min-w-0">
-        <h1 className="text-headline-xl font-bold leading-tight tracking-tight">Design</h1>
-        <p className="mt-xs max-w-content text-m leading-relaxed text-on-canvas-muted">
-          The app is designed in one Figma file,{' '}
-          <b className="text-on-canvas">CORRECTIV App, Aufbau</b>. It is the source for the screens,
-          and this handbook is the source for everything written down about them.
-        </p>
-
-        <p className="mt-s">
-          <a href={FIGMA_FILE} target="_blank" rel="noreferrer noopener" className={LINK}>
-            Open the file in Figma
-            <ExternalLink aria-hidden="true" className="ml-3xs inline size-[0.75rem]" />
-          </a>
-        </p>
-
-        <section className="mt-l" aria-labelledby="h-embed">
-          <h2
-            id="h-embed"
-            className="text-s font-semibold uppercase tracking-wider text-on-canvas-muted"
-          >
-            The file, here
-          </h2>
-
-          {/*
-            Before the frame, not after it. Figma answers a viewer without access
-            with its own sign-in screen, and a sign-in screen inside a page like
-            this one reads as a broken embed rather than as a permission. Measured
-            on 2026-09-05: the frame loads and Figma renders that screen, so the
-            embed itself is not blocked.
-          */}
-          <p className="mt-s max-w-content text-m leading-relaxed text-on-canvas-muted">
-            The frame below shows the file to anyone signed in to Figma with access to it, and a
-            Figma sign-in screen to everybody else. That is a permission, not a fault: this file is
-            not shared publicly. Sharing it as <i>anyone with the link can view</i> would make it
-            render for every reader of this page.
-          </p>
-
-          {framed ? (
-            <div className="mt-s overflow-hidden rounded-md border border-stroke">
-              {/*
-                `allow-same-origin` beside `allow-scripts`, which oxlint warns
-                about and which is right here. Its rule is about a SAME-origin
-                frame, where the pair lets the document reach out and remove its
-                own sandbox, so the attribute only looks like a precaution. This
-                frame is figma.com: `allow-same-origin` grants it its own origin,
-                not ours, and Figma needs it to reach its own storage. What the
-                sandbox still withholds is what it is for here, top-level
-                navigation above all: a third-party frame cannot move the page
-                out from under the reader.
-              */}
-              <iframe
-                title="CORRECTIV App, Aufbau, in Figma"
-                src={FIGMA_EMBED}
-                allowFullScreen
-                sandbox="allow-scripts allow-same-origin allow-popups allow-forms"
-                className="block h-[min(70vh,44rem)] w-full border-0 bg-surface"
-              />
-            </div>
-          ) : (
-            <button
-              type="button"
-              onClick={() => setFramed(true)}
-              className="mt-s flex h-[14rem] w-full items-center justify-center rounded-md border border-dashed border-stroke-strong bg-surface px-m text-m text-on-canvas transition-colors hover:bg-canvas focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent"
-            >
-              Load the Figma file in a frame
-            </button>
-          )}
-        </section>
-
-        <section className="mt-xl" aria-labelledby="h-repo">
-          <h2
-            id="h-repo"
-            className="text-s font-semibold uppercase tracking-wider text-on-canvas-muted"
-          >
-            Where the design reaches the code
-          </h2>
-          <div className="mt-s grid gap-xs md:grid-cols-3">
-            <div className={CARD}>
-              <h3 className="text-m font-semibold">The colours</h3>
-              <p className="mt-3xs text-m leading-relaxed text-on-canvas-muted">
-                Not redrawn from the file.{' '}
-                <code className="font-mono text-[0.875em]">@correctiv/design-tokens</code> is
-                generated and both the app and this site import the same stylesheet, so{' '}
-                <code className="font-mono text-[0.875em]">bg-canvas</code> means one thing in three
-                places.
+    <>
+      <div
+        className={cn(
+          'stage-grid flex flex-col bg-surface',
+          full ? 'h-dvh' : asPage ? 'min-h-[60dvh]' : 'h-full',
+        )}
+      >
+        {framed ? (
+          /*
+            `allow-same-origin` beside `allow-scripts`, which oxlint warns about
+            and which is right here. Its rule is about a SAME-origin frame, where
+            the pair lets the document reach out and remove its own sandbox, so
+            the attribute only looks like a precaution. This frame is figma.com:
+            `allow-same-origin` grants it its own origin, not ours, and Figma
+            needs it to reach its own storage. What the sandbox still withholds is
+            what it is for here, top-level navigation above all: a third-party
+            frame cannot move the page out from under the reader.
+          */
+          <iframe
+            key={reloads}
+            title="CORRECTIV App, Aufbau, in Figma"
+            src={FIGMA_EMBED}
+            allowFullScreen
+            sandbox="allow-scripts allow-same-origin allow-popups allow-forms"
+            /* `bg-surface` while it loads, which is a role and so is the right
+               colour in both schemes. A white flash under a dark page is the
+               half second this covers. */
+            className="block h-full min-h-0 w-full flex-1 border-0 bg-surface"
+          />
+        ) : (
+          /*
+            `flex` with a child that is `w-full max-w-content`, not
+            `grid place-content-center`. `place-content-center` sizes the item to
+            its content and centres that, so at 390px a column whose cap is wider
+            than the screen overflowed on BOTH sides: the h1 read "esign" and every
+            line ran off the right. Measured on 2026-09-11.
+          */
+          <div className="flex min-h-full flex-1 items-center justify-center px-m py-xl">
+            <div className="w-full max-w-content">
+              <h1 className="text-headline-xl font-bold leading-tight tracking-tight">Design</h1>
+              <p className="mt-xs text-m leading-relaxed text-on-canvas">
+                The app is designed in one Figma file,{' '}
+                <b className="font-semibold">CORRECTIV App, Aufbau</b>. It is the source for the
+                screens, and this handbook is the source for everything written down about them.
               </p>
-              <p className="mt-xs">
-                <a className={LINK} href={href('/decisions/0010')}>
-                  ADR 0010
-                </a>
-                {' · '}
-                <a className={LINK} href={href('/decisions/0022')}>
-                  ADR 0022
-                </a>
-              </p>
-            </div>
 
-            <div className={CARD}>
-              <h3 className="text-m font-semibold">The board</h3>
-              <p className="mt-3xs text-m leading-relaxed text-on-canvas-muted">
-                <code className="font-mono text-[0.875em]">tools/figma-plugin</code> draws the
-                screen inventory into the file from data in this repository, rather than anybody
-                keeping a board in step by hand.
-              </p>
-              <p className="mt-xs">
-                <a className={LINK} href={href('/decisions/0021')}>
-                  ADR 0021
-                </a>
-              </p>
-            </div>
+              <dl className="mt-m rounded-md border border-stroke bg-canvas p-sm text-s">
+                <dt className="font-semibold text-on-canvas">What loads</dt>
+                <dd className="mt-4xs break-words font-mono text-on-canvas-muted">
+                  {FIGMA_EMBED_SHORT}
+                </dd>
+                <dd className="mt-3xs leading-relaxed text-on-canvas-muted">
+                  One request to figma.com, and none before the button is pressed.
+                </dd>
 
-            <div className={CARD}>
-              <h3 className="text-m font-semibold">The screens</h3>
-              <p className="mt-3xs text-m leading-relaxed text-on-canvas-muted">
-                What the design says against what the app does. The workbench frames the running app
-                at a device size, which is the comparison the file is for.
-              </p>
-              <p className="mt-xs">
-                <a className={LINK} href={href('/workbench')}>
-                  Open the app
-                </a>
+                <dt className="mt-s font-semibold text-on-canvas">What you will see</dt>
+                <dd className="mt-4xs leading-relaxed text-on-canvas-muted">
+                  The file, if you are signed in to Figma with access to it. Figma&apos;s own
+                  sign-in screen if not. That screen is a permission and not a fault: this file is
+                  not shared publicly.
+                </dd>
+              </dl>
+
+              <div className="mt-m">
+                {asPage ? (
+                  <Button size="lg" onClick={() => onAddress({ full: true })}>
+                    <Maximize2 aria-hidden="true" />
+                    Open full screen
+                  </Button>
+                ) : (
+                  <Button size="lg" onClick={() => setFramed(true)}>
+                    <ExternalLink aria-hidden="true" />
+                    Load the Figma file
+                  </Button>
+                )}
+                <p className={cn(NOTE, 'mt-2xs')}>
+                  {asPage
+                    ? 'The frame needs the width of the screen, so it opens on its own. The file itself still loads on a press.'
+                    : 'from figma.com'}
+                </p>
+              </div>
+
+              <p className={cn(NOTE, 'mt-m')}>
+                {wide
+                  ? 'Everything else about the design, the clients, the plugin and where the colours reach the code, is on the right.'
+                  : 'Everything else about the design, the clients, the plugin and where the colours reach the code, is below.'}
               </p>
             </div>
           </div>
-        </section>
+        )}
+      </div>
 
-        <section className="mt-xl" aria-labelledby="h-plugin">
-          <h2
-            id="h-plugin"
-            className="text-s font-semibold uppercase tracking-wider text-on-canvas-muted"
-          >
-            The plugin, and what it needs
-          </h2>
-
-          <p className="mt-s max-w-content text-m leading-relaxed text-on-canvas-muted">
-            <code className="font-mono text-[0.875em]">tools/figma-plugin</code> draws the
-            app&apos;s screens onto a board inside the file, at the size of the Android screenshots,
-            in two renderings: a faithful replica and a hand-drawn wireframe. It is an interpreter
-            rather than a builder. <code className="font-mono text-[0.875em]">code.js</code> knows
-            nothing about the app and draws whatever{' '}
-            <code className="font-mono text-[0.875em]">spec.json</code> describes, so changing the
-            board means editing a JSON document and never re-importing the plugin.
-          </p>
-
-          <p className="mt-s max-w-content text-m leading-relaxed text-on-canvas-muted">
-            <b className="text-on-canvas">It needs the Figma desktop app.</b> A plugin under
-            development is loaded through Plugins, Development, Import plugin from manifest, and
-            that menu does not exist in the browser. Figma builds a client for macOS and for
-            Windows; on Linux there is none, so this project uses a fork.
-          </p>
-
-          <ul className="mt-s flex flex-wrap gap-xs">
-            {CLIENTS.map((client) => (
-              <li key={client.href}>
-                <a
-                  href={client.href}
-                  target="_blank"
-                  rel="noreferrer noopener"
-                  className={cn(
-                    'flex min-w-[10rem] flex-col rounded-md border border-stroke bg-surface px-sm py-xs',
-                    'transition-colors hover:border-stroke-strong hover:bg-canvas',
-                    'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent',
-                  )}
-                >
-                  <span className="flex items-center gap-2xs text-m font-medium text-on-canvas">
-                    <Download aria-hidden="true" className="size-[0.875rem] shrink-0" />
-                    {client.label}
-                  </span>
-                  <span className="mt-4xs text-s text-on-canvas-muted">{client.note}</span>
-                </a>
-              </li>
-            ))}
-          </ul>
-
-          <p className="mt-s max-w-content text-m leading-relaxed text-on-canvas-muted">
-            The importing itself, and the three traps that come with the Linux client, are in the
-            plugin&apos;s own{' '}
-            <a href={PLUGIN_README} target="_blank" rel="noreferrer noopener" className={LINK}>
-              README
-              <ExternalLink aria-hidden="true" className="ml-3xs inline size-[0.75rem]" />
+      <Slot id="context-bar">
+        <div className="flex min-w-0 flex-1 flex-wrap items-center gap-2xs">
+          <Button variant="outline" size="sm" asChild>
+            <a href={FIGMA_FILE} target="_blank" rel="noreferrer noopener">
+              <ExternalLink aria-hidden="true" />
+              Open in Figma
             </a>
-            , where they are next to the code they describe.
-          </p>
-        </section>
+          </Button>
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <Button
+                variant="ghost"
+                size="icon"
+                aria-label="Reload the frame"
+                disabled={!framed}
+                onClick={() => setReloads((n) => n + 1)}
+              >
+                <RotateCw aria-hidden="true" />
+              </Button>
+            </TooltipTrigger>
+            <TooltipContent side="bottom">Reload the frame</TooltipContent>
+          </Tooltip>
+        </div>
+      </Slot>
 
-        <p className="mt-l text-m text-on-canvas-muted">
-          Built from commit{' '}
-          <code className="font-mono text-[0.875em]">{docsModule.commit.slice(0, 7)}</code>.
+      <Slot id="design-links">
+        <a
+          className={cn(
+            CARD,
+            'block transition-colors hover:border-stroke-strong hover:bg-surface',
+          )}
+          href={FIGMA_FILE}
+          target="_blank"
+          rel="noreferrer noopener"
+        >
+          <span className="flex items-center gap-2xs text-m font-medium text-on-canvas">
+            <ExternalLink aria-hidden="true" className="size-[0.875rem] shrink-0" />
+            The file in Figma
+          </span>
+        </a>
+        <a
+          className={cn(
+            CARD,
+            'block transition-colors hover:border-stroke-strong hover:bg-surface',
+          )}
+          href={href('/workbench')}
+        >
+          <span className="text-m font-medium text-on-canvas">The app, at device size</span>
+        </a>
+        <p className={NOTE}>
+          The workbench frames the running app at the size the file draws it, which is the
+          comparison the file is for.
         </p>
-      </article>
-    </Page>
+      </Slot>
+
+      <Slot id="design-clients">
+        <p className={NOTE}>
+          The plugin is loaded through Plugins, Development, Import plugin from manifest, and that
+          menu exists only in the desktop app. Figma builds one for macOS and Windows; on Linux this
+          project uses a fork.
+        </p>
+        <ul className="flex flex-col gap-3xs">
+          {CLIENTS.map((client) => (
+            <li key={client.href}>
+              <a
+                href={client.href}
+                target="_blank"
+                rel="noreferrer noopener"
+                className={cn(
+                  CARD,
+                  'flex flex-col transition-colors hover:border-stroke-strong hover:bg-surface',
+                  'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent',
+                )}
+              >
+                <span className="flex items-center gap-2xs text-m font-medium text-on-canvas">
+                  <Download aria-hidden="true" className="size-[0.875rem] shrink-0" />
+                  {client.label}
+                </span>
+                <span className={cn(NOTE, 'mt-4xs')}>{client.note}</span>
+              </a>
+            </li>
+          ))}
+        </ul>
+      </Slot>
+
+      <Slot id="design-code">
+        <div className={CARD}>
+          <h4 className="text-m font-semibold text-on-canvas">The colours</h4>
+          <p className={cn(NOTE, 'mt-3xs')}>
+            Not redrawn from the file. <code className="font-mono">@correctiv/design-tokens</code>{' '}
+            is generated and both the app and this site import the same stylesheet, so{' '}
+            <code className="font-mono">bg-canvas</code> means one thing in three places.
+          </p>
+          <p className="mt-2xs text-s">
+            <a className={LINK} href={href('/decisions/0010')}>
+              ADR 0010
+            </a>
+            {' · '}
+            <a className={LINK} href={href('/decisions/0022')}>
+              ADR 0022
+            </a>
+          </p>
+        </div>
+
+        <div className={CARD}>
+          <h4 className="text-m font-semibold text-on-canvas">The board</h4>
+          <p className={cn(NOTE, 'mt-3xs')}>
+            <code className="font-mono">tools/figma-plugin</code> draws the screen inventory into
+            the file from data in this repository, rather than anybody keeping a board in step by
+            hand.
+          </p>
+          <p className="mt-2xs text-s">
+            <a className={LINK} href={href('/decisions/0021')}>
+              ADR 0021
+            </a>
+          </p>
+        </div>
+
+        <div className={CARD}>
+          <h4 className="text-m font-semibold text-on-canvas">The plugin</h4>
+          <p className={cn(NOTE, 'mt-3xs')}>
+            An interpreter rather than a builder: <code className="font-mono">code.js</code> knows
+            nothing about the app and draws whatever <code className="font-mono">spec.json</code>{' '}
+            describes. Its own documentation is a page of this site, with the three traps of the
+            Linux client in it.
+          </p>
+          <p className="mt-2xs text-s">
+            <a className={LINK} href={href('/design/plugin')}>
+              The Figma plugin
+            </a>
+            {' · '}
+            <a
+              className={LINK}
+              href={`${docsModule.repo}/tree/${docsModule.commit}/tools/figma-plugin`}
+              target="_blank"
+              rel="noreferrer noopener"
+            >
+              In the repository
+            </a>
+          </p>
+        </div>
+      </Slot>
+    </>
   );
 }

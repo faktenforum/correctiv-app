@@ -25,6 +25,7 @@ import { applyFixture } from './frame/seed';
 import { apply as applyTokens, type Scheme } from './frame/tokens';
 import { addLog, clearLogs, getLogs, subscribeLogs } from './logs';
 import { HOST_DEVICE } from './devices';
+import { fitScale, STAGE_ROOM } from './scale';
 import { frameSize, type PreviewState } from './state';
 import { getState, set, start, subscribe } from './store';
 import type { ToolBindings } from './ui/Panels';
@@ -43,12 +44,13 @@ import type { ToolBindings } from './ui/Panels';
  * copy of that state, and the copy in `App.tsx` would go stale the moment this
  * one wrote.
  *
- * `active` is every one of these effects' first condition. The hook is called on
- * every view because hooks are, but a shell that polled a frame that is not there
- * and wrote `#/?d=iphone-15-pro` over a document's heading anchor is what the
- * unconditional version did.
+ * Every effect here used to open with `if (!active) return`, because `App.tsx`
+ * called this hook on every view and a shell that polled a frame that is not
+ * there wrote `#/?d=iphone-15-pro` over a document's heading anchor. The hook is
+ * mounted by `pages/Workbench.tsx` now, which exists only on its own route, so
+ * the condition is the mounting.
  */
-export function useWorkbench(active: boolean) {
+export function useWorkbench() {
   const state = useSyncExternalStore(subscribe, getState);
   const logs = useSyncExternalStore(subscribeLogs, getLogs);
   const stageRef = useRef<HTMLDivElement>(null);
@@ -85,7 +87,7 @@ export function useWorkbench(active: boolean) {
    */
   const shape = state.device === HOST_DEVICE ? 'host' : 'framed';
 
-  const { size, scale } = useStage(stageRef, state, active, shape);
+  const { size, scale } = useStage(stageRef, state, shape);
 
   const status = statusOf(state, frameInfo, reportedRoute, logs);
 
@@ -95,14 +97,13 @@ export function useWorkbench(active: boolean) {
    * showing the app to change devices would be answering about nothing.
    */
   useEffect(() => {
-    if (!active) return;
     install();
     const release = start();
     return () => {
       release();
       uninstall();
     };
-  }, [active]);
+  }, []);
 
   /*
    * Re-run whenever the stage changes shape, not only on load. `Stage` draws a
@@ -111,8 +112,9 @@ export function useWorkbench(active: boolean) {
    * below would otherwise still be holding the one that was thrown away.
    */
   useEffect(() => {
-    registerFrame(active ? frameRef.current : null);
-  }, [active, loaded, shape]);
+    registerFrame(frameRef.current);
+    return () => registerFrame(null);
+  }, [loaded, shape]);
 
   /**
    * The frame's first navigation, every one the route field causes, and the route
@@ -132,7 +134,7 @@ export function useWorkbench(active: boolean) {
    */
   const seeded = useRef<string | null>(null);
   useEffect(() => {
-    const frame = active ? frameRef.current : null;
+    const frame = frameRef.current;
     if (!frame) return;
 
     // No fixture means leave the storage alone, which is what the plain demo
@@ -156,12 +158,12 @@ export function useWorkbench(active: boolean) {
 
     document.body.dataset.state = 'loading';
     navigate(frame, state.route);
-  }, [active, shape, state.route, state.seed, loaded]);
+  }, [shape, state.route, state.seed, loaded]);
 
   /** The appearance setting, re-applied after every load because a reload resets it. */
   useEffect(() => {
-    if (active && state.theme) applyTheme(win(), state.theme);
-  }, [active, state.theme, loaded]);
+    if (state.theme) applyTheme(win(), state.theme);
+  }, [state.theme, loaded]);
 
   useEffect(
     () => applyTokens(win(), state.overrides, textPass),
@@ -173,17 +175,17 @@ export function useWorkbench(active: boolean) {
   // is reachable by opening a link rather than by clicking a button — the same
   // reason the device and the route live in the address bar.
   useEffect(() => {
-    if (active && state.check && loaded > 0) setReport(audit(win()));
-  }, [active, state.check, loaded]);
+    if (state.check && loaded > 0) setReport(audit(win()));
+  }, [state.check, loaded]);
 
   useEffect(() => {
-    if (!active || !picking) return;
+    if (!picking) return;
     return armPicker(win(), (frames, label) => {
       setHit({ label, frames });
       setSelected(0);
       setPicking(false);
     });
-  }, [active, picking, loaded]);
+  }, [picking, loaded]);
 
   const onLoad = useCallback(() => {
     const frame = frameRef.current;
@@ -207,7 +209,6 @@ export function useWorkbench(active: boolean) {
    */
   const seen = useRef<string | undefined>(undefined);
   useEffect(() => {
-    if (!active) return;
     const id = window.setInterval(() => {
       const current = win();
 
@@ -249,7 +250,7 @@ export function useWorkbench(active: boolean) {
       if (moved && route !== undefined && route !== getState().route) set({ route });
     }, 300);
     return () => window.clearInterval(id);
-  }, [active]);
+  }, []);
 
   useEffect(() => setRouteField(state.route), [state.route]);
 
@@ -315,16 +316,16 @@ function unchanged(a: FrameInfo, b: FrameInfo): boolean {
  * screen's size, which is the point of it, and a scale factor over that would be
  * a lie about how many pixels the app thinks it has.
  *
- * `active` is a dependency because it is what decides whether there is a box at
- * all. Arriving at the app view from another one, the ref goes from null to an
- * element without any of the other dependencies changing, so the observer was
- * never attached and the frame stayed at the initial 100%: correct on a direct
- * load of this address, wrong every time somebody clicked their way here.
+ * `shape` is a dependency because it is what replaces the element. This used to
+ * take an `active` flag as well, for the render in which the hook ran on a view
+ * that had no stage: the ref went from null to an element without any other
+ * dependency changing, the observer was never attached, and the frame stayed at
+ * the initial 100%. The hook is mounted with its route now, so that render does
+ * not happen.
  */
 function useStage(
   stageRef: React.RefObject<HTMLDivElement | null>,
   state: PreviewState,
-  active: boolean,
   shape: string,
 ): { size: { w: number; h: number }; scale: number } {
   const [box, setBox] = useState({ w: 0, h: 0 });
@@ -332,7 +333,6 @@ function useStage(
   const isHost = state.device === HOST_DEVICE;
 
   useLayoutEffect(() => {
-    if (!active) return;
     const stage = stageRef.current;
     if (!stage) return;
 
@@ -344,7 +344,7 @@ function useStage(
     const observer = new ResizeObserver(measure);
     observer.observe(stage);
     return () => observer.disconnect();
-  }, [active, shape, stageRef]);
+  }, [shape, stageRef]);
 
   // Full bleed: no padding to subtract and no handles to leave room for.
   if (isHost) return { size: box, scale: 1 };
@@ -352,9 +352,5 @@ function useStage(
   const size = asked;
   if (state.zoom !== 'fit') return { size, scale: Number(state.zoom) };
 
-  // Padding on both sides plus room for the handles, which hang outside the frame.
-  const availW = box.w - 40 - 24;
-  const availH = box.h - 40 - 24;
-  const scale = box.w === 0 ? 1 : Math.min(1, availW / size.w, availH / size.h);
-  return { size, scale };
+  return { size, scale: fitScale(box, size, STAGE_ROOM) };
 }

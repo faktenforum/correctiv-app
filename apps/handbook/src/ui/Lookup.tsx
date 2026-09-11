@@ -14,9 +14,12 @@ const BLOB = `${docsModule.repo}/blob/${docsModule.commit}`;
  * opens onto the detail, and a link into the repository. Two copies of the row
  * would be two places for the search palette's contract with it to be got wrong.
  *
- * Sticky, because a lookup surface whose filter has scrolled away is a list.
- * `top-0`, not an offset: the scroller is the shell's main area, which begins
- * below the header, so an offset here would leave a gap the page scrolls through.
+ * **In the header's context bar, not in the page.** It used to be a sticky row
+ * inside the scroller, which is a second sticky thing inside something that is
+ * already fixed: the shell has a place for what belongs to the open view, and a
+ * filter is the clearest case of it (ADR 0028). So there is no wrapper and no
+ * `sticky` here any more — the row it sits in is the header's, and the header
+ * wraps at 390px.
  */
 export function Filter({
   id,
@@ -36,29 +39,27 @@ export function Filter({
   summary: string;
 }) {
   return (
-    <div className="sticky top-0 z-10 mt-m mb-m border-b border-stroke bg-canvas py-s">
-      <div className="flex flex-wrap items-center gap-s">
-        <label htmlFor={id} className="sr-only">
-          {label}
-        </label>
-        <div className="relative min-w-0 flex-1">
-          <SearchIcon
-            aria-hidden="true"
-            className="pointer-events-none absolute left-xs top-1/2 size-[1rem] -translate-y-1/2 text-on-canvas-muted"
-          />
-          <input
-            id={id}
-            type="search"
-            placeholder={placeholder}
-            value={value}
-            onChange={(event) => onChange(event.target.value)}
-            className="h-[2.25rem] w-full rounded-md border border-stroke bg-canvas pl-l pr-s text-m text-on-canvas placeholder:text-on-canvas-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent"
-          />
-        </div>
-        <p aria-live="polite" className="text-s tabular-nums text-on-canvas-muted">
-          {summary}
-        </p>
+    <div className="flex min-w-[12rem] flex-1 flex-wrap items-center gap-xs">
+      <label htmlFor={id} className="sr-only">
+        {label}
+      </label>
+      <div className="relative min-w-[9rem] flex-1">
+        <SearchIcon
+          aria-hidden="true"
+          className="pointer-events-none absolute left-xs top-1/2 size-[0.875rem] -translate-y-1/2 text-on-canvas-muted"
+        />
+        <input
+          id={id}
+          type="search"
+          placeholder={placeholder}
+          value={value}
+          onChange={(event) => onChange(event.target.value)}
+          className="h-[1.75rem] w-full rounded-md border border-stroke bg-canvas pl-m pr-s text-s text-on-canvas placeholder:text-on-canvas-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent"
+        />
       </div>
+      <p aria-live="polite" className="shrink-0 text-s tabular-nums text-on-canvas-muted">
+        {summary}
+      </p>
     </div>
   );
 }
@@ -73,9 +74,8 @@ export function Filter({
  * render.
  *
  * `onOpenChange` is for a child that must not exist while the row is shut. A
- * `details` keeps its panel in the DOM and only hides it, so an iframe in there
- * would boot the app for all 46 rows at once; `pages/Components.tsx` mounts one
- * on this signal instead.
+ * `details` keeps its panel in the DOM and only hides it, so anything expensive
+ * in there is paid for by every row at once whether it is open or not.
  *
  * `text-s` on the row is for a child that cannot state its own size: the kit's
  * badge carries one in the same tailwind-merge group as its colour, so `cn` keeps

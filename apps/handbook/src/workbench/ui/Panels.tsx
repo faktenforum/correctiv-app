@@ -1,23 +1,16 @@
 import {
   Check,
-  ChevronRight,
   CircleDashed,
   Copy,
   Crosshair,
-  Database,
   Eraser,
   ExternalLink,
   OctagonAlert,
-  Palette,
   Play,
   RotateCcw,
-  Ruler,
-  SunMoon,
-  Terminal,
   TriangleAlert,
-  type LucideIcon,
 } from 'lucide-react';
-import { useCallback, useEffect, useRef, useState, type ReactNode } from 'react';
+import { useEffect, useRef, useState, type ReactNode } from 'react';
 
 import { COMBINATIONS, type Status } from '../api';
 import type { Level, LogEntry } from '../frame/console';
@@ -28,9 +21,9 @@ import { FIXTURES } from '../frame/seed';
 import { asCss, PALETTE, TOKENS, type Overrides, type Scheme } from '../frame/tokens';
 import type { PreviewState, ThemeSetting } from '../state';
 import { cn } from '../../lib/cn';
+import type { SectionId } from '../../shell/views';
 import { Badge } from '../../ui/kit/badge';
 import { Button } from '../../ui/kit/button';
-import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '../../ui/kit/collapsible';
 import { Segmented } from '../../ui/kit/segmented';
 import { Tooltip, TooltipContent, TooltipTrigger } from '../../ui/kit/tooltip';
 
@@ -59,6 +52,16 @@ export interface ToolBindings {
   };
 }
 
+/**
+ * What each section of the inspector is handed.
+ *
+ * These used to be one `Props` and a `Panel` wrapper each, and this file owned
+ * which of them were open — a comment here said so: "which panels are open is
+ * local to this component". It is in the address on every route now
+ * (`shell/address.ts`), the chrome is `ui/Section.tsx`, and what is left here is
+ * six bodies and the badges that go beside their titles. ADR 0028 records the
+ * move.
+ */
 interface Props {
   state: PreviewState;
   status: Status;
@@ -66,23 +69,6 @@ interface Props {
   tools: ToolBindings;
   onChange: (patch: Partial<PreviewState>) => void;
   onClearLogs: () => void;
-}
-
-type PanelName = 'appearance' | 'state' | 'console' | 'tokens' | 'measure' | 'inspect';
-
-/**
- * Which panels are open the first time the tools appear.
- *
- * The three whose readouts hold in any build, as in the design. Which panels are
- * open is local to this component rather than part of `PreviewState`: the design
- * carries them in its address, and `state.ts` has no field for that, so a link
- * reproduces which tools are on and not which drawers were pulled out.
- */
-const OPEN_AT_FIRST: PanelName[] = ['appearance', 'console', 'measure'];
-
-interface Disclosure {
-  open: boolean;
-  onToggle: () => void;
 }
 
 /**
@@ -114,105 +100,77 @@ function segment(on: boolean): string {
 }
 
 /**
- * The workbench half of the page: everything the demo audience does not get.
+ * Three counts, and a way into the section that explains each.
  *
- * It is a panel of the split beside the stage. Wide, `App.tsx` keeps it mounted
- * and collapses it to zero width, because a panel that comes and goes changes
- * `react-resizable-panels`' child list and that took the whole page down once;
- * shut, it is `inert`, so none of this is announced to someone who has not opened
- * it. The dock fills its panel and scrolls inside itself; the page it sits on
- * never scrolls.
+ * The number is written out beside the word it counts, so the summary reads the
+ * same to somebody who cannot tell the yellow from the red. It goes in the
+ * panel's head, which stays put while the sections scroll under it.
+ *
+ * "Reveal" now writes to the address rather than to a `useState` in this file, so
+ * opening the console from a count shows up in the link.
  */
-export function Panels(props: Props) {
-  const { status, tools } = props;
-  const [open, setOpen] = useState<ReadonlySet<PanelName>>(() => new Set(OPEN_AT_FIRST));
-
-  const toggle = useCallback(
-    (name: PanelName) =>
-      setOpen((current) => {
-        const next = new Set(current);
-        if (!next.delete(name)) next.add(name);
-        return next;
-      }),
-    [],
-  );
-  const reveal = useCallback(
-    (name: PanelName) => setOpen((current) => new Set(current).add(name)),
-    [],
-  );
-  const disclosure = (name: PanelName): Disclosure => ({
-    open: open.has(name),
-    onToggle: () => toggle(name),
-  });
-
+export function Counts({
+  status,
+  tools,
+  onReveal,
+}: {
+  status: Status;
+  tools: ToolBindings;
+  onReveal: (section: SectionId) => void;
+}) {
   const findings = tools.measure.report?.findings.length ?? null;
-
   return (
-    <div className="flex h-full min-h-0 flex-col">
-      {/* Three counts and a way into the panel that explains each. The number is
-          written out beside the word it counts, so the summary reads the same to
-          somebody who cannot tell the yellow from the red. It stays put while the
-          panels scroll, which is why the sidebar is told not to scroll this. */}
-      <div className="shrink-0 border-b border-stroke px-s py-xs">
-        <div className="flex flex-wrap items-center gap-2xs">
-          <Summary onClick={() => reveal('console')} hint="Open the Console panel">
-            <Count n={status.warnings} tone="warn" label="warnings" />
-          </Summary>
-          <Summary onClick={() => reveal('console')} hint="Open the Console panel">
-            <Count n={status.errors} tone="err" label="errors" />
-          </Summary>
-          <Summary onClick={() => reveal('measure')} hint="Open the Measure panel">
-            <Count n={findings} tone="warn" label="findings" />
-          </Summary>
-        </div>
-      </div>
+    <div className="flex flex-wrap items-center gap-2xs px-s py-xs">
+      <Summary onClick={() => onReveal('console')} hint="Open the Console section">
+        <Count n={status.warnings} tone="warn" label="warnings" />
+      </Summary>
+      <Summary onClick={() => onReveal('console')} hint="Open the Console section">
+        <Count n={status.errors} tone="err" label="errors" />
+      </Summary>
+      <Summary onClick={() => onReveal('measure')} hint="Open the Measure section">
+        <Count n={findings} tone="warn" label="findings" />
+      </Summary>
+    </div>
+  );
+}
 
-      <div className="min-h-0 flex-1 overflow-y-auto">
-        {/*
-          The design offers a select here, to switch between "published, static
-          export" and "development server" for the sake of the demonstration. This
-          is not a choice anyone makes on this page: it is read out of the frame,
-          and it decides whether half the controls below can do anything. So it is
-          stated, not offered.
-        */}
-        <div className="border-b border-stroke px-s py-xs">
-          <div className="flex flex-wrap items-center gap-xs">
-            <span className="text-s text-on-canvas-muted">Build</span>
-            <Badge variant={status.handle ? 'default' : 'outline'}>
-              {status.handle ? 'Development server' : 'Published, static export'}
-            </Badge>
-          </div>
-          <p className={cn(NOTE, 'mt-3xs')}>
-            {status.handle
-              ? 'Store handle present, every panel live.'
-              : 'Store handle absent, the appearance setting and the inspector are inert. Fixtures and token overrides still work.'}
-          </p>
-          {/*
-            Said here because this is where somebody notices it. Expo Router applies
-            its base path when the export is built and not in the dev server, so an
-            address under the base is not a route the app can match. The field works
-            anyway, by driving the app's own router over this handle
-            (`frame/handle.ts`, `driveRoute`), and the button beside it has no such
-            way in. `TROUBLESHOOTING.md` has the measurement.
-          */}
-          {status.handle && (
-            <p className={cn(NOTE, 'mt-3xs')}>
-              The route field drives the app&apos;s own router here, because a dev server does not
-              apply the base path this frame puts the app behind. Opening a route in its own tab
-              still renders the app&apos;s 404. The published build has neither limit.
-            </p>
-          )}
-        </div>
-
-        <div>
-          <Appearance {...props} panel={disclosure('appearance')} />
-          <State {...props} panel={disclosure('state')} />
-          <Console {...props} panel={disclosure('console')} />
-          <Tokens {...props} panel={disclosure('tokens')} />
-          <Measure {...props} panel={disclosure('measure')} />
-          <Inspect {...props} panel={disclosure('inspect')} />
-        </div>
+/**
+ * Which build is in the frame, stated rather than offered.
+ *
+ * The design offers a select here, to switch between "published, static export"
+ * and "development server" for the sake of the demonstration. That is not a
+ * choice anyone makes on this page: it is read out of the frame, and it decides
+ * whether half the controls below can do anything.
+ */
+export function BuildLine({ status }: { status: Status }) {
+  return (
+    <div className="border-t border-stroke px-s py-xs">
+      <div className="flex flex-wrap items-center gap-xs">
+        <span className="text-s text-on-canvas-muted">Build</span>
+        <Badge variant={status.handle ? 'default' : 'outline'}>
+          {status.handle ? 'Development server' : 'Published, static export'}
+        </Badge>
       </div>
+      <p className={cn(NOTE, 'mt-3xs')}>
+        {status.handle
+          ? 'Store handle present, every panel live.'
+          : 'Store handle absent, the appearance setting and the inspector are inert. Fixtures and token overrides still work.'}
+      </p>
+      {/*
+        Said here because this is where somebody notices it. Expo Router applies
+        its base path when the export is built and not in the dev server, so an
+        address under the base is not a route the app can match. The field works
+        anyway, by driving the app's own router over this handle
+        (`frame/handle.ts`, `driveRoute`), and the button beside it has no such
+        way in. `TROUBLESHOOTING.md` has the measurement.
+      */}
+      {status.handle && (
+        <p className={cn(NOTE, 'mt-3xs')}>
+          The route field drives the app&apos;s own router here, because a dev server does not apply
+          the base path this frame puts the app behind. Opening a route in its own tab still renders
+          the app&apos;s 404. The published build has neither limit.
+        </p>
+      )}
     </div>
   );
 }
@@ -290,56 +248,6 @@ function Count({ n, tone, label }: { n: number | null; tone: 'warn' | 'err'; lab
   );
 }
 
-function Panel({
-  title,
-  icon: Icon,
-  panel,
-  tags,
-  children,
-}: {
-  title: string;
-  icon: LucideIcon;
-  panel: Disclosure;
-  tags?: ReactNode;
-  children: ReactNode;
-}) {
-  return (
-    <Collapsible open={panel.open} onOpenChange={panel.onToggle} asChild>
-      <section className="border-b border-stroke last:border-b-0">
-        {/* The heading carries the trigger rather than sitting beside it, so the
-            panel appears once in the document outline and is announced once.
-            Radix puts `aria-expanded` and `aria-controls` on the trigger and the
-            matching id on the body, which is the pair a `<details>` cannot be
-            given and this dock needs, because the head has buttons that open a
-            panel from the outside. */}
-        <h3>
-          <CollapsibleTrigger
-            className={cn(
-              'group flex w-full flex-wrap items-center gap-xs px-s py-xs text-left hover:bg-canvas',
-              'focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-accent',
-            )}
-          >
-            <ChevronRight
-              aria-hidden="true"
-              className="size-[0.875rem] shrink-0 text-on-canvas-muted transition-transform group-data-[state=open]:rotate-90"
-            />
-            <Icon aria-hidden="true" className="size-[0.875rem] shrink-0 text-on-canvas-muted" />
-            <span className="min-w-0 text-m font-semibold text-on-canvas">{title}</span>
-            {tags && (
-              <span className="ml-auto flex flex-wrap items-center justify-end gap-3xs">
-                {tags}
-              </span>
-            )}
-          </CollapsibleTrigger>
-        </h3>
-        <CollapsibleContent className="overflow-hidden">
-          <div className="flex flex-col gap-s px-s pb-s">{children}</div>
-        </CollapsibleContent>
-      </section>
-    </Collapsible>
-  );
-}
-
 /** The one thing on this page a person needs a development build to change. */
 function InertHere() {
   return <Badge variant="outline">inert here</Badge>;
@@ -392,23 +300,20 @@ const SWATCH = { light: '#ffffff', dark: '#1a1a1a' }; // palette-exempt
  * are a readout for that reason; the setting, which is the half this page can
  * write, is the segmented control above them.
  */
-function Appearance({ status, onChange, panel }: Props & { panel: Disclosure }) {
+export function AppearanceTags({ status }: Props) {
   return (
-    <Panel
-      title="Appearance"
-      icon={SunMoon}
-      panel={panel}
-      tags={
-        <>
-          <Badge variant="outline" className="font-mono tabular-nums">
-            {status.combination === null
-              ? 'combination unknown'
-              : `combination ${status.combination}`}
-          </Badge>
-          {!status.handle && <InertHere />}
-        </>
-      }
-    >
+    <>
+      <Badge variant="outline" className="font-mono tabular-nums">
+        {status.combination === null ? 'combination unknown' : `combination ${status.combination}`}
+      </Badge>
+      {!status.handle && <InertHere />}
+    </>
+  );
+}
+
+export function Appearance({ status, onChange }: Props) {
+  return (
+    <>
       <dl className="grid grid-cols-2 gap-xs">
         <div className={cn(CARD, 'min-w-0 px-xs py-2xs')}>
           <dt className="text-s text-on-canvas-muted">App setting says</dt>
@@ -488,7 +393,7 @@ function Appearance({ status, onChange, panel }: Props & { panel: Disclosure }) 
           );
         })}
       </ol>
-    </Panel>
+    </>
   );
 }
 
@@ -502,18 +407,17 @@ function Appearance({ status, onChange, panel }: Props & { panel: Disclosure }) 
  * app's own, before the frame is pointed at a route. That works in the static
  * export, so nothing here warns about the build.
  */
-function State({ state, onChange, panel }: Props & { panel: Disclosure }) {
+export function StateTags({ state }: Props) {
   return (
-    <Panel
-      title="State"
-      icon={Database}
-      panel={panel}
-      tags={
-        <Badge variant="outline" className="max-w-[10rem] font-mono">
-          <span className="truncate">{state.seed ?? 'untouched'}</span>
-        </Badge>
-      }
-    >
+    <Badge variant="outline" className="max-w-[10rem] font-mono">
+      <span className="truncate">{state.seed ?? 'untouched'}</span>
+    </Badge>
+  );
+}
+
+export function State({ state, onChange }: Props) {
+  return (
+    <>
       <fieldset className="min-w-0">
         <legend className={cn(NOTE, 'mb-2xs')}>
           Fixture, seeded before the app boots. Choosing one reloads the frame.
@@ -546,7 +450,7 @@ function State({ state, onChange, panel }: Props & { panel: Disclosure }) {
       <p className={NOTE}>
         The fixture is in the link, so whoever opens it starts where you started.
       </p>
-    </Panel>
+    </>
   );
 }
 
@@ -600,7 +504,16 @@ const LEVELS: Level[] = ['warn', 'error'];
  * `frame/console.ts` collects, and a button for `log` would switch a category
  * that can never arrive.
  */
-function Console({ status, logs, onClearLogs, panel }: Props & { panel: Disclosure }) {
+export function ConsoleTags({ status }: Props) {
+  return (
+    <>
+      <Count n={status.warnings} tone="warn" label="warnings" />
+      <Count n={status.errors} tone="err" label="errors" />
+    </>
+  );
+}
+
+export function Console({ status, logs, onClearLogs }: Props) {
   const [levels, setLevels] = useState<ReadonlySet<Level>>(() => new Set(LEVELS));
   const [filter, setFilter] = useState('');
 
@@ -611,17 +524,7 @@ function Console({ status, logs, onClearLogs, panel }: Props & { panel: Disclosu
   );
 
   return (
-    <Panel
-      title="Console"
-      icon={Terminal}
-      panel={panel}
-      tags={
-        <>
-          <Count n={status.warnings} tone="warn" label="warnings" />
-          <Count n={status.errors} tone="err" label="errors" />
-        </>
-      }
-    >
+    <>
       <div className="flex flex-wrap items-center gap-xs">
         {/* A fieldset rather than a div carrying `role="group"`: `prefer-tag-over-role`
             asks for the element, and the legend is the group's name either way. */}
@@ -706,7 +609,7 @@ function Console({ status, logs, onClearLogs, panel }: Props & { panel: Disclosu
         {shown.length} of {logs.length} lines shown, {status.warnings} warnings, {status.errors}{' '}
         errors.
       </p>
-    </Panel>
+    </>
   );
 }
 
@@ -719,7 +622,15 @@ function Console({ status, logs, onClearLogs, panel }: Props & { panel: Disclosu
  * stylesheet appended to the frame's own document, which same-origin allows in
  * any build.
  */
-function Tokens({ tools, panel }: Props & { panel: Disclosure }) {
+export function TokensTags({ tools }: Props) {
+  return (
+    <Badge variant="outline" className="font-mono">
+      {tools.scheme} scheme
+    </Badge>
+  );
+}
+
+export function Tokens({ tools }: Props) {
   const { scheme, tokens } = tools;
   const changed = TOKENS.filter((t) => tokens.overrides[t]?.[scheme]);
 
@@ -731,16 +642,7 @@ function Tokens({ tools, panel }: Props & { panel: Disclosure }) {
   };
 
   return (
-    <Panel
-      title="Tokens"
-      icon={Palette}
-      panel={panel}
-      tags={
-        <Badge variant="outline" className="font-mono">
-          {scheme} scheme
-        </Badge>
-      }
-    >
+    <>
       <p className={NOTE}>
         Overrides apply to the <b className="font-semibold text-on-canvas">{scheme}</b> scheme, the
         one the app is painting with. Nothing is written to the repository; Copy CSS is how a
@@ -815,7 +717,7 @@ function Tokens({ tools, panel }: Props & { panel: Disclosure }) {
         in inline styles, so <b className="font-semibold text-on-canvas">Text too</b> chases them by
         value: a best effort, not a guarantee.
       </p>
-    </Panel>
+    </>
   );
 }
 
@@ -844,19 +746,18 @@ const KIND_LABEL: Record<Finding['kind'], string> = {
 };
 
 /** The mechanical half of looking: overflow, tap targets, colours off the palette. */
-function Measure({ tools, panel }: Props & { panel: Disclosure }) {
+export function MeasureTags({ tools }: Props) {
+  return <Count n={tools.measure.report?.findings.length ?? null} tone="warn" label="findings" />;
+}
+
+export function Measure({ tools }: Props) {
   const { measure } = tools;
   const report = measure.report;
   const count = (kind: Finding['kind']) =>
     report ? report.findings.filter((f) => f.kind === kind).length : null;
 
   return (
-    <Panel
-      title="Measure"
-      icon={Ruler}
-      panel={panel}
-      tags={<Count n={report?.findings.length ?? null} tone="warn" label="findings" />}
-    >
+    <>
       <div className="flex flex-wrap items-center gap-xs">
         <Button size="sm" onClick={measure.run}>
           <Play aria-hidden="true" />
@@ -925,7 +826,7 @@ function Measure({ tools, panel }: Props & { panel: Disclosure }) {
           more distinct values.
         </p>
       )}
-    </Panel>
+    </>
   );
 }
 
@@ -937,7 +838,11 @@ function Measure({ tools, panel }: Props & { panel: Disclosure }) {
  * entries of the same chain. The selected one becomes `Source:` in the block
  * below, the rest become `Context:`.
  */
-function Inspect({ status, tools, panel }: Props & { panel: Disclosure }) {
+export function InspectTags({ status }: Props) {
+  return status.handle ? null : <InertHere />;
+}
+
+export function Inspect({ status, tools }: Props) {
   const { inspect } = tools;
   const section = useRef<HTMLDivElement>(null);
 
@@ -961,121 +866,114 @@ function Inspect({ status, tools, panel }: Props & { panel: Disclosure }) {
       : '';
 
   return (
-    <div ref={section}>
-      <Panel
-        title="Inspect"
-        icon={Crosshair}
-        panel={panel}
-        tags={!status.handle ? <InertHere /> : undefined}
-      >
-        {!status.handle && (
-          <NeedsDev>
-            The source line comes from the owner stack React keeps beside each node, and a
-            production bundle keeps none. The picker stays disarmed here.
-          </NeedsDev>
+    <div ref={section} className="flex flex-col gap-s">
+      {!status.handle && (
+        <NeedsDev>
+          The source line comes from the owner stack React keeps beside each node, and a production
+          bundle keeps none. The picker stays disarmed here.
+        </NeedsDev>
+      )}
+
+      <fieldset disabled={!status.handle} className="flex flex-col gap-s disabled:opacity-60">
+        <div>
+          <Button
+            variant={inspect.picking ? 'default' : 'outline'}
+            size="sm"
+            aria-pressed={inspect.picking}
+            onClick={() => inspect.setPicking(!inspect.picking)}
+          >
+            <Crosshair aria-hidden="true" />
+            {inspect.picking ? 'Picker armed, click in the frame' : 'Pick element'}
+          </Button>
+        </div>
+
+        <p className={cn(CARD, 'min-w-0 truncate px-xs py-2xs font-mono text-s text-on-canvas')}>
+          {inspect.hit
+            ? inspect.hit.label
+              ? `"${inspect.hit.label}"`
+              : 'Element with no label'
+            : 'Nothing chosen.'}
+        </p>
+
+        {inspect.hit && frames.length === 0 && (
+          <p className={NOTE}>
+            No source: either nothing in this node&apos;s owner chain is app code, or the bundle
+            keeps no owner stacks at all, which is every production build.
+          </p>
         )}
 
-        <fieldset disabled={!status.handle} className="flex flex-col gap-s disabled:opacity-60">
-          <div>
-            <Button
-              variant={inspect.picking ? 'default' : 'outline'}
-              size="sm"
-              aria-pressed={inspect.picking}
-              onClick={() => inspect.setPicking(!inspect.picking)}
-            >
-              <Crosshair aria-hidden="true" />
-              {inspect.picking ? 'Picker armed, click in the frame' : 'Pick element'}
-            </Button>
-          </div>
-
-          <p className={cn(CARD, 'min-w-0 truncate px-xs py-2xs font-mono text-s text-on-canvas')}>
-            {inspect.hit
-              ? inspect.hit.label
-                ? `"${inspect.hit.label}"`
-                : 'Element with no label'
-              : 'Nothing chosen.'}
-          </p>
-
-          {inspect.hit && frames.length === 0 && (
-            <p className={NOTE}>
-              No source: either nothing in this node&apos;s owner chain is app code, or the bundle
-              keeps no owner stacks at all, which is every production build.
-            </p>
-          )}
-
-          {frames.length > 0 && (
-            <>
-              <fieldset className="min-w-0">
-                <legend className={cn(NOTE, 'mb-2xs')}>Source stack, innermost first</legend>
-                <div className="flex flex-col gap-3xs">
-                  {frames.map((f, index) => (
-                    <label
-                      key={`${f.file}:${f.lineNumber}:${f.column}`}
-                      aria-label={frameLabel(f)}
-                      className={cn(
-                        CARD,
-                        'flex min-w-0 cursor-pointer items-start gap-xs px-xs py-2xs',
-                        'has-[:focus-visible]:ring-2 has-[:focus-visible]:ring-accent',
-                        index === inspect.selected && 'border-accent',
-                      )}
-                    >
-                      <input
-                        type="radio"
-                        name="wb-frame"
-                        checked={index === inspect.selected}
-                        onChange={() => inspect.setSelected(index)}
-                        className="mt-4xs size-[0.875rem] shrink-0 accent-accent"
-                      />
-                      <span className="min-w-0 flex-1">
-                        <code className="block truncate font-mono text-s text-on-canvas">
-                          {frameShort(f)}
-                          {f.methodName ? ` · ${f.methodName}` : ''}
-                        </code>
-                        <span className={cn(NOTE, 'block truncate')} title={frameLabel(f)}>
-                          {frameLabel(f)}
-                        </span>
+        {frames.length > 0 && (
+          <>
+            <fieldset className="min-w-0">
+              <legend className={cn(NOTE, 'mb-2xs')}>Source stack, innermost first</legend>
+              <div className="flex flex-col gap-3xs">
+                {frames.map((f, index) => (
+                  <label
+                    key={`${f.file}:${f.lineNumber}:${f.column}`}
+                    aria-label={frameLabel(f)}
+                    className={cn(
+                      CARD,
+                      'flex min-w-0 cursor-pointer items-start gap-xs px-xs py-2xs',
+                      'has-[:focus-visible]:ring-2 has-[:focus-visible]:ring-accent',
+                      index === inspect.selected && 'border-accent',
+                    )}
+                  >
+                    <input
+                      type="radio"
+                      name="wb-frame"
+                      checked={index === inspect.selected}
+                      onChange={() => inspect.setSelected(index)}
+                      className="mt-4xs size-[0.875rem] shrink-0 accent-accent"
+                    />
+                    <span className="min-w-0 flex-1">
+                      <code className="block truncate font-mono text-s text-on-canvas">
+                        {frameShort(f)}
+                        {f.methodName ? ` · ${f.methodName}` : ''}
+                      </code>
+                      <span className={cn(NOTE, 'block truncate')} title={frameLabel(f)}>
+                        {frameLabel(f)}
                       </span>
-                    </label>
-                  ))}
-                </div>
-              </fieldset>
-
-              {/* A textarea rather than a `pre`, so the text can be selected and
-                  scrolled by someone who would rather not press the button. */}
-              <textarea
-                readOnly
-                rows={5}
-                value={block}
-                aria-label="Handover block"
-                className={cn(
-                  CARD,
-                  'w-full resize-y p-xs font-mono text-s text-on-canvas',
-                  'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent',
-                )}
-              />
-              <div className="flex flex-wrap items-center gap-xs">
-                <Button size="sm" onClick={() => void navigator.clipboard.writeText(block)}>
-                  <Copy aria-hidden="true" />
-                  Copy for agent
-                </Button>
-                <Button
-                  variant="outline"
-                  size="sm"
-                  disabled={!chosen}
-                  onClick={() => chosen && inspect.open(chosen)}
-                >
-                  <ExternalLink aria-hidden="true" />
-                  Open in editor
-                </Button>
+                    </span>
+                  </label>
+                ))}
               </div>
-              <p className={NOTE}>
-                Paste it, then say what should be different. The view address is in there, so
-                whoever picks this up can put the same thing back on screen before and after.
-              </p>
-            </>
-          )}
-        </fieldset>
-      </Panel>
+            </fieldset>
+
+            {/* A textarea rather than a `pre`, so the text can be selected and
+                  scrolled by someone who would rather not press the button. */}
+            <textarea
+              readOnly
+              rows={5}
+              value={block}
+              aria-label="Handover block"
+              className={cn(
+                CARD,
+                'w-full resize-y p-xs font-mono text-s text-on-canvas',
+                'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent',
+              )}
+            />
+            <div className="flex flex-wrap items-center gap-xs">
+              <Button size="sm" onClick={() => void navigator.clipboard.writeText(block)}>
+                <Copy aria-hidden="true" />
+                Copy for agent
+              </Button>
+              <Button
+                variant="outline"
+                size="sm"
+                disabled={!chosen}
+                onClick={() => chosen && inspect.open(chosen)}
+              >
+                <ExternalLink aria-hidden="true" />
+                Open in editor
+              </Button>
+            </div>
+            <p className={NOTE}>
+              Paste it, then say what should be different. The view address is in there, so whoever
+              picks this up can put the same thing back on screen before and after.
+            </p>
+          </>
+        )}
+      </fieldset>
     </div>
   );
 }

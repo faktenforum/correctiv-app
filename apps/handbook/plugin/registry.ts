@@ -88,6 +88,26 @@ export const DOCUMENTS: DocumentSource[] = [
     nav: 'Release',
     blurb: 'How a build reaches a device and a store.',
   },
+  {
+    // Under `/design`, not in the handbook: it is the design section's document,
+    // and `ui/ActivityBar.tsx` lights that section for anything under the prefix.
+    // `/design` is a page and this is a document, which are distinct addresses;
+    // `test/shell.test.ts` holds that pair specifically, because a page that
+    // shadows a document takes it off the site with no error anywhere.
+    //
+    // Published rather than summarised, because the page that used to summarise
+    // it was a shorter version of prose that already exists: the README carries
+    // the three traps of the Linux client next to the code they describe, and
+    // `plugin/markdown.ts` resolves its relative links from its own directory, so
+    // `../../adr/0020-…` becomes `/decisions/0020` and `../../screens` becomes a
+    // repository link at the built commit.
+    id: 'figma-plugin',
+    file: 'tools/figma-plugin/README.md',
+    route: '/design/plugin',
+    nav: 'The Figma plugin',
+    blurb:
+      'Draws the app’s screens and kit into the Figma file from data in this repository, and what it needs to run.',
+  },
 ];
 
 /** `adr/0022-three-tiers-of-colour.md` and `0022-three-tiers-of-colour.md` both give `0022`. */

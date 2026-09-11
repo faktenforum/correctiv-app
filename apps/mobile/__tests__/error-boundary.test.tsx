@@ -68,8 +68,9 @@ jest.mock('expo-splash-screen', () => ({
  * `_RNGestureHandlerModule.default.install is not a function` on mount. Worth
  * recording rather than just silencing, because writing this suite is how it came to
  * light: the boundary caught THAT error rather than the one the test threw, which is
- * the boundary working and the test measuring the wrong thing. Every other suite
- * misses it by never getting past the shell's early return.
+ * the boundary working and the test measuring the wrong thing. Suites that never get
+ * past the shell's early return used to miss it; `root-layout.test.tsx` no longer
+ * does, because the gesture root moved up into `lib/env/AppEnvironment`.
  */
 jest.mock('react-native-gesture-handler', () => {
   const react = jest.requireActual<typeof import('react')>('react');
