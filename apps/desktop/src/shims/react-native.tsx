@@ -436,6 +436,27 @@ function normalizeStyle(style: unknown): Record<string, unknown> | undefined {
         out.height = value;
         break;
 
+      // `textAlignVertical` is where the text sits inside a taller input, and GTK
+      // already puts it there. A single-line `Gtk.Entry` centres its line because it
+      // has one; a multiline `Gtk.TextView` starts at the top because that is where
+      // text starts. The app passes exactly those two values and exactly for those
+      // two cases (`participate/FormField`: `'top'` for a textarea, `'center'`
+      // otherwise), so both are the toolkit's own behaviour and there is nothing to
+      // carry.
+      //
+      // DROPPED RATHER THAN LEFT TO REFUSE, and this one cost the most of any entry
+      // in this file. The partition throws `UnknownUtilityError` on it, the app's
+      // error boundary caught that, and the boundary's own recovery screen then
+      // refused as well — so the log showed the SECOND refusal and the real message
+      // never appeared. `participate/FormField` read as a layout fault for hours.
+      // See `app/_layout.tsx`, where the wrapper that unmasks it is, and the README.
+      case 'textAlignVertical':
+        reportStyle(
+          'textAlignVertical',
+          'GTK puts text where this asks already: a single-line Gtk.Entry centres its one line, a multiline Gtk.TextView starts at the top. Dropped, because both values the app passes are the toolkit default.',
+        );
+        break;
+
       // The physical pair. `marginHorizontal` has no single GTK property, and the
       // partition refuses a physical and a logical margin together, so it becomes the
       // two physical edges.
@@ -769,6 +790,19 @@ function normalize(
     // No GTK property expresses it; see the note in this file's header for what the
     // counterpart is and what dropping it costs on the door.
     accessibilityLiveRegion: _accessibilityLiveRegion,
+    // `accessibilityValue={{ min, max, now }}` is the position of a slider, and
+    // `player/ProgressBar` is the one place this app passes it. The layer refuses it
+    // by name and answers no accessibility VALUE at all — `accessibility.ts` routes
+    // role, label, state and hint, and nothing that carries a number.
+    //
+    // DROPPED, and this is a real accessibility loss rather than a concession worth
+    // shrugging at: GTK does have somewhere to put it, `Gtk.Accessible` publishes
+    // `VALUE_NOW`/`VALUE_MIN`/`VALUE_MAX` on the AT-SPI side, so the gap is in the
+    // layer and not in the toolkit. Until it routes them, Orca reads this bar as a
+    // control with no position. Named here and in README beside the two other
+    // accessibility losses, because a screen reader gap that nobody wrote down is a
+    // gap nobody fixes.
+    accessibilityValue: _accessibilityValue,
     autoFocus,
     contentContainerClassName,
     pointerEvents,
@@ -776,6 +810,32 @@ function normalize(
   } = props;
 
   const passthrough: Record<string, unknown> = { ...rest };
+
+  // `multiline`, DROPPED, and it is the one entry here whose loss you can see.
+  //
+  // `<TextInput multiline>` is a `Gtk.TextView`, which keeps its content in a
+  // `Gtk.TextBuffer` rather than in a property — the layer measured 61 properties and
+  // no `text` — so it refuses BOTH `value` and `onChangeText` on that widget. Dropping
+  // those two instead would leave a box that accepts typing and reports none of it,
+  // which is the silent-failure shape this whole file exists to refuse.
+  //
+  // So the flag goes and the widget stays a `Gtk.Entry`, which has the property and
+  // the signal. `participate/FormField`'s textarea is therefore ONE LINE TALL here,
+  // scrolling sideways instead of wrapping, and its `minHeight: 96` still gives it the
+  // height the design asks for. Typing works, the store updates, nothing is lost
+  // except the wrap.
+  //
+  // NOT COVERABLE BY `test/prop-gate.test.ts`, and that is worth knowing: the refusal
+  // depends on a SIBLING prop, so `explainProp('TextInput', 'value')` answers `null`
+  // and a per-prop table cannot express the pair. The sweep is the only oracle.
+  // A buffer binding in the layer is what would make this unnecessary.
+  if (passthrough.multiline === true) {
+    reportStyle(
+      'TextInput.multiline',
+      'a Gtk.TextView holds its content in a Gtk.TextBuffer rather than a property, so it answers neither value nor onChangeText. Dropped, which leaves a one-line Gtk.Entry that does answer both.',
+    );
+    delete passthrough.multiline;
+  }
 
   // Every style-SHAPED prop, not just `style`. A `ScrollView`'s content box is a
   // second styleable node, and `components/ui/Rail.tsx` reaches it with

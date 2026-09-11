@@ -64,6 +64,11 @@ const EXACT = {
   // would each need an exception for it.
   '@/components/media/VideoFrame': here('src/overrides/VideoFrame.tsx'),
 
+  // The scrubber's fill is scaled with a transform on the phone, and a transform is a
+  // Gsk render node here rather than a widget property. The override sizes it instead
+  // and says what that costs; same redirect mechanism, same reason as above.
+  '@/components/player/ProgressBar': here('src/overrides/ProgressBar.tsx'),
+
   // Uniwind's CSS entry. It is the file Uniwind's Metro transform reads, and there is
   // no Metro here — the class vocabulary reaches GTK through `configureStyle`. Nothing
   // in the desktop tree imports it, but a mobile module that grows the import should

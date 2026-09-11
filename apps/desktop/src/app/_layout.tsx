@@ -28,6 +28,7 @@ import { StatusBar } from 'expo-status-bar';
 import { useFonts } from 'expo-font';
 import * as SplashScreen from 'expo-splash-screen';
 import { Component, useEffect, useRef, useState, type ReactNode } from 'react';
+import { View } from 'react-native';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import { Provider } from 'react-redux';
 
@@ -183,7 +184,31 @@ class RecoveryBoundaryClass extends Component<
     // `error` is whatever was thrown, and a thrown string must not take the
     // recovery screen down with it — the same normalisation the phone does.
     const detail = error instanceof Error ? error.message : String(error);
-    return <RecoveryScreen detail={detail} onRetry={this.retry} />;
+    /*
+      WRAPPED IN A BARE `<View>`, and this is load-bearing rather than tidy.
+
+      `RecoveryScreen` renders `Screen`, whose outermost element is a
+      `SafeAreaView` carrying `flex-1`. On this host `flex-1` becomes
+      `intent.expand`, which `@gjsify/react-native` can only resolve against a
+      PARENT context — and a fallback rendered after a boundary caught sits at the
+      root of a freshly rendered subtree with no such context. So the recovery
+      screen itself threw, uncaught this time, and the tree died anyway.
+
+      Worse than dying: the second refusal REPLACED the first in the log. Every
+      real fault read as `<View> expand — carries layout that cannot be resolved at
+      this position`, whatever it actually was. Both of this host's known component
+      faults were hidden behind it, and both are named in README once this wrapper
+      let them through.
+
+      The `<View>` carries no utility of its own, which is the whole point: it is a
+      parent for the screen below it to resolve against. Measured on GTK 4.22.4 —
+      with it, the recovery screen renders and the original message survives.
+    */
+    return (
+      <View>
+        <RecoveryScreen detail={detail} onRetry={this.retry} />
+      </View>
+    );
   }
 }
 

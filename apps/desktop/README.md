@@ -78,11 +78,17 @@ handler only for an error NO boundary caught, and with the class in the tree
 `@gjsify/gtk-host/react` logs `an error boundary caught an error` through
 `onCaughtError` instead, the process survives, and a capture still gets written.
 
-**WHAT IT DOES NOT CATCH**, measured by the first full `component-sweep` rather than
-predicted: the `<View> expand` refusal described below reaches the root past it, and
-the log says `React hit an error no boundary caught`. The `<Typo onPress>` class is
-caught and this one is not, and why they differ is open. Until that is understood, the
-boundary is a partial answer rather than the answer.
+**IT CATCHES MORE THAN THE FIRST MEASUREMENT SAID.** The first full `component-sweep`
+reported `React hit an error no boundary caught` and this section concluded the
+boundary was a partial answer. That was wrong, and the way it was wrong is the useful
+part: the boundary caught the fault and rendered the recovery screen, and the recovery
+screen then refused as well, because `Screen`'s outermost element carries `flex-1` and
+a fallback rendered after a catch has no parent context to resolve it against. The
+SECOND refusal was uncaught, and it replaced the first in the log.
+
+So the fallback is wrapped in a bare `<View>` — a parent for the screen below it —
+and the original messages come through. Everything below about the two components that
+would not render was found by that one element.
 
 **A cast, and it is not cosmetic.** `tsconfig.json` points `jsxImportSource` at
 `@gjsify/gtk-host/react` so that an accidental `<div>` is a type error rather than a
@@ -171,92 +177,69 @@ ordinary React Native the whole time, every screenshot of it was right, and
 `npm run check` was green for the entire life of the defect. A screenshot proves a
 tree rendered; it says nothing about what the render cost.
 
-### Two components that cannot render here, and the sweep that had to exist to say so
+### What the first component sweep found, and the refusal that hid it
 
-`participate/FormField` and `player/ProgressBar` both throw on GTK:
+The sweep's first run reported 43 of 45, with `participate/FormField` and
+`player/ProgressBar` refusing. Both now render, both for reasons that had nothing to
+do with what the message said, and the route this took is the useful part.
 
-    <View> expand — carries layout that cannot be resolved at this position. These
-    need a parent to resolve against — `flex-1` and `self-*` need the parent
-    orientation, `absolute` needs the parent to be an overlay — and this element is
-    the root of its tree, or its parent is not a box.
+**Every refusal read as the same one.** Whatever actually went wrong, the log said:
 
-The two markups are NOT the same, and the shared part is the one that matters.
-`FormField` puts a label beside an icon:
+    <View> expand — carries layout that cannot be resolved at this position
 
-```tsx
-<Pressable className="mb-2xs flex-row items-center rounded-md border px-s py-s">
-  <Ionicons name={…} size={20} />
-  <Typo variant="text-m" className="ml-s flex-1">{value.label}</Typo>
-</Pressable>
-```
+That is because the app's error boundary DID catch the real fault and render the
+recovery screen, and the recovery screen then refused as well — `Screen`'s outermost
+element carries `flex-1`, which needs a parent context to resolve, and a fallback
+rendered after a catch sits at the root of a fresh subtree with none. The second
+refusal was uncaught, took the tree, and replaced the first one in the log.
 
-`ProgressBar` has no row, no icon and no label — it is a bar inside a hit area:
+`src/app/_layout.tsx` now wraps the fallback in a bare `<View>`, which is a parent for
+the screen below it to resolve against. One element, and the real messages came
+through immediately.
 
-```tsx
-<Pressable className="justify-center py-2xs">
-  <View className="overflow-hidden rounded-s bg-stroke" style={{ height: 4 }}>
-    <View className="h-full w-full bg-accent" style={{ transform: [{ scaleX: ratio }] }} />
-  </View>
-</Pressable>
-```
+**What they actually were**, once visible:
 
-What they share is a `Pressable` parenting children that carry expand. A `Pressable`
-is a `Gtk.Button`, which is a BIN and not a box, so it establishes no orientation for
-anything under it to resolve against. The layer's own comment at the throw says this
-used to be a silent drop and is now loud on purpose, which is the right trade and is
-what surfaced it here.
+| component | refusal | answer |
+| --- | --- | --- |
+| `participate/FormField` | style `textAlignVertical` is not a property the partition routes | dropped in the shim: a `Gtk.Entry` centres its one line and a `Gtk.TextView` starts at the top, so both values the app passes are the toolkit's own behaviour |
+| `participate/FormField` | `<TextInput>` `value` AND `onChangeText`, on a multiline field | `multiline` dropped instead. A `Gtk.TextView` keeps its content in a `Gtk.TextBuffer` rather than a property, so it answers neither; dropping those two would accept typing and report none of it. The textarea is one line tall here |
+| `player/ProgressBar` | `<Pressable>` `accessibilityValue` | dropped, and it is a real screen-reader loss: GTK publishes `VALUE_NOW`/`VALUE_MIN`/`VALUE_MAX` on `Gtk.Accessible`, so the gap is in the layer, not the toolkit |
+| `player/ProgressBar` | `style={{ transform: [...] }}` is an array; the partition reads numbers and strings, and a transform is a `Gsk` render node rather than a widget property | `src/overrides/ProgressBar.tsx`, which sizes the fill instead of scaling it. Same redirect mechanism as `VideoFrame` |
 
-**WHY NO SCREEN SWEEP WOULD EVER HAVE FOUND IT**, and this is the argument for
-`component-sweep` in one measurement rather than in the abstract. Both components have
-a route, and `route-sweep` reports both routes `ok`:
+**Two of the four are `apps/mobile` techniques that GTK expresses differently**, not
+defects: a transform instead of a width, because a phone cannot afford a layout pass
+per tick; and a buffer-backed multiline input. Neither component changed on the phone.
+
+**WHY NO ROUTE SWEEP WOULD HAVE FOUND ANY OF IT.** Both components have a route, and
+`route-sweep` reported both `ok`:
 
 | route | sweep line | what it photographs | what it never draws |
 | --- | --- | --- | --- |
 | `/player` | `ok  [11829 byte capture]` | "Es läuft gerade nichts." | `ProgressBar` |
 | `/formular` | `ok  [18457 byte capture]` | "Dieses Formular gibt es nicht" | `FormField` |
 
-Nothing is playing in a swept process and no callout is passed to the form, so each
-screen renders a legitimate empty state and passes. Driven at a route that actually
-reaches the component — `/formular?slug=wem-gehoert-die-stadt` — the same bundle
-throws, the tree ends, and the window falls back to `/` with a 12 779-byte capture:
-the same shape as the profil crash above, which captured 12 848 where a live tree had
-captured 92 125.
+Nothing plays in a swept process and no callout is passed to the form, so each screen
+renders a legitimate empty state and passes. `route-sweep.mjs`'s own header warns
+about this for `[param]` routes; it is true of these two as well, and nothing about
+their `ok` lines says so.
 
-**The gallery route itself is now the sweep's one red line.** `route-sweep` reports
-24 of 25, and the failure is `/gallery` — the same refusal, because that page draws
-both components. That is the sweep telling the truth for the first time about
-components it had been rendering `ok` around.
+**The obvious remedy was tried first and did not work**, which is worth keeping. The
+refusal's own advice is "wrap it in a `<View>`, or move the utility to a child", so
+both components were rewritten that way and both still refused: `0 of 2`. The advice
+was sound and pointed at the wrong element, because the message could not say which
+element it meant. Finding that out needed a patch to the built `lib/` to print the
+`className`, and that is one of the two gjsify issues this produced.
 
-`route-sweep.mjs`'s own header warns about this for `[param]` routes: "a route that
-404s inside its own screen renders a legitimate empty state and would pass for the
-wrong reason". It is true of these two non-param routes as well, and nothing about the
-`ok` lines says so.
+**What went upstream.** Two issues, both with file:line evidence:
 
-**Not fixed here, and THE OBVIOUS REMEDY WAS TRIED AND DOES NOT WORK**, which is the
-more useful half of this entry. The refusal itself says "wrap it in a `<View>`, or
-move the utility to a child", so both components were rewritten that way — the
-`flex-row items-center` moved off `FormField`'s `Pressable` onto a `<View>` around its
-two children, and `justify-center` moved off `ProgressBar`'s onto a `<View>` around
-the bar. Built, swept, and both still refuse: `0 of 2`.
+1. `render()` drops `ParentProvider` for every child when any child is a text run, so
+   a sibling's `flex-1` throws. Measured: `''` is a child to `Children.toArray` and
+   not a child to the reconciler, so an invisible value removes the provider.
+2. `PrimitiveError` cannot name the element it refused, and the unresolved-intent
+   message blames a cause that cannot apply — for `expand` the only input is whether a
+   parent context exists, so "or its parent is not a box" can never be it.
 
-So the cause is NOT simply a layout utility on a `Gtk.Button`, which is what the first
-reading of the message suggests. What is known:
-
-- `flex-1` is the only utility in either component that becomes an unresolved
-  `expand`. `layout.ts` turns it into `intent.expand = 'main-axis'`, while `w-full`
-  and `h-full` resolve straight to `hexpand`/`vexpand` and never reach the intent.
-- The refusal names the primitive `<View>`. Neither component has a `<View>` carrying
-  `flex-1`: `FormField`'s two are on a `<Typo>`, which is a `Text`, and `ProgressBar`
-  has none at all. So the element being refused is most likely one the layer or a
-  shim SYNTHESISES, not one this app wrote.
-- `hitSlop`, which `ProgressBar` passes, is dropped by the shim rather than wrapped,
-  so it is not the source of an extra box.
-
-That is where the next person should start, and it is worth saying that the message
-would have been enough on its own if it named the class list and the parent it could
-not resolve against.
-
-### The deep-link loop, fixed upstream and now measured
+### The deep-link loop, fixed upstream and now measured### The deep-link loop, fixed upstream and now measured
 
 Three tab routes — `/mediathek`, `/mitmachen`, `/profil` — used to enter an infinite
 update loop when entered by URL: React error #185 with
