@@ -91,27 +91,22 @@ describe('the components the handbook draws', () => {
     expect(plugins).toMatch(/rnw\(\)[\s\S]*uniwind\(/);
   });
 
-  it('hands the site’s appearance to Uniwind rather than only painting a class', () => {
-    // The trap ADR 0027 records and ADR 0008 records the NativeWind version of.
-    // A `.dark` class on `<html>` moves the CSS variables and leaves
-    // `useUniwind().theme` at light, so every colour a component reads in
-    // TypeScript — `useColors()`, and therefore every `<Typo>` — stays on the
-    // light value over a dark ground. Measured: `canvas` at `#1a1a1a` under text
-    // at `#333`. Nothing about the page looks broken to a build.
-    expect(PREVIEW).toMatch(/Uniwind\.setTheme\(/);
+  it('lays a specimen out the way the app lays it out', () => {
+    // The stage boxes are `View`s and not `<div>`s, and the difference is not
+    // cosmetic: a view is a flex column that stretches its children, a `<div>` is
+    // a block box that does neither, and a component's outermost element is laid
+    // out by its parent. Measured on 2026-09-11 with divs: `ui/Badge` and
+    // `participate/ClaimStatusTag` ran the full width of the column although both
+    // say `self-start`, because `align-self` means nothing to a child of a block
+    // box, and `ui/Chip` hugged its label where the app stretches it.
+    expect(PREVIEW).toMatch(/from 'react-native'/);
+    expect(PREVIEW).not.toMatch(/<div className="p-s"/);
   });
 
-  it('puts a store and a safe area above every specimen', () => {
-    // Measured on 2026-09-11 by drawing all 45 entries with neither: `MiniPlayer`
-    // and everything else that selects from a slice threw, because react-redux
-    // refuses rather than degrading without a Provider, and `LoginGate`,
-    // `RecoveryScreen`, `Screen`, `ScreenHeader` and `SafeAreaView` threw on
-    // `useSafeAreaInsets`, which refuses rather than defaulting. Both are
-    // one-line providers and neither is a stub: the store is `apps/mobile`'s own
-    // instance, and the insets are zero because a page has no notch.
-    expect(PREVIEW).toMatch(/<Provider store=\{coreStore\}>/);
-    expect(PREVIEW).toMatch(/<SafeAreaProvider initialMetrics=/);
-  });
+  // What is above a specimen — the stylesheet, the fonts, the store, the safe
+  // area, the gesture root and the appearance — is the app's own environment and
+  // is asserted in `environment.test.ts`, which is also where the reason it is
+  // not a list in this package is written down.
 });
 
 /**

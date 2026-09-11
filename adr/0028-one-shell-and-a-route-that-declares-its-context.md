@@ -241,8 +241,11 @@ its React tree can actually mount. That is `NOT_DRAWN` in `src/components/direct
 **a list of exceptions rather than of members**, each with the reason in the words the
 card prints.
 
-**Measured on 2026-09-11, and the list is empty.** All 45 entries draw. Two things
-were needed and both are one line:
+**Measured on 2026-09-11, and the list is empty.** All 45 entries draw. ~~Two things
+were needed and both are one line:~~ Voided by "The environment is the app's, and it
+was short by five things" below: two things were needed to *mount* a component
+without throwing, which is what this paragraph measured, and five are needed to
+*draw* it the way the app draws it. The two that threw:
 
 | missing | what threw | components affected |
 |---|---|---|
@@ -263,6 +266,115 @@ imports `@/components/ui`, so this bundle now carries `@expo/vector-icons` and
 plus the icon fonts as separate assets. That is paid knowingly — every one of the
 forty-five is drawn here, so every one of them is needed anyway — and the alternative
 was a second catalogue.
+
+### The environment is the app's, and it was short by five things
+
+The section above measured what a component needs in order to **mount** here without
+throwing, and got the right answer to that question. What nobody measured was whether
+it then **looked** like the app, and it did not. Read on the assembled site on
+2026-09-11, every component against its own frame on `/components/<group>/<name>`, in
+both appearance settings — which is exactly the comparison that route exists for, and
+the first time anybody had actually walked it.
+
+| what differed | components | why |
+|---|---|---|
+| the typeface, everywhere | all 45 | no `@font-face` at all in the document; Chrome substituted its standard face, which is a **serif** |
+| every bold and semibold string drew at regular weight | all 45 | this app names one loaded family per cut, so a family that is not there takes the weight with it |
+| `variant="text-article"` was the wrong serif | `ui/Typo`, `reader/ReaderView` | Merriweather is a family name here like any other |
+| every row stood on end as a column | `ProjectRow`, `SampleHitRow`, `SearchEntry`, `ArticleRow`, `HomeHeader`, `SpotlightBriefing`, `EpisodeRow`, `LiveBanner`, `MediathekReihe`, `NavCard`, `SettingRow`, `ScreenHeader`, `SectionHeader`, `FormField`, `Badge`, `Overline`, `BackstageTeaser` | `.flex-row` was not in the stylesheet, so `react-native-web`'s own `flex-direction: column` stood |
+| white text on no ground at all | `CalloutTeaser`, `LiveBanner` | `.bg-always-dark` was not in the stylesheet |
+| thumbnails, play buttons and progress bars lost their fill | `Thumbnail`, `MediaCard`, `SeriesTile`, `ArticleHero`, `EpisodeRow`, `CalloutCard` | `.bg-grey-250`, `.bg-grey-300`, `.bg-on-surface` |
+| rail tiles lost their width, spacing was off in places | `MediathekReihe`, `SeriesTile`, and 15 spacing utilities across the set | `.w-32`, `.w-64`, `.mt-ml`, `.pb-3xl`, `.opacity-70` and 34 more |
+| pills and tags ran the full width of the column | `Badge`, `ClaimStatusTag` | `align-self: flex-start` means nothing to a child of a block box |
+| `ui/Chip` hugged its label where the app stretches it | `Chip` | the same thing from the other side |
+| a horizontal rail bled past the card into the page | `Rail`, `TopicRail` | follows from the above |
+| the "All specimens" pill covered the specimen | `ClubCard`, `CalloutCard`, `SpotlightBriefing`, and every specimen taller than the card | a control parked on its own opaque ground over the bottom-right corner |
+
+**Three causes, and every row above is one of them.** None is a component's fault and
+none is fixed per component.
+
+**One. The app's stylesheet was compiled against the wrong tree.** Tailwind generates
+a utility only where it has seen the name, and what it scans by default is the
+*bundler's* project rather than the stylesheet's. Metro's project is `apps/mobile`, so
+the app was always right; the handbook's Vite root is `apps/handbook`, so it compiled
+`apps/mobile/src/global.css` against the handbook's own sources and emitted only the
+utilities the handbook happens to write itself. 39 of the app's classes were missing,
+and the ones that were *there* were there by coincidence — the handbook writes
+`bg-canvas` and `p-m` for its own chrome, and never writes `flex-row`, because a DOM
+site has no use for it. Both builds green, the page rendering, nothing to grep for.
+
+The fix is one line, and it goes in the app's stylesheet rather than in the host:
+`@source './'`, relative to `global.css`, which is this app saying where its own class
+names are written and is the same answer for every bundler that ever compiles the
+file. It costs 2.8 kB of the site's CSS. A host-side `@source` pointing at
+`apps/mobile/src` would have worked identically and would have been the second
+description of a fact the app already owns.
+
+**Two. There was no font file.** The handbook applied the family names and loaded
+nothing behind them — `document.fonts` was empty on every page of it. That is the
+whole of the typeface, the weight and the `text-article` rows above, and it is one
+defect, not three.
+
+**Three. The specimen's parent was a `<div>`.** A React Native view is a flex column
+that stretches its children; a `<div>` is a block box that does neither, and a
+component's outermost element is laid out by its parent. So `self-start` did nothing
+and `align-items` did something else. `DirectPreview`'s stage boxes are `View`s now.
+
+### One environment, exported once
+
+The answer to one and two together is `apps/mobile/src/lib/env/AppEnvironment.tsx`:
+the app's stylesheet, its five font files, the store, the safe area, the gesture root,
+and the appearance handed to Uniwind. `app/_layout.tsx` wraps the router in it and
+`DirectPreview` wraps every specimen in it. **One definition, two hosts**, which is
+what [ADR 0006](0006-one-core-two-hosts.md) already prescribes for everything else and
+what the handbook was the last thing in the repository not to do.
+
+Not a stylesheet in the handbook that simulates the app, which was the obvious move
+and is the wrong one: `_layout.tsx` already describes that environment, a second
+description is not kept in step by anything, and the drift would surface as exactly
+the kind of difference the `direct | bundle` comparison exists to *detect*. The list
+this replaced had been right when it was written and was wrong two changes later,
+which is the whole argument in one sentence.
+
+Two things it takes as arguments, because they are genuinely the host's:
+
+- **the appearance.** The app's own setting is in its store; the handbook's is a
+  control in its header and a class on `<html>`. The handbook reads its class and
+  passes the value; `lib/theme/appearance.ts` applies it. `Uniwind.setTheme` is
+  called from one place in the repository, which is what ADR 0008 and ADR 0027 both
+  cost a defect to learn.
+- **the safe-area insets.** In the app expo-router mounts a `SafeAreaProvider` above
+  the root route, so the environment adds none — a second one nested inside it would
+  measure the same full-screen box and answer the same insets. A host with no router
+  states them instead, and the handbook states zero, because a page has no notch and
+  a provider with nothing measured yet renders `null`.
+
+What is deliberately not in it: the splash screen, the persistence hydration, the
+onboarding redirect, the error boundary, the status bar, the door and the `Stack` —
+routing and lifecycle, which a drawn card has neither of. Nor `configurePlatform()`:
+the ports are a statement about the running app, and the handbook is right to leave
+the core on `createMemoryPlatform()`.
+
+`apps/handbook/test/environment.test.ts` fails if `DirectPreview` grows a `Provider`,
+a `SafeAreaProvider`, a `Uniwind.setTheme`, an `import '@/global.css'` or a font name
+of its own, if `_layout.tsx` stops using the same component, or if `global.css` loses
+its `@source`. It reads the files as text, which is the same choice `shell.test.ts`
+makes and for the same reason.
+
+### The card's link is over the drawing, not on it
+
+The "All specimens" pill sat in the bottom-right corner of every card's preview on its
+own opaque ground, and what it did there was cover the component: `ClubCard` lost the
+line under the member's name, `CalloutCard` its progress bar, `SpotlightBriefing` an
+entry. A control that hides the thing it is a control for is worse than no control,
+and the card already says where it goes — the component's name below it is a link, and
+the page's prose says the component's page has every specimen.
+
+So the pill is gone and the preview area is a link, as an anchor laid over the drawing
+rather than wrapped around it: a specimen contains `<button>`s of its own and an `<a>`
+around one of those is invalid. That also stops a press landing on a specimen's own
+control, which on a card does nothing anybody wants, and it makes the drawn state and
+the `NOT_DRAWN` state the same shape, which the card was already trying to be.
 
 ### A visible way past the app's door (issue #112)
 
@@ -379,8 +491,20 @@ appends the commit it was built from, because that is a fact about the current v
 every other non-owning view says where it is. A third such exception would be the
 signal that the status line wants a declaration of its own.
 
-**Fonts are still open**, unchanged from ADR 0027: a drawn component's sizes, weights
-and line heights are the app's and its typeface is the browser's fallback.
+~~**Fonts are still open**, unchanged from ADR 0027: a drawn component's sizes, weights
+and line heights are the app's and its typeface is the browser's fallback.~~ Voided by
+"The environment is the app's, and it was short by five things" below: the handbook
+loads the app's five font files, out of the app's own `fontAssets`, through the
+environment the app itself starts in.
+
+**A drawn component is 46 px wider than the framed one at the same device**, and that
+is left as it stands. Measured at the 393 px preset: the drawn specimen's box is
+367 px, the framed one's 321 px, because the frame is the app's gallery page and that
+page insets by a screen's own `px-m` before its outline's `p-s`, while this stage
+gives one `p-s`. It moves where lines break and nothing else. Matching it would mean
+the handbook reproducing the app's gallery furniture, which is the copy this record
+has just spent a section removing; the honest fix, if it is ever worth one, is for the
+stage to inset by the app's `Screen` padding rather than by the gallery's.
 
 **Two components fetch on mount and fail by CORS in a browser** — `LiveBanner` asks
 icecast for the station status and an article row asks correctiv.org for a reading
@@ -400,8 +524,25 @@ the grid, and what came off is a control inherited from the page this one replac
 measured and found to be gating nothing. Decision 12 of the redesign is withdrawn
 with it.
 
-[ADR 0027](0027-the-handbook-draws-the-apps-components.md), two claims, **struck in
-place**:
+**This record itself, two more claims, struck in place**, both by "The environment is
+the app's, and it was short by five things" above, which is a section of this ADR
+rather than a record of its own for the same reason as the one before it: nothing
+about the decision moved. The handbook still draws the app's components in its own
+React tree, the roster is still the app's catalogue, the two renderings are still
+offered and still not compared by anything but a person. What changed is what stands
+above a specimen.
+
+- "Two things were needed and both are one line", in "The registry's roster is the
+  app's own catalogue". Two were needed to *mount* a component without throwing,
+  which is what that paragraph measured and stated correctly. Five are needed to draw
+  it as the app draws it, and the measurement that would have found the other three
+  is the one this ADR's own route was built for and nobody had run.
+- "Fonts are still open, unchanged from ADR 0027", in "What is still open". They are
+  loaded, out of the app's own `fontAssets`, by the environment the app itself starts
+  in.
+
+[ADR 0027](0027-the-handbook-draws-the-apps-components.md), **four claims struck in
+place**. The first two by this record as it was first written:
 
 - Its context, "three at a time (`src/lib/rows.ts` says why three)". There are no
   frames on that page at all now and the file with the cap in it is deleted. The
@@ -414,6 +555,22 @@ place**:
   own catalogue and the two hand-written entries are gone; the argument above them,
   that the registry is the measurement rather than a description of one, is why the
   exceptions are a list and not a manifest, and is untouched.
+
+And two more by "The environment is the app's, and it was short by five things":
+
+- "The font chain, which was a wall": "`app/_layout.tsx` — the only consumer of
+  `fontAssets`, verified against the whole tree — imports it by path". The only
+  consumer is `lib/env/fonts.ts` now, and `_layout.tsx` reaches the files through it.
+  The reason the chain was cut is untouched and is stronger for it: the barrel still
+  keeps Expo's font loader out of every component's import graph, and exactly one
+  module in the app has any use for the files.
+- "What is still open → Fonts", the whole entry, including "How the handbook loads
+  Merriweather and Source Sans 3 for a directly drawn component is unresolved". It is
+  resolved, and by neither of the two candidates that paragraph names: not a stub and
+  not the reader's font subsets, but `expo-font` itself, on the handbook's own page,
+  over the same five files. The paragraph's reasoning is the part worth keeping — the
+  families are *applied* and loading one is `expo-font`'s job — and it is what points
+  at the fix.
 
 **Two comments in the code**, both deleted with the thing they described:
 `App.tsx`'s "that parameter predates this shell", about `tools` — it is every view's

@@ -1,12 +1,7 @@
-import '@/global.css';
-
 import { router, Stack, usePathname, type ErrorBoundaryProps } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
-import { useFonts } from 'expo-font';
 import * as SplashScreen from 'expo-splash-screen';
 import { useEffect, useRef, useState } from 'react';
-import { GestureHandlerRootView } from 'react-native-gesture-handler';
-import { Provider } from 'react-redux';
 
 import { configurePlatform } from '@correctiv/app-core';
 import { extractArticleFromDom } from '@correctiv/app-core/articles/extract/dom';
@@ -38,13 +33,14 @@ import { LoginGate } from '@/components/gate/LoginGate';
 import { RecoveryScreen } from '@/components/recovery/RecoveryScreen';
 import { expoAudio } from '@/lib/audio/backend';
 import { stop as stopAudio } from '@/lib/audio/player';
+// Everything a component of this app needs around it before it draws: the
+// stylesheet, the fonts, the store, the safe area, the gesture root and the
+// appearance handed to Uniwind. The handbook wraps each specimen it draws in the
+// same component, which is the whole reason it is one (ADR 0028).
+import { AppEnvironment, useAppFonts } from '@/lib/env/AppEnvironment';
 import { expoPlatform } from '@/lib/platform/expo';
 import { coreStore, useAppStore, useIsAdmitted } from '@/lib/store/core';
-import { useAppearance, useColors, useIsDark } from '@/lib/theme';
-// By path, and the one import in the app that is. `lib/theme`'s barrel leaves the
-// font files out so that a component importing a colour hook does not pull Expo's
-// font loader in behind it; see `lib/theme/font-assets.ts` and ADR 0027.
-import { fontAssets } from '@/lib/theme/font-assets';
+import { useColors, useIsDark } from '@/lib/theme';
 
 // Hand the core its platform capabilities before anything reads a store. Storage
 // and bundled content come from the adapter; the audio backend is composed in
@@ -105,9 +101,9 @@ export const unstable_settings = { anchor: '(tabs)' };
 
 export default function RootLayout() {
   return (
-    <Provider store={coreStore}>
+    <AppEnvironment>
       <AppShell />
-    </Provider>
+    </AppEnvironment>
   );
 }
 
@@ -149,16 +145,19 @@ export function ErrorBoundary({ error, retry }: ErrorBoundaryProps) {
 }
 
 /**
- * Everything that reads state lives below the Provider.
+ * Everything that reads state lives below the Provider, which `AppEnvironment`
+ * renders — a `useSelector` above its own store finds no context and throws at
+ * startup, so the shell has to be a child rather than the thing holding it.
  *
- * `useAppearance()` selects the appearance setting, so it cannot run in the
- * component that renders the Provider — a `useSelector` above its own store finds
- * no context and throws at startup. Splitting the shell out is the whole fix.
+ * `useAppFonts()` here as well as inside the environment, and that is one load:
+ * `expo-font` caches by family name, so the second call subscribes to the first
+ * one's promise. What this call is for is the two things only the app does with
+ * the answer — holding the splash screen up until the type is ready, and handing
+ * a failed load to the boundary below.
  */
 function AppShell() {
-  const [fontsLoaded, fontError] = useFonts(fontAssets);
+  const [fontsLoaded, fontError] = useAppFonts();
   const [storeReady, setStoreReady] = useState(false);
-  useAppearance();
   const palette = useColors();
   const isDark = useIsDark();
 
@@ -256,7 +255,7 @@ function AppShell() {
   if (!fontsLoaded || !storeReady) return null;
 
   return (
-    <GestureHandlerRootView style={{ flex: 1 }}>
+    <>
       {/* Explicit rather than "auto": auto follows the device, and the app's
           appearance setting may deliberately disagree with it. */}
       <StatusBar style={isDark ? 'light' : 'dark'} />
@@ -279,6 +278,6 @@ function AppShell() {
       ) : (
         <LoginGate />
       )}
-    </GestureHandlerRootView>
+    </>
   );
 }

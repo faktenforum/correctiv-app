@@ -1,6 +1,27 @@
 @import 'tailwindcss';
 @import 'uniwind';
 
+/* WHERE THIS APP'S CLASS NAMES ARE WRITTEN, said out loud.
+
+   Tailwind generates a utility only where it has seen the name, and what it
+   scans by default is the BUNDLER's project, not this file's. Metro's project is
+   `apps/mobile`, so the app was always right; the handbook's Vite root is
+   `apps/handbook`, so a second host compiling this same stylesheet scanned the
+   wrong tree and emitted only the utilities it happened to write itself.
+
+   Measured on 2026-09-11 against the assembled site: 39 of the app's classes were
+   missing from the handbook's sheet. `flex-row` was one of them, so every row in
+   every drawn component stood on end as a column; `bg-always-dark` was another,
+   so `CalloutTeaser` and `LiveBanner` were white text on no ground at all. The
+   rest worked only by coincidence — the handbook writes `bg-canvas` and `p-m`
+   itself, so those existed.
+
+   One line, and it belongs here rather than in the host: it is this app saying
+   where its own classes live, which is the same answer for every bundler that
+   ever compiles this file. Relative to this stylesheet, so it does not depend on
+   who is asking. `apps/handbook/test/environment.test.ts` fails if it goes. */
+@source './';
+
 /* The palette, the spacing scale and the type scale — generated from
    tokens/theme.css into @correctiv/design-tokens.
 

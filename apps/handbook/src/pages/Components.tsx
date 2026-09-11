@@ -8,7 +8,6 @@ import { DirectPreview } from '../components/DirectPreview';
 import { href, navigate } from '../router';
 import { Slot } from '../shell/slots';
 import { Badge } from '../ui/kit/badge';
-import { Button } from '../ui/kit/button';
 import { Segmented } from '../ui/kit/segmented';
 import { Filter, Source } from '../ui/Lookup';
 import { Page } from '../ui/Page';
@@ -290,14 +289,29 @@ function ComponentCard({
                 labels={false}
               />
             </div>
-            <Button
-              variant="ghost"
-              size="sm"
-              asChild
-              className="absolute bottom-3xs right-3xs bg-canvas"
-            >
-              <a href={href(route)}>All specimens</a>
-            </Button>
+            {/*
+              The way to the component's own page, over the drawing rather than on
+              it.
+
+              This was a pill reading "All specimens", parked in the bottom-right
+              corner on its own opaque ground, and what it did there was cover the
+              component: `ClubCard` lost the line under the member's name,
+              `CalloutCard` its progress bar, `SpotlightBriefing` an entry. A
+              control that hides the thing it is a control for is worse than no
+              control, and the card already says where it goes twice over — the
+              component's name below is a link, and the page's own prose says the
+              component's page has every specimen.
+
+              An anchor and not a wrapper: a specimen contains `<button>`s of its
+              own and an `<a>` around one of those is invalid, so this sits over
+              the drawing as a sibling instead. That also stops a press landing on
+              a specimen's own control, which on a card does nothing anybody wants.
+            */}
+            <a
+              href={href(route)}
+              aria-label={`Every specimen of ${component.name}`}
+              className="absolute inset-0 rounded-t-md focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-accent"
+            />
           </>
         )}
       </div>

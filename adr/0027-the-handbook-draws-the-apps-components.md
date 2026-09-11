@@ -113,8 +113,13 @@ a colour token.
 
 What a component actually wants from that module is a family *name*, which is a plain
 string. So `fonts.ts` keeps the names and `fontFamilyFor()`, a new `font-assets.ts`
-holds the five files, the barrel does not re-export it, and `app/_layout.tsx` — the
-only consumer of `fontAssets`, verified against the whole tree — imports it by path.
+holds the five files, the barrel does not re-export it, and ~~`app/_layout.tsx` — the
+only consumer of `fontAssets`, verified against the whole tree — imports it by path.~~
+`lib/env/fonts.ts` is the only consumer, and `app/_layout.tsx` reaches the files
+through it; voided by [ADR 0028](0028-one-shell-and-a-route-that-declares-its-context.md),
+"The environment is the app's, and it was short by five things", where the second host
+loads the same five files by loading the app's own environment. There is still exactly
+one importer, which is the fact this paragraph is about.
 `__tests__/web-target.test.ts` fails if any of those three facts stops being true.
 
 ### The `ui` barrel, which is the same shape one level up
@@ -260,12 +265,21 @@ about the build it claims to be about.
 family-name strings, and breaking the chain out of the barrel has the same effect
 without a stub: the families are *applied* — `fontFamilyFor()` returns
 `Merriweather_400Regular` and `<Typo>` sets it — and no font file is loaded, because
-loading one is `expo-font`'s job and there is no Expo here. So a drawn component's
+loading one is `expo-font`'s job and there is no Expo here. ~~So a drawn component's
 sizes, weights and line heights are the app's and its typeface is the browser's
 fallback, which is visible in the handbook beside the framed app and looks like what
 it is. How the handbook loads Merriweather and Source Sans 3 for a directly drawn
 component is unresolved; the reader font subsets in
-`lib/theme/readerFonts.generated.ts` are one candidate and were not tried.
+`lib/theme/readerFonts.generated.ts` are one candidate and were not tried.~~ Voided by
+[ADR 0028](0028-one-shell-and-a-route-that-declares-its-context.md), "The environment
+is the app's, and it was short by five things": the handbook loads the five files with
+`expo-font`, out of the app's own `fontAssets`, because it wraps every specimen in the
+app's environment and that is where the app loads them too. Neither candidate above
+was the answer, and the reasoning that led to them is why the fix is one import: it
+was never a missing name, only a missing loader. The fallback was also worse than this
+paragraph guessed — Chrome substitutes its *standard* face for an unmatched family,
+which is a serif, so the whole interface drew in Times and every bold string drew at
+regular weight, this app having one loaded family per cut.
 
 **`vite-plugin-rnw` is pre-1.0** and has one maintainer. If it goes away, its two
 loads of work — Flow removal and the React Native defines — are reproducible here in

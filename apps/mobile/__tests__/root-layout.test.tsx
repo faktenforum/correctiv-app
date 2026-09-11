@@ -53,6 +53,25 @@ jest.mock('expo-splash-screen', () => ({
   preventAutoHideAsync: jest.fn(),
   hideAsync: jest.fn(),
 }));
+/**
+ * `GestureHandlerRootView` reaches for a native module jest has not got and throws
+ * `_RNGestureHandlerModule.default.install is not a function` on mount.
+ *
+ * This suite used to miss it: the gesture root sat inside the shell, below its
+ * `if (!fontsLoaded || !storeReady) return null`, and the fonts never resolve here.
+ * It is part of `lib/env/AppEnvironment` now, above that return, because it is part
+ * of what the app wraps everything in rather than part of what it renders once it
+ * is ready. `error-boundary.test.tsx` carries the same double and the story of how
+ * it came to light.
+ */
+jest.mock('react-native-gesture-handler', () => {
+  const react = jest.requireActual<typeof import('react')>('react');
+  const { View } = jest.requireActual<typeof import('react-native')>('react-native');
+  const GestureHandlerRootView = ({ children }: { children?: React.ReactNode }) =>
+    react.createElement(View, null, children);
+  return { GestureHandlerRootView };
+});
+
 jest.mock('uniwind', () => ({
   Uniwind: { setTheme: jest.fn() },
   useUniwind: () => ({ theme: 'light', hasAdaptiveThemes: true }),

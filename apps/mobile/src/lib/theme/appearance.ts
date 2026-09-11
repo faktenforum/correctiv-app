@@ -34,8 +34,22 @@ export type ThemeSetting = 'system' | 'light' | 'dark';
  * reason this is a setting: a user who picks light on a dark phone means it.
  */
 export function useAppearance(): void {
-  const setting = useTheme();
+  useGivenAppearance(useTheme());
+}
 
+/**
+ * The same, for a host that already has an appearance setting of its own.
+ *
+ * `apps/handbook` is a website with a light/dark/system control in its own
+ * header, and the components it draws have to follow THAT rather than the app's
+ * stored preference — the app's store is not hydrated there, so every specimen
+ * would sit at `'system'` while the page around it was explicitly dark.
+ *
+ * Split out rather than copied, because the one line it wraps is the line that
+ * has broken twice (see above, and ADR 0008): `Uniwind.setTheme` is called from
+ * exactly one place in this repository, and both hosts reach it through here.
+ */
+export function useGivenAppearance(setting: ThemeSetting): void {
   useEffect(() => {
     Uniwind.setTheme(setting);
   }, [setting]);
