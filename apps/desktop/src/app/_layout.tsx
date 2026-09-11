@@ -149,8 +149,21 @@ export const unstable_settings = { anchor: '(tabs)' };
  * provider and no store. And `Screen`'s `SafeAreaView` needs no
  * `SafeAreaProvider`, because `src/shims/react-native-safe-area-context.tsx`
  * answers zero insets outright: a GTK window is a rectangle the compositor hands
- * over whole. So this boundary wraps the `Provider` rather than sitting under it,
- * which is what lets it catch a fault in the store's own construction.
+ * over whole.
+ *
+ * WHAT WRAPPING THE `Provider` DOES AND DOES NOT BUY. It was claimed here that this
+ * catches a fault in the store's own construction. It does not: `coreStore` is a
+ * module-scope `export const` in `lib/store/core.ts`, so a construction fault throws
+ * during module EVALUATION, before any component renders, and no boundary in any tree
+ * can catch it. What the position actually buys is a throw from `Provider`'s own
+ * render and from everything in `AppShell` — the hydration effect, `useAppearance`,
+ * the door. That is worth having, and it is less than the sentence it replaces.
+ *
+ * WHAT SITS ABOVE IT IS NOT COVERED EITHER, and the list is short enough to write
+ * down: `entry.tsx`'s `registerFontsOnce`, `configureStyleOnce`,
+ * `installMediaControlsOnce` and `armScreenshot`; `RouterRoot` itself; and this file's
+ * own module scope, where `configurePlatform` and the extractor choice run. A fault in
+ * any of those is the host's `render()` rethrow, which is a different failure path.
  */
 class RecoveryBoundaryClass extends Component<
   { children: ReactNode },

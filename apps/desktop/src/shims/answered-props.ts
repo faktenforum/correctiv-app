@@ -55,6 +55,23 @@ export const ANSWERED_PROPS: readonly AnsweredProp[] = [
     why: 'an 8px concession to a fingertip; a desktop pointer has single-pixel precision',
   },
   {
+    // THE ENTRY THAT SHOULD HAVE EXISTED FIRST. `onLayout` is how React Native hands a
+    // component its own measured size, and the layer refuses it because allocation is
+    // `vfunc_size_allocate`, a subclass override only the layer can make. The shim
+    // drops it, which is the only available answer — and the consequence is that
+    // NOTHING IN THIS APP MAY DEPEND ON A MEASUREMENT.
+    //
+    // `overrides/ProgressBar.tsx` did. It sized a fill from an `onLayout` width, the
+    // width stayed 0 for the whole session, the bar was invisible, and both sweeps
+    // reported `ok` because an invisible widget throws nothing. It shipped for an hour.
+    // With this entry, `prop-gate.test.ts` states the refusal as data, so the next
+    // component that reaches for a measurement has something to have read.
+    prop: 'onLayout',
+    primitive: 'View',
+    disposition: 'dropped',
+    why: 'allocation is vfunc_size_allocate, a subclass override the layer owns; nothing here may depend on a measured size',
+  },
+  {
     prop: 'trackColor',
     primitive: 'Switch',
     disposition: 'dropped',
@@ -107,6 +124,20 @@ export const ANSWERED_PROPS: readonly AnsweredProp[] = [
  *   * `accessibilityLiveRegion` on `Text`. This host's header says a screen-reader user
  *     is told nothing on the door, and the layer answers it through
  *     `Gtk.Accessible.announce()` on the one element whose content IS its message.
+ *
+ *     TWO THINGS HAVE TO MOVE FOR THAT, and the entry is easy to misread as one. The
+ *     layer accepts it on `Text` and still REFUSES it on `View`
+ *     (`explainProp('View', 'accessibilityLiveRegion')` is not null), and the app's two
+ *     call sites are both `<View accessibilityLiveRegion="polite">`
+ *     (`gate/LoginGate.tsx`). So the shim's drop is load-bearing for the app as it
+ *     stands, and the gain needs the prop moved onto the `Typo` whose text is the
+ *     message — a change in `apps/mobile`, not here.
+ *
+ *     THE HAZARD IS THAT THE DROP IS UNCONDITIONAL while the layer's answer is
+ *     per-primitive: the day somebody moves the prop to the `Typo`, this shim will
+ *     swallow a prop the layer would have honoured, silently. Making the drop
+ *     conditional on the primitive is the fix, and it needs the primitive threaded into
+ *     `normalize`, which is why it is written down here rather than done in passing.
  *   * **`accessibilityRole` on `View`, 41 call sites**, which this shim DROPS. It was
  *     dropped because the layer had no answer, not because GTK has none — the header of
  *     `react-native.tsx` measured that and said the entry would move the day the layer
@@ -125,5 +156,16 @@ export const UPSTREAM_CAUGHT_UP: readonly (readonly [primitive: string, prop: st
   ['TextInput', 'textContentType'],
   ['TextInput', 'submitBehavior'],
   ['ScrollView', 'contentContainerClassName'],
+  // TRUE AT PROP LEVEL AND NOT THE WHOLE STORY. The layer accepts `pointerEvents` on a
+  // `View`, so this entry belongs here — but `POINTER_EVENTS` maps only `auto` and
+  // `none`, and the app passes `box-none` at four sites, which throws at RENDER. So the
+  // shim's value mapping in `react-native.tsx` is still load-bearing, and removing it
+  // because this list says "caught up" would break four screens.
+  //
+  // The published oracle cannot see it either: `explainPropValue('View',
+  // 'pointerEvents', 'box-none')` answers accepted, because `propRefusedValues` reads
+  // an explicit `refuses` field and not a mapped route's key set. That is a defect in
+  // the oracle rather than in this ledger, and it is filed upstream — a value-level
+  // refusal invisible to the table is how a consumer's own ledger goes wrong.
   ['View', 'pointerEvents'],
 ];

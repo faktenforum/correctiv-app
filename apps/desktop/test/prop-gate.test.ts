@@ -33,6 +33,15 @@ import { explainProp, PRIMITIVE_NAMES } from '@gjsify/react-native/prop-table';
 import { ANSWERED_PROPS, UPSTREAM_CAUGHT_UP } from '../src/shims/answered-props.js';
 
 describe('the prop workarounds', () => {
+  it('has entries at all, so an empty ledger cannot pass', () => {
+    // EVERY OTHER ASSERTION HERE IS `filter(...).toEqual([])`, which an empty list
+    // satisfies. So a ledger that lost its entries — or never gained the ones for a
+    // new shim answer — would be green. Its sibling guards all carry a floor for the
+    // same reason (`support-gate` >50 imports, `route-tree` >20 files).
+    expect(ANSWERED_PROPS.length).toBeGreaterThan(5);
+    expect(UPSTREAM_CAUGHT_UP.length).toBeGreaterThan(5);
+  });
+
   it('names a real primitive in every entry', () => {
     // A typo in a primitive name would make `explainProp` answer about nothing, and
     // every assertion below would pass for the wrong reason.

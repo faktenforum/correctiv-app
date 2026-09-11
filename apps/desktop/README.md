@@ -272,7 +272,7 @@ element it meant. Finding that out needed a patch to the built `lib/` to print t
    message blames a cause that cannot apply — for `expand` the only input is whether a
    parent context exists, so "or its parent is not a box" can never be it.
 
-### The deep-link loop, fixed upstream and now measured### The deep-link loop, fixed upstream and now measured
+### The deep-link loop, fixed upstream and now measured
 
 Three tab routes — `/mediathek`, `/mitmachen`, `/profil` — used to enter an infinite
 update loop when entered by URL: React error #185 with

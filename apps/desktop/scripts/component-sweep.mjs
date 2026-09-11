@@ -40,12 +40,11 @@
  * against.
  */
 
-import { execFileSync } from 'node:child_process';
 import { mkdirSync, readdirSync, rmSync, statSync } from 'node:fs';
 import { dirname, join, relative, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
-import { DEFAULT_HOST, FAILURE_PATTERN, HOSTS } from './hosts.mjs';
+import { DEFAULT_HOST, HOSTS, openOnce, refusalsIn, sweepTimings } from './hosts.mjs';
 
 const HERE = dirname(fileURLToPath(import.meta.url));
 const APP = resolve(HERE, '..');
@@ -58,13 +57,10 @@ if (!HOST) {
   console.error(`unknown host "${HOST_NAME}". Known: ${Object.keys(HOSTS).join(', ')}`);
   process.exit(2);
 }
-const BUNDLE = join(APP, HOST.bundle);
 
-// The same numbers `route-sweep.mjs` uses, and for the reasons its own comment
-// gives: the deadline bounds the RUN and not the capture, because these screens
-// refuse when their data arrives rather than when they mount.
-const DWELL = Number(process.env.SWEEP_DWELL_MS ?? '3500');
-const KILL_AFTER_MS = DWELL + 12000;
+// The dwell and the deadline are `hosts.mjs`' now, validated there: a non-numeric
+// `SWEEP_DWELL_MS` used to make every route pass without a process starting.
+const { dwell: DWELL, killAfterMs: KILL_AFTER_MS } = sweepTimings();
 
 /** Not components: shared prop contracts and the barrel. The phone's own list. */
 const NOT_A_COMPONENT = new Set(['ui/index.ts', 'media/videoFrameTypes.ts', 'reader/types.ts']);
@@ -103,47 +99,32 @@ const CAPTURES = join(APP, 'dist', 'components');
 /**
  * Open one gallery page and hand back the log.
  *
- * `label` names the capture; `href` is what `CORRECTIV_DESKTOP_ROUTE` gets. Both
- * halves of the environment below are copied from `route-sweep.mjs` deliberately,
- * including `CORRECTIV_DESKTOP_SCREENSHOT_QUIT: '0'` — closing the window on
- * capture ended the observation early there and would do it here too.
+ * `openOnce` is shared with `route-sweep.mjs` and is where the three checks live that
+ * stop a sweep passing on nothing: the bundle exists, a spawn failure that is not the
+ * deadline is fatal, and an empty log is fatal. Its header has the measurement.
+ *
+ * `label` names the capture; `href` is what `CORRECTIV_DESKTOP_ROUTE` gets, and
+ * `CORRECTIV_DESKTOP_SCREENSHOT_QUIT: '0'` is copied deliberately — closing the window
+ * on capture ended the observation early in the route sweep and would here too.
  */
 function open(href, label) {
-  try {
-    return execFileSync(HOST.command, [...HOST.args, BUNDLE], {
-      cwd: APP,
-      encoding: 'utf8',
-      stdio: ['ignore', 'pipe', 'pipe'],
-      timeout: KILL_AFTER_MS,
-      killSignal: 'SIGKILL',
-      env: {
-        ...process.env,
-        CORRECTIV_DESKTOP_ASSETS: resolve(APP, '..', 'mobile'),
-        CORRECTIV_DESKTOP_ROUTE: href,
-        CORRECTIV_DESKTOP_SCREENSHOT: join(CAPTURES, `${label.replaceAll('/', '_')}.png`),
-        CORRECTIV_DESKTOP_SCREENSHOT_DELAY_MS: String(DWELL),
-        CORRECTIV_DESKTOP_SCREENSHOT_QUIT: '0',
-      },
-    });
-  } catch (error) {
-    // The deadline is the ordinary end of a healthy run here, exactly as in
-    // `route-sweep.mjs`, so the output is salvaged and the log decides.
-    return `${error.stdout ?? ''}${error.stderr ?? ''}`;
-  }
+  return openOnce({
+    host: HOST,
+    appDir: APP,
+    killAfterMs: KILL_AFTER_MS,
+    env: {
+      ...process.env,
+      CORRECTIV_DESKTOP_ASSETS: resolve(APP, '..', 'mobile'),
+      CORRECTIV_DESKTOP_ROUTE: href,
+      CORRECTIV_DESKTOP_SCREENSHOT: join(CAPTURES, `${label.replaceAll('/', '_')}.png`),
+      CORRECTIV_DESKTOP_SCREENSHOT_DELAY_MS: String(DWELL),
+      CORRECTIV_DESKTOP_SCREENSHOT_QUIT: '0',
+    },
+  });
 }
 
-/** The refusals in a log, at most two, or null when it is clean. */
-function refusals(log) {
-  const lines = log
-    .split('\n')
-    .filter((line) => FAILURE_PATTERN.test(line))
-    .slice(0, 2);
-  if (lines.length > 0) return lines;
-  // Two of the pattern's alternatives span a newline, so the whole log is tested as
-  // well; `route-sweep.mjs` says what a per-line filter alone misses.
-  if (FAILURE_PATTERN.test(log)) return ['(matched across lines)'];
-  return null;
-}
+/** The refusals in a log, or null when it is clean. Shared, so both sweeps agree. */
+const refusals = (log) => refusalsIn(log);
 
 const CATALOGUED = componentIds();
 const args = process.argv.slice(2).filter((a) => !a.startsWith('--') && a !== HOST_NAME);
@@ -155,6 +136,17 @@ const forceEach = process.argv.includes('--each');
 const unknown = args.filter((id) => !CATALOGUED.includes(id));
 if (unknown.length > 0) {
   console.error(`no such component: ${unknown.join(', ')}`);
+  process.exit(2);
+}
+
+// AND THE ENUMERATED LIST IS CHECKED TOO, not only the ones typed on the command line.
+// `componentIds()` reads the filesystem and the gallery reads its catalogue, and the
+// only thing tying the two together is a test on the phone's side. If they ever part,
+// the gallery answers the id it does not have with "No component of that name" — which
+// renders perfectly cleanly and would be reported here as a component that passed. So
+// an id that draws nothing is refused rather than swept.
+if (CATALOGUED.length === 0) {
+  console.error('no components found under apps/mobile/src/components; nothing to sweep');
   process.exit(2);
 }
 

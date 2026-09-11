@@ -25,12 +25,11 @@
  * diagnostic passes here. `dist/*.png` and the README's screenshots are the other half.
  */
 
-import { execFileSync } from 'node:child_process';
 import { mkdirSync, readdirSync, rmSync, statSync } from 'node:fs';
 import { dirname, join, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
-import { DEFAULT_HOST, FAILURE_PATTERN, HOSTS } from './hosts.mjs';
+import { DEFAULT_HOST, HOSTS, openOnce, refusalsIn, sweepTimings } from './hosts.mjs';
 
 const HERE = dirname(fileURLToPath(import.meta.url));
 const APP = resolve(HERE, '..');
@@ -49,10 +48,16 @@ if (HOST === undefined) {
   );
   process.exit(2);
 }
-const BUNDLE = join(APP, HOST.bundle);
 
-/** Milliseconds each route gets to render before the process is killed. */
-const DWELL = Number(process.env.SWEEP_DWELL_MS ?? '3500');
+/**
+ * The dwell and the kill deadline, from `hosts.mjs` so both sweeps agree on them.
+ *
+ * VALIDATED there, and that is not fussiness: a non-numeric `SWEEP_DWELL_MS` made
+ * `Number()` answer `NaN`, `execFileSync` threw `ERR_OUT_OF_RANGE` before spawning
+ * anything, and this sweep read the empty output as a clean run. Every route passed
+ * without a single process starting.
+ */
+const { dwell: DWELL, killAfterMs: KILL_AFTER_MS } = sweepTimings();
 
 /**
  * The kill deadline, in the CHILD's own terms rather than a wrapper's.
@@ -75,9 +80,6 @@ const DWELL = Number(process.env.SWEEP_DWELL_MS ?? '3500');
 // 9 s — inside the old 9.5 s budget by 500 ms. A miss there is printed as
 // `[no capture]` beside an `ok`, which is the quiet kind of wrong this sweep exists to
 // avoid, so the slack is bought rather than the margin trusted.
-const KILL_AFTER_MS = DWELL + 12000;
-
-const FAILURE = FAILURE_PATTERN;
 
 /** Every route file, as the manifest's context keys. */
 function routeFiles(dir, prefix = '') {
@@ -108,7 +110,18 @@ function hrefFor(contextKey) {
   if (contextKey in PARAM_VALUES) {
     return '/' + contextKey.replace(/\/\[[^\]]+\]\.tsx$/, `/${PARAM_VALUES[contextKey]}`);
   }
-  if (contextKey.includes('[')) return null;
+  // A DYNAMIC ROUTE WITH NO VALUE IS A FAILURE, not a route to skip. It used to
+  // `return null`, which dropped it from the target list: a new `foo/[id].tsx` swept
+  // nothing, the printed count shrank by one, and the summary still said every route
+  // rendered. The values are a judgement about the app's own sample data, so they have
+  // to be added by hand — and this is where somebody finds out they have to.
+  if (contextKey.includes('[')) {
+    throw new Error(
+      `${contextKey} takes a [param] and PARAM_VALUES has no value for it. Add one — a real id ` +
+        `out of the app's bundled data, because a route that 404s inside its own screen renders a ` +
+        `legitimate empty state and would pass for the wrong reason.`,
+    );
+  }
   const withoutGroups = contextKey
     .replace(/\.tsx$/, '')
     .split('/')
@@ -139,63 +152,43 @@ mkdirSync(CAPTURES, { recursive: true });
 
 let failed = 0;
 for (const [key, href] of targets) {
-  let log = '';
-  try {
-    log = execFileSync(HOST.command, [...HOST.args, BUNDLE], {
-      cwd: APP,
-      encoding: 'utf8',
-      stdio: ['ignore', 'pipe', 'pipe'],
-      timeout: KILL_AFTER_MS,
-      killSignal: 'SIGKILL',
-      env: {
-        ...process.env,
-        CORRECTIV_DESKTOP_ASSETS: resolve(APP, '..', 'mobile'),
-        CORRECTIV_DESKTOP_ROUTE: href,
-        // A PNG per route — the visual half this sweep does not check, but a human
-        // can then flip through.
-        CORRECTIV_DESKTOP_SCREENSHOT: join(CAPTURES, `${key.replaceAll('/', '_')}.png`),
-        CORRECTIV_DESKTOP_SCREENSHOT_DELAY_MS: String(DWELL),
-        // THE CAPTURE MUST NOT END THE OBSERVATION, and this line is the whole
-        // difference between a sweep and a screenshot session. Closing the window on
-        // capture made the process exit at DWELL + ~1.2 s, so anything the app refused
-        // after that was never in the log — measured: `/suche` and `/gespeichert` both
-        // reported `ok` with a capture attached while a run of the SAME bundle without
-        // the capture threw `<TextInput> prop "placeholderTextColor"` and `<FlatList>
-        // prop "contentContainerClassName"`. The screens render first and refuse when
-        // their data arrives, which is later than any capture delay worth waiting for.
-        // So the deadline below bounds the run, not the capture; the cost is that every
-        // route now takes the full KILL_AFTER_MS, and that cost buys the sweep its
-        // subject back.
-        CORRECTIV_DESKTOP_SCREENSHOT_QUIT: '0',
-      },
-    });
-  } catch (error) {
-    // Reaching the deadline throws (`error.killed`), and so does a signal death — which
-    // on the node host is a real possibility, the GI bridge having a known intermittent
-    // lifetime fault. Neither is a failure BY ITSELF, and since the capture no longer
-    // closes the window, the deadline is now the ORDINARY end of a healthy run. The log
-    // decides, so the output is salvaged and read.
-    log = `${error.stdout ?? ''}${error.stderr ?? ''}`;
-  }
+  // `openOnce` is shared with `component-sweep.mjs` and is where the three checks live
+  // that stop a sweep passing on nothing: the bundle exists, a spawn failure that is
+  // not the deadline is fatal, and an empty log is fatal. Its header carries the
+  // measurement — `gjs` off PATH used to print "25 of 25 routes rendered".
+  //
+  // `CORRECTIV_DESKTOP_SCREENSHOT_QUIT: '0'` is the line that matters most in here, and
+  // it is the difference between a sweep and a screenshot session. Closing the window
+  // on capture made the process exit at DWELL + ~1.2 s, so anything the app refused
+  // after that was never in the log — measured: `/suche` and `/gespeichert` both
+  // reported `ok` with a capture attached while a run of the SAME bundle without the
+  // capture threw `<TextInput> prop "placeholderTextColor"` and `<FlatList> prop
+  // "contentContainerClassName"`. The screens render first and refuse when their data
+  // arrives, which is later than any capture delay worth waiting for. So the deadline
+  // bounds the run, not the capture; every route takes the full budget, and that cost
+  // buys the sweep its subject back.
+  const log = openOnce({
+    host: HOST,
+    appDir: APP,
+    killAfterMs: KILL_AFTER_MS,
+    env: {
+      ...process.env,
+      CORRECTIV_DESKTOP_ASSETS: resolve(APP, '..', 'mobile'),
+      CORRECTIV_DESKTOP_ROUTE: href,
+      // A PNG per route — the visual half this sweep does not check, but a human can
+      // then flip through.
+      CORRECTIV_DESKTOP_SCREENSHOT: join(CAPTURES, `${key.replaceAll('/', '_')}.png`),
+      CORRECTIV_DESKTOP_SCREENSHOT_DELAY_MS: String(DWELL),
+      CORRECTIV_DESKTOP_SCREENSHOT_QUIT: '0',
+    },
+  });
 
-  const problems = log
-    .split('\n')
-    .filter((line) => FAILURE.test(line))
-    .slice(0, 2);
+  const problems = refusalsIn(log);
 
-  // Two of FAILURE_PATTERN's alternatives span a newline — an `Error:` line and the
-  // `    at ` frames under it — and a per-line filter can never see either, because a
-  // line contains no newline. So the whole log is tested as well. Without this the
-  // node host's bare stacks, which are the reason those alternatives exist, were
-  // matched by nothing and every run read as clean.
-  const straddles = problems.length === 0 && FAILURE.test(log);
-
-  if (problems.length > 0 || straddles) {
+  if (problems !== null) {
     failed++;
     console.log(`FAIL  ${href}  (${key})`);
-    const shown =
-      problems.length > 0 ? problems : [FAILURE.exec(log)?.[0] ?? '(matched across lines)'];
-    for (const problem of shown) console.log(`        ${problem.trim().slice(0, 180)}`);
+    for (const problem of problems) console.log(`        ${problem.trim().slice(0, 180)}`);
   } else {
     const wrote = /screenshot: wrote (\d+) bytes/.exec(log);
     console.log(

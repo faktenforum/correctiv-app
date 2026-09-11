@@ -68,12 +68,33 @@ const APP = resolve(HERE, '..');
 const SWEEP = join(APP, 'dist', 'sweep');
 const KEPT = join(APP, 'dist', 'captures');
 
-/** `--save <name>` / `--against <name>`, whichever was given. */
+/**
+ * `--save <name>` / `--against <name>`, whichever was given.
+ *
+ * THE NAME IS VALIDATED, and that is not pedantry: `--save` writes into
+ * `dist/captures/<name>` and clears it first with a recursive `rmSync`. A missing value
+ * made the next FLAG the name (`--save --against` saved a baseline called
+ * `--against`), and a name containing `..` walked out of the directory it was supposed
+ * to be confined to — so `--save ../..` would have deleted `dist/` and then
+ * `apps/desktop/`. One path segment, no traversal, no leading dash.
+ */
+function baselineName(raw) {
+  if (raw === undefined || raw.startsWith('-')) {
+    throw new Error('--save and --against need a name, and a flag is not one.');
+  }
+  if (raw === '' || raw === '.' || raw === '..' || raw.includes('/') || raw.includes('\\')) {
+    throw new Error(
+      `"${raw}" is not a baseline name. One path segment, because the directory it names is cleared before it is written.`,
+    );
+  }
+  return raw;
+}
+
 function mode() {
   const save = process.argv.indexOf('--save');
-  if (save !== -1) return { verb: 'save', name: process.argv[save + 1] };
+  if (save !== -1) return { verb: 'save', name: baselineName(process.argv[save + 1]) };
   const against = process.argv.indexOf('--against');
-  if (against !== -1) return { verb: 'against', name: process.argv[against + 1] };
+  if (against !== -1) return { verb: 'against', name: baselineName(process.argv[against + 1]) };
   return null;
 }
 

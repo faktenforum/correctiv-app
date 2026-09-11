@@ -138,10 +138,12 @@ describe('the recovery screen', () => {
     expect(desktop).toContain("from '@/components/recovery/RecoveryScreen'");
   });
 
-  it('wraps the store, not just the screens under it', () => {
-    // ABOVE the Provider, which is what lets it catch a fault in the store's own
-    // construction or in `AppShell`'s hydration effect. Below it, the boundary would
-    // be inside the tree it is supposed to survive.
+  it('wraps the Provider, not just the screens under it', () => {
+    // ABOVE the Provider, so a throw from `Provider`'s own render and from everything
+    // in `AppShell` — the hydration effect, `useAppearance`, the door — reaches it.
+    // NOT the store's construction: `coreStore` is a module-scope `export const`, so
+    // that throws during module evaluation and no boundary catches it. This assertion
+    // used to carry that wrong reason, which is the kind of thing a reader acts on.
     const boundary = desktop.indexOf('<RecoveryBoundary>');
     const provider = desktop.indexOf('<Provider store={coreStore}>');
     expect(boundary).toBeGreaterThan(-1);
