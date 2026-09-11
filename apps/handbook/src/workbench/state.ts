@@ -1,3 +1,4 @@
+import type { ShellAddress } from '../shell/address';
 import { DEFAULT_DEVICE, DEVICES, HOST_DEVICE, preset } from './devices';
 import { TOKENS, type Overrides, type Scheme } from './frame/tokens';
 
@@ -22,16 +23,6 @@ export interface PreviewState {
   theme: ThemeSetting | null;
   /** A storage fixture applied before the frame boots; see `frame/seed.ts`. */
   seed: string | null;
-  /** Whether the tool panels are shown at all. Off is the plain demo. */
-  tools: boolean;
-  /**
-   * The app alone, with the shell's chrome floated away.
-   *
-   * In the address because "look at this without my furniture around it" is a
-   * thing worth handing over as a link, and because it is how the app view opens
-   * on a phone, where the chrome is most of the screen.
-   */
-  full: boolean;
   /** Colour tokens overridden in the frame, per scheme. */
   overrides: Overrides;
   /** Run the measure checks as soon as the frame settles. */
@@ -47,8 +38,6 @@ export const INITIAL: PreviewState = {
   h: preset(DEFAULT_DEVICE).h,
   theme: null,
   seed: null,
-  tools: false,
-  full: false,
   overrides: {},
   check: false,
 };
@@ -66,14 +55,17 @@ function isTheme(value: string | null): value is ThemeSetting {
  *
  * The five original parameters (`d`, `o`, `z`, `w`, `h`) keep their names and
  * their meaning: links written before this package existed still resolve.
+ *
+ * What moved is where the hash is parsed. `shell/address.ts` owns the grammar on
+ * every route now, takes the three parameters that belong to the shell — `tools`,
+ * `open`, `full` — and hands the rest through untouched. So this file no longer
+ * reads a string: it reads what is left, which is exactly the frame's half. That
+ * is what let `tools` and `full` leave `PreviewState`, where they had always been
+ * the two fields that were not about the frame at all.
  */
-export function parseHash(hash: string): PreviewState {
-  const raw = hash.replace(/^#/, '');
-  if (!raw) return INITIAL;
-
-  const cut = raw.indexOf('?');
-  const route = (cut === -1 ? raw : raw.slice(0, cut)) || '/';
-  const p = new URLSearchParams(cut === -1 ? '' : raw.slice(cut + 1));
+export function fromAddress(address: ShellAddress): PreviewState {
+  const route = address.head || '/';
+  const p = address.rest;
 
   const asked = p.get('d') ?? '';
   const device = DEVICES.some((d) => d.id === asked) ? asked : INITIAL.device;
@@ -90,8 +82,6 @@ export function parseHash(hash: string): PreviewState {
     h: Number(p.get('h')) || size.h || INITIAL.h,
     theme: isTheme(theme) ? theme : null,
     seed: p.get('s'),
-    tools: p.has('tools'),
-    full: p.has('full'),
     overrides: parseOverrides(p.get('kl'), p.get('kd')),
     check: p.has('check'),
   };
@@ -127,7 +117,8 @@ function writeOverrides(overrides: Overrides, scheme: Scheme): string {
     .join(',');
 }
 
-export function writeHash(state: PreviewState): string {
+/** The frame's half of the address: the app route, and the five-plus parameters. */
+export function toAddress(state: PreviewState): { head: string; rest: URLSearchParams } {
   const p = new URLSearchParams();
   p.set('d', state.device);
   if (state.landscape) p.set('o', 'l');
@@ -138,14 +129,12 @@ export function writeHash(state: PreviewState): string {
   }
   if (state.theme) p.set('t', state.theme);
   if (state.seed) p.set('s', state.seed);
-  if (state.tools) p.set('tools', '1');
-  if (state.full) p.set('full', '1');
   if (state.check) p.set('check', '1');
   const light = writeOverrides(state.overrides, 'light');
   const dark = writeOverrides(state.overrides, 'dark');
   if (light) p.set('kl', light);
   if (dark) p.set('kd', dark);
-  return `#${state.route || '/'}?${p}`;
+  return { head: state.route || '/', rest: p };
 }
 
 /**

@@ -6,9 +6,12 @@ import type { RenderedDoc } from '../../plugin/markdown.ts';
 import type { ReactNode } from 'react';
 import { CoreAndHost } from '../diagrams/CoreAndHost';
 import { cn } from '../lib/cn';
+import { Slot } from '../shell/slots';
+import { sectionOf } from '../ui/ActivityBar';
 import { Badge } from '../ui/kit/badge';
 import { href } from '../router';
 import { Page } from '../ui/Page';
+import { Toc } from '../ui/Toc';
 
 interface Props {
   doc: RenderedDoc;
@@ -54,33 +57,35 @@ export function Document({ doc }: Props) {
   const record = doc.route.startsWith('/decisions/') ? doc.route.slice(11) : null;
 
   return (
-    <Page>
-      <article ref={article} className="min-w-0">
-        <nav aria-label="Breadcrumb" className="mb-sm max-w-content text-s text-on-canvas-muted">
-          <ol className="flex flex-wrap items-center gap-2xs">
-            <li>Handbook</li>
-            {record && (
-              <>
-                <li aria-hidden="true">/</li>
-                <li>Decisions</li>
-              </>
-            )}
-            <li aria-hidden="true">/</li>
-            <li className="text-on-canvas">{record ? `ADR ${record}` : doc.nav}</li>
-          </ol>
-        </nav>
+    <>
+      <Slot id="contents">
+        <Toc headings={doc.headings} />
+      </Slot>
 
-        {doc.retired.length > 0 && (
-          <p className="mb-m flex max-w-content items-center gap-xs text-m text-on-canvas-muted">
-            <Badge variant="alt">{doc.retired.length} retired</Badge>
-            {doc.retired.length === 1
-              ? 'One claim on this page is'
-              : 'Claims on this page are'}{' '}
-            struck through where they stand, with what voided them beside them.
-          </p>
-        )}
+      <Page>
+        <article ref={article} className="min-w-0">
+          <nav aria-label="Breadcrumb" className="mb-sm max-w-content text-s text-on-canvas-muted">
+            <ol className="flex flex-wrap items-center gap-2xs">
+              {/* The section the rail lights, rather than the word "Handbook",
+                which stopped being true the day a document of the design section
+                was published at `/design/plugin`. */}
+              <li>{sectionOf(doc.route)}</li>
+              <li aria-hidden="true">/</li>
+              <li className="text-on-canvas">{record ? `ADR ${record}` : doc.nav}</li>
+            </ol>
+          </nav>
 
-        {/*
+          {doc.retired.length > 0 && (
+            <p className="mb-m flex max-w-content items-center gap-xs text-m text-on-canvas-muted">
+              <Badge variant="alt">{doc.retired.length} retired</Badge>
+              {doc.retired.length === 1
+                ? 'One claim on this page is'
+                : 'Claims on this page are'}{' '}
+              struck through where they stand, with what voided them beside them.
+            </p>
+          )}
+
+          {/*
           The document, in as many pieces as it has drawings in it, with the
           drawings between them.
           
@@ -90,43 +95,44 @@ export function Document({ doc }: Props) {
           `dangerouslySetInnerHTML` that React owns and may replace under it.
           Splitting the string is the version where React owns every piece.
         */}
-        {parts.map((part, i) =>
-          part.diagram ? (
-            // The figure carries its own top margin; the prose that follows a
-            // drawing starts at zero, because it is the first child of a fresh
-            // `.prose` container. Without this the caption and the next
-            // paragraph butt together.
-            <div key={`d${i}`} className="mb-l">
-              <Diagram id={part.diagram} />
-            </div>
-          ) : (
-            <div
-              key={`h${i}`}
-              className="prose prose-sm max-w-content prose-headings:scroll-mt-8 prose-pre:border prose-pre:border-stroke"
-              dangerouslySetInnerHTML={{ __html: part.html }}
-            />
-          ),
-        )}
+          {parts.map((part, i) =>
+            part.diagram ? (
+              // The figure carries its own top margin; the prose that follows a
+              // drawing starts at zero, because it is the first child of a fresh
+              // `.prose` container. Without this the caption and the next
+              // paragraph butt together.
+              <div key={`d${i}`} className="mb-l">
+                <Diagram id={part.diagram} />
+              </div>
+            ) : (
+              <div
+                key={`h${i}`}
+                className="prose prose-sm max-w-content prose-headings:scroll-mt-8 prose-pre:border prose-pre:border-stroke"
+                dangerouslySetInnerHTML={{ __html: part.html }}
+              />
+            ),
+          )}
 
-        {record && <Neighbours route={doc.route} />}
+          {record && <Neighbours route={doc.route} />}
 
-        <footer className="mt-xl max-w-content border-t border-stroke pt-sm text-m text-on-canvas-muted">
-          <p>
-            This page is{' '}
-            <a
-              href={`${REPO_BLOB}/${doc.file}`}
-              target="_blank"
-              rel="noreferrer noopener"
-              className="inline-flex items-center gap-3xs font-mono text-on-canvas underline decoration-accent underline-offset-2"
-            >
-              {doc.file}
-              <ExternalLink aria-hidden="true" className="size-[0.75rem]" />
-            </a>{' '}
-            in the repository, rendered here. It is not a copy, so there is one place to edit it.
-          </p>
-        </footer>
-      </article>
-    </Page>
+          <footer className="mt-xl max-w-content border-t border-stroke pt-sm text-m text-on-canvas-muted">
+            <p>
+              This page is{' '}
+              <a
+                href={`${REPO_BLOB}/${doc.file}`}
+                target="_blank"
+                rel="noreferrer noopener"
+                className="inline-flex items-center gap-3xs font-mono text-on-canvas underline decoration-accent underline-offset-2"
+              >
+                {doc.file}
+                <ExternalLink aria-hidden="true" className="size-[0.75rem]" />
+              </a>{' '}
+              in the repository, rendered here. It is not a copy, so there is one place to edit it.
+            </p>
+          </footer>
+        </article>
+      </Page>
+    </>
   );
 }
 

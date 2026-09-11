@@ -1,6 +1,6 @@
 # Architecture decisions
 
-Twenty-seven decisions shaped this repo. Read them when you want to know *why* something
+Twenty-eight decisions shaped this repo. Read them when you want to know *why* something
 is the way it is; [`../ARCHITECTURE.md`](../ARCHITECTURE.md) describes *what* it is.
 
 | | Decision | Status |
@@ -31,7 +31,8 @@ is the way it is; [`../ARCHITECTURE.md`](../ARCHITECTURE.md) describes *what* it
 | [0024](0024-the-handbook-owns-the-root.md) | The handbook owns the site root, and the app moves under it | accepted; retires two of 0014's, its argument untouched |
 | [0025](0025-the-published-app-is-a-production-bundle.md) | The published app is a production bundle, and the workbench gives up its handle | accepted; a capability measured and rejected |
 | [0026](0026-react-native-review-and-hardening.md) | The React Native review, and which of it we are doing | accepted; nine decisions, three with a named open item, no ADR superseded, three comments and three sentences of `AGENTS.md` named for later |
-| [0027](0027-the-handbook-draws-the-apps-components.md) | The handbook draws the app's components, and the app's rendering is the one that counts | accepted; retires 0002's decision, three open items named |
+| [0027](0027-the-handbook-draws-the-apps-components.md) | The handbook draws the app's components, and the app's rendering is the one that counts | accepted; retires 0002's decision, two of its own claims retired by 0028, three open items named |
+| [0028](0028-one-shell-and-a-route-that-declares-its-context.md) | One shell, and a route that declares its context | accepted; retires two of 0027's and two code comments, answers #112, three open items named |
 
 Eight notes for readers of the older ones:
 
@@ -74,6 +75,13 @@ dark block really did hold the light values, and `palette.js` really did assign 
 grey by role. wp-design-tokens `8ed7a28` deleted the first and made the second
 unnecessary. 0010's decision — the package is the shared one, the app writes nothing —
 is untouched.
+
+[ADR 0028](0028-one-shell-and-a-route-that-declares-its-context.md) strikes two of
+0027's claims, both of which 0027 wrote knowing the next change would make them false:
+the three-frame cap on the old components page, and "the components page that is built
+around this is the next change and is not here". It is that change. 0027's measurement
+and its argument for a registry that cannot describe something it does not build are
+untouched, and are why the registry now carries a list of *exceptions*.
 
 [ADR 0027](0027-the-handbook-draws-the-apps-components.md) strikes 0002's decision
 line, "Stay on `@nativescript/vite@2.0.3` / Vite 7". Half of it was already moot under

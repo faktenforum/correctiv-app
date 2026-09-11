@@ -1,4 +1,6 @@
 import { Component, useEffect, useState, type ErrorInfo, type ReactNode } from 'react';
+import { SafeAreaProvider } from 'react-native-safe-area-context';
+import { Provider } from 'react-redux';
 import { Uniwind } from 'uniwind';
 
 // The app's own stylesheet, in this document.
@@ -9,11 +11,29 @@ import { Uniwind } from 'uniwind';
 // Two stylesheets, one generator, and `apps/handbook/test/styles.test.ts` is what
 // keeps this package from writing a third colour of its own.
 import '@/global.css';
+import { coreStore } from '@/lib/store/core';
 
-import type { DirectEntry } from './direct';
+import type { DirectSpecimen } from './direct';
 
 /**
- * The three things a component from `apps/mobile` needs before it will draw here.
+ * A device with no notch, stated rather than measured.
+ *
+ * `SafeAreaProvider` measures its own box and renders nothing until it has an
+ * answer, which inside a card is a component that never appears. Handing it
+ * metrics skips the measurement, and zero insets is the truth here: this is a
+ * page, not a phone, and `SafeAreaView` on a page has nothing to avoid. Without
+ * the provider at all, five components throw — `LoginGate`, `RecoveryScreen`,
+ * `Screen`, `ScreenHeader` and `SafeAreaView` all reach `useSafeAreaInsets`,
+ * which refuses rather than defaulting. Measured on 2026-09-11: those five, and
+ * nothing else in the catalogue.
+ */
+const NO_INSETS = {
+  frame: { x: 0, y: 0, width: 393, height: 852 },
+  insets: { top: 0, left: 0, right: 0, bottom: 0 },
+};
+
+/**
+ * The five things a component from `apps/mobile` needs before it will draw here.
  *
  * 1. The app's CSS, imported above.
  * 2. Uniwind's runtime theme, set below — and this is the part that has already
@@ -24,31 +44,62 @@ import type { DirectEntry } from './direct';
  *    very nearly invisible. Uniwind reads the class exactly once, in its own
  *    module constructor, and the site's appearance setting changes afterwards.
  *    ADR 0027 records it; ADR 0008 records the same failure in the NativeWind era.
- * 3. Nothing else. Not a Redux store, not a router, not a `Provider`: those are
- *    runtime preconditions for the components that read them, and neither of the
- *    two drawn here does.
+ * 3. The store, under a `Provider`. ADR 0027 measured that no store is needed to
+ *    *bundle* a component and that `useColors()` reads Uniwind rather than Redux,
+ *    which is why two components shipped without one. It is needed to *mount* the
+ *    thirty-odd that select from a slice — `MiniPlayer` reads `audio`, `ClubCard`
+ *    reads `session` — and react-redux throws rather than degrading when there is
+ *    no Provider above them. This is `apps/mobile`'s own instance, not a second
+ *    one: the components' bound actions (`useCoreActions`) are bound to it.
+ * 4. A safe-area provider, above.
+ * 5. The ports, which are nobody's here. `packages/app-core`'s default platform is
+ *    `createMemoryPlatform()`, so a thunk that reaches for storage or the bundle
+ *    gets an empty answer instead of throwing. Nothing in a specimen dispatches
+ *    one, and a component that started a fetch on mount would degrade rather than
+ *    fail.
  */
 export function DirectPreview({
-  entry,
-  ground = 'canvas',
+  specimens,
+  ground,
+  width,
+  labels = true,
 }: {
-  entry: DirectEntry;
-  /** Which of the app's two grounds to stand the specimen on. */
-  ground?: 'canvas' | 'surface';
+  specimens: readonly DirectSpecimen[];
+  /** Which of the app's two grounds to stand the specimens on. */
+  ground: 'canvas' | 'surface';
+  /** A CSS pixel cap on the drawing's column: a device width, or a card's own. */
+  width?: number;
+  /** Off on a card, where the component is the whole of what there is room for. */
+  labels?: boolean;
 }) {
   useUniwindFollowsTheSite();
 
   return (
-    <div
-      className={`rounded-md border border-stroke ${ground === 'surface' ? 'bg-surface' : 'bg-canvas'}`}
-    >
-      {entry.specimens.map((specimen) => (
-        <div className="border-b border-stroke p-s last:border-b-0" key={specimen.label}>
-          <p className="mb-2xs font-mono text-s text-on-canvas-muted">{specimen.label}</p>
-          <SpecimenBoundary label={specimen.label}>{specimen.node}</SpecimenBoundary>
+    <Provider store={coreStore}>
+      <SafeAreaProvider initialMetrics={NO_INSETS}>
+        <div
+          style={width === undefined ? undefined : { maxWidth: width }}
+          className={ground === 'surface' ? 'bg-surface' : 'bg-canvas'}
+        >
+          {specimens.map((specimen) => (
+            <div className="p-s" key={specimen.label}>
+              {labels && (
+                <p className="mb-2xs font-mono text-s text-on-canvas-muted">{specimen.label}</p>
+              )}
+              {/*
+                A component that fills a screen has no height of its own inside a
+                block box and collapses to nothing. The app's own gallery boxes the
+                same specimens to the same `height`, which is why the number is the
+                catalogue's rather than this file's.
+              */}
+              <div style={specimen.height === undefined ? undefined : { height: specimen.height }}>
+                <SpecimenBoundary label={specimen.label}>{specimen.node}</SpecimenBoundary>
+              </div>
+            </div>
+          ))}
         </div>
-      ))}
-    </div>
+      </SafeAreaProvider>
+    </Provider>
   );
 }
 
@@ -90,7 +141,8 @@ function siteTheme(): 'light' | 'dark' | 'system' {
  *
  * `ui/Boundary.tsx` is keyed by route and replaces the whole view; a component
  * that throws while being drawn must not take the page it is being explained on
- * with it.
+ * with it. It is also how `NOT_DRAWN` is measured: a component that lands here
+ * is one this site cannot draw, and the message says why.
  */
 class SpecimenBoundary extends Component<
   { children: ReactNode; label: string },

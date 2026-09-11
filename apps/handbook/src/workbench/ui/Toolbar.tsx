@@ -9,7 +9,7 @@ import { Tooltip, TooltipContent, TooltipTrigger } from '../../ui/kit/tooltip';
 import { Pages } from './Pages';
 import { DEVICES, HOST_DEVICE } from '../devices';
 import { ROUTES } from '../routes';
-import { frameSize, writeHash, type PreviewState } from '../state';
+import { frameSize, type PreviewState } from '../state';
 import type { Status } from '../api';
 
 /** The context bar's one field shape, so its selects and inputs agree. */
@@ -237,12 +237,14 @@ export function Toolbar({ state, routeField, onRouteField, onChange, onReload, o
  * current view, which is what that line is for, and a second row under the header
  * would have pushed the frame down.
  *
- * `store.set()` has already written this hash with `replaceState`, so the line
- * shows the browser's own address rather than a second rendering of the state
- * that could drift from it. The values are picked out because the point of it is
- * that a knob moved and the link changed with it.
+ * The hash is handed over rather than derived here, and it is the shell's whole
+ * hash: `shell/address.ts` has already written it with `replaceState`, and it
+ * carries the panel's own `tools` and `open` beside the frame's parameters. So
+ * this line shows the browser's address rather than a second rendering of half
+ * the state that could drift from it. The values are picked out because the
+ * point of it is that a knob moved and the link changed with it.
  */
-export function LinkBar({ state }: { state: PreviewState }) {
+export function LinkBar({ hash }: { hash: string }) {
   const [copied, setCopied] = useState(false);
 
   useEffect(() => {
@@ -251,7 +253,6 @@ export function LinkBar({ state }: { state: PreviewState }) {
     return () => window.clearTimeout(id);
   }, [copied]);
 
-  const hash = writeHash(state);
   const cut = hash.indexOf('?');
   const route = hash.slice(1, cut === -1 ? undefined : cut);
   const params = cut === -1 ? [] : hash.slice(cut + 1).split('&');

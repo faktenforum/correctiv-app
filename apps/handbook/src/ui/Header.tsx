@@ -66,8 +66,17 @@ export function Header({
           own, so a view that needs no controls costs no height. It is allowed to
           wrap: at 1024px the app view's controls are about forty pixels wider
           than the room left for them, and a control pushed off the end of a bar
-          is a control nobody knows is missing. */}
-      <div className="flex min-w-0 flex-1 flex-wrap items-center">{children}</div>
+          is a control nobody knows is missing.
+
+          Below 640 it takes a row of its own instead, and takes it last. A view
+          that keeps its bar in the header at that width — `narrow: 'page'`, the
+          design and workbench views — otherwise pushes the mark and the icons
+          into a second row in whatever order they happen to fall: measured at
+          390px on `/design`, the mark ended up under the "Open in Figma" button,
+          which reads as a broken header rather than as a wrap. */}
+      <div className="flex min-w-0 flex-1 flex-wrap items-center max-sm:order-last max-sm:basis-full max-sm:pt-4xs">
+        {children}
+      </div>
 
       <Button
         variant="outline"

@@ -17,6 +17,14 @@ interface Props {
   frameRef: RefObject<HTMLIFrameElement | null>;
   onResize: (size: { w: number; h: number }) => void;
   onLoad: () => void;
+  /**
+   * Whether to print the sentence under the frame that says what this view is.
+   *
+   * The demo audience's, and not the inspector audience's. It used to be read off
+   * `state.tools` and `state.full`, which are the shell's now and not the frame's,
+   * so the page that knows both decides and this one draws.
+   */
+  hint: boolean;
 }
 
 type Axes = 'x' | 'y' | 'xy';
@@ -40,7 +48,7 @@ type Axes = 'x' | 'y' | 'xy';
  * surface rather than a white box on a white page, which is what it looked like
  * without it.
  */
-export function Stage({ state, size, scale, stageRef, frameRef, onResize, onLoad }: Props) {
+export function Stage({ state, size, scale, stageRef, frameRef, onResize, onLoad, hint }: Props) {
   const { w, h } = size;
   const host = state.device === HOST_DEVICE;
   const right = useRef<HTMLDivElement>(null);
@@ -173,7 +181,7 @@ export function Stage({ state, size, scale, stageRef, frameRef, onResize, onLoad
         phone-sized screen is a third of the room the app has, spent explaining
         controls that are one tap away.
       */}
-      {!state.tools && !state.full && (
+      {hint && (
         <p className="mx-auto hidden max-w-[42rem] shrink-0 px-m pb-m text-center text-m text-on-canvas-muted lg:block">
           This is the app at device size. Pick a device or a route in the bar above; the address in
           the status line reproduces exactly what you see. Open the Tools sidebar, ⌘J, for the

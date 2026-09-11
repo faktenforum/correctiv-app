@@ -186,7 +186,7 @@ equivalents for focus, liveness and errors.
   `screens/tools/serve-clean.mjs`.
 
   **Any other frame has to do the same, and `about:blank` answers every question
-  wrongly on the way.** `/components` draws each component in its own frame
+  wrongly on the way.** `/components/<group>/<name>` draws its component in a frame
   (`workbench/AppFrame.tsx`), so the mechanism above is shared rather than copied, and
   getting there cost three measurements on 2026-09-10. A frame whose `src` is set by
   script fires `about:blank`'s `load` before the app's, and even on the app's the
@@ -397,7 +397,7 @@ equivalents for focus, liveness and errors.
   everything crosses (ADR 0014), and this is the exception: the scheme travels as a
   class on the *document's* root element, and the framed app has a root element of its
   own. Both sides default to `'system'`, so they agree until a reader picks light or
-  dark on one of them — and then `/components` drew a black phone on a white page,
+  dark on one of them — and then the reference drew a black phone on a white page,
   which is the app's own default against a dark device and the combination this file
   already calls the one that ships broken. There is no handle to dispatch through in
   the published export, and seeding `settings` would clobber whatever the reader had

@@ -7,9 +7,12 @@ Status: accepted, 2026-09-11.
 `/components` in the handbook lists all 47 components of `apps/mobile` with their
 props, their prose and their source link, and shows none of them. To see one, a
 reader opens a row and the page boots the **whole app** in an iframe, at phone width,
-three at a time ([`src/lib/rows.ts`](../apps/handbook/src/lib/rows.ts) says why three).
+~~three at a time (`src/lib/rows.ts` says why three)~~. Voided by
+[ADR 0028](0028-one-shell-and-a-route-that-declares-its-context.md): there are no
+frames on that page at all any more, and the file with the cap in it is deleted.
 A frame always carries a viewport, so what a reader gets for `Hairline` — a one-pixel
-line — is a 393 px phone with a line somewhere on it.
+line — is a 393 px phone with a line somewhere on it. That observation is the reason
+for both records and is untouched.
 
 The obvious alternative is for the handbook to import the component and render it in
 its own React tree. The handbook is Vite and React; the app is Expo, React Native and
@@ -163,9 +166,15 @@ fails `vite build`, so there is no manifest to keep in step. `direct-ids.ts` bes
 it holds the ids as plain data, and typing the registry as `Record<DirectId, …>` is
 what stops the two from drifting.
 
-`ui/Card` and `ui/Hairline` ship in it, which is the proof and nothing more. The
+~~`ui/Card` and `ui/Hairline` ship in it, which is the proof and nothing more.~~ ~~The
 components page that is built around this — cards, a detail route, the switch between
-the two renderings — is the next change and is not here.
+the two renderings — is the next change and is not here.~~ Both voided by
+[ADR 0028](0028-one-shell-and-a-route-that-declares-its-context.md), which is that
+change: the registry's roster is the app's own `gallery/catalogue.tsx` now, so all 45
+entries are drawn rather than two, and `direct.tsx` holds the exceptions instead of
+the members. The argument above it — that the registry is the measurement rather than
+a description of one — is why the exceptions are a list and not a manifest, and is
+untouched.
 
 **Where the two renderings disagree, the app's is right.** The handbook's is a second
 build of the same source with a different bundler; it exists so a reader can see a

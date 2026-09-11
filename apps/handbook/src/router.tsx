@@ -24,8 +24,18 @@ export function href(route: string): string {
   return `${BASE}${route === '/' ? '/' : route}`;
 }
 
-export function navigate(route: string): void {
-  window.history.pushState(null, '', href(route));
+/**
+ * `replace` for a redirect nobody asked for by name.
+ *
+ * `/components?c=ui/Card` is the address the app's gallery links back with, and
+ * this site answers it by sending the reader to that component's own page. Pushed,
+ * the back button would land them on the overview, which would immediately
+ * redirect them forward again: a trap, from a link that was only ever a
+ * translation between two vocabularies.
+ */
+export function navigate(route: string, options?: { replace?: boolean }): void {
+  const state = options?.replace ? window.history.replaceState : window.history.pushState;
+  state.call(window.history, null, '', href(route));
   window.dispatchEvent(new PopStateEvent('popstate'));
 }
 
@@ -41,6 +51,16 @@ export function useRoute(): [string, (route: string) => void] {
 
   useEffect(() => {
     const onPop = () => setRoute(currentPath());
+    /*
+     * Read the address again on the way in, because something may have moved it
+     * before this listener existed. A page's effects run before its parent's, and
+     * `/components` redirects `?c=ui/Card` to that component's own page from one
+     * of them: the `popstate` it dispatched landed with nobody listening, so the
+     * address said one route and the shell went on drawing another. Measured on
+     * 2026-09-11 — the URL was `/components/ui/SectionCard` and the page was the
+     * overview, with no error anywhere.
+     */
+    onPop();
     window.addEventListener('popstate', onPop);
     return () => window.removeEventListener('popstate', onPop);
   }, []);

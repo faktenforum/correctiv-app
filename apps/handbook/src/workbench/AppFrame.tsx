@@ -83,9 +83,9 @@ export function loadedTheAddress(win: Window | null): boolean {
  * This origin's storage, or nothing.
  *
  * Reading the property is what throws when site data is switched off, so it
- * cannot be done inside `holdTheDoorOpen` — and a page of 46 rows must not fail
- * to render because one frame could not seed a session. `theme.ts` guards its own
- * two calls for the same reason.
+ * cannot be done inside `holdTheDoorOpen` — and a page must not fail to render
+ * because one frame could not seed a session. `theme.ts` guards its own two calls
+ * for the same reason.
  */
 function ownStorage(): Storage | null {
   try {
@@ -101,29 +101,39 @@ function ownStorage(): Storage | null {
  * `Workbench.tsx` is the tool: device sizes, appearance, storage fixtures, the
  * console, the measure checks, all carried in its address. This is the other
  * thing a frame is for, which is to draw one screen where the text about it
- * stands, and `/components` is the reader it was written for. It shares the
- * three parts of the mechanism that are hard to get right rather than copying
- * them: where the app answers, how to reach a route in a development build, and
- * how to get past the door.
+ * stands, and `/components/<group>/<name>` is the reader it was written for. It
+ * shares the three parts of the mechanism that are hard to get right rather than
+ * copying them: where the app answers, how to reach a route in a development
+ * build, and how to get past the door.
  *
  * Why a frame and not a component rendered in place: the components are React
  * Native, and this package compiles none of it. The app's own bundle is the only
  * thing that can draw them, and an iframe is how this page borrows it.
  *
  * Mounted by the caller, only when something has asked for it. One frame boots
- * the whole app bundle, so a page with 46 rows on it must not hold 46.
+ * the whole app bundle, and the overview of forty-five components holds none:
+ * the frame is on the detail route, where a device has room to be a device
+ * (ADR 0028).
  */
 export function AppFrame({
   route,
   title,
-  height = 520,
+  size,
+  scale = 1,
 }: {
   /** An app route, with its query if it takes one: `/gallery?c=ui/Button`. */
   route: string;
   /** Names the frame for a screen reader, which cannot see what is in it. */
   title: string;
-  /** In pixels. The width is a phone's, or the container's if that is narrower. */
-  height?: number;
+  /**
+   * The device, in CSS pixels. A frame always carries a viewport, so the size is
+   * the caller's choice rather than a number in here: `/components/<group>/<name>`
+   * offers the presets in `workbench/devices.ts`, which is the whole reason the
+   * frame lives on a detail route and not on a card three hundred pixels wide.
+   */
+  size: { w: number; h: number };
+  /** Drawn smaller to fit the box it stands in, the way `ui/Stage.tsx` does. */
+  scale?: number;
 }) {
   const ref = useRef<HTMLIFrameElement>(null);
   const [state, setState] = useState<'booting' | 'drawn' | 'stuck'>('booting');
@@ -194,30 +204,45 @@ export function AppFrame({
   }, [route]);
 
   return (
+    /*
+      Two boxes, because a scaled element still occupies its unscaled space. The
+      outer one is the room the frame takes on the page; the inner one is the
+      device, scaled from its own top left so the two agree. `ui/Stage.tsx` does
+      the same thing for the same reason.
+    */
     <div
-      className="relative mt-s w-[393px] max-w-full overflow-hidden rounded-md border border-stroke bg-canvas"
-      style={{ height }}
+      className="relative shrink-0 overflow-hidden"
+      style={{ width: size.w * scale, height: size.h * scale }}
     >
-      {state !== 'drawn' && (
-        // A live region, because the frame it covers is what a reader is waiting
-        // for and "did not load" arrives six seconds after they stopped looking.
-        // `output` and not `p role="status"`: oxlint asks for the element whose
-        // implicit role that is, and the two are the same announcement.
-        <output className="absolute inset-0 grid place-items-center px-s text-center text-s text-on-canvas-muted">
-          {state === 'booting'
-            ? 'Booting the app…'
-            : 'The app did not load. The workbench has its console.'}
-        </output>
-      )}
-      {/* eslint-disable-next-line react/iframe-missing-sandbox */}
-      <iframe
-        ref={ref}
-        title={title}
-        /* No `sandbox`: `allow-same-origin` would have to be in it for the two
+      <div
+        className="absolute left-0 top-0 overflow-hidden rounded-md border border-stroke bg-canvas"
+        style={{
+          width: size.w,
+          height: size.h,
+          transform: `scale(${scale})`,
+          transformOrigin: 'top left',
+        }}
+      >
+        {state !== 'drawn' && (
+          // A live region, because the frame it covers is what a reader is waiting
+          // for and "did not load" arrives six seconds after they stopped looking.
+          // `output` and not `p role="status"`: oxlint asks for the element whose
+          // implicit role that is, and the two are the same announcement.
+          <output className="absolute inset-0 grid place-items-center px-s text-center text-s text-on-canvas-muted">
+            {state === 'booting'
+              ? 'Booting the app…'
+              : 'The app did not load. The workbench has its console.'}
+          </output>
+        )}
+        {/* eslint-disable-next-line react/iframe-missing-sandbox */}
+        <iframe
+          ref={ref}
+          title={title}
+          /* No `sandbox`: `allow-same-origin` would have to be in it for the two
            lines below to work at all, and with `allow-scripts` beside it on a
            same-origin document the attribute grants what it appears to withhold.
            `ui/Stage.tsx` carries the long version of this argument. */
-        /* The frame follows THIS page's appearance, which is the one thing about
+          /* The frame follows THIS page's appearance, which is the one thing about
            it a reader can set and the app in it cannot see. `color-scheme` on an
            embedding element is what `prefers-color-scheme` resolves to inside the
            document, so these two classes reach across the origin the class on
@@ -229,8 +254,9 @@ export function AppFrame({
            default, `'system'`, which is what a reader of this page has. Without it
            the reference drew a black phone on a white page whenever the two
            disagreed, and that is the app's own default against a dark device. */
-        className="block h-full w-full border-0 scheme-light dark:scheme-dark"
-      />
+          className="block h-full w-full border-0 scheme-light dark:scheme-dark"
+        />
+      </div>
     </div>
   );
 }
