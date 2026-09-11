@@ -96,6 +96,22 @@ describe('the shell’s contract with its pages', () => {
   });
 
   /**
+   * A declaration nothing can fill is four empty boxes, and only the route knows.
+   *
+   * `/components/ui/NotAThing` matched the component view on its shape alone, so
+   * the shell opened a panel with `Rendering`, `Device`, `Props` and `Source` in
+   * it and a blank status line, while the page returned early with a sentence.
+   * The assertion above about pages and slots cannot see that: the slots are in
+   * the file, and the render never reached them.
+   */
+  it('answers a component the app has not got with the not-found view', () => {
+    const has = (group: string, name: string) => `${group}/${name}` === 'ui/Card';
+
+    expect(resolveView('/components/ui/Card', false, has).view.kind).toBe('component');
+    expect(resolveView('/components/ui/NotAThing', false, has).view.kind).toBe('not-found');
+  });
+
+  /**
    * The collision this pair exists for.
    *
    * `/sources` is a board built from the manifest and `SOURCES.md` is the record

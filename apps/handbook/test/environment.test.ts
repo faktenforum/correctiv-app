@@ -121,11 +121,16 @@ describe('the app’s environment, borrowed rather than reproduced', () => {
  * is `apps/handbook`, so it compiled this same stylesheet against the wrong tree
  * and emitted only the utilities it happened to write itself.
  *
- * Measured on 2026-09-11 against the assembled site: 39 of the app's classes were
- * missing. `flex-row` was one, so every row in every drawn component stood on end
- * as a column; `bg-always-dark` was another, so `home/CalloutTeaser` and
+ * Measured on 2026-09-11 against the assembled site: dozens of the app's classes
+ * were missing. `flex-row` was one, so every row in every drawn component stood on
+ * end as a column; `bg-always-dark` was another, so `home/CalloutTeaser` and
  * `media/LiveBanner` were white text on no ground at all. Both builds were green
  * and the page rendered.
+ *
+ * The count is not asserted and the two names above no longer reproduce it, which
+ * is the same fact twice: Tailwind scans this file as source, so naming a class in
+ * a comment generates it. `apps/mobile/src/global.css` carries the long version.
+ * What is asserted is the line, which is the thing that can go missing.
  */
 describe('the app’s stylesheet', () => {
   it('declares the tree its own class names are written in', () => {

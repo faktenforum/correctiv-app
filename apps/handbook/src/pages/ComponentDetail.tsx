@@ -83,32 +83,35 @@ export function ComponentDetail({
   const size = preset(device);
   const scale = fitScale(box, size, FRAME_ROOM);
 
-  if (rows.length === 0) {
-    return (
-      <div className="mx-auto max-w-content px-m py-2xl">
-        <h1 className="text-headline-l font-semibold">No component called {id}</h1>
-        <p className="mt-s text-on-canvas-muted">
-          The app has no <code className="font-mono">{name}</code> in{' '}
-          <code className="font-mono">{group}</code>.{' '}
-          <a
-            className="text-on-canvas underline decoration-accent underline-offset-2"
-            href={href('/components')}
-          >
-            Every component it does have
-          </a>{' '}
-          is one page back.
-        </p>
-      </div>
-    );
-  }
-
+  /*
+   * There is always a row here: `resolveView` only answers with this view for a
+   * `group/name` the reference has, so an address that names nothing is the
+   * not-found view and never reaches this file. That check is there rather than
+   * here because the panel is declared before the page renders — returning early
+   * from this component left the route's four sections on screen with nothing in
+   * any of them.
+   */
   const first = rows[0];
   /** Narrow and not full: no room for a device frame, so it gets a door. */
   const asPage = !wide && !full;
 
   return (
     <>
-      <div className={cn('stage-grid flex flex-col bg-canvas', full ? 'h-dvh' : 'h-full')}>
+      {/*
+        `h-full` only where this view owns the height. Narrow it does not: the
+        sections are rendered after the page, so the column scrolls as one and a
+        stage that filled the viewport and scrolled inside itself would be a
+        second scroller in it — the specimens caught in a 688px box that a reader
+        has to get past before the props are reachable. Measured at 390px on
+        2026-09-11, `ui/Typo`: the page scrolled 2,669px and the stage inside it
+        3,584px. `pages/Design.tsx` makes the same split for the same reason.
+      */}
+      <div
+        className={cn(
+          'stage-grid flex flex-col bg-canvas',
+          full ? 'h-dvh' : asPage ? 'min-h-[60dvh]' : 'h-full',
+        )}
+      >
         {!full && (
           <nav aria-label="Breadcrumb" className="shrink-0 px-m py-s text-s text-on-canvas-muted">
             <ol className="flex flex-wrap items-center gap-2xs">
@@ -146,7 +149,7 @@ export function ComponentDetail({
             that reaches for a primitive where it meant a semantic token looks
             right on exactly one of the two, and right on both in light mode.
           */
-          <div className="min-h-0 flex-1 overflow-auto p-m">
+          <div className={cn('min-h-0 flex-1 p-m', !asPage && 'overflow-auto')}>
             <div className="mx-auto" style={{ maxWidth: size.w === 0 ? undefined : size.w }}>
               {entry.specimens.map((specimen) => (
                 <section key={specimen.label} className="mb-m last:mb-0">
@@ -193,10 +196,20 @@ export function ComponentDetail({
 
       <Slot id="context-bar">
         <div className="flex min-w-0 flex-1 flex-wrap items-center gap-2xs">
+          {/*
+            The gallery, and not this component in it, because the workbench
+            cannot carry a query on the app's route: `shell/address.ts` splits the
+            hash at the first `?`, so everything after it is a parameter, and
+            `workbench/state.ts` writes back only the ten it knows. A
+            `#/gallery?c=ui/Card` therefore arrives as `#/gallery` and the frame
+            opens the whole gallery. Measured on 2026-09-11 — the link said the
+            component's name and the frame's address was `/app/gallery`, with
+            nothing anywhere to say so. The label is what the link does.
+          */}
           <Button variant="outline" size="sm" asChild>
-            <a href={`${href('/workbench')}#/gallery?c=${id}&d=${device}`}>
+            <a href={`${href('/workbench')}#/gallery?d=${device}`}>
               <ExternalLink aria-hidden="true" />
-              In the workbench
+              The gallery in the workbench
             </a>
           </Button>
           <Tooltip>

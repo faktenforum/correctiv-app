@@ -1,5 +1,6 @@
 import { Fragment, useEffect, useRef, useState, type ReactNode } from 'react';
 
+import api from 'virtual:api';
 import docsModule from 'virtual:docs';
 import { DIAGRAMS } from './diagrams';
 import { ComponentDetail } from './pages/ComponentDetail';
@@ -38,7 +39,20 @@ import { cn } from './lib/cn';
 import { useMedia, WIDE } from './lib/useMedia';
 import { PAGE_TITLES } from './nav';
 import { useAppearance } from './theme';
-import { useLinkInterception, useRoute } from './router';
+import { href, useLinkInterception, useRoute } from './router';
+
+/**
+ * Every `group/name` the app has, built once, for `resolveView`.
+ *
+ * One `Set` rather than a search through the groups on every render, and at
+ * module scope because the reference is generated at build time and cannot move
+ * while the page is open.
+ */
+const COMPONENT_IDS = new Set(
+  api.components.groups.flatMap((group) => group.components.map((c) => `${group.name}/${c.name}`)),
+);
+
+const hasComponent = (group: string, name: string) => COMPONENT_IDS.has(`${group}/${name}`);
 
 /**
  * One application, not a site with a tool bolted to the side of it.
@@ -66,7 +80,7 @@ export function App() {
   const [settingsOpen, setSettingsOpen] = useState(false);
 
   const doc = docsModule.docs.find((d) => d.route === route);
-  const { view, params } = resolveView(route, doc !== undefined);
+  const { view, params } = resolveView(route, doc !== undefined, hasComponent);
   const [address, setAddress] = useAddress(view);
   useLinkInterception();
 
@@ -376,6 +390,20 @@ function NotFound({ route }: { route: string }) {
         The handbook publishes the repository&apos;s own documents. This address matches none of
         them. Press <kbd className="font-mono">⌘K</kbd> to search.
       </p>
+      {/* The one family that lands here by being renamed rather than by being
+          typed wrong, so it gets the way back that a bare 404 cannot give. */}
+      {route.startsWith('/components/') && (
+        <p className="mt-s text-on-canvas-muted">
+          The app has no such component.{' '}
+          <a
+            className="text-on-canvas underline decoration-accent underline-offset-2"
+            href={href('/components')}
+          >
+            Every component it does have
+          </a>{' '}
+          is one page back.
+        </p>
+      )}
     </div>
   );
 }

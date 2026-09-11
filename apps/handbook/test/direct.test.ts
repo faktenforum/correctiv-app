@@ -149,7 +149,10 @@ describe('the components overview', () => {
     // 47 specimens settle at their own speeds. A preview area sized by its
     // content would reflow the grid under a reader who was already reading it,
     // which is the failure the button used to hide by never drawing at all.
-    expect(PAGE).toMatch(/className="stage-grid relative h-\[11rem\] shrink-0/);
+    // The height and nothing else about the class list: an assertion on the whole
+    // string reddens when somebody reorders three utilities, which teaches people
+    // to edit the test rather than to read it.
+    expect(PAGE).toMatch(/h-\[11rem\]/);
   });
 
   it('keeps the state a component this site cannot draw explains itself in', () => {

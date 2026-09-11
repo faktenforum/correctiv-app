@@ -10,6 +10,19 @@ const RETRY = 200;
 const GIVE_UP = 6_000;
 
 /**
+ * The device's outline, which is NOT part of the device.
+ *
+ * Tailwind's preflight makes every box `border-box`, so a 1px border on an
+ * element sized `393` leaves 391 for what is inside it — and what is inside it
+ * here is the app's whole window. Measured on 2026-09-11 on the built site: the
+ * frame said `393 × 852` in its own readout and `innerWidth` inside it was 391,
+ * on this route and in the workbench alike. Two pixels is nothing to look at and
+ * everything to a preview whose one job is to be the size it claims, so the
+ * outline is added to the stated size rather than taken out of it.
+ */
+export const OUTLINE = 2;
+
+/**
  * Whether the route has to be handed to the app's router, or the address will do.
  *
  * The one build-time question this file asks, and it is the honest form of it. A
@@ -212,13 +225,13 @@ export function AppFrame({
     */
     <div
       className="relative shrink-0 overflow-hidden"
-      style={{ width: size.w * scale, height: size.h * scale }}
+      style={{ width: (size.w + OUTLINE) * scale, height: (size.h + OUTLINE) * scale }}
     >
       <div
         className="absolute left-0 top-0 overflow-hidden rounded-md border border-stroke bg-canvas"
         style={{
-          width: size.w,
-          height: size.h,
+          width: size.w + OUTLINE,
+          height: size.h + OUTLINE,
           transform: `scale(${scale})`,
           transformOrigin: 'top left',
         }}

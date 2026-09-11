@@ -240,16 +240,29 @@ export const PAGE_ROUTES: readonly string[] = Object.keys(EXACT);
 /**
  * Which view a route is, and what it was given.
  *
- * `isDocument` is passed in rather than read, so this file imports no virtual
- * module and a test can call it with a list it built itself.
+ * `isDocument` and `hasComponent` are passed in rather than read, so this file
+ * imports no virtual module and a test can call it with lists it built itself.
  *
  * Exact matches first, then the two families with a segment under them, then the
  * documents. The order is what lets `/design` be a page and `/design/plugin` a
  * document without either shadowing the other; `test/shell.test.ts` holds that
  * pair specifically, because the last time a page and a document wanted one
  * address the document simply left the site with no error anywhere.
+ *
+ * **A component the app has not got is not the component view.** The declaration
+ * is what the shell believes before the page renders, so an address like
+ * `/components/ui/NotAThing` used to open a panel with `Rendering`, `Device`,
+ * `Props` and `Source` in it and nothing inside any of them, plus a blank status
+ * line — four empty boxes behind four titles, which is what a declaration costs
+ * when nothing can fill it. `test/shell.test.ts` reads the page files as text and
+ * cannot see that, because the slots are in the file and the render returned
+ * before them. Asking here is where the question can be answered once.
  */
-export function resolveView(route: string, isDocument: boolean): ResolvedView {
+export function resolveView(
+  route: string,
+  isDocument: boolean,
+  hasComponent: (group: string, name: string) => boolean = () => true,
+): ResolvedView {
   const exact = EXACT[route];
   if (exact) return { view: VIEWS[exact], params: {} };
 
@@ -259,7 +272,7 @@ export function resolveView(route: string, isDocument: boolean): ResolvedView {
 
   if (route.startsWith('/components/')) {
     const [group, name, ...rest] = route.slice('/components/'.length).split('/');
-    if (group && name && rest.length === 0) {
+    if (group && name && rest.length === 0 && hasComponent(group, name)) {
       return { view: VIEWS.component, params: { group, name } };
     }
   }

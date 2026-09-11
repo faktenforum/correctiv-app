@@ -1,6 +1,7 @@
 import { useEffect, useRef, type RefObject } from 'react';
 
 import { cn } from '../../lib/cn';
+import { OUTLINE } from '../AppFrame';
 import { HOST_DEVICE } from '../devices';
 import type { PreviewState } from '../state';
 
@@ -42,6 +43,13 @@ type Axes = 'x' | 'y' | 'xy';
  * Nothing is injected into the frame for sizing, deliberately: measured at
  * 393px, the app reports `innerWidth` 393 and `clientWidth` 393, so no desktop
  * scrollbar is eating layout width and there is nothing to compensate for.
+ *
+ * That is true of the frame and it was not true of the box around it. Tailwind's
+ * preflight makes every box `border-box`, so the device's 1px outline came out of
+ * the width it was given: measured on 2026-09-11 on the built site, a frame
+ * reading `393 × 852` handed the app `innerWidth` 391. `OUTLINE` in
+ * `workbench/AppFrame.tsx` says the rest; the outline is added to the stated size
+ * here for the same reason.
  *
  * The graph-paper ground is `stage-grid`, the one piece of decoration in
  * `styles/app.css`. It is there so the frame reads as a thing standing on a
@@ -103,7 +111,10 @@ export function Stage({ state, size, scale, stageRef, frameRef, onResize, onLoad
         container puts the top out of reach.
       */}
       <div ref={stageRef} className="relative flex min-h-0 flex-1 overflow-auto p-m">
-        <div className="relative m-auto shrink-0" style={{ width: w * scale, height: h * scale }}>
+        <div
+          className="relative m-auto shrink-0"
+          style={{ width: (w + OUTLINE) * scale, height: (h + OUTLINE) * scale }}
+        >
           {/*
           The ground behind the app while it boots. Only a pinned dark setting is
           known here without reading the frame, and reading the frame is the
@@ -118,8 +129,8 @@ export function Stage({ state, size, scale, stageRef, frameRef, onResize, onLoad
             className="overflow-hidden rounded-md border border-stroke-strong bg-white text-neutral-700 shadow-lg"
             data-app-scheme={state.theme === 'dark' ? 'dark' : undefined}
             style={{
-              width: w,
-              height: h,
+              width: w + OUTLINE,
+              height: h + OUTLINE,
               transform: `scale(${scale})`,
               transformOrigin: 'top left',
             }}

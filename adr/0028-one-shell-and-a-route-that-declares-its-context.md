@@ -169,7 +169,7 @@ this same change, and the brake outlived the thing it was braking.
 
 **What a drawing costs now is a React mount, and the bytes are already paid.**
 `src/components/direct.tsx` imports `apps/mobile`'s catalogue statically, so every
-one of the 47 components is in the chunk the page loads whether or not anybody
+one of the 45 components is in the chunk the page loads whether or not anybody
 presses anything. A button that gates a mount while the download has already
 happened does not save the reader the cost; it only tells them there is one. **A
 control that gates nothing misrepresents what it costs to look**, and it asks 47
@@ -481,9 +481,14 @@ other views while they were open, and the shell owns it on all of them now.
 
 **The "Drawn here" filter currently filters nothing**, because `NOT_DRAWN` is empty
 and all forty-five draw. It is kept because it is the control that finds the
-minority whichever way the number goes, and the count beside it — "45 folders, 47
+minority whichever way the number goes, and the count beside it — "11 folders, 47
 components, 47 drawn here" — is computed rather than typed, so the page never claims
-a number it did not count. If the list stays empty for long, the segment is the thing
+a number it did not count. Two numbers run through this record and they are not the
+same number: **45** is the components, which is what the catalogue holds and what
+`/components/<group>/<name>` publishes a page for, and **47** is the rows the
+reference has, because `reader/ReaderView` and `media/VideoFrame` are each a `.tsx`
+and a `.web.tsx`. The grid draws one card per row, so it is 47 cards of 45
+components. If the list stays empty for long, the segment is the thing
 to delete, not the mechanism behind it.
 
 **The status line's default is one line of prose and one exception.** `/design`

@@ -1,16 +1,6 @@
 import { readdirSync, readFileSync } from 'node:fs';
 import { join, resolve } from 'node:path';
 
-/** Every source file under a directory, so a new one is checked without being listed. */
-function sources(dir: string, out: string[] = []): string[] {
-  for (const entry of readdirSync(dir, { withFileTypes: true })) {
-    const path = join(dir, entry.name);
-    if (entry.isDirectory()) sources(path, out);
-    else if (/\.tsx?$/.test(entry.name)) out.push(path);
-  }
-  return out;
-}
-
 import { describe, expect, it } from 'vitest';
 
 import { ROOT } from '../../plugin/collect.ts';
@@ -26,6 +16,16 @@ import {
   holdTheDoorOpen,
   SEEDED_KEY,
 } from '../../src/workbench/frame/seed';
+
+/** Every source file under a directory, so a new one is checked without being listed. */
+function sources(dir: string, out: string[] = []): string[] {
+  for (const entry of readdirSync(dir, { withFileTypes: true })) {
+    const path = join(dir, entry.name);
+    if (entry.isDirectory()) sources(path, out);
+    else if (/\.tsx?$/.test(entry.name)) out.push(path);
+  }
+  return out;
+}
 
 /**
  * The shell writes the app's storage directly, so it has to know four things the
