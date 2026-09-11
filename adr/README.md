@@ -1,12 +1,12 @@
 # Architecture decisions
 
-Twenty-six decisions shaped this repo. Read them when you want to know *why* something
+Twenty-seven decisions shaped this repo. Read them when you want to know *why* something
 is the way it is; [`../ARCHITECTURE.md`](../ARCHITECTURE.md) describes *what* it is.
 
 | | Decision | Status |
 | --- | --- | --- |
 | [0001](0001-monorepo-and-platform-free-core.md) | A monorepo with a platform-free core, and why the directory is `app-core` | accepted |
-| [0002](0002-vite-8-rolldown-evaluation.md) | Stay on Vite 7 — Rolldown silently drops the NativeScript polyfills | moot since 0007; kept for the measurement |
+| [0002](0002-vite-8-rolldown-evaluation.md) | Stay on Vite 7 — Rolldown silently drops the NativeScript polyfills | moot since 0007; its decision struck by 0027; kept for the measurement |
 | [0003](0003-audio-capability-spike.md) | What the audio stack can and cannot do, measured on a device | accepted |
 | [0004](0004-react-native-pivot.md) | Move to React Native / Expo, with a web target | accepted |
 | [0005](0005-react-native-over-nativescript.md) | Expo is the stack; what NativeScript was better at, and when to revisit | accepted, amended by 0006, carried out by 0007 |
@@ -31,6 +31,7 @@ is the way it is; [`../ARCHITECTURE.md`](../ARCHITECTURE.md) describes *what* it
 | [0024](0024-the-handbook-owns-the-root.md) | The handbook owns the site root, and the app moves under it | accepted; retires two of 0014's, its argument untouched |
 | [0025](0025-the-published-app-is-a-production-bundle.md) | The published app is a production bundle, and the workbench gives up its handle | accepted; a capability measured and rejected |
 | [0026](0026-react-native-review-and-hardening.md) | The React Native review, and which of it we are doing | accepted; nine decisions, three with a named open item, no ADR superseded, three comments and three sentences of `AGENTS.md` named for later |
+| [0027](0027-the-handbook-draws-the-apps-components.md) | The handbook draws the app's components, and the app's rendering is the one that counts | accepted; retires 0002's decision, three open items named |
 
 Eight notes for readers of the older ones:
 
@@ -73,6 +74,12 @@ dark block really did hold the light values, and `palette.js` really did assign 
 grey by role. wp-design-tokens `8ed7a28` deleted the first and made the second
 unnecessary. 0010's decision — the package is the shared one, the app writes nothing —
 is untouched.
+
+[ADR 0027](0027-the-handbook-draws-the-apps-components.md) strikes 0002's decision
+line, "Stay on `@nativescript/vite@2.0.3` / Vite 7". Half of it was already moot under
+0007, but 0002 was still the only record in here saying which bundler this project
+runs, and the answer had changed without one. Its measurement — a bundler dropping a
+polyfill and staying green — is untouched and is why the record is kept.
 
 [ADR 0015](0015-reading-correctiv-org-through-its-rest-api.md) retires the CORS item
 in 0006 and four claims in the top-level docs. Read its last section for the list; the
