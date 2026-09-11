@@ -60,4 +60,22 @@ describe('the site’s routes', () => {
     expect(detail).toContain('<AppFrame');
     expect(overview).not.toContain('AppFrame');
   });
+
+  /**
+   * The Figma frame is third-party, and a browser that partitions third-party
+   * state hands it a jar with no Figma session in it. The frame then draws the
+   * sign-in screen to a reader who is signed in one tab over, and the Storage
+   * Access API is the way out of that — but a sandboxed frame may not even call it
+   * without this token. Reported from a reader's console on 2026-09-11.
+   *
+   * Asserted because the attribute reads like a list of permissions to trim, and
+   * this one grants nothing on its own: it lets the frame ask, and the reader
+   * answers.
+   */
+  it('lets the Figma frame ask for its own cookies', () => {
+    const design = readFileSync(join(ROOT, 'apps/handbook/src/pages/Design.tsx'), 'utf8');
+    const attribute = design.match(/sandbox="([^"]+)"/)?.[1];
+    expect(attribute).toBeDefined();
+    expect(attribute?.split(' ')).toContain('allow-storage-access-by-user-activation');
+  });
 });
