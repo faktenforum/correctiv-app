@@ -131,7 +131,7 @@ check could see.
 | `test/routes.test.ts` | a page shadowing a document, which removes it from the site with no error |
 | `test/styles.test.ts` | a colour value written here instead of taken from `packages/design-tokens`, which forks the palette invisibly, and the entry stylesheet importing the theme without the variants that choose between light and dark |
 | `test/toolchain.test.ts` | the repository root hoisting a Vite older than this package's, which makes a plugin configure the wrong bundler and say nothing useful about it |
-| `test/direct.test.ts` | a drawn component that no longer exists, one reached through a barrel that drags Expo in behind it, and the loss of the `Uniwind.setTheme` call that keeps a drawing following the site's appearance |
+| `test/direct.test.ts` | a drawn component that no longer exists, one reached through a barrel that drags Expo in behind it, a plugin order that leaves every drawing unpainted, and the two ways the appearance setting stops reaching a drawing — no `Uniwind.setTheme` call at all, or one fed from the class Uniwind itself writes |
 
 ## Colour
 

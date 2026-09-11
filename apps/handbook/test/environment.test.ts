@@ -9,6 +9,24 @@ const HANDBOOK = join(ROOT, 'apps/handbook');
 const APP = join(ROOT, 'apps/mobile');
 
 const PREVIEW = readFileSync(join(HANDBOOK, 'src/components/DirectPreview.tsx'), 'utf8');
+
+/**
+ * The same source with its prose taken out.
+ *
+ * The assertions below are about what this file DOES, and a file that explains why
+ * it no longer calls something has to be able to name the thing it no longer calls.
+ * Without this, the docblock saying "applying it is the app's business, not this
+ * file's" fails the check that this file does not apply it — which is the comment
+ * being punished for being accurate. Block comments and whole comment lines only,
+ * so a `//` inside a string is left where it is.
+ */
+function code(source: string): string {
+  return source
+    .replace(/\/\*[\s\S]*?\*\//g, '')
+    .split('\n')
+    .filter((line) => !/^\s*(\/\/|\*)/.test(line))
+    .join('\n');
+}
 const ENVIRONMENT = readFileSync(join(APP, 'src/lib/env/AppEnvironment.tsx'), 'utf8');
 const ENV_FONTS = readFileSync(join(APP, 'src/lib/env/fonts.ts'), 'utf8');
 const LAYOUT = readFileSync(join(APP, 'src/app/_layout.tsx'), 'utf8');
@@ -40,12 +58,10 @@ describe('the app’s environment, borrowed rather than reproduced', () => {
     // Each of these was in this file, and each is now the app's answer rather
     // than a second one. A host that needs something new from the environment
     // adds it to the environment, where the app gets it too.
-    expect(PREVIEW).not.toMatch(/from 'react-redux'/);
-    expect(PREVIEW).not.toMatch(/from 'react-native-safe-area-context'/);
-    expect(PREVIEW).not.toMatch(/Uniwind\.setTheme/);
-    // At the start of a line, so the sentence in this file's own docblock saying
-    // that the import used to be here does not count as the import being here.
-    expect(PREVIEW).not.toMatch(/^import '@\/global\.css'/m);
+    expect(code(PREVIEW)).not.toMatch(/from 'react-redux'/);
+    expect(code(PREVIEW)).not.toMatch(/from 'react-native-safe-area-context'/);
+    expect(code(PREVIEW)).not.toMatch(/Uniwind\.setTheme/);
+    expect(code(PREVIEW)).not.toMatch(/import '@\/global\.css'/);
   });
 
   it('is the same environment the app itself starts in', () => {

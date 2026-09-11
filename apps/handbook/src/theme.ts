@@ -14,7 +14,7 @@ const KEY = 'handbook:appearance';
  * which is what lets `prefers-color-scheme` decide.
  */
 export function useAppearance(): [Appearance, (next: Appearance) => void] {
-  const [appearance, setAppearance] = useState<Appearance>(read);
+  const [appearance, setAppearance] = useState<Appearance>(storedAppearance);
 
   useEffect(() => {
     // A class, not an attribute, because that is what the token package's `light`
@@ -36,7 +36,17 @@ export function useAppearance(): [Appearance, (next: Appearance) => void] {
   return [appearance, useCallback((next: Appearance) => setAppearance(next), [])];
 }
 
-function read(): Appearance {
+/**
+ * The setting as the reader last left it, which is the only reading of it that
+ * cannot have been written by something else.
+ *
+ * Exported because `components/DirectPreview.tsx` needs the same answer and must
+ * not get it from the class on `<html>`: Uniwind writes that class itself, and a
+ * reader of it would mistake Uniwind's output for the reader's choice. The class
+ * says which scheme is on screen; this says which of the three the reader asked
+ * for, and only for "system" are those two different questions.
+ */
+export function storedAppearance(): Appearance {
   try {
     const stored = localStorage.getItem(KEY);
     if (stored === 'light' || stored === 'dark') return stored;

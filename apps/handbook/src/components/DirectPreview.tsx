@@ -25,6 +25,7 @@ import { View } from 'react-native';
 import { AppEnvironment } from '@/lib/env/AppEnvironment';
 import type { ThemeSetting } from '@/lib/theme';
 
+import { storedAppearance } from '../theme';
 import type { DirectSpecimen } from './direct';
 
 /**
@@ -109,44 +110,41 @@ export function DirectPreview({
 }
 
 /**
- * The site's appearance, read off `<html>` and handed to the app to apply.
+ * The site's appearance setting, handed to the app to apply.
  *
- * Read off the class rather than taken as a prop, because `theme.ts`'s
- * `useAppearance` is `useState` held in `App.tsx` and a second call to it would
- * be a second, independent setting. The class is the one thing both halves can
- * see: `dark` or `light` when the reader chose one, neither when the setting is
- * "System" — which is the app's `'system'`, Uniwind's own adaptive mode following
- * `prefers-color-scheme`. That is the fourth combination in TROUBLESHOOTING.md,
- * and the one that has shipped broken before.
+ * **Taken from the stored setting, not from the class on `<html>`, and that is
+ * measured rather than stylistic.** Uniwind writes that class itself:
+ * `setTheme('system')` resolves the device scheme once and stamps the answer back
+ * on the root as an explicit `light` or `dark`. A reader of the class therefore
+ * reads Uniwind's own output, mistakes it for the reader's choice, and pins the
+ * site to whichever scheme the device had when the page loaded. Measured on the
+ * built site on 2026-09-11, setting on System, device light, then the device
+ * switched to dark while the page was open: `/components` stayed white while `/`
+ * and `/architecture` went dark. The class says what is on screen; the setting
+ * says what was asked for, and `'system'` is the one value where those differ.
  *
- * **Read here and applied there.** A `.dark` class on `<html>` flips the CSS
- * variables and leaves `useUniwind().theme` at `light`, so a component that reads
- * a colour in TypeScript keeps the light value on a dark page. Measured on
- * 2026-09-11: `canvas` went to `#1a1a1a` while `Typo`'s colour stayed at `#333`,
- * which is very nearly invisible. Uniwind reads the class exactly once, in its
- * own module constructor, and the site's appearance setting changes afterwards.
- * ADR 0027 records it; ADR 0008 records the same failure in the NativeWind era.
- * The call that fixes it is `lib/theme/appearance.ts`'s, in the app, where the
- * app's own setting reaches Uniwind through the same line.
+ * So `storedAppearance()` is the value and the class change is only the signal
+ * that it moved — `theme.ts` writes both, in that order, and nothing else writes
+ * the stored one. Taken from there rather than as a prop because `useAppearance`
+ * is `useState` held in `App.tsx`, and a second call to it would be a second,
+ * independent setting.
+ *
+ * Applying it is the app's business, not this file's: `AppEnvironment` hands it to
+ * `useGivenAppearance`, which is the one line in the repository that calls
+ * `Uniwind.setTheme`. That hook also re-resolves `'system'` when the device scheme
+ * moves, which is the fourth combination in TROUBLESHOOTING.md and the one that
+ * has shipped broken before.
  */
 function useSiteAppearance(): ThemeSetting {
-  const [appearance, setAppearance] = useState(siteTheme);
+  const [appearance, setAppearance] = useState<ThemeSetting>(storedAppearance);
 
   useEffect(() => {
-    const root = document.documentElement;
-    const observer = new MutationObserver(() => setAppearance(siteTheme()));
-    observer.observe(root, { attributeFilter: ['class'] });
+    const observer = new MutationObserver(() => setAppearance(storedAppearance()));
+    observer.observe(document.documentElement, { attributeFilter: ['class'] });
     return () => observer.disconnect();
   }, []);
 
   return appearance;
-}
-
-function siteTheme(): ThemeSetting {
-  const classes = document.documentElement.classList;
-  if (classes.contains('dark')) return 'dark';
-  if (classes.contains('light')) return 'light';
-  return 'system';
 }
 
 /**

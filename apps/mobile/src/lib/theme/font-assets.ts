@@ -3,11 +3,16 @@
  *
  * Apart from the root layout nothing in the app needs the files; what components
  * need is the family *name*, which is `fontFamilyFor()` in `./fonts` and a plain
- * string. Splitting the two is not tidiness: `@expo-google-fonts/*` resolves to
- * a React Native asset registration, `./fonts` is re-exported by `lib/theme`'s
- * barrel, and every component that writes `import { useColors } from '@/lib/theme'`
- * therefore used to pull Expo's font loader in behind it. That chain is what kept
- * the handbook from building a single component of this app with Vite (ADR 0027).
+ * string. Splitting the two is not tidiness, and it is not a build fix either:
+ * `@expo-google-fonts/*` is a `require()` of a `.ttf`, which Metro registers as
+ * an asset and a plain bundler emits as a file, so both toolchains cope. What it
+ * costs is size, and the size is absurd. The package's entry re-exports every cut
+ * it ships — light through black, italics included — and a `require()` of a file
+ * is a side effect no tree shaker will drop. Measured on 2026-09-11 by building
+ * `<Typo>` alone outside Metro: **19,828 kB of `.ttf` against 424 kB** once this
+ * module left the barrel. `./fonts` is re-exported by `lib/theme`'s barrel, so
+ * every component that writes `import { useColors } from '@/lib/theme'` was
+ * carrying all of it (ADR 0027).
  *
  * So this module is deliberately NOT in the barrel. `app/_layout.tsx` imports it
  * by path, and it is the only thing that should.

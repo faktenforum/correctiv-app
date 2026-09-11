@@ -10,7 +10,8 @@
 > **And the rejection itself is void since
 > [ADR 0027](0027-the-handbook-draws-the-apps-components.md) (2026-09-11):** Vite 8
 > and Rolldown are what `apps/handbook` builds with, and what the repository root
-> resolves. The decision line below is struck; nothing else here is.
+> resolves. The status above and the decision line below are struck; nothing else
+> here is.
 
 ## Context
 

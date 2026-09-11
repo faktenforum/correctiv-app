@@ -43,7 +43,8 @@ over JSX inside CommonJS. Vite 8 is the stricter of the two. The seven that surv
 it unaided were `media/VideoFrame`, `media/VideoFrame.web`, `player/ProgressBar`,
 `reader/ReaderView`, `reader/ReaderView.web`, `ui/Card` and `ui/Hairline`.
 
-**The recipe is three things, and there is no fourth.**
+**The recipe is two things, and there is no third.** Both are necessary; neither
+alone gets past 7.
 
 1. **`vite-plugin-rnw` 0.0.12**, which strips the Flow that Rolldown refuses, treats
    `.js` in `react-native*`/`expo*` as JSX, and defines `__DEV__` and the rest of the
@@ -51,19 +52,22 @@ it unaided were `media/VideoFrame`, `media/VideoFrame.web`, `player/ProgressBar`
    Vite setup prescribes. Pre-1.0, and accepted knowingly: what it does is
    mechanical, it is 400 lines, and the alternative is doing the same work here.
 2. **`.web.*` ahead of the bare extensions in `resolve.extensions`.** Metro's
-   platform split, spelled out. `react-native-safe-area-context` ships
-   `SafeAreaView.web.js` and `NativeSafeAreaProvider.web.js` beside native files, and
-   without the order it resolves the native ones. The plugin carries a list of its
-   own and it is not enough: a plugin's `config()` result is appended to the user's,
-   arrays concatenate, and a bare `.js` written at the config level wins. Measured
-   twice — by the first run of this recipe, which reported 7 of 47 with the plugin
-   and a bare-first list, and again on 2026-09-11 by shortening the list with the
-   plugin in place: `ui/SafeAreaView`, `ui/Screen` and `ui/ScreenHeader` fail on
-   `[UNLOADABLE_DEPENDENCY] Could not load react-native-web/Libraries/Utilities/codegenNativeComponent`,
-   from a spec file only the native half reaches.
-3. **Breaking the `@expo-google-fonts` chain out of `@/lib/theme`.** See below.
+   platform split, spelled out. Two packages in the tree ship a web file beside a
+   native one: `react-native-safe-area-context` (`SafeAreaView.web.js`,
+   `NativeSafeAreaProvider.web.js`) and `react-native-screens`
+   (`DebugContainer.web.js`). Without the order Vite resolves the native ones. The
+   plugin carries a list of its own and it is not enough: a plugin's `config()`
+   result is appended to the user's, arrays concatenate, and a bare `.js` written at
+   the config level wins. Measured twice — by the first run of this recipe, which
+   reported 7 of 47 with the plugin and a bare-first list, and again on 2026-09-11 by
+   shortening the list with the plugin in place. **Both times 7 of 47**, which is the
+   unaided number: this is half the recipe, not a trim on it. The forty failures are
+   `[UNLOADABLE_DEPENDENCY] Could not load react-native-web/Libraries/Utilities/codegenNativeComponent`
+   and `…/Libraries/ReactNative/AppContainer`, from spec files only the native halves
+   reach, and the seven survivors are the seven that import neither package.
 
-No stub. Not the store, not the router, not the webview.
+No stub. Not the store, not the router, not the webview, and — measured, against an
+earlier draft of this record that said otherwise — not the fonts either.
 
 ### And one thing the count cannot see
 
@@ -102,16 +106,30 @@ routes, which again is a runtime question.
 **The webview is not one.** `VideoFrame` and `ReaderView` both build while importing
 `react-native-webview`, and both were among the seven that built before the recipe.
 
-### The font chain, which was a wall
+### The font chain, which was not a wall, and is 19 MB
 
-`apps/mobile/src/lib/theme/index.ts` re-exported `./fonts`, and `fonts.ts` imported
-`@expo-google-fonts/merriweather` and `@expo-google-fonts/source-sans-3`. Those
-resolve to React Native asset registrations, which only Metro can answer. `lib/theme`
-is the app's most-imported module — every `useColors`, every typography constant —
-so **every component in the app had Expo's font loader in its import graph** to reach
-a colour token.
+This record's first draft called the `@expo-google-fonts` chain the third part of the
+recipe and said the handbook could build nothing until it was cut. **That was wrong,
+and it was wrong in the direction that flatters the change.** Re-measured on
+2026-09-11 by restoring `main`'s `fonts.ts` and re-running the script: **47 of 47
+still build.** `@expo-google-fonts/merriweather/400Regular` is one line,
+`require('./Merriweather_400Regular.ttf')`; Metro answers it from its asset registry
+and an ordinary bundler emits the file. Neither is stuck.
 
-What a component actually wants from that module is a family *name*, which is a plain
+What the chain costs is size, and the size is the reason to cut it anyway. The
+package's entry re-exports every cut it ships — 300 through 900, italics included —
+and a `require()` of a file is a side effect no tree shaker will drop, so all of them
+are emitted whatever a component asked for. Measured the same day by building
+`<Typo>` alone against this recipe:
+
+| `@expo-google-fonts` reachable from `@/lib/theme` | the bundle |
+|---|---|
+| yes, as on `main` | **19,828 kB**, of which about 19,400 kB is `.ttf` |
+| no, after the split | **424 kB** |
+
+`lib/theme` is the app's most-imported module — every `useColors`, every typography
+constant — so that was every component in the app, to reach a colour token. What a
+component actually wants from that module is a family *name*, which is a plain
 string. So `fonts.ts` keeps the names and `fontFamilyFor()`, a new `font-assets.ts`
 holds the five files, the barrel does not re-export it, and ~~`app/_layout.tsx` — the
 only consumer of `fontAssets`, verified against the whole tree — imports it by path.~~
@@ -121,6 +139,10 @@ through it; voided by [ADR 0028](0028-one-shell-and-a-route-that-declares-its-co
 loads the same five files by loading the app's own environment. There is still exactly
 one importer, which is the fact this paragraph is about.
 `__tests__/web-target.test.ts` fails if any of those three facts stops being true.
+
+Nothing about this reaches the app: Metro deduped the cuts already, so the phone
+never paid the 19 MB and does not now save it. It is a fact about the second
+bundler, which is what this record is about.
 
 ### The `ui` barrel, which is the same shape one level up
 
@@ -215,12 +237,30 @@ browser walk. This is that defect, from the other side, in a second host. Nothin
 this repository's checks would catch it, because every mechanism involved is working
 correctly; they are simply two mechanisms.
 
-`DirectPreview.tsx` therefore reads the class off `<html>` — `dark`, `light`, or
-neither, which is the "System" setting — and calls `Uniwind.setTheme()` with it,
-`'system'` included, which is Uniwind's own adaptive mode. It reads the class rather
-than taking a prop because `theme.ts`'s `useAppearance` is `useState` held in
-`App.tsx`, and a second call to it would be a second, independent setting.
-`test/direct.test.ts` fails if the call disappears.
+`DirectPreview.tsx` therefore calls `Uniwind.setTheme()` with the site's setting,
+`'system'` included, which is Uniwind's own adaptive mode. `test/direct.test.ts`
+fails if the call disappears.
+
+**And the obvious way to get that setting is a second bug.** The first version read
+the class off `<html>` — `dark`, `light`, or neither for "System" — because that is
+the one thing `theme.ts` and this file can both see without `useAppearance` being
+called twice. But `setTheme('system')` resolves the device scheme *once* and then
+stamps its answer back onto `<html>` as an explicit `light` or `dark`. A reader of
+the class reads that stamp, calls it the reader's choice, and hands it back as an
+explicit theme — and Uniwind stops following the device. Measured on the built site
+on 2026-09-11, setting on System, device light, then the device switched to dark
+with the page open:
+
+| page | after the device goes dark |
+|---|---|
+| `/` and `/architecture` | `<html>` gets `dark`, ground `#1a1a1a` — correct |
+| `/components`, class-reading version | `<html>` gets **`light`**, ground stays `#ffffff` |
+
+A stale class on the root element pins the whole site, chrome included, not just the
+drawing. So the value comes from `storedAppearance()` in `theme.ts` — the one reading
+of the setting that only `theme.ts` writes — and the class change is used as nothing
+but the signal that it moved. "System" is re-applied on a `prefers-color-scheme`
+change, because Uniwind resolves it once.
 
 **So the appearance matrix is not optional for this change.** All four, measured on
 the built site with `Card` drawn, on 2026-09-11:
@@ -231,6 +271,12 @@ the built site with `Card` drawn, on 2026-09-11:
 | System | **dark** | `#1a1a1a` | `#1a1a1a` | `#f2f2f2` |
 | Light | dark | `#ffffff` | `#ffffff` | `#333333` |
 | Dark | light | `#1a1a1a` | `#1a1a1a` | `#f2f2f2` |
+
+**Four is not the whole matrix, which is how the bug above survived it.** Every row
+here is a page *loaded* in that combination, and the class-reading version passes all
+four: it resolves correctly once and then stops. The fifth case is the device scheme
+moving while the page is open, on the System setting, and that is the only one that
+caught it. Load the page, then change the scheme.
 
 The second row is the default on both halves and the one that has already shipped
 broken. Note that the device scheme was emulated for this table, which is legitimate
@@ -250,8 +296,9 @@ theme from the call above. `apps/handbook/test/styles.test.ts` still refuses a
 literal colour anywhere in this package, which is what keeps a third palette from
 appearing.
 
-**The site's bundle grew.** 1,181.59 kB to 1,392.09 kB (gzip 362.83 to 435.72), and
-the stylesheet 68.22 kB to 74.49 kB, for two components. That is react-native-web,
+**The site's bundle grew.** 1,181.59 kB to 1,396.25 kB (gzip 362.83 to 437.11), and
+the stylesheet 68.22 kB to 74.49 kB, for two components. Both halves re-measured on
+2026-09-11, the first by building `main`'s handbook. That is react-native-web,
 Uniwind's runtime and — through `Typo` → `@/lib/theme` → `appearance.ts` — the core's
 store. It is not per component; the next forty-five are close to free.
 
@@ -281,18 +328,32 @@ paragraph guessed — Chrome substitutes its *standard* face for an unmatched fa
 which is a serif, so the whole interface drew in Times and every bold string drew at
 regular weight, this app having one loaded family per cut.
 
-**`vite-plugin-rnw` is pre-1.0** and has one maintainer. If it goes away, its two
-loads of work — Flow removal and the React Native defines — are reproducible here in
-well under a hundred lines, and this ADR names them for that reason.
+**`vite-plugin-rnw` is pre-1.0** and has one maintainer, and it is now in the path of
+every published build of this site, not only of the drawings. `^0.0.12` is an exact
+pin — npm's caret allows nothing above a `0.0.x` patch — and CI installs from the
+lockfile, so a future release cannot reach the site without somebody's commit. The
+exposure is the plugin being abandoned, not it changing under us.
+
+If it goes away, **three** loads of work have to be replaced, and the third is easy to
+miss: Flow removal, the React Native defines, and `@vitejs/plugin-react`, which the
+site's config no longer adds of its own because `rnw()` ends with one. The handbook's
+own JSX goes through it too, so dropping the plugin stops this package compiling
+itself, not merely the app's components. `@vitejs/plugin-react` is still a declared
+dependency here, which is what makes putting it back one line. The first two are
+reproducible in well under a hundred lines, and this ADR names them for that reason.
 
 **Which components are worth drawing** is a different question from which ones build.
 All 47 build; `direct.tsx` has two. The rest arrive with the page built for them.
 
 ## What this retires
 
-[ADR 0002](0002-vite-8-rolldown-evaluation.md), its decision line: **"Stay on
-`@nativescript/vite@2.0.3` / Vite 7."** **Struck in place.** The NativeScript half of
-that sentence was already moot under
+[ADR 0002](0002-vite-8-rolldown-evaluation.md), two statements, **struck in place**:
+
+- its status, **"rejected for now, revisit"** — the revisiting happened, and a reader
+  taking that line at face value would think this repository does not run Vite 8;
+- its decision line, **"Stay on `@nativescript/vite@2.0.3` / Vite 7."**
+
+The NativeScript half of that sentence was already moot under
 [ADR 0007](0007-removing-the-nativescript-host.md); the Vite half was not, and it was
 still the only ADR in the repository saying anything about which Vite this project
 runs. `apps/handbook` has built with Vite 8 and Rolldown since 2026-09, and after
