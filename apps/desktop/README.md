@@ -20,7 +20,8 @@ this host as a reason for two decisions; this is that host, built.
 
 | | |
 | --- | --- |
-| **Routes** | 26 route files (24 openable hrefs + 2 layouts). **24 of 24 rendered** when last swept — 2026-09-04, on macOS under the node host, which is also the first sweep of a non-Linux target. The three routes that used to loop on a deep link are among them; see [*The deep-link loop*](#the-deep-link-loop-fixed-upstream-and-now-measured). |
+| **Routes** | 26 route files (25 openable hrefs + 2 layouts). **25 of 25 rendered** when last swept, 2026-09-11, on Linux under the GJS host. The three routes that used to loop on a deep link are among them; see [*The deep-link loop*](#the-deep-link-loop-fixed-upstream-and-now-measured). The last sweep of the node host was 2026-09-04 on macOS, at 24 of 24, which is also the only sweep of a non-Linux target. |
+| **Components** | **45 of 45 rendered**, same day, same host. This is the phone's own catalogue opened here, and it is what found the four refusals below: the route sweep reported every one of those routes `ok`. |
 | **The vertical slice** | Start → Artikel → Reader, working, over WebKitGTK. |
 | **Audio** | Working, on GStreamer. Position advances, live streams are detected, and the port's re-entrancy contract holds. |
 | **Chrome** | Adwaita's own. `Stack` is an `Adw.NavigationView`, `Tabs` an `Adw.ViewStack` + `Adw.ViewSwitcher` — moving to an `Adw.ViewSwitcherBar` at the bottom when the window is too narrow to show it, which is the phone's tab bar on a Linux phone. Nothing restyles a header bar or a button. |
