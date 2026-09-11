@@ -84,6 +84,7 @@ export function resolveHref(
   from: string,
   routes: Map<string, string>,
   blobBase: string,
+  base: string,
 ): LinkTarget {
   if (/^[a-z][a-z0-9+.-]*:/i.test(href) || href.startsWith('//')) return { href, external: true };
   if (href.startsWith('#')) return { href, external: false };
@@ -93,9 +94,22 @@ export function resolveHref(
 
   const resolved = posix.normalize(posix.join(posix.dirname(from), rawPath)).replace(/^\.\//, '');
   const route = routes.get(resolved);
-  if (route) return { href: route + hash, external: false };
+  // The prefix, not the bare route. This HTML is handed to the document as a
+  // string, so it never passes `router.tsx`'s `href()`, which is what adds the
+  // prefix everywhere else. Without it a link in a document reads `/decisions/0021`
+  // and lands at the domain root — on a project site that is somebody else's
+  // address, and `useLinkInterception` deliberately ignores it, because a path
+  // outside the base is not this site's to answer. Both halves of that are correct
+  // and the result was a 404 on every internal link in every document, but only
+  // once published: locally the base is `/` and the bug cannot appear.
+  if (route) return { href: prefix(base) + route + hash, external: false };
 
   return { href: `${blobBase}/${resolved}${hash}`, external: true };
+}
+
+/** Vite's base without its trailing slash, so `/` contributes nothing. */
+function prefix(base: string): string {
+  return base.replace(/\/$/, '');
 }
 
 function splitHash(href: string): [string, string] {
@@ -232,6 +246,7 @@ export function renderDoc(
   markdown: string,
   routes: Map<string, string>,
   blobBase: string,
+  base: string,
 ): RenderedDoc {
   const headings: Heading[] = [];
   const seen = new Map<string, number>();
@@ -279,7 +294,7 @@ export function renderDoc(
        * serve.
        */
       image(token: Tokens.Image) {
-        const target = resolveHref(token.href, source.file, routes, blobBase);
+        const target = resolveHref(token.href, source.file, routes, blobBase, base);
         const src = target.external
           ? target.href.replace(`${REPO_BLOB_SEGMENT}/`, '/raw/')
           : target.href;
@@ -287,7 +302,7 @@ export function renderDoc(
         return `<img src="${escapeAttr(src)}" alt="${escapeAttr(token.text)}"${title} loading="lazy" />`;
       },
       link(token: Tokens.Link) {
-        const target = resolveHref(token.href, source.file, routes, blobBase);
+        const target = resolveHref(token.href, source.file, routes, blobBase, base);
         const text = this.parser.parseInline(token.tokens);
         const title = token.title ? ` title="${escapeAttr(token.title)}"` : '';
         const rel = target.external ? ' target="_blank" rel="noreferrer noopener"' : '';

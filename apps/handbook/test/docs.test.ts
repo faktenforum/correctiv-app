@@ -64,6 +64,39 @@ describe('link rewriting', () => {
     const unresolved = links.filter((l) => /^(\.|[^/:#]+\.md)/.test(l.href));
     expect(unresolved.map((l) => `${l.from} -> ${l.href}`)).toEqual([]);
   });
+
+  it('carries the base path into every link a document makes to this site', () => {
+    // This shipped. A document's HTML is handed to the page as a string, so it
+    // never passes `router.tsx`'s `href()`, which is what puts the prefix on every
+    // other link — and `useLinkInterception` ignores a path outside the base on
+    // purpose, because such a path is not this site's to answer. So every internal
+    // link in every document was a real navigation to the domain root, which on a
+    // project site is somebody else's address: `/decisions/0021` instead of
+    // `/correctiv-app/decisions/0021`, and a 404 for each one.
+    //
+    // Invisible in development, where the base is `/` and the two spellings are the
+    // same string. Hence a base that is not `/`.
+    const based = collectDocs('/correctiv-app/').module.docs;
+    const internal = based.flatMap((doc) =>
+      [...doc.html.matchAll(/<a href="([^"]+)"/g)]
+        .map((m) => m[1])
+        .filter((href) => href.startsWith('/'))
+        .map((href) => ({ from: doc.route, href })),
+    );
+    expect(internal.length).toBeGreaterThan(20);
+    const unprefixed = internal.filter((l) => !l.href.startsWith('/correctiv-app/'));
+    expect(unprefixed.map((l) => `${l.from} -> ${l.href}`)).toEqual([]);
+  });
+
+  it('adds nothing when the site is served from the root', () => {
+    // The other half: `/` must contribute no prefix, or every link would start
+    // `//decisions`, which a browser reads as a host.
+    const rooted = collectDocs('/').module.docs;
+    const doubled = rooted.flatMap((doc) =>
+      [...doc.html.matchAll(/<a href="(\/\/[^"]*)"/g)].map((m) => `${doc.route} -> ${m[1]}`),
+    );
+    expect(doubled).toEqual([]);
+  });
 });
 
 describe('retired claims', () => {

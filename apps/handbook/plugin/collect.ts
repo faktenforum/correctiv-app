@@ -51,7 +51,7 @@ export interface DocsModule {
  * broken, which is the failure this repository's troubleshooting notes are
  * mostly about.
  */
-export function collectDocs(): { module: DocsModule; files: string[] } {
+export function collectDocs(base = '/'): { module: DocsModule; files: string[] } {
   const adrs = adrFiles();
   const routes = routeMap(adrs);
   const sha = commit();
@@ -66,7 +66,7 @@ export function collectDocs(): { module: DocsModule; files: string[] } {
   ];
 
   const docs = sources.map((source) =>
-    renderDoc(source, readFileSync(join(ROOT, source.file), 'utf8'), routes, blobBase),
+    renderDoc(source, readFileSync(join(ROOT, source.file), 'utf8'), routes, blobBase, base),
   );
 
   return {
