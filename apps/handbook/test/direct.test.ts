@@ -145,14 +145,67 @@ describe('the components overview', () => {
     expect(PAGE).not.toMatch(/onClick|onDraw|\bPlay\b/);
   });
 
-  it('reserves the preview area’s height rather than letting a specimen set it', () => {
+  it('reserves the preview area rather than letting a specimen set it', () => {
     // 47 specimens settle at their own speeds. A preview area sized by its
     // content would reflow the grid under a reader who was already reading it,
     // which is the failure the button used to hide by never drawing at all.
-    // The height and nothing else about the class list: an assertion on the whole
-    // string reddens when somebody reorders three utilities, which teaches people
-    // to edit the test rather than to read it.
-    expect(PAGE).toMatch(/h-\[11rem\]/);
+    //
+    // A square derived from the column, and not the `h-[11rem]` this shipped
+    // with: a reserved height in rem is a number that has to be kept in step with
+    // the grid by hand, and it was 176px against columns of 260, 379 and 432 at
+    // three different widths. `aspect-ratio: 1` reserves the same box without
+    // stating a size, so the two cannot part.
+    expect(PAGE).toMatch(/aspect-square/);
+    expect(PAGE).not.toMatch(/h-\[\d/);
+  });
+
+  it('centres a short specimen with auto margins, so a tall one keeps its top', () => {
+    // The whole of the rule, and it is one class. Auto margins take free space
+    // when there is some and resolve to zero when there is none, so a row that
+    // does not fill the square is centred in it and a component taller than the
+    // square is drawn from its top edge and cut off at the bottom.
+    // `justify-content: center` would split the overflow between both edges and
+    // shave the top off every tall component, which is the half a reader most
+    // needs — a screen's header, a card's title.
+    expect(PAGE).toContain('my-auto');
+    // And the column itself stays full width. Shrink-wrapping it would centre
+    // `ui/Badge` and `participate/ClaimStatusTag`, which both say `self-start` in
+    // the app, and hide which components stretch and which hug.
+    expect(PAGE).toContain('mx-auto my-auto w-full');
+  });
+
+  it('asks the two boxes which cards clip rather than naming the components', () => {
+    // The set changes with the column the grid gives a card, with the window and
+    // with the app; measured on 2026-09-11, the same specimens clip nine times in
+    // a 277px column and three times in a 340px one. A list in this repository
+    // would be a card cropping a component while claiming to show all of it,
+    // which is what the iframes were taken off this page for (ADR 0027).
+    const clipped = readFileSync(join(HANDBOOK, 'src/components/clipped.ts'), 'utf8');
+    expect(clipped).toContain('ResizeObserver');
+    // The marker is drawn from the answer the two boxes give, and from nothing
+    // else: no set, no list, no id in a condition anywhere.
+    expect(PAGE).toContain('useClipped');
+    expect(PAGE).toContain('{clipped && (');
+    // And the decision itself knows no component at all — it is two numbers.
+    for (const name of ['RecoveryScreen', 'LoginGate', 'ArticleHero', 'NOT_DRAWN']) {
+      expect(clipped).not.toContain(name);
+    }
+  });
+
+  it('lets the grid decide the column, between a floor and a ceiling', () => {
+    // The square is the column, so the grid is where its size is decided. A band
+    // rather than breakpoints, because the column is not a function of the window
+    // here: the right-hand panel takes a quarter of it, and `sm:grid-cols-2
+    // xl:grid-cols-3` gave 260px at 640, 379px at 1280 and 432px at 1440.
+    // `auto-fit` and not `auto-fill` would stretch a one-component folder's
+    // single card across the whole row, so its square would be twice the one
+    // above it; the class, not the prose, is where that is settled.
+    expect(PAGE).toMatch(/grid-cols-\[repeat\(auto-fill,minmax\(min\(100%,\d+rem\),1fr\)\)\]/);
+    // The ceiling is on the card and not in the track, and that is not a style
+    // choice: `repeat()` counts an `auto-fill` with a definite maximum AT that
+    // maximum, so putting both ends in the track fits two 24rem columns at 1280
+    // where three 19rem ones fit, and loses a column to say the same thing.
+    expect(PAGE).toMatch(/max-w-\[\d+rem\]/);
   });
 
   it('keeps the state a component this site cannot draw explains itself in', () => {

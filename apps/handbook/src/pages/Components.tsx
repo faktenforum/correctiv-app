@@ -2,6 +2,7 @@ import { useEffect, useMemo, useState } from 'react';
 
 import api from 'virtual:api';
 import type { ApiComponent, ApiComponentGroup } from 'virtual:api';
+import { useClipped } from '../components/clipped';
 import { directEntry, DRAWN_IDS } from '../components/direct';
 import { NOT_DRAWN } from '../components/direct-ids';
 import { DirectPreview } from '../components/DirectPreview';
@@ -66,6 +67,13 @@ function useAskedFor(): void {
  * Measured on 2026-09-11: mounting all 47 adds about 100 ms to the first render,
  * 460 ms on a CPU throttled four times, and the page still scrolls end to end at
  * 60 frames a second with nothing over 17 ms. ADR 0028 carries the table.
+ *
+ * **And a card that cannot show all of a component says so.** The square each
+ * one reserves is the column the grid gives it, which at a desktop width is
+ * between 19rem and 24rem, and against the 47 specimens that leaves a handful
+ * taller than the box they are drawn in. Those get a fade and a line saying how
+ * tall the component really is, measured in the browser rather than listed here,
+ * because the set changes with the grid, the window and the app.
  */
 export function Components() {
   const [query, setQuery] = useState('');
@@ -153,9 +161,9 @@ export function Components() {
             Every component the app builds its screens from, taken out of{' '}
             <code className="font-mono">{root}</code> with its props, their types and whatever prose
             the source carries. Every card draws its component, from the app&apos;s source, in this
-            site&apos;s own React tree; the component&apos;s own page has every specimen, the
-            app&apos;s bundle beside it, and a device size. The core&apos;s exports are a separate
-            section:{' '}
+            site&apos;s own React tree, and a card too small to hold the whole of one says so at its
+            lower edge; the component&apos;s own page has every specimen whole, the app&apos;s
+            bundle beside it, and a device size. The core&apos;s exports are a separate section:{' '}
             <a
               href={href('/reference')}
               className="text-on-canvas underline decoration-accent underline-offset-2"
@@ -188,11 +196,40 @@ export function Components() {
                 </p>
               )}
 
-              <ul className="mt-s grid gap-xs sm:grid-cols-2 xl:grid-cols-3">
+              {/*
+                A BAND, NOT A BREAKPOINT, because the column is what sizes the
+                square a card reserves (`ComponentCard` below).
+
+                Breakpoints cannot say what this has to say, because the column
+                here is not a function of the window: the right-hand panel takes a
+                quarter of it whenever a reader opens it. `sm:grid-cols-2
+                xl:grid-cols-3` therefore gave 260px columns at 640, 379px at
+                1280, 432px at 1440 and 301px at 1280 with the panel open — four
+                answers to one question, the widest nearly twice the narrowest.
+                Measured on 2026-09-11 against the 47 specimens: a 340px column
+                clips three of them, a 260px column clips nine.
+
+                So the grid states the band instead, 19rem up, and the card states
+                24rem down. The two halves are written where they are because they
+                are different questions: how many columns fit is the grid's, and
+                how wide a card may usefully be is the card's. Both in the track
+                would also change the answer — `repeat()` counts an `auto-fill`
+                with a definite maximum at that maximum, so `minmax(19rem,24rem)`
+                fits two 24rem columns at 1280 where three 19rem ones fit, and
+                loses a whole column to say the same thing.
+
+                `auto-fill` and not the other one: a folder with a single
+                component in it keeps the column width of the folder above rather
+                than stretching its one card across the row.
+              */}
+              <ul className="mt-s grid grid-cols-[repeat(auto-fill,minmax(min(100%,19rem),1fr))] gap-xs">
                 {group.components.map((component) => {
                   const id = `${group.name}/${component.name}`;
                   return (
-                    <li key={`${component.name}-${component.platform ?? ''}`} className="min-w-0">
+                    <li
+                      key={`${component.name}-${component.platform ?? ''}`}
+                      className="mx-auto w-full min-w-0 max-w-[24rem]"
+                    >
                       <ComponentCard id={id} group={group.name} component={component} />
                     </li>
                   );
@@ -240,17 +277,19 @@ export function Components() {
 /**
  * One card, in either of its two states, both of them the same shape.
  *
- * The preview area is the same height whether it holds a drawing or a badge, and
+ * The preview area is the same square whether it holds a drawing or a badge, and
  * the head, the summary and the foot are identical in both. That is what keeps
  * the minority state from reading as broken: with two components undrawable the
  * exceptions are a statement about where the drawing is, and with forty of them
  * undrawable it is the same statement forty times. Nothing is dashed, greyed out,
  * or shaped like a loading state.
  *
- * The height is fixed rather than measured, and that is the part of the shape
+ * **The square is reserved and not measured**, and that is the part of the shape
  * that has to stay: 47 specimens settle at their own speeds, and a preview area
  * sized by its content would reflow the grid under a reader who was already
- * reading it.
+ * reading it. It is `aspect-ratio: 1` rather than a height in rem, so the
+ * reserved box follows the column the grid gives it and there is no number here
+ * to keep in step with the one in the grid above.
  */
 function ComponentCard({
   id,
@@ -263,13 +302,16 @@ function ComponentCard({
 }) {
   const entry = directEntry(id);
   const route = `/components/${group}/${component.name}`;
+  const { stage, column, clipped, natural } = useClipped<HTMLDivElement, HTMLDivElement>();
 
   return (
     <div className={CARD}>
-      {/* The same 11rem `/diagrams` gives its previews, so the two grids rhyme.
-          Graph paper under it, so a specimen that paints its own surface reads as
-          a thing standing on a stage rather than a box on a page. */}
-      <div className="stage-grid relative h-[11rem] shrink-0 overflow-hidden border-b border-stroke bg-canvas">
+      {/* Graph paper under the square, so a specimen that paints its own surface
+          reads as a thing standing on a stage rather than a box on a page. */}
+      <div
+        ref={stage}
+        className="stage-grid relative flex aspect-square shrink-0 flex-col overflow-hidden border-b border-stroke bg-canvas"
+      >
         {entry === undefined ? (
           <a
             href={href(route)}
@@ -282,13 +324,67 @@ function ComponentCard({
           </a>
         ) : (
           <>
-            <div className="h-full overflow-hidden">
+            {/*
+              CENTRE THE STAGE, NEVER THE SPECIMEN.
+
+              `my-auto` and not `justify-center`, and the difference is the whole
+              rule. Auto margins take the free space when there is some, which
+              centres a short component in the square — vertical position carries
+              no meaning for something that lives in a scrolling column, and a
+              row pinned to the top of a 340px square reads as adrift. When the
+              specimen is taller than the square there is no free space, the
+              margins resolve to zero, and the component is drawn from its top
+              edge and cut off at the bottom. `justify-content: center` would
+              instead split the overflow between the two edges and shave the top
+              off every tall component, which is the half a reader most needs.
+
+              `mx-auto w-full` is the horizontal half: the COLUMN is centred when
+              it is narrower than the card, and the column is full width today, so
+              nothing moves. What must never happen is the column shrinking to its
+              content, because then `ui/Badge` and `participate/ClaimStatusTag`
+              would appear centred when both say `self-start` in the app, and the
+              card would misdescribe them. A full-width column is also what shows
+              which components stretch and which hug.
+            */}
+            <div ref={column} className="mx-auto my-auto w-full">
               <DirectPreview
                 specimens={entry.specimens.slice(0, 1)}
                 ground="canvas"
                 labels={false}
               />
             </div>
+            {/*
+              A CROP THAT SAYS IT IS ONE.
+
+              Without this the card passes a crop off as the whole component,
+              which is a quieter version of the lie ADR 0027 measured: a frame
+              that drew a 393pt phone and called it `Hairline`. It is a fade and
+              one line, painted over a region that is already cut, and it appears
+              only on the cards that are cutting something — on every card that
+              fits, nothing is drawn over the specimen at all.
+
+              Not scaled to fit, which was the other candidate: `LoginGate` is a
+              screen, and a screen shrunk into a card is an unreadable thumbnail
+              claiming a size the component has never had. The whole component is
+              on its own page, which is what the link below this covers the square
+              with.
+
+              Which components clip is measured and never listed: `clipped.ts`
+              says why, and the set moves with the grid, the window and the app.
+            */}
+            {clipped && (
+              <p
+                aria-hidden="true"
+                /* The fade reaches full canvas before the line starts, so the
+                   note is read against the page's own ground and not against
+                   whatever the component happens to be showing there. Above
+                   that it is a fade and nothing else: the point is that the
+                   component runs out of card, not that a band was painted. */
+                className="pointer-events-none absolute inset-x-0 bottom-0 flex justify-end bg-linear-to-t from-canvas from-40% to-transparent px-s pb-2xs pt-ml text-s text-on-canvas-muted tabular-nums"
+              >
+                Clipped · {natural} px tall
+              </p>
+            )}
             {/*
               The way to the component's own page, over the drawing rather than on
               it.
@@ -306,10 +402,19 @@ function ComponentCard({
               own and an `<a>` around one of those is invalid, so this sits over
               the drawing as a sibling instead. That also stops a press landing on
               a specimen's own control, which on a card does nothing anybody wants.
+
+              It also carries the crop, because the marker above it is the one
+              thing on the card a reader cannot act on and this link is the act:
+              the note is `aria-hidden` and what it says is in the label here,
+              attached to the thing that resolves it.
             */}
             <a
               href={href(route)}
-              aria-label={`Every specimen of ${component.name}`}
+              aria-label={
+                clipped
+                  ? `Every specimen of ${component.name}, which this card clips at ${natural} px`
+                  : `Every specimen of ${component.name}`
+              }
               className="absolute inset-0 rounded-t-md focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-accent"
             />
           </>

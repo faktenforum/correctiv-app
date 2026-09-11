@@ -198,8 +198,13 @@ So: **about 100 ms of the first render, 460 ms on a CPU throttled four times, an
 nothing at all afterwards.** Paid once, on a page whose subject is what the
 components look like. The scroll is the number that would have decided it the other
 way and it does not move: 47 mounted React trees sit in the layout without costing a
-frame, because a card's preview area is `overflow: hidden` at a fixed height, so
-nothing in it is laid out against the page.
+frame, ~~because a card's preview area is `overflow: hidden` at a fixed height, so
+nothing in it is laid out against the page.~~ Voided in one phrase by "The square is
+the column, and a crop says it is one" below: the preview area is reserved by
+`aspect-ratio` now rather than by a height. Everything else about the sentence stands,
+it is still `overflow: hidden` and nothing in it is still laid out against the page,
+and the scroll was measured again after the change: 88 frames end to end at 1280, none
+of them over 32 ms.
 
 **Therefore no `IntersectionObserver` either.** Mounting a card as it scrolls into
 view was the fallback if this had measured badly — invisible to a reader, and still
@@ -209,9 +214,14 @@ place for a specimen to fail that the page does not otherwise have.
 
 **The reserved height stays, and it is what the button was accidentally providing.**
 47 specimens settle at their own speeds; a preview area sized by its content would
-reflow the grid under a reader who was already reading it. The height is `11rem`,
+reflow the grid under a reader who was already reading it. ~~The height is `11rem`,
 fixed, the same number `/diagrams` gives its previews, and the last row of the table
-above is the check on it: the page is exactly as tall drawn as empty.
+above is the check on it: the page is exactly as tall drawn as empty.~~ Voided by "The
+square is the column, and a crop says it is one" below: it is `aspect-ratio: 1`
+against a column the grid holds between 19rem and 24rem, so the two grids no longer
+rhyme. The check survives the change and still passes, the page being exactly as tall
+drawn as empty, and the sentence before this one, which is the reason anything is
+reserved at all, is untouched.
 
 **`NOT_DRAWN` and the card state behind it stay too**, though the list is empty and
 nothing reaches that branch. It is a list of exceptions, and it is how the next
@@ -221,6 +231,106 @@ a branch because nothing currently takes it is how the reason gets lost.
 The detail route is untouched by any of this: `/components/<group>/<name>` still
 offers `direct|bundle`, because there the two renderings are the question the page
 exists to answer, and the frame half of it really does boot an app.
+
+### The square is the column, and a crop says it is one
+
+The preview area shipped as `h-[11rem]`, left-aligned, top-aligned, `overflow: hidden`.
+Three things were wrong with it and all three are one thing: **176 pixels is a number
+about nothing.**
+
+**It was a number that had to be kept in step with a grid it could not see.**
+`sm:grid-cols-2 xl:grid-cols-3` gave a 260px column at 640, 379px at 1280, 432px at
+1440 and 301px at 1280 with the right-hand panel open — four answers to one question,
+against one height written in rem. So the box is `aspect-ratio: 1` now. It is still
+reserved and still cannot reflow, because a square of a known width is as definite as
+a height in rem, and there is no longer a second number anywhere to drift.
+
+That leaves the column deciding how big the square is, so the grid states a band
+instead of a breakpoint: `repeat(auto-fill, minmax(min(100%, 19rem), 1fr))` on the
+grid and `max-w-[24rem]` on the card. **The two halves are written apart because
+putting them together changes the answer**: `repeat()` counts an `auto-fill` at the
+track's maximum when that maximum is definite, so `minmax(19rem, 24rem)` fits two
+24rem columns at 1280 where three 19rem ones fit, and loses a whole column to say the
+same thing. Measured, not reasoned about: the first attempt shipped exactly that and
+drew two cards a row at 1280 with 377px of empty page beside them.
+
+**A short component read as adrift, and it was not centred because centring is the
+wrong word for what a card needs.** Three rules, and the third is the one that has
+teeth:
+
+- *Vertically, the specimen is centred in the square.* Where a component sits up and
+  down carries no meaning for something that lives in a scrolling column.
+- *Horizontally, the COLUMN is centred, never the specimen.* The column is the card's
+  full width, so nothing moves today; what the rule forbids is shrinking it to its
+  content. `ui/Badge` and `participate/ClaimStatusTag` both say `self-start` in the
+  app, and a shrink-wrapped column would draw them centred — the card would
+  misdescribe the component, and which components stretch and which hug would stop
+  being visible at all. That is the same failure as the `<div>` parents three
+  sections down, arrived at from the other side.
+- *A component taller than the square keeps its top.* It is `my-auto` and not
+  `justify-content: center`, and that is the whole mechanism: auto margins take free
+  space when there is some and resolve to zero when there is none, so the same one
+  line centres what fits and pins what does not. `justify-content: center` would split
+  the overflow between both edges and shave the top off every tall component, which
+  is the half a reader most needs — a screen's header, a card's title.
+
+**And a card that cannot show all of a component now says so.** A crop passing itself
+off as the whole thing is the same lie [ADR 0027](0027-the-handbook-draws-the-apps-components.md)
+took the frames off this page for, when a 393pt phone stood in for a one-pixel
+`Hairline`; the fixed height was telling a quieter version of it 20 times over. A
+clipped card gets a fade to the page's own ground at its lower edge and one line in
+it saying how tall the component really is — `Clipped · 484 px tall` — which is
+exactly the fact the crop hides.
+
+**Not scaled to fit**, which was the only other candidate. `gate/LoginGate` is a
+screen; a screen shrunk into a 340px card is an unreadable thumbnail claiming a size
+the component has never had, and that is the frame's failure with a different
+mechanism. The whole component is on `/components/<group>/<name>`, which draws every
+specimen at its own height and clips none of them, and the link the card already
+covers its square with is the way there. The marker is `aria-hidden` and the fact is
+in that link's label instead, so the one thing on the card a reader cannot act on
+reaches them attached to the thing that resolves it.
+
+**Which components clip is measured at runtime and named nowhere.** A `ResizeObserver`
+over the square and the column, and `clips(content, stage)` with a pixel of slack
+between them. A list of names in this repository would be right the day it was
+written: the set moves with the column, with the window, with the right-hand panel,
+and with the app, where a component gaining one row grows by 24 pixels. Measured on
+2026-09-11 against the 47 specimens, natural height against card width, counting how
+many are taller than a square of that width:
+
+| card width | 277 | 301 | 322 | 340 | 379 | 420 | 432 | 520 |
+|---|---|---|---|---|---|---|---|---|
+| clipped, of 47 | 9 | 5 | 4 | 3 | 3 | 3 | 3 | 0 |
+
+The median natural height is **122 px at every width**, because most of these are
+single-line rows that widening cannot shrink further. What binds is the tall minority,
+and it thins out fast between 277 and 340 and then barely at all — which is the
+argument for the band's floor being where it is rather than higher.
+
+What the shipped grid gives, measured the same day on the assembled site:
+
+| viewport | column | square | clipped |
+|---|---|---|---|
+| 390 | 279 | 277 | 8 |
+| 768 | 324 | 323 | 4 |
+| 1024 | 384, capped | 382 | 3 |
+| 1280 | 379 | 377 | **3** — `ArticleHero` 475, `LoginGate` 444, `RecoveryScreen` 484 |
+| 1440 | 322 | 320 | 4 — those three and `BackstageTeaser` 347 |
+
+**This is not the "All specimens" pill coming back.** That control sat on every card,
+on its own opaque ground, over a region the component was using: it hid `ClubCard`'s
+hairline and `CalloutCard`'s progress bar on cards that were showing those components
+perfectly well. This appears on the three or four that are already cutting something
+off, over the part that is already cut, and it is not a control — the link is the
+whole square, as it has been since that pill came off.
+
+The two numbers the section above rests on were re-measured after the change and
+neither moved in the direction that would have mattered: the page is 11,559px tall at
+1280 against 7,735px before, which is what a square costs over 176 pixels, and
+scrolling it end to end is 88 frames with none over 32 ms. Nothing reflows as the
+specimens settle: the page's height and the number of markers on it are the same from
+the first frame either can be read on.
 
 ### The registry's roster is the app's own catalogue
 
@@ -528,6 +638,24 @@ nothing else about the decision moved: the frames are still gone, the grid is st
 the grid, and what came off is a control inherited from the page this one replaced,
 measured and found to be gating nothing. Decision 12 of the redesign is withdrawn
 with it.
+
+**This record itself, two claims about the preview area's size**, both struck in
+place, both by "The square is the column, and a crop says it is one" above, which is
+a section of this ADR rather than a record of its own because the decision it belongs
+to is this one: the frames are still gone, the cards still draw on arrival, the box is
+still reserved so that nothing reflows. What moved is only what reserves it.
+
+- "The height is `11rem`, fixed, the same number `/diagrams` gives its previews …", in
+  "Every card draws, and there is nothing to press". It is `aspect-ratio: 1` against a
+  column the grid holds between 19rem and 24rem. The two grids no longer rhyme, and
+  `/diagrams` is untouched: an SVG scaled into a box has no natural height to be wrong
+  about, which is the whole reason one number could serve both and now cannot. The
+  sentence's own check — as tall drawn as empty — went under the strike with it and is
+  the thing that was re-run rather than assumed.
+- "because a card's preview area is `overflow: hidden` at a fixed height …", in the
+  same section. Still `overflow: hidden`, still reserved, no longer a height. Struck
+  as a whole sentence because the false part is a phrase inside one, and this
+  repository annotates a strike with what follows it.
 
 **This record itself, two more claims, struck in place**, both by "The environment is
 the app's, and it was short by five things" above, which is a section of this ADR
