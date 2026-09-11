@@ -75,11 +75,12 @@ grey by role. wp-design-tokens `8ed7a28` deleted the first and made the second
 unnecessary. 0010's decision — the package is the shared one, the app writes nothing —
 is untouched.
 
-[ADR 0027](0027-the-handbook-draws-the-apps-components.md) strikes 0002's decision
-line, "Stay on `@nativescript/vite@2.0.3` / Vite 7". Half of it was already moot under
-0007, but 0002 was still the only record in here saying which bundler this project
-runs, and the answer had changed without one. Its measurement — a bundler dropping a
-polyfill and staying green — is untouched and is why the record is kept.
+[ADR 0027](0027-the-handbook-draws-the-apps-components.md) strikes 0002's status and
+its decision line, "Stay on `@nativescript/vite@2.0.3` / Vite 7". Half of that
+sentence was already moot under 0007, but 0002 was still the only record in here
+saying which bundler this project runs, and the answer had changed without one. Its
+measurement — a bundler dropping a polyfill and staying green — is untouched and is
+why the record is kept.
 
 [ADR 0015](0015-reading-correctiv-org-through-its-rest-api.md) retires the CORS item
 in 0006 and four claims in the top-level docs. Read its last section for the list; the

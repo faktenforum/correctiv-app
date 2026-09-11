@@ -135,13 +135,14 @@ describe('web target', () => {
   it('keeps the font files out of the theme barrel', () => {
     // `lib/theme` is the app's most-imported module: a component asks it for
     // `useColors` and, through `export * from './fonts'`, used to get
-    // `@expo-google-fonts/*` with it — a React Native asset registration in the
-    // import graph of every component in the app. Nothing on a phone notices,
-    // because Metro registers assets. A bundler that is not Metro cannot, which
-    // is why the handbook could build 0 of the app's 47 components until this
-    // chain was cut (ADR 0027). The families a component actually wants are plain
-    // strings in `lib/theme/fonts.ts`; the files are in `font-assets.ts`, and
-    // `app/_layout.tsx` is the only module that has any use for them.
+    // `@expo-google-fonts/*` with it — five `require()`s of a `.ttf` in the import
+    // graph of every component in the app. Metro dedupes those into its asset
+    // registry, so nothing on a phone notices; a plain bundler emits every cut the
+    // package re-exports, which measured 19,828 kB against 424 kB for a single
+    // `<Typo>` built outside Metro (ADR 0027). The families a component actually
+    // wants are plain strings in `lib/theme/fonts.ts`; the files are in
+    // `font-assets.ts`, and `app/_layout.tsx` is the only module that has any use
+    // for them.
     const barrel = readFileSync(resolve(SRC, 'lib/theme/index.ts'), 'utf8');
     expect(barrel).not.toMatch(/font-assets/);
 

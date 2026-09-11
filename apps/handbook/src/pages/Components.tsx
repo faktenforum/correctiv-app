@@ -371,7 +371,7 @@ function Component({
           <p className="mb-2xs text-s font-semibold uppercase tracking-wider text-on-canvas-muted">
             Drawn by the handbook
           </p>
-          <DirectPreview entry={DIRECT[directId]} ground="canvas" />
+          <DirectPreview specimens={DIRECT[directId]} ground="canvas" />
         </div>
       )}
       <Drawn group={group} name={component.name} state={stateOf(id)} />

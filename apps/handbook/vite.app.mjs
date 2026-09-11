@@ -35,19 +35,25 @@ export const APP_CSS_ENTRY = '../mobile/src/global.css';
 /**
  * Metro's platform split, spelled for a bundler that does not have one.
  *
- * `.web.*` ahead of the bare extensions, because that is the only reason
- * `react-native-safe-area-context` resolves: it ships `SafeAreaView.web.js` and
- * `NativeSafeAreaProvider.web.js` beside native files. `vite-plugin-rnw` carries
- * a list of its own, and it is not enough — a plugin's `config()` result is
- * appended to the user's and arrays concatenate, so a bare `.js` written at this
- * level wins over the plugin's `.web.js` and the split silently does not happen.
+ * `.web.*` ahead of the bare extensions, because two packages in the app's tree
+ * ship a web file beside a native one and nothing but this order picks it:
+ * `react-native-safe-area-context` (`SafeAreaView.web.js`,
+ * `NativeSafeAreaProvider.web.js`) and `react-native-screens`
+ * (`DebugContainer.web.js`). `vite-plugin-rnw` carries a list of its own, and it
+ * is not enough — a plugin's `config()` result is appended to the user's and
+ * arrays concatenate, so a bare `.js` written at this level wins over the
+ * plugin's `.web.js` and the split silently does not happen.
  *
- * Measured on 2026-09-11 by shortening this list to the bare extensions, with
- * the plugin still in place: `ui/SafeAreaView`, `ui/Screen` and `ui/ScreenHeader`
- * stop building, on
+ * This is the larger half of the recipe, not a detail. Measured on 2026-09-11 by
+ * shortening this list to the bare extensions with the plugin still in place:
+ * **7 of 47 build**, the same number as with no recipe at all. The forty that
+ * fail do so on
  * `[UNLOADABLE_DEPENDENCY] Could not load react-native-web/Libraries/Utilities/codegenNativeComponent`
- * from `react-native-safe-area-context/lib/module/specs/NativeSafeAreaView.js` —
- * a file the native half reaches and the web half never does. (ADR 0027.)
+ * (from `react-native-safe-area-context/lib/module/specs/NativeSafeAreaView.js`)
+ * and `…/Libraries/ReactNative/AppContainer` (from
+ * `react-native-screens/lib/module/components/DebugContainer.js`) — files the
+ * native halves reach and the web halves never do. The seven survivors are the
+ * seven that import neither. (ADR 0027.)
  */
 export const WEB_FIRST_EXTENSIONS = [
   '.web.tsx',

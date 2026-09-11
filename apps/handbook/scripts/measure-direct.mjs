@@ -6,7 +6,7 @@
  *
  * One `vite build` per component, each with a throwaway entry that imports that
  * one file and nothing else, so a failure names the component rather than the
- * run. It prints `built / failed` with the first line of each error, and that
+ * run. It prints `built / failed` with the reason each failure gives, and that
  * output is the evidence behind the number in ADR 0027.
  *
  * A script and not a test, on purpose. The number moves when `react-native`,
@@ -22,7 +22,7 @@
  * why it is a committed script now and not a command somebody types.
  */
 
-import { existsSync, mkdirSync, rmSync, writeFileSync } from 'node:fs';
+import { existsSync, mkdirSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
 import { dirname, join, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
@@ -46,9 +46,7 @@ if (!existsSync(API)) {
   process.exit(1);
 }
 
-const { components } = JSON.parse(
-  await import('node:fs/promises').then((fs) => fs.readFile(API, 'utf8')),
-);
+const { components } = JSON.parse(readFileSync(API, 'utf8'));
 
 const only = process.argv.includes('--only')
   ? process.argv[process.argv.indexOf('--only') + 1]
@@ -75,6 +73,24 @@ writeFileSync(
   join(WORK, 'index.html'),
   '<!doctype html><div id="root"></div><script type="module" src="./entry.tsx"></script>\n',
 );
+
+/**
+ * The line of a Vite failure that names what went wrong.
+ *
+ * Not the first line: Rolldown's message opens with "Build failed with 2 errors:"
+ * and then a blank one, so a naive first-line reader prints the same nine words
+ * for every component and the run says nothing about any of them. The line worth
+ * having is the first `[CODE] reason` after that header. ANSI colours have to come
+ * off first, because Rolldown writes them even at `logLevel: 'silent'`.
+ */
+function firstReason(thrown) {
+  const lines = String(thrown?.message ?? thrown)
+    .replaceAll(/\[[0-9;]*m/g, '')
+    .split('\n')
+    .map((line) => line.trim())
+    .filter((line) => line.length > 0);
+  return lines.find((line) => /^\[[A-Z_]+\]/.test(line)) ?? lines[0];
+}
 
 const results = [];
 for (const target of targets) {
@@ -106,10 +122,7 @@ for (const target of targets) {
       build: { outDir: join(WORK, 'dist'), emptyOutDir: true, reportCompressedSize: false },
     });
   } catch (thrown) {
-    error = String(thrown?.message ?? thrown)
-      .split('\n')
-      .map((line) => line.trim())
-      .find((line) => line.length > 0);
+    error = firstReason(thrown);
   }
   results.push({ id: target.id, error });
   console.log(`${error === undefined ? 'built ' : 'FAILED'}  ${target.id}`);

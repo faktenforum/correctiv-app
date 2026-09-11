@@ -10,7 +10,8 @@ import { Uniwind } from 'uniwind';
 // keeps this package from writing a third colour of its own.
 import '@/global.css';
 
-import type { DirectEntry } from './direct';
+import { storedAppearance, type Appearance } from '../theme';
+import type { DirectSpecimen } from './direct';
 
 /**
  * The three things a component from `apps/mobile` needs before it will draw here.
@@ -24,17 +25,19 @@ import type { DirectEntry } from './direct';
  *    very nearly invisible. Uniwind reads the class exactly once, in its own
  *    module constructor, and the site's appearance setting changes afterwards.
  *    ADR 0027 records it; ADR 0008 records the same failure in the NativeWind era.
+ *    Where the setting is read from is the other half of this, and it is not
+ *    obvious; the hook below says why.
  * 3. Nothing else. Not a Redux store, not a router, not a `Provider`: those are
  *    runtime preconditions for the components that read them, and neither of the
  *    two drawn here does.
  */
 export function DirectPreview({
-  entry,
-  ground = 'canvas',
+  specimens,
+  ground,
 }: {
-  entry: DirectEntry;
-  /** Which of the app's two grounds to stand the specimen on. */
-  ground?: 'canvas' | 'surface';
+  specimens: readonly DirectSpecimen[];
+  /** Which of the app's two grounds to stand the specimens on. */
+  ground: 'canvas' | 'surface';
 }) {
   useUniwindFollowsTheSite();
 
@@ -42,7 +45,7 @@ export function DirectPreview({
     <div
       className={`rounded-md border border-stroke ${ground === 'surface' ? 'bg-surface' : 'bg-canvas'}`}
     >
-      {entry.specimens.map((specimen) => (
+      {specimens.map((specimen) => (
         <div className="border-b border-stroke p-s last:border-b-0" key={specimen.label}>
           <p className="mb-2xs font-mono text-s text-on-canvas-muted">{specimen.label}</p>
           <SpecimenBoundary label={specimen.label}>{specimen.node}</SpecimenBoundary>
@@ -55,34 +58,43 @@ export function DirectPreview({
 /**
  * The site's appearance, handed to Uniwind rather than merely painted as a class.
  *
- * Read off `<html>` rather than taken as a prop, because `theme.ts`'s
- * `useAppearance` is `useState` held in `App.tsx` and a second call to it would
- * be a second, independent setting. The class is the one thing both halves can
- * see: `dark` or `light` when the reader chose one, neither when the setting is
- * "System" — which is `setTheme('system')` here, and is Uniwind's own adaptive
- * mode following `prefers-color-scheme`. That is the fourth combination in
- * TROUBLESHOOTING.md, and the one that has shipped broken before.
+ * Not read off `<html>`, and that is measured rather than stylistic. Uniwind
+ * writes that class itself: `setTheme('system')` resolves the device scheme once
+ * and stamps the answer back on the root as an explicit `light` or `dark`. A
+ * reader of the class therefore reads Uniwind's own output, calls it the reader's
+ * choice, and pins the site to whichever scheme the device had when the page
+ * loaded. Measured on the built site on 2026-09-11, setting on System, device
+ * light, then the device switched to dark: `/components` stayed white while `/`
+ * and `/architecture` went dark. The class says what is on screen; the setting
+ * says what was asked for, and "system" is the one value where those differ.
+ *
+ * So `storedAppearance()` is the value and the class change is only the signal
+ * that it moved — `theme.ts` writes both, in that order, and nothing else writes
+ * the stored one. Taken from there rather than as a prop because `useAppearance`
+ * is `useState` held in `App.tsx`, and a second call to it would be a second,
+ * independent setting.
+ *
+ * "System" is then re-applied whenever the device scheme moves, because Uniwind
+ * resolves it once. That is the fourth combination in TROUBLESHOOTING.md, and the
+ * one that has shipped broken before.
  */
 function useUniwindFollowsTheSite(): void {
-  const [theme, setTheme] = useState(siteTheme);
+  const [theme, setTheme] = useState<Appearance>(storedAppearance);
 
   useEffect(() => {
-    const root = document.documentElement;
-    const observer = new MutationObserver(() => setTheme(siteTheme()));
-    observer.observe(root, { attributeFilter: ['class'] });
+    const observer = new MutationObserver(() => setTheme(storedAppearance()));
+    observer.observe(document.documentElement, { attributeFilter: ['class'] });
     return () => observer.disconnect();
   }, []);
 
   useEffect(() => {
     Uniwind.setTheme(theme);
+    if (theme !== 'system') return;
+    const query = window.matchMedia('(prefers-color-scheme: dark)');
+    const resolveAgain = () => Uniwind.setTheme('system');
+    query.addEventListener('change', resolveAgain);
+    return () => query.removeEventListener('change', resolveAgain);
   }, [theme]);
-}
-
-function siteTheme(): 'light' | 'dark' | 'system' {
-  const classes = document.documentElement.classList;
-  if (classes.contains('dark')) return 'dark';
-  if (classes.contains('light')) return 'light';
-  return 'system';
 }
 
 /**

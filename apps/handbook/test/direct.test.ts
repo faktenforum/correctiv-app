@@ -5,12 +5,12 @@ import { describe, expect, it } from 'vitest';
 
 import { ROOT } from '../plugin/collect.ts';
 import { DIRECT_IDS } from '../src/components/direct-ids.ts';
+import { appPlugins } from '../vite.app.mjs';
 
 const HANDBOOK = join(ROOT, 'apps/handbook');
 const API = join(HANDBOOK, 'content/api.generated.json');
 const REGISTRY = readFileSync(join(HANDBOOK, 'src/components/direct.tsx'), 'utf8');
 const PREVIEW = readFileSync(join(HANDBOOK, 'src/components/DirectPreview.tsx'), 'utf8');
-const RECIPE = readFileSync(join(HANDBOOK, 'vite.app.mjs'), 'utf8');
 
 /**
  * What the handbook draws itself, held against what the app actually has.
@@ -75,8 +75,17 @@ describe('the components the handbook draws', () => {
     // green either way, `scripts/measure-direct.mjs` reports 47 of 47 either way,
     // and the page renders either way. Nothing but a pair of eyes sees it, which
     // is why the order is asserted here. `vite.app.mjs` carries the table.
-    const plugins = /export function appPlugins\(\) \{[\s\S]*?\n\}/.exec(RECIPE)?.[0] ?? '';
-    expect(plugins).toMatch(/rnw\(\)[\s\S]*uniwind\(/);
+    //
+    // The built list and not the file's text: `rnw()` expands to nine plugins and
+    // the one that does the aliasing is `vite:react-native-web-babel`, so what has
+    // to come first is a fact about the array rather than about the order two
+    // calls happen to be written in.
+    const names = appPlugins()
+      .flat(Infinity)
+      .map((plugin) => (plugin as { name?: string } | null)?.name);
+    expect(names).toContain('vite:react-native-web-babel');
+    expect(names).toContain('uniwind');
+    expect(names.indexOf('vite:react-native-web-babel')).toBeLessThan(names.indexOf('uniwind'));
   });
 
   it('hands the site’s appearance to Uniwind rather than only painting a class', () => {
@@ -87,5 +96,19 @@ describe('the components the handbook draws', () => {
     // light value over a dark ground. Measured: `canvas` at `#1a1a1a` under text
     // at `#333`. Nothing about the page looks broken to a build.
     expect(PREVIEW).toMatch(/Uniwind\.setTheme\(/);
+  });
+
+  it('takes the setting from where the site stores it, never off the root element', () => {
+    // The second half of the same trap, and the more expensive one, because it
+    // passes all four appearance combinations. `setTheme('system')` resolves the
+    // device scheme once and stamps the answer back onto `<html>`; reading the
+    // class therefore reads Uniwind's own output, hands it back as an explicit
+    // theme, and pins the WHOLE SITE to the scheme the device had at load. Measured
+    // on the built site on 2026-09-11: with the setting on System and the device
+    // switched to dark afterwards, `/` and `/architecture` went dark and
+    // `/components` stayed white. `theme.ts` owns the stored setting and nothing
+    // else writes it, which is the only reading that cannot be Uniwind's.
+    expect(PREVIEW).toMatch(/storedAppearance\(/);
+    expect(PREVIEW).not.toMatch(/documentElement\.classList/);
   });
 });
