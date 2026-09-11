@@ -57,6 +57,20 @@ const SIGNED_IN = {
   },
 };
 
+/**
+ * The same, under a name that is obviously not a person.
+ *
+ * What `holdTheDoorOpen` writes when it opens the gate for a frame. The account
+ * name reaches the app's profile screen, so a developer looking at a framed
+ * screen sees "Handbuch" where an account name belongs and knows the session was
+ * not signed into. German, because this one string is read by the app's own user
+ * interface rather than by a developer; the marker beside it is not.
+ */
+const HELD_OPEN = {
+  account: { email: 'handbuch@example.org', name: 'Handbuch' },
+  entitlement: SIGNED_IN.entitlement,
+};
+
 /** A member of the 0 € tier: signed in, and the app is not part of it. */
 const NO_ACCESS = {
   account: { email: 'frei@example.org', name: 'Frei' },
@@ -81,10 +95,43 @@ export interface Fixture {
 const kv = (store: Storage, slice: string, value: unknown) =>
   store.setItem(`kv:store.${slice}`, JSON.stringify(value));
 
-/** Everything the app owns, and nothing else. */
+/**
+ * The mark this tool leaves when it opens the app's door for a frame.
+ *
+ * Issue #112: a door that quietly opens is worse than one that asks. Nothing
+ * about a seeded session looks different from a real sign-in from inside the
+ * app, so the app is told, in one key, and prints it where a developer will see
+ * it — `apps/mobile/src/gallery/Gallery.tsx`, which is the page every framed
+ * component is drawn on.
+ *
+ * Outside `kv:store.` on purpose. `persist()` writes back only the keys a slice
+ * declares, so anything invented under that prefix is dropped on the app's first
+ * write; this is not the core's state and must not look like it. It is also one
+ * greppable string, which is what the issue asks for: `handbook:seeded` appears
+ * in exactly two files, and `test/workbench/seed.test.ts` fails if the two ever
+ * spell it differently.
+ *
+ * The bypass itself cannot reach a production build for a simpler reason than a
+ * `__DEV__` branch: it is not in the app. `holdTheDoorOpen` is this package's
+ * code, the app's own bundle contains nothing that opens its gate, and the same
+ * test asserts that too.
+ */
+export const SEEDED_KEY = 'handbook:seeded';
+
+/**
+ * Everything the app owns, plus the mark above, and nothing else.
+ *
+ * `SEEDED_KEY` by name and not by its `handbook:` prefix, which is the kind of
+ * shortcut that would be wrong the day something else took the prefix — and one
+ * already has: `theme.ts` keeps the reader's own appearance setting under
+ * `handbook:appearance`, and a fixture that wiped the prefix would put the site
+ * back to "System" because somebody asked to see the app signed out.
+ */
 function clearApp(store: Storage): void {
   for (const key of Object.keys(store)) {
-    if (key.startsWith('kv:store.') || key.startsWith('blob:')) store.removeItem(key);
+    if (key.startsWith('kv:store.') || key.startsWith('blob:') || key === SEEDED_KEY) {
+      store.removeItem(key);
+    }
   }
 }
 
@@ -221,8 +268,8 @@ export function applyFixture(store: Storage, id: string): void {
  *
  * `applyFixture` above is for someone who asked for a state: it wipes first, so a
  * fixture describes a whole state rather than a patch. That is wrong for a frame
- * that appears because a reader opened a row on `/components` — they asked to see
- * a button drawn, not to have the demo app's saved articles cleared.
+ * that appears because a reader opened a component's page — they asked to see a
+ * button drawn, not to have the demo app's saved articles cleared.
  *
  * So: the session key, and only when the door is actually shut. Nothing else is
  * read or written, and a reader who is already signed in keeps the account they
@@ -231,9 +278,15 @@ export function applyFixture(store: Storage, id: string): void {
  * A frame does need this. The app's root layout renders the gate INSTEAD of the
  * router until the session carries an entitlement, so a frame pointed at
  * `/gallery` without one draws the sign-in form, which is what the link out of
- * `/components` did for every reader of the published site. Storage is the only
+ * the component reference did for every reader of the published site. Storage is the only
  * key that works there, because the static export carries no dev handle to
  * dispatch through, which is the same argument the file header makes.
+ *
+ * **It says so, which is the whole of issue #112.** The account it writes is
+ * named `Handbuch` rather than a plausible person, and it sets `SEEDED_KEY`
+ * beside it; the app's gallery prints one line when that key is there, so a
+ * developer looking at a framed component can tell a held door from a sign-in.
+ * A door that quietly opens is worse than one that asks.
  *
  * `settings` is deliberately left alone: the onboarding redirect fires only from
  * `/`, and nothing this is used for starts there. What it writes does outlive the
@@ -245,9 +298,9 @@ export function applyFixture(store: Storage, id: string): void {
  * browser with site data switched off, and there is no answer to it at all. One
  * block put the write in the catch of the read, so a blocked store threw out of
  * the effect that calls this and React unmounted the page: measured against a
- * `localStorage` whose accessors throw `SecurityError`, `/components` rendered its
- * error boundary and none of the 46 rows. A frame that draws the door is worse
- * than one that draws a component and far better than no reference page.
+ * `localStorage` whose accessors throw `SecurityError`, the component reference
+ * rendered its error boundary and none of its rows. A frame that draws the door
+ * is worse than one that draws a component and far better than no reference page.
  */
 export function holdTheDoorOpen(store: Storage): void {
   try {
@@ -261,7 +314,8 @@ export function holdTheDoorOpen(store: Storage): void {
     // valid JSON, so writing over it loses nothing that would have survived.
   }
   try {
-    kv(store, 'session', SIGNED_IN);
+    kv(store, 'session', HELD_OPEN);
+    store.setItem(SEEDED_KEY, new Date().toISOString());
   } catch {
     // Site data switched off. Nothing can be seeded, and nothing may throw.
   }

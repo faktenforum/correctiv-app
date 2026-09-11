@@ -242,12 +242,55 @@ function shown(only: string | undefined): Folder[] {
 }
 
 /**
+ * The key the handbook writes when it opens this app's door for a frame.
+ *
+ * Spelled here and in `apps/handbook/src/workbench/frame/seed.ts`, and nowhere
+ * else; `apps/handbook/test/workbench/seed.test.ts` fails if the two spellings
+ * part. Read with a `try`, because touching `localStorage` is what throws when
+ * site data is switched off, and a gallery must not fail to render over it.
+ */
+const SEEDED_KEY = 'handbook:seeded';
+
+function seededByTheHandbook(): boolean {
+  try {
+    return globalThis.localStorage?.getItem(SEEDED_KEY) !== null;
+  } catch {
+    return false;
+  }
+}
+
+/**
+ * Whoever is signed in here did not sign in, said on the page.
+ *
+ * Issue #112. The app's door is a render branch on the session, and the handbook
+ * writes one into storage before it points a frame at this route, so a component
+ * can be drawn without anybody signing in first. That is the affordance the issue
+ * asks for and this line is the other half of it: a door that quietly opens is
+ * worse than one that asks.
+ *
+ * No `__DEV__` branch, deliberately. ADR 0025 measured that a route component
+ * returning `null` outside a development build is still pre-rendered into the
+ * export as a blank public page, so guarding a component is not the same as
+ * keeping something out of a build. The bypass is not in this bundle at all — it
+ * is the handbook's code — and what is here is one line that appears only when a
+ * key the handbook wrote is present.
+ */
+function SeededNote() {
+  return (
+    <Typo variant="text-s" color="on-canvas-muted" className="mb-2xs">
+      Session seeded by the handbook, not signed in.
+    </Typo>
+  );
+}
+
+/**
  * @param only One component, as `folder/name`. Everything, when absent.
  * @param bare Without the page's own furniture, for a frame that is 393px wide.
  */
 export function Gallery({ only, bare }: { only?: string; bare?: boolean }) {
   const groups = shown(only);
   const found = groups.length > 0;
+  const seeded = seededByTheHandbook();
   return (
     <SafeAreaView edges={['top']} className="flex-1 bg-canvas">
       <ScrollView
@@ -273,6 +316,8 @@ export function Gallery({ only, bare }: { only?: string; bare?: boolean }) {
           appearance control took 340 of 520 pixels and left the component itself
           below the fold, which is the whole reason for the flag.
         */}
+        {seeded ? <SeededNote /> : null}
+
         {bare ? null : (
           <>
             <Typo variant="headline-m">{only ?? 'Component gallery'}</Typo>

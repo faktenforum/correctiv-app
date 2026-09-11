@@ -1,5 +1,15 @@
-import { readFileSync } from 'node:fs';
-import { resolve } from 'node:path';
+import { readdirSync, readFileSync } from 'node:fs';
+import { join, resolve } from 'node:path';
+
+/** Every source file under a directory, so a new one is checked without being listed. */
+function sources(dir: string, out: string[] = []): string[] {
+  for (const entry of readdirSync(dir, { withFileTypes: true })) {
+    const path = join(dir, entry.name);
+    if (entry.isDirectory()) sources(path, out);
+    else if (/\.tsx?$/.test(entry.name)) out.push(path);
+  }
+  return out;
+}
 
 import { describe, expect, it } from 'vitest';
 
@@ -10,7 +20,12 @@ import { fileKey } from '@correctiv/app-core/services/cache.service';
 import { PERSISTED_KEYS as SESSION_KEYS } from '@correctiv/app-core/stores/session';
 import { PERSISTED_KEYS as SETTINGS_KEYS } from '@correctiv/app-core/stores/settings';
 
-import { applyFixture, FIXTURES, holdTheDoorOpen } from '../../src/workbench/frame/seed';
+import {
+  applyFixture,
+  FIXTURES,
+  holdTheDoorOpen,
+  SEEDED_KEY,
+} from '../../src/workbench/frame/seed';
 
 /**
  * The shell writes the app's storage directly, so it has to know four things the
@@ -194,5 +209,68 @@ describe('holding the door open', () => {
     } as unknown as Storage;
 
     expect(() => holdTheDoorOpen(blocked)).not.toThrow();
+  });
+});
+
+/**
+ * Issue #112: the bypass says what it is, and cannot reach a production build.
+ *
+ * A door that quietly opens is worse than one that asks. Nothing about a seeded
+ * session looks different from a sign-in from inside the app, so two things are
+ * held here: that the mark is written, and that the app prints it under the same
+ * name. The second is the one that rots — two files, one string, and a rename in
+ * either would leave a bypass with no marker and nothing in the build to say so.
+ */
+describe('saying that the door was held open', () => {
+  const GALLERY = readFileSync(resolve(ROOT, 'apps/mobile/src/gallery/Gallery.tsx'), 'utf8');
+
+  it('marks the session it writes, under a name outside the app’s own prefixes', () => {
+    const store = new FakeStorage() as unknown as Storage;
+
+    holdTheDoorOpen(store);
+
+    expect(store.getItem(SEEDED_KEY)).not.toBeNull();
+    // Not under `kv:store.`: `persist()` writes back only the keys a slice
+    // declares, so anything invented under that prefix is dropped on the app's
+    // first write, and this is not the core's state.
+    expect(SEEDED_KEY.startsWith('kv:store.')).toBe(false);
+    // And the account is obviously not a person, which is the half a developer
+    // sees on the profile screen without knowing this key exists.
+    expect(payload(store, 'session').account).toMatchObject({ name: 'Handbuch' });
+  });
+
+  it('is the same string the app reads', () => {
+    expect(GALLERY).toContain(`const SEEDED_KEY = '${SEEDED_KEY}'`);
+    expect(GALLERY).toContain('Session seeded by the handbook');
+  });
+
+  it('takes the mark away with a fixture, which is a whole state', () => {
+    const store = new FakeStorage() as unknown as Storage;
+    holdTheDoorOpen(store);
+    // The site's own setting lives under the same prefix, and a fixture is about
+    // the app's state and not about the reader's. Clearing by prefix would put
+    // somebody back to "System" because they asked to see the app signed out.
+    store.setItem('handbook:appearance', 'dark');
+
+    applyFixture(store, 'fresh');
+
+    expect(store.getItem(SEEDED_KEY)).toBeNull();
+    expect(store.getItem('handbook:appearance')).toBe('dark');
+  });
+
+  /**
+   * And the reason it cannot reach a production build is not a `__DEV__` branch.
+   *
+   * ADR 0025 measured that a route component returning `null` outside a
+   * development build is still pre-rendered into the export as a blank public
+   * page, so guarding a component is not the same as keeping something out of a
+   * build. What keeps this out is simpler: the code that opens the gate is this
+   * package's, and the app's bundle has none of it.
+   */
+  it('keeps the bypass itself out of the app', () => {
+    const offenders = sources(resolve(ROOT, 'apps/mobile/src')).filter((file) =>
+      readFileSync(file, 'utf8').includes('holdTheDoorOpen'),
+    );
+    expect(offenders).toEqual([]);
   });
 });
